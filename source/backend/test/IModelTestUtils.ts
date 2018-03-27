@@ -9,8 +9,7 @@ import {
 } from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { IModelGateway } from "@bentley/imodeljs-common";
-import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
+import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
@@ -245,7 +244,7 @@ export class IModelTestUtils {
     return iModel!;
   }
 
-   public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+  public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
     const destPath = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(destPath))
       IModelJsFs.mkdirSync(destPath);
@@ -304,7 +303,7 @@ export class IModelTestUtils {
     assert.isTrue(modeledElementId.isValid());
 
     // The model
-    const newModel = testImodel.models.createModel({ modeledElement: {id: modeledElementId, relClassName: "BisCore:PhysicalModelBreaksDownPhysicalPortion"}, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
+    const newModel = testImodel.models.createModel({ modeledElement: { id: modeledElementId, relClassName: "BisCore:PhysicalModelBreaksDownPhysicalPortion" }, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
     newModelId = testImodel.models.insertModel(newModel);
 
     assert.isTrue(newModelId.isValid());

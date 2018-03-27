@@ -10,8 +10,7 @@ import { DbResult, Id64, using } from "@bentley/bentleyjs-core";
 import { XAndY, XYAndZ, Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { KnownTestLocations } from "./KnownTestLocations";
 
-describe.only("ECSqlStatement", () => {
-  debugger;
+describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = testRange.toFloat64Array().buffer;

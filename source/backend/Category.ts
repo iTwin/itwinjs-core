@@ -2,19 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { CodeSpecNames, Code, ElementProps, Appearance, Rank } from "@bentley/imodeljs-common";
+import { CodeSpecNames, Code, ElementProps, Appearance, Rank, AppearanceProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
 
 /** Parameters to create a SubCategory element */
 export interface SubCategoryProps extends ElementProps {
-  appearance?: Appearance;
+  appearance?: AppearanceProps;
   description?: string;
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
-export class SubCategory extends DefinitionElement implements SubCategoryProps {
+export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public description?: string;
   public constructor(props: SubCategoryProps, iModel: IModelDb) {
@@ -24,7 +24,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
   }
   public toJSON(): SubCategoryProps {
     const val = super.toJSON();
-    val.appearance = this.appearance;
+    val.appearance = this.appearance.toJSON();
     if (this.description && this.description.length > 0)
       val.description = this.description;
     return val;
@@ -62,7 +62,7 @@ export class Category extends DefinitionElement implements CategoryProps {
 
   /** Set the default appearance of this category */
   public setDefaultAppearance(app: Appearance) {
-    const subCat = this.iModel.elements.getElement(this.id).copyForEdit() as SubCategory;
+    const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).copyForEdit();
     subCat.appearance = app;
     this.iModel.elements.updateElement(subCat);
   }

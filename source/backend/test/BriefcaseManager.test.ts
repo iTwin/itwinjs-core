@@ -5,7 +5,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges } from "@bentley/imodeljs-clients";
-import { Code, IModelVersion, Appearance, ColorDef, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
 import { ConcurrencyControl } from "../ConcurrencyControl";
 import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
@@ -65,7 +65,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
 
   // Reserve all of the codes that are required by the new model and category.
   try {
@@ -276,14 +276,14 @@ describe("BriefcaseManager", () => {
 
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
-    const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", {copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
     upgraded.saveChanges();
     createChangeSet(upgraded);
 
     // Open two copies of the seed file.
-    const first: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "first.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
-    const second: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "second.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
-    const neutral: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", {copyFilename: "neutral.bim", openMode: OpenMode.ReadWrite, enableTransactions: true});
+    const first: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "first.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const second: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "second.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const neutral: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "neutral.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
     assert.isTrue(first !== second);
 
     first.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -304,7 +304,7 @@ describe("BriefcaseManager", () => {
       [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);
       const dictionary: DictionaryModel = first.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
       el1 = first.elements.insertElement(IModelTestUtils.createPhysicalObject(first, modelId, spatialCategoryId));
       first.saveChanges();
       cshistory.push(createChangeSet(first));
@@ -367,7 +367,7 @@ describe("BriefcaseManager", () => {
       const elobj = first.elements.getElement(el1);
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
     }
-});
+  });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
     let onOpenCalled: boolean = false;
@@ -590,7 +590,7 @@ describe("BriefcaseManager", () => {
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
 
     timer.end();
 
