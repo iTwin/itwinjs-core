@@ -3,23 +3,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import Enumeration from "./Enumeration";
-import SchemaChild from "./SchemaChild";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaChildType, tryParsePrimitiveType } from "../ECObjects";
+import SchemaItem from "./SchemaItem";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, tryParsePrimitiveType } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
-import { AnyClass, LazyLoadedECClass, LazyLoadedProperty, SchemaChildVisitor } from "../Interfaces";
+import { AnyClass, LazyLoadedECClass, LazyLoadedProperty, SchemaItemVisitor } from "../Interfaces";
 
-function createLazyLoadedChild<T extends SchemaChild>(c: T) {
+function createLazyLoadedItem<T extends SchemaItem>(c: T) {
   return new DelayedPromiseWithProps(c.key, async () => c);
 }
 
 /**
  * A common abstract class for all of the ECClass types.
  */
-export default abstract class ECClass extends SchemaChild implements CustomAttributeContainerProps {
+export default abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _properties?: LazyLoadedProperty[];
@@ -35,7 +35,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
-  constructor(schema: Schema, name: string, type: SchemaChildType, modifier?: ECClassModifier) {
+  constructor(schema: Schema, name: string, type: SchemaItemType, modifier?: ECClassModifier) {
     super(schema, name, type);
 
     if (modifier)
@@ -108,7 +108,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationProperty(this, name, createLazyLoadedChild(propType)));
+    return this.addProperty(new EnumerationProperty(this, name, createLazyLoadedItem(propType)));
   }
 
   /**
@@ -126,7 +126,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (typeof(propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationArrayProperty(this, name, createLazyLoadedChild(propType)));
+    return this.addProperty(new EnumerationArrayProperty(this, name, createLazyLoadedItem(propType)));
   }
 
   /**
@@ -138,7 +138,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedChild(await this.loadStructType(structType, this.schema));
+    const lazyStructClass = createLazyLoadedItem(await this.loadStructType(structType, this.schema));
     return this.addProperty(new StructProperty(this, name, lazyStructClass));
   }
 
@@ -151,14 +151,14 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
-    const lazyStructClass = createLazyLoadedChild(await this.loadStructType(structType, this.schema));
+    const lazyStructClass = createLazyLoadedItem(await this.loadStructType(structType, this.schema));
     return this.addProperty(new StructArrayProperty(this, name, lazyStructClass));
   }
 
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof(structType) === "string")
-      correctType = await schema.getChild<StructClass>(structType, true);
+      correctType = await schema.getItem<StructClass>(structType, true);
     else
       correctType = structType as StructClass | undefined;
 
@@ -173,7 +173,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       return PrimitiveType.Integer;
 
     if (typeof(primitiveType) === "string") {
-      const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getChild<Enumeration>(primitiveType, true);
+      const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getItem<Enumeration>(primitiveType, true);
       if (resolvedType === undefined)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
@@ -201,15 +201,15 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
       if (typeof(jsonObj.baseClass) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
-      const baseClass = await this.schema.getChild<ECClass>(jsonObj.baseClass, true);
+      const baseClass = await this.schema.getItem<ECClass>(jsonObj.baseClass, true);
       if (!baseClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-      this._baseClass = createLazyLoadedChild(baseClass);
+      this._baseClass = createLazyLoadedItem(baseClass);
     }
   }
 
-  public async accept(visitor: SchemaChildVisitor) {
+  public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitClass)
       await visitor.visitClass(this as AnyClass);
   }
@@ -221,7 +221,7 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
   public async *getAllBaseClasses(): AsyncIterableIterator<ECClass> {
     const baseClasses: ECClass[] = [ this ];
     const addBaseClasses = async (ecClass: AnyClass) => {
-      if (SchemaChildType.EntityClass === ecClass.type) {
+      if (SchemaItemType.EntityClass === ecClass.type) {
         for (let i = ecClass.mixins.length - 1; i >= 0; i--) {
           baseClasses.push(await ecClass.mixins[i]);
         }
@@ -244,10 +244,10 @@ export default abstract class ECClass extends SchemaChild implements CustomAttri
  * A Typescript class representation of an ECStructClass.
  */
 export class StructClass extends ECClass {
-  public readonly type: SchemaChildType.StructClass;
+  public readonly type: SchemaItemType.StructClass;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, SchemaChildType.StructClass, modifier);
+    super(schema, name, SchemaItemType.StructClass, modifier);
   }
 }
 

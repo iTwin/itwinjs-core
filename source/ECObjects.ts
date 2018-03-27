@@ -15,7 +15,7 @@ export const enum ECClassModifier {
   Sealed,
 }
 
-export const enum SchemaChildType {
+export const enum SchemaItemType {
   EntityClass,
   Mixin,
   StructClass,
@@ -27,36 +27,36 @@ export const enum SchemaChildType {
 }
 
 /**
- * Tries to parse the given string as one of the 8 schema child types.
- * @param type The schema child type string to parse.
- * @returns A valid SchemaChildType if successfully parsed, or undefined if the provided string is not a valid SchemaChildType.
+ * Tries to parse the given string as one of the 8 schema item types.
+ * @param type The schema item type string to parse.
+ * @returns A valid SchemaItemType if successfully parsed, or undefined if the provided string is not a valid SchemaItemType.
  */
-export function tryParseSchemaChildType(type: string): SchemaChildType | undefined {
-  if (/^EntityClass$/i.test(type)) return SchemaChildType.EntityClass;
-  if (/^Mixin$/i.test(type)) return SchemaChildType.Mixin;
-  if (/^StructClass$/i.test(type)) return SchemaChildType.StructClass;
-  if (/^CustomAttributeClass$/i.test(type)) return SchemaChildType.CustomAttributeClass;
-  if (/^RelationshipClass$/i.test(type)) return SchemaChildType.RelationshipClass;
-  if (/^Enumeration$/i.test(type)) return SchemaChildType.Enumeration;
-  if (/^KindOfQuantity$/i.test(type)) return SchemaChildType.KindOfQuantity;
-  if (/^PropertyCategory$/i.test(type)) return SchemaChildType.PropertyCategory;
+export function tryParseSchemaItemType(type: string): SchemaItemType | undefined {
+  if (/^EntityClass$/i.test(type)) return SchemaItemType.EntityClass;
+  if (/^Mixin$/i.test(type)) return SchemaItemType.Mixin;
+  if (/^StructClass$/i.test(type)) return SchemaItemType.StructClass;
+  if (/^CustomAttributeClass$/i.test(type)) return SchemaItemType.CustomAttributeClass;
+  if (/^RelationshipClass$/i.test(type)) return SchemaItemType.RelationshipClass;
+  if (/^Enumeration$/i.test(type)) return SchemaItemType.Enumeration;
+  if (/^KindOfQuantity$/i.test(type)) return SchemaItemType.KindOfQuantity;
+  if (/^PropertyCategory$/i.test(type)) return SchemaItemType.PropertyCategory;
   return undefined;
 }
 
 /**
- * Converts a valid SchemaChildType to a display string.
- * @param value The SchemaChildType to stringify.
+ * Converts a valid SchemaItemType to a display string.
+ * @param value The SchemaItemType to stringify.
  */
-export function schemaChildTypeToString(value: SchemaChildType): string {
+export function schemaItemTypeToString(value: SchemaItemType): string {
   switch (value) {
-    case SchemaChildType.EntityClass: return "EntityClass";
-    case SchemaChildType.Mixin: return "Mixin";
-    case SchemaChildType.StructClass: return "StructClass";
-    case SchemaChildType.CustomAttributeClass: return "CustomAttributeClass";
-    case SchemaChildType.RelationshipClass: return "RelationshipClass";
-    case SchemaChildType.Enumeration: return "Enumeration";
-    case SchemaChildType.KindOfQuantity: return "KindOfQuantity";
-    case SchemaChildType.PropertyCategory: return "PropertyCategory";
+    case SchemaItemType.EntityClass: return "EntityClass";
+    case SchemaItemType.Mixin: return "Mixin";
+    case SchemaItemType.StructClass: return "StructClass";
+    case SchemaItemType.CustomAttributeClass: return "CustomAttributeClass";
+    case SchemaItemType.RelationshipClass: return "RelationshipClass";
+    case SchemaItemType.Enumeration: return "Enumeration";
+    case SchemaItemType.KindOfQuantity: return "KindOfQuantity";
+    case SchemaItemType.PropertyCategory: return "PropertyCategory";
   }
 }
 
@@ -369,7 +369,7 @@ export class ECVersion {
 
     const padWithZeroes = (num: number) => {
       return (num < 10 ? "0" : "") + num;
-    }
+    };
 
     return `${padWithZeroes(this.read)}.${padWithZeroes(this.write)}.${padWithZeroes(this.minor)}`;
   }
@@ -502,13 +502,13 @@ export class SchemaKey {
 /**
  *
  */
-export class SchemaChildKey {
+export class SchemaItemKey {
   private _name: ECName;
-  protected _type: SchemaChildType;
+  protected _type: SchemaItemType;
   protected _schemaKey: SchemaKey;
   // TODO: Need a checksum
 
-  constructor(name: string, type: SchemaChildType | undefined, schema: SchemaKey) {
+  constructor(name: string, type: SchemaItemType | undefined, schema: SchemaKey) {
     this._name = new ECName(name);
     this._schemaKey = schema;
     if (undefined !== type)
@@ -521,11 +521,11 @@ export class SchemaChildKey {
   get schemaName() { return this.schemaKey.name; }
 
   /**
-   * Checks whether this SchemaChildKey matches the one provided.
-   * @param rhs The SchemaChildKey to compare to this.
+   * Checks whether this SchemaItemKey matches the one provided.
+   * @param rhs The SchemaItemKey to compare to this.
    */
   // TODO: Need to add a match type
-  public matches(rhs: SchemaChildKey): boolean {
+  public matches(rhs: SchemaItemKey): boolean {
     if (rhs.name !== this.name)
       return false;
 

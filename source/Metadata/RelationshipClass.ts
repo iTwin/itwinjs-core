@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaChildType, StrengthType,
+import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
         parseStrength, parseStrengthDirection } from "../ECObjects";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -20,14 +20,14 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  */
 export default class RelationshipClass extends ECClass {
   public readonly schema: Schema;
-  public readonly type: SchemaChildType.RelationshipClass;
+  public readonly type: SchemaItemType.RelationshipClass;
   protected _strength: StrengthType = StrengthType.Referencing;
   protected _strengthDirection: RelatedInstanceDirection = RelatedInstanceDirection.Forward;
   protected _source: RelationshipConstraint;
   protected _target: RelationshipConstraint;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, SchemaChildType.RelationshipClass, modifier);
+    super(schema, name, SchemaItemType.RelationshipClass, modifier);
 
     this._source = new RelationshipConstraint(this, RelationshipEnd.Source);
     this._target = new RelationshipConstraint(this, RelationshipEnd.Target);
@@ -53,7 +53,7 @@ export default class RelationshipClass extends ECClass {
 
     let resolvedRelationship: RelationshipClass | undefined;
     if (typeof(relationship) === "string")
-      resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, true);
+      resolvedRelationship = await this.schema.getItem<RelationshipClass>(relationship, true);
     else
       resolvedRelationship = relationship;
 
@@ -188,7 +188,7 @@ export class RelationshipConstraint {
       if (typeof(jsonObj.abstractConstraint) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
 
-      const tempAbstractConstraint = await relClassSchema.getChild<AnyConstraintClass>(jsonObj.abstractConstraint, true);
+      const tempAbstractConstraint = await relClassSchema.getItem<AnyConstraintClass>(jsonObj.abstractConstraint, true);
       if (!tempAbstractConstraint)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
@@ -203,7 +203,7 @@ export class RelationshipConstraint {
         if (typeof(constraintClassName) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipConstraint ${debugName(this)} has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
 
-        const tempConstraintClass = await relClassSchema.getChild<AnyConstraintClass>(constraintClassName, true);
+        const tempConstraintClass = await relClassSchema.getItem<AnyConstraintClass>(constraintClassName, true);
         if (!tempConstraintClass)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 

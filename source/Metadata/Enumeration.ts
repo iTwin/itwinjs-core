@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaChild from "./SchemaChild";
+import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType, SchemaChildType } from "../ECObjects";
-import { SchemaChildVisitor } from "../Interfaces";
+import { PrimitiveType, SchemaItemType } from "../ECObjects";
+import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export interface Enumerator<T> {
@@ -27,8 +27,8 @@ export interface IntEnumeration extends Enumeration {
 /**
  * A Typescript class representation of an ECEnumeration.
  */
-export default class Enumeration extends SchemaChild {
-  public readonly type: SchemaChildType.Enumeration;
+export default class Enumeration extends SchemaItem {
+  public readonly type: SchemaItemType.Enumeration;
   protected _primitiveType?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
@@ -38,7 +38,7 @@ export default class Enumeration extends SchemaChild {
   get isStrict() { return this._isStrict; }
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
-    super(schema, name, SchemaChildType.Enumeration);
+    super(schema, name, SchemaItemType.Enumeration);
 
     this._primitiveType = primitiveType;
     this._isStrict = true;
@@ -142,7 +142,7 @@ export default class Enumeration extends SchemaChild {
     this._enumerators = jsonObj.enumerators;
   }
 
-  public async accept(visitor: SchemaChildVisitor) {
+  public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitEnumeration)
       await visitor.visitEnumeration(this);
   }

@@ -15,9 +15,9 @@ describe("PropertyCategory", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
+        items: {
           testPropCategory: {
-            schemaChildType: "PropertyCategory",
+            schemaItemType: "PropertyCategory",
             priority: 5,
           },
         },
@@ -26,11 +26,11 @@ describe("PropertyCategory", () => {
       const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
-      const child = await ecSchema.getChild("testPropCategory");
-      assert.isDefined(child);
-      assert.isTrue(child instanceof PropertyCategory);
+      const item = await ecSchema.getItem("testPropCategory");
+      assert.isDefined(item);
+      assert.isTrue(item instanceof PropertyCategory);
 
-      const propCat = child as PropertyCategory;
+      const propCat = item as PropertyCategory;
       assert.isDefined(propCat);
       expect(propCat.priority).equal(5);
     });
@@ -47,7 +47,7 @@ describe("PropertyCategory", () => {
     it("should throw for invalid priority", async () => {
       expect(testCategory).to.exist;
       const json = {
-        schemaChildType: "PropertyCategory",
+        schemaItemType: "PropertyCategory",
         priority: "1",
       };
       await expect(testCategory.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The PropertyCategory TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
@@ -62,7 +62,7 @@ describe("PropertyCategory", () => {
       testCategory = new PropertyCategory(schema, "TestCategory");
     });
 
-    it("should call visitPropertyCategory on a SchemaChildVisitor object", async () => {
+    it("should call visitPropertyCategory on a SchemaItemVisitor object", async () => {
       expect(testCategory).to.exist;
       const mockVisitor = { visitPropertyCategory: sinon.spy() };
       await testCategory.accept(mockVisitor);
@@ -70,7 +70,7 @@ describe("PropertyCategory", () => {
       expect(mockVisitor.visitPropertyCategory.calledWithExactly(testCategory)).to.be.true;
     });
 
-    it("should safely handle a SchemaChildVisitor without visitPropertyCategory defined", async () => {
+    it("should safely handle a SchemaItemVisitor without visitPropertyCategory defined", async () => {
       expect(testCategory).to.exist;
       await testCategory.accept({});
     });

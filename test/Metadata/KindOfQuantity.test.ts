@@ -15,9 +15,9 @@ describe("KindOfQuantity", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
+        items: {
           testKoQ: {
-            schemaChildType: "KindOfQuantity",
+            schemaItemType: "KindOfQuantity",
             precision: 5,
             persistenceUnit: {
               format: "DefaultReal",
@@ -40,11 +40,11 @@ describe("KindOfQuantity", () => {
       const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
-      const testChild = await ecSchema.getChild("testKoQ");
-      assert.isDefined(testChild);
-      assert.isTrue(testChild instanceof KindOfQuantity);
+      const testItem = await ecSchema.getItem("testKoQ");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof KindOfQuantity);
 
-      const testKoQ: KindOfQuantity = testChild as KindOfQuantity;
+      const testKoQ: KindOfQuantity = testItem as KindOfQuantity;
       assert.isDefined(testKoQ);
 
       expect(testKoQ.precision).equal(5);
@@ -61,7 +61,7 @@ describe("KindOfQuantity", () => {
 
   describe("fromJson", () => {
     let testKoQ: KindOfQuantity;
-    const baseJson = { schemaChildType: "KindOfQuantity" };
+    const baseJson = { schemaItemType: "KindOfQuantity" };
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -190,7 +190,7 @@ describe("KindOfQuantity", () => {
       testKoq = new KindOfQuantity(schema, "TestKindOfQuantity");
     });
 
-    it("should call visitKindOfQuantity on a SchemaChildVisitor object", async () => {
+    it("should call visitKindOfQuantity on a SchemaItemVisitor object", async () => {
       expect(testKoq).to.exist;
       const mockVisitor = { visitKindOfQuantity: sinon.spy() };
       await testKoq.accept(mockVisitor);
@@ -198,7 +198,7 @@ describe("KindOfQuantity", () => {
       expect(mockVisitor.visitKindOfQuantity.calledWithExactly(testKoq)).to.be.true;
     });
 
-    it("should safely handle a SchemaChildVisitor without visitKindOfQuantity defined", async () => {
+    it("should safely handle a SchemaItemVisitor without visitKindOfQuantity defined", async () => {
       expect(testKoq).to.exist;
       await testKoq.accept({});
     });

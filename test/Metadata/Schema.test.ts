@@ -29,7 +29,7 @@ describe("Schema", () => {
     });
   });
 
-  describe("create schema children", () => {
+  describe("create schema items", () => {
     it("should succeed for entity class", async () => {
       const testSchema = new Schema("TestSchema", 1, 1, 1);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");

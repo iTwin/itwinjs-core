@@ -45,33 +45,33 @@ describe("EntityClass", () => {
   });
 
   describe("deserialization", () => {
-    function createSchemaJsonWithChildren(childrenJson: any): any {
+    function createSchemaJsonWithItems(itemsJson: any): any {
       return {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
-          ...childrenJson,
+        items: {
+          ...itemsJson,
         },
       };
     }
     function createSchemaJson(entityClassJson: any): any {
-      return createSchemaJsonWithChildren({
+      return createSchemaJsonWithItems({
         TestEntityClass: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
           ...entityClassJson,
         },
       });
     }
 
     function createNavPropSchemaJson(entityClassJson: any): any {
-      return createSchemaJsonWithChildren({
+      return createSchemaJsonWithItems({
         TestEntityClass: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
           ...entityClassJson,
         },
         NavPropRelationship: {
-          schemaChildType: "RelationshipClass",
+          schemaItemType: "RelationshipClass",
           strength: "Embedding",
           strengthDirection: "Forward",
           modifier: "Sealed",
@@ -93,7 +93,7 @@ describe("EntityClass", () => {
           },
         },
         TargetClass: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
         },
       });
     }
@@ -119,13 +119,13 @@ describe("EntityClass", () => {
     });
 
     it("should succeed with mixin", async () => {
-      const schemaJson = createSchemaJsonWithChildren({
+      const schemaJson = createSchemaJsonWithItems({
         testMixin: {
-          schemaChildType: "Mixin",
+          schemaItemType: "Mixin",
           appliesTo: "TestSchema.testClass",
         },
         testClass: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
           mixins: [ "TestSchema.testMixin" ],
         },
       });
@@ -150,20 +150,20 @@ describe("EntityClass", () => {
     });
 
     it("should succeed with multiple mixins", async () => {
-      const schemaJson = createSchemaJsonWithChildren({
+      const schemaJson = createSchemaJsonWithItems({
         testMixin: {
-          schemaChildType: "Mixin",
+          schemaItemType: "Mixin",
           appliesTo: "TestSchema.testClass",
         },
         testClass: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
           mixins: [
             "TestSchema.testMixin",
             "TestSchema.anotherMixin",
           ],
         },
         anotherMixin: {
-          schemaChildType: "Mixin",
+          schemaItemType: "Mixin",
           appliesTo: "TestSchema.testClass",
         },
       });
@@ -172,12 +172,12 @@ describe("EntityClass", () => {
     });
 
     it("should succeed with base class", async () => {
-      const schemaJson = createSchemaJsonWithChildren({
+      const schemaJson = createSchemaJsonWithItems({
         baseClass: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
         },
         testClass: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
           baseClass: "TestSchema.baseClass",
         },
       });
@@ -356,7 +356,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaChild BadSchema.ThisDoesNotExist.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem BadSchema.ThisDoesNotExist.`);
     });
 
     it("should throw for navigation property with missing direction", async () => {
@@ -389,7 +389,7 @@ describe("EntityClass", () => {
 
   describe("fromJson", () => {
     let testClass: EntityClass;
-    const baseJson = { schemaChildType: "EntityClass" };
+    const baseJson = { schemaItemType: "EntityClass" };
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
