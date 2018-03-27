@@ -20,29 +20,21 @@ steps #4 - #7 do that.
 
 2. `git add .`
 
-3. `git commit`
+3. `rush change`
 
-4. `rush change`
+    Asks several questions about the changes and creates change files.
 
-    Detects whether any changes were made to the backend or frontend
-    packages. If yes, it asks several questions about the changes and
-    creates change files.
+4. Review the change files created by Rush.
 
-5. Review the change files created by Rush.
+5. `git add .`
 
-6. `git add .`
-
-7. `git commit --amend --no-edit`
-
-    Appends the change files to your last commit.
+6. `git commit`
 
 You can make multiple local commits before pushing the changes.
 
 ## Pushing the changes
 
-To get your code reviewed by ECPresentation team, use
-[pull requests](./PULL_REQUESTS.md). If the code is already reviewed
-by other means, use `git push`.
+Use [pull requests](./PULL_REQUESTS.md).
 
 ## Publishing changes
 
