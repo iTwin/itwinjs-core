@@ -3,122 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import {
-  Path, BSplineSurface3d, IndexedPolyface, Point3d, Vector3d, YawPitchRollAngles,
-  PolyfaceBuilder, Arc3d, Cone, AngleSweep, PointString3d,
+  Point3d, YawPitchRollAngles, Arc3d,
 } from "@bentley/geometry-core";
-import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import {
-  GeometricPrimitive, GeometryType, Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel,
+  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { DictionaryModel, IModelDb } from "../backend";
-
-describe("GeometricPrimitive", () => {
-  it("should be able to create GeometricPrimitives from various geometry", () => {
-
-    // CurvePrimitive
-    const arc = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI));
-    let elmGeom = GeometricPrimitive.createCurvePrimitiveClone(arc!);
-    assert.isTrue(GeometryType.CurvePrimitive === elmGeom.type, "Correctly stored CurvePrimitive in GeometricPrimitive");
-    assert.isTrue(elmGeom.isWire(), "CurvePrimitive is wire");
-    assert.isFalse(elmGeom.isSheet(), "CurvePrimitive is not sheet");
-    assert.isFalse(elmGeom.isSolid(), "CurvePrimitive is not solid");
-    // Clone CurvePrimitive
-    let elmGeomC = elmGeom.clone();
-    const getAsCurvePrimitive = elmGeomC.asCurvePrimitive;
-    assert.isTrue(getAsCurvePrimitive instanceof Arc3d, "GeometricPrimitive correctly returned CurvePrimitive data");
-    assert.isFalse(getAsCurvePrimitive === arc, "CurvePrimitive stored as deep copy in GeometricPrimitive");
-    assert.isTrue(elmGeomC.type === elmGeom.type, "GeometricPrimitive clone type matches");
-    assert.isTrue(getAsCurvePrimitive!.isAlmostEqual(arc!), "CurvePrimitive and its clone are equal");
-
-    // CurveCollection
-    const loops = Sample.createSimplePaths(true);
-    const curveCollection = loops[2];   // <-- Is a loop containing 4 LineSegments
-    elmGeom = GeometricPrimitive.createCurveCollectionClone(curveCollection);
-    assert.isTrue(elmGeom.type === GeometryType.CurveCollection, "Correctly stored CurveCollection in GeometricPrimitive");
-    assert.isTrue(elmGeom.isWire(), "CurveCollection is wire");
-    assert.isFalse(elmGeom.isSheet(), "CurveCollection is not sheet");
-    assert.isFalse(elmGeom.isSolid(), "CurveCollection is not solid");
-    // Clone CurveCollection
-    elmGeomC = elmGeom.clone();
-    const getAsCurveCollection = elmGeomC.asCurveCollection;
-    assert.isTrue(getAsCurveCollection instanceof Path, "GeometricPrimitive correctly returned CurveCollection data");
-    assert.isFalse(getAsCurveCollection === curveCollection, "CurveCollection stored as deep copy in GeometricPrimitive");
-    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
-    assert.isTrue(getAsCurveCollection!.isAlmostEqual(curveCollection!), "CurveCollection and its clone are equal");
-
-    // SolidPrimitive
-    const dz = 3.0;
-    const radius = 1.5;
-    const solidPrimitive = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, dz), radius, radius, true);
-    elmGeom = GeometricPrimitive.createSolidPrimitiveClone(solidPrimitive!);
-    assert.isTrue(GeometryType.SolidPrimitive === elmGeom.type, "Correctly stored SolidPrimitive in GeometricPrimitive");
-    assert.isFalse(elmGeom.isWire(), "SolidPrimitive is not wire");
-    assert.isFalse(elmGeom.isSheet(), "SolidPrimitive is not sheet");
-    assert.isTrue(elmGeom.isSolid(), "SolidPrimitive is solid");
-    // Clone SolidPrimitive
-    elmGeomC = elmGeom.clone();
-    const getAsSolidPrimitive = elmGeomC.asSolidPrimitive;
-    assert.isTrue(getAsSolidPrimitive instanceof Cone, "GeometricPrimitive correctly returned SolidPrimitive data");
-    assert.isFalse(getAsSolidPrimitive === solidPrimitive, "SolidPrimitive stored as deep copy in GeometricPrimitive");
-    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
-    assert.isTrue(getAsSolidPrimitive!.isAlmostEqual(solidPrimitive!), "SolidPrimitive and its clone are equal");
-
-    // BsplineSurface
-    const surface = BSplineSurface3d.createUniformKnots([Point3d.create(0, 0), Point3d.create(1, 1)], 1, 1, 1);
-    elmGeom = GeometricPrimitive.createBsplineSurfaceClone(surface!);
-    assert.isTrue(GeometryType.BsplineSurface === elmGeom.type, "Correctly stored BsplineSurface in GeometricPrimitive");
-    assert.isFalse(elmGeom.isWire(), "BsplineSurface is not wire");
-    assert.isTrue(elmGeom.isSheet(), "BsplineSurface is sheet");
-    assert.isFalse(elmGeom.isSolid(), "BsplineSurface is not solid");
-    // Clone BsplineSurface
-    elmGeomC = elmGeom.clone();
-    const getAsBspline = elmGeomC.asBsplineSurface;
-    assert.isTrue(getAsBspline instanceof BSplineSurface3d, "GeometricPrimitive correctly returned BsplineSurface data");
-    assert.isFalse(getAsBspline === surface, "BsplineSurface stored as deep copy in GeometricPrimitive");
-    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
-    assert.isTrue(getAsBspline!.isAlmostEqual(surface!), "BsplineSurface and its clone are equal");
-
-    // Polyface
-    const builder = PolyfaceBuilder.create();
-    builder.addCone(solidPrimitive!);
-    const polyface = builder.claimPolyface();
-    elmGeom = GeometricPrimitive.createIndexedPolyfaceClone(polyface);
-    assert.isTrue(GeometryType.IndexedPolyface === elmGeom.type, "Correctly stored Polyface in GeometricPrimitive");
-    assert.isFalse(elmGeom.isWire(), "Polyface is not wire");
-    assert.isTrue(elmGeom.isSheet(), "Polyface is sheet");
-    assert.isFalse(elmGeom.isSolid(), "Polyface is not solid");
-    // Clone Polyface
-    elmGeomC = elmGeom.clone();
-    const getAsPolyface = elmGeomC.asIndexedPolyface;
-    assert.isTrue(getAsPolyface instanceof IndexedPolyface, "GeometricPrimitive correctly returned Polyface data");
-    assert.isFalse(getAsPolyface === polyface, "Polyface stored as deep copy in GeometricPrimitive");
-    assert.isTrue(elmGeom.type === elmGeomC.type, "GeometricPrimitive clone type matches");
-    assert.isTrue(getAsPolyface!.isAlmostEqual(polyface!), "Polyface and its clone are equal");
-
-    // PointString
-    const localPoints3dBuf: Point3d[] = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)];
-    const pointString = PointString3d.create(localPoints3dBuf);
-    elmGeom = GeometricPrimitive.createPointStringClone(pointString!);
-    assert.isTrue(GeometryType.PointString === elmGeom.type, "Correctly stored PointString3d in GeometricPrimitive");
-    assert.isFalse(elmGeom.isWire(), "PointString is not wire");
-    assert.isFalse(elmGeom.isSheet(), "PointString is not sheet");
-    assert.isFalse(elmGeom.isSolid(), "PointString is not solid");
-    // Clone PointString
-    elmGeomC = elmGeom.clone();
-    const getAsPointString = elmGeomC.asPointString;
-    assert.isTrue(getAsPointString instanceof PointString3d, "GeometricPrimitive correctly returned PointString data");
-    assert.isFalse(getAsPointString === pointString, "Pointstring stored as deep copy in GeometricPrimitive");
-    assert.isTrue(elmGeomC.type === elmGeom.type, "GeometricPrimitive clone type matches");
-    assert.isTrue(getAsPointString!.isAlmostEqual(pointString!), "PointString and its clone are equal");
-
-    // BRepEntity...
-
-    // TextString...
-  });
-});
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
