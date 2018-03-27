@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const paths = require("../../config/paths");
 const webpack = require("webpack");
@@ -67,7 +67,13 @@ function buildFrontend(config) {
   return runWebpackBuild(config, "FRONTEND");
 }
 
+async function saveJsonStats(stats, outputPath) {
+  await fs.writeFile(outputPath, JSON.stringify(stats.toJson({all: true})));
+  return outputPath;
+}
+
 module.exports = {
   buildBackend,
   buildFrontend,
+  saveJsonStats,
 }

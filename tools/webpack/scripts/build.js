@@ -38,12 +38,16 @@ exports.handler = async (argv) => {
   const checkRequiredFiles = require("react-dev-utils/checkRequiredFiles");
   const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
   const printHostingInstructions = require("react-dev-utils/printHostingInstructions");
-  const FileSizeReporter = require("react-dev-utils/FileSizeReporter");
-  const { buildFrontend, buildBackend } = require("./utils/buildBackend");
+  const { measureFileSizesBeforeBuild, printFileSizesAfterBuild } = require("react-dev-utils/FileSizeReporter");
+  const { buildFrontend, buildBackend, saveJsonStats } = require("./utils/buildBackend");
 
   const paths = require("../config/paths");
   const frontendConfig = require("../config/webpack.config.frontend.prod");
   const backendConfig = require("../config/webpack.config.backend.prod");
+  const statDumpPromises = [];
+
+  const skipBackend = (argv.only === "frontend");
+  const skipFrontend = (argv.only === "backend");
 
   async function runBuild(name, callback) {
     const startTime = Date.now();
@@ -54,50 +58,58 @@ exports.handler = async (argv) => {
     console.log();
   }
 
-  function copyPublicFolder() {
-    fs.copySync(paths.appPublic, paths.appLibPublic, {
+  async function prepFrontendBuild() {
+    if (skipFrontend)
+      return;
+
+    // First, read the current file sizes in build directory.
+    // This lets us display how much they changed later.
+    const previousFileSizes = await measureFileSizesBeforeBuild(paths.appLibPublic);
+
+    // Remove all content but keep the directory so that
+    // if you're in it, you don't end up in Trash
+    await fs.emptyDir(paths.appLibPublic);
+
+    // Merge with the public folder
+    await fs.copy(paths.appPublic, paths.appLibPublic, {
       dereference: true,
       filter: file => file !== paths.appHtml,
     });
+
+    return previousFileSizes;
   }
-
-  const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild;
-  const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
-
-  // These sizes are pretty large. We'll warn for bundles exceeding them.
-  const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
-  const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024;
 
   // Warn and crash if required files are missing
   if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs, paths.appMainJs])) {
     process.exit(1);
   }
 
-  // First, read the current file sizes in build directory.
-  // This lets us display how much they changed later.
-  const previousFileSizes = await measureFileSizesBeforeBuild(paths.appLibPublic);
-
-  // Remove all content but keep the directory so that
-  // if you're in it, you don't end up in Trash
-  fs.emptyDirSync(paths.appLibPublic);
-
-  // Merge with the public folder
-  copyPublicFolder();
-
+  // This can take a while, so get it started while we build the backend.
+  const prepFrontendPromise = prepFrontendBuild();
   
   // Start the webpack backend build
-  if (argv.only !== "frontend") {
-    await runBuild("BACKEND", async () => buildBackend(backendConfig));
+  if (!skipBackend) {
+    await runBuild("BACKEND", async () => {
+      const stats = await buildBackend(backendConfig);
+      statDumpPromises.push(saveJsonStats(stats, paths.appBackendStats));
+    });
   }
 
+  // _Now_ we need those previousFileSizes ready.
+  const previousFileSizes = await prepFrontendPromise;
+
   // Now, start the webpack frontend build
-  if (argv.only !== "backend") {
+  if (!skipFrontend) {
     await runBuild("FRONTEND", async () => {
-      
       console.log(chalk.dim("\nCreating an optimized production build..."));
       const stats = await buildFrontend(frontendConfig);
+      statDumpPromises.push(saveJsonStats(stats, paths.appFrontendStats));
 
-      console.log('File sizes after gzip:\n');
+      // These sizes are pretty large. We'll warn for bundles exceeding them.
+      const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
+      const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024;
+
+      console.log("File sizes after gzip:\n");
       printFileSizesAfterBuild(
         stats,
         previousFileSizes,
@@ -118,5 +130,19 @@ exports.handler = async (argv) => {
     console.log(`The ${chalk.cyan("lib")} folder is ready to be deployed.`);
   } else {
     console.log(`The built electron app can now be run with ${chalk.cyan("npm run electron")}.`);      
+  }
+  
+  const statsPaths = await Promise.all(statDumpPromises);
+  if (statsPaths.length > 0) {
+    console.log();
+    console.log(`Detailed ${chalk.yellow("webpack stats files")} are available at:`);
+    for (const statsPath of statsPaths) {
+      console.log(`   ${chalk.bold(path.relative(process.cwd(), statsPath))}`);
+    }
+
+    console.log();
+    console.log(chalk.italic(`You can explore webpack statistics with tools like:`));
+    console.log(`   ${chalk.bold("Webpack Analyse:")} ${chalk.underline(chalk.cyan("http://webpack.github.io/analyse/"))}`);
+    console.log(`   ${chalk.bold("Webpack Visualizer:")} ${chalk.underline(chalk.cyan("https://chrisbateman.github.io/webpack-visualizer/"))}`);
   }
 };
