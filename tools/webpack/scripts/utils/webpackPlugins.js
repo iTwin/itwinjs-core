@@ -16,7 +16,7 @@ class BanImportsPlugin {
   }
 
   apply(resolver) {
-    resolver.plugin("file", (request, callback) => {
+    resolver.hooks.file.tapAsync(this.constructor.name, (request, contextResolver, callback) => {
       if (!request.context.issuer || !request.__innerRequest_request)
         return callback();
 
@@ -42,7 +42,7 @@ class CopyNativeAddonsPlugin {
   constructor(options) {}
 
   apply(compiler) {
-    compiler.plugin("environment", () => {
+    compiler.hooks.environment.tap("CopyNativeAddonsPlugin", () => {
       const packageLock = require(paths.appPackageLockJson);
       const dir = path.resolve(paths.appNodeModules, "**/*.node");
       const matches = glob.sync(dir)
@@ -68,7 +68,7 @@ class CopyNativeAddonsPlugin {
 
 class CopyAssetsPlugin {
   apply(compiler) {
-    compiler.plugin("environment", () => {
+    compiler.hooks.environment.tap("CopyAssetsPlugin", () => {
       if (fs.existsSync(paths.appAssets))
         fs.copySync(paths.appAssets, path.resolve(paths.appLib, "assets"));
     });
@@ -82,7 +82,7 @@ function isDirectory (directoryName) {
 class CopyBentleyDependencyPublicFoldersPlugin {
 
   apply(compiler) {
-    compiler.plugin("environment", () => {
+    compiler.hooks.environment.tap("CopyBentleyDependencyPublicFoldersPlugin", () => {
       const bentleyDir = paths.appBentleyNodeModules;
       // go through all node_modules/@bentley directories. If there's a "public" folder, copy its contents
       const subDirectoryNames = fs.readdirSync(bentleyDir).filter(isDirectory, { bentleyDir: paths.appBentleyNodeModules });

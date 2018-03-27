@@ -77,7 +77,7 @@ module.exports = (publicPath) => {
         // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
         // please link the files into your node_modules/ and let module-resolution kick in.
         // Make sure your source files are compiled, as they will not be processed in any way.
-        new ModuleScopePlugin(paths.appSrc),
+        // FIXME: new ModuleScopePlugin(paths.appSrc),
         // This is only for BACKEND code - frontend modules should be excluded from the bundle.
         new plugins.BanFrontendImportsPlugin(),
       ],
@@ -105,10 +105,12 @@ module.exports = (publicPath) => {
             {
               test: /\.ts$/,
               include: paths.appSrc,
-              loader: require.resolve("ts-loader"),
-              options: {
-                onlyCompileBundledFiles: true,
-                logLevel: "warn",
+              use: {
+                loader: require.resolve("ts-loader"),
+                options: {
+                  onlyCompileBundledFiles: true,
+                  logLevel: "warn",
+                }
               }
             },
           ],

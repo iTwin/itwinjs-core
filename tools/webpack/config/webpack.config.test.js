@@ -21,12 +21,21 @@ const env = getClientEnvironment(publicUrl);
 
 // This is the test configuration.
 const config = {
+  mode: "development",
+
   // Compile node compatible code
   target: "node",
   
   // The base directory, an absolute path, for resolving entry points and loaders from configuration.
   context: paths.appTest,
 
+  output: {
+    // The build folder.
+    // Next line is not used in dev but WebpackDevServer crashes without it:
+    path: paths.appLib,
+    // The name of the output bundle.
+    filename: "test.js",
+  },
   // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
   externals: [
     // Don't include anything from node_modules in the bundle
@@ -43,6 +52,8 @@ const config = {
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: "inline-cheap-module-source-map",
   output: {
+    path: paths.appLib,
+    publicPath: "",
     devtoolModuleFilenameTemplate: "[absolute-resource-path]",
     devtoolFallbackModuleFilenameTemplate: "[absolute-resource-path]?[hash]"
   },
@@ -81,10 +92,12 @@ const config = {
     rules: [
       // WIP: This is a temporary (hack) workaround for the supporting snapshots with mocha-webpack.
       {
-        loader: require.resolve("imports-loader"),
-        query: "describe=>global.globalMochaHooks(__filename)",
         test: /.*\.test\.(jsx?|tsx?)$/,
         enforce: "post",
+        use: {
+          loader: require.resolve("imports-loader"),
+          query: "describe=>global.globalMochaHooks(__filename)",
+        }
       },
       // First, run the linter.
       // It's important to do this before Typescript runs.
@@ -107,11 +120,13 @@ const config = {
           {
             test: /\.(ts|tsx)$/,
             exclude: /(node_modules|bower_components)/,
-            loader: require.resolve("ts-loader"),
-            options: {
-              onlyCompileBundledFiles: true,
-              logLevel: "warn"
-            },
+            use: {
+              loader: require.resolve("ts-loader"),
+              options: {
+                // onlyCompileBundledFiles: true,
+                logLevel: "warn"
+              },
+            }
           },
           // "file" loader makes sure assets end up in the `lib` folder.
           // When you `import` an asset, you get its filename.
@@ -120,11 +135,13 @@ const config = {
           {
             // Exclude `js`, `html`, and `json` extensions so they get processed by webpack's internal loaders.
             exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
-            loader: require.resolve("file-loader"),
-            options: {
-              emitFile: false, // don't actually emit the file to the `lib` folder; we just want the filename returned in tests 
-              name: "[path][name].[ext]",
-            },
+            use: {
+              loader: require.resolve("file-loader"),
+              options: {
+                emitFile: false, // don't actually emit the file to the `lib` folder; we just want the filename returned in tests 
+                name: "[path][name].[ext]",
+              },
+            }
           },
         ]
       }
@@ -144,7 +161,7 @@ const config = {
     // to restart the development server for Webpack to discover it. This plugin
     // makes the discovery automatic so you don't have to restart.
     // See https://github.com/facebookincubator/create-react-app/issues/186
-    new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+    // FIXME: new WatchMissingNodeModulesPlugin(paths.appNodeModules),
     // Automatically make React and sinon available
     new webpack.ProvidePlugin({
       React: "react",

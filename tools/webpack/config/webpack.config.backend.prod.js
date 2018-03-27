@@ -6,7 +6,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const LicenseWebpackPlugin = require("license-webpack-plugin").LicenseWebpackPlugin;
-const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const paths = require("./paths");
 const helpers = require("./helpers");
 
@@ -21,6 +21,7 @@ const baseConfiguration = require("./webpack.config.backend.base")(publicPath);
 // It compiles slowly and is focused on producing a fast and minimal bundle.
 //======================================================================================================================================
 const config = helpers.mergeWebpackConfigs(baseConfiguration, {
+  mode: "production",
   // Don't attempt to continue if there are any errors.
   bail: true,
   // We generate sourcemaps in production. This is slow but gives good results.
@@ -36,34 +37,44 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       },
     ],
   },
-  plugins: [
+  optimization: {
     // Minify the code.
-    new UglifyJSPlugin({
-      parallel: true,
-      uglifyOptions: {
-        mangle: {
-          // NEEDSWORK: Mangling classnames appears to break gateway marshalling...
-          keep_classnames: true,
+    minimizer: [
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          ecma: 8,
+          mangle: {
+            safari10: true,
+            // NEEDSWORK: Mangling classnames appears to break gateway marshalling...
+            keep_classnames: true,
+          },
+          compress: {
+            warnings: false,
+            // Disabled because of an issue with Uglify breaking seemingly valid code:
+            // https://github.com/facebook/create-react-app/issues/2376
+            // Pending further investigation:
+            // https://github.com/mishoo/UglifyJS2/issues/2011
+            comparisons: false,
+            // Compressing classnames also breaks reflection
+            keep_classnames: true,
+          },
+          output: {
+            comments: false,
+            // Turned on because emoji and regex is not minified properly using default
+            // https://github.com/facebook/create-react-app/issues/2488
+            ascii_only: true,
+          },
         },
-        compress: {
-          // Compressing classnames also breaks reflection
-          keep_classnames: true,
-          warnings: false,
-          // Disabled because of an issue with Uglify breaking seemingly valid code:
-          // https://github.com/facebookincubator/create-react-app/issues/2376
-          // Pending further investigation:
-          // https://github.com/mishoo/UglifyJS2/issues/2011
-          comparisons: false,
-        },
-        output: {
-          comments: false,
-          // Turned on because emoji and regex is not minified properly using default
-          // https://github.com/facebookincubator/create-react-app/issues/2488
-          ascii_only: true,
-        },
+        // Use multi-process parallel running to improve the build speed
+        // Default number of concurrent runs: os.cpus().length - 1
+        parallel: true,
+        // Enable file caching
+        cache: true,
         sourceMap: true,
-      },
-    }),
+      }),
+    ],
+  },
+  plugins: [
     // Find and bundle all license notices from package dependencies
     new LicenseWebpackPlugin({
       pattern: /.*/,

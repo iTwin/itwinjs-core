@@ -6,7 +6,8 @@
 const path = require("path");
 const webpack = require("webpack");
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
-const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const InterpolateHtmlPlugin = require("../scripts/utils/InterpolateHtmlPlugin"); // FIXME
 const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
 const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const getClientEnvironment = require("./env");
@@ -74,7 +75,7 @@ module.exports = (publicPath) => {
         // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
         // please link the files into your node_modules/ and let module-resolution kick in.
         // Make sure your source files are compiled, as they will not be processed in any way.
-        new ModuleScopePlugin(paths.appSrc),
+        // FIXME: new ModuleScopePlugin(paths.appSrc),
         // This is only for FRONTEND code - backend modules should be excluded from the bundle.
         new plugins.BanBackendImportsPlugin(),
       ],
@@ -102,9 +103,11 @@ module.exports = (publicPath) => {
         // "sass" loader compiles SASS into CSS.
         {
           test: /\.scss$/,
-          loader: require.resolve("sass-loader"),
-          options: {
-            includePaths: [paths.appNodeModules]
+          use: {
+            loader: require.resolve("sass-loader"),
+            options: {
+              includePaths: [paths.appNodeModules]
+            },
           },
           enforce: "pre",
         },
@@ -117,20 +120,24 @@ module.exports = (publicPath) => {
             // assets smaller than specified size as data URLs to avoid requests.
             {
               test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-              loader: require.resolve("url-loader"),
-              options: {
-                limit: 10000,
-                name: "static/media/[name].[hash:8].[ext]",
-              },
+              use: {
+                loader: require.resolve("url-loader"),
+                options: {
+                  limit: 10000,
+                  name: "static/media/[name].[hash:8].[ext]",
+                },
+              }
             },
             // Compile .tsx?
             {
               test: /\.(ts|tsx)$/,
               include: paths.appSrc,
-              loader: require.resolve("ts-loader"),
-              options: {
-                onlyCompileBundledFiles: true,
-                logLevel: "warn",
+              use: {
+                loader: require.resolve("ts-loader"),
+                options: {
+                  onlyCompileBundledFiles: true,
+                  logLevel: "warn",
+                }
               }
             },
             // Inline SVG icons
@@ -157,10 +164,12 @@ module.exports = (publicPath) => {
               // Also exclude `html` and `json` extensions so they get processed
               // by webpacks internal loaders.
               exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
-              loader: require.resolve("file-loader"),
-              options: {
-                name: "static/media/[name].[hash:8].[ext]",
-              },
+              use: {
+                loader: require.resolve("file-loader"),
+                options: {
+                  name: "static/media/[name].[hash:8].[ext]",
+                },
+              }
             },
           ]
         }
@@ -178,8 +187,37 @@ module.exports = (publicPath) => {
       tls: "empty",
     },
 
+    optimization: {
+      // Automatically split vendor and commons
+      // https://twitter.com/wSokra/status/969633336732905474
+      splitChunks: {
+        chunks: 'all',
+      },
+      // Keep the runtime chunk seperated to enable long term caching
+      // https://twitter.com/wSokra/status/969679223278505985
+      runtimeChunk: true,
+    },
+
     // There are a number of plugins that are common to both configs
     plugins: [
+      // Generates an `index.html` file with the <script> injected.
+      // This _should_ be specified in the separate dev and prod configs, but it's here because it has to be added _before_ InterpolateHtmlPlugin
+      new HtmlWebpackPlugin({
+        inject: true,
+        template: paths.appHtml,
+        minify: (process.env.NODE_ENV === "development") ? undefined : {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true,
+          minifyJS: true,
+          minifyCSS: true,
+          minifyURLs: true,
+        },
+      }),
       // Makes some environment variables available in index.html.
       // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
       // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
@@ -208,5 +246,10 @@ module.exports = (publicPath) => {
         React: "react",
       }),
     ],
+
+    performance: {
+      maxEntrypointSize: 5000000,
+      maxAssetSize: 5000000,
+    }
   };
 };

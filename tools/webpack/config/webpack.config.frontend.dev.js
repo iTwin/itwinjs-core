@@ -6,7 +6,6 @@
 const autoprefixer = require("autoprefixer");
 const path = require("path");
 const webpack = require("webpack");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeModulesPlugin");
 const paths = require("./paths");
 const helpers = require("./helpers");
@@ -23,6 +22,7 @@ const baseConfiguration = require("./webpack.config.frontend.base")(publicPath);
 // It is focused on developer experience and fast rebuilds.
 //======================================================================================================================================
 const config = helpers.mergeWebpackConfigs(baseConfiguration, {
+  mode: "development",
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: "cheap-module-source-map",
@@ -99,12 +99,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       },
     ]
   },
-  plugins: [    
-    // Generates an `index.html` file with the <script> injected.
-    new HtmlWebpackPlugin({
-      inject: true,
-      template: paths.appHtml
-    }),
+  plugins: [
     // Add module names to factory functions so they appear in browser profiler.
     new webpack.NamedModulesPlugin(),
     // This is necessary to emit hot updates (currently CSS only):
@@ -113,7 +108,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
     // to restart the development server for Webpack to discover it. This plugin
     // makes the discovery automatic so you don't have to restart.
     // See https://github.com/facebookincubator/create-react-app/issues/186
-    new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+    // FIXME: new WatchMissingNodeModulesPlugin(paths.appNodeModules),
   ],
   // Turn off performance hints during development because we don't do any
   // splitting or minification in interest of speed. These warnings become

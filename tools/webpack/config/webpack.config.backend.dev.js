@@ -21,6 +21,7 @@ const baseConfiguration = require("./webpack.config.backend.base")(publicPath);
 // It is focused on developer experience and fast rebuilds.
 //======================================================================================================================================
 const config = helpers.mergeWebpackConfigs(baseConfiguration, {
+  mode: "development",
   // You may want "eval" instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: "cheap-module-source-map",
@@ -35,7 +36,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
     // to restart the development server for Webpack to discover it. This plugin
     // makes the discovery automatic so you don't have to restart.
     // See https://github.com/facebookincubator/create-react-app/issues/186
-    new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+    // FIXME: new WatchMissingNodeModulesPlugin(paths.appNodeModules),
   ],
   // Turn off performance hints during development because we don't do any
   // splitting or minification in interest of speed. These warnings become
