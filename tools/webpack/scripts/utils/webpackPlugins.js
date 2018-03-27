@@ -114,10 +114,79 @@ class BanBackendImportsPlugin extends BanImportsPlugin {
   }
 }
 
+// Extend LicenseWebpackPlugin to add better error formatting and some custom handling for @bentley packages.
+const LicenseWebpackPlugin = require("license-webpack-plugin").LicenseWebpackPlugin;
+class PrettyLicenseWebpackPlugin extends LicenseWebpackPlugin {
+  constructor(options) {
+    options.suppressErrors = true;
+    super(options);
+  }
+
+  apply(compiler) {
+    super.apply(compiler);
+
+    compiler.hooks.afterEmit.tap("PrettyLicenseWebpackPlugin", (compilation) => {
+      const formattedErrors = [];
+      for (const e of this.errors) {
+        const regex = /license-webpack-plugin: Could not find a license file for (.*?)(, defaulting to license name found in package.json: (.*))?$/
+        const groups = e.message.match(regex);
+        if (groups) {
+          if (groups[1].startsWith("@bentley"))
+            continue;
+          
+          let formatted = "   " + chalk.bold.magenta(groups[1]);
+          if (groups[3]) {
+            formatted += chalk.gray(` (should have a notice for `) + chalk.bold(chalk.gray(groups[3])) + chalk.gray(` license according to its package.json)`);
+          } else {
+            formatted += chalk.gray(` (no license is specified in its package.json)`);
+          }
+
+          formattedErrors.push(formatted)
+        } else {
+          e.message = e.message.replace("license-webpack-plugin:", chalk.underline.red("LicenseWarning:"));
+          compilation.warnings.push(e);
+        }
+      }
+
+      if (formattedErrors.length > 0) {
+        console.log();
+        console.log(`${chalk.bold.yellow("WARNING:")} ${chalk.yellow("License notices for the following packages could not be found:")}`);
+        formattedErrors.sort().forEach((e) => console.log(e));
+        console.log(chalk.yellow("Don't worry, this warning will not be treated as an error in CI builds (yet)."));
+        console.log(chalk.yellow("We're still looking for a good way to pull and manage these notices.\n"));
+      }
+    });
+  }
+}
+
+// By default, LicenseWebpackPlugin does not even attempt to find LICENSE files for packages with package.json license undefined.
+// This monkey patch should make sure that we're looking for notices for ALL dependencies, not just those with known licenses.
+const LicenseExtractor = require("license-webpack-plugin/dist/LicenseExtractor").LicenseExtractor;
+const baseGetLicenseText = LicenseExtractor.prototype.getLicenseText;
+LicenseExtractor.prototype.getLicenseText = function(packageJson, licenseName,  modulePrefix) {
+  if (licenseName === LicenseExtractor.UNKNOWN_LICENSE) {
+    const licenseFilename = this.getLicenseFilename(packageJson, licenseName, modulePrefix);
+    if (!licenseFilename) {
+      this.errors.push(
+        new Error(`license-webpack-plugin: Could not find a license file for ${packageJson.name}`)
+      );
+      return '';
+    }
+
+    return fs
+      .readFileSync(licenseFilename, 'utf8')
+      .trim()
+      .replace(/\r\n/g, '\n');
+  }
+
+  baseGetLicenseText.call(this, packageJson, licenseName,  modulePrefix);
+}
+
 module.exports = {
   BanFrontendImportsPlugin,
   BanBackendImportsPlugin,
   CopyNativeAddonsPlugin,
   CopyAssetsPlugin,
-  CopyBentleyDependencyPublicFoldersPlugin
+  CopyBentleyDependencyPublicFoldersPlugin,
+  PrettyLicenseWebpackPlugin
 };

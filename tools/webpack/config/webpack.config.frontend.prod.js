@@ -8,10 +8,10 @@ const path = require("path");
 const webpack = require("webpack");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ManifestPlugin = require("webpack-manifest-plugin");
-const LicenseWebpackPlugin = require("license-webpack-plugin").LicenseWebpackPlugin;
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const paths = require("./paths");
 const helpers = require("./helpers");
+const plugins = require("../scripts/utils/webpackPlugins");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -126,8 +126,11 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       chunkFilename: 'static/css/[name].[chunkhash:8].chunk.css',
     }),
     // Find and bundle all license notices from package dependencies
-    new LicenseWebpackPlugin({
+    new plugins.PrettyLicenseWebpackPlugin({
       pattern: /.*/,
+      includeUndefined: true,
+      includePackagesWithoutLicense: true,
+      unacceptablePattern: /^(GPL|.*[^L]GPL)/i,
     }),
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without
