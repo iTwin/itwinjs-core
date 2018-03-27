@@ -403,7 +403,7 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelLatestVersion);
   });
 
-  it("should open a briefcase of an iModel with no versions", async () => {
+  it.only("should open a briefcase of an iModel with no versions", async () => {
     const iModelNoVerId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "NoVersionsTest");
     const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
@@ -479,8 +479,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.only("should write to briefcase with optimistic concurrency", async () => {
-    debugger; // tslint:disable-line:no-debugger
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
