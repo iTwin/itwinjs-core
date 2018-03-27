@@ -29,6 +29,9 @@
   font-size: 90%;
 }
 
+.GridWidget .ContentContainer table tr[data-selected=true] {
+  background-color: #FFFDD0;
+}
 .GridWidget .Error {
   color: red;
 }

@@ -1,18 +1,17 @@
 import * as React from "react";
-// import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
 import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
 import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 import PropertyPaneDataProvider from "@bentley/ecpresentation-frontend/lib/Controls/PropertyPaneDataProvider";
-import { TreeNodeItem } from "@bentley/ecpresentation-frontend/lib/Controls/TreeDataProvider";
 import { isPrimitiveValue, isStructValue, isArrayValue, PropertyRecord } from "@bentley/ecpresentation-frontend/lib/Controls/ContentBuilder";
+import { SelectionManager, SelectionChangeEventArgs, SelectedItem, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 import "./PropertiesWidget.css";
 
 export interface Props {
   imodel: IModelConnection;
-  rulesetId?: string;
-  selectedNodes: TreeNodeItem[];
+  rulesetId: string;
+  selectionManager: SelectionManager;
 }
 export default class PropertiesWidget extends React.Component<Props> {
   constructor(props: Props, context?: any) {
@@ -24,7 +23,7 @@ export default class PropertiesWidget extends React.Component<Props> {
       <div className="PropertiesWidget">
         <h3>Properties</h3>
         <div className="ContentContainer">
-          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} selectedNodes={this.props.selectedNodes} />
+          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} selectionManager={this.props.selectionManager} />
         </div>
       </div>
     );
@@ -33,8 +32,8 @@ export default class PropertiesWidget extends React.Component<Props> {
 
 interface PropertyPaneProps {
   imodelToken: IModelToken;
-  rulesetId?: string;
-  selectedNodes: TreeNodeItem[];
+  rulesetId: string;
+  selectionManager: SelectionManager;
 }
 interface PropertyDisplayInfo {
   label: string;
@@ -54,35 +53,44 @@ const initialState: PropertyPaneState = {
 };
 class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState> {
   private _presentationManager: ECPresentationManager;
-  private _dataProvider: PropertyPaneDataProvider | undefined;
-
+  private _dataProvider: PropertyPaneDataProvider;
+  private _selectionHandler: SelectionHandler;
+  private _hasSelection: boolean;
   constructor(props: PropertyPaneProps, context?: any) {
     super(props, context);
     this.state = initialState;
+    this._hasSelection = false;
     this._presentationManager = new ECPresentationManager();
-    if (props.rulesetId)
-      this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, props.rulesetId);
+    this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, props.rulesetId);
+    this._selectionHandler = new SelectionHandler(this.props.selectionManager, "Properties", props.rulesetId, props.imodelToken, this.onSelectionChanged);
   }
-  public componentWillMount() {
-    this.fetchProperties(this.props.imodelToken, this.props.selectedNodes);
-  }
-  public componentWillReceiveProps(newProps: PropertyPaneProps) {
-    if (newProps.rulesetId !== this.props.rulesetId)
-      this._dataProvider = (newProps.rulesetId) ? new PropertyPaneDataProvider(this._presentationManager, newProps.imodelToken, newProps.rulesetId) : undefined;
-    if (newProps.imodelToken !== this.props.imodelToken || !this.areSelectedNodesEqual(newProps.selectedNodes))
-      this.fetchProperties(newProps.imodelToken, newProps.selectedNodes);
-  }
-  private areSelectedNodesEqual(newSelection: TreeNodeItem[]) {
-    if (newSelection.length !== this.props.selectedNodes.length)
-      return false;
-    for (const newItem of newSelection) {
-      for (const oldItem of this.props.selectedNodes) {
-        if (newItem !== oldItem)
-          return false;
+
+  // tslint:disable-next-line:naming-convention
+  private onSelectionChanged = (_evt: SelectionChangeEventArgs, items: SelectionProvider): void => {
+    this._hasSelection = false;
+    for (let i = _evt.level; i >= 0; i--) {
+      const selectedItemsSet = items.getSelection(this.props.imodelToken, i);
+      if (selectedItemsSet && !selectedItemsSet.isEmpty) {
+        this._hasSelection = true;
+        this.fetchProperties(this.props.imodelToken, selectedItemsSet.asArray());
+        return;
       }
     }
-    return true;
+    this.fetchProperties(this.props.imodelToken, []);
   }
+
+  public componentWillUnmount() {
+    this._selectionHandler.dispose();
+  }
+
+  public componentWillReceiveProps(newProps: PropertyPaneProps) {
+    if (newProps.rulesetId !== this.props.rulesetId || newProps.imodelToken !== this.props.imodelToken) {
+      this._selectionHandler.rulesetId = newProps.rulesetId;
+      this._selectionHandler.imodelToken = newProps.imodelToken;
+      this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, newProps.imodelToken, newProps.rulesetId);
+    }
+  }
+
   private createRecordDisplayValues(record: PropertyRecord): PropertyDisplayInfo[] {
     const values = new Array<PropertyDisplayInfo>();
     const recordValue = record.value;
@@ -115,14 +123,14 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     }
     return values;
   }
-  private async fetchProperties(_imodelToken: IModelToken, selectedNodes: TreeNodeItem[]) {
-    if (0 === selectedNodes.length || !this._dataProvider) {
-      this.setState(initialState);
-      return;
-    }
+  private async fetchProperties(_imodelToken: IModelToken, selectedNodes: SelectedItem[]) {
+    this.setState(initialState);
 
-    const keys: InstanceKey[] = selectedNodes.map((item: TreeNodeItem) => {
-      return item.extendedData.node.key;
+    if (0 === selectedNodes.length || !this._dataProvider)
+      return;
+
+    const keys: InstanceKey[] = selectedNodes.map((item: SelectedItem) => {
+      return item.key;
     });
 
     try {
@@ -168,8 +176,8 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
   public render() {
     if (this.state.error)
       return (<div className="Error">{this.state.error}</div>);
-    if (!this.props.selectedNodes || 0 === this.props.selectedNodes.length)
-      return (<div className="NoProperties">Nothing selected</div>);
+    if (!this._hasSelection)
+      return (<div className="NoData">Nothing selected</div>);
     if (!this.state.groups || 0 === this.state.groups.length)
       return (<div className="NoProperties">No Properties</div>);
     return (

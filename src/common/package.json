@@ -23,9 +23,9 @@
     "No need to repeat all of the dependencies are already expressed by frontend and backend."
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/bentleyjs-core": "^7.3.6",
     "@bentley/bentleyjs-tools": "^2.2.0",
-    "@bentley/imodeljs-common": "~0.68.0",
+    "@bentley/imodeljs-common": "~0.69.0",
     "rimraf": "^2.6.2",
     "typescript": "^2.6.2",
     "tslint": "^5.8.0"

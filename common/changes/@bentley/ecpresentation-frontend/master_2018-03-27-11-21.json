@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "added code for unified selection",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "aidas.kilinskas@bentley.com"
+}
