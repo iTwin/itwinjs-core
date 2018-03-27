@@ -1,0 +1,11 @@
+{
+  "$schema": "https://dev.office.com/json-schemas/rush/command-line.schema.json",
+  "customCommands": [
+    {
+      "name": "clean",
+      "summary": "Cleans build output within each package",
+      "documentation": "Iterates through each package in the monorepo and runs the clean script",
+      "parallelized": true
+    }
+  ]
+}
