@@ -13,8 +13,7 @@ import {
 } from "../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, Appearance, ColorDef, IModel,
-  FontType, FontMap,
+  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -46,14 +45,14 @@ describe("iModel", () => {
     assert.isTrue(entity.isPersistent());
     const copyOf = entity.copyForEdit();
     assert.isFalse(copyOf.isPersistent());
-    copyOf.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
+    const s1 = JSON.stringify(entity); let s2 = JSON.stringify(copyOf);
+    assert.equal(s1, s2);
 
     // now round trip the entity through a json string and back to a new entity.
-    const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
+    const jsonObj = JSON.parse(s1) as EntityProps;
     const el2 = new (entity.constructor as any)(jsonObj, entity.iModel); // create a new entity from the json
-    el2.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, el2, "json stringify worked");
+    s2 = JSON.stringify(el2);
+    assert.equal(s1, s2);
   };
 
   it("should be able to get the name of the IModel", () => {
@@ -704,8 +703,8 @@ describe("iModel", () => {
     }
   });
 
-  it("should create link table relationship instances", () => {
-
+  // THIS TEST IS DISABLED UNTIL A NEW VERSION OF imodelJs-native is available to fix updating subcategory appearance
+  it.skip("should create link table relationship instances", () => {
     const testImodel: IModelDb = imodel1;
 
     // Create a new physical model
@@ -716,7 +715,10 @@ describe("iModel", () => {
     const dictionary: DictionaryModel = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: ColorByName.darkRed }));
+
+      const updated = testImodel.elements.getElement(IModelDb.getDefaultSubCategoryId(spatialCategoryId)) as SubCategory;
+      assert.equal(updated.appearance.color.tbgr, ColorByName.darkRed, "SubCategory appearance should be updated");
     }
 
     // Create a couple of physical elements.
@@ -780,7 +782,7 @@ describe("iModel", () => {
     const dictionary = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance());
     }
 
     const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";

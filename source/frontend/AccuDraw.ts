@@ -6,7 +6,7 @@ import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
-import { ColorDef, ColorRgb, LinePixels } from "@bentley/imodeljs-common";
+import { ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
 import { SnapMode } from "./HitDetail";
@@ -243,11 +243,11 @@ export class AccuDraw {
   protected compassSizeInches = 0.44;
   protected animationFrames = 12;
   protected indexToleranceInches = 0.11;
-  protected readonly frameColor = new ColorDef(ColorRgb.lightGrey);
-  protected readonly fillColor = new ColorDef(ColorRgb.blue);
-  protected readonly xColor = new ColorDef(ColorRgb.red);
-  protected readonly yColor = new ColorDef(ColorRgb.green);
-  protected readonly indexColor = new ColorDef(ColorRgb.white);
+  protected readonly frameColor = new ColorDef(ColorByName.lightGrey);
+  protected readonly fillColor = new ColorDef(ColorByName.blue);
+  protected readonly xColor = new ColorDef(ColorByName.red);
+  protected readonly yColor = new ColorDef(ColorByName.green);
+  protected readonly indexColor = new ColorDef(ColorByName.white);
 
   // User Preference Settings...
   public smartKeyin = true;
@@ -1859,8 +1859,8 @@ export class AccuDraw {
 
     const hasFocus = this.hasInputFocus;
     const bgColor = vp.view.backgroundColor;
-    const darkGrey = new ColorDef(ColorRgb.darkGrey);
-    const lightGrey = new ColorDef(ColorRgb.lightGrey);
+    const darkGrey = new ColorDef(ColorByName.darkGrey);
+    const lightGrey = new ColorDef(ColorByName.lightGrey);
     const frameColor = (hasFocus ? this.frameColor : darkGrey).adjustForContrast(bgColor, 100);
     const fillColor = (hasFocus ? this.fillColor : lightGrey).adjustForContrast(bgColor, 180);
     const xColor = (hasFocus ? this.xColor : darkGrey).adjustForContrast(bgColor, 100);
