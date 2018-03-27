@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect } from "chai";
 import * as moq from "typemoq";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { Gateway, IModelToken } from "@bentley/imodeljs-common";
@@ -27,14 +27,14 @@ describe("ECPresentationGatewayImpl", () => {
     ECPresentation.initialize();
     initializeGateway(ECPresentationGateway);
     const impl = Gateway.getProxyForGateway(ECPresentationGatewayDefinition);
-    assert.isNotNull(impl);
-    assert.instanceOf(impl, ECPresentationGateway);
+    expect(impl).is.not.null;
+    expect(impl).is.instanceof(ECPresentationGateway);
   });
 
   it("uses default ECPresentationManager implementation if not overridden", () => {
     ECPresentation.initialize();
     const gateway = new ECPresentationGateway();
-    assert.instanceOf(gateway.getManager(), ECPresentationManager);
+    expect(gateway.getManager()).is.instanceof(ECPresentationManager);
   });
 
   describe("calls forwarding", () => {
@@ -63,7 +63,7 @@ describe("ECPresentationGatewayImpl", () => {
         .verifiable();
       const actualResult = await gateway.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
       mock.verifyAll();
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getRootNodesCount", async () => {
@@ -73,7 +73,7 @@ describe("ECPresentationGatewayImpl", () => {
         .verifiable();
       const actualResult = await gateway.getRootNodesCount(testData.imodelToken, testData.extendedOptions);
       mock.verifyAll();
-      assert.equal(actualResult, result);
+      expect(actualResult).to.eq(result);
     });
 
     it("calls manager's getChildren", async () => {
@@ -84,7 +84,7 @@ describe("ECPresentationGatewayImpl", () => {
         .verifiable();
       const actualResult = await gateway.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions);
       mock.verifyAll();
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getChildrenCount", async () => {
@@ -95,7 +95,7 @@ describe("ECPresentationGatewayImpl", () => {
         .verifiable();
       const actualResult = await gateway.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions);
       mock.verifyAll();
-      assert.equal(actualResult, result);
+      expect(actualResult).to.eq(result);
     });
 
     it("calls manager's getNodePaths", async () => {
@@ -110,7 +110,7 @@ describe("ECPresentationGatewayImpl", () => {
         .verifiable();
       const actualResult = await gateway.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions);
       mock.verifyAll();
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getFilteredNodesPaths", async () => {
@@ -121,7 +121,7 @@ describe("ECPresentationGatewayImpl", () => {
         .verifiable();
       const actualResult = await gateway.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions);
       mock.verifyAll();
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getContentDescriptor", async () => {
@@ -132,7 +132,7 @@ describe("ECPresentationGatewayImpl", () => {
       const actualResult = await gateway.getContentDescriptor(testData.imodelToken, testData.displayType,
         testData.inputKeys, testData.selectionInfo, testData.extendedOptions);
       mock.verifyAll();
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getContentSetSize", async () => {
@@ -143,7 +143,7 @@ describe("ECPresentationGatewayImpl", () => {
       const actualResult = await gateway.getContentSetSize(testData.imodelToken, testData.descriptor,
         testData.inputKeys, testData.extendedOptions);
       mock.verifyAll();
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getContent", async () => {
@@ -155,7 +155,7 @@ describe("ECPresentationGatewayImpl", () => {
         .verifiable();
       const actualResult = await gateway.getContent(testData.imodelToken, testData.descriptor,
         testData.inputKeys, testData.pageOptions, testData.extendedOptions);
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getDistinctValues", async () => {
@@ -168,7 +168,7 @@ describe("ECPresentationGatewayImpl", () => {
       const actualResult = await gateway.getDistinctValues(testData.imodelToken, testData.displayType,
         fieldName, maxValueCount, testData.extendedOptions);
       mock.verifyAll();
-      assert.deepEqual(actualResult, result);
+      expect(actualResult).to.deep.eq(result);
     });
 
   });
