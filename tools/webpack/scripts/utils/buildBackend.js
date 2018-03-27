@@ -8,6 +8,10 @@ const webpack = require("webpack");
 const chalk = require("chalk");
 const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
 
+const delims = chalk.inverse(".").split(".");
+const delims2 = chalk.underline.red(".").split(".");
+const fixWarningColors = (w) => w.replace(delims[0], delims2[0]).replace(delims[1], delims2[1]);
+
 function runWebpackAsync(compiler) {
   return new Promise((resolve, reject) => { 
     compiler.run((err, stats) => (err) ? reject(err) : resolve(stats))
@@ -31,10 +35,10 @@ function handleWarningsAndErrors(stats) {
 
   if (warnings.length) {
     console.log();
-    console.log(chalk.yellow("Compiled with warnings.\n"));
-    console.log(warnings.join("\n\n"));
-    console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about each warning.`);
-    console.log(`To ignore, add ${chalk.cyan("// tslint-disable-next-line")} to the line before.\n`);
+    console.log(chalk.bold.yellow("Compiled with warnings.\n"));
+    console.log(warnings.map(fixWarningColors).join("\n\n"));
+    console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about tslint warnings.`);
+    console.log(`To ignore a tslint warning, add ${chalk.cyan("// tslint-disable-next-line")} to the line before.\n`);
   }
 }
 
