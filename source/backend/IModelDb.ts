@@ -59,6 +59,8 @@ export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000;
   public static readonly maxLimit = 10000;
   private static _accessTokens?: Map<string, AccessToken>;
+  /** Event called after a changeset is applied to this IModelDb. */
+  public readonly onChangesetApplied = new BeEvent<() => void>();
   public models: IModelDbModels = new IModelDbModels(this);
   public elements: IModelDbElements = new IModelDbElements(this);
   public views: IModelDbViews = new IModelDbViews(this);
@@ -240,13 +242,19 @@ export class IModelDb extends IModel {
     this.briefcase.iModelDb = this;
     this.briefcase.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
     this.briefcase.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcase.onChangesetApplied.addListener(this.onChangesetAppliedForwarder, this);
   }
 
   private clearBriefcaseEntry(): void {
     this.briefcase!.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
     this.briefcase!.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcase!.onChangesetApplied.removeListener(this.onChangesetAppliedForwarder, this);
     this.briefcase!.iModelDb = undefined;
     this.briefcase = undefined;
+  }
+
+  private onChangesetAppliedForwarder() {
+    this.onChangesetApplied.raiseEvent();
   }
 
   private onBriefcaseCloseHandler() {
@@ -618,7 +626,10 @@ export class IModelDbModels {
   private _loaded: LRUMap<string, Model>;
 
   /** @hidden */
-  public constructor(private _iModel: IModelDb, max: number = 500) { this._loaded = new LRUMap<string, Model>(max); }
+  public constructor(private _iModel: IModelDb, max: number = 500) {
+    this._loaded = new LRUMap<string, Model>(max);
+    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+  }
 
   /** Get the Model with the specified identifier.
    * @param modelId The Model identifier.
@@ -728,7 +739,10 @@ export class IModelDbElements {
   public get loaded() { return this._loaded; }
 
   /** @hidden */
-  public constructor(private _iModel: IModelDb, maxElements: number = 2000) { this._loaded = new LRUMap<string, Element>(maxElements); }
+  public constructor(private _iModel: IModelDb, maxElements: number = 2000) {
+    this._loaded = new LRUMap<string, Element>(maxElements);
+    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+  }
 
   /** Private implementation details of getElementProps */
   private _getElementProps(opts: ElementLoadProps): ElementProps {

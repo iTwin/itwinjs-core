@@ -39,7 +39,7 @@ export const enum KeepBriefcase {
 }
 
 /** A token that represents a ChangeSet */
-class ChangeSetToken {
+export class ChangeSetToken {
   constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: ContainsSchemaChanges) { }
 }
 
@@ -98,10 +98,13 @@ export class BriefcaseEntry {
   /** File Id used to upload change sets for this briefcase (only setup in Read-Write cases) */
   public fileId?: string;
 
-  /** Event called when the briefcase is about to be closed */
+  /** @hidden Event called after a changeset is applied to a briefcase. */
+  public readonly onChangesetApplied = new BeEvent<() => void>();
+
+  /** @hidden Event called when the briefcase is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
-  /** Event called when the version of the briefcase has been updated */
+  /** @hidden Event called when the version of the briefcase has been updated */
   public readonly onBeforeVersionUpdate = new BeEvent<() => void>();
 
   /** Gets the path key to be used in the cache and iModelToken */
@@ -867,6 +870,8 @@ export class BriefcaseManager {
         assert(false, "Unknown change set process option");
         return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Unknown ChangeSet process option"));
     }
+
+    briefcase.onChangesetApplied.raiseEvent();
   }
 
   public static async reverseChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {
