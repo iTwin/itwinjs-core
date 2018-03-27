@@ -91,9 +91,9 @@ export class SpatialCategory extends Category {
   public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
-  public static queryCategoryIdByName(parentModel: DefinitionModel, categoryName: string): Id64 | undefined {
-    const code = SpatialCategory.createCode(parentModel, categoryName);
-    return parentModel.iModel.elements.queryElementIdByCode(code);
+  public static queryCategoryIdByName(scopeModel: DefinitionModel, categoryName: string): Id64 | undefined {
+    const code = SpatialCategory.createCode(scopeModel, categoryName);
+    return scopeModel.iModel.elements.queryElementIdByCode(code);
   }
 
   /** Create a Code for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -109,16 +109,13 @@ export class SpatialCategory extends Category {
 
   /**
    * Create a new SpatialCategory element.
-   * @param parentModel The model in which the category element will be inserted by the caller.
+   * @param scopeModel The model in which the category element will be inserted by the caller.
    * @param categoryName The name of the category.
-   * @param scopeModel  Optional. You can pass in the model that is to be the scope of the category's code. This defaults to parentModel.
    * @return a new, non-persistent SpatialCategory element.
    */
-  public static create(parentModel: DefinitionModel, categoryName: string, scopeModel?: DefinitionModel): SpatialCategory {
-    if (undefined === scopeModel)
-      scopeModel = parentModel;
-    return parentModel.iModel.elements.createElement({
-      iModel: parentModel.iModel,
+  public static create(scopeModel: DefinitionModel, categoryName: string): SpatialCategory {
+    return scopeModel.iModel.elements.createElement({
+      iModel: scopeModel.iModel,
       classFullName: "BisCore:SpatialCategory",
       model: scopeModel.id,
       code: SpatialCategory.createCode(scopeModel, categoryName),

@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
-import { Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps,
+  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, GeometryPartProps,
   AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
 } from "@bentley/imodeljs-common";
 
@@ -528,6 +528,28 @@ export class RepositoryLink extends UrlLink {
  * a person can play the role of a teacher or a rock can play the role of a boundary marker.
  */
 export abstract class RoleElement extends Element {
+}
+
+/**
+ * A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
+ * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
+ */
+export class GeometryPart extends DefinitionElement implements GeometryPartProps {
+  public geom?: GeometryStreamProps;
+  public bbox: ElementAlignedBox3d;
+  public constructor(props: GeometryPartProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.geom = props.geom;
+    this.bbox = ElementAlignedBox3d.fromJSON(props.bbox);
+  }
+
+  /** convert this geometry part to a JSON object */
+  public toJSON(): GeometryPartProps {
+    const val = super.toJSON() as GeometryPartProps;
+    val.geom = this.geom;
+    val.bbox = this.bbox;
+    return val;
+  }
 }
 
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {

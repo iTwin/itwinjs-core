@@ -8,12 +8,12 @@ import {
 } from "@bentley/geometry-core";
 import { Sample } from "@bentley/geometry-core/lib/serialization/GeometrySamples";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
-import { IModelDb } from "../IModelDb";
 import {
-  GeometricPrimitive, GeometryType, Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryStreamProps,
+  GeometricPrimitive, GeometryType, Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { DictionaryModel, IModelDb } from "../backend";
 
 describe("GeometricPrimitive", () => {
   it("should be able to create GeometricPrimitives from various geometry", () => {
@@ -131,6 +131,47 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
+  it.skip("json encoding and decoding roundtrip of GeometryPart", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+
+    const geometryStream: GeometryStreamProps = [];
+
+    for (const geom of geomArray) {
+      const arcData = GeomJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
+    }
+
+    // tslint:disable-next-line:no-debugger
+    // debugger;
+
+    const dictionary: DictionaryModel = imodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const partProps: GeometryPartProps = {
+      classFullName: "BisCore:GeometryPart",
+      iModel: imodel,
+      model: dictionary,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      bbox: new ElementAlignedBox3d(0, 0, 0, 0, 0, 0),
+    };
+
+    const testPart = imodel.elements.createElement(partProps);
+    const partId = imodel.elements.insertElement(testPart);
+    imodel.saveChanges();
+
+    // Extract and test value returned
+    const value = imodel.elements.getElement({ id: partId, wantGeometry: true });
+    assert.isDefined(value.geom);
+  });
+
   it.skip("json encoding and decoding roundtrip of arcs", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
@@ -150,6 +191,9 @@ describe("GeometryStream", () => {
       geometryStream.push(arcData);
     }
 
+    // tslint:disable-next-line:no-debugger
+    // debugger;
+
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
       iModel: imodel,
@@ -161,9 +205,6 @@ describe("GeometryStream", () => {
       geom: geometryStream,
       placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 0, 0, 0)),
     };
-
-    // tslint:disable-next-line:no-debugger
-    // debugger;
 
     const testElem = imodel.elements.createElement(elementProps);
     const newId = imodel.elements.insertElement(testElem);

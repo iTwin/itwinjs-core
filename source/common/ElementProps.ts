@@ -77,6 +77,12 @@ export interface GeometricElement2dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
+/** Properties of a GeometryPart */
+export interface GeometryPartProps extends ElementProps {
+  geom?: GeometryStreamProps;
+  bbox: LowAndHighXYZ;
+}
+
 export interface ViewAttachmentProps extends GeometricElement2dProps {
   view?: Id64Props;
 }
