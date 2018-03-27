@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, Transform, RotMatrix, Angle, GeometryQuery,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, YawPitchRollProps,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { GeometryClass } from "../Render";
 import { TextStringProps } from "./TextString";
@@ -16,13 +16,13 @@ import { TextStringProps } from "./TextString";
  */
 export interface GeometryAppearanceProps {
   /** Optional subCategory id for subsequent geometry. Use to create a GeometryStream with geometry that is not on the default subCategory for the element's category or is on multiple subCategories */
-  subCategory?: Id64;
+  subCategory?: Id64Props;
   /** Optional color to override the subCategory appearance color for subsequent geometry */
   color?: ColorDef;
   /** Optional weight to override the subCategory appearance weight for subsequent geometry */
   weight?: number;
   /** Optional style to override the subCategory appearance style for subsequent geometry */
-  style?: Id64;
+  style?: Id64Props;
   /** Optional transparency, default is 0. Effective transparency is a combination of this value and that from the subCategory appearance */
   transparency?: number;
   /** Optional display priority (2d only), default is 0. Effective display priority is a combination of this value and that from the subCategory appearance */
@@ -33,26 +33,14 @@ export interface GeometryAppearanceProps {
 
 // NEEDSWORK: StyleModifierProps/AreaFillProps/AreaPatternProps/MaterialProps...
 
-/** GeometryStream entry to a GeometryPart for a GeometricElement2d */
-export interface GeometryPart2dInstanceProps {
+/** GeometryStream entry to a GeometryPart for a GeometricElement */
+export interface GeometryPartInstanceProps {
   /** GeometryPart id */
-  geomPart: Id64;
-  /** Optional translation relative to element's placement, default translation is 0,0 */
-  origin?: Point2d;
-  /** Optional rotation relative to element's placement, default angle is 0 */
-  angle?: Angle;
-  /** Optional scale to apply to part, default scale is 1 */
-  scale?: number;
-}
-
-/** GeometryStream entry to a GeometryPart for a GeometricElement3d */
-export interface GeometryPart3dInstanceProps {
-  /** GeometryPart id */
-  part: Id64;
-  /** Optional translation relative to element's placement, default translation is 0,0,0 */
-  origin?: Point3d;
-  /** Optional rotation relative to element's placement, default angles are 0,0,0 */
-  angles?: YawPitchRollAngles;
+  part: Id64Props;
+  /** Optional translation relative to element's placement. Default is 0,0,0. For a 2d element/translation, supply non-zero x and y only */
+  origin?: XYZProps;
+  /** Optional rotation relative to element's placement. Default is 0,0,0. For a 2d element/rotation, supply a non-zero yaw angle only */
+  rotation?: YawPitchRollProps;
   /** Optional scale to apply to part, default scale is 1 */
   scale?: number;
 }
@@ -60,7 +48,7 @@ export interface GeometryPart3dInstanceProps {
 /** Allowed GeometryStream entries */
 export type GeometryStreamEntryProps =
   { appearance: GeometryAppearanceProps } |
-  { geomPart: GeometryPart2dInstanceProps | GeometryPart3dInstanceProps } |
+  { geomPart: GeometryPartInstanceProps } |
   { textString: TextStringProps } |
   GeomJson.GeometryProps;
 
