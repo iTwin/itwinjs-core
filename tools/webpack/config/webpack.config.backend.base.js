@@ -96,7 +96,7 @@ module.exports = (publicPath) => {
           test: /\.js$/,
           loader: require.resolve("source-map-loader"),
           enforce: "pre",
-          include: helpers.createBentleySourceMapsIncludePaths(),
+          include: helpers.createBentleySourceMapsIncludePaths,
         },
         {
           // "oneOf" will traverse all following loaders until one will match the requirements.

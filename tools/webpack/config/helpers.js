@@ -20,17 +20,26 @@ const createDevToolModuleFilename = (info) => {
   return info.absoluteResourcePath;
 };
 
+const knownSourceMapPaths = [paths.appSrc];
+
 /** Creates a list of include paths for app source and all its @bentley dependencies */
-const createBentleySourceMapsIncludePaths = () => {
-  let includePaths = [paths.appSrc];
-  const bentleyIncludesPath = path.resolve(paths.appNodeModules, "@bentley");
-  const bentleyIncludes = fs.readdirSync(bentleyIncludesPath);
-  for (const bentleyInclude of bentleyIncludes) {
-    const matches = glob.sync(path.resolve(bentleyIncludesPath, bentleyInclude, "**/*.map"))
-    if (matches && matches.length > 0)
-      includePaths.push(fs.realpathSync(path.resolve(bentleyIncludesPath, bentleyInclude)));
+const createBentleySourceMapsIncludePaths = (resource) => {
+  for (const knownDir of knownSourceMapPaths) {
+    if (resource.startsWith(knownDir))
+      return true;
   }
-  return includePaths;
+  
+  const bentleyIncludesPath = path.resolve(paths.appNodeModules, "@bentley");
+  if (!resource.startsWith(bentleyIncludesPath))
+    return false;
+
+  const dir = path.dirname(resource);
+  const matches = glob.sync(path.resolve(dir, "**/*.map"));
+  if (matches && matches.length > 0) {
+    knownSourceMapPaths.push(dir);
+    return true;
+  }
+  return false;
 };
 
 const _ = require("lodash");

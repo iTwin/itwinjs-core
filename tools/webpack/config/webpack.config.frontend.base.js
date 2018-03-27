@@ -98,7 +98,7 @@ module.exports = (publicPath) => {
           test: /\.js$/,
           loader: require.resolve("source-map-loader"),
           enforce: "pre",
-          include: helpers.createBentleySourceMapsIncludePaths(),
+          include: helpers.createBentleySourceMapsIncludePaths,
         },
         // "sass" loader compiles SASS into CSS.
         {
