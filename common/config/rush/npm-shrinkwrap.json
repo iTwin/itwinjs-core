@@ -180,7 +180,7 @@
     },
     "@rush-temp/imodeljs-core-sample-code": {
       "version": "file:projects/imodeljs-core-sample-code.tgz",
-      "integrity": "sha1-FpzdXDHsiNyDzvO5nyBSeixkMYw=",
+      "integrity": "sha1-sE1JltKMM/2ITxxr3qDx3UmNeI8=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.9",
         "@bentley/geometry-core": "7.3.0",
