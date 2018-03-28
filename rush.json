@@ -36,8 +36,7 @@
   ],
   "eventHooks": {
     "postRushInstall": [
-      "rush clean",
-      "cd nativePlatformForTests & npm install & cd .."
+      "rush clean && cd nativePlatformForTests & npm install & cd .."
     ]
   }
 }
