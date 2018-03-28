@@ -7,8 +7,10 @@ import { Capabilities, ViewportQuad, TexturedViewportQuad } from "@bentley/imode
 function getCanvas(): HTMLCanvasElement | undefined {
   let canvas = document.getElementById("canvas") as HTMLCanvasElement | undefined;
   if (null === canvas)
-    canvas = document.createElement("canvas") as HTMLCanvasElement | undefined;
-  return canvas;
+    canvas = document.createElement("canvas") as HTMLCanvasElement;
+
+  const gl = canvas!.getContext("webgl");
+  return gl ? canvas : undefined;
 }
 
 describe("System WebGL Capabilities", () => {
