@@ -179,15 +179,12 @@ export class FloatPreMulRgba {
    * @param colorDef A FloatRgba used to create a new ColorDef.
    */
   public initFromColorDef(colorDef: ColorDef): void {
-    // alpha is actually inverted in ColorDef. 0 means opaque, where in RGBA format 0 means fully transparent.
-    const a: number = (255 - colorDef.getAlpha()) / 255.0;
-
     // if !defined(DEBUG_PREMUL_RGBA)
     const colors = colorDef.getColors();
     this.red = colors.r / 255.0;
     this.green = colors.g / 255.0;
     this.blue = colors.b / 255.0;
-    this.alpha = a;
+    this.alpha = colors.t / 255.0;
 
     // if defined(DEBUG_PREMUL_RGBA)
     // const colors = colorDef.getColors();

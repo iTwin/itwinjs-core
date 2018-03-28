@@ -27,9 +27,9 @@ import {
  */
 export abstract class Element extends Entity implements ElementProps {
   /** the ModelId of the Model containing this element */
-  public model: Id64;
+  public readonly model: Id64;
   /** the code for this element */
-  public code: Code;
+  public readonly code: Code;
   /** the parent element, if present, of this element. */
   public parent?: RelatedElement;
   /** a GUID assigned to this element by some other federated database */
@@ -37,7 +37,7 @@ export abstract class Element extends Entity implements ElementProps {
   /** a user-assigned label for this element. */
   public userLabel?: string;
   /** optional json properties of this element. */
-  public jsonProperties: any;
+  public readonly jsonProperties: any;
 
   /** constructor for Element. */
   constructor(props: ElementProps, iModel: IModelDb) {
@@ -83,6 +83,8 @@ export abstract class Element extends Entity implements ElementProps {
   /** remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
+  public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
+  public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
   /**
    * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
