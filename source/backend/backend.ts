@@ -14,7 +14,6 @@ export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
-export * from "./ElementGeometry";
 export * from "./ElementPropertyFormatter";
 export * from "./Entity";
 export * from "./IModelJsFs";

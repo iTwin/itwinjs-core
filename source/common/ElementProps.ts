@@ -41,7 +41,6 @@ export class RelatedElement implements RelatedElementProps {
     }
     return Id64.fromJSON(json);
   }
-
 }
 
 /** A RelatedElement that describes the type definition of an element. */
@@ -57,13 +56,13 @@ export interface GeometricElementProps extends ElementProps {
 export interface Placement3dProps {
   origin: XYZProps;
   angles: YawPitchRollProps;
-  bbox: LowAndHighXYZ;
+  bbox?: LowAndHighXYZ;
 }
 
 export interface Placement2dProps {
   origin: XYProps;
   angle: AngleProps;
-  bbox: LowAndHighXY;
+  bbox?: LowAndHighXY;
 }
 
 /** Properties that define a GeometricElement3d */
@@ -76,6 +75,12 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 export interface GeometricElement2dProps extends GeometricElementProps {
   placement: Placement2dProps;
   typeDefinition?: RelatedElementProps;
+}
+
+/** Properties of a GeometryPart */
+export interface GeometryPartProps extends ElementProps {
+  geom?: GeometryStreamProps;
+  bbox: LowAndHighXYZ;
 }
 
 export interface ViewAttachmentProps extends GeometricElement2dProps {
