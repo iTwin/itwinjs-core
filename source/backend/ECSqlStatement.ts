@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert, DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, using, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { assert, DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
@@ -93,7 +93,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    */
   public bindNull(parameter: number | string): void {
-    using(this.getBinder(parameter), (binder) => binder.bindNull());
+    this.getBinder(parameter).bindNull();
   }
 
   /** bind a Range3d as a blob to the specified ECSQL parameter
@@ -107,7 +107,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param BLOB value as either an ArrayBuffer or a Base64 string
    */
   public bindBlob(parameter: number | string, blob: string | ArrayBuffer | SharedArrayBuffer): void {
-    using(this.getBinder(parameter), (binder) => binder.bindBlob(blob));
+    this.getBinder(parameter).bindBlob(blob);
   }
 
   /** Binds a boolean value to the specified ECSQL parameter.
@@ -115,7 +115,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Boolean value
    */
   public bindBoolean(parameter: number | string, val: boolean): void {
-    using(this.getBinder(parameter), (binder) => binder.bindBoolean(val));
+    this.getBinder(parameter).bindBoolean(val);
   }
 
   /** Binds a DateTime value to the specified ECSQL parameter.
@@ -123,7 +123,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param isoDateTimeString DateTime value as ISO8601 string
    */
   public bindDateTime(parameter: number | string, isoDateTimeString: string): void {
-    using(this.getBinder(parameter), (binder) => binder.bindDateTime(isoDateTimeString));
+    this.getBinder(parameter).bindDateTime(isoDateTimeString);
   }
 
   /** Binds a double value to the specified ECSQL parameter.
@@ -131,7 +131,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Double value
    */
   public bindDouble(parameter: number | string, val: number): void {
-    using(this.getBinder(parameter), (binder) => binder.bindDouble(val));
+    this.getBinder(parameter).bindDouble(val);
   }
 
   /** Binds an GUID value to the specified ECSQL parameter.
@@ -139,7 +139,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val GUID value
    */
   public bindGuid(parameter: number | string, val: GuidProps): void {
-    using(this.getBinder(parameter), (binder) => binder.bindGuid(ECSqlTypeHelper.toGuidString(val)));
+    this.getBinder(parameter).bindGuid(ECSqlTypeHelper.toGuidString(val));
   }
 
   /** Binds an Id value to the specified ECSQL parameter.
@@ -147,7 +147,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Id value
    */
   public bindId(parameter: number | string, val: Id64Props): void {
-    using(this.getBinder(parameter), (binder) => binder.bindId(ECSqlTypeHelper.toIdString(val)));
+    this.getBinder(parameter).bindId(ECSqlTypeHelper.toIdString(val));
   }
 
   /** Binds an integer value to the specified ECSQL parameter.
@@ -155,7 +155,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Integer value as number, decimal string or hexadecimal string.
    */
   public bindInteger(parameter: number | string, val: number | string): void {
-    using(this.getBinder(parameter), (binder) => binder.bindInteger(val));
+    this.getBinder(parameter).bindInteger(val);
   }
 
   /** Binds an Point2d value to the specified ECSQL parameter.
@@ -163,7 +163,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Point2d value
    */
   public bindPoint2d(parameter: number | string, val: XAndY): void {
-    using(this.getBinder(parameter), (binder) => binder.bindPoint2d(val.x, val.y));
+    this.getBinder(parameter).bindPoint2d(val.x, val.y);
   }
 
   /** Binds an Point3d value to the specified ECSQL parameter.
@@ -171,7 +171,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Point3d value
    */
   public bindPoint3d(parameter: number | string, val: XYAndZ): void {
-    using(this.getBinder(parameter), (binder) => binder.bindPoint3d(val.x, val.y, val.z));
+    this.getBinder(parameter).bindPoint3d(val.x, val.y, val.z);
   }
 
   /** Binds an string to the specified ECSQL parameter.
@@ -179,7 +179,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val String value
    */
   public bindString(parameter: number | string, val: string): void {
-    using(this.getBinder(parameter), (binder) => binder.bindString(val));
+    this.getBinder(parameter).bindString(val);
   }
 
   /** Binds a navigation property value to the specified ECSQL parameter.
@@ -187,7 +187,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Navigation property value
    */
   public bindNavigation(parameter: number | string, val: NavigationBindingValue): void {
-    using(this.getBinder(parameter), (binder) => binder.bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace));
+    this.getBinder(parameter).bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace);
   }
 
   /** Binds a struct property value to the specified ECSQL parameter.
@@ -196,7 +196,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * (of one of the supported types)
    */
   public bindStruct(parameter: number | string, val: object): void {
-    using(this.getBinder(parameter), (binder) => ECSqlBindingHelper.bindStruct(binder, val));
+    ECSqlBindingHelper.bindStruct(this.getBinder(parameter), val);
   }
 
   /** Binds an array value to the specified ECSQL parameter.
@@ -204,7 +204,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Array value. The array value is an array of values of the supported types
    */
   public bindArray(parameter: number | string, val: any[]): void {
-    using(this.getBinder(parameter), (binder) => ECSqlBindingHelper.bindArray(binder, val));
+    ECSqlBindingHelper.bindArray(this.getBinder(parameter), val);
   }
 
   /** Bind values to all parameters in the statement.
@@ -233,8 +233,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
         if (paramValue === undefined || paramValue === null)
           continue;
 
-        using(this.getBinder(paramIndex),
-          (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
+          ECSqlBindingHelper.bindValue(this.getBinder(paramIndex), paramValue);
       }
       return;
     }
@@ -245,8 +244,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       if (paramValue === undefined || paramValue === null)
         continue;
 
-      using(this.getBinder(paramName),
-        (binder) => ECSqlBindingHelper.bindValue(binder, paramValue));
+      ECSqlBindingHelper.bindValue(this.getBinder(paramName), paramValue);
     }
   }
 
@@ -334,14 +332,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      using(this.getValue(i), (ecsqlValue: ECSqlValue) => {
-        if (ecsqlValue.isNull())
-          return;
-
-        const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
-        const val: any = ecsqlValue.value;
-        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
-      });
+      let ecsqlValue = this.getValue(i);
+      if (!ecsqlValue.isNull()) {
+      const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
+      const val: any = ecsqlValue.value;
+      Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
+      }
     }
 
     return row;
@@ -375,11 +371,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
  * row of the result set of an ECSQL SELECT statement.
  * See [[ECSqlStatement]], [[ECSqlStatement.getValue]]
  */
-export class ECSqlValue implements IDisposable {
+export class ECSqlValue {
   private _val: NativeECSqlValue;
 
   public constructor(val: NativeECSqlValue) { this._val = val; }
-  public dispose(): void { this._val.dispose(); }
 
   /** Get information about the ECSQL SELECT result's column this value refers to. */
   public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
@@ -460,12 +455,11 @@ export class ECSqlValue implements IDisposable {
  *  the elements of an array ECSqlValue.
  *  See [[ECSqlValue.getStructIterator]] or [[ECSqlValue.getArrayIterator]]
  */
-export class ECSqlValueIterator implements IterableIterator<ECSqlValue>, IDisposable {
+export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: NativeECSqlValueIterator;
 
   public constructor(it: NativeECSqlValueIterator) { this._it = it; }
-  public dispose(): void { this._it.dispose(); }
-
+  
   public next(): IteratorResult<ECSqlValue> {
     if (this._it.moveNext())
       return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
@@ -595,8 +589,7 @@ class ECSqlBindingHelper {
     for (const member of Object.entries(val)) {
       const memberName: string = member[0];
       const memberVal: any = member[1];
-      using(binder.bindMember(memberName),
-        (memberBinder: NativeECSqlBinder) => ECSqlBindingHelper.bindValue(memberBinder, memberVal));
+      ECSqlBindingHelper.bindValue(binder.bindMember(memberName), memberVal);
     }
   }
 
@@ -615,8 +608,7 @@ class ECSqlBindingHelper {
     }
 
     for (const element of val) {
-      using(binder.addArrayElement(),
-        (elementBinder: NativeECSqlBinder) => ECSqlBindingHelper.bindValue(elementBinder, element));
+        ECSqlBindingHelper.bindValue(binder.addArrayElement(), element);
     }
   }
 
@@ -765,7 +757,6 @@ class ECSqlValueHelper {
         Object.defineProperty(structVal, memberName, { enumerable: true, configurable: true, writable: true, value: memberVal });
       }
     } finally {
-      it.dispose();
     }
 
     return structVal;
@@ -780,7 +771,7 @@ class ECSqlValueHelper {
         arrayVal.push(memberVal);
       }
     } finally {
-      it.dispose();
+      
     }
 
     return arrayVal;
