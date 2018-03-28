@@ -5,6 +5,8 @@ import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorByName, Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common";
 
+// spell-checker: disable
+
 describe("Category tests", () => {
   it("Appearance should construct properly", () => {
     const opts: AppearanceProps = {

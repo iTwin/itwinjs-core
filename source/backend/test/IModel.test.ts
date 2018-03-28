@@ -231,10 +231,15 @@ describe("iModel", () => {
     }
   });
 
-  it("should load a known model by Id from an existing iModel", () => {
+  // DISABLED PENDING new verion of imodeljs-native with json properties of models fixed
+  it.skip("should load a known model by Id from an existing iModel", () => {
     assert.exists(imodel1.models);
     const model2 = imodel1.models.getModel(new Id64("0x1c"));
     assert.exists(model2);
+    const formatter = model2.getJsonProperty("formatter");
+    assert.exists(formatter, "formatter should exist as json property");
+    assert.equal(formatter.fmtFlags.angMode, 1, "fmtFlags");
+    assert.equal(formatter.mastUnit.label, "m", "mastUnit is meters");
     testCopyAndJson(model2);
     let model = imodel1.models.getModel(imodel1.models.repositoryModelId);
     assert.exists(model);

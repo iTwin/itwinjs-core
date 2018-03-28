@@ -21,14 +21,9 @@ export class Capabilities {
   public depthStencilTexture: boolean = false;
   public shaderTextureLOD: boolean = false;
 
-  public init(): boolean {
-    let canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    if (null === canvas)
-      canvas = document.createElement("canvas") as HTMLCanvasElement;
-    if (null === canvas) return false;
-    document.body.appendChild(canvas);
+  public init(canvas: HTMLCanvasElement): boolean {
     const gl = canvas.getContext("webgl");
-    if (null === gl) return false;
+    if (!gl) return false;
 
     const maxTS = gl.getParameter(WebGLRenderingContext.MAX_TEXTURE_SIZE);
     this.maxTextureSize = (maxTS & 0xffff); // >64kx64k textures?!
@@ -38,20 +33,20 @@ export class Capabilities {
     // DEBUG_PRINTF("Max uniforms: vert: %d frag: %d", maxVertUniforms, maxFragUniforms);
 
     const extensions = gl.getSupportedExtensions();
-    if (null !== extensions) {
+    if (extensions) {
       for (const ext of extensions) {
         if (ext === "OES_texture_float")
-          this.textureFloat = (gl.getExtension(ext) !== null);
+          this.textureFloat = (gl.getExtension(ext) != null);
         else if (ext === "OES_element_index_uint")
-          this.elementIndexUint = (gl.getExtension(ext) !== null);
+          this.elementIndexUint = (gl.getExtension(ext) != null);
         else if (ext === "WEBGL_depth_texture")
-          this.depthStencilTexture = (gl.getExtension(ext) !== null);
+          this.depthStencilTexture = (gl.getExtension(ext) != null);
         else if (ext === "WEBGL_draw_buffers")
-          this.drawBuffers = (gl.getExtension(ext) !== null);
+          this.drawBuffers = (gl.getExtension(ext) != null);
         else if (ext === "EXT_color_buffer_float")
-          this.renderToFloat = (gl.getExtension(ext) !== null);
+          this.renderToFloat = (gl.getExtension(ext) != null);
         else if (ext === "EXT_shader_texture_lod")
-          this.shaderTextureLOD = (gl.getExtension(ext) !== null);
+          this.shaderTextureLOD = (gl.getExtension(ext) != null);
       }
     }
     // Return based on required extensions.

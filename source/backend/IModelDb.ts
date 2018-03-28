@@ -52,7 +52,7 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
  * being pushed to iModelHub, a changeset becomes part of the iModel's permanent history.
  * An app that modifies models, elements or codes in an IModelDb must use [[ConcurrencyControl]] to coordinate with other users.
  *
- * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object lifecycle, including [[onOpen]] and [[onOpened]].
+ * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
  *
  */
 export class IModelDb extends IModel {
@@ -237,24 +237,20 @@ export class IModelDb extends IModel {
     this.clearBriefcaseEntry();
   }
 
+  private forwardChangesetApplied() { this.onChangesetApplied.raiseEvent(); }
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     this.briefcase = briefcaseEntry;
     this.briefcase.iModelDb = this;
     this.briefcase.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
     this.briefcase.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
-    this.briefcase.onChangesetApplied.addListener(this.onChangesetAppliedForwarder, this);
+    this.briefcase.onChangesetApplied.addListener(this.forwardChangesetApplied, this);
   }
-
   private clearBriefcaseEntry(): void {
     this.briefcase!.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
     this.briefcase!.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
-    this.briefcase!.onChangesetApplied.removeListener(this.onChangesetAppliedForwarder, this);
+    this.briefcase!.onChangesetApplied.removeListener(this.forwardChangesetApplied, this);
     this.briefcase!.iModelDb = undefined;
     this.briefcase = undefined;
-  }
-
-  private onChangesetAppliedForwarder() {
-    this.onChangesetApplied.raiseEvent();
   }
 
   private onBriefcaseCloseHandler() {
@@ -623,11 +619,11 @@ export class IModelDb extends IModel {
 
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
-  private _loaded: LRUMap<string, Model>;
+  private _loaded = new LRUMap<string, Model>(500);
 
   /** @hidden */
   public constructor(private _iModel: IModelDb, max: number = 500) {
-    this._loaded = new LRUMap<string, Model>(max);
+    this._loaded.limit = max;
     this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
   }
 
