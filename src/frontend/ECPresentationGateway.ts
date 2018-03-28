@@ -4,7 +4,7 @@
 import { IModelToken, Gateway } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
+import { Node, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
 
@@ -14,7 +14,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return Gateway.getProxyForGateway(ECPresentationGateway);
   }
 
-  public async getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
+  public async getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return this.forward.apply(this, arguments);
   }
 
@@ -22,19 +22,19 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getChildren(_token: Readonly<IModelToken>, _parent: Readonly<NavNode>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
+  public async getChildren(_token: Readonly<IModelToken>, _parent: Readonly<Node>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getChildrenCount(_token: Readonly<IModelToken>, _parent: Readonly<NavNode>, _options: object): Promise<number> {
+  public async getChildrenCount(_token: Readonly<IModelToken>, _parent: Readonly<Node>, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getNodePaths(_token: Readonly<IModelToken>, _paths: ReadonlyArray<Readonly<NavNodeKeyPath>>, _markedIndex: number, _options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
+  public async getNodePaths(_token: Readonly<IModelToken>, _paths: ReadonlyArray<Readonly<NodeKeyPath>>, _markedIndex: number, _options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getFilteredNodesPaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
+  public async getFilteredNodesPaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
     return this.forward.apply(this, arguments);
   }
 

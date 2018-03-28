@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { NavNode, PageOptions } from "@bentley/ecpresentation-common";
+import { Node, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import StyleHelper from "../common/StyleHelper";
 
@@ -56,8 +56,8 @@ export default class TreeDataProvider {
     };
   }
 
-  private static getNodeFromTreeNodeItem(item: TreeNodeItem): NavNode {
-    return item.extendedData.node as NavNode;
+  private static getNodeFromTreeNodeItem(item: TreeNodeItem): Node {
+    return item.extendedData.node as Node;
   }
 
   /** Returns the root nodes.
@@ -90,11 +90,11 @@ export default class TreeDataProvider {
    * @param[in] parentNode The parent node to return children count for.
    */
   public async getChildNodesCount(parentNode: TreeNodeItem): Promise<number> {
-    const parent: NavNode = TreeDataProvider.getNodeFromTreeNodeItem(parentNode);
+    const parent: Node = TreeDataProvider.getNodeFromTreeNodeItem(parentNode);
     return await ECPresentation.manager.getChildrenCount(this.imodelToken, parent, this.createRequestOptions());
   }
 
-  private createTreeNodeItem(node: Readonly<NavNode>): TreeNodeItem {
+  private createTreeNodeItem(node: Readonly<Node>): TreeNodeItem {
     const item: TreeNodeItem = {
       id: node.nodeId,
       label: node.label,
@@ -112,7 +112,7 @@ export default class TreeDataProvider {
     return item;
   }
 
-  private createTreeNodeItems(nodes: ReadonlyArray<Readonly<NavNode>>): TreeNodeItem[] {
+  private createTreeNodeItems(nodes: ReadonlyArray<Readonly<Node>>): TreeNodeItem[] {
     const list = new Array<TreeNodeItem>();
     for (const node of nodes)
       list.push(this.createTreeNodeItem(node));

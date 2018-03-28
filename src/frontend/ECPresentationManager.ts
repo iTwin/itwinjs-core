@@ -4,14 +4,14 @@
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
+import { Node, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common";
 import { rebuildParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
 import ECPresentationGateway from "./ECPresentationGateway";
 
 export default class ECPresentationManager implements ECPInterface {
-  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
+  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return await ECPresentationGateway.getProxy().getRootNodes(token, pageOptions, options);
   }
 
@@ -19,19 +19,19 @@ export default class ECPresentationManager implements ECPInterface {
     return await ECPresentationGateway.getProxy().getRootNodesCount(token, options);
   }
 
-  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<NavNode>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
+  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<Node>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return await ECPresentationGateway.getProxy().getChildren(token, parent, pageOptions, options);
   }
 
-  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<NavNode>, options: object): Promise<number> {
+  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<Node>, options: object): Promise<number> {
     return await ECPresentationGateway.getProxy().getChildrenCount(token, parent, options);
   }
 
-  public async getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NavNodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
+  public async getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
     return await ECPresentationGateway.getProxy().getNodePaths(token, paths, markedIndex, options);
   }
 
-  public async getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
+  public async getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
     return await ECPresentationGateway.getProxy().getFilteredNodesPaths(token, filterText, options);
   }
 

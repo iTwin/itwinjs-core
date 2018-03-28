@@ -4,15 +4,15 @@
 import * as assert from "assert";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
-import { NavNodeKey } from "./Hierarchy";
+import { NodeKey } from "./Hierarchy";
 import { EntityProps } from "@bentley/imodeljs-common";
 
-export type Key = Readonly<NavNodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
+export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 export type Keys = ReadonlyArray<Key> | Readonly<SerializedKeySet> | Readonly<KeySet>;
 
 export interface SerializedKeySet {
   instanceKeys: Array<[string, string[]]>;
-  nodeKeys: NavNodeKey[];
+  nodeKeys: NodeKey[];
 }
 
 export default class KeySet {
@@ -44,14 +44,14 @@ export default class KeySet {
     return map;
   }
 
-  public get nodeKeys(): ReadonlySet<NavNodeKey> {
-    const set = new Set<NavNodeKey>();
+  public get nodeKeys(): ReadonlySet<NodeKey> {
+    const set = new Set<NodeKey>();
     for (const serialized of this._nodeKeys) {
       const key = JSON.parse(serialized, (objectKey: string, value: any): any => {
         if (typeof(objectKey) === "string" && objectKey.endsWith("Id"))
           return new Id64(value);
         return value;
-      }) as NavNodeKey;
+      }) as NodeKey;
       set.add(key);
     }
     return set;
@@ -69,7 +69,7 @@ export default class KeySet {
     return Array.isArray(keys);
   }
 
-  private isNodeKey(key: Key): key is NavNodeKey {
+  private isNodeKey(key: Key): key is NodeKey {
     return (key as any).type;
   }
 

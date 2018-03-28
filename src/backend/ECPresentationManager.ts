@@ -35,7 +35,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this._addon!;
   }
 
-  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.NavNode>>> {
+  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.Node>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
       options,
@@ -50,7 +50,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params);
   }
 
-  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<types.NavNode>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.NavNode>>> {
+  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<types.Node>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.Node>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
       nodeKey: parent.key,
       pageOptions,
@@ -59,7 +59,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params, Conversion.createNodesList);
   }
 
-  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<types.NavNode>, options: object): Promise<number> {
+  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<types.Node>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
       nodeKey: parent.key,
       options,
@@ -67,11 +67,11 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params);
   }
 
-  public async getNodePaths(_token: Readonly<IModelToken>, _paths: ReadonlyArray<Readonly<types.NavNodeKeyPath>>, _markedIndex: number, _options: object): Promise<ReadonlyArray<Readonly<types.NavNodePathElement>>> {
+  public async getNodePaths(_token: Readonly<IModelToken>, _paths: ReadonlyArray<Readonly<types.NodeKeyPath>>, _markedIndex: number, _options: object): Promise<ReadonlyArray<Readonly<types.NodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
-  public async getFilteredNodesPaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<ReadonlyArray<Readonly<types.NavNodePathElement>>> {
+  public async getFilteredNodesPaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<ReadonlyArray<Readonly<types.NodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
@@ -175,10 +175,10 @@ export enum NodeAddonRequestTypes {
 }
 
 namespace Conversion {
-  export function createNodesList(r: responseTypes.Node[]): types.NavNode[] {
+  export function createNodesList(r: responseTypes.Node[]): types.Node[] {
     if (!r)
       throw new Error("Invalid nodes' response");
-    const nodes = new Array<types.NavNode>();
+    const nodes = new Array<types.Node>();
     for (const rNode of r) {
       nodes.push({
         nodeId: new Id64(rNode.NodeId),
@@ -206,11 +206,11 @@ namespace Conversion {
     return key.Type === "ECInstanceNode";
   }
 
-  function createNavNodeKey(r: responseTypes.NodeKey): types.NavNodeKey {
+  function createNavNodeKey(r: responseTypes.NodeKey): types.NodeKey {
     const key = {
       type: r.Type,
       pathFromRoot: r.PathFromRoot,
-    } as types.NavNodeKey;
+    } as types.NodeKey;
     if (isECInstanceNodeKey(r)) {
       return {
         ...key,

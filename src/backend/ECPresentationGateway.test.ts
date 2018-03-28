@@ -6,7 +6,7 @@ import * as moq from "typemoq";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { Gateway, IModelToken } from "@bentley/imodeljs-common";
 import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
+import { Node, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Content } from "@bentley/ecpresentation-common";
 import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
 import { createRandomECInstanceKey } from "../test-helpers/random/EC";
@@ -42,7 +42,7 @@ describe("ECPresentationGatewayImpl", () => {
     const testData = {
       imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.ReadWrite, "user id"),
       pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
-      nodePathElements: [createRandomNodePathElement(3), createRandomNodePathElement(1)] as NavNodePathElement[],
+      nodePathElements: [createRandomNodePathElement(3), createRandomNodePathElement(1)] as NodePathElement[],
       displayType: "sample display type",
       inputKeys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
       selectionInfo: {} as SelectionInfo,
@@ -57,7 +57,7 @@ describe("ECPresentationGatewayImpl", () => {
     });
 
     it("calls manager's getRootNodes", async () => {
-      const result: NavNode[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
+      const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
       mock.setup((x) => x.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
@@ -78,7 +78,7 @@ describe("ECPresentationGatewayImpl", () => {
 
     it("calls manager's getChildren", async () => {
       const parentNode = createRandomECInstanceNode();
-      const result: NavNode[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
+      const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
       mock.setup((x) => x.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
@@ -99,12 +99,12 @@ describe("ECPresentationGatewayImpl", () => {
     });
 
     it("calls manager's getNodePaths", async () => {
-      const paths: NavNodeKeyPath[] = [
+      const paths: NodeKeyPath[] = [
         [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()],
         [createRandomECInstanceNodeKey()],
       ];
       const markedIndex = 555;
-      const result: NavNodePathElement[] = [createRandomNodePathElement(3), createRandomNodePathElement(1), createRandomNodePathElement(2)];
+      const result: NodePathElement[] = [createRandomNodePathElement(3), createRandomNodePathElement(1), createRandomNodePathElement(2)];
       mock.setup((x) => x.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
@@ -115,7 +115,7 @@ describe("ECPresentationGatewayImpl", () => {
 
     it("calls manager's getFilteredNodesPaths", async () => {
       const filterText = "test filter";
-      const result: NavNodePathElement[] = [createRandomNodePathElement(1), createRandomNodePathElement(2)];
+      const result: NodePathElement[] = [createRandomNodePathElement(1), createRandomNodePathElement(2)];
       mock.setup((x) => x.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();

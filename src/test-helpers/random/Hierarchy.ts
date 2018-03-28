@@ -5,16 +5,16 @@ import * as faker from "faker";
 import * as h from "../../common/Hierarchy";
 import { nullable, createRandomId } from "./Misc";
 
-export const createRandomECInstanceNodeKey = (): h.NavNodeKey => {
+export const createRandomECInstanceNodeKey = (): h.NodeKey => {
   return {
     type: "ECInstanceNode",
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     classId: createRandomId(),
     instanceId: createRandomId(),
-  } as h.NavNodeKey;
+  } as h.NodeKey;
 };
 
-export const createRandomECInstanceNode = (): h.NavNode => {
+export const createRandomECInstanceNode = (): h.Node => {
   return {
     nodeId: createRandomId(),
     key: createRandomECInstanceNodeKey(),
@@ -32,8 +32,8 @@ export const createRandomECInstanceNode = (): h.NavNode => {
   };
 };
 
-export const createRandomNodePathElement = (depth: number = 1): h.NavNodePathElement => {
-  const el: h.NavNodePathElement = {
+export const createRandomNodePathElement = (depth: number = 1): h.NodePathElement => {
+  const el: h.NodePathElement = {
     node: createRandomECInstanceNode(),
     index: faker.random.number(999),
     isMarked: faker.random.boolean(),

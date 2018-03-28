@@ -1,7 +1,7 @@
 import * as React from "react";
 import Tree, { TreeNode } from "rc-tree";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NavNodeKey } from "@bentley/ecpresentation-common";
+import { NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionManager, SelectionHandler } from "@bentley/ecpresentation-frontend";
 import { TreeDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
 
@@ -85,7 +85,7 @@ export default class TreeWidget extends React.Component<Props, State> {
       if (item)
         selectedItems.push(item);
     }
-    const selectedNodeKeys: NavNodeKey[] = selectedItems.map((x) => x.extendedData.node.key);
+    const selectedNodeKeys: NodeKey[] = selectedItems.map((x) => x.extendedData.node.key);
     this._selectionHandler.replaceSelection(selectedNodeKeys);
   }
 

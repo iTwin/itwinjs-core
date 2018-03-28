@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Gateway } from "@bentley/imodeljs-common";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
+import { Node, NodeKeyPath, NodePathElement } from "./Hierarchy";
 import * as content from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
 import { PageOptions } from "./ECPresentationManager";
@@ -22,12 +22,12 @@ export default abstract class ECPresentationGateway extends Gateway {
     IModelToken,
   ]
 
-  public abstract getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>>;
+  public abstract getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
   public abstract getRootNodesCount(token: Readonly<IModelToken>, options: object): Promise<number>;
-  public abstract getChildren(token: Readonly<IModelToken>, parent: Readonly<NavNode>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>>;
-  public abstract getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<NavNode>, options: object): Promise<number>;
-  public abstract getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NavNodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>>;
-  public abstract getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>>;
+  public abstract getChildren(token: Readonly<IModelToken>, parent: Readonly<Node>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
+  public abstract getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<Node>, options: object): Promise<number>;
+  public abstract getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>>;
+  public abstract getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>>;
   public abstract getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<content.SelectionInfo> | undefined, options: object): Promise<Readonly<content.Descriptor>>;
   public abstract getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<content.Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number>;
   public abstract getContent(token: Readonly<IModelToken>, descriptor: Readonly<content.Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions>, options: object): Promise<Readonly<content.Content>>;

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
+import { Node, NodeKeyPath, NodePathElement } from "./Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
 import { IModelToken } from "@bentley/imodeljs-common";
@@ -19,9 +19,9 @@ export interface ECPresentationManager {
    * @param[in] token Token of imodel to pull data from.
    * @param[in] pageOptions  Page options for the requested nodes.
    * @param[in] options      An options object that depends on the used presentation manager implementation.
-   * @return A promise object that returns either an array of @ref NavNode on success or an error string on error.
+   * @return A promise object that returns either an array of @ref Node on success or an error string on error.
    */
-  getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>>;
+  getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
 
   /** Retrieves root nodes count.
    * @param[in] token Token of imodel to pull data from.
@@ -35,9 +35,9 @@ export interface ECPresentationManager {
    * @param[in] parent       The parent node.
    * @param[in] pageOptions  Page options for the requested nodes.
    * @param[in] options      An options object that depends on the used presentation manager implementation.
-   * @return A promise object that returns either an array of @ref NavNode on success or an error string on error.
+   * @return A promise object that returns either an array of @ref Node on success or an error string on error.
    */
-  getChildren(token: Readonly<IModelToken>, parent: Readonly<NavNode>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>>;
+  getChildren(token: Readonly<IModelToken>, parent: Readonly<Node>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
 
   /** Retrieves children count for the specified parent node.
    * @param[in] token Token of imodel to pull data from.
@@ -45,7 +45,7 @@ export interface ECPresentationManager {
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns the number of child nodes.
    */
-  getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<NavNode>, options: object): Promise<number>;
+  getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<Node>, options: object): Promise<number>;
 
   /** Using the provided NavNodeKeyPaths, returns a merged node paths list.
    * @param[in] token Token of imodel to pull data from.
@@ -53,7 +53,7 @@ export interface ECPresentationManager {
    * @param[in] markedIndex Index of the path which will be marked in the resulting path's list.
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    */
-  getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NavNodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>>;
+  getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>>;
 
   /** Send message to get filtered nodes paths.
    * @param[in] token Token of imodel to pull data from
@@ -61,7 +61,7 @@ export interface ECPresentationManager {
    * @param[in] options              An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either a boolean on success or an error string on error.
    */
-  getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>>;
+  getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>>;
 
   /** Retrieves the content descriptor which can be used to call @ref GetContent.
    * @param[in] token Token of imodel to pull data from.
