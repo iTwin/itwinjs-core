@@ -38,7 +38,7 @@ npm config set @bentley:registry https://npm.bentley.com/npm/npm/
 
 1. Clone repository (first time) with `git clone` or pull updates to the repository (subsequent times) with `git pull`
 2. Install dependencies: `rush install`
-3. clean `npm run clean`
+3. Clean: `rush clean`
 4. Rebuild source: `rush rebuild`
 5. Run tests: `npm test -s`
 
@@ -58,7 +58,7 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 |----------------------|------------------|------------------|
 | Install dependencies | rush install     | npm install      |
 | Check dependencies   | rush check       | N/A              |
-| Clean output         | npm run clean    | npm run clean    |
+| Clean output         | rush clean       | npm run clean    |
 | Rebuild source       | rush rebuild     | npm run build -s |
 | Incremental build    | rush build       | N/A              |
 | Run tests            | npm test -s      | npm test -s      |

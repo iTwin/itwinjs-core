@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { ColorDef } from "./ColorDef";
-import { Angle } from "@bentley/geometry-core";
+import { ColorDef, ColorDefProps } from "./ColorDef";
+import { Angle, AngleProps } from "@bentley/geometry-core";
 
 /** The type of a Light */
 export const enum LightType {
@@ -24,9 +24,9 @@ export const enum LightType {
 export interface LightProps {
   lightType?: LightType;  // the type of light from LightType enum
   intensity?: number;     // intensity of the light
-  color?: ColorDef;       // color of the light. ColorDef as integer
+  color?: ColorDefProps;  // color of the light. ColorDef as integer
   intensity2?: number;    // for portrait lights, intensity of the "over the left shoulder" light (intensity is the right shoulder light).
-  color2?: ColorDef;      // for left portrait light
+  color2?: ColorDefProps; // for left portrait light
   kelvin?: number;        // color temperature, in kelvins. Note that color and kelvins are not independent. Useful for UI, I guess?
   shadows?: number;       // the number of shadow samples
   bulbs?: number;         // number of bulbs
@@ -66,8 +66,8 @@ export class Light {
 
 /** Properties of a Spot light. */
 export interface SpotProps extends LightProps {
-  inner?: Angle;
-  outer?: Angle;
+  inner?: AngleProps;
+  outer?: AngleProps;
 }
 
 /** A light from a single location. */

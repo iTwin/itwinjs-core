@@ -4,12 +4,11 @@ set iModelJsCoreDir=%~dp0
 
 pushd %OutRoot%Winx64\packages\imodeljs-native-platform-node
 call npm install --no-save  %OutRoot%Winx64\packages\imodeljs-native-platform-api %OutRoot%Winx64\packages\imodeljs-n_8_9-win32-x64
-popd
-pushd %OutRoot%Winx64\packages\imodeljs-native-platform-electron
-call npm install --no-save  %OutRoot%Winx64\packages\imodeljs-native-platform-api %OutRoot%Winx64\packages\imodeljs-e_1_6_11-win32-x64
-popd
 
-pushd %ImodelJsRoot%
+cd %OutRoot%Winx64\packages\imodeljs-native-platform-electron
+call npm install --no-save  %OutRoot%Winx64\packages\imodeljs-native-platform-api %OutRoot%Winx64\packages\imodeljs-e_1_6_11-win32-x64
+
+cd %ImodelJsRoot%
 xcopy /Y /I %OutRoot%Winx64\packages\imodeljs-native-platform-api         %iModelJsCoreDir%common\temp\node_modules\@bentley\imodeljs-native-platform-api
 xcopy /Y /I %OutRoot%Winx64\packages\imodeljs-native-platform-node        %iModelJsCoreDir%common\temp\node_modules\@bentley\imodeljs-native-platform-node
 xcopy /Y /I %OutRoot%Winx64\packages\imodeljs-native-platform-node        %iModelJsCoreDir%nativePlatformForTests\node_modules\@bentley\imodeljs-native-platform-node
