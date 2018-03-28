@@ -16,7 +16,7 @@ function getWebGLContext(canvas: HTMLCanvasElement): WebGLRenderingContext | nul
   return canvas.getContext("webgl");
 }
 
-describe.only("System WebGL Capabilities", () => {
+describe("System WebGL Capabilities", () => {
   it("capabilities should all default to false", () => {
     const gl = getWebGLContext(getCanvas());
     assert.isNotNull(gl);
