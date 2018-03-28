@@ -38,29 +38,70 @@ function pathToPackageName(p) {
   return (parts[0].startsWith("@")) ? parts[0] + "/" + parts[1] : parts[0];
 }
 
+function findPackageJson(pkgName, parentPath) {
+  const searchPaths = [];
+  if (parentPath) {
+    const parentNodeModules = path.resolve(parentPath, "node_modules");
+    const parentContainingDir = parentPath.replace(/^(.*node_modules).*$/, "$1");
+    searchPaths.push(parentNodeModules, parentContainingDir);
+  }
+  searchPaths.push(paths.appNodeModules);
+
+  try {
+    return require.resolve(pkgName + "/package.json", { paths: searchPaths });
+  } catch (error) {
+    return undefined;
+  }
+}
+
+function copyPackage(pkgName, parentPath) {
+  const packageJsonPath = findPackageJson(pkgName, parentPath);
+  if (!packageJsonPath)
+    return;
+
+  if (!parentPath || !packageJsonPath.startsWith(parentPath)) {
+    // console.log(chalk.gray(`Copying ${path.dirname(packageJsonPath)} to lib/node_modules`));
+    fs.copySync(path.dirname(packageJsonPath), path.resolve(paths.appLib, "node_modules", pkgName), { dereference: true });
+  }
+  return packageJsonPath;
+}
+
 class CopyNativeAddonsPlugin {
   constructor(options) {}
 
   apply(compiler) {
     compiler.hooks.environment.tap("CopyNativeAddonsPlugin", () => {
-      const packageLock = require(paths.appPackageLockJson);
-      const dir = path.resolve(paths.appNodeModules, "**/*.node");
-      const matches = glob.sync(dir)
+      const appPackageJson = require(paths.appPackageJson);
+      let packagesToCopy = [];
       
-      // Also copy any modules excluded from the bundle via the "externals" webpack config option
+      // Copy any modules excluded from the bundle via the "externals" webpack config option
       const externals = compiler.options.externals;
       if (typeof(externals) === "object") {
         if (Array.isArray(externals))
-          matches.push(...externals.filter((ext) => typeof(ext) === "string"));
+          packagesToCopy = externals.filter((ext) => typeof(ext) === "string");
         else
-          matches.push(...Object.keys(externals));
+          packagesToCopy = Object.keys(externals);
       }
 
-      for (const match of matches) {
-        const nativeDependency = pathToPackageName(match);
+      const copiedPackages = new Set();
+      for (const pkg of packagesToCopy) {
+        const pkgName = pathToPackageName(pkg);
+        if (copiedPackages.has(pkgName) || undefined === appPackageJson.dependencies[pkgName])
+          continue;
+          
+        const packageJsonPath = copyPackage(pkgName);
+        copiedPackages.add(pkgName);
 
-        if (packageLock.dependencies[nativeDependency] && !packageLock.dependencies[nativeDependency].dev)
-          fs.copySync(path.resolve(paths.appNodeModules, nativeDependency), path.resolve(paths.appLib, "node_modules", nativeDependency), { dereference: true });
+        const packageJson = require(packageJsonPath);
+        if (!packageJson.dependencies)
+          continue;
+
+        for (const dep of Object.keys(packageJson.dependencies)) {
+          if (!copiedPackages.has(dep)) {
+            copyPackage(dep, path.dirname(packageJsonPath));
+            copiedPackages.add(dep);
+          }
+        }
       }
     });
   }
