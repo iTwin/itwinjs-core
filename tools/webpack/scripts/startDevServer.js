@@ -65,7 +65,7 @@ module.exports = async () => {
   );
   devServer = new WebpackDevServer(compiler, serverConfig);
 
-  await new Promise((resolve) => {
+  return await new Promise((resolve) => {
     // Launch WebpackDevServer.
     devServer.listen(port, HOST, err => {
       if (err) {
