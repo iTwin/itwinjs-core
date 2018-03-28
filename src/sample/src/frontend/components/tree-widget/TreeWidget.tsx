@@ -58,7 +58,7 @@ export default class TreeWidget extends React.Component<Props, State> {
       nodes = await this._dataProvider.getChildNodes(parentItem, { pageStart: 0, pageSize: 0 });
     const self = this;
     const data = nodes.map((node: Readonly<TreeNodeItem>): TreeData => {
-      self._items.set(node.id, node);
+      self._items.set(node.id.toString(), node);
       return node;
     });
     if (!parentItem) {
@@ -97,8 +97,8 @@ export default class TreeWidget extends React.Component<Props, State> {
     const loop = (data: TreeData[]): any => {
       return data.map((item: TreeData) => {
         if (item.children)
-          return <TreeNode title={item.label} key={item.id}>{loop(item.children)}</TreeNode>;
-        return (<TreeNode title={item.label} key={item.id} isLeaf={!item.hasChildren} />);
+          return <TreeNode title={item.label} key={item.id.toString()}>{loop(item.children)}</TreeNode>;
+        return (<TreeNode title={item.label} key={item.id.toString()} isLeaf={!item.hasChildren} />);
       });
     };
     const treeNodes = loop(this.state.treeData);

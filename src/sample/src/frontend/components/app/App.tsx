@@ -1,11 +1,11 @@
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { SelectionManager, SelectionManagerImpl } from "@bentley/ecpresentation-frontend";
-import IModelSelector from "../IModelSelector/IModelSelector";
-import PropertiesWidget from "../PropertiesWidget/PropertiesWidget";
-import GridWidget from "../GridWidget/GridWidget";
-import TreeWidget from "../TreeWidget/TreeWidget";
-import RulesetSelector from "../RulesetSelector/RulesetSelector";
+import IModelSelector from "../imodel-selector/IModelSelector";
+import PropertiesWidget from "../properties-widget/PropertiesWidget";
+import GridWidget from "../grid-widget/GridWidget";
+import TreeWidget from "../tree-widget/TreeWidget";
+import RulesetSelector from "../ruleset-selector/RulesetSelector";
 import "./App.css";
 
 export interface State {
