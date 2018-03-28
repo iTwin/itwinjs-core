@@ -6,8 +6,8 @@ import * as spies from "chai-spies";
 import * as moq from "typemoq";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { InstanceKey } from "@bentley/ecpresentation-common";
+import SelectionManager from "./SelectionManager";
 import { createRandomECInstanceKey } from "../../test-helpers/random/EC";
-import { SelectionManagerImpl } from "./SelectionManagerImpl";
 
 use(spies);
 
@@ -19,15 +19,15 @@ const generateSelection = (): InstanceKey[] => {
   ];
 };
 
-describe("SelectionManagerImpl", () => {
+describe("SelectionManager", () => {
 
-  let selectionManager: SelectionManagerImpl;
+  let selectionManager: SelectionManager;
   let baseSelection: InstanceKey[];
   const mockImodelToken = moq.Mock.ofType<IModelToken>();
   const source: string = "test";
 
   beforeEach(() => {
-    selectionManager = new SelectionManagerImpl();
+    selectionManager = new SelectionManager();
     mockImodelToken.reset();
     baseSelection = generateSelection();
   });
@@ -42,7 +42,6 @@ describe("SelectionManagerImpl", () => {
       for (const key of baseSelection) {
         expect(selectedItemsSet.has(key)).true;
       }
-
     });
 
     it("adds selection on non empty selection", () => {

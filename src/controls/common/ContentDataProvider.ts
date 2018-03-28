@@ -77,7 +77,7 @@ export default abstract class ContentDataProvider {
   public async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
     if (!this._configuredDescriptor) {
       if (!this._descriptor) {
-        this._descriptor = await ECPresentation.manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
+        this._descriptor = await ECPresentation.presentation.getContentDescriptor(this.imodelToken, this._displayType, keys,
           selectionInfo, this.createRequestOptions());
       }
       this._configuredDescriptor = this.configureContentDescriptor(this._descriptor);
@@ -116,7 +116,7 @@ export default abstract class ContentDataProvider {
   protected async getContent(keys: Readonly<KeySet>, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
     if (!this._content) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      this._content = await ECPresentation.manager.getContent(this.imodelToken, descriptor, keys,
+      this._content = await ECPresentation.presentation.getContent(this.imodelToken, descriptor, keys,
         { pageStart, pageSize }, this.createRequestOptions());
     }
     return this._content;
@@ -130,7 +130,7 @@ export default abstract class ContentDataProvider {
   protected async getContentSetSize(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (undefined === this._contentSetSize) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      this._contentSetSize = await ECPresentation.manager.getContentSetSize(this.imodelToken, descriptor,
+      this._contentSetSize = await ECPresentation.presentation.getContentSetSize(this.imodelToken, descriptor,
         keys, this.createRequestOptions());
     }
     return this._contentSetSize;

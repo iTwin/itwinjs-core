@@ -2,47 +2,133 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
-import { Keys } from "@bentley/ecpresentation-common";
-import { SelectionProvider } from "./SelectionProvider";
-import { SelectionChangeEvent } from "./SelectionChangeEvent";
+import { KeySet, Keys } from "@bentley/ecpresentation-common";
+import ISelectionProvider from "./ISelectionProvider";
+import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
 
-export interface SelectionManager extends SelectionProvider {
-  /** An event that's broadcasted when selection changes */
-  selectionChange: SelectionChangeEvent;
+/** The selection manager which stores the overall selection */
+export default class SelectionManager implements ISelectionProvider {
+  private _selectionContainerMap = new Map<Readonly<IModelToken>, SelectionContainer>();
+  public selectionChange: SelectionChangeEvent;
 
-  /** Add to selection.
-   * @param[in] source The name of the selection source that is modifying the selection.
-   * @param[in] imodelToken Token of the imodel connection with which the selection is associated.
-   * @param[in] keys The keys to add to selection.
-   * @param[in] level Level of the selection.
-   * @param[in] rulesetId Id of the ruleset associated with the selection.
-   */
-  addToSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number, rulesetId?: string): void;
+  constructor() {
+    this.selectionChange = new SelectionChangeEvent();
+  }
 
-  /** Remove from selection.
-   * @param[in] source The name of the selection source that is modifying the selection.
-   * @param[in] imodelToken Token of the imodel connection with which the selection is associated.
-   * @param[in] keys The keys to remove from selection.
-   * @param[in] level Level of the selection.
-   * @param[in] rulesetId Id of the ruleset associated with the selection.
-   */
-  removeFromSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number, rulesetId?: string): void;
+  private getContainer(imodelToken: Readonly<IModelToken>): SelectionContainer {
+    let selectionContainer = this._selectionContainerMap.get(imodelToken);
+    if (!selectionContainer) {
+      selectionContainer = new SelectionContainer();
+      this._selectionContainerMap.set(imodelToken, selectionContainer);
+    }
+    return selectionContainer;
+  }
 
-  /** Change selection.
-   * @param[in] source The name of the selection source that is modifying the selection.
-   * @param[in] imodelToken Token of the imodel connection with which the selection is associated.
-   * @param[in] keys The keys indicating the new selection.
-   * @param[in] level Level of the selection.
-   * @param[in] rulesetId Id of the ruleset associated with the selection.
-   */
-  replaceSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number, rulesetId?: string): void;
+  public getSelection(imodelToken: Readonly<IModelToken>, level: number = 0): Readonly<KeySet> {
+    return this.getContainer(imodelToken).getSelection(level);
+  }
 
-  /** Clear selection.
-   * @param[in] source The name of the selection source that is modifying the selection.
-   * @param[in] imodelToken Token of the imodel connection with which the selection is associated.
-   * @param[in] level Level of the selection.
-   * @param[in] rulesetId Id of the ruleset associated with the selection.
-   */
-  clearSelection(source: string, imodelToken: Readonly<IModelToken>, level: number, rulesetId?: string): void;
+  // WIP: subscribe to IModelConnection.onIModelClose even when it becomes available
+  // private onConnectionClose(imodelConnection: IModelConnection): void {
+  //   this.clearSelection("Connection Close Event", 0, imodelConnection.iModelToken);
+  //   this._selectionContainerMap.delete(imodelConnection.iModelToken);
+  // }
 
+  private handleEvent(evt: SelectionChangeEventArgs): void {
+    const container = this.getContainer(evt.imodelToken);
+    const selectedItemsSet = container.getSelection(evt.level);
+    switch (evt.changeType) {
+      case SelectionChangeType.Add:
+        selectedItemsSet.add(evt.keys);
+        break;
+      case SelectionChangeType.Remove:
+        selectedItemsSet.delete(evt.keys);
+        break;
+      case SelectionChangeType.Replace:
+        selectedItemsSet.clear().add(evt.keys);
+        break;
+      case SelectionChangeType.Clear:
+        selectedItemsSet.clear();
+        break;
+    }
+    container.clear(evt.level + 1);
+
+    this.selectionChange.raiseEvent(evt, this);
+  }
+
+  public addToSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
+    const evt: SelectionChangeEventArgs = {
+      source,
+      level,
+      imodelToken,
+      changeType: SelectionChangeType.Add,
+      keys: new KeySet(keys),
+      rulesetId,
+    };
+    this.handleEvent(evt);
+  }
+
+  public removeFromSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
+    const evt: SelectionChangeEventArgs = {
+      source,
+      level,
+      imodelToken,
+      changeType: SelectionChangeType.Remove,
+      keys: new KeySet(keys),
+      rulesetId,
+    };
+    this.handleEvent(evt);
+  }
+
+  public replaceSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
+    const evt: SelectionChangeEventArgs = {
+      source,
+      level,
+      imodelToken,
+      changeType: SelectionChangeType.Replace,
+      keys: new KeySet(keys),
+      rulesetId,
+    };
+    this.handleEvent(evt);
+  }
+
+  public clearSelection(source: string, imodelToken: Readonly<IModelToken>, level: number = 0, rulesetId?: string): void {
+    const evt: SelectionChangeEventArgs = {
+      source,
+      level,
+      imodelToken,
+      changeType: SelectionChangeType.Clear,
+      keys: new KeySet(),
+      rulesetId,
+    };
+    this.handleEvent(evt);
+  }
+}
+
+class SelectionContainer {
+  private readonly _selectedItemsSetMap: Map<number, KeySet>;
+
+  constructor() {
+    this._selectedItemsSetMap = new Map<number, KeySet>();
+  }
+
+  public getSelection(level: number): KeySet {
+    let selectedItemsSet = this._selectedItemsSetMap.get(level);
+    if (!selectedItemsSet) {
+      selectedItemsSet = new KeySet();
+      this._selectedItemsSetMap.set(level, selectedItemsSet);
+    }
+    return selectedItemsSet;
+  }
+
+  public clear(level: number) {
+    const keys = this._selectedItemsSetMap.keys();
+    for (const key of keys) {
+      if (key >= level) {
+        const selectedItemsSet = this._selectedItemsSetMap.get(key);
+        if (selectedItemsSet)
+          selectedItemsSet.clear();
+      }
+    }
+  }
 }

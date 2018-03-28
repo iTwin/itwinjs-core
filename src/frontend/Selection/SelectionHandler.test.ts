@@ -14,17 +14,18 @@ describe("SelectionHandler", () => {
 
   const mockSelectionManager = moq.Mock.ofType<SelectionManager>();
   const mockImodelToken = moq.Mock.ofType<IModelToken>();
-  let selectionHandler: SelectionHandler;
   const source: string = "test";
   const ruleset: string = "ruleset";
   const keyset = new KeySet();
+  let selectionHandler: SelectionHandler;
 
   use(spies);
 
   beforeEach(() => {
+    const selectionChangeEvent = new SelectionChangeEvent();
     mockSelectionManager.reset();
-    mockImodelToken.reset();
-    selectionHandler = new SelectionHandler(mockSelectionManager.object, source, ruleset, mockImodelToken.object);
+    mockSelectionManager.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
+    selectionHandler = new SelectionHandler(mockSelectionManager.object, source, mockImodelToken.object, ruleset);
   });
 
   describe("clearSelection", () => {
@@ -67,23 +68,19 @@ describe("SelectionHandler", () => {
   describe("onSelect", () => {
 
     let callBackSpy: any;
-    let event: SelectionChangeEvent;
 
     beforeEach(() => {
-      event = new SelectionChangeEvent();
-      mockSelectionManager.reset();
-      mockSelectionManager.setup((x) => x.selectionChange).returns(() => event);
       callBackSpy = spy.on(() => { });
-      selectionHandler = new SelectionHandler(mockSelectionManager.object, source, ruleset, mockImodelToken.object, callBackSpy);
+      selectionHandler = new SelectionHandler(mockSelectionManager.object, source, mockImodelToken.object, ruleset, callBackSpy);
     });
 
     it("raises SelectionChangeEvent with different source from SelectionHandler", () => {
-      event.raiseEvent({ source: "someDifferentSource" });
+      mockSelectionManager.object.selectionChange.raiseEvent({ source: "someDifferentSource" });
       expect(callBackSpy).to.have.been.called.once;
     });
 
     it("raises SelectionChangeEvent with same source as SelectionHandler", () => {
-      event.raiseEvent({ source });
+      mockSelectionManager.object.selectionChange.raiseEvent({ source });
       expect(callBackSpy).to.have.been.called.exactly(0);
     });
 

@@ -2,30 +2,43 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import ECPresentationManager from "./ECPresentationManager";
+import SelectionManager from "./selection/SelectionManager";
 
-let manager: ECPresentationManager | undefined;
+let presentationManager: ECPresentationManager | undefined;
+let selectionManager: SelectionManager | undefined;
 
 export default class ECPresentation {
-
   private constructor() { }
 
   public static initialize(): void {
-    manager = new ECPresentationManager();
+    presentationManager = new ECPresentationManager();
+    selectionManager = new SelectionManager();
   }
 
   public static terminate(): void {
-    manager = undefined;
+    presentationManager = undefined;
+    selectionManager = undefined;
   }
 
-  public static get manager(): ECPresentationManager {
-    if (!manager)
+  public static get presentation(): ECPresentationManager {
+    if (!presentationManager)
       throw new Error("ECPresentation must be first initialized by calling ECPresentation.initialize");
-    return manager;
+    return presentationManager;
   }
 
   /** @hidden */
-  public static set manager(value: ECPresentationManager) {
-    manager = value;
+  public static set presentation(value: ECPresentationManager) {
+    presentationManager = value;
   }
 
+  public static get selection(): SelectionManager {
+    if (!selectionManager)
+      throw new Error("ECPresentation must be first initialized by calling ECPresentation.initialize");
+    return selectionManager;
+  }
+
+  /** @hidden */
+  public static set selection(value: SelectionManager) {
+    selectionManager = value;
+  }
 }

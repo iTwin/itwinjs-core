@@ -64,13 +64,13 @@ export default class TreeDataProvider {
    * @param[in] pageOptions Information about the requested page of data.
    */
   public async getRootNodes(pageOptions: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
-    const nodes = await ECPresentation.manager.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
+    const nodes = await ECPresentation.presentation.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
     return this.createTreeNodeItems(nodes);
   }
 
   /** Returns the total number of root nodes. */
   public async getRootNodesCount(): Promise<number> {
-    return await ECPresentation.manager.getRootNodesCount(this.imodelToken, this.createRequestOptions());
+    return await ECPresentation.presentation.getRootNodesCount(this.imodelToken, this.createRequestOptions());
   }
 
   /** Returns child nodes.
@@ -78,7 +78,7 @@ export default class TreeDataProvider {
    * @param[in] pageOptions Information about the requested page of data.
    */
   public async getChildNodes(parentNode: TreeNodeItem, pageOptions: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
-    const nodes = await ECPresentation.manager.getChildren(this.imodelToken, TreeDataProvider.getNodeFromTreeNodeItem(parentNode), pageOptions, this.createRequestOptions());
+    const nodes = await ECPresentation.presentation.getChildren(this.imodelToken, TreeDataProvider.getNodeFromTreeNodeItem(parentNode), pageOptions, this.createRequestOptions());
     const items = this.createTreeNodeItems(nodes);
     items.forEach((item: TreeNodeItem) => {
       item.parent = parentNode;
@@ -91,7 +91,7 @@ export default class TreeDataProvider {
    */
   public async getChildNodesCount(parentNode: TreeNodeItem): Promise<number> {
     const parent: Node = TreeDataProvider.getNodeFromTreeNodeItem(parentNode);
-    return await ECPresentation.manager.getChildrenCount(this.imodelToken, parent, this.createRequestOptions());
+    return await ECPresentation.presentation.getChildrenCount(this.imodelToken, parent, this.createRequestOptions());
   }
 
   private createTreeNodeItem(node: Readonly<Node>): TreeNodeItem {

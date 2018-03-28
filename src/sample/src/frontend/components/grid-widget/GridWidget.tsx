@@ -2,14 +2,13 @@ import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, KeySet } from "@bentley/ecpresentation-common";
-import { SelectionManager, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
+import { ECPresentation, SelectionChangeEventArgs, ISelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
 import { GridDataProvider } from "@bentley/ecpresentation-controls";
 import "./GridWidget.css";
 
 export interface Props {
   imodel: IModelConnection;
   rulesetId: string;
-  selectionManager: SelectionManager;
 }
 
 export default class GridWidget extends React.Component<Props> {
@@ -22,7 +21,7 @@ export default class GridWidget extends React.Component<Props> {
       <div className="GridWidget">
         <h3>Grid</h3>
         <div className="ContentContainer">
-          <Grid imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} selectionManager={this.props.selectionManager} />
+          <Grid imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} />
         </div>
       </div>
     );
@@ -30,7 +29,6 @@ export default class GridWidget extends React.Component<Props> {
 }
 
 interface GridProps {
-  selectionManager: SelectionManager;
   imodelToken: IModelToken;
   rulesetId: string;
 }
@@ -63,14 +61,14 @@ class Grid extends React.Component<GridProps, GridState> {
     this.state = initialState;
     this._hasSelection = false;
     this._dataProvider = new GridDataProvider(props.imodelToken, props.rulesetId);
-    this._selectionHandler = new SelectionHandler(this.props.selectionManager, "Grid", props.rulesetId, props.imodelToken, this.onSelectionChanged);
+    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Grid", props.imodelToken, props.rulesetId, this.onSelectionChanged);
   }
 
   // tslint:disable-next-line:naming-convention
-  private onSelectionChanged = (evt: SelectionChangeEventArgs, items: SelectionProvider): void => {
+  private onSelectionChanged = (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
     if (evt.level !== 0)
       return;
-    const selectedItems = items.getSelection(this.props.imodelToken, 0);
+    const selectedItems = selectionProvider.getSelection(this.props.imodelToken, 0);
     this._hasSelection = !selectedItems.isEmpty;
     this.fetchData(this.props.imodelToken, selectedItems);
   }

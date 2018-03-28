@@ -4,19 +4,19 @@
 import { IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { Keys } from "@bentley/ecpresentation-common";
-import { SelectionManager } from "./SelectionManager";
 import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
-import { SelectionProvider } from "./SelectionProvider";
+import SelectionManager from "./SelectionManager";
+import ISelectionProvider from "./ISelectionProvider";
 
 /** A class that handles selection changes and helps to change the selection */
-export class SelectionHandler implements IDisposable {
+export default class SelectionHandler implements IDisposable {
   private _manager: SelectionManager;
   private _inSelect: boolean;
   private _disposables: DisposableList;
-  public onSelect?: SelectionChangesListener;
   public name: string;
   public rulesetId: string;
   public imodelToken: Readonly<IModelToken>;
+  public onSelect?: SelectionChangesListener;
 
   /** Constructor.
    * @param[in] manager SelectionManager used to store overall selection.
@@ -25,16 +25,15 @@ export class SelectionHandler implements IDisposable {
    * @param[in] imodelToken Token of the imodel connection with which the selection changes will be associated.
    * @param[in] onSelect Callback function called when selection changes.
    */
-  constructor(manager: SelectionManager, name: string, rulesetId: string, imodelToken: IModelToken, onSelect?: SelectionChangesListener) {
-    this.name = name;
+  constructor(manager: SelectionManager, name: string, imodelToken: IModelToken, rulesetId: string, onSelect?: SelectionChangesListener) {
     this._inSelect = false;
     this._manager = manager;
     this._disposables = new DisposableList();
+    this.name = name;
     this.rulesetId = rulesetId;
-    this.onSelect = onSelect;
     this.imodelToken = imodelToken;
-    if (onSelect)
-      this._disposables.add(this._manager.selectionChange.addListener(this.onSelectionChanged, this));
+    this.onSelect = onSelect;
+    this._disposables.add(this._manager.selectionChange.addListener(this.onSelectionChanged, this));
   }
 
   /** Destructor. Must be called before disposing this object to make sure it cleans
@@ -47,8 +46,8 @@ export class SelectionHandler implements IDisposable {
   /** Called when the selection changes. Handles this callback by first checking whether
    * the event should be handled at all (see @ref shouldHandle) and then calling onSelect
    */
-  protected onSelectionChanged(evt: SelectionChangeEventArgs, provider: SelectionProvider): void {
-    if (!this.shouldHandle(evt) || !this.onSelect)
+  protected onSelectionChanged(evt: SelectionChangeEventArgs, provider: ISelectionProvider): void {
+    if (!this.onSelect || !this.shouldHandle(evt))
       return;
 
     this._inSelect = true;
@@ -56,8 +55,7 @@ export class SelectionHandler implements IDisposable {
     this._inSelect = false;
   }
 
-  /** Called to check whether the event should be handled by this handler.
-   */
+  /** Called to check whether the event should be handled by this handler */
   protected shouldHandle(evt: SelectionChangeEventArgs): boolean {
     if (this.name === evt.source)
       return false;

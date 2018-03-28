@@ -3,9 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet } from "@bentley/ecpresentation-common";
+import SelectionChangeEvent from "./SelectionChangeEvent";
 
 /** Selection provider interface which provides main selection and sub-selection */
-export interface SelectionProvider {
+export default interface ISelectionProvider {
+  /** An event that's fired when selection changes */
+  selectionChange: SelectionChangeEvent;
+
   /** Return selection.
    * @param[in] imodelToken Token of the imodel connection with which the selection is associated.
    * @param[in] level   Level of the selection.

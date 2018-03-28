@@ -2,7 +2,7 @@ import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { SelectionManager, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
+import { ECPresentation, SelectionChangeEventArgs, ISelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
 import { PropertyPaneDataProvider, PropertyRecord } from "@bentley/ecpresentation-controls";
 import { isPrimitiveValue, isStructValue, isArrayValue } from "@bentley/ecpresentation-controls";
 import "./PropertiesWidget.css";
@@ -10,7 +10,6 @@ import "./PropertiesWidget.css";
 export interface Props {
   imodel: IModelConnection;
   rulesetId: string;
-  selectionManager: SelectionManager;
 }
 export default class PropertiesWidget extends React.Component<Props> {
   constructor(props: Props, context?: any) {
@@ -22,7 +21,7 @@ export default class PropertiesWidget extends React.Component<Props> {
       <div className="PropertiesWidget">
         <h3>Properties</h3>
         <div className="ContentContainer">
-          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} selectionManager={this.props.selectionManager} />
+          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} />
         </div>
       </div>
     );
@@ -32,7 +31,6 @@ export default class PropertiesWidget extends React.Component<Props> {
 interface PropertyPaneProps {
   imodelToken: IModelToken;
   rulesetId: string;
-  selectionManager: SelectionManager;
 }
 interface PropertyDisplayInfo {
   label: string;
@@ -59,14 +57,14 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     this.state = initialState;
     this._hasSelection = false;
     this._dataProvider = new PropertyPaneDataProvider(props.imodelToken, props.rulesetId);
-    this._selectionHandler = new SelectionHandler(this.props.selectionManager, "Properties", props.rulesetId, props.imodelToken, this.onSelectionChanged);
+    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Properties", props.imodelToken, props.rulesetId, this.onSelectionChanged);
   }
 
   // tslint:disable-next-line:naming-convention
-  private onSelectionChanged = (_evt: SelectionChangeEventArgs, items: SelectionProvider): void => {
+  private onSelectionChanged = (_evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
     this._hasSelection = false;
     for (let i = _evt.level; i >= 0; i--) {
-      const selection = items.getSelection(this.props.imodelToken, i);
+      const selection = selectionProvider.getSelection(this.props.imodelToken, i);
       this._hasSelection = !selection.isEmpty;
       if (this._hasSelection) {
         this.fetchProperties(this.props.imodelToken, selection);

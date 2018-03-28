@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionManager, SelectionManagerImpl } from "@bentley/ecpresentation-frontend";
+import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import IModelSelector from "../imodel-selector/IModelSelector";
 import PropertiesWidget from "../properties-widget/PropertiesWidget";
 import GridWidget from "../grid-widget/GridWidget";
@@ -15,11 +15,9 @@ export interface State {
 
 export default class App extends React.Component<{}, State> {
 
-  private _selectionManager: SelectionManager;
   constructor(props?: any, context?: any) {
     super(props, context);
     this.state = {};
-    this._selectionManager = new SelectionManagerImpl();
   }
 
   // tslint:disable-next-line:naming-convention
@@ -29,13 +27,13 @@ export default class App extends React.Component<{}, State> {
 
   // tslint:disable-next-line:naming-convention
   private onBeforeCloseImodel = (imodel: IModelConnection) => {
-    this._selectionManager.clearSelection("onImodelSelected", imodel.iModelToken, 0);
+    ECPresentation.selection.clearSelection("onImodelSelected", imodel.iModelToken, 0);
   }
 
   // tslint:disable-next-line:naming-convention
   private onRulesetSelected = (rulesetId: string | undefined) => {
     if (this.state.imodel)
-      this._selectionManager.clearSelection("onRulesetChanged", this.state.imodel.iModelToken, 0);
+      ECPresentation.selection.clearSelection("onRulesetChanged", this.state.imodel.iModelToken, 0);
     this.setState({ ...this.state, currentRulesetId: rulesetId });
   }
 
@@ -43,11 +41,11 @@ export default class App extends React.Component<{}, State> {
     return (
       <div className="Content">
         <div className="Content-Top">
-          <TreeWidget imodel={imodel} rulesetId={rulesetId} selectionManager={this._selectionManager} />
-          <PropertiesWidget imodel={imodel} rulesetId={rulesetId} selectionManager={this._selectionManager} />
+          <TreeWidget imodel={imodel} rulesetId={rulesetId} />
+          <PropertiesWidget imodel={imodel} rulesetId={rulesetId} />
         </div>
         <div className="Content-Bottom">
-          <GridWidget imodel={imodel} rulesetId={rulesetId} selectionManager={this._selectionManager} />
+          <GridWidget imodel={imodel} rulesetId={rulesetId} />
         </div>
       </div>
     );

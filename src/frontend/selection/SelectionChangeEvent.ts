@@ -4,13 +4,13 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { SelectionProvider } from "./SelectionProvider";
+import ISelectionProvider from "./ISelectionProvider";
 
 /** An interface for selection change listeners */
-export declare type SelectionChangesListener = (args: SelectionChangeEventArgs, provider: SelectionProvider) => void;
+export declare type SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void;
 
 /** An event broadcasted on selection changes */
-export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> { }
+export default class SelectionChangeEvent extends BeEvent<SelectionChangesListener> { }
 
 /** The type of selection change */
 export enum SelectionChangeType {
