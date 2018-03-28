@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { NavNode, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
@@ -15,7 +16,7 @@ export enum CheckBoxState {
 
 /** A node item which can be displayed in a tree */
 export interface TreeNodeItem {
-  id: string;
+  id: Id64;
   label: string;
   description?: string;
   hasChildren: boolean;
@@ -62,7 +63,7 @@ export default class TreeDataProvider {
   /** Returns the root nodes.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getRootNodes(pageOptions: PageOptions): Promise<Array<Readonly<TreeNodeItem>>> {
+  public async getRootNodes(pageOptions: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
     const nodes = await ECPresentation.manager.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
     return this.createTreeNodeItems(nodes);
   }
@@ -76,7 +77,7 @@ export default class TreeDataProvider {
    * @param[in] parentNode The parent node to return children for.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getChildNodes(parentNode: TreeNodeItem, pageOptions: PageOptions): Promise<Array<Readonly<TreeNodeItem>>> {
+  public async getChildNodes(parentNode: TreeNodeItem, pageOptions: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
     const nodes = await ECPresentation.manager.getChildren(this.imodelToken, TreeDataProvider.getNodeFromTreeNodeItem(parentNode), pageOptions, this.createRequestOptions());
     const items = this.createTreeNodeItems(nodes);
     items.forEach((item: TreeNodeItem) => {
@@ -93,9 +94,9 @@ export default class TreeDataProvider {
     return await ECPresentation.manager.getChildrenCount(this.imodelToken, parent, this.createRequestOptions());
   }
 
-  private createTreeNodeItem(node: NavNode): TreeNodeItem {
+  private createTreeNodeItem(node: Readonly<NavNode>): TreeNodeItem {
     const item: TreeNodeItem = {
-      id: node.nodeId.toString(),
+      id: node.nodeId,
       label: node.label,
       description: node.description || "",
       hasChildren: node.hasChildren,
@@ -111,7 +112,7 @@ export default class TreeDataProvider {
     return item;
   }
 
-  private createTreeNodeItems(nodes: NavNode[]): TreeNodeItem[] {
+  private createTreeNodeItems(nodes: ReadonlyArray<Readonly<NavNode>>): TreeNodeItem[] {
     const list = new Array<TreeNodeItem>();
     for (const node of nodes)
       list.push(this.createTreeNodeItem(node));

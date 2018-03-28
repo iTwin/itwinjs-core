@@ -16,7 +16,7 @@ describe("KeySet", () => {
 
     it("creates empty set by default", () => {
       const set = new KeySet();
-      expect(set.size).to.eq(0);
+      expect(set.isEmpty).to.be.true;
     });
 
     it("initializes from node keys", () => {
@@ -58,12 +58,33 @@ describe("KeySet", () => {
         ],
         nodeKeys: [nodeKey],
       } as SerializedKeySet;
+
       const set = new KeySet(serialized);
       expect(set.size).to.eq(4);
       expect(set.has(instanceKey11)).to.be.true;
       expect(set.has(instanceKey12)).to.be.true;
       expect(set.has(instanceKey2)).to.be.true;
       expect(set.has(nodeKey)).to.be.true;
+    });
+
+    it("initializes from KeySet", () => {
+      const instanceKey11 = createRandomECInstanceKey();
+      const instanceKey12 = {
+        className: instanceKey11.className,
+        id: createRandomECInstanceId(),
+      } as InstanceKey;
+      const instanceKey2 = createRandomECInstanceKey();
+      const nodeKey = createRandomECInstanceNodeKey();
+      const source = new KeySet();
+      source.add([instanceKey11, instanceKey12, instanceKey2]);
+      source.add(nodeKey);
+
+      const target = new KeySet(source);
+      expect(target.size).to.eq(4);
+      expect(target.has(instanceKey11)).to.be.true;
+      expect(target.has(instanceKey12)).to.be.true;
+      expect(target.has(instanceKey2)).to.be.true;
+      expect(target.has(nodeKey)).to.be.true;
     });
 
   });
@@ -155,6 +176,54 @@ describe("KeySet", () => {
       expect(set.has(props[1])).to.be.true;
     });
 
+    it("adds a keyset", () => {
+      const instanceKey1 = createRandomECInstanceKey();
+      const nodeKey1 = createRandomECInstanceNodeKey();
+      const set = new KeySet();
+      set.add(instanceKey1).add(nodeKey1);
+      expect(set.size).to.eq(2);
+      expect(set.has(instanceKey1)).to.be.true;
+      expect(set.has(nodeKey1)).to.be.true;
+
+      const instanceKey2 = createRandomECInstanceKey();
+      const nodeKey2 = createRandomECInstanceNodeKey();
+      const source = new KeySet();
+      source.add(instanceKey2).add(nodeKey2);
+
+      set.add(source);
+      expect(set.size).to.eq(4);
+      expect(set.has(instanceKey1)).to.be.true;
+      expect(set.has(instanceKey2)).to.be.true;
+      expect(set.has(nodeKey1)).to.be.true;
+      expect(set.has(nodeKey2)).to.be.true;
+    });
+
+    it("adds a serialized keyset", () => {
+      const instanceKey1 = createRandomECInstanceKey();
+      const nodeKey1 = createRandomECInstanceNodeKey();
+      const set = new KeySet();
+      set.add(instanceKey1).add(nodeKey1);
+      expect(set.size).to.eq(2);
+      expect(set.has(instanceKey1)).to.be.true;
+      expect(set.has(nodeKey1)).to.be.true;
+
+      const instanceKey2 = createRandomECInstanceKey();
+      const nodeKey2 = createRandomECInstanceNodeKey();
+      const serialized = {
+        instanceKeys: [
+          [instanceKey2.className, [instanceKey2.id.value]],
+        ],
+        nodeKeys: [nodeKey2],
+      } as SerializedKeySet;
+
+      set.add(serialized);
+      expect(set.size).to.eq(4);
+      expect(set.has(instanceKey1)).to.be.true;
+      expect(set.has(instanceKey2)).to.be.true;
+      expect(set.has(nodeKey1)).to.be.true;
+      expect(set.has(nodeKey2)).to.be.true;
+    });
+
   });
 
   describe("delete", () => {
@@ -214,6 +283,54 @@ describe("KeySet", () => {
       expect(set.size).to.eq(1);
       expect(set.has(props[1])).to.be.false;
       expect(set.has(props[2])).to.be.false;
+    });
+
+    it("deletes keys from a keyset", () => {
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const set = new KeySet();
+      set.add(instanceKeys).add(nodeKeys);
+      expect(set.size).to.eq(4);
+      expect(set.has(instanceKeys[0])).to.be.true;
+      expect(set.has(instanceKeys[1])).to.be.true;
+      expect(set.has(nodeKeys[0])).to.be.true;
+      expect(set.has(nodeKeys[1])).to.be.true;
+
+      const source = new KeySet();
+      source.add(instanceKeys[1]).add(nodeKeys[0]);
+
+      set.delete(source);
+      expect(set.size).to.eq(2);
+      expect(set.has(instanceKeys[0])).to.be.true;
+      expect(set.has(instanceKeys[1])).to.be.false;
+      expect(set.has(nodeKeys[0])).to.be.false;
+      expect(set.has(nodeKeys[1])).to.be.true;
+    });
+
+    it("deletes keys from a serialized keyset", () => {
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const set = new KeySet();
+      set.add(instanceKeys).add(nodeKeys);
+      expect(set.size).to.eq(4);
+      expect(set.has(instanceKeys[0])).to.be.true;
+      expect(set.has(instanceKeys[1])).to.be.true;
+      expect(set.has(nodeKeys[0])).to.be.true;
+      expect(set.has(nodeKeys[1])).to.be.true;
+
+      const serialized = {
+        instanceKeys: [
+          [instanceKeys[1].className, [instanceKeys[1].id.value]],
+        ],
+        nodeKeys: [nodeKeys[0]],
+      } as SerializedKeySet;
+
+      set.delete(serialized);
+      expect(set.size).to.eq(2);
+      expect(set.has(instanceKeys[0])).to.be.true;
+      expect(set.has(instanceKeys[1])).to.be.false;
+      expect(set.has(nodeKeys[0])).to.be.false;
+      expect(set.has(nodeKeys[1])).to.be.true;
     });
 
   });

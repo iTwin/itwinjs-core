@@ -141,6 +141,7 @@
       "cwd": "${workspaceFolder}/src/sample",
       "args": [
         "${workspaceFolder}/src/sample/node_modules/@bentley/imodeljs-react-scripts/scripts/start",
+        "--noWeb",
         "--electronDebug=5858",
         "--electronRemoteDebug=9223"
       ],

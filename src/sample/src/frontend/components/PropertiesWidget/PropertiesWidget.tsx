@@ -1,10 +1,10 @@
 import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NavNodeKey, KeySet } from "@bentley/ecpresentation-common";
-import { PropertyPaneDataProvider, TreeNodeItem, PropertyRecord } from "@bentley/ecpresentation-controls";
+import { KeySet } from "@bentley/ecpresentation-common";
+import { SelectionManager, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
+import { PropertyPaneDataProvider, PropertyRecord } from "@bentley/ecpresentation-controls";
 import { isPrimitiveValue, isStructValue, isArrayValue } from "@bentley/ecpresentation-controls";
-import { SelectionManager, SelectionChangeEventArgs, SelectedItem, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 import "./PropertiesWidget.css";
 
 export interface Props {
@@ -66,14 +66,14 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
   private onSelectionChanged = (_evt: SelectionChangeEventArgs, items: SelectionProvider): void => {
     this._hasSelection = false;
     for (let i = _evt.level; i >= 0; i--) {
-      const selectedItemsSet = items.getSelection(this.props.imodelToken, i);
-      if (selectedItemsSet && !selectedItemsSet.isEmpty) {
-        this._hasSelection = true;
-        this.fetchProperties(this.props.imodelToken, selectedItemsSet.asArray());
+      const selection = items.getSelection(this.props.imodelToken, i);
+      this._hasSelection = !selection.isEmpty;
+      if (this._hasSelection) {
+        this.fetchProperties(this.props.imodelToken, selection);
         return;
       }
     }
-    this.fetchProperties(this.props.imodelToken, []);
+    this.fetchProperties(this.props.imodelToken, new KeySet());
   }
 
   public componentWillUnmount() {
@@ -120,18 +120,15 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     }
     return values;
   }
-  private async fetchProperties(_imodelToken: IModelToken, selectedNodes: SelectedItem[]) {
+
+  private async fetchProperties(_imodelToken: IModelToken, selection: Readonly<KeySet>) {
     this.setState(initialState);
 
-    if (0 === selectedNodes.length || !this._dataProvider)
+    if (selection.isEmpty || !this._dataProvider)
       return;
 
-    const keys: NavNodeKey[] = selectedNodes.map((item: TreeNodeItem) => {
-      return item.extendedData.node.key;
-    });
-
     try {
-      this._dataProvider.keys = new KeySet(keys);
+      this._dataProvider.keys = selection;
       const groups: GroupDisplayInfo[] = [];
       const categoryCount = await this._dataProvider.getCategoryCount();
       for (let i = 0; i < categoryCount; ++i) {

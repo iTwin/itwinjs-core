@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { expect, spy, use } from "chai";
 import * as spies from "chai-spies";
 import * as moq from "typemoq";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { KeySet } from "@bentley/ecpresentation-common";
 import { SelectionManager } from "./SelectionManager";
 import { SelectionHandler } from "./SelectionHandler";
 import { SelectionChangeEvent } from "./SelectionChangeEvent";
@@ -16,6 +17,7 @@ describe("SelectionHandler", () => {
   let selectionHandler: SelectionHandler;
   const source: string = "test";
   const ruleset: string = "ruleset";
+  const keyset = new KeySet();
 
   use(spies);
 
@@ -38,8 +40,8 @@ describe("SelectionHandler", () => {
   describe("addToSelection", () => {
 
     it("calls manager's addToSelection", () => {
-      selectionHandler.addToSelection([]);
-      mockSelectionManager.verify((x) => x.addToSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue([]), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
+      selectionHandler.addToSelection(keyset);
+      mockSelectionManager.verify((x) => x.addToSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(keyset), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
     });
 
   });
@@ -47,8 +49,8 @@ describe("SelectionHandler", () => {
   describe("removeFromSelection", () => {
 
     it("calls manager's removeFromSelection", () => {
-      selectionHandler.removeFromSelection([]);
-      mockSelectionManager.verify((x) => x.removeFromSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue([]), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
+      selectionHandler.removeFromSelection(keyset);
+      mockSelectionManager.verify((x) => x.removeFromSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(keyset), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
     });
 
   });
@@ -56,8 +58,8 @@ describe("SelectionHandler", () => {
   describe("replaceSelection", () => {
 
     it("calls manager's replaceSelection", () => {
-      selectionHandler.replaceSelection([]);
-      mockSelectionManager.verify((x) => x.replaceSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue([]), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
+      selectionHandler.replaceSelection(keyset);
+      mockSelectionManager.verify((x) => x.replaceSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(keyset), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
     });
 
   });

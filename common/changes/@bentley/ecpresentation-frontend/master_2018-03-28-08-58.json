@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "Readonly-ness fixes",
+      "type": "patch"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "Selection manager now uses KeySet to store selection",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

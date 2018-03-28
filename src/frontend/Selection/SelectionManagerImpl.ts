@@ -1,23 +1,21 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { IModelToken } from "@bentley/imodeljs-common";
+import { KeySet, Keys } from "@bentley/ecpresentation-common";
 import { SelectionManager } from "./SelectionManager";
-import { SelectedItemsSet } from "./SelectedItemsSet";
-import { SelectionChangeEvent, SelectionChangeEventArgs } from "./SelectionChangeEvent";
-import { SelectionChangeType } from "./SelectionChangeType";
-import { SelectedItem } from "./SelectedItem";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { SelectionChangeType, SelectionChangeEvent, SelectionChangeEventArgs } from "./SelectionChangeEvent";
 
 /** The selection manager which stores the overall selection */
 export class SelectionManagerImpl implements SelectionManager {
   public selectionChange: SelectionChangeEvent;
-  private _selectionContainerMap: Map<IModelToken, SelectionContainer> = new Map<IModelToken, SelectionContainer>();
+  private _selectionContainerMap = new Map<Readonly<IModelToken>, SelectionContainer>();
 
   constructor() {
     this.selectionChange = new SelectionChangeEvent();
   }
 
-  private getContainer(imodelToken: IModelToken): SelectionContainer {
+  private getContainer(imodelToken: Readonly<IModelToken>): SelectionContainer {
     let selectionContainer = this._selectionContainerMap.get(imodelToken);
     if (!selectionContainer) {
       selectionContainer = new SelectionContainer();
@@ -26,7 +24,7 @@ export class SelectionManagerImpl implements SelectionManager {
     return selectionContainer;
   }
 
-  public getSelection(imodelToken: IModelToken, level: number = 0): Readonly<SelectedItemsSet> {
+  public getSelection(imodelToken: Readonly<IModelToken>, level: number = 0): Readonly<KeySet> {
     return this.getContainer(imodelToken).getSelection(level);
   }
 
@@ -40,76 +38,66 @@ export class SelectionManagerImpl implements SelectionManager {
     const selectedItemsSet = container.getSelection(evt.level);
     switch (evt.changeType) {
       case SelectionChangeType.Add:
-        {
-          for (const key of evt.items)
-            selectedItemsSet.add(key);
-          break;
-        }
+        selectedItemsSet.add(evt.keys);
+        break;
       case SelectionChangeType.Remove:
-        {
-          for (const key of evt.items)
-            selectedItemsSet.remove(key);
-          break;
-        }
+        selectedItemsSet.delete(evt.keys);
+        break;
       case SelectionChangeType.Replace:
-        {
-          selectedItemsSet.initFromArray(evt.items);
-          break;
-        }
+        selectedItemsSet.clear().add(evt.keys);
+        break;
       case SelectionChangeType.Clear:
-        {
-          selectedItemsSet.clear();
-          break;
-        }
+        selectedItemsSet.clear();
+        break;
     }
     container.clear(evt.level + 1);
 
     this.selectionChange.raiseEvent(evt, this);
   }
 
-  public addToSelection(source: string, imodelToken: IModelToken, items: SelectedItem[], level: number = 0, rulesetId?: string): void {
+  public addToSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
       imodelToken,
       changeType: SelectionChangeType.Add,
-      items,
+      keys: new KeySet(keys),
       rulesetId,
     };
     this.handleEvent(evt);
   }
 
-  public removeFromSelection(source: string, imodelToken: IModelToken, items: SelectedItem[], level: number = 0, rulesetId?: string): void {
+  public removeFromSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
       imodelToken,
       changeType: SelectionChangeType.Remove,
-      items,
+      keys: new KeySet(keys),
       rulesetId,
     };
     this.handleEvent(evt);
   }
 
-  public replaceSelection(source: string, imodelToken: IModelToken, items: SelectedItem[], level: number = 0, rulesetId?: string): void {
+  public replaceSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
       imodelToken,
       changeType: SelectionChangeType.Replace,
-      items,
+      keys: new KeySet(keys),
       rulesetId,
     };
     this.handleEvent(evt);
   }
 
-  public clearSelection(source: string, imodelToken: IModelToken, level: number = 0, rulesetId?: string): void {
+  public clearSelection(source: string, imodelToken: Readonly<IModelToken>, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
       imodelToken,
       changeType: SelectionChangeType.Clear,
-      items: [],
+      keys: new KeySet(),
       rulesetId,
     };
     this.handleEvent(evt);
@@ -117,16 +105,16 @@ export class SelectionManagerImpl implements SelectionManager {
 }
 
 class SelectionContainer {
-  private _selectedItemsSetMap: Map<number, SelectedItemsSet>;
+  private readonly _selectedItemsSetMap: Map<number, KeySet>;
 
   constructor() {
-    this._selectedItemsSetMap = new Map<number, SelectedItemsSet>();
+    this._selectedItemsSetMap = new Map<number, KeySet>();
   }
 
-  public getSelection(level: number): SelectedItemsSet {
+  public getSelection(level: number): KeySet {
     let selectedItemsSet = this._selectedItemsSetMap.get(level);
     if (!selectedItemsSet) {
-      selectedItemsSet = new SelectedItemsSet();
+      selectedItemsSet = new KeySet();
       this._selectedItemsSetMap.set(level, selectedItemsSet);
     }
     return selectedItemsSet;

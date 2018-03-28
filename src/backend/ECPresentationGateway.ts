@@ -2,67 +2,68 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
-import { ECPresentationGatewayDefinition, ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
+import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
 import { resetParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
 import ECPresentation from "./ECPresentation";
+import ECPresentationManager from "./ECPresentationManager";
 
 /** The backend implementation of ECPresentationGatewayDefinition. */
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
 
-  public getManager(): ECPresentationManagerDefinition {
+  public getManager(): ECPresentationManager {
     return ECPresentation.manager;
   }
 
-  public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
+  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
     return await this.getManager().getRootNodes(token, pageOptions, options);
   }
 
-  public async getRootNodesCount(token: IModelToken, options: object): Promise<number> {
+  public async getRootNodesCount(token: Readonly<IModelToken>, options: object): Promise<number> {
     return await this.getManager().getRootNodesCount(token, options);
   }
 
-  public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
+  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<NavNode>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
     return await this.getManager().getChildren(token, parent, pageOptions, options);
   }
 
-  public async getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number> {
+  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<NavNode>, options: object): Promise<number> {
     return await this.getManager().getChildrenCount(token, parent, options);
   }
 
-  public async getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<Array<Readonly<NavNodePathElement>>> {
+  public async getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NavNodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
     return await this.getManager().getNodePaths(token, paths, markedIndex, options);
   }
 
-  public async getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<Array<Readonly<NavNodePathElement>>> {
+  public async getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
     return await this.getManager().getFilteredNodesPaths(token, filterText, options);
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: KeySet, selection: SelectionInfo | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
     const descriptor = await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
     if (descriptor)
       resetParentship(descriptor);
     return descriptor;
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: Descriptor, keys: KeySet, options: object): Promise<number> {
+  public async getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
     return await this.getManager().getContentSetSize(token, descriptor, keys, options);
   }
 
-  public async getContent(token: IModelToken, descriptor: Descriptor, keys: KeySet, pageOptions: PageOptions, options: object): Promise<Readonly<Content>> {
+  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions>, options: object): Promise<Readonly<Content>> {
     const content: Content = await this.getManager().getContent(token, descriptor, keys, pageOptions, options);
     resetParentship(content.descriptor);
     return content;
   }
 
-  public async getDistinctValues(token: IModelToken, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<string[]> {
+  public async getDistinctValues(token: Readonly<IModelToken>, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<ReadonlyArray<string>> {
     return await this.getManager().getDistinctValues(token, displayType, fieldName, maximumValueCount, options);
   }
 
-  public async saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<Array<Readonly<ECInstanceChangeResult>>> {
+  public async saveValueChange(token: Readonly<IModelToken>, instancesInfo: ReadonlyArray<Readonly<ChangedECInstanceInfo>>, propertyAccessor: string, value: any, options: object): Promise<ReadonlyArray<Readonly<ECInstanceChangeResult>>> {
     return await this.getManager().saveValueChange(token, instancesInfo, propertyAccessor, value, options);
   }
 }

@@ -1,17 +1,31 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { BeEvent } from "@bentley/bentleyjs-core/lib/BeEvent";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { KeySet } from "@bentley/ecpresentation-common";
 import { SelectionProvider } from "./SelectionProvider";
-import { SelectionChangeType } from "./SelectionChangeType";
-import { SelectedItem } from "./SelectedItem";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 
 /** An interface for selection change listeners */
 export declare type SelectionChangesListener = (args: SelectionChangeEventArgs, provider: SelectionProvider) => void;
 
 /** An event broadcasted on selection changes */
 export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> { }
+
+/** The type of selection change */
+export enum SelectionChangeType {
+  /** Added to selection. */
+  Add,
+
+  /** Removed from selection. */
+  Remove,
+
+  /** Selection was replaced. */
+  Replace,
+
+  /** Selection was cleared. */
+  Clear,
+}
 
 /** The event object that's sent when the selection changes */
 export interface SelectionChangeEventArgs {
@@ -25,11 +39,11 @@ export interface SelectionChangeEventArgs {
   /** The selection change type. */
   changeType: SelectionChangeType;
 
-  /** The selection affected by this selection change event. */
-  items: SelectedItem[];
+  /** Set of keys affected by this selection change event. */
+  keys: Readonly<KeySet>;
 
   /** Token of the imodel connection with which the selection is associated. */
-  imodelToken: IModelToken;
+  imodelToken: Readonly<IModelToken>;
 
   /** Ruleset Id. */
   rulesetId?: string;

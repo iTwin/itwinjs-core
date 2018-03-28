@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { IDisposable, DisposableList } from "@bentley/bentleyjs-core";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { Keys } from "@bentley/ecpresentation-common";
 import { SelectionManager } from "./SelectionManager";
-import { IDisposable, DisposableList } from "@bentley/bentleyjs-core/lib/Disposable";
-import { SelectedItem } from "./SelectedItem";
 import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
 import { SelectionProvider } from "./SelectionProvider";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 
 /** A class that handles selection changes and helps to change the selection */
 export class SelectionHandler implements IDisposable {
@@ -16,7 +16,7 @@ export class SelectionHandler implements IDisposable {
   public onSelect?: SelectionChangesListener;
   public name: string;
   public rulesetId: string;
-  public imodelToken: IModelToken;
+  public imodelToken: Readonly<IModelToken>;
 
   /** Constructor.
    * @param[in] manager SelectionManager used to store overall selection.
@@ -65,36 +65,36 @@ export class SelectionHandler implements IDisposable {
   }
 
   /** Add to selection.
-   * @param[in] items The items to add to selection.
+   * @param[in] keys The keys to add to selection.
    * @param[in] level Level of the selection.
    */
-  public addToSelection(items: SelectedItem[], level: number = 0): void {
+  public addToSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect)
       return;
 
-    return this._manager.addToSelection(this.name, this.imodelToken, items, level, this.rulesetId);
+    return this._manager.addToSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
   }
 
   /** Remove from selection.
-   * @param[in] items The items to remove from selection.
+   * @param[in] keys The keys to remove from selection.
    * @param[in] level Level of the selection.
    */
-  public removeFromSelection(items: SelectedItem[], level: number = 0): void {
+  public removeFromSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect)
       return;
 
-    return this._manager.removeFromSelection(this.name, this.imodelToken, items, level, this.rulesetId);
+    return this._manager.removeFromSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
   }
 
   /** Change selection.
+   * @param[in] keys The keys indicating the new selection.
    * @param[in] level Level of the selection.
-   * @param[in] items The items indicating the new selection.
    */
-  public replaceSelection(items: SelectedItem[], level: number = 0): void {
+  public replaceSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect)
       return;
 
-    return this._manager.replaceSelection(this.name, this.imodelToken, items, level, this.rulesetId);
+    return this._manager.replaceSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
   }
 
   /** Clear selection.

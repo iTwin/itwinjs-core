@@ -35,7 +35,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this._addon!;
   }
 
-  public async getRootNodes(token: IModelToken, pageOptions: types.PageOptions, options: object): Promise<Array<Readonly<types.NavNode>>> {
+  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.NavNode>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
       options,
@@ -43,14 +43,14 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params, Conversion.createNodesList);
   }
 
-  public async getRootNodesCount(token: IModelToken, options: object): Promise<number> {
+  public async getRootNodesCount(token: Readonly<IModelToken>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodesCount, {
       options,
     });
     return this.request(token, params);
   }
 
-  public async getChildren(token: IModelToken, parent: types.NavNode, pageOptions: types.PageOptions, options: object): Promise<Array<Readonly<types.NavNode>>> {
+  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<types.NavNode>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.NavNode>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
       nodeKey: parent.key,
       pageOptions,
@@ -59,7 +59,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params, Conversion.createNodesList);
   }
 
-  public async getChildrenCount(token: IModelToken, parent: types.NavNode, options: object): Promise<number> {
+  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<types.NavNode>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
       nodeKey: parent.key,
       options,
@@ -67,15 +67,15 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params);
   }
 
-  public async getNodePaths(_token: IModelToken, _paths: types.NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<Array<Readonly<types.NavNodePathElement>>> {
+  public async getNodePaths(_token: Readonly<IModelToken>, _paths: ReadonlyArray<Readonly<types.NavNodeKeyPath>>, _markedIndex: number, _options: object): Promise<ReadonlyArray<Readonly<types.NavNodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
-  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<Array<Readonly<types.NavNodePathElement>>> {
+  public async getFilteredNodesPaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<ReadonlyArray<Readonly<types.NavNodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: types.KeySet, selection: types.SelectionInfo | undefined, options: object): Promise<Readonly<types.Descriptor>> {
+  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<types.KeySet>, selection: Readonly<types.SelectionInfo> | undefined, options: object): Promise<Readonly<types.Descriptor>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
@@ -85,7 +85,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params, Conversion.createContentDescriptor);
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: types.Descriptor, keys: types.KeySet, options: object): Promise<number> {
+  public async getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<types.Descriptor>, keys: Readonly<types.KeySet>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentSetSize, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -94,7 +94,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params);
   }
 
-  public async getContent(token: IModelToken, descriptor: types.Descriptor, keys: types.KeySet, pageOptions: types.PageOptions, options: object): Promise<Readonly<types.Content>> {
+  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<types.Descriptor>, keys: Readonly<types.KeySet>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<Readonly<types.Content>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -104,16 +104,16 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params, Conversion.createContent);
   }
 
-  public async getDistinctValues(_token: IModelToken, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<string[]> {
+  public async getDistinctValues(_token: Readonly<IModelToken>, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<ReadonlyArray<string>> {
     throw new Error("Not implemented.");
   }
 
-  public async saveValueChange(_token: IModelToken, _instancesInfo: types.ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<Array<Readonly<types.ECInstanceChangeResult>>> {
+  public async saveValueChange(_token: Readonly<IModelToken>, _instancesInfo: ReadonlyArray<Readonly<types.ChangedECInstanceInfo>>, _propertyAccessor: string, _value: any, _options: object): Promise<ReadonlyArray<Readonly<types.ECInstanceChangeResult>>> {
     // note: should probably handle this in typescript rather than forwarding to node addon
     throw new Error("Not implemented.");
   }
 
-  private request(token: IModelToken, params: string, responseHandler?: (response: any) => any) {
+  private request(token: Readonly<IModelToken>, params: string, responseHandler?: (response: any) => any) {
     const imodelAddon = this.getNativePlatform().getImodelAddon(token);
     const serializedResponse = this.getNativePlatform().handleRequest(imodelAddon, params);
     if (!serializedResponse)

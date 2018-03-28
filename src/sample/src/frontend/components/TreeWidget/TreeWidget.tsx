@@ -1,8 +1,9 @@
 import * as React from "react";
 import Tree, { TreeNode } from "rc-tree";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { NavNodeKey } from "@bentley/ecpresentation-common";
+import { SelectionManager, SelectionHandler } from "@bentley/ecpresentation-frontend";
 import { TreeDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
-import { SelectionManager, SelectedItem, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 
 import "./TreeWidget.css";
 
@@ -50,13 +51,13 @@ export default class TreeWidget extends React.Component<Props, State> {
       return Promise.reject("No data provider");
 
     const parentItem = (parent) ? this._items.get((parent.props as any).eventKey as string) : undefined;
-    let nodes: TreeNodeItem[];
+    let nodes: ReadonlyArray<Readonly<TreeNodeItem>>;
     if (!parentItem)
       nodes = await this._dataProvider.getRootNodes({ pageStart: 0, pageSize: 0 });
     else
       nodes = await this._dataProvider.getChildNodes(parentItem, { pageStart: 0, pageSize: 0 });
     const self = this;
-    const data = nodes.map((node: TreeNodeItem): TreeData => {
+    const data = nodes.map((node: Readonly<TreeNodeItem>): TreeData => {
       self._items.set(node.id, node);
       return node;
     });
@@ -75,18 +76,17 @@ export default class TreeWidget extends React.Component<Props, State> {
   private onNodeSelected = (selectedKeys: string[]) => {
     if (0 === selectedKeys.length) {
       this._selectionHandler.clearSelection();
-    } else {
-      const self = this;
-      const selectedItems: TreeNodeItem[] = [];
-      for (const key of selectedKeys) {
-        const item = self._items.get(key);
-        if (item)
-          selectedItems.push(item);
-      }
-
-      const selectedNodes: SelectedItem[] = selectedItems.map((x) => new SelectedItem(x.extendedData.node.key));
-      this._selectionHandler.replaceSelection(selectedNodes);
+      return;
     }
+    const self = this;
+    const selectedItems: TreeNodeItem[] = [];
+    for (const key of selectedKeys) {
+      const item = self._items.get(key);
+      if (item)
+        selectedItems.push(item);
+    }
+    const selectedNodeKeys: NavNodeKey[] = selectedItems.map((x) => x.extendedData.node.key);
+    this._selectionHandler.replaceSelection(selectedNodeKeys);
   }
 
   public componentWillUnmount() {

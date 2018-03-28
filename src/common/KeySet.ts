@@ -7,8 +7,8 @@ import { InstanceId, InstanceKey } from "./EC";
 import { NavNodeKey } from "./Hierarchy";
 import { EntityProps } from "@bentley/imodeljs-common";
 
-export type Key = NavNodeKey | InstanceKey | EntityProps;
-export type Keys = NavNodeKey[] | InstanceKey[] | EntityProps[];
+export type Key = Readonly<NavNodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
+export type Keys = ReadonlyArray<Key> | Readonly<SerializedKeySet> | Readonly<KeySet>;
 
 export interface SerializedKeySet {
   instanceKeys: Array<[string, string[]]>;
@@ -20,11 +20,11 @@ export default class KeySet {
   private _instanceKeys: Map<string, Set<string>>; // class name => instance ids
   private _nodeKeys: Set<string>;
 
-  constructor(source?: Keys | SerializedKeySet) {
+  constructor(source?: Keys) {
     this._instanceKeys = new Map();
     this._nodeKeys = new Set();
     if (source)
-      this.initFromSource(source);
+      this.add(source);
   }
 
   public toJSON(): SerializedKeySet {
@@ -35,18 +35,6 @@ export default class KeySet {
       instanceKeys,
       nodeKeys: [...this.nodeKeys],
     };
-  }
-
-  private initFromSource(source: Keys | SerializedKeySet) {
-    this.clear();
-    if (Array.isArray(source)) {
-      this.add(source);
-    } else {
-      for (const key of source.nodeKeys)
-        this._nodeKeys.add(JSON.stringify(key));
-      for (const entry of source.instanceKeys)
-        this._instanceKeys.set(entry["0"], new Set(entry["1"]));
-    }
   }
 
   public get instanceKeys(): ReadonlyMap<string, ReadonlySet<InstanceId>> {
@@ -69,6 +57,18 @@ export default class KeySet {
     return set;
   }
 
+  private isSerializedKeySet(set: Keys | Key): set is Readonly<SerializedKeySet> {
+    return Array.isArray((set as any).nodeKeys) && Array.isArray((set as any).instanceKeys);
+  }
+
+  private isKeySet(set: Keys | Key): set is Readonly<KeySet> {
+    return (set as any)._nodeKeys && (set as any)._instanceKeys;
+  }
+
+  private isKeysArray(keys: Keys | Key): keys is ReadonlyArray<Key> {
+    return Array.isArray(keys);
+  }
+
   private isNodeKey(key: Key): key is NavNodeKey {
     return (key as any).type;
   }
@@ -87,10 +87,36 @@ export default class KeySet {
     return this;
   }
 
+  private addKeySet(keyset: Readonly<KeySet>): void {
+    for (const key of (keyset as any)._nodeKeys)
+      this._nodeKeys.add(key);
+    for (const entry of (keyset as any)._instanceKeys) {
+      let set = this._instanceKeys.get(entry["0"]);
+      if (!set) {
+        set = new Set();
+        this._instanceKeys.set(entry["0"], set);
+      }
+      entry["1"].forEach((key: string) => {
+        set!.add(key);
+      });
+    }
+  }
+
+  private addSerializedKeySet(keyset: Readonly<SerializedKeySet>): void {
+    for (const key of keyset.nodeKeys)
+      this._nodeKeys.add(JSON.stringify(key));
+    for (const entry of keyset.instanceKeys)
+      this._instanceKeys.set(entry["0"], new Set(entry["1"]));
+  }
+
   public add(value: Keys | Key): KeySet {
     if (!value)
       return this;
-    if (Array.isArray(value)) {
+    if (this.isKeySet(value)) {
+      this.addKeySet(value);
+    } else if (this.isSerializedKeySet(value)) {
+      this.addSerializedKeySet(value);
+    } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.add(key);
     } else if (this.isNodeKey(value)) {
@@ -107,10 +133,40 @@ export default class KeySet {
     return this;
   }
 
+  private deleteKeySet(keyset: Readonly<KeySet>): void {
+    for (const key of (keyset as any)._nodeKeys)
+      this._nodeKeys.delete(key);
+    for (const entry of (keyset as any)._instanceKeys) {
+      const set = this._instanceKeys.get(entry["0"]);
+      if (set) {
+        entry["1"].forEach((key: string) => {
+          set.delete(key);
+        });
+      }
+    }
+  }
+
+  private deleteSerializedKeySet(keyset: Readonly<SerializedKeySet>): void {
+    for (const key of keyset.nodeKeys)
+      this._nodeKeys.delete(JSON.stringify(key));
+    for (const entry of keyset.instanceKeys) {
+      const set = this._instanceKeys.get(entry["0"]);
+      if (set) {
+        entry["1"].forEach((key: string) => {
+          set.delete(key);
+        });
+      }
+    }
+  }
+
   public delete(value: Keys | Key): KeySet {
     if (!value)
       return this;
-    if (Array.isArray(value)) {
+    if (this.isKeySet(value)) {
+      this.deleteKeySet(value);
+    } else if (this.isSerializedKeySet(value)) {
+      this.deleteSerializedKeySet(value);
+    } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.delete(key);
     } else if (this.isNodeKey(value)) {
@@ -134,7 +190,7 @@ export default class KeySet {
       return this._nodeKeys.has(JSON.stringify(value));
     if (this.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className);
-      return (set && set.has(value.id.value)) as boolean;
+      return !!(set && set.has(value.id.value));
     }
     if (this.isEntityProps(value))
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
@@ -148,5 +204,9 @@ export default class KeySet {
     for (const set of this._instanceKeys.values())
       instanceIdsCount += set.size;
     return nodeKeysCount + instanceIdsCount;
+  }
+
+  public get isEmpty(): boolean {
+    return 0 === this.size;
   }
 }

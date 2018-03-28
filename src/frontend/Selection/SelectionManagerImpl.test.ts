@@ -3,27 +3,29 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy, use } from "chai";
 import * as spies from "chai-spies";
-import { IModelToken } from "@bentley/imodeljs-common";
 import * as moq from "typemoq";
-import { SelectedItem } from "./SelectedItem";
-import { SelectionManagerImpl } from "./SelectionManagerImpl";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { InstanceKey } from "@bentley/ecpresentation-common";
 import { createRandomECInstanceKey } from "../../test-helpers/random/EC";
+import { SelectionManagerImpl } from "./SelectionManagerImpl";
 
-const source: string = "test";
+use(spies);
 
-function generateSelection(): SelectedItem[] {
+const generateSelection = (): InstanceKey[] => {
   return [
-    new SelectedItem(createRandomECInstanceKey()),
-    new SelectedItem(createRandomECInstanceKey()),
-    new SelectedItem(createRandomECInstanceKey()),
+    createRandomECInstanceKey(),
+    createRandomECInstanceKey(),
+    createRandomECInstanceKey(),
   ];
-}
+};
 
 describe("SelectionManagerImpl", () => {
+
   let selectionManager: SelectionManagerImpl;
-  let baseSelection: SelectedItem[];
+  let baseSelection: InstanceKey[];
   const mockImodelToken = moq.Mock.ofType<IModelToken>();
-  use(spies);
+  const source: string = "test";
+
   beforeEach(() => {
     selectionManager = new SelectionManagerImpl();
     mockImodelToken.reset();
@@ -38,7 +40,7 @@ describe("SelectionManagerImpl", () => {
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
 
       for (const key of baseSelection) {
-        expect(selectedItemsSet.contains(key)).true;
+        expect(selectedItemsSet.has(key)).true;
       }
 
     });
@@ -50,7 +52,7 @@ describe("SelectionManagerImpl", () => {
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
 
       for (const key of baseSelection) {
-        expect(selectedItemsSet.contains(key)).true;
+        expect(selectedItemsSet.has(key)).true;
       }
     });
 
@@ -64,7 +66,7 @@ describe("SelectionManagerImpl", () => {
         expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
 
         for (const key of baseSelection) {
-          expect(selectedItemsSet.contains(key)).true;
+          expect(selectedItemsSet.has(key)).true;
         }
       }
     });
@@ -76,7 +78,7 @@ describe("SelectionManagerImpl", () => {
         const selectedItemsSet = selectionManager.getSelection(mockImodelToken.object, i);
         expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
         for (const key of baseSelection) {
-          expect(selectedItemsSet.contains(key)).true;
+          expect(selectedItemsSet.has(key)).true;
         }
       }
     });
@@ -99,7 +101,7 @@ describe("SelectionManagerImpl", () => {
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
 
       for (const key of baseSelection) {
-        expect(selectedItemsSet.contains(key)).true;
+        expect(selectedItemsSet.has(key)).true;
       }
     });
 
@@ -108,9 +110,9 @@ describe("SelectionManagerImpl", () => {
       selectionManager.replaceSelection(source, mockImodelToken.object, [baseSelection[1], baseSelection[2]]);
       const selectedItemsSet = selectionManager.getSelection(mockImodelToken.object);
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length - 1);
-      expect(selectedItemsSet.contains(baseSelection[0])).false;
-      expect(selectedItemsSet.contains(baseSelection[1])).true;
-      expect(selectedItemsSet.contains(baseSelection[2])).true;
+      expect(selectedItemsSet.has(baseSelection[0])).false;
+      expect(selectedItemsSet.has(baseSelection[1])).true;
+      expect(selectedItemsSet.has(baseSelection[2])).true;
     });
 
     it("replaces on different imodelTokens", () => {
@@ -123,7 +125,7 @@ describe("SelectionManagerImpl", () => {
         expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
 
         for (const key of baseSelection) {
-          expect(selectedItemsSet.contains(key)).true;
+          expect(selectedItemsSet.has(key)).true;
         }
       }
     });
@@ -135,7 +137,7 @@ describe("SelectionManagerImpl", () => {
         const selectedItemsSet = selectionManager.getSelection(mockImodelToken.object, i);
         expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
         for (const key of baseSelection) {
-          expect(selectedItemsSet.contains(key)).true;
+          expect(selectedItemsSet.has(key)).true;
         }
       }
     });
@@ -178,7 +180,7 @@ describe("SelectionManagerImpl", () => {
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
 
       for (const key of baseSelection) {
-        expect(selectedItemsSet.contains(key)).true;
+        expect(selectedItemsSet.has(key)).true;
       }
     });
 
@@ -194,7 +196,7 @@ describe("SelectionManagerImpl", () => {
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
 
       for (const key of baseSelection) {
-        expect(selectedItemsSet.contains(key)).true;
+        expect(selectedItemsSet.has(key)).true;
       }
     });
 
@@ -215,9 +217,9 @@ describe("SelectionManagerImpl", () => {
       selectionManager.removeFromSelection(source, mockImodelToken.object, [baseSelection[1], baseSelection[2]]);
       const selectedItemsSet = selectionManager.getSelection(mockImodelToken.object);
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length - 2);
-      expect(selectedItemsSet.contains(baseSelection[0])).true;
-      expect(selectedItemsSet.contains(baseSelection[1])).false;
-      expect(selectedItemsSet.contains(baseSelection[2])).false;
+      expect(selectedItemsSet.has(baseSelection[0])).true;
+      expect(selectedItemsSet.has(baseSelection[1])).false;
+      expect(selectedItemsSet.has(baseSelection[2])).false;
     });
 
     it("removes whole selection", () => {
@@ -236,15 +238,15 @@ describe("SelectionManagerImpl", () => {
       selectionManager.removeFromSelection(source, anotherMockImodelToken.object, [baseSelection[1], baseSelection[2]]);
       let selectedItemsSet = selectionManager.getSelection(mockImodelToken.object);
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length - 1);
-      expect(selectedItemsSet.contains(baseSelection[0])).false;
-      expect(selectedItemsSet.contains(baseSelection[1])).true;
-      expect(selectedItemsSet.contains(baseSelection[2])).true;
+      expect(selectedItemsSet.has(baseSelection[0])).false;
+      expect(selectedItemsSet.has(baseSelection[1])).true;
+      expect(selectedItemsSet.has(baseSelection[2])).true;
 
       selectedItemsSet = selectionManager.getSelection(anotherMockImodelToken.object);
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length - 2);
-      expect(selectedItemsSet.contains(baseSelection[0])).true;
-      expect(selectedItemsSet.contains(baseSelection[1])).false;
-      expect(selectedItemsSet.contains(baseSelection[2])).false;
+      expect(selectedItemsSet.has(baseSelection[0])).true;
+      expect(selectedItemsSet.has(baseSelection[1])).false;
+      expect(selectedItemsSet.has(baseSelection[2])).false;
     });
 
     it("removes with different levels", () => {
@@ -254,15 +256,15 @@ describe("SelectionManagerImpl", () => {
 
       let selectedItemsSet = selectionManager.getSelection(mockImodelToken.object);
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
-      expect(selectedItemsSet.contains(baseSelection[0])).true;
-      expect(selectedItemsSet.contains(baseSelection[1])).true;
-      expect(selectedItemsSet.contains(baseSelection[2])).true;
+      expect(selectedItemsSet.has(baseSelection[0])).true;
+      expect(selectedItemsSet.has(baseSelection[1])).true;
+      expect(selectedItemsSet.has(baseSelection[2])).true;
 
       selectedItemsSet = selectionManager.getSelection(mockImodelToken.object, 1);
       expect(selectedItemsSet.size).to.be.equal(baseSelection.length - 1);
-      expect(selectedItemsSet.contains(baseSelection[0])).false;
-      expect(selectedItemsSet.contains(baseSelection[1])).true;
-      expect(selectedItemsSet.contains(baseSelection[2])).true;
+      expect(selectedItemsSet.has(baseSelection[0])).false;
+      expect(selectedItemsSet.has(baseSelection[1])).true;
+      expect(selectedItemsSet.has(baseSelection[2])).true;
     });
 
     it("clears higher level selection after removing items of lower level selection", () => {

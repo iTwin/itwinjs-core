@@ -219,7 +219,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   private _sortDirection: SortDirection = SortDirection.Ascending;
   private _filterExpression: string | undefined;
   private _pages: PageContainer;
-  private _keys: KeySet;
+  private _keys: Readonly<KeySet>;
 
   /** Constructor. */
   constructor(imodelToken: IModelToken, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
@@ -261,7 +261,7 @@ export default class TableViewDataProvider extends ContentDataProvider {
   }
 
   public get keys() { return this._keys; }
-  public set keys(keys: KeySet) {
+  public set keys(keys: Readonly<KeySet>) {
     this._keys = keys;
     this.invalidateCache();
   }

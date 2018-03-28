@@ -1,9 +1,9 @@
 import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NavNodeKey, KeySet } from "@bentley/ecpresentation-common";
-import { GridDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
-import { SelectionManager, SelectedItem, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
+import { InstanceKey, KeySet } from "@bentley/ecpresentation-common";
+import { SelectionManager, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
+import { GridDataProvider } from "@bentley/ecpresentation-controls";
 import "./GridWidget.css";
 
 export interface Props {
@@ -70,13 +70,9 @@ class Grid extends React.Component<GridProps, GridState> {
   private onSelectionChanged = (evt: SelectionChangeEventArgs, items: SelectionProvider): void => {
     if (evt.level !== 0)
       return;
-    const selectedItemsSet = items.getSelection(this.props.imodelToken, 0);
-    if (selectedItemsSet) {
-      this._hasSelection = !selectedItemsSet.isEmpty;
-      this.fetchData(this.props.imodelToken, selectedItemsSet.asArray());
-    } else
-      this.fetchData(this.props.imodelToken, []);
-
+    const selectedItems = items.getSelection(this.props.imodelToken, 0);
+    this._hasSelection = !selectedItems.isEmpty;
+    this.fetchData(this.props.imodelToken, selectedItems);
   }
 
   public componentWillReceiveProps(newProps: GridProps) {
@@ -100,18 +96,15 @@ class Grid extends React.Component<GridProps, GridState> {
       return JSON.stringify(value);
     return value.toString();
   }
-  private async fetchData(_imodelToken: IModelToken, selectedNodes: SelectedItem[]) {
+
+  private async fetchData(_imodelToken: IModelToken, selection: Readonly<KeySet>) {
     this.setState(initialState);
 
-    if (0 === selectedNodes.length || !this._dataProvider)
+    if (selection.isEmpty || !this._dataProvider)
       return;
 
-    const keys: NavNodeKey[] = selectedNodes.map((item: TreeNodeItem) => {
-      return item.extendedData.node.key;
-    });
-
     try {
-      this._dataProvider.keys = new KeySet(keys);
+      this._dataProvider.keys = selection;
       const columns = new Array<ColumnDefinition>();
       const columnDescriptions = await this._dataProvider.getColumns();
       for (const columnDescription of columnDescriptions)
@@ -163,9 +156,9 @@ class Grid extends React.Component<GridProps, GridState> {
       const row = this.state.rows[index];
 
       if (row.selected)
-        this._selectionHandler.removeFromSelection([new SelectedItem(key)], 1);
+        this._selectionHandler.removeFromSelection([key], 1);
       else
-        this._selectionHandler.addToSelection([new SelectedItem(key)], 1);
+        this._selectionHandler.addToSelection([key], 1);
 
       row.selected = !row.selected;
       this.forceUpdate();

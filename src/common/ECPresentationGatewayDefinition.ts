@@ -22,15 +22,15 @@ export default abstract class ECPresentationGateway extends Gateway {
     IModelToken,
   ]
 
-  public abstract getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>>;
-  public abstract getRootNodesCount(token: IModelToken, options: object): Promise<number>;
-  public abstract getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>>;
-  public abstract getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number>;
-  public abstract getNodePaths(token: IModelToken, paths: NavNodeKeyPath[], markedIndex: number, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
-  public abstract getFilteredNodesPaths(token: IModelToken, filterText: string, options: object): Promise<Array<Readonly<NavNodePathElement>>>;
-  public abstract getContentDescriptor(token: IModelToken, displayType: string, keys: KeySet, selection: content.SelectionInfo | undefined, options: object): Promise<Readonly<content.Descriptor>>;
-  public abstract getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: KeySet, options: object): Promise<number>;
-  public abstract getContent(token: IModelToken, descriptor: content.Descriptor, keys: KeySet, pageOptions: PageOptions, options: object): Promise<Readonly<content.Content>>;
-  public abstract getDistinctValues(token: IModelToken, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<string[]>;
-  public abstract saveValueChange(token: IModelToken, instancesInfo: ChangedECInstanceInfo[], propertyAccessor: string, value: any, options: object): Promise<Array<Readonly<ECInstanceChangeResult>>>;
+  public abstract getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>>;
+  public abstract getRootNodesCount(token: Readonly<IModelToken>, options: object): Promise<number>;
+  public abstract getChildren(token: Readonly<IModelToken>, parent: Readonly<NavNode>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<NavNode>>>;
+  public abstract getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<NavNode>, options: object): Promise<number>;
+  public abstract getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NavNodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>>;
+  public abstract getFilteredNodesPaths(token: Readonly<IModelToken>, filterText: string, options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>>;
+  public abstract getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<content.SelectionInfo> | undefined, options: object): Promise<Readonly<content.Descriptor>>;
+  public abstract getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<content.Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number>;
+  public abstract getContent(token: Readonly<IModelToken>, descriptor: Readonly<content.Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions>, options: object): Promise<Readonly<content.Content>>;
+  public abstract getDistinctValues(token: Readonly<IModelToken>, displayType: string, fieldName: string, maximumValueCount: number, options: object): Promise<ReadonlyArray<string>>;
+  public abstract saveValueChange(token: Readonly<IModelToken>, instancesInfo: ReadonlyArray<Readonly<ChangedECInstanceInfo>>, propertyAccessor: string, value: any, options: object): Promise<ReadonlyArray<Readonly<ECInstanceChangeResult>>>;
 }

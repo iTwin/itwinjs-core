@@ -74,7 +74,7 @@ export default abstract class ContentDataProvider {
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  public async getContentDescriptor(keys: KeySet, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
+  public async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
     if (!this._configuredDescriptor) {
       if (!this._descriptor) {
         this._descriptor = await ECPresentation.manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
@@ -113,7 +113,7 @@ export default abstract class ContentDataProvider {
    * @param pageStart Start index of the page to load.
    * @param pageSize The number of requested items in the page (0 means all items).
    */
-  protected async getContent(keys: KeySet, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
+  protected async getContent(keys: Readonly<KeySet>, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
     if (!this._content) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
       this._content = await ECPresentation.manager.getContent(this.imodelToken, descriptor, keys,
@@ -127,7 +127,7 @@ export default abstract class ContentDataProvider {
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    * @note The method returns the total number of records (without paging).
    */
-  protected async getContentSetSize(keys: KeySet, selectionInfo?: content.SelectionInfo): Promise<number> {
+  protected async getContentSetSize(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (undefined === this._contentSetSize) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
       this._contentSetSize = await ECPresentation.manager.getContentSetSize(this.imodelToken, descriptor,

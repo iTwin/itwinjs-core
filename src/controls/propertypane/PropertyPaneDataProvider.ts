@@ -101,7 +101,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   private _categorizedFields: CategoryFields | undefined;
   private _includeFieldsWithNoValues: boolean;
   private _favorites: { [name: string]: boolean };
-  private _keys: KeySet;
+  private _keys: Readonly<KeySet>;
 
   /** Constructor. */
   constructor(imodelToken: IModelToken, rulesetId: string) {
@@ -112,7 +112,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   }
 
   public get keys() { return this._keys; }
-  public set keys(keys: KeySet) {
+  public set keys(keys: Readonly<KeySet>) {
     this._keys = keys;
     this.invalidateCache();
   }

@@ -14,47 +14,47 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return Gateway.getProxyForGateway(ECPresentationGateway);
   }
 
-  public async getRootNodes(_token: IModelToken, _pageOptions: PageOptions, _options: object): Promise<Array<Readonly<NavNode>>> {
+  public async getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getRootNodesCount(_token: IModelToken, _options: object): Promise<number> {
+  public async getRootNodesCount(_token: Readonly<IModelToken>, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getChildren(_token: IModelToken, _parent: NavNode, _pageOptions: PageOptions, _options: object): Promise<Array<Readonly<NavNode>>> {
+  public async getChildren(_token: Readonly<IModelToken>, _parent: Readonly<NavNode>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<NavNode>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getChildrenCount(_token: IModelToken, _parent: NavNode, _options: object): Promise<number> {
+  public async getChildrenCount(_token: Readonly<IModelToken>, _parent: Readonly<NavNode>, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getNodePaths(_token: IModelToken, _paths: NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
+  public async getNodePaths(_token: Readonly<IModelToken>, _paths: ReadonlyArray<Readonly<NavNodeKeyPath>>, _markedIndex: number, _options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
+  public async getFilteredNodesPaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<ReadonlyArray<Readonly<NavNodePathElement>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: KeySet, _selection: SelectionInfo | undefined, _options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(_token: Readonly<IModelToken>, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined, _options: object): Promise<Readonly<Descriptor>> {
     return await this.forward.apply(this, arguments);
   }
 
-  public async getContentSetSize(_token: IModelToken, _descriptor: Descriptor, _keys: KeySet, _options: object): Promise<number> {
+  public async getContentSetSize(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContent(_token: IModelToken, _descriptor: Descriptor, _keys: KeySet, _pageOptions: PageOptions, _options: object): Promise<Readonly<Content>> {
+  public async getContent(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<Readonly<Content>> {
     return await this.forward.apply(this, arguments);
   }
 
-  public async getDistinctValues(_token: IModelToken, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<string[]> {
+  public async getDistinctValues(_token: Readonly<IModelToken>, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<ReadonlyArray<string>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async saveValueChange(_token: IModelToken, _instancesInfo: ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<Array<Readonly<ECInstanceChangeResult>>> {
+  public async saveValueChange(_token: Readonly<IModelToken>, _instancesInfo: ReadonlyArray<Readonly<ChangedECInstanceInfo>>, _propertyAccessor: string, _value: any, _options: object): Promise<ReadonlyArray<Readonly<ECInstanceChangeResult>>> {
     return this.forward.apply(this, arguments);
   }
 }
