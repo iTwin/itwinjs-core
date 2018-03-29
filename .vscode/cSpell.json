@@ -29,6 +29,7 @@
         "imodels",
         "junit",
         "lcov",
+        "memoized",
         "nodeaddon",
         "nodeaddonapi",
         "objs",

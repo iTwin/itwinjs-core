@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import memoize = require("lodash/memoize");
 import { IModelToken } from "@bentley/imodeljs-common";
-import ContentDataProvider from "../common/ContentDataProvider";
+import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyRecord, isValueEmpty, isArrayValue, isStructValue } from "../common/ContentBuilder";
 import { KeySet, CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item } from "@bentley/ecpresentation-common";
 import { isNestedContentField } from "@bentley/ecpresentation-common/lib/content/Fields";
@@ -212,7 +213,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   public get keys() { return this._keys; }
   public set keys(keys: Readonly<KeySet>) {
     this._keys = keys;
-    this.invalidateCache();
+    this.invalidateCache({ descriptor: true, size: true, content: true });
   }
 
   protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
@@ -221,9 +222,9 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     return configured;
   }
 
-  protected invalidateContentCache(invalidateContentSetSize: boolean): void {
-    super.invalidateContentCache(invalidateContentSetSize);
-    // wip: invalidate cache
+  protected invalidateCache(props: CacheInvalidationProps): void {
+    this.getData.cache.clear();
+    super.invalidateCache(props);
   }
 
   protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field) && !this.isFieldFavorite(field); }
@@ -231,7 +232,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   public get includeFieldsWithNoValues(): boolean { return this._includeFieldsWithNoValues; }
   public set includeFieldsWithNoValues(value: boolean) {
     this._includeFieldsWithNoValues = value;
-    this.invalidateContentCache(false);
+    this.invalidateCache({ content: true });
   }
 
   /** Is the specified field in the favorites list. */
@@ -245,7 +246,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     fields.sort(prioritySortFunction);
   }
 
-  public async getData(): Promise<PropertyPaneData> {
+  public getData: _.MemoizedFunction = memoize(async (): Promise<PropertyPaneData> => {
     const content = await this.getContent(this._keys);
     if (!content || 0 === content.contentSet.length)
       throw new Error("No content");
@@ -260,5 +261,5 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     const builder = new PropertyDataBuilder(content.descriptor, contentItem,
       this.includeFieldsWithNoValues, callbacks);
     return builder.buildPropertyData();
-  }
+  });
 }

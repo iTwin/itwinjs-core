@@ -6,9 +6,9 @@ import * as spies from "chai-spies";
 import * as moq from "typemoq";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { SelectionManager } from "./SelectionManager";
-import { SelectionHandler } from "./SelectionHandler";
-import { SelectionChangeEvent } from "./SelectionChangeEvent";
+import SelectionManager from "./SelectionManager";
+import SelectionHandler from "./SelectionHandler";
+import SelectionChangeEvent from "./SelectionChangeEvent";
 
 describe("SelectionHandler", () => {
 

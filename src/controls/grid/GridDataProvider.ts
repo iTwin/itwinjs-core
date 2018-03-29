@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import memoize = require("lodash/memoize");
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
-import ContentDataProvider from "../common/ContentDataProvider";
+import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { isPrimitiveDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
 import { InstanceKey, KeySet, PageOptions } from "@bentley/ecpresentation-common";
+
+// note: I expect the below types to be defined somewhere outside ecpresentation repository
 
 export enum SortDirection {
   Ascending,
@@ -45,20 +48,23 @@ interface PagePosition {
 
 class Page {
   private readonly _position: PagePosition;
-  private _rowsPromise: Promise<RowItem[]>;
+  private readonly _content: Promise<content.Content>;
   private _rows: Array<Readonly<RowItem>> | undefined;
 
   constructor(position: PagePosition, contentPromise: Promise<content.Content>) {
-    const self = this;
     this._position = position;
-    this._rowsPromise = contentPromise.then((c: content.Content) => {
-      return self._rows = self.createRows(c);
-    });
+    this._content = contentPromise;
   }
 
   public get position(): Readonly<PagePosition> { return this._position; }
+
   public get rows(): Array<Readonly<RowItem>> | undefined { return this._rows; }
-  public async getRows(): Promise<Array<Readonly<RowItem>>> { return this._rowsPromise; }
+
+  public getRows: _.MemoizedFunction = memoize(async (): Promise<Array<Readonly<RowItem>>> => {
+    const c = await this._content;
+    this._rows = this.createRows(c);
+    return this._rows;
+  });
 
   private createRows(c: content.Content): RowItem[] {
     const pageSize = this._position.end - this._position.start;
@@ -228,22 +234,24 @@ export default class GridDataProvider extends ContentDataProvider {
     this._keys = new KeySet();
   }
 
-  protected invalidateCache(): void {
-    this._filterExpression = undefined;
-    this._sortColumnKey = undefined;
-    this._sortDirection = SortDirection.Ascending;
+  protected invalidateCache(props: CacheInvalidationProps): void {
+    if (props.descriptor) {
+      this._filterExpression = undefined;
+      this._sortColumnKey = undefined;
+      this._sortDirection = SortDirection.Ascending;
+      this.getColumns.cache.clear();
+    }
 
-    if (undefined !== this._pages)
+    if (props.size)
+      this.getRowsCount.cache.clear();
+
+    if (props.content)
+      this.getRow.cache.clear();
+
+    if ((props.size || props.content) && this._pages)
       this._pages.invalidatePages();
 
-    super.invalidateCache();
-  }
-
-  protected invalidateContentCache(invalidateContentSetSize: boolean, invalidatePages: boolean = true): void {
-    super.invalidateContentCache(invalidateContentSetSize);
-
-    if (invalidatePages && this._pages)
-      this._pages.invalidatePages();
+    super.invalidateCache(props);
   }
 
   /** Handles filtering and sorting. */
@@ -260,14 +268,28 @@ export default class GridDataProvider extends ContentDataProvider {
     return configured;
   }
 
+  /** Sorts the data in this data provider.
+   * @param[in] columnIndex Index of the column to sort on.
+   * @param[in] sortDirection Sorting direction.
+   */
+  public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
+    const columns = await this.getColumns();
+    const sortingColumn = columns[columnIndex];
+    if (!sortingColumn)
+      throw new Error("Invalid column index");
+    this._sortColumnKey = sortingColumn.key;
+    this._sortDirection = sortDirection;
+    this.invalidateCache({ content: true });
+  }
+
   public get keys() { return this._keys; }
   public set keys(keys: Readonly<KeySet>) {
     this._keys = keys;
-    this.invalidateCache();
+    this.invalidateCache({ descriptor: true, size: true, content: true });
   }
 
   /** Returns column definitions for the content. */
-  public async getColumns(): Promise<Array<Readonly<ColumnDescription>>> {
+  public getColumns: _.MemoizedFunction = memoize(async (): Promise<Array<Readonly<ColumnDescription>>> => {
     const descriptor = await this.getContentDescriptor(this.keys);
     const sortedFields = descriptor.fields.slice();
     sortedFields.sort((a: content.Field, b: content.Field): number => {
@@ -291,39 +313,26 @@ export default class GridDataProvider extends ContentDataProvider {
       cols.push(columnDescription);
     }
     return cols;
-  }
-
-  /** Sorts the data in this data provider.
-   * @param[in] columnIndex Index of the column to sort on.
-   * @param[in] sortDirection Sorting direction.
-   */
-  public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
-    const columns = await this.getColumns();
-    const sortingColumn = columns[columnIndex];
-    if (!sortingColumn)
-      throw new Error("Invalid column index");
-    this._sortColumnKey = sortingColumn.key;
-    this._sortDirection = sortDirection;
-    this.invalidateContentCache(false);
-  }
+  });
 
   /** Get the total number of rows in the content. */
-  public async getRowsCount(): Promise<number> { return await this.getContentSetSize(this.keys); }
+  public getRowsCount: _.MemoizedFunction = memoize(async (): Promise<number> => {
+    return await this.getContentSetSize(this.keys);
+  });
 
   /** Get a single row.
    * @param[in] rowIndex Index of the row to return.
    */
-  public async getRow(rowIndex: number): Promise<Readonly<RowItem>> {
+  public getRow: _.MemoizedFunction = memoize(async (rowIndex: number): Promise<Readonly<RowItem>> => {
     let page = this._pages.getPage(rowIndex);
     if (!page) {
-      this.invalidateContentCache(false, false);
       const position = this._pages.reservePage(rowIndex);
       page = this._pages.createPage(position, this.getContent(this.keys, undefined,
         { pageStart: position.start, pageSize: position.end - position.start } as PageOptions));
     }
     const rows = await page.getRows();
     return rows[rowIndex - page.position.start];
-  }
+  });
 
   /** Try to get the loaded row. Returns undefined if the row is not currently cached.
    * @param[in] rowIndex Index of the row to return.

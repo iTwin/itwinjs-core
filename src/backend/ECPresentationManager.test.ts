@@ -11,7 +11,7 @@ import { PageOptions, SelectionInfo, KeySet } from "@bentley/ecpresentation-comm
 import { createDescriptorOverrides } from "@bentley/ecpresentation-common/lib/content/Descriptor";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "./ECPresentationManager";
 import * as addonTypes from "./AddonResponses";
-import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "../test-helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey } from "../test-helpers/random/Hierarchy";
 import { createRandomECInstanceKey } from "../test-helpers/random/EC";
 import { createRandomDescriptor } from "../test-helpers/random/Content";
 import { createRandomId } from "../test-helpers/random/Misc";

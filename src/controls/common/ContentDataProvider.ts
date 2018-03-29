@@ -6,6 +6,12 @@ import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 
+export interface CacheInvalidationProps {
+  descriptor?: boolean;
+  size?: boolean;
+  content?: boolean;
+}
+
 /** Base class for all data providers that are based on @ref PresentationManager. */
 export default abstract class ContentDataProvider {
   private _rulesetId: string;
@@ -25,37 +31,28 @@ export default abstract class ContentDataProvider {
     this._rulesetId = rulesetId;
     this._displayType = displayType;
     this._imodelToken = imodelToken;
-    this.invalidateCache();
-  }
-
-  public set imodelToken(token: IModelToken) {
-    this._imodelToken = token;
-    this.invalidateCache();
+    this.invalidateCache({ descriptor: true, size: true, content: true });
   }
 
   public get imodelToken(): IModelToken { return this._imodelToken; }
 
+  public set imodelToken(token: IModelToken) {
+    this._imodelToken = token;
+    this.invalidateCache({ descriptor: true, size: true, content: true });
+  }
+
   /** Fully invalidates cached content including the descriptor. Called after events like
    * selection changes.
    */
-  protected invalidateCache(): void {
-    this._descriptor = undefined;
-    this._configuredDescriptor = undefined;
-    this.invalidateContentCache(true);
-  }
-
-  /** Invalidates just the content but not the descriptor. Called after events like
-   * sorting or filtering changes.
-   * @param invalidateContentSetSize Should content set size also be invalidated.
-   * The size invalidation can be skipped after operations like sorting, because the
-   * amount of items in the content set doesn't change.
-   */
-  protected invalidateContentCache(invalidateContentSetSize: boolean): void {
-    this._configuredDescriptor = undefined;
-    this._content = undefined;
-
-    if (invalidateContentSetSize)
+  protected invalidateCache(props: CacheInvalidationProps): void {
+    if (props.descriptor) {
+      this._descriptor = undefined;
+      this._configuredDescriptor = undefined;
+    }
+    if (props.size)
       this._contentSetSize = undefined;
+    if (props.content)
+      this._content = undefined;
   }
 
   /** Called to create extended options for content requests. The actual options depend on the

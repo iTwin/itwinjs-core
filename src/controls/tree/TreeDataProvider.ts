@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import memoize = require("lodash/memoize");
 import { IModelToken } from "@bentley/imodeljs-common";
 import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
@@ -31,10 +32,22 @@ export interface TreeNodeItem {
   extendedData: any;
 }
 
+const createKeyForPageOptions = (pageOptions?: PageOptions) => {
+  if (!pageOptions)
+    return "0/0";
+  return `${(pageOptions.pageStart) ? pageOptions.pageStart : 0}/${(pageOptions.pageSize) ? pageOptions.pageSize : 0}`;
+};
+const createKeyForTreeNodeItem = (item: TreeNodeItem) => item.id;
+const getRootNodesKeyResolver = createKeyForPageOptions;
+const getChildNodesKeyResolver = (parent: TreeNodeItem, pageOptions?: PageOptions) => {
+  return `${createKeyForTreeNodeItem(parent)}/${createKeyForPageOptions(pageOptions)}`;
+};
+const getChildNodesCountKeyResolver = createKeyForTreeNodeItem;
+
 /** Tree data provider which uses @ref PresentationManager to query nodes. */
 export default class TreeDataProvider {
   private _rulesetId: string;
-  public imodelToken: IModelToken;
+  private _imodelToken: IModelToken;
 
   /** Constructor.
    * @param[in] manager Presentation manager used to get the nodes.
@@ -42,11 +55,21 @@ export default class TreeDataProvider {
    */
   public constructor(imodelToken: IModelToken, rulesetId: string) {
     this._rulesetId = rulesetId;
-    this.imodelToken = imodelToken;
+    this._imodelToken = imodelToken;
   }
 
   /** Get id of the ruleset used by this data provider */
   public get rulesetId(): string { return this._rulesetId; }
+
+  public get imodelToken(): IModelToken { return this._imodelToken; }
+
+  public set imodelToken(value: IModelToken) {
+    this._imodelToken = value;
+    this.getRootNodesCount.cache.clear();
+    this.getRootNodes.cache.clear();
+    this.getChildNodesCount.cache.clear();
+    this.getChildNodes.cache.clear();
+  }
 
   /** Called to get extended options for node requests */
   private createRequestOptions(): object {
@@ -62,21 +85,21 @@ export default class TreeDataProvider {
   /** Returns the root nodes.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getRootNodes(pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
+  public getRootNodes: _.MemoizedFunction = memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const nodes = await ECPresentation.presentation.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
     return this.createTreeNodeItems(nodes);
-  }
+  }, getRootNodesKeyResolver);
 
   /** Returns the total number of root nodes. */
-  public async getRootNodesCount(): Promise<number> {
+  public getRootNodesCount: _.MemoizedFunction = memoize(async (): Promise<number> => {
     return await ECPresentation.presentation.getRootNodesCount(this.imodelToken, this.createRequestOptions());
-  }
+  });
 
   /** Returns child nodes.
    * @param[in] parentNode The parent node to return children for.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getChildNodes(parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
+  public getChildNodes: _.MemoizedFunction = memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
     const nodes = await ECPresentation.presentation.getChildren(this.imodelToken, parentKey, pageOptions, this.createRequestOptions());
     const items = this.createTreeNodeItems(nodes);
@@ -84,15 +107,15 @@ export default class TreeDataProvider {
       item.parentId = parentNode.id;
     });
     return items;
-  }
+  }, getChildNodesKeyResolver);
 
   /** Returns the total number of child nodes.
    * @param[in] parentNode The parent node to return children count for.
    */
-  public async getChildNodesCount(parentNode: TreeNodeItem): Promise<number> {
+  public getChildNodesCount: _.MemoizedFunction = memoize(async (parentNode: TreeNodeItem): Promise<number> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
     return await ECPresentation.presentation.getChildrenCount(this.imodelToken, parentKey, this.createRequestOptions());
-  }
+  }, getChildNodesCountKeyResolver);
 
   private createTreeNodeItem(node: Readonly<Node>): TreeNodeItem {
     const item: TreeNodeItem = {

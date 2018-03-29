@@ -23,6 +23,7 @@
     "lint": "tslint -p ./tsconfig.json",
     "prepublishOnly": "npm run build",
     "test": "node ../../scripts/run-tests.js",
+    "validatePackageJson": "validjson ./package.json",
     "watch": "npm run test -- --watch"
   },
   "dependencies": {
@@ -57,7 +58,8 @@
     "tslint": "^5.8.0",
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
-    "typemoq": "^2.1.0"
+    "typemoq": "^2.1.0",
+    "valid-json-cli": "^1.3.0"
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",

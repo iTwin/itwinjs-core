@@ -5,6 +5,7 @@ import * as chai from "chai";
 import * as path from "path";
 import * as faker from "faker";
 
+// tslint:disable-next-line:no-var-requires
 const chaiJestSnapshot = require("chai-jest-snapshot");
 
 faker.seed(1);

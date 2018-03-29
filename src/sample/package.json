@@ -12,12 +12,13 @@
   },
   "private": true,
   "scripts": {
+    "build": "",
+    "clean": "",
+    "cover": "",
+    "lint": "",
     "start": "imodeljs-react-scripts start",
-    "build": "echo Disabled",
-    "clean": "rimraf lib",
-    "cover": "echo disabled",
-    "lint": "echo Linting is part of build, no need to lint separately",
-    "test": "echo disabled"
+    "test": "",
+    "validatePackageJson": "validjson ./package.json"
   },
   "dependencies": {
     "@bentley/ecpresentation-backend": "~0.0.32",
@@ -59,6 +60,7 @@
     "electron-builder": "^19.49.2",
     "rc-tree": "^1.4.5",
     "react-test-renderer": "^16.1.1",
+    "valid-json-cli": "^1.3.0",
     "webpack": "^2.7.0"
   },
   "homepage": "http://localhost:3000/"

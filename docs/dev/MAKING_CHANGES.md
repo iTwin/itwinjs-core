@@ -36,6 +36,10 @@ You can make multiple local commits before pushing the changes.
 
 Use [pull requests](./PULL_REQUESTS.md).
 
+Note: before pushing it's recommended to run the `pre-publish.bat`
+file - it runs the same commands as our CI job and helps to make
+sure you don't forget to built / lint / test / etc.
+
 ## Publishing changes
 
 New version of the library should be published when it reaches some
