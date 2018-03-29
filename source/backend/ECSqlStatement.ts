@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert, DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
@@ -40,15 +40,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public setIsShared(b: boolean) { this._isShared = b; }
 
   /** @hidden - used by statement cache */
-  public isShared(): boolean {
-    assert(!this._isShared || this.isPrepared(), "a shared statement must always be in the prepared state");
-    return this._isShared;
-  }
+  public isShared(): boolean { return this._isShared; }
 
   /** Check if this statement has been prepared successfully or not */
-  public isPrepared(): boolean {
-    return this._stmt !== undefined;
-  }
+  public isPrepared(): boolean { return this._stmt !== undefined; }
 
   /** @hidden used internally only
    * Prepare this statement prior to first use.
@@ -85,16 +80,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       return;
     this._stmt!.dispose(); // Tell the peer JS object to free its native resources immediately
     this._stmt = undefined; // discard the peer JS object as garbage
-
-    assert(!this.isPrepared()); // leaves the statement in the un-prepared state
   }
 
   /** Binds null to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    */
-  public bindNull(parameter: number | string): void {
-    this.getBinder(parameter).bindNull();
-  }
+  public bindNull(parameter: number | string): void { this.getBinder(parameter).bindNull(); }
 
   /** bind a Range3d as a blob to the specified ECSQL parameter
    * @param parameter Index(1-based) or name of the parameter
@@ -106,106 +97,80 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param BLOB value as either an ArrayBuffer or a Base64 string
    */
-  public bindBlob(parameter: number | string, blob: string | ArrayBuffer | SharedArrayBuffer): void {
-    this.getBinder(parameter).bindBlob(blob);
-  }
+  public bindBlob(parameter: number | string, blob: string | ArrayBuffer | SharedArrayBuffer): void { this.getBinder(parameter).bindBlob(blob); }
 
   /** Binds a boolean value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Boolean value
    */
-  public bindBoolean(parameter: number | string, val: boolean): void {
-    this.getBinder(parameter).bindBoolean(val);
-  }
+  public bindBoolean(parameter: number | string, val: boolean): void { this.getBinder(parameter).bindBoolean(val); }
 
   /** Binds a DateTime value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param isoDateTimeString DateTime value as ISO8601 string
    */
-  public bindDateTime(parameter: number | string, isoDateTimeString: string): void {
-    this.getBinder(parameter).bindDateTime(isoDateTimeString);
-  }
+  public bindDateTime(parameter: number | string, isoDateTimeString: string): void { this.getBinder(parameter).bindDateTime(isoDateTimeString); }
 
   /** Binds a double value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Double value
    */
-  public bindDouble(parameter: number | string, val: number): void {
-    this.getBinder(parameter).bindDouble(val);
-  }
+  public bindDouble(parameter: number | string, val: number): void { this.getBinder(parameter).bindDouble(val); }
 
   /** Binds an GUID value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val GUID value
    */
-  public bindGuid(parameter: number | string, val: GuidProps): void {
-    this.getBinder(parameter).bindGuid(ECSqlTypeHelper.toGuidString(val));
-  }
+  public bindGuid(parameter: number | string, val: GuidProps): void { this.getBinder(parameter).bindGuid(ECSqlTypeHelper.toGuidString(val)); }
 
   /** Binds an Id value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64Props): void {
-    this.getBinder(parameter).bindId(ECSqlTypeHelper.toIdString(val));
-  }
+  public bindId(parameter: number | string, val: Id64Props): void { this.getBinder(parameter).bindId(ECSqlTypeHelper.toIdString(val)); }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Integer value as number, decimal string or hexadecimal string.
    */
-  public bindInteger(parameter: number | string, val: number | string): void {
-    this.getBinder(parameter).bindInteger(val);
-  }
+  public bindInteger(parameter: number | string, val: number | string): void { this.getBinder(parameter).bindInteger(val); }
 
   /** Binds an Point2d value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Point2d value
    */
-  public bindPoint2d(parameter: number | string, val: XAndY): void {
-    this.getBinder(parameter).bindPoint2d(val.x, val.y);
-  }
+  public bindPoint2d(parameter: number | string, val: XAndY): void { this.getBinder(parameter).bindPoint2d(val.x, val.y); }
 
   /** Binds an Point3d value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Point3d value
    */
-  public bindPoint3d(parameter: number | string, val: XYAndZ): void {
-    this.getBinder(parameter).bindPoint3d(val.x, val.y, val.z);
-  }
+  public bindPoint3d(parameter: number | string, val: XYAndZ): void { this.getBinder(parameter).bindPoint3d(val.x, val.y, val.z); }
 
   /** Binds an string to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val String value
    */
-  public bindString(parameter: number | string, val: string): void {
-    this.getBinder(parameter).bindString(val);
-  }
+  public bindString(parameter: number | string, val: string): void { this.getBinder(parameter).bindString(val); }
 
   /** Binds a navigation property value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Navigation property value
    */
-  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void {
-    this.getBinder(parameter).bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace);
-  }
+  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void { this.getBinder(parameter).bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace); }
 
   /** Binds a struct property value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
    * (of one of the supported types)
    */
-  public bindStruct(parameter: number | string, val: object): void {
-    ECSqlBindingHelper.bindStruct(this.getBinder(parameter), val);
-  }
+  public bindStruct(parameter: number | string, val: object): void { ECSqlBindingHelper.bindStruct(this.getBinder(parameter), val); }
 
   /** Binds an array value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Array value. The array value is an array of values of the supported types
    */
-  public bindArray(parameter: number | string, val: any[]): void {
-    ECSqlBindingHelper.bindArray(this.getBinder(parameter), val);
-  }
+  public bindArray(parameter: number | string, val: any[]): void { ECSqlBindingHelper.bindArray(this.getBinder(parameter), val); }
 
   /** Bind values to all parameters in the statement.
    * @param values The values to bind to the parameters.
@@ -233,7 +198,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
         if (paramValue === undefined || paramValue === null)
           continue;
 
-          ECSqlBindingHelper.bindValue(this.getBinder(paramIndex), paramValue);
+        ECSqlBindingHelper.bindValue(this.getBinder(paramIndex), paramValue);
       }
       return;
     }
@@ -268,9 +233,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *  * [[DbResult.BE_SQLITE_DONE]] if the statement has been executed successfully.
    *  * Error status in case of errors.
    */
-  public step(): DbResult {
-    return this._stmt!.step();
-  }
+  public step(): DbResult { return this._stmt!.step(); }
 
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
    * created instance.
@@ -332,11 +295,11 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      let ecsqlValue = this.getValue(i);
+      const ecsqlValue = this.getValue(i);
       if (!ecsqlValue.isNull()) {
-      const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
-      const val: any = ecsqlValue.value;
-      Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
+        const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
+        const val: any = ecsqlValue.value;
+        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
       }
     }
 
@@ -459,7 +422,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: NativeECSqlValueIterator;
 
   public constructor(it: NativeECSqlValueIterator) { this._it = it; }
-  
+
   public next(): IteratorResult<ECSqlValue> {
     if (this._it.moveNext())
       return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
@@ -608,7 +571,7 @@ class ECSqlBindingHelper {
     }
 
     for (const element of val) {
-        ECSqlBindingHelper.bindValue(binder.addArrayElement(), element);
+      ECSqlBindingHelper.bindValue(binder.addArrayElement(), element);
     }
   }
 
@@ -654,7 +617,6 @@ class ECSqlBindingHelper {
 }
 
 class ECSqlValueHelper {
-
   public static getValue(ecsqlValue: ECSqlValue): any {
     if (ecsqlValue.isNull())
       return undefined;
@@ -718,16 +680,12 @@ class ECSqlValueHelper {
           propName += ECJsNames.toJsName(ECSqlSystemProperty.PointY);
         else if (leafToken === "Z")
           propName += ECJsNames.toJsName(ECSqlSystemProperty.PointZ);
-        else {
-          assert(false, "Unhandled ECSQL system property type");
-          throw new IModelError(BentleyStatus.ERROR, "Unhandled ECSQL system property: " + colInfo.getAccessString());
-        }
+        else throw new IModelError(BentleyStatus.ERROR, "Unhandled ECSQL system property: " + colInfo.getAccessString());
       }
     } else
       propName = ECJsNames.toJsName(colAccessString);
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
-    assert(propName !== undefined);
     let suffix: number | undefined = duplicatePropNames.get(propName);
     if (suffix === undefined)
       duplicatePropNames.set(propName, 0);
@@ -751,7 +709,6 @@ class ECSqlValueHelper {
         if (memberECSqlVal.isNull())
           continue;
 
-        assert(!memberECSqlVal.columnInfo.isGeneratedProperty());
         const memberName: string = ECJsNames.toJsName(memberECSqlVal.columnInfo.getPropertyName());
         const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
         Object.defineProperty(structVal, memberName, { enumerable: true, configurable: true, writable: true, value: memberVal });
@@ -771,7 +728,6 @@ class ECSqlValueHelper {
         arrayVal.push(memberVal);
       }
     } finally {
-      
     }
 
     return arrayVal;
@@ -888,22 +844,16 @@ export class ECSqlStatementCache {
   }
 
   public add(str: string, stmt: ECSqlStatement): void {
-
-    assert(!stmt.isShared(), "when you add a statement to the cache, the cache takes ownership of it. You can't add a statement that is already being shared in some other way");
-    assert(stmt.isPrepared(), "you must cache only cached statements.");
-
     const existing = this.statements.get(str);
     if (existing !== undefined) {
-      assert(existing.useCount > 0, "you should only add a statement if all existing copies of it are in use.");
+      throw new Error("you should only add a statement if all existing copies of it are in use.");
     }
     const cs = new CachedECSqlStatement(stmt);
     cs.statement.setIsShared(true);
     this.statements.set(str, cs);
   }
 
-  public getCount(): number {
-    return this.statements.size;
-  }
+  public getCount(): number { return this.statements.size; }
 
   public find(str: string): CachedECSqlStatement | undefined {
     return this.statements.get(str);
@@ -920,7 +870,7 @@ export class ECSqlStatementCache {
             css.statement.clearBindings();
           }
         } else {
-          assert(false, "double-release of cached statement");
+          throw new Error("double-release of cached statement");
         }
         // leave the statement in the cache, even if its use count goes to zero. See removeUnusedStatements and clearOnClose.
         // *** TODO: we should remove it if it is a duplicate of another unused statement in the cache. The trouble is that we don't have the ecsql for the statement,
@@ -937,8 +887,6 @@ export class ECSqlStatementCache {
     const keysToRemove = [];
     for (const cs of this.statements) {
       const css = cs[1];
-      assert(css.statement.isShared());
-      assert(css.statement.isPrepared());
       if (css.useCount === 0) {
         css.statement.setIsShared(false);
         css.statement.dispose();
@@ -954,9 +902,6 @@ export class ECSqlStatementCache {
 
   public clear() {
     for (const cs of this.statements) {
-      assert(cs[1].useCount === 0, "statement was never released: " + cs[0]);
-      assert(cs[1].statement.isShared());
-      assert(cs[1].statement.isPrepared());
       const stmt = cs[1].statement;
       if (stmt !== undefined) {
         stmt.setIsShared(false);
