@@ -2,12 +2,12 @@ import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
-import { SeedFile, SeedFileInitState, RequestQueryOptions } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelHost } from "../backend";
 import {
-  ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModel as HubIModel, Briefcase, MultiCode,
+  AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
+  Response, ChangeSet, IModel as HubIModel, Briefcase, MultiCode, Version,
+  SeedFile, SeedFileInitState, RequestQueryOptions,
 } from "@bentley/imodeljs-clients";
 
 /** Parse a single typed instance from a JSON string using ECJsonTypeMap */
@@ -52,8 +52,12 @@ export class TestIModelInfo {
 export class MockAssetUtil {
   private static iModelMap = new Map<string, string>([["c3e1146f-8c81-430d-a974-ac840657b7ac", "ReadOnlyTest"],
                                                       ["b74b6451-cca3-40f1-9890-42c769a28f3e", "ReadWriteTest"],
-                                                      // ["077e23a9-d974-408c-aeb8-79b01d37d289", "OpConTest"],
                                                       ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
+
+  private static versionMap = new Map<string, string[]>([["c3e1146f-8c81-430d-a974-ac840657b7ac", ["0", "1", "2", "3"]],
+                                                         ["b74b6451-cca3-40f1-9890-42c769a28f3e", ["0"]],
+                                                         ["0aea4c09-09f4-449d-bf47-045228d259ba", ["0"]]]);
+  private static versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
   public static verifyIModelInfo(testIModelInfos: TestIModelInfo[]) {
     assert(testIModelInfos.length === this.iModelMap.size, "IModelInfo array has the wrong number of entries");
@@ -123,6 +127,7 @@ export class MockAssetUtil {
                                                                      TypeMoq.It.isAnyString(),
                                                                      TypeMoq.It.is<RequestQueryOptions>((x: RequestQueryOptions) => x.$filter!.includes(pair[1]))))
         .returns(() => {
+          pair.toString();
           const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
           const buff = IModelJsFs.readFileSync(sampleIModelPath);
           const jsonObj = JSON.parse(buff.toString());
@@ -154,20 +159,22 @@ export class MockAssetUtil {
 
       // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
       // into the provided cache location
-      iModelHubClientMock.setup((f: IModelHubClient) => f.downloadFile(TypeMoq.It.isAnyString(),
-                                                                       TypeMoq.It.is<string>((x: string) => x.includes(pair[1]))))
-        .returns((seedUrl: string, seedPathname: string) => {
-          seedUrl.italics();
-          const testModelPath = path.join(assetDir, pair[1], `${pair[1]}.bim`);
-          IModelJsFs.copySync(testModelPath, seedPathname);
-          const retResponse: Response = {
-            status: 200,
-            header: undefined,
-            body: undefined,
-          };
-          return Promise.resolve(retResponse)
-          .then(() => Promise.resolve());
-        });
+      for (const version of this.versionMap.get(pair[0])!) {
+        iModelHubClientMock.setup((f: IModelHubClient) => f.downloadFile(TypeMoq.It.isAnyString(),
+                                                                         TypeMoq.It.is<string>((x: string) => x.includes(pair[1]))))
+          .returns((seedUrl: string, seedPathname: string) => {
+            seedUrl.toString();
+            const testModelPath = path.join(assetDir, pair[1], version, `${pair[1]}.bim`);
+            IModelJsFs.copySync(testModelPath, seedPathname);
+            const retResponse: Response = {
+              status: 200,
+              header: undefined,
+              body: undefined,
+            };
+            return Promise.resolve(retResponse)
+            .then(() => Promise.resolve());
+          });
+      }
 
       // For any call with a specified iModelId, return a dummy briefcaseId. If future test cases demand so, we may
       // need to change this to return specific briefcaseIds
@@ -201,35 +208,40 @@ export class MockAssetUtil {
           return Promise.resolve([briefcaseInstance]);
         }).verifiable();
 
+      // iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
+      //                                                                   TypeMoq.It.isAny(),
+      //                                                                   TypeMoq.It.isAny()))
+      //   .returns((accessToken: AccessToken, ID: string, flag: boolean) => {
+      //     accessToken.toTokenString();
+      //     ID.toString();
+      //     flag.valueOf();
+      //     const sampleChangeSetPath = path.join(assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+      //     const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
+      //     const jsonObj = JSON.parse(buff.toString());
+      //     return Promise.resolve(getTypedInstances<ChangeSet>(ChangeSet, jsonObj));
+      //   });
+
       // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
       // and parse them into instances
-      iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
-                                                                        TypeMoq.It.is<string>((x: string) => x.includes(pair[0])),
-                                                                        TypeMoq.It.isAny()))
-        .returns(() => {
-          const sampleChangeSetPath = path.join(assetDir, pair[1], `${pair[1]}ChangeSets.json`);
-          const buff = IModelJsFs.readFileSync(sampleChangeSetPath);
-          const jsonObj = JSON.parse(buff.toString());
-          return Promise.resolve(getTypedInstances<ChangeSet>(ChangeSet, jsonObj));
-        }).verifiable();
-
-      // Same set up as before, but for calls with all optional parameters
       iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSets(TypeMoq.It.isAny(),
                                                                           TypeMoq.It.is<string>((x: string) => x === pair[0]),
                                                                           TypeMoq.It.isAny(),
                                                                           TypeMoq.It.isAny()))
-        .returns(() => {
-            const sampleChangeSetsPath = path.join(assetDir, pair[1], `${pair[1]}ChangeSets.json`);
-            const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
-            const jsonObj = JSON.parse(buff.toString());
-            const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
-            return Promise.resolve(sampleChangeSets);
-          }).verifiable();
+        .returns((accessToken: AccessToken, ID: string, flag: boolean) => {
+          accessToken.toTokenString();
+          ID.toString();
+          flag.valueOf();
+          const sampleChangeSetsPath = path.join(assetDir, pair[1], `${pair[1]}ChangeSets.json`);
+          const buff = IModelJsFs.readFileSync(sampleChangeSetsPath);
+          const jsonObj = JSON.parse(buff.toString());
+          const sampleChangeSets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
+          return Promise.resolve(sampleChangeSets);
+          });
 
       // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
       // and parse them into instances
       iModelHubClientMock.setup((f: IModelHubClient) => f.getChangeSet(TypeMoq.It.isAny(),
-                                                                        TypeMoq.It.is<string>((x: string) => x.includes(pair[0])),
+                                                                        TypeMoq.It.is<string>((x: string) => x === pair[0]),
                                                                         TypeMoq.It.isAnyString(),
                                                                         TypeMoq.It.isValue(false)))
         .returns(() => {
@@ -269,6 +281,18 @@ export class MockAssetUtil {
         seedFiles.push(seedFileMock.object);
         return Promise.resolve(seedFiles);
       }).verifiable();
+
+    for (const name of this.versionNames) {
+      iModelHubClientMock.setup((f: IModelHubClient) => f.getVersions(TypeMoq.It.isAny(),
+                                                                      TypeMoq.It.is<string>((x: string) => x === "c3e1146f-8c81-430d-a974-ac840657b7ac"),
+                                                                      TypeMoq.It.is<RequestQueryOptions>((x: RequestQueryOptions) => x.$filter!.includes(name))))
+        .returns(() => {
+          const versionPath = path.join(assetDir, "ReadOnlyTest", "versions", `ReadOnlyTest${name}.json`);
+          const buff = IModelJsFs.readFileSync(versionPath);
+          const jsonObj = JSON.parse(buff.toString());
+          return Promise.resolve(getTypedInstances<Version>(Version, jsonObj));
+        });
+    }
   }
 
   public static setupHubMultiCodes(iModelHubClientMock: TypeMoq.IMock<IModelHubClient>, assetDir: string, iModelId: string, iModelName: string, isReserved: boolean) {

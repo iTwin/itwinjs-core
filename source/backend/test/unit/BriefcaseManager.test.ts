@@ -72,7 +72,7 @@ describe("BriefcaseManagerUnitTests", () => {
       $select: "*",
       $filter: "Name+eq+'NodeJstestproject'",
     });
-    connectClientMock.verify((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
+    // connectClientMock.verify((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
     assert(project && project.wsgId, "No projectId returned from connectionClient mock");
     testProjectId = project.wsgId;
 
