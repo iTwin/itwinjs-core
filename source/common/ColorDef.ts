@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// tslint:disable:variable-name
 // spell-checker: disable
 
 /**
- * A set of known colors by name as a number in the form [Blue,Green,Red] (red is the low byte).
- * This is different than color values in [Red,Green,Blue] format for HTML pages (red and blue are swapped).
- * If your colors don't look right, likely you're using RGB where ColorDef expects BGR.
+ * A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).
+ * This is different than color values in #RRGGBB format for HTML pages (red and blue are swapped).
+ * If your colors don't look right, likely you're using 0xRRGGBB where ColorDef expects 0xBBGGRR.
  */
 export enum ColorByName {
   aliceBlue = 0xFFF8F0,
@@ -88,7 +87,7 @@ export enum ColorByName {
   lightPink = 0xC1B6FF,
   lightSalmon = 0x7AA0FF,
   lightSeagreen = 0xAAB220,
-  lightSkyblue = 0xFACE87,
+  lightSkyBlue = 0xFACE87,
   lightSlateGray = 0x998877,
   lightSlateGrey = 0x998877,
   lightSteelBlue = 0xDEC4B0,
@@ -102,7 +101,7 @@ export enum ColorByName {
   mediumBlue = 0xCD0000,
   mediumOrchid = 0xD355BA,
   mediumPurple = 0xDB7093,
-  mediumSeagreen = 0x71B33C,
+  mediumSeaGreen = 0x71B33C,
   mediumSlateBlue = 0xEE687B,
   mediumSpringGreen = 0x9AFA00,
   mediumTurquoise = 0xCCD148,
@@ -113,7 +112,7 @@ export enum ColorByName {
   moccasin = 0xB5E4FF,
   navajoWhite = 0xADDEFF,
   navy = 0x800000,
-  oldlace = 0xE6F5FD,
+  oldLace = 0xE6F5FD,
   olive = 0x008080,
   oliveDrab = 0x238E6B,
   orange = 0x00A5FF,
@@ -123,7 +122,7 @@ export enum ColorByName {
   paleGreen = 0x98FB98,
   paleTurquoise = 0xEEEEAF,
   paleVioletRed = 0x9370DB,
-  papayawhip = 0xD5EFFF,
+  papayaWhip = 0xD5EFFF,
   peachPuff = 0xB9DAFF,
   peru = 0x3F85CD,
   pink = 0xCBC0FF,
@@ -161,9 +160,11 @@ export enum ColorByName {
   yellowGreen = 0x32CD9A,
 }
 
-const VISIBILITY_GOAL = 40;
-const HSV_SATURATION_WEIGHT = 4;
-const HSV_VALUE_WEIGHT = 2;
+const enum HsvConstants {
+  VISIBILITY_GOAL = 40,
+  HSV_SATURATION_WEIGHT = 4,
+  HSV_VALUE_WEIGHT = 2,
+}
 
 /** a color defined by Hue, Saturation, and Lightness */
 export class HSLColor {
@@ -189,7 +190,7 @@ export class HSVColor {
 
   public adjustColor(darkenColor: boolean, delta: number): void {
     if (darkenColor) {
-      let weightedDelta = delta * HSV_VALUE_WEIGHT;
+      let weightedDelta = delta * HsvConstants.HSV_VALUE_WEIGHT;
 
       if (this.v >= weightedDelta) {
         this.v -= weightedDelta;
@@ -200,7 +201,7 @@ export class HSVColor {
         this.s = this.s + weightedDelta < 100 ? this.s + weightedDelta : 100;
       }
     } else {
-      let weightedDelta = delta * HSV_SATURATION_WEIGHT;
+      let weightedDelta = delta * HsvConstants.HSV_SATURATION_WEIGHT;
 
       if (this.s >= weightedDelta) {
         this.s -= weightedDelta;
@@ -216,57 +217,49 @@ export class HSVColor {
 const scratchBytes = new Uint8Array(4);
 const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
-/** a number in TBGR format */
+/** a number in 0xTTBBGGRR format */
 export type ColorDefProps = number | ColorDef;
 
-/** a TBGR value for a color */
+/** a value for a color.  */
 export class ColorDef {
   private _tbgr: number;
 
+  /** swap the red and blue values of a 32-bit integer representing a color. Alpha and green are unchanged. */
+  public static rgb2bgr(val: number): number { scratchUInt32[0] = val; return scratchBytes[3] << 24 + scratchBytes[0] << 16 + scratchBytes[1] << 8 + scratchBytes[2]; }
+
   /**
-   * Create a new ColorDef.
+   * Ctor for ColorDef.
    * @param val value to use.
-   * if a number, it is interpreted as a TBGR  (NOTE: RED is in the low byte!) value.
+   * if a number, it is interpreted as a 0xTTBBGGRR (NOTE: RED is in the low byte, high byte is transparency) value.
    * if a string, must be in one of the following forms:
    * * "rgb(255,0,0)"
    * * "rgba(255,0,0,255)"
    * * "rgb(100%,0%,0%)"
    * * "hsl(120,50%,50%)"
-   * * "#ff0000"
-   * * "red"(see values from ColorRgb)
-   * @return this
+   * * "#rrbbgg
+   * * "red"(see values from ColorByName)
    */
   public constructor(val?: string | ColorDefProps) {
     this._tbgr = 0;
-    if (!val)
-      return;
-
-    if (typeof val === "number") {
-      this.tbgr = val;
-      return;
-    }
-
-    if (val instanceof ColorDef) {
-      this._tbgr = val._tbgr;
-      return;
-    }
-
+    if (!val) return;
+    if (typeof val === "number") { this.tbgr = val; return; }
+    if (val instanceof ColorDef) { this._tbgr = val._tbgr; return; }
     this.fromString(val);
   }
 
   /** make a copy of this ColorDef */
-  public clone(): ColorDef { return new ColorDef(this); }
+  public clone(): ColorDef { return new ColorDef(this._tbgr); }
 
   /** set the color of this ColorDef from another ColorDef */
   public setFrom(other: ColorDef) { this._tbgr = other._tbgr; }
 
-  /** convert this ColorDef to a 32 bit number representing the trgb value */
+  /** convert this ColorDef to a 32 bit number representing the 0xTTBBGGRR value */
   public toJSON(): ColorDefProps { return this._tbgr; }
 
-  /** create a new ColorDef from a json object. If the json object is a number, it is assumed to be a TRGB value. */
+  /** create a new ColorDef from a json object. If the json object is a number, it is assumed to be a 0xTTBBGGRR value. */
   public static fromJSON(json?: any): ColorDef { return new ColorDef(json); }
 
-  /** initialize or create a ColorDef fromn R,G,B,T values. All values should be between 0-255 */
+  /** initialize or create a ColorDef fromn Red,Green,Blue,Transparency values. All values should be between 0-255 */
   public static from(red: number, green: number, blue: number, transparency?: number, result?: ColorDef): ColorDef {
     result = result ? result : new ColorDef();
     scratchBytes[0] = red;
@@ -276,16 +269,20 @@ export class ColorDef {
     result._tbgr = scratchUInt32[0];
     return result;
   }
+
   /** get the r,g,b,t values from this ColorDef. Returned as an object with {r, g, b, t} members. Values will be integers between 0-255. */
   public getColors() { scratchUInt32[0] = this._tbgr; return { b: scratchBytes[2], g: scratchBytes[1], r: scratchBytes[0], t: scratchBytes[3] }; }
   public get tbgr(): number { return this._tbgr; }
   public set tbgr(tbgr: number) { this._tbgr = tbgr | 0; }
-  /** get the value of the color as a number in [Alpha,blue,green,red] format (i.e. red is in low byte)  */
+
+  /** get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==opaque) converted to alpha (255==opaque).  */
   public getAbgr(): number { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - scratchBytes[3]; return scratchUInt32[0]; }
-  /** get the RGB value of the color as a number in [red,green,blue]  format (i.e blue is in the low byte!). Transparency is ignored. Value will be from 0 to 2^24 */
+
+  /** get the RGB value of the color as a number in 0xRRGGBB format (i.e blue is in the low byte). Transparency is ignored. Value will be from 0 to 2^24 */
   public getRgb(): number { scratchUInt32[0] = this._tbgr; return (scratchBytes[0] << 16) + (scratchBytes[1] << 8) + scratchBytes[2]; }
+
   /** change the alpha value for this ColorDef.
-   * @param alpha the new alpha value. Should be between 0-255.
+   * @param alpha the new alpha value. Must be between 0-255.
    */
   public setAlpha(alpha: number): void { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
   /** get the alpha value for this ColorDef. Will be between 0-255 */
@@ -543,10 +540,10 @@ export class ColorDef {
    */
   public adjustForContrast(other: ColorDef, alpha?: number): ColorDef {
     const visibility = this.visibilityCheck(other);
-    if (VISIBILITY_GOAL <= visibility)
+    if (HsvConstants.VISIBILITY_GOAL <= visibility)
       return this.clone();
 
-    const adjPercent = Math.floor(((VISIBILITY_GOAL - visibility) / 255.0) * 100.0);
+    const adjPercent = Math.floor(((HsvConstants.VISIBILITY_GOAL - visibility) / 255.0) * 100.0);
     alpha = alpha ? alpha : this.getAlpha();
     const darkerHSV = this.toHSV();
     const brightHSV = darkerHSV.clone();

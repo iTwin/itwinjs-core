@@ -67,20 +67,20 @@ export interface Placement2dProps {
 
 /** Properties that define a GeometricElement3d */
 export interface GeometricElement3dProps extends GeometricElementProps {
-  placement: Placement3dProps;
+  placement?: Placement3dProps;
   typeDefinition?: RelatedElementProps;
 }
 
 /** Properties that define a GeometricElement2d */
 export interface GeometricElement2dProps extends GeometricElementProps {
-  placement: Placement2dProps;
+  placement?: Placement2dProps;
   typeDefinition?: RelatedElementProps;
 }
 
 /** Properties of a GeometryPart */
 export interface GeometryPartProps extends ElementProps {
   geom?: GeometryStreamProps;
-  bbox: LowAndHighXYZ;
+  bbox?: LowAndHighXYZ;
 }
 
 export interface ViewAttachmentProps extends GeometricElement2dProps {
