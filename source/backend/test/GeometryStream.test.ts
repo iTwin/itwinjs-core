@@ -7,7 +7,7 @@ import {
 } from "@bentley/geometry-core";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import {
-  Code, Placement3d, ElementAlignedBox3d, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeomCoordSystem,
+  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeomCoordSystem,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
@@ -38,16 +38,17 @@ describe("GeometryStream", () => {
     const fonts = imodelWithFonts.getFontMap();
     assert.isTrue(fonts.fonts.size > 0);
 
-    const placement3d = new Placement3d(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(45, 0, 0), new ElementAlignedBox3d(0, 0, 0, 0, 0, 0))
-    const builder = GeometryStreamBuilder.from3d(placement3d.origin, placement3d.angles);
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
+    const builder = GeometryStreamBuilder.from3d(testOrigin, testAngles);
 
     const textProps: TextStringProps = {
       text: "ABC",
       font: 1,
       height: 2,
       bold: true,
-      origin: placement3d.origin,
-      rotation: placement3d.angles,
+      origin: testOrigin,
+      rotation: testAngles,
     };
 
     const textString = new TextString(textProps);
@@ -63,14 +64,14 @@ describe("GeometryStream", () => {
       federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: builder.geometryStream,
-      placement: placement3d,
+      placement: { origin: testOrigin, angles: testAngles },
     };
 
     const testElem = imodelWithFonts.elements.createElement(elementProps);
     const newId = imodelWithFonts.elements.insertElement(testElem);
     imodelWithFonts.saveChanges();
 
-    // Extract and test value returned
+    // Extract and test value returned, text transform should now be identity as it's accounted for by element's placement...
     const value = imodelWithFonts.elements.getElement({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
@@ -102,9 +103,6 @@ describe("GeometryStream", () => {
       geometryStream.push(arcData);
     }
 
-    // tslint:disable-next-line:no-debugger
-    // debugger;
-
     const dictionary: DictionaryModel = imodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     const partProps: GeometryPartProps = {
       classFullName: "BisCore:GeometryPart",
@@ -112,7 +110,6 @@ describe("GeometryStream", () => {
       model: dictionary,
       code: Code.createEmpty(),
       geom: geometryStream,
-      bbox: new ElementAlignedBox3d(0, 0, 0, 0, 0, 0),
     };
 
     const testPart = imodel.elements.createElement(partProps);
@@ -143,9 +140,6 @@ describe("GeometryStream", () => {
       geometryStream.push(arcData);
     }
 
-    // tslint:disable-next-line:no-debugger
-    // debugger;
-
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
       iModel: imodel,
@@ -155,7 +149,6 @@ describe("GeometryStream", () => {
       federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: geometryStream,
-      placement: new Placement3d(Point3d.create(), YawPitchRollAngles.createDegrees(0, 0, 0), new ElementAlignedBox3d(0, 0, 0, 0, 0, 0)),
     };
 
     const testElem = imodel.elements.createElement(elementProps);
