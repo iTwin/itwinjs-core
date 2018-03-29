@@ -8,13 +8,13 @@ import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAnd
 import { IModelError, IModelStatus } from "./IModelError";
 import { GeometryStreamProps } from "./common";
 
-/** The shape of a Navigation property value. Note that the internal properties are defined by the iModelJs JSON wire format and must not be changed. */
+/** The iModelJson properties of an ECNavigationProperty in a BIS schema. */
 export interface RelatedElementProps {
   id: Id64Props;
   relClassName?: string;
 }
 
-/** The properties that define a BIS Element */
+/** The iModelJson properties of a BIS Element */
 export interface ElementProps extends EntityProps {
   model?: Id64Props | RelatedElementProps;
   code?: CodeProps;

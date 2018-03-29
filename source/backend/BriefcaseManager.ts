@@ -5,7 +5,7 @@ import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IMo
 import { ChangeSetProcessOption, BeEvent, DbResult, OpenMode, assert, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { NativeDgnDb, ErrorStatusOrResult, CreateIModelProps } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -414,7 +414,7 @@ export class BriefcaseManager {
   /** Close a briefcase */
   public static async close(accessToken: AccessToken, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
     briefcase.onBeforeClose.raiseEvent(briefcase);
-    briefcase.nativeDb!.closeDgnDb();
+    briefcase.nativeDb!.closeIModel();
     briefcase.isOpen = false;
     if (keepBriefcase === KeepBriefcase.No)
       await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
@@ -650,7 +650,7 @@ export class BriefcaseManager {
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
-    const res = nativeDb.openDgnDb(pathname, openMode);
+    const res = nativeDb.openIModel(pathname, openMode);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, pathname);
 
@@ -678,15 +678,15 @@ export class BriefcaseManager {
   }
 
   /** Create a standalone iModel from the local disk */
-  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): BriefcaseEntry {
-    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${pathname} again - it already exists`);
+  public static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry {
+    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(fileName)))
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${fileName} again - it already exists`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
-    const res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
+    const res: DbResult = nativeDb.createIModel(fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, pathname);
+      throw new IModelError(res, fileName);
 
     nativeDb.setBriefcaseId(BriefcaseId.Standalone);
 
@@ -696,7 +696,7 @@ export class BriefcaseManager {
     briefcase.iModelId = nativeDb.getDbGuid();
     briefcase.isOpen = true;
     briefcase.openMode = OpenMode.ReadWrite;
-    briefcase.pathname = pathname;
+    briefcase.pathname = fileName;
     briefcase.isStandalone = true;
     briefcase.nativeDb = nativeDb;
 
@@ -707,7 +707,7 @@ export class BriefcaseManager {
   /** Close the standalone briefcase */
   public static closeStandalone(briefcase: BriefcaseEntry) {
     briefcase.onBeforeClose.raiseEvent(briefcase);
-    briefcase.nativeDb!.closeDgnDb();
+    briefcase.nativeDb!.closeIModel();
     briefcase.isOpen = false;
 
     if (BriefcaseManager.standaloneCache.findBriefcase(briefcase))
@@ -772,7 +772,7 @@ export class BriefcaseManager {
       briefcase.nativeDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     // Note: Open briefcase as ReadWrite, even if briefcase.openMode is Readonly. This is to allow to pull and merge change sets.
-    const res: DbResult = briefcase.nativeDb.openDgnDb(briefcase.pathname, OpenMode.ReadWrite);
+    const res: DbResult = briefcase.nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
 
@@ -982,7 +982,7 @@ export class BriefcaseManager {
   }
 
   /** Create an iModel on the iModelHub */
-  public static async create(accessToken: AccessToken, projectId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<BriefcaseEntry> {
+  public static async create(accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<BriefcaseEntry> {
     await BriefcaseManager.initCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
@@ -992,21 +992,21 @@ export class BriefcaseManager {
     if (!IModelJsFs.existsSync(scratchDir))
       IModelJsFs.mkdirSync(scratchDir);
 
-    const pathname = path.join(scratchDir, hubName + ".bim");
-    if (IModelJsFs.existsSync(pathname))
-      IModelJsFs.unlinkSync(pathname); // Note: Cannot create two files with the same name at the same time with multiple async calls.
+    const fileName = path.join(scratchDir, hubName + ".bim");
+    if (IModelJsFs.existsSync(fileName))
+      IModelJsFs.unlinkSync(fileName); // Note: Cannot create two files with the same name at the same time with multiple async calls.
 
-    let res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
+    let res: DbResult = nativeDb.createIModel(fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, pathname);
+      throw new IModelError(res, fileName);
 
     res = nativeDb.saveChanges();
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res);
 
-    nativeDb.closeDgnDb();
+    nativeDb.closeIModel();
 
-    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, pathname, hubName, hubDescription);
+    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, fileName, hubName, args.description);
     return BriefcaseManager.open(accessToken, projectId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
   }
 

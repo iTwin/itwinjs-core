@@ -18,6 +18,7 @@ import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
+import { CreateIModelProps } from "@bentley/imodeljs-native-platform-api";
 
 Logger.initializeToConsole();
 if (process.env.imodeljs_test_logging_config === undefined) {
@@ -207,16 +208,16 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static createStandaloneIModel(filename: string, rootSubjectName: string): IModelDb {
+  public static createStandaloneIModel(fileName: string, args: CreateIModelProps): IModelDb {
     const destPath = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(destPath))
       IModelJsFs.mkdirSync(destPath);
 
-    const pathname = path.join(destPath, filename);
+    const pathname = path.join(destPath, fileName);
     if (IModelJsFs.existsSync(pathname))
       IModelJsFs.unlinkSync(pathname);
 
-    const iModel: IModelDb = IModelDb.createStandalone(pathname, rootSubjectName);
+    const iModel: IModelDb = IModelDb.createStandalone(pathname, args);
 
     assert.isNotNull(iModel);
     assert.isTrue(IModelJsFs.existsSync(pathname));

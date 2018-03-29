@@ -55,7 +55,7 @@ describe("iModel", () => {
     assert.equal(s1, s2);
   };
 
-  it("should be able to get properties of an IModel", () => {
+  it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
     assert(!extents.isNull());
@@ -234,8 +234,7 @@ describe("iModel", () => {
     }
   });
 
-  // DISABLED PENDING new verion of imodeljs-native with json properties of models fixed
-  it.skip("should load a known model by Id from an existing iModel", () => {
+  it("should load a known model by Id from an existing iModel", () => {
     assert.exists(imodel1.models);
     const model2 = imodel1.models.getModel(new Id64("0x1c"));
     assert.exists(model2);
@@ -711,8 +710,7 @@ describe("iModel", () => {
     }
   });
 
-  // THIS TEST IS DISABLED UNTIL A NEW VERSION OF imodelJs-native is available to fix updating subcategory appearance
-  it.skip("should create link table relationship instances", () => {
+  it("should create link table relationship instances", () => {
     const testImodel: IModelDb = imodel1;
 
     // Create a new physical model

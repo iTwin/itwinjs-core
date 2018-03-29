@@ -7,7 +7,7 @@
     "*** Keep this in synch with source/backend/package.json ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-node": "~13.0.0",
-    "@bentley/imodeljs-native-platform-electron": "~13.0.0"
+    "@bentley/imodeljs-native-platform-node": "~14.0.0",
+    "@bentley/imodeljs-native-platform-electron": "~14.0.0"
   }
 }

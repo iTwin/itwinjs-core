@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
@@ -562,7 +562,7 @@ describe("BriefcaseManager", () => {
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", "TestSubject");
+    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", { rootSubject: "TestSubject" });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -698,7 +698,26 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to create a standalone IModel", async () => {
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", "TestSubject");
+    const args = {
+      rootSubject: "TestSubject",
+      client: "ABC Manufacturing",
+      description: "test project",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: new Guid(true),
+    };
+
+    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", args);
+    assert.equal(iModel.getGuid().value, args.guid.value);
+    assert.equal(iModel.rootSubject!.name, args.rootSubject);
+    assert.equal(iModel.rootSubject!.description, args.description);
+    assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);
+    assert.equal(iModel.projectExtents.low.y, args.projectExtents.low.y);
+    assert.equal(iModel.projectExtents.low.z, args.projectExtents.low.z);
+    assert.equal(iModel.globalOrigin.x, args.globalOrigin.x);
+    assert.equal(iModel.globalOrigin.y, args.globalOrigin.y);
+    assert.equal(iModel.globalOrigin.z, 0);
+
     iModel.closeStandalone();
   });
 
