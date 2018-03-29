@@ -30,7 +30,7 @@ describe("GeometryStream", () => {
 
   it.skip("json encoding and decoding roundtrip of TextString in world coords", async () => {
     // tslint:disable-next-line:no-debugger
-    debugger;
+    // debugger;
 
     // Set up element to be placed in iModel
     const seedElement = imodelWithFonts.elements.getElement(new Id64("0x38"));
