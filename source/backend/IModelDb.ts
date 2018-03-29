@@ -565,7 +565,7 @@ export class IModelDb extends IModel {
     return entity;
   }
 
-  /** Get metadata for a class. This method will load the metadata from the NativeDgnDb into the cache as a side-effect, if necessary.
+  /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    */
   public getMetaData(classFullName: string): EntityMetaData {

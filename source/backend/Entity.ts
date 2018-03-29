@@ -4,7 +4,6 @@
 import { Id64, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { EntityProps, RelatedElement } from "@bentley/imodeljs-common";
-import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -187,16 +186,16 @@ export class PropertyMetaData {
 /** Metadata for an Entity. */
 export class EntityMetaData {
   /** The Entity name */
-  public ecclass: string;
-  public description?: string;
-  public modifier?: string;
-  public displayLabel?: string;
+  public readonly ecclass: string;
+  public readonly description?: string;
+  public readonly modifier?: string;
+  public readonly displayLabel?: string;
   /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
-  public baseClasses: string[];
+  public readonly baseClasses: string[];
   /** The Custom Attributes for this class */
-  public customAttributes?: CustomAttribute[];
+  public readonly customAttributes?: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class. */
-  public properties: { [propName: string]: PropertyMetaData };
+  public readonly properties: { [propName: string]: PropertyMetaData };
 
   public constructor(jsonObj: any) {
     this.ecclass = jsonObj.ecclass;
@@ -212,7 +211,8 @@ export class EntityMetaData {
     }
   }
 
-  /** Invoke a callback on each property of the specified class, optionally including superclass properties.
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
    * @param iModel  The IModel that contains the schema
    * @param schemaName The schema that defines the class
    * @param className The name of the class
@@ -221,11 +221,7 @@ export class EntityMetaData {
    * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    */
   public static forEach(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean) {
-    const meta = iModel.classMetaDataRegistry.find(classFullName);
-    if (meta === undefined) {
-      throw ClassRegistry.makeMetaDataNotFoundError(classFullName);
-    }
-
+    const meta = iModel.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) {
       if (propName) {
         const propMeta = meta.properties[propName];
@@ -234,10 +230,7 @@ export class EntityMetaData {
       }
     }
 
-    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0) {
-      meta.baseClasses.forEach((baseClass) => {
-        EntityMetaData.forEach(iModel, baseClass, true, func, includeCustom);
-      });
-    }
+    if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+      meta.baseClasses.forEach((baseClass) => EntityMetaData.forEach(iModel, baseClass, true, func, includeCustom));
   }
 }
