@@ -165,7 +165,7 @@ export abstract class GraphicBuilder {
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
   public abstract _finish(): Graphic;
-  public finish(): Graphic | undefined { return this.isOpen ? this._finish() : undefined; };
+  public finish(): Graphic | undefined { return this.isOpen ? this._finish() : undefined; }
 
   /**
    * Set a GraphicParams to be the "active" GraphicParams for this Graphic.
