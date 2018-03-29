@@ -20,7 +20,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 
 // spell-checker: disable
 
-describe.only("iModel", () => {
+describe("iModel", () => {
   let imodel1: IModelDb;
   let imodel2: IModelDb;
   let imodel3: IModelDb;
