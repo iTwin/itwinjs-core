@@ -20,7 +20,7 @@ describe("GraphicBuilderTileCorners", () => {
   });
 });
 
-describe.("GraphicBuilderCreateParams", () => {
+describe("GraphicBuilderCreateParams", () => {
   let iModel: IModelConnection;
   let iModel2: IModelConnection;
 
