@@ -12,23 +12,18 @@ export const enum ContextState {
 }
 
 export class Capabilities {
-  public maxTextureSize: number = 0;
-  public nonPowerOf2Textures: boolean = false;
-  public drawBuffers: boolean = false;
-  public elementIndexUint: boolean = false;
-  public textureFloat: boolean = false;
-  public renderToFloat: boolean = false;
-  public depthStencilTexture: boolean = false;
-  public shaderTextureLOD: boolean = false;
+  public maxTextureSize = 0;
+  public nonPowerOf2Textures = false;
+  public drawBuffers = false;
+  public elementIndexUint = false;
+  public textureFloat = false;
+  public renderToFloat = false;
+  public depthStencilTexture = false;
+  public shaderTextureLOD = false;
 
-  public init(): boolean {
-    let canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    if (null === canvas)
-      canvas = document.createElement("canvas") as HTMLCanvasElement;
-    if (null === canvas) return false;
-    document.body.appendChild(canvas);
+  public init(canvas: HTMLCanvasElement): boolean {
     const gl = canvas.getContext("webgl");
-    if (null === gl) return false;
+    if (!gl) return false;
 
     const maxTS = gl.getParameter(WebGLRenderingContext.MAX_TEXTURE_SIZE);
     this.maxTextureSize = (maxTS & 0xffff); // >64kx64k textures?!
@@ -38,34 +33,25 @@ export class Capabilities {
     // DEBUG_PRINTF("Max uniforms: vert: %d frag: %d", maxVertUniforms, maxFragUniforms);
 
     const extensions = gl.getSupportedExtensions();
-    if (null !== extensions) {
+    if (extensions) {
       for (const ext of extensions) {
         if (ext === "OES_texture_float")
-          this.textureFloat = (gl.getExtension(ext) !== null);
+          this.textureFloat = (gl.getExtension(ext) != null);
         else if (ext === "OES_element_index_uint")
-          this.elementIndexUint = (gl.getExtension(ext) !== null);
+          this.elementIndexUint = (gl.getExtension(ext) != null);
         else if (ext === "WEBGL_depth_texture")
-          this.depthStencilTexture = (gl.getExtension(ext) !== null);
+          this.depthStencilTexture = (gl.getExtension(ext) != null);
         else if (ext === "WEBGL_draw_buffers")
-          this.drawBuffers = (gl.getExtension(ext) !== null);
+          this.drawBuffers = (gl.getExtension(ext) != null);
         else if (ext === "EXT_color_buffer_float")
-          this.renderToFloat = (gl.getExtension(ext) !== null);
+          this.renderToFloat = (gl.getExtension(ext) != null);
         else if (ext === "EXT_shader_texture_lod")
-          this.shaderTextureLOD = (gl.getExtension(ext) !== null);
+          this.shaderTextureLOD = (gl.getExtension(ext) != null);
       }
     }
     // Return based on required extensions.
     return this.depthStencilTexture && this.textureFloat && this.drawBuffers && this.elementIndexUint;
   }
-
-  public GetMaxTextureSize(): number { return this.maxTextureSize; } // GL_MAX_TEXTURE_SIZE - e.g. returns 2048 if max texture dimensions are 2048x2048
-  public SupportsNonPowerOf2Textures(): boolean { return this.nonPowerOf2Textures; } // WebGL does not have full support for power of 2 textures
-  public SupportsDrawBuffers(): boolean { return this.drawBuffers; } // WEBGL_draw_buffers
-  public Supports32BitElementIndex(): boolean { return this.elementIndexUint; } // OES_element_index_uint
-  public SupportsTextureFloat(): boolean { return this.textureFloat; } // OES_texture_float
-  public SupportsRenderToFloat(): boolean { return this.renderToFloat; } // EXT_color_buffer_float
-  public SupportsDepthStencilTexture(): boolean { return this.depthStencilTexture; } // WEBGL_depth_texture - combined depth/stencil tex
-  public SupportsShaderTextureLOD(): boolean { return this.shaderTextureLOD; } // WEBGL_depth_texture - combined depth/stencil tex
 }
 
 export class ViewportQuad {
