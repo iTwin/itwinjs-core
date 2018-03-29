@@ -214,7 +214,7 @@ const getFieldByName = (descriptor: content.Descriptor, name: string): content.F
   return undefined;
 };
 
-export default class TableViewDataProvider extends ContentDataProvider {
+export default class GridDataProvider extends ContentDataProvider {
   private _sortColumnKey: string | undefined;
   private _sortDirection: SortDirection = SortDirection.Ascending;
   private _filterExpression: string | undefined;
@@ -312,9 +312,8 @@ export default class TableViewDataProvider extends ContentDataProvider {
 
   /** Get a single row.
    * @param[in] rowIndex Index of the row to return.
-   * @param[in] _unfiltered (not used)
    */
-  public async getRow(rowIndex: number, _unfiltered?: boolean): Promise<Readonly<RowItem>> {
+  public async getRow(rowIndex: number): Promise<Readonly<RowItem>> {
     let page = this._pages.getPage(rowIndex);
     if (!page) {
       this.invalidateContentCache(false, false);
@@ -328,9 +327,8 @@ export default class TableViewDataProvider extends ContentDataProvider {
 
   /** Try to get the loaded row. Returns undefined if the row is not currently cached.
    * @param[in] rowIndex Index of the row to return.
-   * @param[in] unfiltered (not used)
    */
-  public getLoadedRow(rowIndex: number, _unfiltered?: boolean): Readonly<RowItem> | undefined {
+  public getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined {
     return this._pages.getRow(rowIndex);
   }
 }

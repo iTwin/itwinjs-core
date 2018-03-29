@@ -84,7 +84,7 @@ export default class TreeWidget extends React.Component<Props, State> {
       if (item)
         selectedItems.push(item);
     }
-    const selectedNodeKeys: NodeKey[] = selectedItems.map((x) => x.extendedData.node.key);
+    const selectedNodeKeys: NodeKey[] = selectedItems.map((x) => x.extendedData.key);
     this._selectionHandler.replaceSelection(selectedNodeKeys);
   }
 

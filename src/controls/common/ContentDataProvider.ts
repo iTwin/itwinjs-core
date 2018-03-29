@@ -67,14 +67,11 @@ export default abstract class ContentDataProvider {
     };
   }
 
-  /** Get the content descriptor currently used by this data provider. */
-  public get descriptor(): content.Descriptor | undefined { return this._descriptor; }
-
   /** Get the content descriptor.
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  public async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
+  protected async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
     if (!this._configuredDescriptor) {
       if (!this._descriptor) {
         this._descriptor = await ECPresentation.presentation.getContentDescriptor(this.imodelToken, this._displayType, keys,
@@ -110,14 +107,13 @@ export default abstract class ContentDataProvider {
   /** Get the content.
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
-   * @param pageStart Start index of the page to load.
-   * @param pageSize The number of requested items in the page (0 means all items).
+   * @param pageOptions Paging options.
    */
-  protected async getContent(keys: Readonly<KeySet>, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
+  protected async getContent(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo, pageOptions?: PageOptions): Promise<Readonly<content.Content>> {
     if (!this._content) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
       this._content = await ECPresentation.presentation.getContent(this.imodelToken, descriptor, keys,
-        { pageStart, pageSize }, this.createRequestOptions());
+        pageOptions, this.createRequestOptions());
     }
     return this._content;
   }

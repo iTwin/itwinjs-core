@@ -5,9 +5,6 @@ import * as chai from "chai";
 import * as path from "path";
 import * as faker from "faker";
 
-// note: this is a hack to work around badly exported chaiJestSnapshot
-// import chaiJestSnapshotR = require("chai-jest-snapshot");
-// const chaiJestSnapshot = chaiJestSnapshotR as any;
 const chaiJestSnapshot = require("chai-jest-snapshot");
 
 faker.seed(1);

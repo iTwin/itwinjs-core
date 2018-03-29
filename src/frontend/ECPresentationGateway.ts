@@ -4,7 +4,7 @@
 import { IModelToken, Gateway } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
-import { Node, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
+import { Node, NodeKey, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
 
@@ -14,7 +14,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return Gateway.getProxyForGateway(ECPresentationGateway);
   }
 
-  public async getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return this.forward.apply(this, arguments);
   }
 
@@ -22,11 +22,11 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getChildren(_token: Readonly<IModelToken>, _parent: Readonly<Node>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getChildren(_token: Readonly<IModelToken>, _parentKey: Readonly<NodeKey>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getChildrenCount(_token: Readonly<IModelToken>, _parent: Readonly<Node>, _options: object): Promise<number> {
+  public async getChildrenCount(_token: Readonly<IModelToken>, _parentKey: Readonly<NodeKey>, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
@@ -46,7 +46,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getContent(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _pageOptions: Readonly<PageOptions>, _options: object): Promise<Readonly<Content>> {
+  public async getContent(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<Readonly<Content>> {
     return await this.forward.apply(this, arguments);
   }
 

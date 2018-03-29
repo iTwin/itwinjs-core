@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Node, NodeKeyPath, NodePathElement } from "./Hierarchy";
+import { Node, NodeKey, NodeKeyPath, NodePathElement } from "./Hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";
 import { IModelToken } from "@bentley/imodeljs-common";
@@ -9,8 +9,8 @@ import KeySet from "./KeySet";
 
 /** Paging options. */
 export interface PageOptions {
-  pageStart: number;
-  pageSize: number;
+  pageStart?: number;
+  pageSize?: number;
 }
 
 /** An abstract presentation manager which drives presentation controls. */
@@ -21,7 +21,7 @@ export interface ECPresentationManager {
    * @param[in] options      An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either an array of @ref Node on success or an error string on error.
    */
-  getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
+  getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
 
   /** Retrieves root nodes count.
    * @param[in] token Token of imodel to pull data from.
@@ -32,20 +32,20 @@ export interface ECPresentationManager {
 
   /** Retrieves children of the specified parent node.
    * @param[in] token Token of imodel to pull data from.
-   * @param[in] parent       The parent node.
+   * @param[in] parentKey    Key of the parent node.
    * @param[in] pageOptions  Page options for the requested nodes.
    * @param[in] options      An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either an array of @ref Node on success or an error string on error.
    */
-  getChildren(token: Readonly<IModelToken>, parent: Readonly<Node>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
+  getChildren(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>>;
 
   /** Retrieves children count for the specified parent node.
    * @param[in] token Token of imodel to pull data from.
-   * @param[in] parent   The parent node.
+   * @param[in] parentKey Key of the parent node.
    * @param[in] options  An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns the number of child nodes.
    */
-  getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<Node>, options: object): Promise<number>;
+  getChildrenCount(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, options: object): Promise<number>;
 
   /** Using the provided NavNodeKeyPaths, returns a merged node paths list.
    * @param[in] token Token of imodel to pull data from.
@@ -92,7 +92,7 @@ export interface ECPresentationManager {
    * @param[in] options              An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either @ref Content on success or an error string on error.
    */
-  getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions>, options: object): Promise<Readonly<Content>>;
+  getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>>;
 
   /** Send message to WorkThread to get specified column distinct values.
    * @param[in] token Token of imodel to pull data from

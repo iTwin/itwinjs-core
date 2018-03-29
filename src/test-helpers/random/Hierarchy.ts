@@ -16,7 +16,6 @@ export const createRandomECInstanceNodeKey = (): h.NodeKey => {
 
 export const createRandomECInstanceNode = (): h.Node => {
   return {
-    nodeId: createRandomId(),
     key: createRandomECInstanceNodeKey(),
     label: faker.random.words(),
     description: faker.lorem.sentence(),

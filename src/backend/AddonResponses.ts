@@ -13,8 +13,6 @@ export interface ECInstanceNodeKey extends NodeKey {
 }
 /** @hidden */
 export interface Node {
-  NodeId: string; // TODO: should be hex-string
-  ParentNodeId?: string; // TODO: should be hex-string
   Key: NodeKey;
   Label: string;
   Description?: string;

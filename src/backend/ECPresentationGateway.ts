@@ -4,7 +4,7 @@
 import { IModelToken } from "@bentley/imodeljs-common";
 import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
-import { Node, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
+import { Node, NodeKey, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
 import { resetParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
@@ -18,7 +18,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return ECPresentation.manager;
   }
 
-  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return await this.getManager().getRootNodes(token, pageOptions, options);
   }
 
@@ -26,12 +26,12 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return await this.getManager().getRootNodesCount(token, options);
   }
 
-  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<Node>, pageOptions: Readonly<PageOptions>, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this.getManager().getChildren(token, parent, pageOptions, options);
+  public async getChildren(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+    return await this.getManager().getChildren(token, parentKey, pageOptions, options);
   }
 
-  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<Node>, options: object): Promise<number> {
-    return await this.getManager().getChildrenCount(token, parent, options);
+  public async getChildrenCount(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
+    return await this.getManager().getChildrenCount(token, parentKey, options);
   }
 
   public async getNodePaths(token: Readonly<IModelToken>, paths: ReadonlyArray<Readonly<NodeKeyPath>>, markedIndex: number, options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
@@ -53,7 +53,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return await this.getManager().getContentSetSize(token, descriptor, keys, options);
   }
 
-  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions>, options: object): Promise<Readonly<Content>> {
+  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
     const content: Content = await this.getManager().getContent(token, descriptor, keys, pageOptions, options);
     resetParentship(content.descriptor);
     return content;

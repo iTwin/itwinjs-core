@@ -40,17 +40,26 @@ export interface StructValue extends PropertyValue {
   members: { [name: string]: PropertyRecord };
 }
 export interface ArrayValue extends PropertyValue {
-  members: PropertyRecord[];
+  items: PropertyRecord[];
 }
 export const isPrimitiveValue = (v: PropertyValue): v is PrimitiveValue => (content.PropertyValueFormat.Primitive === v.valueFormat);
 export const isStructValue = (v: PropertyValue): v is StructValue => (content.PropertyValueFormat.Struct === v.valueFormat);
 export const isArrayValue = (v: PropertyValue): v is ArrayValue => (content.PropertyValueFormat.Array === v.valueFormat);
+export const isValueEmpty = (v: PropertyValue): boolean => {
+  if (isPrimitiveValue(v))
+    return (null === v.value || undefined === v.value || "" === v.value);
+  if (isStructValue(v))
+    return !v.members;
+  if (isArrayValue(v))
+    return !v.items || 0 === v.items.length;
+  return false;
+};
 
 export interface PropertyRecord {
   property: PropertyDescription;
   value: PropertyValue;
   description: string;
-  unit: string;
+  unit?: string;
   isReadonly: boolean;
   isMerged: boolean;
 }
@@ -87,15 +96,15 @@ class NestedContentRecord implements PropertyRecord {
     } else {
       // nested content value is in Array<NestedContent> format
       const nestedContentArray: NestedContent[] = item.values[field.name];
-      const members = new Array<PropertyRecord>();
+      const items = new Array<PropertyRecord>();
       for (const nestedContent of nestedContentArray)
-        members.push(this.createNestedStructRecord(nestedContent, path));
+        items.push(this.createNestedStructRecord(nestedContent, path));
       const value = {
         valueFormat: content.PropertyValueFormat.Array,
-        members,
+        items,
       } as ArrayValue;
       if (1 === nestedContentArray.length)
-        this.value = value.members[0].value;
+        this.value = value.items[0].value;
       else
         this.value = value;
     }
@@ -112,7 +121,7 @@ class NestedContentRecord implements PropertyRecord {
           record.property = ContentBuilder.createPropertyDescription(path.pop() || nestedField);
           break;
         }
-        if (isArrayValue(record.value) && 0 === record.value.members.length) {
+        if (isArrayValue(record.value) && 0 === record.value.items.length) {
           // found empty array which means no value
           record.property = ContentBuilder.createPropertyDescription(path.pop() || nestedField);
           record.value = {
@@ -121,9 +130,9 @@ class NestedContentRecord implements PropertyRecord {
           } as PrimitiveValue;
           break;
         }
-        if (isArrayValue(record.value) && 1 === record.value.members.length) {
+        if (isArrayValue(record.value) && 1 === record.value.items.length) {
           const members: { [name: string]: PropertyRecord } = {};
-          members[nestedField.name] = record.value.members[0];
+          members[nestedField.name] = record.value.items[0];
           record.value = {
             valueFormat: content.PropertyValueFormat.Struct,
             members,
@@ -201,7 +210,7 @@ export default class ContentBuilder {
       return undefined;
     };
     const createArrayValue = (arrayDescription: content.ArrayTypeDescription, values: any[], displayValues: Array<string | undefined>): ArrayValue => {
-      const members = new Array<PropertyRecord>();
+      const items = new Array<PropertyRecord>();
       if (values && displayValues) {
         assert(values.length === displayValues.length);
         for (let i = 0; i < values.length; ++i) {
@@ -213,12 +222,12 @@ export default class ContentBuilder {
           } as PropertyDescription;
           const record = ContentBuilder.createRecord(memberDescription, arrayDescription.memberType,
             values[i], displayValues[i], true, false);
-          members.push(record);
+          items.push(record);
         }
       }
       return {
         valueFormat: content.PropertyValueFormat.Array,
-        members,
+        items,
       } as ArrayValue;
     };
     const createStructValue = (description: content.StructTypeDescription,

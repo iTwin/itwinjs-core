@@ -35,7 +35,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this._addon!;
   }
 
-  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.Node>>> {
+  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<types.PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<types.Node>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
       options,
@@ -50,18 +50,18 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params);
   }
 
-  public async getChildren(token: Readonly<IModelToken>, parent: Readonly<types.Node>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<ReadonlyArray<Readonly<types.Node>>> {
+  public async getChildren(token: Readonly<IModelToken>, parentKey: Readonly<types.NodeKey>, pageOptions: Readonly<types.PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<types.Node>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
-      nodeKey: parent.key,
+      nodeKey: parentKey,
       pageOptions,
       options,
     });
     return this.request(token, params, Conversion.createNodesList);
   }
 
-  public async getChildrenCount(token: Readonly<IModelToken>, parent: Readonly<types.Node>, options: object): Promise<number> {
+  public async getChildrenCount(token: Readonly<IModelToken>, parentKey: Readonly<types.NodeKey>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
-      nodeKey: parent.key,
+      nodeKey: parentKey,
       options,
     });
     return this.request(token, params);
@@ -94,7 +94,7 @@ export default class ECPresentationManager implements types.ECPresentationManage
     return this.request(token, params);
   }
 
-  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<types.Descriptor>, keys: Readonly<types.KeySet>, pageOptions: Readonly<types.PageOptions>, options: object): Promise<Readonly<types.Content>> {
+  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<types.Descriptor>, keys: Readonly<types.KeySet>, pageOptions: Readonly<types.PageOptions> | undefined, options: object): Promise<Readonly<types.Content>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -181,8 +181,6 @@ namespace Conversion {
     const nodes = new Array<types.Node>();
     for (const rNode of r) {
       nodes.push({
-        nodeId: new Id64(rNode.NodeId),
-        parentNodeId: rNode.ParentNodeId ? new Id64(rNode.ParentNodeId) : undefined,
         key: createNavNodeKey(rNode.Key),
         label: rNode.Label,
         description: rNode.Description,

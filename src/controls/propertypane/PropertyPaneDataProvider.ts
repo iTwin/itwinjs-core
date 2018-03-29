@@ -1,28 +1,30 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import ContentDataProvider from "../common/ContentDataProvider";
-import ContentBuilder, { PropertyRecord } from "../common/ContentBuilder";
-import * as content from "@bentley/ecpresentation-common/lib/content";
-import { KeySet } from "@bentley/ecpresentation-common";
+import ContentBuilder, { PropertyRecord, isValueEmpty, isArrayValue, isStructValue } from "../common/ContentBuilder";
+import { KeySet, CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item } from "@bentley/ecpresentation-common";
+import { isNestedContentField } from "@bentley/ecpresentation-common/lib/content/Fields";
 
-let favoritesCategory: content.CategoryDescription | undefined;
-function getFavoritesCategory(): content.CategoryDescription {
+let favoritesCategory: CategoryDescription | undefined;
+function getFavoritesCategory(): CategoryDescription {
   if (undefined === favoritesCategory) {
     favoritesCategory = {
       name: "Favorite",
-      label: "Favorite",
-      description: "",
+      label: "Favorite", // wip: localization
+      description: "", // wip: localization
       priority: Number.MAX_VALUE,
       expand: true,
-    } as content.CategoryDescription;
+    } as CategoryDescription;
   }
   return favoritesCategory;
 }
 
-function prioritySortFunction(a: any, b: any): number {
+interface IPrioritized {
+  priority: number;
+}
+function prioritySortFunction(a: IPrioritized, b: IPrioritized): number {
   if (a.priority > b.priority)
     return -1;
   if (a.priority < b.priority)
@@ -30,65 +32,16 @@ function prioritySortFunction(a: any, b: any): number {
   return 0;
 }
 
-export type CategoriesSortHandler = (a: content.CategoryDescription, b: content.CategoryDescription) => number;
-export type FieldsSortHandler = (a: content.Field, b: content.Field) => number;
-type FieldPredicate = (field: content.Field) => boolean;
-type FieldsSortHandlerSupplier = (a: content.CategoryDescription) => FieldsSortHandler;
+interface PropertyPaneCallbacks {
+  isFavorite(field: Field): boolean;
+  isHidden(field: Field): boolean;
+  sortCategories(categories: CategoryDescription[]): void;
+  sortFields(category: CategoryDescription, fields: Field[]): void;
+}
 
-class CategoryFields {
-  private _categories: content.CategoryDescription[];
-  private _fields: { [categoryName: string]: content.Field[] };
-
-  constructor(c: content.Content | undefined, includeFieldsWithNoValues: boolean, isFieldFavorite?: FieldPredicate, isFieldHidden?: FieldPredicate,
-    categoriesSortHandler?: CategoriesSortHandler, fieldsSortFunctionSupplier?: FieldsSortHandlerSupplier) {
-    this._categories = [];
-    this._fields = {};
-
-    if (!c)
-      return;
-
-    const fields = c.descriptor.fields;
-    for (const field of fields) {
-      if (getFavoritesCategory().name !== field.category.name && isFieldFavorite && isFieldFavorite(field))
-        this.includeField(getFavoritesCategory(), field);
-
-      if (isFieldHidden && isFieldHidden(field))
-        continue;
-
-      if (!includeFieldsWithNoValues) {
-        if (0 === c.contentSet.length)
-          continue;
-
-        const fieldValue = c.contentSet[0].values[field.name];
-        if (undefined === fieldValue || "" === fieldValue)
-          continue;
-      }
-
-      this.includeField(field.category, field);
-    }
-
-    // sort categories by priority
-    this._categories.sort(categoriesSortHandler ? categoriesSortHandler : prioritySortFunction);
-
-    // sort fields by priority
-    for (const category of this._categories) {
-      const sortFunction = fieldsSortFunctionSupplier ? fieldsSortFunctionSupplier(category) : undefined;
-      this._fields[category.name].sort(sortFunction ? sortFunction : prioritySortFunction);
-    }
-  }
-
-  private includeField(category: content.CategoryDescription, field: content.Field): void {
-    if (!this._fields.hasOwnProperty(category.name)) {
-      this._categories.push(category);
-      this._fields[category.name] = new Array<content.Field>();
-    }
-    this._fields[category.name].push(field);
-  }
-
-  public getCategoryCount(): number { return this._categories.length; }
-  public getCategory(index: number): content.CategoryDescription { return this._categories[index]; }
-  public getFieldCount(category: content.CategoryDescription): number { return this._fields[category.name].length; }
-  public getField(category: content.CategoryDescription, fieldIndex: number): content.Field { return this._fields[category.name][fieldIndex]; }
+interface CategorizedFields {
+  categories: CategoryDescription[];
+  fields: { [categoryName: string]: Field[] };
 }
 
 export interface PropertyCategory {
@@ -97,17 +50,162 @@ export interface PropertyCategory {
   expand: boolean;
 }
 
+export interface CategorizedRecords {
+  categories: PropertyCategory[];
+  records: { [categoryName: string]: PropertyRecord[] };
+}
+
+export interface PropertyPaneData extends CategorizedRecords {
+  label: string;
+  description?: string;
+}
+
+class PropertyDataBuilder {
+  private _descriptor: Descriptor;
+  private _contentItem: Item;
+  private _includeWithNoValues: boolean;
+  private _callbacks: PropertyPaneCallbacks;
+
+  constructor(descriptor: Descriptor, item: Item, includeWithNoValues: boolean, callbacks: PropertyPaneCallbacks) {
+    this._descriptor = descriptor;
+    this._contentItem = item;
+    this._callbacks = callbacks;
+    this._includeWithNoValues = includeWithNoValues;
+  }
+
+  private createCategorizedFields(): CategorizedFields {
+    const categories = new Array<CategoryDescription>();
+    const fields: { [categoryName: string]: Field[] } = {};
+    const includeField = (category: CategoryDescription, field: Field) => {
+      if (!fields.hasOwnProperty(category.name)) {
+        categories.push(category);
+        fields[category.name] = new Array<Field>();
+      }
+      fields[category.name].push(field);
+    };
+
+    for (const field of this._descriptor.fields) {
+      if (getFavoritesCategory().name !== field.category.name && this._callbacks.isFavorite(field))
+        includeField(getFavoritesCategory(), field);
+      includeField(field.category, field);
+    }
+
+    // sort categories
+    this._callbacks.sortCategories(categories);
+
+    // sort fields
+    for (const category of categories) {
+      const categoryFields = fields[category.name];
+      if (categoryFields && categoryFields.length > 0)
+        this._callbacks.sortFields(category, categoryFields);
+    }
+
+    return {
+      categories,
+      fields,
+    } as CategorizedFields;
+  }
+
+  private createRecord(field: Field): PropertyRecord {
+    let pathToRootField: Field[] | undefined;
+    if (field.parent) {
+      pathToRootField = [field];
+      let parentField = field.parent;
+      while (parentField.parent) {
+        pathToRootField.push(parentField);
+        parentField = parentField.parent;
+      }
+      field = parentField;
+      pathToRootField.reverse();
+    }
+    return ContentBuilder.createPropertyRecord(field, this._contentItem, pathToRootField);
+  }
+
+  private createCategorizedRecords(fields: CategorizedFields): CategorizedRecords {
+    const result: CategorizedRecords = {
+      categories: [],
+      records: {},
+    };
+    for (const category of fields.categories) {
+      const records = new Array<PropertyRecord>();
+      const addRecord = (field: Field, record: PropertyRecord) => {
+        if (!record.value)
+          return;
+        if (category.name !== getFavoritesCategory().name) {
+          // note: favorite fields should be displayed even if they're hidden
+          if (this._callbacks.isHidden(field))
+            return;
+          if (!this._includeWithNoValues && !record.isMerged && isValueEmpty(record.value))
+            return;
+        }
+        records.push(record);
+      };
+      const handleNestedContentRecord = (field: NestedContentField, record: PropertyRecord) => {
+        if (1 === fields.fields[category.name].length) {
+          // note: special handling if this is the only field in the category
+          if (isArrayValue(record.value)) {
+            if (0 === record.value.items.length) {
+              // don't include empty arrays at all
+              return;
+            }
+            if (1 === record.value.items.length) {
+              // for single element arrays just include the first item
+              record = record.value.items[0];
+            }
+          }
+          if (isStructValue(record.value)) {
+            // for structs just include all their members
+            for (const nestedField of field.nestedFields)
+              addRecord(nestedField, record.value.members[nestedField.name]);
+            return;
+          }
+        }
+        addRecord(field, record);
+      };
+
+      // create/add records for each field
+      for (const field of fields.fields[category.name]) {
+        const record = this.createRecord(field);
+        if (isNestedContentField(field))
+          handleNestedContentRecord(field, record);
+        else
+          addRecord(field, record);
+      }
+
+      if (records.length === 0) {
+        // don't create the category if it has no records
+        continue;
+      }
+
+      result.categories.push({
+        name: category.name,
+        label: category.label,
+        expand: category.expand,
+      });
+      result.records[category.name] = records;
+    }
+    return result;
+  }
+
+  public buildPropertyData(): PropertyPaneData {
+    const fields = this.createCategorizedFields();
+    const records = this.createCategorizedRecords(fields);
+    return {
+      ...records,
+      label: this._contentItem.label,
+      description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
+    } as PropertyPaneData;
+  }
+}
+
 export default class PropertyPaneDataProvider extends ContentDataProvider {
-  private _categorizedFields: CategoryFields | undefined;
   private _includeFieldsWithNoValues: boolean;
-  private _favorites: { [name: string]: boolean };
   private _keys: Readonly<KeySet>;
 
   /** Constructor. */
   constructor(imodelToken: IModelToken, rulesetId: string) {
-    super(imodelToken, rulesetId, content.DefaultContentDisplayTypes.PROPERTY_PANE);
+    super(imodelToken, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
     this._includeFieldsWithNoValues = true;
-    this._favorites = {};
     this._keys = new KeySet();
   }
 
@@ -117,18 +215,18 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     this.invalidateCache();
   }
 
-  protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
     const configured = super.configureContentDescriptor(descriptor);
-    configured.contentFlags |= content.ContentFlags.ShowLabels;
+    configured.contentFlags |= ContentFlags.ShowLabels;
     return configured;
   }
 
   protected invalidateContentCache(invalidateContentSetSize: boolean): void {
     super.invalidateContentCache(invalidateContentSetSize);
-    this._categorizedFields = undefined;
+    // wip: invalidate cache
   }
 
-  protected shouldExcludeFromDescriptor(field: content.Field): boolean { return this.isFieldHidden(field) && !this.isFieldFavorite(field); }
+  protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field) && !this.isFieldFavorite(field); }
 
   public get includeFieldsWithNoValues(): boolean { return this._includeFieldsWithNoValues; }
   public set includeFieldsWithNoValues(value: boolean) {
@@ -136,86 +234,31 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     this.invalidateContentCache(false);
   }
 
-  /** Is the specified field in the favorites list.
-   * @note Subclasses may override this method to make fields favorite based on their own
-   * criteria - in that case @ref AddFavorite and @ref RemoveFavorite do nothing.
-   */
-  public isFieldFavorite(field: content.Field): boolean { return this._favorites.hasOwnProperty(field.name); }
+  /** Is the specified field in the favorites list. */
+  protected isFieldFavorite(_field: Field): boolean { return false; }
 
-  /** Gets an array of fields with "favorite" flag. */
-  public getFavorites(): string[] {
-    const arr = new Array<string>();
-    for (const key in this._favorites)
-      arr.push(key);
-    return arr;
+  protected sortCategories(categories: CategoryDescription[]): void {
+    categories.sort(prioritySortFunction);
   }
 
-  /** Adds the specified field into favorites list. */
-  public addFavorite(fieldName: string): void {
-    this._favorites[fieldName] = true;
-    this.invalidateContentCache(false);
+  protected sortFields(_category: CategoryDescription, fields: Field[]): void {
+    fields.sort(prioritySortFunction);
   }
 
-  /** Removes the specified field from favorites list. */
-  public removeFavorite(fieldName: string): void {
-    delete this._favorites[fieldName];
-    this.invalidateContentCache(false);
-  }
+  public async getData(): Promise<PropertyPaneData> {
+    const content = await this.getContent(this._keys);
+    if (!content || 0 === content.contentSet.length)
+      throw new Error("No content");
 
-  /** Clears the favorite properties list. */
-  public resetFavorites(): void {
-    this._favorites = {};
-    this.invalidateContentCache(false);
-  }
-
-  protected supplyCategoriesSortFunction(): CategoriesSortHandler { return prioritySortFunction; }
-  protected supplyFieldsSortFunction(_category: content.CategoryDescription): FieldsSortHandler { return prioritySortFunction; }
-
-  private async getCategoryFields(): Promise<CategoryFields> {
-    if (!this._categorizedFields) {
-      const c = await this.getContent(this._keys, undefined, { pageStart: 0, pageSize: 0 });
-      this._categorizedFields = new CategoryFields(c, this.includeFieldsWithNoValues,
-        (field) => this.isFieldFavorite(field), (field) => this.isFieldHidden(field),
-        this.supplyCategoriesSortFunction(), (category: content.CategoryDescription) => this.supplyFieldsSortFunction(category));
-    }
-    return this._categorizedFields;
-  }
-
-  public async getCategoryCount(): Promise<number> {
-    const cf = await this.getCategoryFields();
-    return cf.getCategoryCount();
-  }
-
-  public async getCategory(index: number): Promise<PropertyCategory> {
-    const cf = await this.getCategoryFields();
-    const category = cf.getCategory(index);
-    return {
-      name: category.name,
-      label: category.label,
-      expand: category.expand,
+    const contentItem = content.contentSet[0];
+    const callbacks: PropertyPaneCallbacks = {
+      isFavorite: this.isFieldFavorite,
+      isHidden: this.isFieldHidden,
+      sortCategories: this.sortCategories,
+      sortFields: this.sortFields,
     };
-  }
-
-  public async getPropertyCount(categoryIndex: number): Promise<number> {
-    const cf = await this.getCategoryFields();
-    const category = cf.getCategory(categoryIndex);
-    return cf.getFieldCount(category);
-  }
-
-  public async getProperty(categoryIndex: number, propertyIndex: number): Promise<PropertyRecord> {
-    const cf = await this.getCategoryFields();
-    const category = cf.getCategory(categoryIndex);
-    const field = cf.getField(category, propertyIndex);
-    const item = await this.getContentItem();
-    return item ? ContentBuilder.createPropertyRecord(field, item) : ContentBuilder.createInvalidPropertyRecord();
-  }
-
-  public async getContentItem(): Promise<content.Item | undefined> {
-    const c = await this.getContent(this._keys, undefined, { pageStart: 0, pageSize: 0 });
-    if (c.contentSet.length === 0)
-      return undefined;
-
-    assert(c.contentSet.length === 1, "Expecting the number of records to be exactly 1");
-    return c.contentSet[0];
+    const builder = new PropertyDataBuilder(content.descriptor, contentItem,
+      this.includeFieldsWithNoValues, callbacks);
+    return builder.buildPropertyData();
   }
 }

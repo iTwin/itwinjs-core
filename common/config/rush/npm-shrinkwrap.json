@@ -1772,6 +1772,7 @@
         "tsconfig-paths": "2.7.3",
         "tslint": "5.9.1",
         "typemoq": "2.1.0",
+        "xmlhttprequest": "1.8.0",
         "yargs": "11.0.0"
       }
     },
@@ -19018,6 +19019,11 @@
       "version": "0.1.27",
       "resolved": "https://registry.npmjs.org/xmldom/-/xmldom-0.1.27.tgz",
       "integrity": "sha1-1QH5ezvbQDr4757MIFcxh6rawOk="
+    },
+    "xmlhttprequest": {
+      "version": "1.8.0",
+      "resolved": "https://registry.npmjs.org/xmlhttprequest/-/xmlhttprequest-1.8.0.tgz",
+      "integrity": "sha1-Z/4HXFwk/vOfnWX197f+dRcZaPw="
     },
     "xpath": {
       "version": "0.0.24",

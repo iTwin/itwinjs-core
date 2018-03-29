@@ -15,8 +15,7 @@ import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "../te
 import { createRandomECInstanceKey } from "../test-helpers/random/EC";
 import { createRandomDescriptor } from "../test-helpers/random/Content";
 import { createRandomId } from "../test-helpers/random/Misc";
-
-require("../test-helpers/Snapshots"); // tslint:disable-line:no-var-requires
+import "../test-helpers/Snapshots";
 
 describe("ECPresentationManager", () => {
 
@@ -83,11 +82,17 @@ describe("ECPresentationManager", () => {
       // mock the handleRequest function
       mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => JSON.stringify(addonResponse));
     };
-    const verify = (result: any, expectedParams: any) => {
+    const verifyWithSnapshot = (result: any, expectedParams: any) => {
       // verify the addon was called with correct params
       mock.verify((x) => x.handleRequest(moq.It.isAny(), JSON.stringify(expectedParams)), moq.Times.once());
       // verify the manager correctly used addonResponse to create its result
       expect(result).to.matchSnapshot();
+    };
+    const verifyWithExpectedResult = (actualResult: any, expectedResult: any, expectedParams: any) => {
+      // verify the addon was called with correct params
+      mock.verify((x) => x.handleRequest(moq.It.isAny(), JSON.stringify(expectedParams)), moq.Times.once());
+      // verify the manager correctly used addonResponse to create its result
+      expect(actualResult).to.deep.eq(expectedResult);
     };
 
     it("returns root nodes", async () => {
@@ -101,8 +106,6 @@ describe("ECPresentationManager", () => {
       };
       // what the addon returns
       const addonResponse: addonTypes.Node[] = [{
-        NodeId: createRandomId().toString(),
-        ParentNodeId: createRandomId().toString(),
         Key: {
           Type: "type1",
           PathFromRoot: ["p1", "p2", "p3"],
@@ -121,8 +124,6 @@ describe("ECPresentationManager", () => {
         IsCheckboxEnabled: true,
         IsExpanded: true,
       }, {
-        NodeId: createRandomId().toString(),
-        ParentNodeId: createRandomId().toString(),
         Key: {
           Type: "ECInstanceNode",
           PathFromRoot: ["p1"],
@@ -143,7 +144,6 @@ describe("ECPresentationManager", () => {
         IsCheckboxEnabled: false,
         IsExpanded: false,
       }, {
-        NodeId: createRandomId().toString(),
         Key: {
           Type: "some node",
           PathFromRoot: ["p1", "p3"],
@@ -153,7 +153,7 @@ describe("ECPresentationManager", () => {
       // test
       setup(addonResponse);
       const result = await manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
-      verify(result, expectedParams);
+      verifyWithSnapshot(result, expectedParams);
     });
 
     it("returns root nodes count", async () => {
@@ -169,31 +169,28 @@ describe("ECPresentationManager", () => {
       // test
       setup(addonResponse);
       const result = await manager.getRootNodesCount(testData.imodelToken, testData.extendedOptions);
-      verify(result, expectedParams);
+      verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
     it("returns child nodes", async () => {
       // what the addon receives
-      const parentNode = createRandomECInstanceNode();
+      const parentNodeKey = createRandomECInstanceNodeKey();
       const expectedParams = {
         requestId: NodeAddonRequestTypes.GetChildren,
         params: {
-          nodeKey: parentNode.key,
+          nodeKey: parentNodeKey,
           pageOptions: testData.pageOptions,
           options: testData.extendedOptions,
         },
       };
       // what the addon returns
       const addonResponse: addonTypes.Node[] = [{
-        NodeId: createRandomId().toString(),
-        ParentNodeId: createRandomId().toString(),
         Key: {
           Type: "type 1",
           PathFromRoot: ["p1"],
         } as addonTypes.ECInstanceNodeKey,
         Label: "test2",
       }, {
-        NodeId: createRandomId().toString(),
         Key: {
           Type: "type 2",
           PathFromRoot: ["p1", "p3"],
@@ -202,17 +199,17 @@ describe("ECPresentationManager", () => {
       }];
       // test
       setup(addonResponse);
-      const result = await manager.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions);
-      verify(result, expectedParams);
+      const result = await manager.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.extendedOptions);
+      verifyWithSnapshot(result, expectedParams);
     });
 
     it("returns child nodes count", async () => {
       // what the addon receives
-      const parentNode = createRandomECInstanceNode();
+      const parentNodeKey = createRandomECInstanceNodeKey();
       const expectedParams = {
         requestId: NodeAddonRequestTypes.GetChildrenCount,
         params: {
-          nodeKey: parentNode.key,
+          nodeKey: parentNodeKey,
           options: testData.extendedOptions,
         },
       };
@@ -220,8 +217,8 @@ describe("ECPresentationManager", () => {
       const addonResponse = 789;
       // test
       setup(addonResponse);
-      const result = await manager.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions);
-      verify(result, expectedParams);
+      const result = await manager.getChildrenCount(testData.imodelToken, parentNodeKey, testData.extendedOptions);
+      verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
     it("returns content descriptor", async () => {
@@ -400,7 +397,7 @@ describe("ECPresentationManager", () => {
       setup(addonResponse);
       const result = await manager.getContentDescriptor(testData.imodelToken, testData.displayType,
         testData.keys, testData.selectionInfo, testData.extendedOptions);
-      verify(result, expectedParams);
+      verifyWithSnapshot(result, expectedParams);
     });
 
     it("returns content set size", async () => {
@@ -420,11 +417,11 @@ describe("ECPresentationManager", () => {
       setup(addonResponse);
       const result = await manager.getContentSetSize(testData.imodelToken, descriptor,
         testData.keys, testData.extendedOptions);
-      verify(result, expectedParams);
+      verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
     it("returns content", async () => {
-    // what the addon receives
+      // what the addon receives
       const descriptor = createRandomDescriptor();
       const expectedParams = {
         requestId: NodeAddonRequestTypes.GetContent,
@@ -506,7 +503,7 @@ describe("ECPresentationManager", () => {
       setup(addonResponse);
       const result = await manager.getContent(testData.imodelToken, descriptor,
         testData.keys, testData.pageOptions, testData.extendedOptions);
-      verify(result, expectedParams);
+      verifyWithSnapshot(result, expectedParams);
     });
 
   });

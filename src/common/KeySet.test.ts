@@ -7,8 +7,7 @@ import { InstanceKey } from "./EC";
 import { createRandomECInstanceNodeKey } from "../test-helpers/random/Hierarchy";
 import { createRandomECInstanceKey, createRandomECInstanceId } from "../test-helpers/random/EC";
 import { createRandomEntityProps } from "../test-helpers/random/IModelJs";
-
-require("../test-helpers/Snapshots"); // tslint:disable-line:no-var-requires
+import "../test-helpers/Snapshots";
 
 describe("KeySet", () => {
 

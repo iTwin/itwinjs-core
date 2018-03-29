@@ -77,23 +77,23 @@ describe("ECPresentationGatewayImpl", () => {
     });
 
     it("calls manager's getChildren", async () => {
-      const parentNode = createRandomECInstanceNode();
+      const parentNodeKey = createRandomECInstanceNodeKey();
       const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
-      mock.setup((x) => x.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions))
+      mock.setup((x) => x.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await gateway.getChildren(testData.imodelToken, parentNode, testData.pageOptions, testData.extendedOptions);
+      const actualResult = await gateway.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.extendedOptions);
       mock.verifyAll();
       expect(actualResult).to.deep.eq(result);
     });
 
     it("calls manager's getChildrenCount", async () => {
-      const parentNode = createRandomECInstanceNode();
+      const parentNodeKey = createRandomECInstanceNodeKey();
       const result = 999;
-      mock.setup((x) => x.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions))
+      mock.setup((x) => x.getChildrenCount(testData.imodelToken, parentNodeKey, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await gateway.getChildrenCount(testData.imodelToken, parentNode, testData.extendedOptions);
+      const actualResult = await gateway.getChildrenCount(testData.imodelToken, parentNodeKey, testData.extendedOptions);
       mock.verifyAll();
       expect(actualResult).to.eq(result);
     });

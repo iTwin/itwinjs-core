@@ -3,7 +3,7 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionChangeEventArgs, ISelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
-import { PropertyPaneDataProvider, PropertyRecord } from "@bentley/ecpresentation-controls";
+import { PropertyPaneDataProvider, PropertyRecord, PropertyCategory } from "@bentley/ecpresentation-controls";
 import { isPrimitiveValue, isStructValue, isArrayValue } from "@bentley/ecpresentation-controls";
 import "./PropertiesWidget.css";
 
@@ -111,7 +111,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
         }
       }
     } else if (isArrayValue(recordValue)) {
-      for (const member of recordValue.members) {
+      for (const member of recordValue.items) {
         const memberValues = this.createRecordDisplayValues(member);
         values.push(...memberValues);
       }
@@ -127,23 +127,18 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
 
     try {
       this._dataProvider.keys = selection;
-      const groups: GroupDisplayInfo[] = [];
-      const categoryCount = await this._dataProvider.getCategoryCount();
-      for (let i = 0; i < categoryCount; ++i) {
-        const category = await this._dataProvider.getCategory(i);
-        const records: PropertyDisplayInfo[] = [];
-        const propertiesCount = await this._dataProvider.getPropertyCount(i);
-        for (let j = 0; j < propertiesCount; ++j) {
-          const prop = await this._dataProvider.getProperty(i, j);
-          const values = this.createRecordDisplayValues(prop);
-          records.push(...values);
-        }
-        const groupInfo = {
+      const data = await this._dataProvider.getData();
+      const groups: GroupDisplayInfo[] = data.categories.map((category: PropertyCategory) => {
+        const displayInfos: PropertyDisplayInfo[] = [];
+        data.records[category.name].forEach((record: PropertyRecord) => {
+          const values = this.createRecordDisplayValues(record);
+          displayInfos.push(...values);
+        });
+        return {
           label: category.label,
-          records,
-        } as GroupDisplayInfo;
-        groups.push(groupInfo);
-      }
+          records: displayInfos,
+        };
+      });
       this.setState({ ...initialState, groups });
     } catch (error) {
       this.setState({ ...initialState, error: error.toString() });

@@ -22,8 +22,6 @@ Array [
       "type": "type 1",
     },
     "label": "test2",
-    "nodeId": "0x179a3000000c819",
-    "parentNodeId": "0x7190000016199",
   },
   Object {
     "backColor": undefined,
@@ -46,13 +44,9 @@ Array [
       "type": "type 2",
     },
     "label": "test3",
-    "nodeId": "0xf5a8000001338a",
-    "parentNodeId": undefined,
   },
 ]
 `;
-
-exports[`ECPresentationManager addon results conversion to ECPresentation objects returns child nodes count 1`] = `789`;
 
 exports[`ECPresentationManager addon results conversion to ECPresentation objects returns content 1`] = `
 Object {
@@ -393,8 +387,6 @@ Object {
 }
 `;
 
-exports[`ECPresentationManager addon results conversion to ECPresentation objects returns content set size 1`] = `69320`;
-
 exports[`ECPresentationManager addon results conversion to ECPresentation objects returns root nodes 1`] = `
 Array [
   Object {
@@ -419,8 +411,6 @@ Array [
       "type": "type1",
     },
     "label": "test1",
-    "nodeId": "0x5390000000c63d",
-    "parentNodeId": "0x5b510000000e73",
   },
   Object {
     "backColor": "",
@@ -436,16 +426,14 @@ Array [
     "isExpanded": false,
     "isSelectable": false,
     "key": Object {
-      "classId": "0x7760000000b7e3",
-      "instanceId": "0x6cf7000000848b",
+      "classId": "0x5390000000c63d",
+      "instanceId": "0x5b510000000e73",
       "pathFromRoot": Array [
         "p1",
       ],
       "type": "ECInstanceNode",
     },
     "label": "test2",
-    "nodeId": "0x1a4000001108d",
-    "parentNodeId": "0x12658000000bde0",
   },
   Object {
     "backColor": undefined,
@@ -468,10 +456,6 @@ Array [
       "type": "some node",
     },
     "label": "test2",
-    "nodeId": "0x16bd10000013c40",
-    "parentNodeId": undefined,
   },
 ]
 `;
-
-exports[`ECPresentationManager addon results conversion to ECPresentation objects returns root nodes count 1`] = `456`;

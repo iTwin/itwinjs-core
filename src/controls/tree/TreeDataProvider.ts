@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { Node, PageOptions } from "@bentley/ecpresentation-common";
+import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import StyleHelper from "../common/StyleHelper";
 
@@ -16,11 +15,11 @@ export enum CheckBoxState {
 
 /** A node item which can be displayed in a tree */
 export interface TreeNodeItem {
-  id: Id64;
+  id: string;
+  parentId?: string;
   label: string;
   description?: string;
   hasChildren: boolean;
-  parent?: TreeNodeItem;
   labelForeColor?: number;
   labelBackColor?: number;
   labelBold: boolean;
@@ -56,14 +55,14 @@ export default class TreeDataProvider {
     };
   }
 
-  private static getNodeFromTreeNodeItem(item: TreeNodeItem): Node {
-    return item.extendedData.node as Node;
+  private static getNodeKeyFromTreeNodeItem(item: TreeNodeItem): NodeKey {
+    return item.extendedData.key as NodeKey;
   }
 
   /** Returns the root nodes.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getRootNodes(pageOptions: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
+  public async getRootNodes(pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
     const nodes = await ECPresentation.presentation.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
     return this.createTreeNodeItems(nodes);
   }
@@ -77,11 +76,12 @@ export default class TreeDataProvider {
    * @param[in] parentNode The parent node to return children for.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public async getChildNodes(parentNode: TreeNodeItem, pageOptions: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
-    const nodes = await ECPresentation.presentation.getChildren(this.imodelToken, TreeDataProvider.getNodeFromTreeNodeItem(parentNode), pageOptions, this.createRequestOptions());
+  public async getChildNodes(parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
+    const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
+    const nodes = await ECPresentation.presentation.getChildren(this.imodelToken, parentKey, pageOptions, this.createRequestOptions());
     const items = this.createTreeNodeItems(nodes);
     items.forEach((item: TreeNodeItem) => {
-      item.parent = parentNode;
+      item.parentId = parentNode.id;
     });
     return items;
   }
@@ -90,13 +90,13 @@ export default class TreeDataProvider {
    * @param[in] parentNode The parent node to return children count for.
    */
   public async getChildNodesCount(parentNode: TreeNodeItem): Promise<number> {
-    const parent: Node = TreeDataProvider.getNodeFromTreeNodeItem(parentNode);
-    return await ECPresentation.presentation.getChildrenCount(this.imodelToken, parent, this.createRequestOptions());
+    const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
+    return await ECPresentation.presentation.getChildrenCount(this.imodelToken, parentKey, this.createRequestOptions());
   }
 
   private createTreeNodeItem(node: Readonly<Node>): TreeNodeItem {
     const item: TreeNodeItem = {
-      id: node.nodeId,
+      id: [...node.key.pathFromRoot].reverse().join("/"),
       label: node.label,
       description: node.description || "",
       hasChildren: node.hasChildren,
@@ -107,7 +107,7 @@ export default class TreeDataProvider {
       displayCheckBox: node.isCheckboxVisible,
       checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
       isCheckBoxEnabled: node.isCheckboxEnabled,
-      extendedData: {node},
+      extendedData: {key: node.key},
     };
     return item;
   }
