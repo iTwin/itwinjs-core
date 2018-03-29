@@ -302,7 +302,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
         Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
       }
     }
-
     return row;
   }
 
@@ -729,7 +728,6 @@ class ECSqlValueHelper {
       }
     } finally {
     }
-
     return arrayVal;
   }
 
