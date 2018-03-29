@@ -38,7 +38,7 @@ describe("GeometryStream", () => {
     const fonts = imodelWithFonts.getFontMap();
     assert.isTrue(fonts.fonts.size > 0);
 
-    const placement3d = new Placement3d(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(45, 0, 0), new ElementAlignedBox3d(0, 0, 0, 0, 0, 0))
+    const placement3d = new Placement3d(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(45, 0, 0), new ElementAlignedBox3d(0, 0, 0, 0, 0, 0));
     const builder = GeometryStreamBuilder.from3d(placement3d.origin, placement3d.angles);
 
     const textProps: TextStringProps = {
