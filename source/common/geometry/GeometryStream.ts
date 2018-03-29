@@ -9,7 +9,7 @@ import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { GeometryClass } from "../Render";
-import { TextStringProps } from "./TextString";
+import { TextStringProps, TextString } from "./TextString";
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
  *  GeometryAppearanceProps always signifies a reset to the subCategory appearance for all values without an override.
@@ -95,6 +95,18 @@ export class GeometryStreamBuilder {
     if (undefined === localGeometry)
       return false;
     return this.appendGeometryQuery(localGeometry);
+  }
+
+  /** Append a TextString supplied in either local or world coordinates to the GeometryStreamProps array */
+  public appendTextString(textString: TextString, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (GeomCoordSystem.Local === coord) {
+      this.geometryStream.push({ textString });
+      return true;
+    }
+    const localTextString = new TextString(textString);
+    if (!localTextString.transformInPlace(this.sourceToWorld.inverse()!))
+      return false;
+    return this.appendTextString(localTextString);
   }
 }
 
