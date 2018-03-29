@@ -233,7 +233,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
         if (paramValue === undefined || paramValue === null)
           continue;
 
-          ECSqlBindingHelper.bindValue(this.getBinder(paramIndex), paramValue);
+        ECSqlBindingHelper.bindValue(this.getBinder(paramIndex), paramValue);
       }
       return;
     }
@@ -332,14 +332,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      let ecsqlValue = this.getValue(i);
+      const ecsqlValue = this.getValue(i);
       if (!ecsqlValue.isNull()) {
-      const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
-      const val: any = ecsqlValue.value;
-      Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
+        const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
+        const val: any = ecsqlValue.value;
+        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
       }
     }
-
     return row;
   }
 
@@ -459,7 +458,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: NativeECSqlValueIterator;
 
   public constructor(it: NativeECSqlValueIterator) { this._it = it; }
-  
+
   public next(): IteratorResult<ECSqlValue> {
     if (this._it.moveNext())
       return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
@@ -771,9 +770,7 @@ class ECSqlValueHelper {
         arrayVal.push(memberVal);
       }
     } finally {
-      
     }
-
     return arrayVal;
   }
 
