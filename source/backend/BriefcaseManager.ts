@@ -14,7 +14,7 @@ import * as fs from "fs";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
-/** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
+/** The Id assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
   private value: number;
   public static get Illegal(): number { return 0xffffffff; }
