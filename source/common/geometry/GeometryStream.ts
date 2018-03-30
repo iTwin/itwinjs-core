@@ -8,7 +8,7 @@ import {
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
-import { GeometryClass } from "../Render";
+import { GeometryClass, GeometryParams } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
@@ -82,6 +82,63 @@ export class GeometryStreamBuilder {
     return new GeometryStreamBuilder(Transform.createOriginAndMatrix(origin, angles.toRotMatrix()));
   }
 
+  /** Change sub-category or reset to sub-category appearance for subsequent geometry.
+   *  An invalid sub-category id can be supplied to force a reset to the current sub-category appearance.
+   *  It is not valid to change the sub-category when defining a GeometryPart. GeometryParts inherit the symbology of their instance for anything not explicitly overridden.
+   */
+  public appendSubCategoryChange(subCategoryId: Id64): boolean {
+    this.geometryStream.push({ appearance: { subCategory: subCategoryId } });
+    return true;
+  }
+
+  /** Change GeometryParams for subsequent geometry.
+   *  It is not valid to change the sub-category when defining a GeometryPart. GeometryParts inherit the symbology of their instance for anything not explicitly overridden.
+   */
+  public appendGeometryParamsChange(geomParams: GeometryParams, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (GeomCoordSystem.Local === coord) {
+      const appearance: GeometryAppearanceProps = {
+        subCategory: geomParams.subCategoryId,
+        color: geomParams.appearanceOverrides.color ? geomParams.getLineColor() : undefined,
+        weight: geomParams.appearanceOverrides.weight ? geomParams.getWeight() : undefined,
+        style: geomParams.appearanceOverrides.style ? (geomParams.getLineStyle() ? geomParams.getLineStyle()!.styleId : new Id64()) : undefined,
+        transparency: geomParams.getTransparency(),
+        displayPriority: geomParams.getDisplayPriority(),
+        geometryClass: geomParams.getGeometryClass(),
+      };
+      this.geometryStream.push({ appearance });
+      return true;
+    }
+    return this.appendGeometryParamsChange(geomParams); // NEEDSWORK: Handle GeomCoordSystem.World when support added for patterns and linestyles...
+  }
+
+  /** Append a GeometryPart instance with relative position, orientation, and scale to a GeometryStreamEntryProps array for creating a GeometricElement2d.
+   *  Not valid when defining a GeometryPart as nested GeometryParts are not allowed.
+   */
+  public appendGeometryPart2d(partId: Id64, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
+    this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined, rotation: instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined, scale: instanceScale } });
+    return true;
+  }
+
+  /** Append a GeometryPart instance with relative position, orientation, and scale to a GeometryStreamEntryProps array for creating a GeometricElement3d.
+   *  Not valid when defining a GeometryPart as nested GeometryParts are not allowed.
+   */
+  public appendGeometryPart3d(partId: Id64, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean {
+    this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin, rotation: instanceRotation, scale: instanceScale } });
+    return true;
+  }
+
+  /** Append a TextString supplied in either local or world coordinates to the GeometryStreamProps array */
+  public appendTextString(textString: TextString, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
+    if (GeomCoordSystem.Local === coord) {
+      this.geometryStream.push({ textString });
+      return true;
+    }
+    const localTextString = new TextString(textString);
+    if (!localTextString.transformInPlace(this.sourceToWorld.inverse()!))
+      return false;
+    return this.appendTextString(localTextString);
+  }
+
   /** Append a GeometryQuery supplied in either local or world coordinates to the GeometryStreamProps array */
   public appendGeometryQuery(geometry: GeometryQuery, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
     if (GeomCoordSystem.Local === coord) {
@@ -95,18 +152,6 @@ export class GeometryStreamBuilder {
     if (undefined === localGeometry)
       return false;
     return this.appendGeometryQuery(localGeometry);
-  }
-
-  /** Append a TextString supplied in either local or world coordinates to the GeometryStreamProps array */
-  public appendTextString(textString: TextString, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
-    if (GeomCoordSystem.Local === coord) {
-      this.geometryStream.push({ textString });
-      return true;
-    }
-    const localTextString = new TextString(textString);
-    if (!localTextString.transformInPlace(this.sourceToWorld.inverse()!))
-      return false;
-    return this.appendTextString(localTextString);
   }
 }
 
