@@ -9,7 +9,7 @@ import {
 } from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
+import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
@@ -18,7 +18,6 @@ import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
-import { CreateIModelProps } from "@bentley/imodeljs-native-platform-api";
 
 Logger.initializeToConsole();
 if (process.env.imodeljs_test_logging_config === undefined) {

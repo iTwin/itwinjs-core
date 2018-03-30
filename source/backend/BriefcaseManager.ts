@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState, Briefcase, IModelHubResponseError, IModelHubResponseErrorId } from "@bentley/imodeljs-clients";
+import {
+  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges,
+  SeedFile, SeedFileInitState, Briefcase, IModelHubResponseError, IModelHubResponseErrorId,
+} from "@bentley/imodeljs-clients";
 import { ChangeSetProcessOption, BeEvent, DbResult, OpenMode, assert, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseStatus, IModelError, IModelVersion, IModelToken } from "@bentley/imodeljs-common";
+import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { NativeDgnDb, ErrorStatusOrResult, CreateIModelProps } from "@bentley/imodeljs-native-platform-api";
+import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -1006,7 +1009,7 @@ export class BriefcaseManager {
 
     nativeDb.closeIModel();
 
-    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, fileName, hubName, args.description);
+    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, fileName, hubName, args.rootSubject.description);
     return BriefcaseManager.open(accessToken, projectId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
   }
 

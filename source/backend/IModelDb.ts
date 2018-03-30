@@ -7,7 +7,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, ElementLoadProps,
+  FontMap, FontMapProps, ElementLoadProps, CreateIModelProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
@@ -20,7 +20,6 @@ import { Entity, EntityMetaData } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
-import { CreateIModelProps } from "@bentley/imodeljs-native-platform-api";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
