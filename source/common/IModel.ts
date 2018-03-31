@@ -67,13 +67,13 @@ export interface CreateIModelProps extends IModelProps {
 /** Represents an iModel. */
 export abstract class IModel implements IModelProps {
   /** Name of the iModel */
-  public name: string;
+  public name!: string;
   /** The name and description of the root subject of this iModel */
-  public rootSubject: { name: string, description?: string };
+  public rootSubject!: { name: string, description?: string };
   /** The volume inside which the entire project is contained. */
-  public projectExtents: AxisAlignedBox3d;
+  public projectExtents!: AxisAlignedBox3d;
   /** An offset to be applied to all spatial coordinates. This is normally used to transform spatial coordinates into the Cartesian coordinate system of a Geographic Coordinate System. */
-  public globalOrigin: Point3d;
+  public globalOrigin!: Point3d;
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. */
   public ecefLocation?: EcefLocation;
 

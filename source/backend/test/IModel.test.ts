@@ -758,7 +758,7 @@ describe("iModel", () => {
     testImodel.linkTableRelationships.updateInstance(r1);
 
     const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
-    assert.equal(g11.memberPriority, 1);
+    assert.equal(g11.memberPriority, 1, "memberPriority");
 
     // Delete relationship instance property
     testImodel.linkTableRelationships.deleteInstance(r1);

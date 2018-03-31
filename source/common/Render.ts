@@ -563,83 +563,80 @@ export class GeometryParams {
   /**
    *  Compare two GeometryParams for equivalence, i.e. both values are from sub-category appearance or have the same override.
    */
- public isEquivalent(other: GeometryParams): boolean {
-   if (this === other)
-     return true; // Same pointer
+  public isEquivalent(other: GeometryParams): boolean {
+    if (this === other)
+      return true; // Same pointer
 
-   if (!this.categoryId.equals(other.categoryId))
-     return false;
-   if (!this.subCategoryId.equals(other.subCategoryId))
-     return false;
-   if (this.geometryClass !== other.geometryClass)
-     return false;
+    if (!this.categoryId.equals(other.categoryId))
+      return false;
+    if (!this.subCategoryId.equals(other.subCategoryId))
+      return false;
+    if (this.geometryClass !== other.geometryClass)
+      return false;
 
-   // Don't compare netPriority, compare the inputs: elmPriority + subCateogoryId.
-   if (this.elmPriority !== other.elmPriority)
-     return false;
-   // Don't compare netElmTransparency, compare the inputs: elmTransparency + subCateogoryId.
-   if (this.elmTransparency !== other.elmTransparency)
-     return false;
-   // Don't compare netFillTransparency, compare the inputs: fillTransparency + subCateogoryId.
-   if (this.fillTransparency !== other.fillTransparency)
-     return false;
+    // Don't compare netPriority, compare the inputs: elmPriority + subCategoryId.
+    if (this.elmPriority !== other.elmPriority)
+      return false;
+    // Don't compare netElmTransparency, compare the inputs: elmTransparency + subCategoryId.
+    if (this.elmTransparency !== other.elmTransparency)
+      return false;
+    // Don't compare netFillTransparency, compare the inputs: fillTransparency + subCategoryId.
+    if (this.fillTransparency !== other.fillTransparency)
+      return false;
 
-   // Don't compare lineColor unless sub-category appearance override is set...
-   if (this.appearanceOverrides.color !== other.appearanceOverrides.color)
-     return false;
-   if (this.appearanceOverrides.color && (!this.lineColor.equals(other.lineColor)))
-     return false;
+    // Don't compare lineColor unless sub-category appearance override is set...
+    if (this.appearanceOverrides.color !== other.appearanceOverrides.color)
+      return false;
+    if (this.appearanceOverrides.color && (!this.lineColor.equals(other.lineColor)))
+      return false;
 
-   // Don't compare weight unless sub-category appearance override is set...
-   if (this.appearanceOverrides.weight !== other.appearanceOverrides.weight)
-     return false;
-   if (this.appearanceOverrides.weight && (this.weight !== other.weight))
-     return false;
+    // Don't compare weight unless sub-category appearance override is set...
+    if (this.appearanceOverrides.weight !== other.appearanceOverrides.weight)
+      return false;
+    if (this.appearanceOverrides.weight && (this.weight !== other.weight))
+      return false;
 
-   // Don't compare m_materialId unless sub-category appearance override is set...
-   if (this.appearanceOverrides.material !== other.appearanceOverrides.material)
-     return false;
-   if (this.appearanceOverrides.material && (!this.materialId!.equals(other.materialId!)))
-     return false;
+    // Don't compare m_materialId unless sub-category appearance override is set...
+    if (this.appearanceOverrides.material !== other.appearanceOverrides.material)
+      return false;
+    if (this.appearanceOverrides.material && (!this.materialId!.equals(other.materialId!)))
+      return false;
 
-   // Don't compare m_styleInfo unless sub-category appearance override is set...
-   if (this.appearanceOverrides.style !== other.appearanceOverrides.style)
-     return false;
-   if (this.appearanceOverrides.style) {
-     if ((this.styleInfo === undefined) !== (other.styleInfo === undefined))
-       return false;
-     if (this.styleInfo) {
-       if (!this.styleInfo.styleId.equals(other.styleInfo!.styleId))
-         return false;
-       if (!this.styleInfo.lStyleSymb.isEqualTo(other.styleInfo!.lStyleSymb))
-         return false;
-     }
-   }
+    // Don't compare m_styleInfo unless sub-category appearance override is set...
+    if (this.appearanceOverrides.style !== other.appearanceOverrides.style)
+      return false;
+    if (this.appearanceOverrides.style) {
+      if ((this.styleInfo === undefined) !== (other.styleInfo === undefined))
+        return false;
+      if (this.styleInfo && !this.styleInfo.isEqualTo(other.styleInfo!)) {
+        return false;
+      }
+    }
 
-   if (this.fillDisplay !== other.fillDisplay)
-     return false;
-   if (this.fillDisplay !== FillDisplay.Never) {
-     // Don't compare fillColor/gradient unless sub-category appearance override is set...
-     if (this.appearanceOverrides.fill !== other.appearanceOverrides.fill)
-       return false;
-     if (this.appearanceOverrides.fill) {
-       if ((this.gradient === undefined) !== (other.gradient === undefined))
-         return false;
-       if (this.gradient && !this.gradient.isEqualTo(other.gradient!))
-         return false;
-       if (this.backgroundFill !== other.backgroundFill)
-         return false;
-       if (this.backgroundFill !== BackgroundFill.None && !this.fillColor.equals(other.fillColor))
-         return false;
-     }
-   }
+    if (this.fillDisplay !== other.fillDisplay)
+      return false;
+    if (this.fillDisplay !== FillDisplay.Never) {
+      // Don't compare fillColor/gradient unless sub-category appearance override is set...
+      if (this.appearanceOverrides.fill !== other.appearanceOverrides.fill)
+        return false;
+      if (this.appearanceOverrides.fill) {
+        if ((this.gradient === undefined) !== (other.gradient === undefined))
+          return false;
+        if (this.gradient && !this.gradient.isEqualTo(other.gradient!))
+          return false;
+        if (this.backgroundFill !== other.backgroundFill)
+          return false;
+        if (this.backgroundFill !== BackgroundFill.None && !this.fillColor.equals(other.fillColor))
+          return false;
+      }
+    }
 
-   if ((this.pattern === undefined) !== (other.pattern === undefined))
-     return false;
-   if (this.pattern && !this.pattern.isEqualTo(other.pattern!))
-     return false;
+    if ((this.pattern === undefined) !== (other.pattern === undefined))
+      return false;
+    if (this.pattern && !this.pattern.isEqualTo(other.pattern!))
+      return false;
 
-   return true;
+    return true;
   }
 
   /** Whether effective values have been resolved. */
@@ -736,10 +733,7 @@ export class GeometryParams {
   /**  Get display priority (2d only). */
   public getDisplayPriority() { return this.elmPriority; }
 
-  public hasStrokedLineStyle() {
-    assert(this.appearanceOverrides.style || this.resolved);
-    return (this.styleInfo ? this.styleInfo.lStyleSymb.lStyle && this.styleInfo.lStyleSymb.useStroker : false);
-  }
+  public hasStrokedLineStyle() { return ((this.styleInfo && this.styleInfo.lStyleSymb) ? this.styleInfo.lStyleSymb.lStyle && this.styleInfo.lStyleSymb.useStroker : false); }
 
   /**  Get whether this GeometryParams contains information that needs to be transformed (ex. to apply local to world). */
   public isTransformable() { return this.pattern || this.styleInfo; }

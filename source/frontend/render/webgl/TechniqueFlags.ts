@@ -13,13 +13,13 @@ export const enum Mode {
 }
 
 export class TechniqueFlags {
-  public featureDimensions: FeatureDimensions;
-  public mode: Mode;
-  public monochrome: boolean;
-  public clipVolume: boolean;
-  public featureOverrides: boolean;
-  public translucent: boolean;
-  public colorDimension: LUTDimension;
+  public featureDimensions!: FeatureDimensions;
+  public mode!: Mode;
+  public monochrome!: boolean;
+  public clipVolume!: boolean;
+  public featureOverrides?: boolean;
+  public translucent!: boolean;
+  public colorDimension!: LUTDimension;
 
   public get featureDimensionType(): FeatureDimension { return this.featureDimensions.getValue(); }
   public get isMonochrome(): boolean { return this.monochrome; }
@@ -50,7 +50,7 @@ export class TechniqueFlags {
 
   public setFeatureDimensions(type: FeatureIndexType, dim: LUTDimension): void { this.featureDimensions.init(dim, type); }
   public setHilite(): void { this.init(this.featureDimensions, Mode.kMode_Hilite, this.clipVolume ? WithClipVolume.Yes : WithClipVolume.No); }
-  public static forHilite(dims: FeatureDimensions, withClipVolume: WithClipVolume, techniqueFlags: TechniqueFlags = new TechniqueFlags() ): TechniqueFlags {
+  public static forHilite(dims: FeatureDimensions, withClipVolume: WithClipVolume, techniqueFlags: TechniqueFlags = new TechniqueFlags()): TechniqueFlags {
     // The hilite shader simply generates a silhouette...the other flags are superfluous.
     techniqueFlags.featureDimensions = dims;
     techniqueFlags.mode = Mode.kMode_Hilite;

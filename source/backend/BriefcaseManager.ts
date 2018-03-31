@@ -49,18 +49,18 @@ export class ChangeSetToken {
 /** Entry in the briefcase cache */
 export class BriefcaseEntry {
   /** Id of the iModel - set to the DbGuid field in the BIM, it corresponds to the Guid used to track the iModel in iModelHub */
-  public iModelId: string;
+  public iModelId!: string;
 
   /** Id of the last change set that was applied to the BIM.
    * Set to an empty string if it's the initial version, or a standalone briefcase
    */
-  public changeSetId: string;
+  public changeSetId!: string;
 
   /** Index of the last change set that was applied to the BI.
    * Only specified if the briefcase was acquired from the Hub.
    * Set to 0 if it's the initial version.
    */
-  public changeSetIndex?: number;
+  public changeSetIndex = 0;
 
   /** Id of the last change set that was applied to the BIM after it was reversed.
    * Undefined if no change sets have been reversed.
@@ -75,25 +75,25 @@ export class BriefcaseEntry {
   public reversedChangeSetIndex?: number;
 
   /** Briefcase Id  */
-  public briefcaseId: number;
+  public briefcaseId = 0;
 
   /** Absolute path where the briefcase is cached/stored */
-  public pathname: string;
+  public pathname!: string;
 
   /** Flag indicating if the briefcase is standalone or from the iModelHub */
   public isStandalone?: boolean;
 
   /** Mode used to open the iModel */
-  public openMode: OpenMode;
+  public openMode?: OpenMode;
 
   /** Flag to indicate if the briefcase is currently open */
-  public isOpen: boolean;
+  public isOpen = false;
 
   /** Id of the user that acquired the briefcase. This is not set if it's standalone briefcase */
   public userId?: string;
 
   /** In-memory handle of the native Db */
-  public nativeDb: NativeDgnDb;
+  public nativeDb!: NativeDgnDb;
 
   /** In-memory handle fo the IModelDb that corresponds with this briefcase. This is only set if an IModelDb wrapper has been created for this briefcase */
   public iModelDb?: IModelDb;
@@ -132,9 +132,7 @@ class BriefcaseCache {
   }
 
   /** Find a briefcase in the cache */
-  public findBriefcase(briefcase: BriefcaseEntry): BriefcaseEntry | undefined {
-    return this.briefcases.get(briefcase.getPathKey());
-  }
+  public findBriefcase(briefcase: BriefcaseEntry): BriefcaseEntry | undefined { return this.briefcases.get(briefcase.getPathKey()); }
 
   /** Add a briefcase to the cache */
   public addBriefcase(briefcase: BriefcaseEntry) {
@@ -173,14 +171,10 @@ class BriefcaseCache {
   }
 
   /** Checks if the cache is empty */
-  public isEmpty(): boolean {
-    return this.briefcases.size === 0;
-  }
+  public isEmpty(): boolean { return this.briefcases.size === 0; }
 
   /** Clears all entries in the cache */
-  public clear() {
-    this.briefcases.clear();
-  }
+  public clear() { this.briefcases.clear(); }
 }
 
 /** Utility to manage briefcases

@@ -17,25 +17,24 @@ export const enum StyleMod {
 
 /** Line style parameters. */
 export class LineStyleParams {
-  public modifiers: number;
-  public reserved: number;
-  public scale: number;       // Applied to all length values
-  public dashScale: number;   // Applied to adjustable dash strokes
-  public gapScale: number;    // Applied to adjustable gap strokes
-  public startWidth: number;  // Taper start width
-  public endWidth: number;    // Taper end width
-  public distPhase: number;   // Phase shift by distance
-  public fractPhase: number;  // Phase shift by fraction
-  public lineMask: number;    // Multiline line mask
-  public mlineFlags: number;  // Multiline flags
-  public normal: Vector3d;
-  public rMatrix: RotMatrix;
+  public modifiers = 0;
+  public scale = 1.0;       // Applied to all length values
+  public dashScale?: number;   // Applied to adjustable dash strokes
+  public gapScale?: number;    // Applied to adjustable gap strokes
+  public startWidth?: number;  // Taper start width
+  public endWidth?: number;    // Taper end width
+  public distPhase?: number;   // Phase shift by distance
+  public fractPhase?: number;  // Phase shift by fraction
+  public lineMask?: number;    // Multiline line mask
+  public mlineFlags?: number;  // Multiline flags
+  public readonly normal = new Vector3d();
+  public readonly rMatrix = new RotMatrix();
 
   /** Returns LineStyleParams with default values */
   public static createDefaults(): LineStyleParams {
     const retVal = new LineStyleParams();
-    retVal.rMatrix = RotMatrix.createIdentity();
-    retVal.normal = Vector3d.create();
+    retVal.rMatrix.setIdentity();
+    retVal.normal.setZero();
 
     const tmpRetVal = retVal as any;
     for (const prop in tmpRetVal) {    // Assign all numeric properties to zero to begin
@@ -51,7 +50,6 @@ export class LineStyleParams {
   public clone() {
     const retVal = new LineStyleParams();
     retVal.modifiers = this.modifiers;
-    retVal.reserved = this.reserved;
     retVal.scale = this.scale;
     retVal.dashScale = this.dashScale;
     retVal.gapScale = this.gapScale;
@@ -61,8 +59,8 @@ export class LineStyleParams {
     retVal.fractPhase = this.fractPhase;
     retVal.lineMask = this.lineMask;
     retVal.mlineFlags = this.mlineFlags;
-    retVal.normal = this.normal.clone();
-    retVal.rMatrix = this.rMatrix.clone();
+    retVal.normal.setFrom(this.normal);
+    retVal.rMatrix.setFrom(this.rMatrix);
     return retVal;
   }
 
@@ -81,8 +79,7 @@ export class LineStyleParams {
     if (0 === other.modifiers && 0 === this.modifiers)
       return true;    // No need to compare further if both inactive...
 
-    if (other.reserved !== this.reserved ||
-      other.scale !== this.scale ||
+    if (other.scale !== this.scale ||
       other.dashScale !== this.dashScale ||
       other.gapScale !== this.gapScale ||
       other.startWidth !== this.startWidth ||
@@ -140,10 +137,10 @@ export class LineStyleParams {
     if (!(this.modifiers & StyleMod.TrueWidth))
       return;
 
-    if (this.modifiers & StyleMod.SWidth)
+    if (this.modifiers & StyleMod.SWidth && this.startWidth)
       this.startWidth *= scaleFactor;
 
-    if (this.modifiers & StyleMod.EWidth)
+    if (this.modifiers & StyleMod.EWidth && this.endWidth)
       this.endWidth *= scaleFactor;
   }
 }
@@ -179,26 +176,26 @@ class LineStyleSymbOptions {
  * component but the plane definition and scale factors can be used by all components.
  */
 export class LineStyleSymb {
-  private _options: LineStyleSymbOptions;
-  private _lstyle: any;    // <-- Change to use LineStyle class once it is created
-  private _nIterate: number;
-  private _scale: number;
-  private _dashScale: number;
-  private _gapScale: number;
-  private _orgWidth: number;
-  private _endWidth: number;
-  private _phaseShift: number;
-  private _autoPhase: number;
-  private _maxCompress: number;
-  private _totalLength: number;    // length of entire element
-  private _xElemPhase: number;     // where we left off from the last element (for compound elements)
-  private _styleWidth: number;
-  private _startTangent: Vector3d;
-  private _endTangent: Vector3d;
-  private _useStroker: boolean;
-  private _useLinePixels: boolean;
-  private _linePixels: number;
-  private _planeByRows: RotMatrix;
+  private _options?: LineStyleSymbOptions;
+  private _lstyle?: any;    // <-- Change to use LineStyle class once it is created
+  private _nIterate?: number;
+  private _scale?: number;
+  private _dashScale?: number;
+  private _gapScale?: number;
+  private _orgWidth?: number;
+  private _endWidth?: number;
+  private _phaseShift?: number;
+  private _autoPhase?: number;
+  private _maxCompress?: number;
+  private _totalLength?: number;    // length of entire element
+  private _xElemPhase?: number;     // where we left off from the last element (for compound elements)
+  private _styleWidth?: number;
+  private _startTangent?: Vector3d;
+  private _endTangent?: Vector3d;
+  private _useStroker?: boolean;
+  private _useLinePixels?: boolean;
+  private _linePixels?: number;
+  private _planeByRows?: RotMatrix;
 
   public get useStroker() { return this._useStroker; }
   public get styleWidth() { return this._styleWidth; }
@@ -279,13 +276,13 @@ export class LineStyleSymb {
     if (other._xElemPhase !== this._xElemPhase)
       return false;
 
-    if (!other._startTangent.isExactEqual(this._startTangent))
+    if (this._startTangent && other._startTangent && !other._startTangent.isExactEqual(this._startTangent))
       return false;
 
-    if (!other._endTangent.isExactEqual(this._endTangent))
+    if (this._endTangent && other._endTangent && !other._endTangent.isExactEqual(this._endTangent))
       return false;
 
-    if (!other._planeByRows.isExactEqual(this._planeByRows))
+    if (this._planeByRows && other._planeByRows && !other._planeByRows.isExactEqual(this._planeByRows))
       return false;
 
     return true;
@@ -320,12 +317,12 @@ export class LineStyleSymb {
     retVal._totalLength = this._totalLength;
     retVal._xElemPhase = this._xElemPhase;
     retVal._styleWidth = this._styleWidth;
-    retVal._startTangent = this._startTangent.clone();
-    retVal._endTangent = this._endTangent.clone();
+    if (this._startTangent) retVal._startTangent = this._startTangent.clone();
+    if (this._endTangent) retVal._endTangent = this._endTangent.clone();
     retVal._useStroker = this._useStroker;
     retVal._useLinePixels = this._useLinePixels;
     retVal._linePixels = this._linePixels;
-    retVal._planeByRows = this._planeByRows.clone();
+    if (this._planeByRows) retVal._planeByRows = this._planeByRows.clone();
     return retVal;
   }
 
@@ -336,7 +333,7 @@ export class LineStyleSymb {
 export class LineStyleInfo {
   private _styleId: Id64;
   private _styleParams: LineStyleParams;   // <-- Modifiers for user defined linestyle (if applicable)
-  private _lStyleSymb: LineStyleSymb;      // <-- Cooked form of linestyle
+  private _lStyleSymb?: LineStyleSymb;      // <-- Cooked form of linestyle
 
   public get styleId() { return this._styleId; }
   public get styleParams() { return this._styleParams; }
@@ -358,7 +355,7 @@ export class LineStyleInfo {
   /** Returns a deep copy of this object. */
   public clone(): LineStyleInfo {
     const retVal = new LineStyleInfo(this._styleId, this._styleParams.clone());
-    retVal._lStyleSymb = this._lStyleSymb.clone();
+    if (this._lStyleSymb) retVal._lStyleSymb = this._lStyleSymb.clone();
     return retVal;
   }
 
@@ -369,7 +366,7 @@ export class LineStyleInfo {
       return false;
     if (!this._styleParams.isEqualTo(other._styleParams))
       return false;
-    if (!this._lStyleSymb.isEqualTo(other._lStyleSymb))
+    if (this._lStyleSymb && other._lStyleSymb && !this._lStyleSymb.isEqualTo(other._lStyleSymb))
       return false;
     return true;
   }
