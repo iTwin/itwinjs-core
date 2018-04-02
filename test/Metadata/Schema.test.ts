@@ -208,6 +208,55 @@ describe("Schema", () => {
       await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError);
     });
 
+    it("compare by schema version, rh read version is less, returns positive", async () => {
+      const leftSchema = new Schema("LeftSchema", 2, 2, 3);
+      const rightSchema = new Schema("RightSchema", 1, 2, 3);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.isTrue(result > 0);
+    });
+
+    it("compare by schema version, rh write version is less, returns positive", async () => {
+      const leftSchema = new Schema("LeftSchema", 1, 2, 3);
+      const rightSchema = new Schema("RightSchema", 1, 1, 3);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.isTrue(result > 0);
+    });
+
+    it("compare by schema version, rh minor version is less, returns positive", async () => {
+      const leftSchema = new Schema("LeftSchema", 1, 2, 3);
+      const rightSchema = new Schema("RightSchema", 1, 2, 2);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.isTrue(result > 0);
+    });
+
+    it("compare by schema version, rh read version is greater, returns negative", async () => {
+      const leftSchema = new Schema("LeftSchema", 1, 2, 3);
+      const rightSchema = new Schema("RightSchema", 2, 2, 3);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.isTrue(result < 0);
+    });
+
+    it("compare by schema version, rh write version is greater, returns negative", async () => {
+      const leftSchema = new Schema("LeftSchema", 1, 1, 3);
+      const rightSchema = new Schema("RightSchema", 1, 2, 3);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.isTrue(result < 0);
+    });
+
+    it("compare by schema version, rh minor version is greater, returns negative", async () => {
+      const leftSchema = new Schema("LeftSchema", 1, 2, 2);
+      const rightSchema = new Schema("RightSchema", 1, 2, 3);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.isTrue(result < 0);
+    });
+
+    it("compare by schema version, exact match, returns zero", async () => {
+      const leftSchema = new Schema("LeftSchema", 1, 2, 3);
+      const rightSchema = new Schema("RightSchema", 1, 2, 3);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.equal(result, 0);
+    });
+
     it("should throw for invalid alias", async () => testInvalidAttribute(new Schema("BadSchema", 1, 2, 3), "alias", "string", 0));
     it("should throw for invalid label", async () => testInvalidAttribute(new Schema("BadSchema", 1, 2, 3), "label", "string", 0));
     it("should throw for invalid description", async () => testInvalidAttribute(new Schema("BadSchema", 1, 2, 3), "description", "string", 0));

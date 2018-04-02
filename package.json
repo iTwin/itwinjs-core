@@ -38,6 +38,7 @@
     "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^2.2.48",
     "@types/sinon": "^4.1.4",
+    "@types/glob": "^5.0.35",
     "chai-as-promised": "^7.1.1",
     "nyc": "~11.4.1",
     "rimraf": "^2.6.2",

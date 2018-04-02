@@ -454,6 +454,22 @@ export class SchemaKey {
   }
 
   /**
+   * Compares two schema versions and returns a negative number if this
+   * schema version is less than the given schema, a positive number if
+   * greater, and 0 if the version is an exact match.
+   * @param rhs The schema to compare.
+   */
+  public compareByVersion(rhs: SchemaKey): number {
+    if (this.readVersion !== rhs.readVersion)
+      return this.readVersion - rhs.readVersion;
+
+    if (this.writeVersion !== rhs.writeVersion)
+      return this.writeVersion - rhs.writeVersion;
+
+    return this.minorVersion - rhs.minorVersion;
+  }
+
+  /**
    *
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
