@@ -1,5 +1,6 @@
-﻿Copyright © Bentley Systems, Inc. 2018
-# imodeljs-core
+﻿# imodeljs-core
+
+Copyright © Bentley Systems, Inc. 2018
 
 iModelJs extends the iModel technology stack to provide a JavaScript library (built using [TypeScript](https://www.typescriptlang.org/)) for querying, displaying, and modifying iModels.
 It can be used to build:
@@ -30,7 +31,8 @@ The source code is organized according to where it can run:
 ## Authentication
 
 Configure npm and log in to the Bentley npm registry with the following commands:
-```
+
+```cmd
 npm config set @bentley:registry https://npm.bentley.com/npm/npm/
 ```
 
@@ -74,8 +76,8 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 
 1. Build TypeDoc documentation for all packages: `npm run docs`
 2. Build TypeDoc documentation for frontend, backend, or common only: `npm run docs:frontend`, `npm run docs:backend`, `npm run docs:common` from top-level directory or `npm run docs` from package directory
-2. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
-3. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
+3. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
+4. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
 
 The full list of npm scripts can be found in the root `package.json` file.
 
@@ -113,7 +115,6 @@ After a successful install, you will notice multiple **node_modules** directorie
 | source/testbed/node_modules/  | Testbed dependencies    |
 
 With Rush, the node_modules directories listed above are symlinks to a *common* package managed by Rush.
-
 
 ## Build Output and Publishing
 

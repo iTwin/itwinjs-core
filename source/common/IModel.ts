@@ -43,10 +43,18 @@ export class EcefLocation implements EcefLocationProps {
   }
 }
 
-/** The properties that define an iModel. */
+/** the Root Subject is the base for the "table of contents" of an iModel. Every iModel has one and only one. */
+export interface RootSubjectProps {
+  /** the name of the root subject for an iModel. */
+  name: string;
+  /** optional description of the root subject. */
+  description?: string;
+}
+
+/** The properties that are global to an iModel. */
 export interface IModelProps {
   /** the name and description of the root subject of this iModel */
-  rootSubject: { name: string, description?: string };
+  rootSubject: RootSubjectProps;
   /** The volume of the entire project */
   projectExtents?: Range3dProps;
   /** An offset to be applied to all spatial coordinates. This is normally used to transform spatial coordinates into the Cartesian coordinate system of a Geographic Coordinate System. */
@@ -55,6 +63,7 @@ export interface IModelProps {
   ecefLocation?: EcefLocationProps;
 }
 
+/** The properties that can be supplied when creating a new iModel. */
 export interface CreateIModelProps extends IModelProps {
   /** the GUID of new iModel. If not present, a GUID will be generated. */
   guid?: GuidProps;
@@ -64,12 +73,21 @@ export interface CreateIModelProps extends IModelProps {
   thumbnail?: ThumbnailProps;
 }
 
+export interface FilePropertyProps {
+  namespace: string;
+  name: string;
+  id: number;
+  subId?: number;
+  text?: string;
+  blob?: ArrayBuffer;
+}
+
 /** Represents an iModel. */
 export abstract class IModel implements IModelProps {
   /** Name of the iModel */
   public name!: string;
   /** The name and description of the root subject of this iModel */
-  public rootSubject!: { name: string, description?: string };
+  public rootSubject!: RootSubjectProps;
   /** The volume inside which the entire project is contained. */
   public projectExtents!: AxisAlignedBox3d;
   /** An offset to be applied to all spatial coordinates. This is normally used to transform spatial coordinates into the Cartesian coordinate system of a Geographic Coordinate System. */
