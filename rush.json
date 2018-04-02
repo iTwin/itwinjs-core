@@ -27,11 +27,17 @@
       "packageName": "imodeljs-core-testbed",
       "projectFolder": "source/testbed",
       "shouldPublish": false
+    },
+    {
+      "packageName": "imodeljs-core-sample-code",
+      "projectFolder": "source/sample-code",
+      "shouldPublish": false
     }
   ],
   "eventHooks": {
     "postRushInstall": [
-      "npm run clean"
+      "npm run clean & cd nativePlatformForTests & npm install & cd ..",
+      "rush clean"
     ]
   }
 }

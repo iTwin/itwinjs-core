@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
-import { ModelProps, GeometricModel2dProps } from "@bentley/imodeljs-common";
+import { ModelProps, GeometricModel2dProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -11,10 +11,10 @@ import { IModelDb } from "./IModelDb";
  * A Model is a container for persisting a collection of related elements within an iModel.
  */
 export class Model extends Entity implements ModelProps {
-  public modeledElement: Id64;
+  public readonly modeledElement: Id64;
   public readonly name: string;
-  public parentModel: Id64;
-  public jsonProperties: any;
+  public readonly parentModel: Id64;
+  public readonly jsonProperties: any;
   public isPrivate: boolean;
   public isTemplate: boolean;
 
@@ -22,8 +22,8 @@ export class Model extends Entity implements ModelProps {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
     this.name = props.name ? props.name : "";
-    this.modeledElement = Id64.fromJSON(props.modeledElement)!;
-    this.parentModel = Id64.fromJSON(props.parentModel)!;
+    this.modeledElement = RelatedElement.idFromJson(props.modeledElement);
+    this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
@@ -44,6 +44,19 @@ export class Model extends Entity implements ModelProps {
       val.jsonProperties = this.jsonProperties;
     return val;
   }
+
+  private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
+
+  /** get a set of JSON user properties by namespace */
+  public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
+
+  /** change a set of user JSON properties of this Element by namespace. */
+  public setUserProperties(nameSpace: string, value: any) { this.getAllUserProperties()[nameSpace] = value; }
+
+  /** remove a set of JSON user properties, specified by namespace, from this Element */
+  public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
+  public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
+  public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
   /**
    * Add a request for the locks that would be needed in order to carry out the specified operation.

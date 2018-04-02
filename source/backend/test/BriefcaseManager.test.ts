@@ -3,19 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState } from "@bentley/imodeljs-clients";
-import { Code, IModelVersion, Appearance, ColorDef, IModel } from "@bentley/imodeljs-common";
-import { KeepBriefcase } from "../BriefcaseManager";
-import { IModelDb, ConcurrencyControl } from "../IModelDb";
+import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption, Guid } from "@bentley/bentleyjs-core";
+import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges } from "@bentley/imodeljs-clients";
+import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
+import { ConcurrencyControl } from "../ConcurrencyControl";
 import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Element } from "../Element";
-import { DictionaryModel } from "../Model";
-import { SpatialCategory } from "../Category";
 import { IModelJsFs } from "../IModelJsFs";
-import { IModelHost } from "../IModelHost";
-import { AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../AutoPush";
+import { ChangeSetToken } from "../BriefcaseManager";
+import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -33,6 +30,33 @@ class Timer {
   }
 }
 
+// Combine all local Txns and generate a changeset file. Then delete all local Txns.
+function createChangeSet(imodel: IModelDb): ChangeSetToken {
+  const res: ErrorStatusOrResult<DbResult, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
+  if (res.error)
+    throw new IModelError(res.error.status);
+
+  const token: ChangeSetToken = JSON.parse(res.result!);
+
+  // finishCreateChangeSet deletes the file that startCreateChangeSet created.
+  // We make a copy of it now, before he does that.
+  const csfilename = path.join(KnownTestLocations.outputDir, token.id + ".cs");
+  IModelJsFs.copySync(token.pathname, csfilename);
+  token.pathname = csfilename;
+
+  const result = imodel.briefcase!.nativeDb!.finishCreateChangeSet();
+  if (DbResult.BE_SQLITE_OK !== result)
+    throw new IModelError(result);
+
+  return token;
+}
+
+function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
+  const result: DbResult = imodel.briefcase!.nativeDb!.processChangeSets(JSON.stringify([cstoken]), ChangeSetProcessOption.Merge, cstoken.containsSchemaChanges === ContainsSchemaChanges.Yes);
+  imodel.onChangesetApplied.raiseEvent();
+  assert.equal(result, DbResult.BE_SQLITE_OK);
+}
+
 async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
   // Create a new physical model.
   let modelId: Id64;
@@ -41,7 +65,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
 
   // Reserve all of the codes that are required by the new model and category.
   try {
@@ -99,17 +123,38 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
 
-  it.skip("test change-merging scenarios", async () => {
+  it("The same promise can have two subscribers, and it will notify both.", async () => {
+    const testPromise = new Promise((resolve, _reject) => {
+      setTimeout(() => resolve("Success!"), 250);
+    });
+
+    let callbackcount = 0;
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+
+    await testPromise;
+
+    assert.equal(callbackcount, 2);
+  });
+
+  it.skip("test change-merging scenarios in optimistic concurrency mode", async () => {
     const firstUser = accessToken;
     const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
+    const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.user2);
 
     const firstIModel: IModelDb = await IModelDb.open(firstUser, testProjectId, testIModelId, OpenMode.ReadWrite);
     const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModelId, OpenMode.ReadWrite);
+    const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUser, testProjectId, testIModelId, OpenMode.Readonly);
     assert.notEqual(firstIModel, secondIModel);
 
     // Set up optimistic concurrency. Note the defaults are:
     firstIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     secondIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // Note: neutralObserver's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
 
     // firstUser: create model, category, and element el1
     const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(firstIModel, firstUser);
@@ -126,7 +171,7 @@ describe("BriefcaseManager", () => {
     // firstUser: modify el1.userLabel
     if (true) {
       const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
-      el1cc.userLabel = el1cc.userLabel + "changed by firstUser";
+      el1cc.userLabel = el1cc.userLabel + " -> changed by firstUser";
       firstIModel.elements.updateElement(el1cc);
       firstIModel.saveChanges("firstUser modified el1.userLabel");
       await firstIModel.pushChanges(firstUser);
@@ -136,7 +181,7 @@ describe("BriefcaseManager", () => {
     let expectedValueofEl1UserLabel: string;
     if (true) {
       const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
-      expectedValueofEl1UserLabel = el1before.userLabel + "changed by secondUser";
+      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
       el1before.userLabel = expectedValueofEl1UserLabel;
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userLabel");
@@ -149,6 +194,13 @@ describe("BriefcaseManager", () => {
       await secondIModel.pushChanges(secondUser);
     }
 
+    // Make sure a neutral observer sees secondUser's change.
+    if (true) {
+      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
+      const elobj = neutralObserverIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
     // firstUser: pull and see that secondUser has overridden my change
     if (true) {
       await firstIModel.pullAndMergeChanges(firstUser);
@@ -158,44 +210,163 @@ describe("BriefcaseManager", () => {
 
     // --- Test 2: Overlapping changes that are not conflicts  ---
 
-    // firstUser: modify el1
+    // firstUser: modify el1.userLabel
+    const wasExpectedValueofEl1UserLabel = expectedValueofEl1UserLabel;
     if (true) {
       const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
-      expectedValueofEl1UserLabel = el1cc.userLabel + "changed again by firstUser";
+      assert.equal(el1cc.userLabel, wasExpectedValueofEl1UserLabel);
+      expectedValueofEl1UserLabel = el1cc.userLabel + " -> changed again by firstUser";
       el1cc.userLabel = expectedValueofEl1UserLabel;
       firstIModel.elements.updateElement(el1cc);
       firstIModel.saveChanges("firstUser modified el1.userLabel");
       await firstIModel.pushChanges(firstUser);
     }
 
-    // secondUser: modify el1
+    // Make sure a neutral observer sees firstUser's changes.
+    if (true) {
+      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
+      const elobj = neutralObserverIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // secondUser: modify el1.userProperties
     const secondUserPropNs = "secondUser";
+    const secondUserPropName = "property";
     const expectedValueOfSecondUserProp: string = "x";
     if (true) {
       const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
-      el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp });
+      assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel);
+      el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp }); // secondUser changes userProperties
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userProperties");
+      assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel, "secondUser does not change userLabel");
 
       // pull + merge => no conflict + both changes should be intact
       await secondIModel.pullAndMergeChanges(secondUser);
       const el1after = secondIModel.elements.getElement(el1);
       assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
-      assert.equal(el1after.getUserProperties(secondUserPropNs).property, expectedValueOfSecondUserProp);
+      assert.equal(el1after.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
 
       await secondIModel.pushChanges(secondUser);
     }
 
-    // firstUser: pull and see that both changes
+    // firstUser: pull and see both changes
     if (true) {
       await firstIModel.pullAndMergeChanges(firstUser);
       const elobj = firstIModel.elements.getElement(el1);
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
-      assert.equal(elobj.getUserProperties("secondUser").secondUser, "x");
+      assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
     }
 
-    // --- Test 1: Non-overlapping changes ---
+    // Make sure a neutral observer sees both changes.
+    if (true) {
+      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
+      const elobj = neutralObserverIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
+    }
 
+    // --- Test 3: Non-overlapping changes ---
+
+  });
+
+  it.skip("should merge changes so that two branches of an iModel converge", () => {
+    // tslint:disable-next-line:no-debugger
+    debugger;
+
+    // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
+    // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
+    const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    upgraded.saveChanges();
+    createChangeSet(upgraded);
+
+    // Open two copies of the seed file.
+    const first: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "first.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const second: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "second.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const neutral: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "neutral.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    assert.isTrue(first !== second);
+
+    first.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    second.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // Note: neutral observer's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
+
+    const cshistory: ChangeSetToken[] = [];
+
+    let firstparent: number = -1;
+    let secondparent: number = -1;
+    let neutralparent: number = -1;
+
+    let modelId: Id64;
+    let spatialCategoryId: Id64;
+    let el1: Id64;
+    // first. Create a new model, category, and element.  =>  #0
+    if (true) {
+      [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);
+      const dictionary: DictionaryModel = first.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+      const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
+      el1 = first.elements.insertElement(IModelTestUtils.createPhysicalObject(first, modelId, spatialCategoryId));
+      first.saveChanges();
+      cshistory.push(createChangeSet(first));
+      ++firstparent; // (This automatically becomes my parent)
+      assert.isTrue((cshistory.length - 1) === firstparent);
+    }
+
+    if (true) {
+      // first -> second, neutral
+      applyChangeSet(second, cshistory[++secondparent]);
+      assert.isTrue(second.models.getModel(modelId) !== undefined);
+      assert.isTrue(second.elements.getElement(spatialCategoryId) !== undefined);
+      assert.isTrue(second.elements.getElement(el1) !== undefined);
+
+      applyChangeSet(neutral, cshistory[++neutralparent]);
+      assert.isTrue(neutral.models.getModel(modelId) !== undefined);
+      assert.isTrue(neutral.elements.getElement(spatialCategoryId) !== undefined);
+      assert.isTrue(neutral.elements.getElement(el1) !== undefined);
+    }
+
+    // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
+
+    // first: modify el1.userLabel
+    if (true) {
+      const el1cc = (first.elements.getElement(el1)).copyForEdit<Element>();
+      el1cc.userLabel = el1cc.userLabel + " -> changed by first";
+      first.elements.updateElement(el1cc);
+      first.saveChanges("first modified el1.userLabel");
+      cshistory.push(createChangeSet(first));
+      ++firstparent; // (This automatically becomes my parent)
+    }
+
+    // second: modify el1.userLabel
+    let expectedValueofEl1UserLabel: string;
+    if (true) {
+      const el1before = (second.elements.getElement(el1)).copyForEdit<Element>();
+      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by second";
+      el1before.userLabel = expectedValueofEl1UserLabel;
+      second.elements.updateElement(el1before);
+      second.saveChanges("second modified el1.userLabel");
+
+      // merge => take second's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
+      applyChangeSet(second, cshistory[++secondparent]);
+      const el1after = second.elements.getElement(el1);
+      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+      cshistory.push(createChangeSet(second));
+      ++secondparent; // (This automatically becomes my parent)
+    }
+
+    // Make sure a neutral observer sees secondUser's change.
+    if (true) {
+      applyChangeSet(neutral, cshistory[++neutralparent]);
+      const elobj = neutral.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // firstUser: pull and see that secondUser has overridden my change
+    if (true) {
+      applyChangeSet(first, cshistory[++firstparent]);
+      const elobj = first.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
   });
 
   it("should be able to open an IModel from the Hub in Readonly mode", async () => {
@@ -330,6 +501,18 @@ describe("BriefcaseManager", () => {
     assert.exists(qaIModel);
   });
 
+  it("Should track the AccessTokens that are used to open IModels", async () => {
+    await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    assert.deepEqual(IModelDb.getAccessToken(testIModelId), accessToken);
+
+    try {
+      IModelDb.getAccessToken("--invalidid--");
+      assert.fail("Asking for an AccessToken on an iModel that is not open should fail");
+    } catch (err) {
+      assert.equal((err as IModelError).errorNumber, IModelStatus.NotFound);
+    }
+  });
+
   it("should be able to reverse and reinstate changes", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
 
@@ -379,7 +562,7 @@ describe("BriefcaseManager", () => {
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", "TestSubject");
+    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -407,7 +590,7 @@ describe("BriefcaseManager", () => {
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
 
     timer.end();
 
@@ -514,8 +697,26 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it("should be able to create a standalone IModel", async () => {
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", "TestSubject");
+  it.skip("should be able to create a standalone IModel", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Manufacturing",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: new Guid(true),
+    };
+
+    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", args);
+    assert.equal(iModel.getGuid().value, args.guid.value);
+    assert.equal(iModel.rootSubject.name, args.rootSubject.name);
+    assert.equal(iModel.rootSubject.description, args.rootSubject.description);
+    assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);
+    assert.equal(iModel.projectExtents.low.y, args.projectExtents.low.y);
+    assert.equal(iModel.projectExtents.low.z, args.projectExtents.low.z);
+    assert.equal(iModel.globalOrigin.x, args.globalOrigin.x);
+    assert.equal(iModel.globalOrigin.y, args.globalOrigin.y);
+    assert.equal(iModel.globalOrigin.z, 0);
+
     iModel.closeStandalone();
   });
 
@@ -548,7 +749,7 @@ describe("BriefcaseManager", () => {
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, accessToken, activityMonitor);
+    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 

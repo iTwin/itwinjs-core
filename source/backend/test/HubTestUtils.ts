@@ -8,16 +8,14 @@ import { Project, IModel, Briefcase } from "@bentley/imodeljs-clients";
 import { assert, expect } from "chai";
 
 export class HubTestUtils {
-  public accessToken: AccessToken;
+  public accessToken!: AccessToken;
   public hubClient: IModelHubClient;
-  public testUserProfile: UserProfile;
-  public testProject: Project;
-  public testIModel: IModel;
-  public testBriefcase: Briefcase;
+  public testUserProfile!: UserProfile;
+  public testProject!: Project;
+  public testIModel!: IModel;
+  public testBriefcase!: Briefcase;
 
-  constructor() {
-    this.hubClient = new IModelHubClient("QA");
-  }
+  constructor() { this.hubClient = new IModelHubClient("QA"); }
 
   public async initialize(): Promise<void> {
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestConfig.email, TestConfig.password);

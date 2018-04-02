@@ -8,9 +8,14 @@ node_modules
 /source/backend/test/output
 /source/frontend/lib
 /source/testbed/lib
+/source/sample-code/out
+/generated-docs
 
 # rush-specific
 /common/temp
 package-deps.json
 *.build.log
 *.build.error.log
+
+# docs
+/public

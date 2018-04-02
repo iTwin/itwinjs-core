@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges, SeedFile, SeedFileInitState, Briefcase } from "@bentley/imodeljs-clients";
+import {
+  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel, ContainsSchemaChanges,
+  SeedFile, SeedFileInitState, Briefcase, IModelHubResponseError, IModelHubResponseErrorId,
+} from "@bentley/imodeljs-clients";
 import { ChangeSetProcessOption, BeEvent, DbResult, OpenMode, assert, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseStatus, IModelError, IModelVersion, IModelToken } from "@bentley/imodeljs-common";
-import { AddonRegistry } from "./AddonRegistry";
-import { AddonDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -14,7 +17,7 @@ import * as fs from "fs";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
-/** The ID assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
+/** The Id assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */
 export class BriefcaseId {
   private value: number;
   public static get Illegal(): number { return 0xffffffff; }
@@ -39,25 +42,25 @@ export const enum KeepBriefcase {
 }
 
 /** A token that represents a ChangeSet */
-class ChangeSetToken {
+export class ChangeSetToken {
   constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: ContainsSchemaChanges) { }
 }
 
 /** Entry in the briefcase cache */
 export class BriefcaseEntry {
   /** Id of the iModel - set to the DbGuid field in the BIM, it corresponds to the Guid used to track the iModel in iModelHub */
-  public iModelId: string;
+  public iModelId!: string;
 
   /** Id of the last change set that was applied to the BIM.
    * Set to an empty string if it's the initial version, or a standalone briefcase
    */
-  public changeSetId: string;
+  public changeSetId!: string;
 
   /** Index of the last change set that was applied to the BI.
    * Only specified if the briefcase was acquired from the Hub.
    * Set to 0 if it's the initial version.
    */
-  public changeSetIndex?: number;
+  public changeSetIndex = 0;
 
   /** Id of the last change set that was applied to the BIM after it was reversed.
    * Undefined if no change sets have been reversed.
@@ -72,25 +75,25 @@ export class BriefcaseEntry {
   public reversedChangeSetIndex?: number;
 
   /** Briefcase Id  */
-  public briefcaseId: number;
+  public briefcaseId = 0;
 
   /** Absolute path where the briefcase is cached/stored */
-  public pathname: string;
+  public pathname!: string;
 
   /** Flag indicating if the briefcase is standalone or from the iModelHub */
   public isStandalone?: boolean;
 
   /** Mode used to open the iModel */
-  public openMode: OpenMode;
+  public openMode?: OpenMode;
 
   /** Flag to indicate if the briefcase is currently open */
-  public isOpen: boolean;
+  public isOpen = false;
 
   /** Id of the user that acquired the briefcase. This is not set if it's standalone briefcase */
   public userId?: string;
 
   /** In-memory handle of the native Db */
-  public nativeDb: AddonDgnDb;
+  public nativeDb!: NativeDgnDb;
 
   /** In-memory handle fo the IModelDb that corresponds with this briefcase. This is only set if an IModelDb wrapper has been created for this briefcase */
   public iModelDb?: IModelDb;
@@ -98,10 +101,13 @@ export class BriefcaseEntry {
   /** File Id used to upload change sets for this briefcase (only setup in Read-Write cases) */
   public fileId?: string;
 
-  /** Event called when the briefcase is about to be closed */
+  /** @hidden Event called after a changeset is applied to a briefcase. */
+  public readonly onChangesetApplied = new BeEvent<() => void>();
+
+  /** @hidden Event called when the briefcase is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
-  /** Event called when the version of the briefcase has been updated */
+  /** @hidden Event called when the version of the briefcase has been updated */
   public readonly onBeforeVersionUpdate = new BeEvent<() => void>();
 
   /** Gets the path key to be used in the cache and iModelToken */
@@ -126,9 +132,7 @@ class BriefcaseCache {
   }
 
   /** Find a briefcase in the cache */
-  public findBriefcase(briefcase: BriefcaseEntry): BriefcaseEntry | undefined {
-    return this.briefcases.get(briefcase.getPathKey());
-  }
+  public findBriefcase(briefcase: BriefcaseEntry): BriefcaseEntry | undefined { return this.briefcases.get(briefcase.getPathKey()); }
 
   /** Add a briefcase to the cache */
   public addBriefcase(briefcase: BriefcaseEntry) {
@@ -167,14 +171,10 @@ class BriefcaseCache {
   }
 
   /** Checks if the cache is empty */
-  public isEmpty(): boolean {
-    return this.briefcases.size === 0;
-  }
+  public isEmpty(): boolean { return this.briefcases.size === 0; }
 
   /** Clears all entries in the cache */
-  public clear() {
-    this.briefcases.clear();
-  }
+  public clear() { this.briefcases.clear(); }
 }
 
 /** Utility to manage briefcases
@@ -251,7 +251,7 @@ export class BriefcaseManager {
    * }
    */
   private static getCachedBriefcaseInfos(cacheDir: string): any {
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
     const res: ErrorStatusOrResult<DbResult, string> = nativeDb.getCachedBriefcaseInfos(cacheDir);
     if (res.error)
       Promise.reject(new IModelError(res.error.status));
@@ -411,7 +411,7 @@ export class BriefcaseManager {
   /** Close a briefcase */
   public static async close(accessToken: AccessToken, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
     briefcase.onBeforeClose.raiseEvent(briefcase);
-    briefcase.nativeDb!.closeDgnDb();
+    briefcase.nativeDb!.closeIModel();
     briefcase.isOpen = false;
     if (keepBriefcase === KeepBriefcase.No)
       await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
@@ -517,7 +517,7 @@ export class BriefcaseManager {
 
     briefcase.openMode = OpenMode.ReadWrite; // Setup briefcase as ReadWrite to allow pull and merge of changes (irrespective of the real openMode)
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
     const res: DbResult = nativeDb.setupBriefcase(JSON.stringify(briefcase));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
@@ -645,9 +645,9 @@ export class BriefcaseManager {
     if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it's already been opened once`);
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
-    const res = nativeDb.openDgnDb(pathname, openMode);
+    const res = nativeDb.openIModel(pathname, openMode);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, pathname);
 
@@ -675,15 +675,15 @@ export class BriefcaseManager {
   }
 
   /** Create a standalone iModel from the local disk */
-  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): BriefcaseEntry {
-    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${pathname} again - it already exists`);
+  public static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry {
+    if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(fileName)))
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${fileName} again - it already exists`);
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
-    const res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
+    const res: DbResult = nativeDb.createIModel(fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, pathname);
+      throw new IModelError(res, fileName);
 
     nativeDb.setBriefcaseId(BriefcaseId.Standalone);
 
@@ -693,7 +693,7 @@ export class BriefcaseManager {
     briefcase.iModelId = nativeDb.getDbGuid();
     briefcase.isOpen = true;
     briefcase.openMode = OpenMode.ReadWrite;
-    briefcase.pathname = pathname;
+    briefcase.pathname = fileName;
     briefcase.isStandalone = true;
     briefcase.nativeDb = nativeDb;
 
@@ -704,7 +704,7 @@ export class BriefcaseManager {
   /** Close the standalone briefcase */
   public static closeStandalone(briefcase: BriefcaseEntry) {
     briefcase.onBeforeClose.raiseEvent(briefcase);
-    briefcase.nativeDb!.closeDgnDb();
+    briefcase.nativeDb!.closeIModel();
     briefcase.isOpen = false;
 
     if (BriefcaseManager.standaloneCache.findBriefcase(briefcase))
@@ -766,10 +766,10 @@ export class BriefcaseManager {
 
   private static openBriefcase(briefcase: BriefcaseEntry) {
     if (!briefcase.nativeDb)
-      briefcase.nativeDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+      briefcase.nativeDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     // Note: Open briefcase as ReadWrite, even if briefcase.openMode is Readonly. This is to allow to pull and merge change sets.
-    const res: DbResult = briefcase.nativeDb.openDgnDb(briefcase.pathname, OpenMode.ReadWrite);
+    const res: DbResult = briefcase.nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
 
@@ -867,6 +867,8 @@ export class BriefcaseManager {
         assert(false, "Unknown change set process option");
         return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Unknown ChangeSet process option"));
     }
+
+    briefcase.onChangesetApplied.raiseEvent();
   }
 
   public static async reverseChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {
@@ -901,17 +903,13 @@ export class BriefcaseManager {
       throw new IModelError(result);
   }
 
-  /** Push local changes to the hub
-   * @param accessToken The access token of the account that has write access to the iModel. This may be a service account.
-   * @param briefcase Identifies the IModelDb that contains the pending changes.
-   * @param description a description of the changeset that is to be pushed.
-   */
-  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
+  private static abandonCreateChangeSet(briefcase: BriefcaseEntry) {
+    briefcase.nativeDb!.abandonCreateChangeSet();
+  }
 
-    await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
-
+  /** Attempt to push a ChangeSet to iModel Hub */
+  private static async pushChangeSet(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
-
     const changeSet = new ChangeSet();
     changeSet.briefcaseId = briefcase.briefcaseId;
     changeSet.id = changeSetToken.id;
@@ -932,32 +930,80 @@ export class BriefcaseManager {
     briefcase.changeSetIndex = +postedChangeSet.index!;
   }
 
+  /** Attempt to pull merge and push once */
+  private static async pushChangesOnce(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
+    await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.latest());
+    await BriefcaseManager.pushChangeSet(accessToken, briefcase, description).catch((err) => {
+      BriefcaseManager.abandonCreateChangeSet(briefcase);
+      return Promise.reject(err);
+    });
+  }
+
+  /** Return true if should attempt pushing again. */
+  private static shouldRetryPush(error: any): boolean {
+    if (error instanceof IModelHubResponseError && error.id) {
+      switch (error.id!) {
+        case IModelHubResponseErrorId.AnotherUserPushing:
+        case IModelHubResponseErrorId.PullIsRequired:
+        case IModelHubResponseErrorId.DatabaseTemporarilyLocked:
+        case IModelHubResponseErrorId.iModelHubOperationFailed:
+          return true;
+      }
+    }
+    return false;
+  }
+
+  /** Push local changes to the hub
+   * @param accessToken The access token of the account that has write access to the iModel. This may be a service account.
+   * @param briefcase Identifies the IModelDb that contains the pending changes.
+   * @param description a description of the changeset that is to be pushed.
+   */
+  public static async pushChanges(accessToken: AccessToken, briefcase: BriefcaseEntry, description: string): Promise<void> {
+    for (let i = 0; i < 5; ++i) {
+      let pushed: boolean = false;
+      let error: any;
+      await BriefcaseManager.pushChangesOnce(accessToken, briefcase, description).then(() => {
+        pushed = true;
+      }).catch((err) => {
+        error = err;
+      });
+      if (pushed) {
+        return Promise.resolve();
+      }
+      if (!BriefcaseManager.shouldRetryPush(error)) {
+        return Promise.reject(error);
+      }
+      const delay: number = Math.floor(Math.random() * 4800) + 200;
+      await new Promise((resolve: any) => setTimeout(resolve, delay));
+    }
+  }
+
   /** Create an iModel on the iModelHub */
-  public static async create(accessToken: AccessToken, projectId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<BriefcaseEntry> {
+  public static async create(accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<BriefcaseEntry> {
     await BriefcaseManager.initCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
-    const nativeDb: AddonDgnDb = new (AddonRegistry.getAddon()).AddonDgnDb();
+    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     const scratchDir = BriefcaseManager.buildScratchPath();
     if (!IModelJsFs.existsSync(scratchDir))
       IModelJsFs.mkdirSync(scratchDir);
 
-    const pathname = path.join(scratchDir, hubName + ".bim");
-    if (IModelJsFs.existsSync(pathname))
-      IModelJsFs.unlinkSync(pathname); // Note: Cannot create two files with the same name at the same time with multiple async calls.
+    const fileName = path.join(scratchDir, hubName + ".bim");
+    if (IModelJsFs.existsSync(fileName))
+      IModelJsFs.unlinkSync(fileName); // Note: Cannot create two files with the same name at the same time with multiple async calls.
 
-    let res: DbResult = nativeDb.createDgnDb(pathname, rootSubjectName, rootSubjectDescription);
+    let res: DbResult = nativeDb.createIModel(fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, pathname);
+      throw new IModelError(res, fileName);
 
     res = nativeDb.saveChanges();
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res);
 
-    nativeDb.closeDgnDb();
+    nativeDb.closeIModel();
 
-    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, pathname, hubName, hubDescription);
+    const iModelId: string = await BriefcaseManager.upload(accessToken, projectId, fileName, hubName, args.rootSubject.description);
     return BriefcaseManager.open(accessToken, projectId, iModelId, OpenMode.ReadWrite, IModelVersion.latest());
   }
 

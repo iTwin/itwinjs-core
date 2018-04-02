@@ -1,12 +1,12 @@
 {
   "$schema":"https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
   "alias":"ts",
-  "children":{
+  "items":{
     "AbstractDerivedAbstract":{
       "baseClass":"TestSchema.AbstractEntityClass",
       "description":"An abstract class derived from an abstract class",
       "modifier":"abstract",
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "AbstractEntityClass":{
       "description":"Abstract class, cannot be instantiated",
@@ -24,7 +24,7 @@
           "relationshipName":"TestSchema.NormalReferAbstractForward"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "BaseEntity":{
       "description":"Base Entity Description",
@@ -40,11 +40,11 @@
           "typeName":"string"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "BaseEntityReferNormal":{
       "modifier":"abstract",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.BaseEntity"
@@ -74,27 +74,27 @@
           "typeName":"string"
         }
       ],
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomAnyClassAttribute":{
       "appliesTo":"AnyClass",
       "description":"Custom Attribute that can be applied to relationshipConstraint.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomAnyPropertyAttribute":{
       "appliesTo":"AnyProperty",
       "description":"Custom Attribute that can be applied to any of the property types.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomArrayPropertyAttribute":{
       "appliesTo":"ArrayProperty",
       "description":"Custom Attribute that can be applied to an ECArrayProperty.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomCustomAttributeClassAttribute":{
       "appliesTo":"CustomAttributeClass",
       "description":"Custom Attribute that can be applied to an ECCustomAttributeClass.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomEntityClassAttribute":{
       "appliesTo":"EntityClass",
@@ -150,12 +150,12 @@
         {
           "name":"EntityClassIntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"EntityClassStringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         },
         {
           "name":"CAStructProperty",
@@ -175,57 +175,57 @@
           "typeName":"TestSchema.Struct"
         }
       ],
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomNavigationPropertyAttribute":{
       "appliesTo":"NavigationProperty",
       "description":"Custom Attribute that can be applied to an ECNavigationProperty.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomPrimitivePropertyAttribute":{
       "appliesTo":"PrimitiveProperty",
       "description":"Custom Attribute that can be applied to an ECProperty.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomRelationshipClassAttribute":{
       "appliesTo":"RelationshipClass",
       "description":"Custom Attribute that can be applied to an ECRelationshipClass.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomRelationshipConstraintAttribute":{
       "appliesTo":"AnyRelationshipConstraint",
       "description":"Custom Attribute that can be applied to relationshipConstraint.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomRelationshipConstraintAttributeSecond":{
       "appliesTo":"AnyRelationshipConstraint",
       "description":"Custom Attribute that can be applied to relationshipConstraint.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomStructArrayPropertyAttribute":{
       "appliesTo":"StructArrayProperty",
       "description":"Custom Attribute that can be applied to an ECStructArrayProperty.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomStructClassAttribute":{
       "appliesTo":"StructClass",
       "description":"Custom Attribute that can be applied to an ECStructClass.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "CustomStructPropertyAttribute":{
       "appliesTo":"StructProperty",
       "description":"Custom Attribute that can be applied to an ECStructProperty.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "DerivedAbstract":{
       "baseClass":"TestSchema.AbstractEntityClass",
       "description":"A class derived from an abstract class",
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "DerivedAbstractSecond":{
       "baseClass":"TestSchema.AbstractEntityClass",
       "description":"A class derived from an abstract class",
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "DerivedMixin":{
       "appliesTo":"TestSchema.Entity",
@@ -280,7 +280,7 @@
           "typeName":"point3d"
         }
       ],
-      "schemaChildType":"Mixin"
+      "schemaItemType":"Mixin"
     },
     "DerivedNormal":{
       "baseClass":"TestSchema.NormalEntityClass",
@@ -292,7 +292,7 @@
           "typeName":"string"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "DerivedNormalSecond":{
       "baseClass":"TestSchema.NormalEntityClass",
@@ -304,12 +304,12 @@
           "typeName":"long"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "DerivedRelationshipClass":{
       "baseClass":"TestSchema.NormalReferMixinForward",
       "modifier":"sealed",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.DerivedNormal"
@@ -333,7 +333,7 @@
     "DerivedStruct":{
       "baseClass":"TestSchema.Struct",
       "label":"A Struct derived from a Struct",
-      "schemaChildType":"StructClass"
+      "schemaItemType":"StructClass"
     },
     "Entity":{
       "baseClass":"TestSchema.BaseEntity",
@@ -348,11 +348,11 @@
           "typeName":"string"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "EntityEmbedNormalBackward":{
       "modifier":"abstract",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.Entity"
@@ -383,7 +383,7 @@
     "EntityReferDerivedNormal":{
       "baseClass":"TestSchema.BaseEntityReferNormal",
       "modifier":"sealed",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.Entity"
@@ -412,7 +412,7 @@
           "typeName":"string"
         }
       ],
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.Entity"
@@ -435,7 +435,7 @@
     "GeneralCustomAttribute":{
       "appliesTo":"Any",
       "description":"Custom Attribute that can be applied to anything.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "IntEnumeration":{
       "backingTypeName":"int",
@@ -456,7 +456,7 @@
       ],
       "isStrict":true,
       "label":"This is a display label.",
-      "schemaChildType":"Enumeration"
+      "schemaItemType":"Enumeration"
     },
     "KindOfQuantity":{
       "description":"Kind of Quantity Description",
@@ -476,7 +476,7 @@
           "unit":"IN"
         }
       ],
-      "schemaChildType":"KindOfQuantity"
+      "schemaItemType":"KindOfQuantity"
     },
     "MixinClass":{
       "appliesTo":"TestSchema.BaseEntity",
@@ -532,15 +532,15 @@
         {
           "name":"MixinIntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"MixinStringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         }
       ],
-      "schemaChildType":"Mixin"
+      "schemaItemType":"Mixin"
     },
     "NormalEntityClass":{
       "customAttributes":[
@@ -559,11 +559,11 @@
           "typeName":"int"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "NormalReferAbstractBackward":{
       "modifier":"abstract",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.NormalEntityClass"
@@ -597,7 +597,7 @@
         }
       ],
       "modifier":"abstract",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "abstractConstraint":"TestSchema.NormalEntityClass",
         "constraintClasses":[
@@ -623,7 +623,7 @@
     },
     "NormalReferMixinForward":{
       "modifier":"abstract",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.NormalEntityClass"
@@ -717,12 +717,12 @@
         {
           "name":"IntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"StringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         },
         {
           "customAttributes":[
@@ -882,24 +882,24 @@
           "typeName":"TestSchema.Struct"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "SchemaCustomAttribute":{
       "appliesTo":"Schema",
       "description":"Custom Attribute that can be applied to a schema.",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     },
     "SealedDerivedAbstract":{
       "baseClass":"TestSchema.AbstractEntityClass",
       "description":"A sealed class derived from an abstract class",
       "modifier":"sealed",
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "SealedDerivedNormal":{
       "baseClass":"TestSchema.NormalEntityClass",
       "description":"A sealed class derived from a normal class",
       "modifier":"sealed",
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "SealedEntityClass":{
       "description":"Instantiable, but cannot be used as base class",
@@ -911,11 +911,11 @@
           "typeName":"boolean"
         }
       ],
-      "schemaChildType":"EntityClass"
+      "schemaItemType":"EntityClass"
     },
     "SealedHoldNormalBackward":{
       "modifier":"abstract",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.SealedEntityClass"
@@ -945,7 +945,7 @@
     },
     "SealedHoldNormalForward":{
       "modifier":"sealed",
-      "schemaChildType":"RelationshipClass",
+      "schemaItemType":"RelationshipClass",
       "source":{
         "constraintClasses":[
           "TestSchema.SealedEntityClass"
@@ -998,7 +998,7 @@
         }
       ],
       "isStrict":true,
-      "schemaChildType":"Enumeration"
+      "schemaItemType":"Enumeration"
     },
     "Struct":{
       "customAttributes":[
@@ -1064,15 +1064,15 @@
         {
           "name":"StructIntEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"IntEnumeration"
+          "typeName":"TestSchema.IntEnumeration"
         },
         {
           "name":"StructStringEnumerationPrimitive",
           "propertyType":"PrimitiveProperty",
-          "typeName":"StringEnumeration"
+          "typeName":"TestSchema.StringEnumeration"
         }
       ],
-      "schemaChildType":"StructClass"
+      "schemaItemType":"StructClass"
     },
     "UsingCustomAttributeClass":{
       "appliesTo":"Any",
@@ -1088,7 +1088,7 @@
         }
       ],
       "description":"Custom Attribute class that use an ECCustomAttributeClass",
-      "schemaChildType":"CustomAttributeClass"
+      "schemaItemType":"CustomAttributeClass"
     }
   },
   "customAttributes":[

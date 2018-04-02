@@ -3,18 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorRgb, Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { ColorDef, ColorByName, Appearance, AppearanceProps, SubCategoryOverride } from "@bentley/imodeljs-common";
+
+// spell-checker: disable
 
 describe("Category tests", () => {
-
   it("Appearance should construct properly", () => {
     const opts: AppearanceProps = {
-      color: ColorDef.blue,
+      color: ColorByName.blue,
       weight: 3,
       priority: 4,
       transp: 6,
-      style: new Id64("0x22"),
-      material: new Id64("0x24"),
+      style: "0x22",
+      material: "0x24",
       dontPlot: true,
       dontLocate: true,
       dontSnap: true,
@@ -63,15 +64,15 @@ describe("Category tests", () => {
     o1.setMaterial(new Id64("0x222"));
     o1.setStyle(new Id64("0x2"));
     o1.applyTo(a2);
-    assert.equal(a2.color.getRgb(), ColorRgb.darkblue);
+    assert.equal(a2.color.tbgr, ColorByName.darkBlue);
     assert.isTrue(a2.invisible);
     assert.equal(a2.weight, 13);
     assert.equal(a2.transparency, 133);
     assert.equal(a2.priority, 33);
     assert.isTrue(a2.styleId.equals(new Id64("0x2")));
     assert.isTrue(a2.materialId.equals(new Id64("0x222")));
-    o1.setColor(new ColorDef(ColorRgb.darkred));
-    assert.equal(a2.color.getRgb(), ColorRgb.darkblue);
+    o1.setColor(new ColorDef(ColorByName.darkRed));
+    assert.equal(a2.color.tbgr, ColorByName.darkBlue);
 
     json = JSON.stringify(o1);
     const o2 = SubCategoryOverride.fromJSON(JSON.parse(json));

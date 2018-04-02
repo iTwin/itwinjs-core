@@ -1,13 +1,14 @@
-﻿Copyright © Bentley Systems, Inc. 2018
-# imodeljs-core
+﻿# imodeljs-core
 
-iModelJs extends the iModel technology stack to provide a JavaScript library (built using TypeScript) for querying, displaying, and modifying iModels.
+Copyright © Bentley Systems, Inc. 2018
+
+iModelJs extends the iModel technology stack to provide a JavaScript library (built using [TypeScript](https://www.typescriptlang.org/)) for querying, displaying, and modifying iModels.
 It can be used to build:
 
 * Backend agents and other web services
 * Web applications with browser frontends
-* (Future) Desktop applications that use web UI frameworks
-* (Future) Mobile applications that use web UI frameworks
+* Desktop applications that use web UI frameworks
+* Mobile applications that use web UI frameworks
 
 imodeljs-core is the name of the overall git repository.
 The source code is organized according to where it can run:
@@ -30,7 +31,8 @@ The source code is organized according to where it can run:
 ## Authentication
 
 Configure npm and log in to the Bentley npm registry with the following commands:
-```
+
+```cmd
 npm config set @bentley:registry https://npm.bentley.com/npm/npm/
 ```
 
@@ -38,7 +40,7 @@ npm config set @bentley:registry https://npm.bentley.com/npm/npm/
 
 1. Clone repository (first time) with `git clone` or pull updates to the repository (subsequent times) with `git pull`
 2. Install dependencies: `rush install`
-3. clean `npm run clean`
+3. Clean: `rush clean`
 4. Rebuild source: `rush rebuild`
 5. Run tests: `npm test -s`
 
@@ -58,7 +60,7 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 |----------------------|------------------|------------------|
 | Install dependencies | rush install     | npm install      |
 | Check dependencies   | rush check       | N/A              |
-| Clean output         | npm run clean    | npm run clean    |
+| Clean output         | rush clean       | npm run clean    |
 | Rebuild source       | rush rebuild     | npm run build -s |
 | Incremental build    | rush build       | N/A              |
 | Run tests            | npm test -s      | npm test -s      |
@@ -72,9 +74,10 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 
 ## Other NPM Scripts
 
-1. Build TypeDoc documentation: `npm run docs`
-2. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
-3. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
+1. Build TypeDoc documentation for all packages: `npm run docs`
+2. Build TypeDoc documentation for frontend, backend, or common only: `npm run docs:frontend`, `npm run docs:backend`, `npm run docs:common` from top-level directory or `npm run docs` from package directory
+3. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
+4. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
 
 The full list of npm scripts can be found in the root `package.json` file.
 
@@ -112,7 +115,6 @@ After a successful install, you will notice multiple **node_modules** directorie
 | source/testbed/node_modules/  | Testbed dependencies    |
 
 With Rush, the node_modules directories listed above are symlinks to a *common* package managed by Rush.
-
 
 ## Build Output and Publishing
 

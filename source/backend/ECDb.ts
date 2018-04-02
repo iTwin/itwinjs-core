@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { AddonECDb } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
-import { AddonRegistry } from "./AddonRegistry";
+import { NativeECDb } from "@bentley/imodeljs-native-platform-api";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
 
@@ -11,11 +11,11 @@ const loggingCategory = "imodeljs-backend.ECDb";
 
 /** An ECDb file */
 export class ECDb implements IDisposable {
-  private _nativeDb: AddonECDb | undefined;
+  private _nativeDb: NativeECDb | undefined;
   private readonly _statementCache: ECSqlStatementCache;
 
   constructor() {
-    this._nativeDb = new (AddonRegistry.getAddon()).AddonECDb();
+    this._nativeDb = new (NativePlatformRegistry.getNativePlatform()).NativeECDb();
     this._statementCache = new ECSqlStatementCache();
   }
 
@@ -56,11 +56,10 @@ export class ECDb implements IDisposable {
   public isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Close the Db after saving any uncommitted changes.
-   * @returns Promise that resolves to an object that contains an error property if the operation failed.
    * @throws [[IModelError]] if the database is not open.
    */
   public closeDb(): void {
-    this._statementCache.clearOnClose();
+    this._statementCache.clear();
     this.nativeDb.closeDb();
   }
 
@@ -144,7 +143,7 @@ export class ECDb implements IDisposable {
     return stmt;
   }
 
-  public get nativeDb(): AddonECDb {
+  public get nativeDb(): NativeECDb {
     if (this._nativeDb == null)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 

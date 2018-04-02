@@ -5,8 +5,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code } from "@bentley/imodeljs-common";
-import { EntityMetaData } from "../Entity";
-import { IModelDb } from "../IModelDb";
+import { EntityMetaData, IModelDb } from "../backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -102,7 +101,6 @@ class Derived extends Base {
 }
 
 describe("Static Properties", () => {
-
   it("should be inherited, and the subclass should get its own copy", async () => {
     assert.equal(Base.staticProperty, "base");
     assert.equal(Derived.staticProperty, "base"); // Derived inherits Base's staticProperty (via its prototype)

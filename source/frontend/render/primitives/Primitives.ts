@@ -30,6 +30,6 @@ export class GeometryOptions {
               public readonly preserveOrder: PreserveOrder = PreserveOrder.No,
               public readonly edges: GenerateEdges = GenerateEdges.Yes) {}
   public static fromGraphicBuilderCreateParams(params: GraphicBuilderCreateParams, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
-    return new GeometryOptions(normals, surfaces, (params.isOverlay() || params.isViewBackground()) ? PreserveOrder.Yes : PreserveOrder.No, params.isSceneGraphic() ? GenerateEdges.Yes : GenerateEdges.No);
+    return new GeometryOptions(normals, surfaces, (params.isOverlay || params.isViewBackground) ? PreserveOrder.Yes : PreserveOrder.No, params.isSceneGraphic ? GenerateEdges.Yes : GenerateEdges.No);
   }
 }

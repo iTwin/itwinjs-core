@@ -2,19 +2,19 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { CodeSpecNames, Code, ElementProps, Appearance, Rank } from "@bentley/imodeljs-common";
+import { CodeSpecNames, Code, ElementProps, Appearance, Rank, AppearanceProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
 
 /** Parameters to create a SubCategory element */
 export interface SubCategoryProps extends ElementProps {
-  appearance?: Appearance;
+  appearance?: AppearanceProps;
   description?: string;
 }
 
 /** a Subcategory defines the appearance for graphics in Geometric elements */
-export class SubCategory extends DefinitionElement implements SubCategoryProps {
+export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public description?: string;
   public constructor(props: SubCategoryProps, iModel: IModelDb) {
@@ -24,7 +24,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
   }
   public toJSON(): SubCategoryProps {
     const val = super.toJSON();
-    val.appearance = this.appearance;
+    val.appearance = this.appearance.toJSON();
     if (this.description && this.description.length > 0)
       val.description = this.description;
     return val;
@@ -61,8 +61,8 @@ export class Category extends DefinitionElement implements CategoryProps {
   public myDefaultSubCategoryId(): Id64 { return IModelDb.getDefaultSubCategoryId(this.id); }
 
   /** Set the default appearance of this category */
-  public setDefaultAppearance(app: Appearance) {
-    const subCat = this.iModel.elements.getElement(this.id).copyForEdit() as SubCategory;
+  public setDefaultAppearance(app: Appearance): void {
+    const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).copyForEdit();
     subCat.appearance = app;
     this.iModel.elements.updateElement(subCat);
   }
@@ -91,9 +91,9 @@ export class SpatialCategory extends Category {
   public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
-  public static queryCategoryIdByName(parentModel: DefinitionModel, categoryName: string): Id64 | undefined {
-    const code = SpatialCategory.createCode(parentModel, categoryName);
-    return parentModel.iModel.elements.queryElementIdByCode(code);
+  public static queryCategoryIdByName(scopeModel: DefinitionModel, categoryName: string): Id64 | undefined {
+    const code = SpatialCategory.createCode(scopeModel, categoryName);
+    return scopeModel.iModel.elements.queryElementIdByCode(code);
   }
 
   /** Create a Code for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -109,16 +109,13 @@ export class SpatialCategory extends Category {
 
   /**
    * Create a new SpatialCategory element.
-   * @param parentModel The model in which the category element will be inserted by the caller.
+   * @param scopeModel The model in which the category element will be inserted by the caller.
    * @param categoryName The name of the category.
-   * @param scopeModel  Optional. You can pass in the model that is to be the scope of the category's code. This defaults to parentModel.
    * @return a new, non-persistent SpatialCategory element.
    */
-  public static create(parentModel: DefinitionModel, categoryName: string, scopeModel?: DefinitionModel): SpatialCategory {
-    if (undefined === scopeModel)
-      scopeModel = parentModel;
-    return parentModel.iModel.elements.createElement({
-      iModel: parentModel.iModel,
+  public static create(scopeModel: DefinitionModel, categoryName: string): SpatialCategory {
+    return scopeModel.iModel.elements.createElement({
+      iModel: scopeModel.iModel,
       classFullName: "BisCore:SpatialCategory",
       model: scopeModel.id,
       code: SpatialCategory.createCode(scopeModel, categoryName),

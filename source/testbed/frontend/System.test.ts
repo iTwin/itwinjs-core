@@ -1,30 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
 import { Capabilities, ViewportQuad, TexturedViewportQuad } from "@bentley/imodeljs-frontend/lib/rendering";
 
-function getWebGLContext(): WebGLRenderingContext | null {
-  let canvas = document.getElementById("canvas") as HTMLCanvasElement;
+function getCanvas(): HTMLCanvasElement | undefined {
+  let canvas = document.getElementById("canvas") as HTMLCanvasElement | undefined;
   if (null === canvas)
     canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert.isNotNull(canvas);
 
-  if (null === canvas) {
-    return null;
-  }
-
-  document.body.appendChild(canvas);
-  return canvas.getContext("webgl");
+  const gl = canvas!.getContext("webgl");
+  return gl ? canvas : undefined;
 }
 
 describe("System WebGL Capabilities", () => {
   it("capabilities should all default to false", () => {
-    const gl = getWebGLContext();
-    if (null === gl) {
-      return;
-    }
 
     // Test default capabilities
     const cap: Capabilities = new Capabilities();
@@ -38,33 +28,24 @@ describe("System WebGL Capabilities", () => {
     assert.isFalse(cap.shaderTextureLOD, "shaderTextureLOD should initialize to false");
   });
   it("capabilities should be able to be initialized", () => {
-    const gl = getWebGLContext();
-    if (null === gl) {
-      return;
-    }
-
+    const canvas = getCanvas();
+    if (!canvas)
+      return; // test is running on a machine with no graphics
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
-    const isInitialized: boolean = cap.init();
+    const isInitialized: boolean = cap.init(canvas);
     assert.isTrue(isInitialized, "capabilities did not initialize properly");
   });
-  it("capabilities should be able to be read", () => {
-    const gl = getWebGLContext();
-    if (null === gl) {
-      return;
-    }
 
+  it("capabilities should be able to be read", () => {
+    const canvas = getCanvas();
+    if (!canvas)
+      return;
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
-    assert.isTrue(cap.init(), "capabilities did not initialize properly");
-    assert.isTrue(cap.maxTextureSize === cap.GetMaxTextureSize(), "GetMaxTextureSize should return cap.maxTextureSize");
-    assert.isTrue(cap.nonPowerOf2Textures === cap.SupportsNonPowerOf2Textures(), "SupportsNonPowerOf2Textures should return cap.nonPowerOf2Textures");
-    assert.isTrue(cap.drawBuffers === cap.SupportsDrawBuffers(), "SupportsDrawBuffers should return cap.drawBuffers");
-    assert.isTrue(cap.elementIndexUint === cap.Supports32BitElementIndex(), "Supports32BitElementIndex should return cap.elementIndexUint");
-    assert.isTrue(cap.textureFloat === cap.SupportsTextureFloat(), "SupportsTextureFloat should return cap.textureFloat");
-    assert.isTrue(cap.renderToFloat === cap.SupportsRenderToFloat(), "SupportsRenderToFloat should return cap.renderToFloat");
-    assert.isTrue(cap.depthStencilTexture === cap.SupportsDepthStencilTexture(), "SupportsDepthStencilTexture should return cap.depthStencilTexture");
-    assert.isTrue(cap.shaderTextureLOD === cap.SupportsShaderTextureLOD(), "SupportsShaderTextureLOD should return cap.shaderTextureLOD");
+    assert.isTrue(cap.init(canvas), "capabilities did not initialize properly");
+    assert.isTrue(0 !== cap.maxTextureSize, "cap.maxTextureSize");
+    assert.isTrue(cap.drawBuffers, "cap.drawBuffers");
   });
 });
 

@@ -1293,7 +1293,7 @@ export class Viewport {
 
   /** Get a color that will contrast to the current background color of this Viewport. Either Black or White depending on which will have the most contrast. */
   public getContrastToBackgroundColor(): ColorDef {
-    const bgColor = this.view.backgroundColor.getColors();
+    const bgColor = this.view.backgroundColor.colors;
     const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
     return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
   }

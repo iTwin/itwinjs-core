@@ -111,7 +111,7 @@ export abstract class Gateway {
   public configuration = this.supplyConfiguration();
 
   /** The default configuration for a gateway class. */
-  public defaultConfigurationSupplier: GatewayConfigurationSupplier;
+  public defaultConfigurationSupplier!: GatewayConfigurationSupplier;
 
   /** The application-supplied configuration for a gateway class. */
   public applicationConfigurationSupplier: GatewayConfigurationSupplier | undefined;

@@ -2,11 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore } from "../BisCore";
-import { Element, InformationPartitionElement } from "../Element";
-import { IModelDb, ConcurrencyControl } from "../IModelDb";
+import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
@@ -21,7 +19,7 @@ describe("Sample Code", () => {
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(iModel);
+    iModel.close(accessToken);
   });
 
   /** Gives sample code something to call. */
@@ -29,7 +27,7 @@ describe("Sample Code", () => {
     assert.exists(s);
   };
 
-  // __PUBLISH_EXTRACT_START__ BisCore1.sampleCreateModel
+  // __PUBLISH_EXTRACT_START__ IModelDbModels.createModel
   function createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
 
     const outputImodel = parentElement.iModel;
@@ -56,6 +54,17 @@ describe("Sample Code", () => {
   }
   // __PUBLISH_EXTRACT_END__
 
+  it("should update the imodel project extents", async () => {
+    // __PUBLISH_EXTRACT_START__ IModelDb.updateProjectExtents
+    // This is an example of how to expand an iModel's project extents.
+    const originalExtents = iModel.projectExtents;
+    const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
+    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
+    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    iModel.updateProjectExtents(newExtents);
+    // __PUBLISH_EXTRACT_END__
+  });
+
   it("should extract working sample code", async () => {
     // __PUBLISH_EXTRACT_START__ BisCore1.sampleCode
     // Register any schemas that will be used directly
@@ -73,7 +82,7 @@ describe("Sample Code", () => {
     doSomethingWithString(elementClass.name);
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleSetPolicy
+    // __PUBLISH_EXTRACT_START__ ConcurrencyControl.setPolicy
     // Turn on optimistic concurrency control.
     // This allows the app to modify elements, models, etc. without first acquiring locks.
     // Later, when the app downloads and merges changeSets from iModelHub,
@@ -82,7 +91,7 @@ describe("Sample Code", () => {
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleReserveCodesWithErrorHandling
+    // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
     try {
       await iModel.concurrencyControl.codes.reserve(accessToken);
     } catch (err) {
@@ -95,7 +104,7 @@ describe("Sample Code", () => {
     // Create a modeled element and a model.
     const newModeledElementId = createNewModel(iModel.elements.getRootSubject(), "newModelCode", false);
 
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleConcurrencyControlRequest
+    // __PUBLISH_EXTRACT_START__ ConcurrencyControl.request
     // Now acquire all locks and reserve all codes needed.
     // This is a *prequisite* to saving local changes.
     try {
@@ -111,14 +120,44 @@ describe("Sample Code", () => {
     }
     // Now we can commit the local changes to a local transaction in the
     // IModelDb.
+    // __PUBLISH_EXTRACT_END__
+
+    // Now we can commit the local changes to a local transaction in the
+    // IModelDb.
     iModel.saveChanges("inserted generic objects");
 
-    // __PUBLISH_EXTRACT_END__
     assert.isTrue(newModeledElementId !== undefined);
 
     // assertions to ensure sample code is working properly
     assert.equal(BisCore.name, elementClass.schema.name);
     assert.equal(Element.name, elementClass.name);
+  });
+
+  it("should create and insert CodeSpecs", () => {
+    const testImodel = iModel;
+
+    // __PUBLISH_EXTRACT_START__ CodeSpecs.insert
+    // Create and insert a new CodeSpec with the name "CodeSpec1". In this example, we choose to make a model-scoped CodeSpec.
+    const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec);
+    assert.deepEqual(codeSpecId, codeSpec.id);
+
+    // Should not be able to insert a duplicate.
+    try {
+      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
+      testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
+      assert.fail();
+    } catch (err) {
+      // We expect this to fail.
+    }
+
+    // We should be able to insert another CodeSpec with a different name.
+    const codeSpec2: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2Id: Id64 = testImodel.codeSpecs.insert(codeSpec2);
+    assert.deepEqual(codeSpec2Id, codeSpec2.id);
+    assert.notDeepEqual(codeSpec2Id, codeSpecId);
+    // __PUBLISH_EXTRACT_END__
+
   });
 
 });

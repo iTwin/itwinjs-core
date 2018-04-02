@@ -68,7 +68,8 @@ describe("ViewState", () => {
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
     const compare = new DeepCompare();
     const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
-    const val = compare.compare(v1, v2State);
+
+    const val = compare.compare(JSON.parse(JSON.stringify(v1)), JSON.parse(JSON.stringify(v2State)));
     if (!val)
       assert.isUndefined(compare.errorTracker, str);
     assert.isTrue(val, str);

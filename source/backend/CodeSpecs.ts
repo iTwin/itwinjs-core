@@ -11,7 +11,10 @@ export class CodeSpecs {
   private _imodel: IModelDb;
   private _loadedCodeSpecs: CodeSpec[] = [];
 
-  constructor(imodel: IModelDb) { this._imodel = imodel; }
+  constructor(imodel: IModelDb) {
+    this._imodel = imodel;
+    imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
+  }
 
   /** Look up the Id of the CodeSpec with the specified name. */
   public queryId(name: string): Id64 {
@@ -63,7 +66,11 @@ export class CodeSpecs {
     return this.getById(codeSpecId);
   }
 
-  /** Add a new CodeSpec to the table.
+  /** Add a new CodeSpec to the IModelDb.
+   * <p><em>Example:</em>
+   * ``` ts
+   * [[include:CodeSpecs.insert]]
+   * ```
    * @param  codeSpec The new entry to add.
    * @return The id of the persistent CodeSpec.
    * @remarks If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec

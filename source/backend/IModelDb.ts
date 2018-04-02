@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, DbOpcode, Logger, RepositoryStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
-import { RequestQueryOptions, AccessToken, DeploymentEnv, MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients";
-import { AddonBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-nodeaddonapi/imodeljs-nodeaddonapi";
+/** The IModelDb Module */
+import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  Code, CodeSpec, ElementProps, ElementAspectProps, ElementLoadParams, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
+  Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  // FontMap, FontMapProps,
+  FontMap, FontMapProps, ElementLoadProps, CreateIModelProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
@@ -18,39 +18,83 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { CodeSpecs } from "./CodeSpecs";
 import { Entity, EntityMetaData } from "./Entity";
 import * as path from "path";
-import { IModelDbLinkTableRelationships, LinkTableRelationship } from "./LinkTableRelationship";
-import { AddonRegistry } from "./AddonRegistry";
-import { IModelHost } from "./IModelHost";
+import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
+import { ConcurrencyControl } from "./ConcurrencyControl";
 
+/** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
 export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
-/** Represents a physical copy (briefcase) of an iModel that can be accessed as a file. */
+/** Represents a physical copy (briefcase) of an iModel that can be accessed as a file on the local computer.
+ *
+ * An IModelDb is used by a service or by the "back end" of an app.
+ * "Front end" code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
+ *
+ * Use [[IModelDb.open]] to obtain and open an IModelDb from iModelHub.
+ *
+ * An IModelDb provides access to the content of the iModel through the following collections:
+ *  * [[IModelDb.elements]] for Elements
+ *  * [[IModelDb.models]] for Models
+ *
+ * An IModelDb is a full-featured database.
+ * Use [[ECSqlStatement]] to write custom queries on the contents of an IModelDb.
+ *
+ * An iModel is a multi-user database that is stored in the cloud.
+ *
+ * As a local copy, an IModelDb represents a version of an iModel.
+ * Use [[IModelDb.pullAndMergeChanges]] to update a local IModelDb to incorporate recent changes made by others.
+ *
+ * An IModelDb also serves as a staging area where an app can change the content of an iModel and then submit the changes to iModelHub.
+ * Use [[IModelDb.saveChanges]] to commit changes locally. [[IModelDb.txns]] manages local transactions, and it supports local undo/redo.
+ * Use [[IModelDb.pushChanges]] to push local changes to iModelHub as a changeset, so that others can see them. After
+ * being pushed to iModelHub, a changeset becomes part of the iModel's permanent history.
+ * An app that modifies models, elements or codes in an IModelDb must use [[ConcurrencyControl]] to coordinate with other users.
+ *
+ * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
+ *
+ */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000;
   public static readonly maxLimit = 10000;
-  public models: IModelDbModels;
-  public elements: IModelDbElements;
-  public views: IModelDbViews;
-  public linkTableRelationships: IModelDbLinkTableRelationships;
+  private static _accessTokens?: Map<string, AccessToken>;
+  /** Event called after a changeset is applied to this IModelDb. */
+  public readonly onChangesetApplied = new BeEvent<() => void>();
+  public models: IModelDbModels = new IModelDbModels(this);
+  public elements: IModelDbElements = new IModelDbElements(this);
+  public views: IModelDbViews = new IModelDbViews(this);
+  private _linkTableRelationships?: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
   private _txnManager?: TxnManager;
-  // protected _fontMap?: FontMap;
-  // public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.briefcase!.nativeDb.readFontMap()) as FontMapProps)); }
+  protected _fontMap?: FontMap;
+  public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
+  public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
 
-  /** Event raised when a connected IModelDb is created or opened. This event is not raised for standalone IModelDbs. */
-  /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
+  /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only.
+   * This event is not raised for standalone IModelDbs.
+   *
+   * <em>Example:</em>
+   * ``` ts
+   * [[include:IModelDb.onOpened]]
+   * ```
+   */
   public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openMode: OpenMode, _version: IModelVersion) => void>();
-  /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
+  /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only.
+   * This event is not raised for standalone IModelDbs.
+   *
+   * <em>Example:</em>
+   * ``` ts
+   * [[include:IModelDb.onOpen]]
+   * ```
+   */
   public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb) => void>();
-  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
-  public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _hubName: string, _rootSubjectName: string, _hubDescription?: string, _rootSubjectDescription?: string) => void>();
-  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this service only. This event is not raised for standalone IModelDbs. */
+  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
+  public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _args: CreateIModelProps) => void>();
+  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
   public static readonly onCreated = new BeEvent<(_imodelDb: IModelDb) => void>();
 
   /** @hidden */
@@ -73,11 +117,6 @@ export class IModelDb extends IModel {
 
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase!.pathname);
     super.initialize(name, props);
-
-    this.models = new IModelDbModels(this);
-    this.elements = new IModelDbElements(this);
-    this.views = new IModelDbViews(this);
-    this.linkTableRelationships = new IModelDbLinkTableRelationships(this);
   }
 
   private static constructIModelDb(briefcaseEntry: BriefcaseEntry, contextId?: string): IModelDb {
@@ -88,22 +127,55 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Create a standalone local Db
-   * @param pathname The pathname of the iModel
-   * @param rootSubjectName Name of the root subject.
-   * @param rootSubjectDescription Description of the root subject.
+   * Get the AccessToken that is considered to be the owner of a local IModelDb.
+   * Note: Call this only for IModels that are known to have been opened during the current session using [[IModelDb.open]].
+   * @param iModelId The IModelID of an open IModelDb
+   * @throws [[IModelError]] with [[IModelStatus.NotFound]] if no AccessToken is registered for the specified IModel. That could happen if the IModel is not currently open.
    */
-  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
+  public static getAccessToken(iModelId: string): AccessToken {
+    if (IModelDb._accessTokens === undefined)
+      throw new IModelError(IModelStatus.NotFound);
+    const token: AccessToken | undefined = IModelDb._accessTokens.get(iModelId);
+    if (token === undefined)
+      throw new IModelError(IModelStatus.NotFound);
+    return token;
+  }
+
+  private static setFirstAccessToken(iModelId: string, accessToken: AccessToken) {
+    if (IModelDb._accessTokens === undefined)
+      IModelDb._accessTokens = new Map<string, AccessToken>();
+    if (IModelDb._accessTokens.get(iModelId) === undefined)
+      IModelDb._accessTokens.set(iModelId, accessToken);
+  }
+
+  /**
+   * Change the AccessToken that should be considered the owner of the local IModelDb.
+   * @param iModelId iModelId The IModelID of an open IModelDb
+   * @param accessToken The AccessToken that should be considered the owner of the local IModelDb.
+   */
+  public static updateAccessToken(iModelId: string, accessToken: AccessToken) {
+    if (IModelDb._accessTokens !== undefined)
+      IModelDb._accessTokens.delete(iModelId);
+    IModelDb.setFirstAccessToken(iModelId, accessToken);
+  }
+
+  /**
+   * Create a standalone local Db
+   * @param fileName The name for the iModel
+   * @param args The parameters of the iModel
+   */
+  public static createStandalone(fileName: string, args: CreateIModelProps): IModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
     // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
     return IModelDb.constructIModelDb(briefcaseEntry);
   }
 
   /** Create an iModel on the Hub */
-  public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
-    IModelDb.onCreate.raiseEvent(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
-    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
+  public static async create(accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+    IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, fileName, args);
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    IModelDb.setFirstAccessToken(imodelDb.briefcase!.iModelId, accessToken);
     IModelDb.onCreated.raiseEvent(imodelDb);
     return imodelDb;
   }
@@ -120,7 +192,12 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Open an iModel from the iModelHub
+   * Open an iModel from the iModelHub. IModelDb files are cached locally. If the requested version is already in the cache, then open will open it from there.
+   * Otherwise, open will download the requested version from iModelHub and cache it.
+   * <p><em>Example:</em>
+   * ``` ts
+   * [[include:IModelDb.open]]
+   * ```
    * @param accessToken Delegation token of the authorized user.
    * @param contextId Id of the Connect Project or Asset containing the iModel
    * @param iModelId Id of the iModel
@@ -132,6 +209,7 @@ export class IModelDb extends IModel {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(accessToken, contextId, iModelId, openMode, version);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ iModelId, openMode }));
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
+    IModelDb.setFirstAccessToken(imodelDb.briefcase!.iModelId, accessToken);
     IModelDb.onOpened.raiseEvent(imodelDb);
     return imodelDb;
   }
@@ -158,23 +236,25 @@ export class IModelDb extends IModel {
     this.clearBriefcaseEntry();
   }
 
+  private forwardChangesetApplied() { this.onChangesetApplied.raiseEvent(); }
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     this.briefcase = briefcaseEntry;
     this.briefcase.iModelDb = this;
     this.briefcase.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
     this.briefcase.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcase.onChangesetApplied.addListener(this.forwardChangesetApplied, this);
   }
-
   private clearBriefcaseEntry(): void {
     this.briefcase!.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
     this.briefcase!.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    this.briefcase!.onChangesetApplied.removeListener(this.forwardChangesetApplied, this);
     this.briefcase!.iModelDb = undefined;
     this.briefcase = undefined;
   }
 
   private onBriefcaseCloseHandler() {
     this.onBeforeClose.raiseEvent();
-    this.clearStatementCacheOnClose();
+    this.clearStatementCache();
   }
 
   private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase!.changeSetId; }
@@ -282,7 +362,7 @@ export class IModelDb extends IModel {
     return ids;
   }
 
-  public clearStatementCacheOnClose(): void { this.statementCache.clearOnClose(); }
+  public clearStatementCache(): void { this.statementCache.clear(); }
 
   /** Get the GUID of this iModel. */
   public getGuid(): Guid {
@@ -300,7 +380,12 @@ export class IModelDb extends IModel {
     return this.briefcase.nativeDb.setDbGuid(guidStr);
   }
 
-  /** Update the imodel project extents. */
+  /** Update the imodel project extents.
+   * <p><em>Example:</em>
+   * ``` ts
+   * [[include:IModelDb.updateProjectExtents]]
+   * ```
+   */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     if (!this.briefcase)
       throw this._newNotOpenError();
@@ -350,7 +435,7 @@ export class IModelDb extends IModel {
    */
   public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
     if (!this.briefcase) throw this._newNotOpenError();
-    const description = describer ? describer(this.Txns.getCurrentTxnId()) : this.Txns.describeChangeSet();
+    const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(accessToken, this.briefcase, description);
     this.token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
@@ -414,11 +499,14 @@ export class IModelDb extends IModel {
     return this._classMetaDataRegistry;
   }
 
+  /** Get the linkTableRelationships for this IModel */
+  public get linkTableRelationships(): IModelDbLinkTableRelationships { return this._linkTableRelationships || (this._linkTableRelationships = new IModelDbLinkTableRelationships(this)); }
+
   /** Get the ConcurrencyControl for this IModel. */
   public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
 
   /** Get the TxnManager for this IModelDb. */
-  public get Txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }
+  public get txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
@@ -476,7 +564,7 @@ export class IModelDb extends IModel {
     return entity;
   }
 
-  /** Get metadata for a class. This method will load the metadata from the AddonDgnDb into the cache as a side-effect, if necessary.
+  /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    */
   public getMetaData(classFullName: string): EntityMetaData {
@@ -528,551 +616,15 @@ export class IModelDb extends IModel {
   }
 }
 
-/**
- * Transaction Concurrency Control.
- * <p>
- * The ConcurrencyControl class helps with making requesting locks and reserving codes.
- * See [[request]], [[ConcurrencyControl.Codes.reserve]], [[Model.buildConcurrencyControlRequest]], [[Element.buildConcurrencyControlRequest]]
- *
- * The ConcurrencyControl class has methods to set the concurrency control policy. [[setPolicy]]
- *
- */
-export class ConcurrencyControl {
-  private _pendingRequest: ConcurrencyControl.Request;
-  private _codes?: ConcurrencyControl.Codes;
-  private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
-  constructor(private _iModel: IModelDb) { this._pendingRequest = ConcurrencyControl.createRequest(); }
-
-  /** @hidden */
-  public onSaveChanges() {
-    if (this.hasPendingRequests())
-      throw new IModelError(IModelStatus.TransactionActive);
-  }
-
-  /** @hidden */
-  public onSavedChanges() { this.applyTransactionOptions(); }
-
-  /** @hidden */
-  private applyTransactionOptions() {
-    if (!this._policy)
-      return;
-    if (!this.inBulkOperation())
-      this.startBulkOperation();
-  }
-
-  /** Create an empty Request */
-  public static createRequest(): ConcurrencyControl.Request { return new (AddonRegistry.getAddon()).AddonBriefcaseManagerResourcesRequest(); }
-
-  /** Convert the request to any */
-  public static convertRequestToAny(req: ConcurrencyControl.Request): any { return JSON.parse((req as AddonBriefcaseManagerResourcesRequest).toJSON()); }
-
-  /** @hidden [[Model.buildConcurrencyControlRequest]] */
-  public buildRequestForModel(model: Model, opcode: DbOpcode): void {
-    if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  /** @hidden [[Element.buildConcurrencyControlRequest]] */
-  public buildRequestForElement(element: Element, opcode: DbOpcode): void {
-    if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest);
-    let rc: RepositoryStatus;
-    if (element.id === undefined || opcode === DbOpcode.Insert)
-      rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
-    else
-      rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  /** @hidden [[LinkTableRelationship.buildConcurrencyControlRequest]] */
-  public buildRequestForLinkTableRelationship(instance: LinkTableRelationship, opcode: DbOpcode): void {
-    if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
-    if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc);
-  }
-
-  private captureBulkOpRequest() {
-    if (this._iModel.briefcase)
-      this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(this._pendingRequest as AddonBriefcaseManagerResourcesRequest, true, true);
-  }
-
-  /** @hidden */
-  public get pendingRequest(): ConcurrencyControl.Request {
-    this.captureBulkOpRequest();
-    return this._pendingRequest;
-  }
-
-  /** Are there pending, unprocessed requests for locks or codes? */
-  public hasPendingRequests(): boolean {
-    if (!this._iModel.briefcase)
-      return false;
-    const reqAny: any = ConcurrencyControl.convertRequestToAny(this.pendingRequest);
-    return (reqAny.Codes.length !== 0) || (reqAny.Locks.length !== 0);
-  }
-
-  /**
-   * @hidden
-   * Take ownership of all or some of the pending request for locks and codes.
-   * @param locksOnly If true, only the locks in the pending request are extracted. The default is to extract all requests.
-   * @param codesOnly If true, only the codes in the pending request are extracted. The default is to extract all requests.
-   */
-  public extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request {
-    if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest);
-
-    const extractLocks: boolean = !codesOnly;
-    const extractCodes: boolean = !locksOnly;
-
-    const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
-    this._iModel.briefcase.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, this.pendingRequest as AddonBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
-    return req;
-  }
-
-  /**
-   * Try to acquire locks and/or reserve codes from iModelHub.
-   * This function may fulfill some requests and fail to fulfill others. This function returns a rejection of type RequestError if some or all requests could not be fulfilled.
-   * The error object will identify the locks and/or codes that are unavailable.
-   * ``` ts
-   * [[include:BisCore1.sampleConcurrencyControlRequest]]
-   * ```
-   * @param accessToken The user's iModelHub access token
-   * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
-   * @throws [[RequestError]] if some or all of the request could not be fulfilled by iModelHub.
-   * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
-   */
-  public async request(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
-    if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel._newNotOpenError());
-
-    if (req === undefined)
-      req = this.extractPendingRequest();
-
-    const codeResults = await this.reserveCodesFromRequest(req, this._iModel.briefcase, accessToken);
-    await this.acquireLocksFromRequest(req, this._iModel.briefcase, accessToken);
-
-    let err: ConcurrencyControl.RequestError | undefined;
-    for (const code of codeResults) {
-      if (code.state !== CodeState.Reserved) {
-        if (err === undefined)
-          err = new ConcurrencyControl.RequestError(IModelStatus.CodeNotReserved);
-        err.unavailableCodes.push(code);
-      }
-    }
-
-    if (err !== undefined)
-      return Promise.reject(err);
-  }
-
-  private buildCodeRequest(briefcaseEntry: BriefcaseEntry, codeSpecId: string, codeScope: string): MultiCode {
-    const thisReq = new MultiCode();
-    thisReq.briefcaseId = briefcaseEntry.briefcaseId;
-    thisReq.state = CodeState.Reserved;
-    thisReq.codeSpecId = codeSpecId;
-    thisReq.codeScope = codeScope;
-    thisReq.values = [];
-    return thisReq;
-  }
-
-  private buildCodeRequests(briefcaseEntry: BriefcaseEntry, req: ConcurrencyControl.Request): Map<string, any> | undefined {
-    const reqAny = ConcurrencyControl.convertRequestToAny(req);
-    if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
-      return undefined;
-
-    const bySpecId: Map<string, any> = new Map();
-    for (const cReq of reqAny.Codes) {
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(cReq.Id);
-      if (byScope === undefined)
-        bySpecId.set(cReq.Id, (byScope = new Map()));
-
-      let thisReq: MultiCode | undefined = byScope.get(cReq.Scope);
-      if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, cReq.Id, cReq.Scope);
-        byScope.set(cReq.Scope, (thisReq = thisReq));
-      }
-      thisReq.values!.push(cReq.Name);
-    }
-    return bySpecId;
-  }
-
-  private buildCodeRequestsFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): Map<string, any> {
-    const bySpecId: Map<string, any> = new Map();
-    for (const code of codes) {
-      if (code.value === undefined)
-        continue;
-      const specId = code.spec.toString();
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(specId);
-      if (byScope === undefined)
-        bySpecId.set(specId, (byScope = new Map()));
-
-      let thisReq: MultiCode | undefined = byScope.get(code.scope);
-      if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, specId, code.scope);
-        byScope.set(code.scope, (thisReq = thisReq));
-      }
-      thisReq.values!.push(code.value);
-    }
-    return bySpecId;
-  }
-
-  private buildLockRequests(_briefcaseInfo: BriefcaseEntry, req: ConcurrencyControl.Request): Map<string, any> | undefined {
-    const reqAny: any = ConcurrencyControl.convertRequestToAny(req);
-
-    if (!reqAny.hasOwnProperty("Locks") || reqAny.Locks.length === 0)
-      return undefined;
-
-    /*
-    const bySpecId: Map<string, any> = new Map();
-    for (const cReq of reqAny.Locks) {
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(cReq.Id);
-      if (byScope === undefined)
-        bySpecId.set(cReq.Id, (byScope = new Map()));
-
-      let thisReq: MultiCode | undefined = byScope.get(cReq.Scope);
-      if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, cReq.Id, cReq.Scope);
-        byScope.set(cReq.Scope, (thisReq = thisReq));
-      }
-
-      thisReq.values.push(cReq.Name);
-    }
-
-    return bySpecId;
-    */
-    throw new IModelError(IModelStatus.BadRequest, "TBD locks");
-  }
-
-  private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
-  private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv()); }
-
-  /** process the Lock-specific part of the request. */
-  private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {
-    const bySpecId = this.buildLockRequests(briefcaseEntry, req);
-    if (bySpecId === undefined)
-      return;
-
-    /* TODO locks
-
-    const imodelHubClient = this.getIModelHubClient();
-
-    for (const [, thisSpec] of bySpecId) {
-      for (const [, thisReq] of thisSpec) {
-        const newCodes: MultiCode = await imodelHubClient.requestMultipleCodes(accessToken, briefcaseEntry.iModelId, thisReq);
-        console.log(JSON.stringify(newCodes));
-      }
-    }
-    */
-    Promise.reject(new IModelError(IModelStatus.BadRequest, "TBD locks"));
-  }
-
-  /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
-  private async reserveCodes2(bySpecId: Map<string, any>, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<MultiCode[]> {
-    const imodelHubClient = this.getIModelHubClient();
-    const results: MultiCode[] = [];
-    for (const [, thisSpec] of bySpecId) {
-      for (const [, thisReq] of thisSpec) {
-        results.push(await imodelHubClient.requestMultipleCodes(accessToken, briefcaseEntry.iModelId, thisReq));
-      }
-    }
-    return results;
-  }
-
-  /** process the Code-specific part of the request. */
-  private async reserveCodesFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<MultiCode[]> {
-    const bySpecId = this.buildCodeRequests(briefcaseEntry, req);
-    if (bySpecId === undefined)
-      return [];
-
-    return this.reserveCodes2(bySpecId, briefcaseEntry, accessToken);
-  }
-
-  /** Reserve the specified codes */
-  public async reserveCodes(accessToken: AccessToken, codes: Code[]): Promise<MultiCode[]> {
-    if (this._iModel.briefcase === undefined)
-      return Promise.reject(this._iModel._newNotOpenError());
-
-    const bySpecId = this.buildCodeRequestsFromCodes(this._iModel.briefcase, codes);
-    if (bySpecId === undefined)
-      return Promise.reject(new IModelError(IModelStatus.NotFound));
-
-    return this.reserveCodes2(bySpecId, this._iModel.briefcase, accessToken);
-  }
-
-  // Query the state of the Codes for the specified CodeSpec and scope.
-  public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
-    if (this._iModel.briefcase === undefined)
-      return Promise.reject(this._iModel._newNotOpenError());
-
-    const queryOptions: RequestQueryOptions = {
-      $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
-    };
-
-    /* NEEDS WORK
-    if (value !== undefined) {
-      queryOptions.$filter += `+and+Value+eq+'${value}'`;
-    }
-    */
-
-    const imodelHubClient = this.getIModelHubClient();
-    return imodelHubClient.getMultipleCodes(accessToken, this._iModel.briefcase.iModelId, queryOptions);
-  }
-
-  /** Abandon any pending requests for locks or codes. */
-  public abandonRequest() { this.extractPendingRequest(); }
-
-  private static anyFound(a1: string[], a2: string[]) {
-    for (const a of a1) {
-      if (a2.includes(a))
-        return true;
-    }
-    return false;
-  }
-
-  /**
-   * Check to see if *all* of the codes in the specified request are available.
-   * @param req the list of code requests to be fulfilled. If not specified then all pending requests for codes are queried.
-   * @returns true if all codes are available or false if any is not.
-   */
-  public async areCodesAvailable(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel._newNotOpenError());
-    // throw new Error("TBD");
-    if (req === undefined)
-      req = this.pendingRequest;
-    const bySpecId = this.buildCodeRequests(this._iModel.briefcase, req);
-
-    if (bySpecId !== undefined) {
-      for (const [specId, thisSpec] of bySpecId) {
-        for (const [scopeId, thisReq] of thisSpec) {
-          // Query the state of all codes in this spec and scope
-          const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
-          for (const multiCode of multiCodes) {
-            if (multiCode.state !== CodeState.Available) {
-              if (ConcurrencyControl.anyFound(multiCode.values!, thisReq.values)) {
-                return false;
-              }
-            }
-          }
-        }
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Check to see if *all* of the requested resources could be acquired from iModelHub.
-   * @param req the list of resource requests to be fulfilled. If not specified then all pending requests for locks and codes are queried.
-   * @returns true if all resources could be acquired or false if any could not be acquired.
-   */
-  public async areAvailable(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel._newNotOpenError());
-
-    if (req === undefined)
-      req = this.pendingRequest;
-
-    const allCodesAreAvailable = await this.areCodesAvailable(accessToken, req);
-    if (!allCodesAreAvailable)
-      return false;
-
-    // TODO: Locks
-
-    return true;
-  }
-
-  /** Set the concurrency control policy.
-   * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
-   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the IModelDb.
-   * Here is an example of setting an optimistic policy:
-   * ``` ts
-   * [[include:BisCore1.sampleSetPolicy]]
-   * ```
-   * @param policy The policy to used
-   * @throws [[IModelError]] if the policy cannot be set.
-   */
-  public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
-    this._policy = policy;
-    if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest);
-    let rc: RepositoryStatus = RepositoryStatus.Success;
-    if (policy as ConcurrencyControl.OptimisticPolicy) {
-      const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
-      rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
-    } else {
-      rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
-    }
-    if (RepositoryStatus.Success !== rc) {
-      throw new IModelError(rc);
-    }
-    this.applyTransactionOptions();
-  }
-
-  /**
-   * By entering bulk operation mode, an app can insert, update, and delete entities in the IModelDb without first acquiring locks.
-   * When the app calls saveChanges, the transaction manager attempts to acquire all needed locks and codes.
-   * The transaction manager will roll back all pending changes if any lock or code cannot be acquired at save time. Lock and code acquisition will fail if another user
-   * has pushed changes to the same entities or used the same codes as the local transaction.
-   * This mode can therefore be used safely only in special cases where contention for locks and codes is not a risk.
-   * Normally, that is only possible when writing to a model that is exclusively locked and where codes are scoped to that model.
-   * See [[request]], [[IModelDb.saveChanges]] and [[endBulkOperation]].
-   * @throws [[IModelError]] if it would be illegal to enter bulk operation mode.
-   */
-  private startBulkOperation(): void {
-    if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest);
-    const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.briefcaseManagerStartBulkOperation();
-    if (RepositoryStatus.Success !== rc)
-      throw new IModelError(rc);
-  }
-
-  /** Check if there is a bulk operation in progress */
-  private inBulkOperation(): boolean {
-    if (!this._iModel.briefcase)
-      return false;
-    return this._iModel.briefcase.nativeDb.inBulkOperation();
-  }
-
-  /*
-   * Ends the bulk operation and appends the locks and codes that it recorded to the pending request.
-  private endBulkOperation() {
-    if (!this._imodel.briefcaseEntry)
-      return;
-    this.captureBulkOpRequest();
-    // Now exit bulk operation mode in the addon. It will then stop collecting (and start enforcing) lock and code requirements.
-    const rc: RepositoryStatus = this._imodel.briefcaseEntry.nativeDb.briefcaseManagerEndBulkOperation();
-    if (RepositoryStatus.Success !== rc)
-      throw new IModelError(rc);
-    this.applyTransactionOptions(); // (may re-start the bulk operation)
-  }
-   */
-
-  /** API to reserve Codes and query the status of Codes */
-  get codes(): ConcurrencyControl.Codes {
-    if (this._codes === undefined)
-      this._codes = new ConcurrencyControl.Codes(this._iModel);
-    return this._codes;
-  }
-}
-
-export namespace ConcurrencyControl {
-
-  /** A request for locks and/or code reservations. */
-  export class Request {
-    private constructor() { }
-  }
-
-  /** How to handle a conflict. Keep this consistent with DgnPlatform/RepositoryManager.h. */
-  export const enum OnConflict {
-    /** Reject the incoming change */
-    RejectIncomingChange = 0,
-    /** Accept the incoming change */
-    AcceptIncomingChange = 1,
-  }
-
-  /**
-   * The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
-   * The scenario is that the caller has made some changes to the *local* IModelDb. Now, the caller is attempting to
-   * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
-   */
-  export class ConflictResolutionPolicy {
-    /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
-    public updateVsUpdate: OnConflict;
-    /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
-    public updateVsDelete: OnConflict;
-    /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
-    public deleteVsUpdate: OnConflict;
-
-    /**
-     * Construct a ConflictResolutionPolicy.
-     * @param updateVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
-     * @param updateVsDelete - the default is ConcurrencyControl.OnConflict.AcceptIncomingChange
-     * @param deleteVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
-     */
-    constructor(updateVsUpdate?: OnConflict, updateVsDelete?: OnConflict, deleteVsUpdate?: OnConflict) {
-      this.updateVsUpdate = updateVsUpdate ? updateVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;
-      this.updateVsDelete = updateVsDelete ? updateVsDelete! : ConcurrencyControl.OnConflict.AcceptIncomingChange;
-      this.deleteVsUpdate = deleteVsUpdate ? deleteVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;
-    }
-  }
-
-  /** Specifies an optimistic concurrency policy.
-   * Optimistic concurrency allows entities to be modified in the IModelDb without first acquiring locks. Allows codes to be used in the IModelDb without first acquiring them.
-   * This creates the possibility that other apps may have uploaded changeSets to iModelHub that overlap with local changes.
-   * In that case, overlapping changes are merged when changeSets are downloaded from iModelHub.
-   * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
-   */
-  export class OptimisticPolicy {
-    public conflictResolution: ConflictResolutionPolicy;
-    constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy! : new ConflictResolutionPolicy(); }
-  }
-
-  /** Specifies a pessimistic concurrency policy.
-   * Pessimistic concurrency means that entities must be locked and codes must be acquired before local changes can be pushed to iModelHub.
-   */
-  export class PessimisticPolicy {
-  }
-
-  /** Thrown when iModelHub denies or cannot process a request. */
-  export class RequestError extends IModelError {
-    public unavailableCodes: MultiCode[] = [];
-    public unavailableLocks: MultiCode[] = [];
-  }
-
-  /** Code manager */
-  export class Codes {
-    constructor(private _iModel: IModelDb) { }
-
-    /**
-     * Reserve Codes. If no Codes are specified, then all of the Codes that are in currently pending requests are reserved.
-     * This function may only be able to reserve some of the requested Codes. In that case, this function will return a rejection of type RequestError.
-     * The error object will identify the codes that are unavailable.
-     * ``` ts
-     * [[include:BisCore1.sampleReserveCodesWithErrorHandling]]
-     * ```
-     * @param codes The Codes to reserve
-     * @throws [[RequestError]]
-     */
-    public async reserve(accessToken: AccessToken, codes?: Code[]) {
-
-      if (!this._iModel.briefcase)
-        return Promise.reject(this._iModel._newNotOpenError());
-
-      if (codes !== undefined) {
-        await this._iModel.concurrencyControl.reserveCodes(accessToken, codes);
-        // TODO: examine result and throw CodeReservationError if some codes could not be reserved
-        return;
-      }
-
-      const req: ConcurrencyControl.Request = this._iModel.concurrencyControl.extractPendingRequest(false, true);
-      this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, false, true);
-      this._iModel.briefcase.nativeDb.extractBriefcaseManagerResourcesRequest(req as AddonBriefcaseManagerResourcesRequest, req as AddonBriefcaseManagerResourcesRequest, false, true);
-      return this._iModel.concurrencyControl.request(accessToken, req);
-    }
-
-    /**
-     * Queries the state of the specified Codes in the code service.
-     * @param accessToken The user's iModelHub access token
-     * @param specId The CodeSpec to query
-     * @param scopeId The scope to query
-     * @param value Optional. The Code value to query.
-     */
-    public async query(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<MultiCode[]> {
-      return this._iModel.concurrencyControl.queryCodeStates(accessToken, specId, scopeId, value);
-    }
-  }
-}
-
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
-  private _loaded: LRUMap<string, Model>;
+  private _loaded = new LRUMap<string, Model>(500);
 
   /** @hidden */
-  public constructor(private _iModel: IModelDb, max: number = 500) { this._loaded = new LRUMap<string, Model>(max); }
+  public constructor(private _iModel: IModelDb, max: number = 500) {
+    this._loaded.limit = max;
+    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+  }
 
   /** Get the Model with the specified identifier.
    * @param modelId The Model identifier.
@@ -1123,9 +675,7 @@ export class IModelDbModels {
   public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Create a new model in memory.
-   * ``` ts
-   * [[include:BisCore1.sampleCreateModel]]
-   * ```
+   * See the example in [[InformationPartitionElement]].
    * @param modelProps The properties to use when creating the model.
    * @throws [[IModelError]] if there is a problem creating the model.
    */
@@ -1184,10 +734,13 @@ export class IModelDbElements {
   public get loaded() { return this._loaded; }
 
   /** @hidden */
-  public constructor(private _iModel: IModelDb, maxElements: number = 2000) { this._loaded = new LRUMap<string, Element>(maxElements); }
+  public constructor(private _iModel: IModelDb, maxElements: number = 2000) {
+    this._loaded = new LRUMap<string, Element>(maxElements);
+    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+  }
 
   /** Private implementation details of getElementProps */
-  private _getElementProps(opts: ElementLoadParams): ElementProps {
+  private _getElementProps(opts: ElementLoadProps): ElementProps {
     const json = this.getElementJson(JSON.stringify(opts));
     const props = JSON.parse(json) as ElementProps;
     props.iModel = this._iModel;
@@ -1200,24 +753,21 @@ export class IModelDbElements {
    * @return a json string with the properties of the element.
    */
   public getElementJson(elementIdArg: string): string {
-    if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-    const { error, result } = this._iModel.briefcase.nativeDb.getElement(elementIdArg);
+    const { error, result } = this._iModel.briefcase!.nativeDb.getElement(elementIdArg);
     if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
     return result!;
   }
 
   /** Private implementation details of getElement */
-  private _doGetElement(opts: ElementLoadParams): Element {
+  private _doGetElement(opts: ElementLoadProps): Element {
     // first see if the element is already in the local cache.
     if (opts.id) {
       const loaded = this._loaded.get(opts.id.toString());
       if (loaded)
         return loaded;
     }
-
     const props = this._getElementProps(opts);
     const el = this._iModel.constructEntity(props) as Element;
-
     // We have created the element. Cache it before we return it.
     el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
     this._loaded.set(el.id.value, el);
@@ -1228,23 +778,23 @@ export class IModelDbElements {
    * Get properties of an Element by Id, FederationGuid, or Code
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElementProps(elementId: Id64 | Guid | Code | string): ElementProps {
-    if (typeof elementId === "string" || elementId instanceof Id64) return this._getElementProps({ id: elementId.toString() });
-    if (elementId instanceof Guid) return this._getElementProps({ federationGuid: elementId.value });
-    if (elementId instanceof Code) return this._getElementProps({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, "id=" + elementId);
+  public getElementProps(elementId: Id64Props | Guid | Code | ElementLoadProps): ElementProps {
+    if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
+    else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
+    else if (elementId instanceof Code) elementId = { code: elementId };
+    return this._getElementProps(elementId);
   }
 
   /**
    * Get an element by Id, FederationGuid, or Code
-   * @param elementId either the element's Id, Code, or FederationGuid
+   * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
    * @throws [[IModelError]] if the element is not found.
    */
-  public getElement(elementId: Id64 | Guid | Code): Element {
-    if (elementId instanceof Id64) return this._doGetElement({ id: elementId.value });
-    if (elementId instanceof Guid) return this._doGetElement({ federationGuid: elementId.value });
-    if (elementId instanceof Code) return this._doGetElement({ code: elementId });
-    throw new IModelError(IModelStatus.BadArg, "id=" + elementId);
+  public getElement(elementId: Id64Props | Guid | Code | ElementLoadProps): Element {
+    if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
+    else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
+    else if (elementId instanceof Code) elementId = { code: elementId };
+    return this._doGetElement(elementId);
   }
 
   /**
@@ -1273,11 +823,7 @@ export class IModelDbElements {
    * @param elProps The properties of the new element.
    * @throws [[IModelError]] if there is a problem creating the element.
    */
-  public createElement(elProps: ElementProps): Element {
-    const element: Element = this._iModel.constructEntity(elProps) as Element;
-    assert(element instanceof Element);
-    return element;
-  }
+  public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity(elProps) as Element; }
 
   /**
    * Insert a new element into the iModel.
@@ -1475,16 +1021,9 @@ export class TxnManager {
     let txnId = this.queryFirstTxnId();
 
     while (this.isTxnIdValid(txnId)) {
-      const txnDescStr = this.getTxnDescription(txnId);
-      if ((txnDescStr.length === 0) || seen.has(txnDescStr))
+      const txnDesc = this.getTxnDescription(txnId);
+      if ((txnDesc.length === 0) || seen.has(txnDesc))
         continue;
-
-      let txnDesc: any;
-      try {
-        txnDesc = JSON.parse(txnDescStr);
-      } catch (err) {
-        txnDesc = { description: txnDescStr };
-      }
 
       changes.push(txnDesc);
       seen.add(txnDesc);

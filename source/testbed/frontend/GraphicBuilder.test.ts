@@ -32,7 +32,7 @@ describe("GraphicBuilderCreateParams", () => {
     if (iModel2) await iModel2.closeStandalone();
   });
 
-  it("should create a GraphicBuilderCreateParams sucessfully and use all functions", () => {
+  it("should create a GraphicBuilderCreateParams successfully and use all functions", () => {
     /** Test constructors */
     const vp: Viewport = new Viewport();
     const vp2: Viewport = new Viewport();
@@ -215,70 +215,70 @@ describe("GraphicBuilderCreateParams", () => {
 
     /** Test IsViewCoordinates function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isTrue(a.isViewCoordinates(), "IsViewCoordinates test 1 failed");
+    assert.isTrue(a.isViewCoordinates, "IsViewCoordinates test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isTrue(a.isViewCoordinates(), "IsViewCoordinates test 2 failed");
+    assert.isTrue(a.isViewCoordinates, "IsViewCoordinates test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isFalse(a.isViewCoordinates(), "IsViewCoordinates test 3 failed");
+    assert.isFalse(a.isViewCoordinates, "IsViewCoordinates test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.isViewCoordinates(), "IsViewCoordinates test 4 failed");
+    assert.isFalse(a.isViewCoordinates, "IsViewCoordinates test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isFalse(a.isViewCoordinates(), "IsViewCoordinates test 5 failed");
+    assert.isFalse(a.isViewCoordinates, "IsViewCoordinates test 5 failed");
 
     /** Test IsWorldCoordinates function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isFalse(a.isWorldCoordinates(), "IsWorldCoordinates test 1 failed");
+    assert.isFalse(a.isWorldCoordinates, "IsWorldCoordinates test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isFalse(a.isWorldCoordinates(), "IsWorldCoordinates test 2 failed");
+    assert.isFalse(a.isWorldCoordinates, "IsWorldCoordinates test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isTrue(a.isWorldCoordinates(), "IsWorldCoordinates test 3 failed");
+    assert.isTrue(a.isWorldCoordinates, "IsWorldCoordinates test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isTrue(a.isWorldCoordinates(), "IsWorldCoordinates test 4 failed");
+    assert.isTrue(a.isWorldCoordinates, "IsWorldCoordinates test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isTrue(a.isWorldCoordinates(), "IsWorldCoordinates test 5 failed");
+    assert.isTrue(a.isWorldCoordinates, "IsWorldCoordinates test 5 failed");
 
     /** Test IsSceneGraphic function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 1 failed");
+    assert.isFalse(a.isSceneGraphic, "IsSceneGraphic test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 2 failed");
+    assert.isFalse(a.isSceneGraphic, "IsSceneGraphic test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isTrue(a.isSceneGraphic(), "IsSceneGraphic test 3 failed");
+    assert.isTrue(a.isSceneGraphic, "IsSceneGraphic test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 4 failed");
+    assert.isFalse(a.isSceneGraphic, "IsSceneGraphic test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isFalse(a.isSceneGraphic(), "IsSceneGraphic test 5 failed");
+    assert.isFalse(a.isSceneGraphic, "IsSceneGraphic test 5 failed");
 
     /** Test IsViewBackground function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isTrue(a.isViewBackground(), "IsViewBackground test 1 failed");
+    assert.isTrue(a.isViewBackground, "IsViewBackground test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isFalse(a.isViewBackground(), "IsViewBackground test 2 failed");
+    assert.isFalse(a.isViewBackground, "IsViewBackground test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isFalse(a.isViewBackground(), "IsViewBackground test 3 failed");
+    assert.isFalse(a.isViewBackground, "IsViewBackground test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.isViewBackground(), "IsViewBackground test 4 failed");
+    assert.isFalse(a.isViewBackground, "IsViewBackground test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isFalse(a.isViewBackground(), "IsViewBackground test 5 failed");
+    assert.isFalse(a.isViewBackground, "IsViewBackground test 5 failed");
 
     /** Test IsOverlay function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
-    assert.isFalse(a.isOverlay(), "IsOverlay test 1 failed");
+    assert.isFalse(a.isOverlay, "IsOverlay test 1 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewOverlay);
-    assert.isTrue(a.isOverlay(), "IsOverlay test 2 failed");
+    assert.isTrue(a.isOverlay, "IsOverlay test 2 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.Scene);
-    assert.isFalse(a.isOverlay(), "IsOverlay test 3 failed");
+    assert.isFalse(a.isOverlay, "IsOverlay test 3 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldDecoration);
-    assert.isFalse(a.isOverlay(), "IsOverlay test 4 failed");
+    assert.isFalse(a.isOverlay, "IsOverlay test 4 failed");
     a = new GraphicBuilderCreateParams(tf, GraphicType.WorldOverlay);
-    assert.isTrue(a.isOverlay(), "IsOverlay test 5 failed");
+    assert.isTrue(a.isOverlay, "IsOverlay test 5 failed");
 
     /** Test SetPlacement function */
     a = new GraphicBuilderCreateParams(tf, GraphicType.ViewBackground);
     assert.isTrue(a.placement.isAlmostEqual(tf), "SetPlacement test 1 failed");
-    a.setPlacement(tf2);
+    a.placement = tf2;
     assert.isTrue(a.placement.isAlmostEqual(tf2), "SetPlacement test 2 failed");
-    a.setPlacement(tf);
+    a.placement = tf;
     assert.isTrue(a.placement.isAlmostEqual(tf), "SetPlacement test 3 failed");
   });
 });

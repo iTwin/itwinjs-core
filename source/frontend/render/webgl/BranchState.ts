@@ -26,9 +26,7 @@ export class BranchState {
 
   // NOTE: A property. Invoked by:
   //  if (branchState.showClipVolume) { /* ... */ }
-  public get showClipVolume(): boolean {
-    return this.viewFlags.showClipVolume();
-  }
+  public get showClipVolume(): boolean { return this.viewFlags.showClipVolume(); }
 }
 
 /** Represents the current state of the scene graph. As the scene graph is traversed,
@@ -38,15 +36,11 @@ export class BranchState {
  * The stack does not store the scene graph itself.
  */
 export class BranchStack {
-  private _stack: BranchState[];
+  private readonly _stack: BranchState[] = [];
 
-  private push(state: BranchState): void {
-    this._stack.push(state);
-  }
+  private push(state: BranchState): void { this._stack.push(state); }
 
-  public constructor(flags?: ViewFlags, transform?: Transform) {
-    this.push(new BranchState(flags, transform));
-  }
+  public constructor(flags?: ViewFlags, transform?: Transform) { this.push(new BranchState(flags, transform)); }
 
   public get top(): BranchState {
     // NOTE: We have no way of preventing caller from modifying the returned value.
@@ -56,9 +50,7 @@ export class BranchStack {
   }
 
   // NOTE: a property.
-  public get empty(): boolean {
-    return 0 === this._stack.length;
-  }
+  public get empty(): boolean { return 0 === this._stack.length; }
 
   public pop(): void {
     assert(!this.empty);

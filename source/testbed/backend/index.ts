@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { AddonRegistry, IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestGatewayImpl } from "./TestGatewayImpl";
 
@@ -26,9 +26,6 @@ IModelHost.startup();
 
 TestGatewayImpl.register();
 TestbedConfig.initializeGatewayConfig();
-
-// tslint:disable-next-line:no-var-requires
-AddonRegistry.loadAndRegisterStandardAddon();
 
 if (TestbedConfig.gatewayConfig) {
   const app = express();

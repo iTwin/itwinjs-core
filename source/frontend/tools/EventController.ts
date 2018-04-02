@@ -118,26 +118,23 @@ type RemovalFunction = () => void;
 export class EventController {
   private readonly touchPoints: TouchPoint[] = [];
   private readonly touchQueue: GestureInfo[] = [];
-  private previousNumberTouches: number = 0;
+  private previousNumberTouches = 0;
   private readonly firstDown = new TouchPoint();
   private readonly firstTap1 = new TouchPoint();  // 1- and 2-finger taps
   private readonly firstTap2 = new TouchPoint();  // 2-finger taps only
   private readonly secondTap1 = new TouchPoint(); // 1- and 2-finger taps
-  public lastTouchEventTime: number = 0;
+  public lastTouchEventTime = 0;
   private touchTimer = Date.now();
-  private tapDownTime: number;
-  private tapUpTime: number;
+  private tapDownTime = 0;
+  private tapUpTime = 0;
   private state = TouchState.Invalid;
-  private interpretingDataButtonAsTouch: boolean;
-  private endGestureId: GestureId;
+  private interpretingDataButtonAsTouch = false;
+  private endGestureId = GestureId.None;
   private readonly removals: RemovalFunction[] = [];
-  private static scratchMousePos = new Point2d();
-  private static scratchGestureInfo: GestureInfo;
+  private static readonly scratchMousePos = new Point2d();
+  private static readonly scratchGestureInfo = new GestureInfo();
 
   constructor(public vp: Viewport) {
-    if (!EventController.scratchGestureInfo)
-      EventController.scratchGestureInfo = new GestureInfo();
-
     this.registerListeners();
     this.initializeTouches();
   }

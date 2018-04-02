@@ -2,20 +2,21 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core";
-import { CodeProps, Code } from "./Code";
+import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
-import { GeometryStream } from "./geometry/GeometryStream";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
+import { IModelError, IModelStatus } from "./IModelError";
+import { GeometryStreamProps } from "./common";
 
-/** The shape of a Navigation property value. Note that the internal properties are defined by the iModelJs JSON wire format and must not be changed. */
+/** The iModelJson properties of an ECNavigationProperty in a BIS schema. */
 export interface RelatedElementProps {
   id: Id64Props;
   relClassName?: string;
 }
 
-/** The properties that define a BIS Element */
+/** The iModelJson properties of a BIS Element */
 export interface ElementProps extends EntityProps {
-  model?: Id64Props;
+  model?: Id64Props | RelatedElementProps;
   code?: CodeProps;
   parent?: RelatedElementProps;
   federationGuid?: GuidProps;
@@ -29,6 +30,17 @@ export class RelatedElement implements RelatedElementProps {
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
+
+  /** accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
+  public static idFromJson(json: any): Id64 {
+    if ((typeof json === "object") && ("id" in json)) {
+      const r = RelatedElement.fromJSON(json);
+      if (r === undefined)
+        throw new IModelError(IModelStatus.BadArg);
+      return r.id;
+    }
+    return Id64.fromJSON(json);
+  }
 }
 
 /** A RelatedElement that describes the type definition of an element. */
@@ -38,31 +50,37 @@ export class TypeDefinition extends RelatedElement {
 /** Properties of a GeometricElement */
 export interface GeometricElementProps extends ElementProps {
   category: Id64Props;
-  geom?: GeometryStream;
+  geom?: GeometryStreamProps;
 }
 
 export interface Placement3dProps {
   origin: XYZProps;
   angles: YawPitchRollProps;
-  bbox: LowAndHighXYZ;
+  bbox?: LowAndHighXYZ;
 }
 
 export interface Placement2dProps {
   origin: XYProps;
   angle: AngleProps;
-  bbox: LowAndHighXY;
+  bbox?: LowAndHighXY;
 }
 
 /** Properties that define a GeometricElement3d */
 export interface GeometricElement3dProps extends GeometricElementProps {
-  placement: Placement3dProps;
+  placement?: Placement3dProps;
   typeDefinition?: RelatedElementProps;
 }
 
 /** Properties that define a GeometricElement2d */
 export interface GeometricElement2dProps extends GeometricElementProps {
-  placement: Placement2dProps;
+  placement?: Placement2dProps;
   typeDefinition?: RelatedElementProps;
+}
+
+/** Properties of a GeometryPart */
+export interface GeometryPartProps extends ElementProps {
+  geom?: GeometryStreamProps;
+  bbox?: LowAndHighXYZ;
 }
 
 export interface ViewAttachmentProps extends GeometricElement2dProps {
@@ -104,12 +122,11 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
 }
 
 /** Parameters to specify what element to load. */
-export interface ElementLoadParams {
+export interface ElementLoadProps {
   id?: Id64Props;
-  code?: Code;
+  code?: CodeProps;
   federationGuid?: GuidProps;
-  /** if true, do not load the geometry of the element */
-  noGeometry?: boolean;
+  wantGeometry?: boolean;
 }
 
 /** ElementAspectProps */

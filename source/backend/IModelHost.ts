@@ -8,10 +8,14 @@ import * as path from "path";
 import { KnownLocations } from "./KnownLocations";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { BisCore } from "./BisCore";
+import { NativePlatformRegistry } from "./NativePlatformRegistry";
 
 export class IModelHostConfiguration {
   /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
   public iModelHubDeployConfig: DeploymentEnv = "QA";
+
+  /** The native platform to use */
+  public nativePlatform?: any;
 
   /** The path where the cache of briefcases are stored. */
   private _briefcaseCacheDir: string = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/"));
@@ -36,10 +40,15 @@ export class IModelHost {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 
-    // Register the backend implementation of IModelGateway
+    if (!NativePlatformRegistry.isNativePlatformLoaded()) {
+      if (configuration.nativePlatform !== undefined)
+        NativePlatformRegistry.register(configuration.nativePlatform);
+      else
+        NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+    }
+
     IModelGatewayImpl.register();
 
-    // Register the use of BisCore for the backend
     BisCore.registerSchema();
 
     IModelHost.configuration = configuration;

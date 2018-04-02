@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.62.0",
+  "version": "0.69.1",
   "description": "iModelJs components common to frontend and backend",
   "main": "lib/common.js",
   "typings": "lib/common",
@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json"
+    "clean": "rimraf lib package-deps.json",
+    "docs": "cd ../.. && npm run docs:common"
   },
   "repository": {},
   "keywords": [
@@ -21,16 +22,14 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {
-    "@bentley/geometry-core": "^5.0.6",
-    "@bentley/imodeljs-clients": "^4.0.0"
-  },
+  "dependencies": {},
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
-    "flatbuffers": "^1.8.0"
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^4.2.0"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
@@ -38,8 +37,10 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^4.2.0",
     "rimraf": "^2.6.2",
-    "typescript": "~2.6.2"
+    "typescript": "~2.7.2"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

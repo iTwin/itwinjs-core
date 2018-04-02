@@ -8,7 +8,7 @@ import { Schema, Schemas } from "./Schema";
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
-  private static classMap = new Map<string, typeof Entity>();
+  private static readonly classMap = new Map<string, typeof Entity>();
   private static getKey(schemaName: string, className: string) { return (schemaName + ":" + className).toLowerCase(); }
   public static lookupClass(name: string) { return this.classMap.get(name.toLowerCase()); }
 
@@ -19,7 +19,7 @@ export class ClassRegistry {
   public static makeClassNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "class " + className + "not found"); }
 
   /** Construct a metadata-not-found exception */
-  public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for" + className); }
+  public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for " + className); }
 
   /**
    * Construct an instance of an Entity class, given its EntityProps.
@@ -144,14 +144,8 @@ export class MetaDataRegistry {
   private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
 
   /** Get the specified Entity metadata */
-  public find(classFullName: string): EntityMetaData | undefined {
-    const key = classFullName.toLowerCase();
-    return this._registry.get(key);
-  }
+  public find(classFullName: string): EntityMetaData | undefined { return this._registry.get(classFullName.toLowerCase()); }
 
   /** Add metadata to the cache */
-  public add(classFullName: string, metaData: EntityMetaData): void {
-    const key = classFullName.toLowerCase();
-    this._registry.set(key, metaData);
-  }
+  public add(classFullName: string, metaData: EntityMetaData): void { this._registry.set(classFullName.toLowerCase(), metaData); }
 }

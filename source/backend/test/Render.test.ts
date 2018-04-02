@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef, ColorRgb, Light, LightProps, Spot, LightType } from "@bentley/imodeljs-common";
+import { ViewFlags, RenderMode, ColorDef, ColorByName, Light, LightProps, Spot, LightType, SpotProps } from "@bentley/imodeljs-common";
 
 describe("Render", () => {
   it("ColorDef should compare properly", () => {
@@ -14,18 +14,24 @@ describe("Render", () => {
     assert.isTrue(color1.equals(color2), "color1 should equal color2");
     assert.isNotTrue(color1.equals(blue), "color1 should not equal blue");
 
-    const blueVal = blue.tbgr;
-    assert.equal(blueVal, 0xff0000);
-    assert.equal(blue.getRgb(), ColorRgb.blue);
+    assert.equal(blue.tbgr, ColorByName.blue);
+    assert.equal(blue.getRgb(), 0xff);
     assert.isTrue(blue.equals(new ColorDef(blue)));
 
-    const colors = color3.getColors();
+    const colors = color3.colors;
     ColorDef.from(colors.r, colors.g, colors.b, 0x30, color3);
     assert.isTrue(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
 
+    // cornflowerBlue: 0xED9564,
+    const cfg = new ColorDef(ColorByName.cornflowerBlue);
+    assert.isTrue(cfg.equals(ColorDef.from(0x64, 0x95, 0xed)));
+
     const yellow = new ColorDef("yellow");
-    const yellow2 = new ColorDef(ColorRgb.yellow);
+    const yellow2 = new ColorDef(ColorByName.yellow);
     assert.isTrue(yellow.equals(yellow2));
+    assert.equal(yellow.name, "yellow");
+    assert.isUndefined(color1.name, "no color name");
+
     const yellow3 = new ColorDef("#FFFF00");
     assert.isTrue(yellow.equals(yellow3));
     let yellow4 = new ColorDef("rgbA(255,255,0,255)");
@@ -84,7 +90,7 @@ describe("Render", () => {
     assert.equal(l1.bulbs, 3);
     assert.equal(l1.lumens, 2700);
 
-    const spotOpts = {
+    const spotOpts: SpotProps = {
       intensity: 10,
       intensity2: 40,
       color: ColorDef.white,
@@ -97,7 +103,7 @@ describe("Render", () => {
       outer: 45.0,
     };
 
-    const s1 = new Spot(spotOpts as any);
+    const s1 = new Spot(spotOpts);
     assert.equal(s1.lightType, LightType.Spot, "type");
     assert.equal(s1.intensity, 10);
     assert.equal(s1.kelvin, 100);
@@ -114,7 +120,7 @@ describe("Render", () => {
     assert.deepEqual(l1, l2);
     json = JSON.stringify(s1);
     const s2 = new Spot(JSON.parse(json));
-    assert.deepEqual(s1, s2);
+    assert.equal(json, JSON.stringify(s2));
   });
 
 });

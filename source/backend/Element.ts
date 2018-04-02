@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
-import { Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStream, GeometryStreamBuilder } from "@bentley/imodeljs-common";
+import { Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps,
+  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, GeometryPartProps,
   AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
 } from "@bentley/imodeljs-common";
 
@@ -27,9 +27,9 @@ import {
  */
 export abstract class Element extends Entity implements ElementProps {
   /** the ModelId of the Model containing this element */
-  public model: Id64;
+  public readonly model: Id64;
   /** the code for this element */
-  public code: Code;
+  public readonly code: Code;
   /** the parent element, if present, of this element. */
   public parent?: RelatedElement;
   /** a GUID assigned to this element by some other federated database */
@@ -37,13 +37,13 @@ export abstract class Element extends Entity implements ElementProps {
   /** a user-assigned label for this element. */
   public userLabel?: string;
   /** optional json properties of this element. */
-  public jsonProperties: any;
+  public readonly jsonProperties: any;
 
   /** constructor for Element. */
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.code = Code.fromJSON(props.code);
-    this.model = Id64.fromJSON(props.model);
+    this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = Guid.fromJSON(props.federationGuid);
     this.userLabel = props.userLabel;
@@ -83,6 +83,8 @@ export abstract class Element extends Entity implements ElementProps {
   /** remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
+  public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
+  public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
   /**
    * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
@@ -96,11 +98,11 @@ export abstract class Element extends Entity implements ElementProps {
  */
 export abstract class GeometricElement extends Element implements GeometricElementProps {
   public category: Id64;
-  public geom?: GeometryStream;
+  public geom?: GeometryStreamProps;
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.category = Id64.fromJSON(props.category);
-    this.geom = GeometryStream.fromJSON(props.geom);
+    this.geom = props.geom;
   }
 
   public is3d(): this is GeometricElement3d { return this instanceof GeometricElement3d; }
@@ -115,44 +117,6 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     if (this.geom)
       val.geom = this.geom;
     return val;
-  }
-
-  public updateFromGeometryStreamBuilder(builder: GeometryStreamBuilder): boolean {
-    if (builder.isPartCreate)
-      return false;   // Invalid builder for creating element geometry...
-
-    if (builder.currentSize === 0)
-      return false;
-
-    if (!builder.havePlacement)
-      return false;
-
-    if (!this.category.equals(builder.geometryParams.categoryId))
-      return false;
-
-    if (builder.is3d) {
-      if (!builder.placement3d.isValid())
-        return false;
-
-      if (!this.is3d())
-        return false;
-
-      this.placement.setFrom(builder.placement3d);
-    } else {
-      if (!builder.placement2d.isValid())
-        return false;
-
-      if (!this.is2d())
-        return false;
-
-      this.placement.setFrom(builder.placement2d);
-    }
-
-    if (this.geom)
-      this.geom.setFrom(builder.getGeometryStreamClone());
-    else
-      this.geom = builder.getGeometryStreamClone();
-    return true;
   }
 }
 
@@ -453,12 +417,20 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * Information Partition is an abstract base class for elements that indicate that there is a new modeling
  * perspective within the overall iModel information hierarchy. An Information Partition is always parented
  * to a Subject and broken down by a Model.
+ *
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:IModelDbModels.createModel]]
+ * ```
+ *
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   public description?: string;
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** Create a code that can be used for any kind of InformationPartitionElement. */
+  /** Create a code that can be used for any kind of InformationPartitionElement.
+   * See the example in [[InformationPartitionElement]].
+   */
   public static createCode(scopeElement: Element, codeValue: string): Code {
     const codeSpec = scopeElement.iModel.codeSpecs.getByName(CodeSpecNames.InformationPartitionElement());
     return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
@@ -558,6 +530,28 @@ export class RepositoryLink extends UrlLink {
  * a person can play the role of a teacher or a rock can play the role of a boundary marker.
  */
 export abstract class RoleElement extends Element {
+}
+
+/**
+ * A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
+ * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
+ */
+export class GeometryPart extends DefinitionElement implements GeometryPartProps {
+  public geom?: GeometryStreamProps;
+  public bbox: ElementAlignedBox3d;
+  public constructor(props: GeometryPartProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.geom = props.geom;
+    this.bbox = ElementAlignedBox3d.fromJSON(props.bbox);
+  }
+
+  /** convert this geometry part to a JSON object */
+  public toJSON(): GeometryPartProps {
+    const val = super.toJSON() as GeometryPartProps;
+    val.geom = this.geom;
+    val.bbox = this.bbox;
+    return val;
+  }
 }
 
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {

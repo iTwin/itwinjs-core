@@ -11,7 +11,7 @@ const rangeScale = 0xffff;
 
 // encapsulates the pos, origin, and scale for each dimension of the Point, can apply a quantization routine
 export class QData {
-  private _data: number[][];
+  private _data!: number[][];
   constructor(pos: Point, origin: Point, scale: Point) { this.init.apply(this, [pos, origin, scale].map(PointUtil.toNumberArray)); }
   private init(pos: number[], origin: number[], scale: number[]) {
     this._data = pos.map((v, i) => [v, origin[i], scale[i]]);
@@ -85,8 +85,8 @@ export class Quantizer {
 
 // QParams can convert a range to origin and scale points and vice versa
 export abstract class QParamsBase {
-  private _scale: Point;
-  private _origin: Point;
+  private _scale!: Point;
+  private _origin!: Point;
   public get origin(): Point { return this._origin; }
   public get scale(): Point { return this._scale; }
   public get range(): Range { return QParams.computeRange(this.origin, this.scale); }
@@ -217,7 +217,7 @@ export class QPointList<Q extends QPointBase, P extends Point, R extends Range, 
   protected _valid = false;
   protected _pts: Q[];
   protected get pts(): Q[] { return this._pts; }
-  public params: K;
+  public params!: K;
   public get canLoad(): boolean { return this._valid; }
   public get length(): number { return this._pts.length; }
   constructor(params?: R | K, pts: Q[] = []) {

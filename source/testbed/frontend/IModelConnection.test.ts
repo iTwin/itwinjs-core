@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { XYAndZ } from "@bentley/geometry-core";
-import { CodeSpec, CodeSpecNames, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType } from "@bentley/imodeljs-common";
+import { CodeSpec, CodeSpecNames, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
@@ -12,17 +12,20 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 describe("IModelConnection", () => {
+  let iModel: IModelConnection;
+
   before(async () => {
     IModelApp.startup();
     await TestData.load();
+    iModel = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
 
-  after(() => {
+  after(async () => {
+    await iModel.close(TestData.accessToken);
     IModelApp.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);
@@ -33,7 +36,7 @@ describe("IModelConnection", () => {
     const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
-    assert.isTrue(iModel.models.repositoryModelId.equals(new Id64(elementProps[0].model)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
 
     const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
@@ -83,13 +86,10 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
 
-    await iModel.close(TestData.accessToken);
   });
 
   it("Parameterized ECSQL", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
     assert.exists(iModel);
-
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];

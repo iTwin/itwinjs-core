@@ -1,21 +1,22 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-export * from "./AddonRegistry";
+export * from "./NativePlatformRegistry";
 export * from "./AutoPush";
 export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangeSummaryManager";
 export * from "./ClassRegistry";
 export * from "./CodeSpecs";
+export * from "./ConcurrencyControl";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
-export * from "./ElementGeometry";
 export * from "./ElementPropertyFormatter";
 export * from "./Entity";
+export * from "./IModelJsFs";
 export * from "./IModelHost";
 export * from "./KnownLocations";
 export * from "./LinkTableRelationship";

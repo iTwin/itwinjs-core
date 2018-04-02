@@ -5,26 +5,18 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { Entity, EntityMetaData, PrimitiveTypeCode } from "../Entity";
-import { Model, DictionaryModel } from "../Model";
-import { Category, SubCategory, SpatialCategory } from "../Category";
-import { ClassRegistry } from "../ClassRegistry";
-import { BisCore } from "../BisCore";
-import { ECSqlStatement } from "../ECSqlStatement";
 import {
-  Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
-  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject,
-} from "../Element";
-import { ElementPropertyFormatter } from "../ElementPropertyFormatter";
-import { IModelDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
+  ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
+  LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
+  IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
+  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation,
+} from "../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, Appearance, ColorDef, IModel,
-  // FontType, FontMap,
+  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName,
 } from "@bentley/imodeljs-common";
+import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { ElementGroupsMembers } from "../LinkTableRelationship";
 
 // spell-checker: disable
 
@@ -53,23 +45,26 @@ describe("iModel", () => {
     assert.isTrue(entity.isPersistent());
     const copyOf = entity.copyForEdit();
     assert.isFalse(copyOf.isPersistent());
-    copyOf.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, copyOf, "copyForEdit worked"); // make sure the copy is identical to original
+    const s1 = JSON.stringify(entity); let s2 = JSON.stringify(copyOf);
+    assert.equal(s1, s2);
 
     // now round trip the entity through a json string and back to a new entity.
-    const jsonObj = JSON.parse(JSON.stringify(entity)) as EntityProps;
+    const jsonObj = JSON.parse(s1) as EntityProps;
     const el2 = new (entity.constructor as any)(jsonObj, entity.iModel); // create a new entity from the json
-    el2.setPersistent(); // just to allow deepEqual to work
-    assert.deepEqual(entity, el2, "json stringify worked");
+    s2 = JSON.stringify(el2);
+    assert.equal(s1, s2);
   };
 
-  it("should be able to get the name of the IModel", () => {
+  it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
-  });
-
-  it("should be able to get extents of the IModel", () => {
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
     assert(!extents.isNull());
+
+    // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
+    assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
+    const e1 = new LightLocation({ category: "0x11", classFullName: "BisCore.LightLocation" }, imodel1);
+    assert.isDefined(e1);
+    assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
 
   it("should use schema to look up classes by name", () => {
@@ -81,33 +76,34 @@ describe("iModel", () => {
     assert.equal(categoryClass!.name, "Category");
   });
 
-  // disabled until build 10.1.0 of iModelJsNode module is available
-  // it.skip("FontMap", () => {
-  //   const fonts1 = imodel1.getFontMap();
-  //   assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
-  //   assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
-  //   assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
-  //   assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
-  //   assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
-  //   assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
-  //   assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
-  //   assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
-  //   assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
-  //   assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
-  //   assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
-  //   assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
-  //   assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
-  //   assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-  //   assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
-  // });
+  it("FontMap", () => {
+    const fonts1 = imodel1.getFontMap();
+    assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
+    assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
+    assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
+    assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
+    assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
+    assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
+    assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
+    assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
+    assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
+    assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
+    assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
+    assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
+    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
+    assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+  });
 
   it("should load a known element by Id from an existing iModel", () => {
     assert.exists(imodel1.elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel1.elements.getElement(code1);
     assert.exists(el);
-    const el2 = imodel1.elements.getElement(new Id64("0x34"));
-    assert.exists(el2);
+    const el2ById = imodel1.elements.getElement(new Id64("0x34"));
+    assert.exists(el2ById);
+    const el2ByString = imodel1.elements.getElement("0x34");
+    assert.exists(el2ByString);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
 
     try {
@@ -242,6 +238,10 @@ describe("iModel", () => {
     assert.exists(imodel1.models);
     const model2 = imodel1.models.getModel(new Id64("0x1c"));
     assert.exists(model2);
+    const formatter = model2.getJsonProperty("formatter");
+    assert.exists(formatter, "formatter should exist as json property");
+    assert.equal(formatter.fmtFlags.angMode, 1, "fmtFlags");
+    assert.equal(formatter.mastUnit.label, "m", "mastUnit is meters");
     testCopyAndJson(model2);
     let model = imodel1.models.getModel(imodel1.models.repositoryModelId);
     assert.exists(model);
@@ -319,8 +319,7 @@ describe("iModel", () => {
     const drawingGraphicRows: any[] = imodel2.executeQuery("SELECT ECInstanceId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicRows, "Should have some Drawing Graphics");
     for (const drawingGraphicRow of drawingGraphicRows!) {
-      const drawingGraphicId = new Id64(drawingGraphicRow.id);
-      const drawingGraphic = imodel2.elements.getElement(drawingGraphicId);
+      const drawingGraphic = imodel2.elements.getElement({ id: drawingGraphicRow.id, wantGeometry: true });
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
@@ -404,20 +403,6 @@ describe("iModel", () => {
     assert.notEqual(rows[0].id, "");
   });
 
-  /* TBD
-  it("should load struct properties", () => {
-    const el1 = imodel3.elements.getElement(new Id64("0x14"));
-    assert.isDefined(el1);
-    // *** TODO: Check that struct property was loaded
-  });
-
-  it("should load array properties", () => {
-    const el1 = imodel3.elements.getElement(new Id64("0x14"));
-    assert.isDefined(el1);
-    // *** TODO: Check that array property was loaded
-  });
-  */
-
   it("should insert and update auto-handled properties", () => {
     const testElem = imodel4.elements.getElement(new Id64("0x14"));
     assert.isDefined(testElem);
@@ -431,10 +416,10 @@ describe("iModel", () => {
 
     const loc1 = { street: "Elm Street", city: { name: "Downingtown", state: "PA" } };
     const loc2 = { street: "Oak Street", city: { name: "Downingtown", state: "PA" } };
-    // TODO: struct arrays   const loc3 = {street: "Chestnut Street", city: {name: "Philadelphia", state: "PA"}};
-    // TODO: struct arrays    const arrayOfStructs = [loc2, loc3];
+    const loc3 = { street: "Chestnut Street", city: { name: "Philadelphia", state: "PA" } };
+    const arrayOfStructs = [loc2, loc3];
     newTestElem.location = loc1;
-    // TODO: struct arrays    newTestElem.arrayOfStructs = arrayOfStructs;
+    newTestElem.arrayOfStructs = arrayOfStructs;
     newTestElem.dtUtc = new Date("2015-03-25");
     newTestElem.p3d = new Point3d(1, 2, 3);
 
@@ -450,8 +435,9 @@ describe("iModel", () => {
     assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
     assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
     assert.deepEqual(newTestElemFetched.location, loc1);
-    // TODO: struct arrays   assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
+    assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
     // TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
+    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc.toJSON());
     assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
 
     // ----------- updates ----------------
@@ -725,7 +711,6 @@ describe("iModel", () => {
   });
 
   it("should create link table relationship instances", () => {
-
     const testImodel: IModelDb = imodel1;
 
     // Create a new physical model
@@ -733,16 +718,19 @@ describe("iModel", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary: DictionaryModel = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const dictionary = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: ColorByName.darkRed }));
+
+      const updated = testImodel.elements.getElement(IModelDb.getDefaultSubCategoryId(spatialCategoryId)) as SubCategory;
+      assert.equal(updated.appearance.color.tbgr, ColorByName.darkRed, "SubCategory appearance should be updated");
     }
 
     // Create a couple of physical elements.
-    const id0: Id64 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
-    const id1: Id64 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
-    const id2: Id64 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+    const id0 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+    const id1 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+    const id2 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
     const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
@@ -751,8 +739,8 @@ describe("iModel", () => {
     testImodel.linkTableRelationships.insertInstance(r2);
 
     // Look up by id
-    const g1: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
-    const g2: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r2.id) as ElementGroupsMembers;
+    const g1 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
+    const g2 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r2.id) as ElementGroupsMembers;
 
     assert.deepEqual(g1.id, r1.id);
     assert.equal(g1.classFullName, "BisCore:ElementGroupsMembers");
@@ -770,13 +758,12 @@ describe("iModel", () => {
     testImodel.linkTableRelationships.updateInstance(r1);
 
     const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
-    assert.equal(g11.memberPriority, 1);
+    assert.equal(g11.memberPriority, 1, "memberPriority");
 
     // Delete relationship instance property
     testImodel.linkTableRelationships.deleteInstance(r1);
 
     // TODO: Do an ECSql query to verify that 0->1 is gone but 0->2 is still there.
-
     testImodel.saveChanges("");
 
   });
@@ -800,7 +787,7 @@ describe("iModel", () => {
     const dictionary = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance());
     }
 
     const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";

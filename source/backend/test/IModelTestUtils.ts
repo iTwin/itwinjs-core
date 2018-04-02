@@ -9,30 +9,36 @@ import {
 } from "@bentley/imodeljs-clients";
 import { Element, InformationPartitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { AddonRegistry } from "../AddonRegistry";
-import { IModelGateway } from "@bentley/imodeljs-common";
-import { Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
+import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
 import { DefinitionModel, Model } from "../Model";
 import { SpatialCategory } from "../Category";
 import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
+import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
-// Logger.initializeToConsole();
-// Logger.setLevel("Performance", LogLevel.Info);
-// Logger.setLevelDefault(LogLevel.Error);
-// Logger.setLevel("Diagnostics", LogLevel.None);
-// Logger.setLevel("ECObjectsNative", LogLevel.None);
-// Logger.setLevel("BeSQLite", LogLevel.None);
-// Logger.setLevel("ECPresentation", LogLevel.None);
+Logger.initializeToConsole();
+if (process.env.imodeljs_test_logging_config === undefined) {
+  // tslint:disable-next-line:no-console
+  console.log("FYI You can set the environment variable imodeljs_test_logging_config to point to a logging configuration json file.");
+}
+
+const loggingConfigFile: string = process.env.imodeljs_test_logging_config || path.join(__dirname, "logging.config.json");
+if (IModelJsFs.existsSync(loggingConfigFile)) {
+  // tslint:disable-next-line:no-var-requires
+  Logger.configureLevels(require(loggingConfigFile));
+}
+
+let nativePlatformForTestsDir = __dirname;
+while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatformForTests")))
+  nativePlatformForTestsDir = path.join(nativePlatformForTestsDir, "..");
+const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
+NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Initialize the gateway classes used by tests
 Gateway.initialize(IModelGateway);
-
-// Initialize the Node addon used by tests
-AddonRegistry.loadAndRegisterStandardAddon();
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
@@ -187,7 +193,7 @@ export class IModelTestUtils {
       }
     } catch (error) {
       console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
-      IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
+      await IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
     }
   }
 
@@ -201,16 +207,16 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static createStandaloneIModel(filename: string, rootSubjectName: string): IModelDb {
+  public static createStandaloneIModel(fileName: string, args: CreateIModelProps): IModelDb {
     const destPath = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(destPath))
       IModelJsFs.mkdirSync(destPath);
 
-    const pathname = path.join(destPath, filename);
+    const pathname = path.join(destPath, fileName);
     if (IModelJsFs.existsSync(pathname))
       IModelJsFs.unlinkSync(pathname);
 
-    const iModel: IModelDb = IModelDb.createStandalone(pathname, rootSubjectName);
+    const iModel: IModelDb = IModelDb.createStandalone(pathname, args);
 
     assert.isNotNull(iModel);
     assert.isTrue(IModelJsFs.existsSync(pathname));
@@ -226,6 +232,27 @@ export class IModelTestUtils {
       opts = {};
 
     const srcName = path.join(KnownTestLocations.assetsDir, filename);
+    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
+    const srcStat = IModelTestUtils.getStat(srcName);
+    const destStat = IModelTestUtils.getStat(dbName);
+    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
+      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
+    }
+
+    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
+    assert.exists(iModel);
+    return iModel!;
+  }
+
+  public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+    const destPath = KnownTestLocations.outputDir;
+    if (!IModelJsFs.existsSync(destPath))
+      IModelJsFs.mkdirSync(destPath);
+
+    if (opts === undefined)
+      opts = {};
+
+    const srcName = path.join(KnownTestLocations.outputDir, filename);
     const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
@@ -276,7 +303,7 @@ export class IModelTestUtils {
     assert.isTrue(modeledElementId.isValid());
 
     // The model
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
+    const newModel = testImodel.models.createModel({ modeledElement: { id: modeledElementId, relClassName: "BisCore:PhysicalModelBreaksDownPhysicalPortion" }, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
     newModelId = testImodel.models.insertModel(newModel);
 
     assert.isTrue(newModelId.isValid());

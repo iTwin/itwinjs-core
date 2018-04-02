@@ -15,10 +15,10 @@ export abstract class GatewayConfiguration {
   public abstract gateways: () => GatewayDefinition[];
 
   /** Reserved for an application authorization key. */
-  public applicationAuthorizationKey: string;
+  public applicationAuthorizationKey!: string;
 
   /** Reserved for an application authorization value. */
-  public applicationAuthorizationValue: string;
+  public applicationAuthorizationValue!: string;
 
   /** The target interval (in milliseconds) between connection attempts for pending gateway operation requests. */
   public pendingOperationRetryInterval = 10000;
@@ -33,9 +33,7 @@ export abstract class GatewayConfiguration {
   }
 
   /** Initializes the gateways managed by the configuration. */
-  public initializeGateways() {
-    this.gateways().forEach((gateway) => Gateway.initialize(gateway));
-  }
+  public initializeGateways() { this.gateways().forEach((gateway) => Gateway.initialize(gateway)); }
 }
 
 /** A default gateway configuration (suitable for testing). */

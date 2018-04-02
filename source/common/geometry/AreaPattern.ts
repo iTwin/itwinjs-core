@@ -6,9 +6,8 @@ import { Point2d, Point3d, YawPitchRollAngles, RotMatrix, Transform, Geometry } 
 import { ColorDef } from "../ColorDef";
 import { Id64 } from "@bentley/bentleyjs-core";
 
-/** Explicit declaration, separate from generated "schema", for easily changing and reassigning values */
 export class DwgHatchDefLine {
-  public angle: number;
+  public angle = 0;
   public readonly through = new Point2d();
   public readonly offset = new Point2d();
   public readonly dashes: number[] = [];
@@ -18,17 +17,17 @@ export class DwgHatchDefLine {
 export class PatternParams {
   private readonly _origin = new Point3d();                // Pattern origin (offset from to element's placement)
   private readonly _rMatrix = RotMatrix.createIdentity();             // Pattern coordinate system (relative to element's placement)
-  private _space1: number;                 // Primary (row) spacing
-  private _space2: number;                 // Secondary (column) spacing
-  private _angle1: number;                 // Angle of first hatch or pattern
-  private _angle2: number;                 // Angle of second hatch
-  private _scale: number;                  // Pattern scale
-  private _invisibleBoundary: boolean;     // Whether pattern boundary should not display (ignored when also filled)...
-  private _snappable: boolean;             // Whether pattern geometry can be snapped to
-  private _useColor: boolean;              // WWhether to use pattern color instead of inheriting current color
-  private _useWeight: boolean;             // Whether to use pattern weight instead of inheriting current weight
+  private _space1 = 0;                 // Primary (row) spacing
+  private _space2 = 0;                 // Secondary (column) spacing
+  private _angle1 = 0;                 // Angle of first hatch or pattern
+  private _angle2 = 0;                 // Angle of second hatch
+  private _scale = 0;                  // Pattern scale
+  private _invisibleBoundary?: boolean;     // Whether pattern boundary should not display (ignored when also filled)...
+  private _snappable?: boolean;             // Whether pattern geometry can be snapped to
+  private _useColor?: boolean;              // WWhether to use pattern color instead of inheriting current color
+  private _useWeight?: boolean;             // Whether to use pattern weight instead of inheriting current weight
   private _color?: ColorDef;                // The pattern / hatch color
-  private _weight: number;                 // The pattern / hatch weight
+  private _weight?: number;                 // The pattern / hatch weight
   private _symbolId?: Id64;                 // The id of the GeometryPart to use for an area pattern
   private readonly _hatchLines: DwgHatchDefLine[] = [];  // The DWG style hatch definition
 
