@@ -12,10 +12,11 @@ import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
-  GeometricElementProps, Code, Appearance, ColorDef, IModel, GeometryStreamBuilder,
+  GeometricElementProps, Code, Appearance, ColorDef, IModel, GeometryStreamProps,
 } from "@bentley/imodeljs-common";
-import { Point3d, Arc3d, Vector3d, AngleSweep,
+import { Point3d, Arc3d,
 } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
 import * as fs from "fs";
@@ -24,7 +25,6 @@ describe.skip("PerformanceElementsTests", () => {
   let seedIModel: IModelDb;
   let newModelId: Id64;
   let spatialCategoryId1: Id64;
-  let ellipse: Arc3d;
   const opSizes: any[] = [1000, 2000, 3000];
   const dbSizes: any[] = [10000, 100000, 1000000];
   const classNames: any[] = ["PerfElement", "PerfElementSub1", "PerfElementSub2", "PerfElementSub3"];
@@ -44,6 +44,17 @@ describe.skip("PerformanceElementsTests", () => {
   function createElems(className: string, count: number, iModelName: IModelDb, modId: Id64, catId: Id64): any[] {
     const elementColl: Element[] = [];
     for (let m = 0; m < count; ++m) {
+      // add Geometry
+      const geomArray: Arc3d[] = [
+        Arc3d.createXY(Point3d.create(0, 0), 5),
+        Arc3d.createXY(Point3d.create(5, 5), 2),
+        Arc3d.createXY(Point3d.create(-5, -5), 20),
+      ];
+      const geometryStream: GeometryStreamProps = [];
+      for (const geom of geomArray) {
+        const arcData = GeomJson.Writer.toIModelJson(geom);
+        geometryStream.push(arcData);
+      }
       // Create props
       const elementProps: GeometricElementProps = {
         classFullName: "PerfTestDomain:" + className,
@@ -51,6 +62,7 @@ describe.skip("PerformanceElementsTests", () => {
         model: modId,
         category: catId,
         code: Code.createEmpty(),
+        geom: geometryStream,
       };
       if (className === "PerfElementSub3") {
         elementProps.sub3Str = values.sub3Str;
@@ -71,14 +83,6 @@ describe.skip("PerformanceElementsTests", () => {
       elementProps.baseLong = values.baseLong;
       elementProps.baseDouble = values.baseDouble;
       const geomElement = seedIModel.elements.createElement(elementProps);
-      // add Geometry
-      const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin3d(catId, Point3d.create(0, 0, 0));
-      assert.isDefined(builder, "Builder is successfully created");
-      if (!builder)
-        assert.isTrue(false, "Geometric Builder not constructed");
-      ellipse = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI))!;
-      assert.isTrue(builder.appendCurvePrimitive(ellipse), "Successfully appended CurvePrimitive using builder");
-      assert.isTrue(geomElement.updateFromGeometryStreamBuilder(builder), "Successfully updated element given a builder");
       elementColl.push(geomElement);
     }
     return elementColl;
@@ -257,13 +261,17 @@ describe.skip("PerformanceElementsTests", () => {
             const editElem = elemFound.copyForEdit<Element>();
             editElem.baseStr = "PerfElement - UpdatedValue";
             // add Geometry
-            const builder = GeometryStreamBuilder.fromCategoryIdAndOrigin3d(spatialCategoryId1, Point3d.create(0, 0, 0));
-            assert.isDefined(builder, "Builder is successfully created");
-            if (!builder)
-              assert.isTrue(false, "Geometric Builder not constructed");
-            ellipse = Arc3d.create(Point3d.create(3, 2, 1), Vector3d.create(0, 0, 2), Vector3d.create(0, 3, 0), AngleSweep.createStartEndRadians(0, 2 * Math.PI))!;
-            assert.isTrue(builder.appendCurvePrimitive(ellipse), "Successfully appended CurvePrimitive using builder");
-            assert.isTrue(editElem.updateFromGeometryStreamBuilder(builder), "Successfully updated element given a builder");
+            const geomArray: Arc3d[] = [
+              Arc3d.createXY(Point3d.create(0, 0), 2),
+              Arc3d.createXY(Point3d.create(5, 5), 5),
+              Arc3d.createXY(Point3d.create(-5, -5), 10),
+            ];
+            const geometryStream: GeometryStreamProps = [];
+            for (const geom of geomArray) {
+              const arcData = GeomJson.Writer.toIModelJson(geom);
+              geometryStream.push(arcData);
+            }
+            editElem.setUserProperties("geom", geometryStream);
             elementColl.push(editElem);
           }
           // now lets update and record time
