@@ -121,7 +121,7 @@ export class NodeAddonPackageName {
       versionCode = "e_" + electronVersion.replace(/\./g, "_");
     } else {
       const nodeVersion = process.version.substring(1).split("."); // strip off the character 'v' from the start of the string
-      versionCode = "n_" + nodeVersion[0] + "_" + nodeVersion[1]; // use only major and minor version numbers
+      versionCode = "n_" + nodeVersion[0]; // use only major version number
     }
     return "@bentley/imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch;
   }
