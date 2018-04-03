@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
-  ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv,
+  ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv,
 } from "@bentley/imodeljs-clients";
 import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
 import {
@@ -101,7 +101,7 @@ export class IModelTestUtils {
   private static _hubClient: IModelHubClient | undefined;
   public static get hubClient(): IModelHubClient {
     if (!IModelTestUtils._hubClient)
-      IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig);
     return IModelTestUtils._hubClient!;
   }
 
@@ -131,7 +131,7 @@ export class IModelTestUtils {
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)
-      userCredentials = TestUsers.regular;
+    userCredentials = TestUsers.regular;
     const env = IModelTestUtils._iModelHubDeployConfig;
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
@@ -152,10 +152,7 @@ export class IModelTestUtils {
   }
 
   public static async getTestIModelId(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
-    const iModels = await IModelTestUtils.hubClient.getIModels(accessToken, projectId, {
-      $select: "*",
-      $filter: "Name+eq+'" + iModelName + "'",
-    });
+    const iModels = await IModelTestUtils.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 
@@ -164,9 +161,9 @@ export class IModelTestUtils {
 
   private static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
     const promises = new Array<Promise<void>>();
-    const briefcases = await IModelTestUtils.hubClient.getBriefcases(accessToken, iModelId);
+    const briefcases = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
+      promises.push(IModelTestUtils.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
     });
     await Promise.all(promises);
   }
@@ -182,11 +179,11 @@ export class IModelTestUtils {
       const briefcaseIds = new Array<number>();
       let ii = 5; // todo: IModelHub needs to provide a better way for testing this limit. We are arbitrarily testing for 5 briefcases here!
       while (ii-- > 0) {
-        const briefcaseId: number = await IModelTestUtils.hubClient.acquireBriefcase(accessToken, iModelId);
+        const briefcaseId: number = (await IModelTestUtils.hubClient.Briefcases().create(accessToken, iModelId)).briefcaseId!;
         briefcaseIds.push(briefcaseId);
       }
       for (const briefcaseId of briefcaseIds) {
-        await IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcaseId);
+        await IModelTestUtils.hubClient.Briefcases().delete(accessToken, iModelId, briefcaseId);
       }
     } catch (error) {
       console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line

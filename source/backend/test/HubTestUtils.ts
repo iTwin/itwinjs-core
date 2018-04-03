@@ -4,7 +4,7 @@
 import { TestConfig } from "./TestConfig";
 import {
   ConnectClient, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken,
-  AccessToken, UserProfile, Project, IModel, Briefcase,
+  AccessToken, UserProfile, Project, IModel, Briefcase, IModelQuery
 } from "@bentley/imodeljs-clients";
 import { assert, expect } from "chai";
 
@@ -40,10 +40,7 @@ export class HubTestUtils {
   }
 
   private async getTestIModel(accessToken: AccessToken, project: Project): Promise<IModel> {
-    const imodels = await this.hubClient.getIModels(accessToken, project.wsgId, {
-      $select: "*",
-      $filter: "Name+eq+'" + TestConfig.iModelName + "'",
-    });
+    const imodels = await this.hubClient.IModels().get(accessToken, project.wsgId, new IModelQuery().byName(TestConfig.iModelName));
 
     const imodel = imodels[0];
     assert.isDefined(imodel.wsgId);
@@ -53,10 +50,9 @@ export class HubTestUtils {
   }
 
   private async getTestBriefcase(accessToken: AccessToken, iModel: IModel): Promise<Briefcase> {
-    let briefcases = await this.hubClient.getBriefcases(accessToken, iModel.wsgId);
+    let briefcases = await this.hubClient.Briefcases().get(accessToken, iModel.wsgId);
     if (briefcases.length === 0) {
-      await this.hubClient.acquireBriefcase(accessToken, iModel.wsgId);
-      briefcases = await this.hubClient.getBriefcases(accessToken, iModel.wsgId);
+      briefcases = [await this.hubClient.Briefcases().create(accessToken, iModel.wsgId)];
       assert(briefcases.length > 0);
     }
 

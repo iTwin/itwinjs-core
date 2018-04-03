@@ -4,8 +4,9 @@ Gradient/*----------------------------------------------------------------------
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
+import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, Vector3d } from "@bentley/geometry-core";
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
@@ -468,9 +469,6 @@ export const enum GeometryClass {
   Pattern = 3,
 }
 
-export class Texture {
-}
-
 export class Material {
 }
 
@@ -931,4 +929,38 @@ export class FeatureTable {
   public findFeature(index: number): Feature | undefined { return this.map.get(index); }
   public clear(): void { this.map.clear(); }
   public static fromFeatureTable(table: FeatureTable): FeatureTable { return new FeatureTable(table.maxFeatures, table.modelId, table.map); }
+}
+
+export class TextureCreateParams {
+  constructor(public key: Id64,
+              public pitch: number = 0,
+              public isTileSection: boolean = false,
+              public isGlyph: boolean = false,
+              public isRGBE: boolean = false) {}
+}
+
+/** A Texture for rendering */
+export class Texture {
+  public get key(): Id64 { return this.params.key; }
+  public get isGlyph(): boolean { return this.params.isGlyph; }
+  constructor(public params: TextureCreateParams) {}
+  // public getImageSource(): ImageSource;
+}
+
+export namespace ImageLight {
+  export class Solar {
+    constructor(public direction: Vector3d = new Vector3d(),
+                public color: ColorDef = ColorDef.white,
+                public intensity: number = 0) {}
+  }
+}
+
+/** A list of Render::Lights, plus the f-stop setting for the camera */
+export class SceneLights {
+  private _list: Light[] = [];
+  public get isEmpty(): boolean { return this._list.length === 0; }
+  constructor(public imageBased: { environmentalMap: Texture, diffuseImage: Texture, solar: ImageLight.Solar },
+              public fstop: number = 0, // must be between -3 and +3
+              ) {}
+  public addLight(light: Light): void { if (light.isValid()) this._list.push(light); }
 }
