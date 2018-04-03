@@ -626,6 +626,12 @@ export class IModelDb extends IModel {
    */
   public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.briefcase!.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
 
+  /** query for the next available major id for a "file property" from this iModel.
+   * @param prop the FilePropertyProps that describes the property
+   * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
+   */
+  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.briefcase!.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
+
   /** Execute a test from native code
    * @param testName The name of the test
    * @param params parameters for the test
