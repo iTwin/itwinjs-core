@@ -4,8 +4,9 @@ Gradient/*----------------------------------------------------------------------
  *--------------------------------------------------------------------------------------------*/
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
+import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, Vector3d } from "@bentley/geometry-core";
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
@@ -944,4 +945,22 @@ export class Texture {
   public get isGlyph(): boolean { return this.params.isGlyph; }
   constructor(public params: TextureCreateParams) {}
   // public getImageSource(): ImageSource;
+}
+
+export namespace ImageLight {
+  export class Solar {
+    constructor(public direction: Vector3d = new Vector3d(),
+                public color: ColorDef = ColorDef.white,
+                public intensity: number = 0) {}
+  }
+}
+
+/** A list of Render::Lights, plus the f-stop setting for the camera */
+export class SceneLights {
+  private _list: Light[] = [];
+  public get isEmpty(): boolean { return this._list.length === 0; }
+  constructor(public imageBased: { environmentalMap: Texture, diffuseImage: Texture, solar: ImageLight.Solar },
+              public fstop: number = 0, // must be between -3 and +3
+              ) {}
+  public addLight(light: Light): void { if (light.isValid()) this._list.push(light); }
 }
