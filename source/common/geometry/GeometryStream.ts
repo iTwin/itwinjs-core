@@ -54,32 +54,29 @@ export type GeometryStreamEntryProps =
 
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
-export enum GeomCoordSystem {
-  Local = 0,  // <-- Geometry is being supplied in local coordinates. @note Builder must be created with a known placement for local coordinates to be meaningful.
-  World = 1,  // <-- Geometry is being supplied in world coordinates. @note Builder should not be supplied world coordinate geometry for an identity placement.
-}
-
 /** GeometryStreamBuilder is a helper class for populating the GeometryStreamEntryProps array needed to create a GeometricElement or GeometryPart */
 export class GeometryStreamBuilder {
-  /** Current placement transform, used for converting world input to local */
-  public readonly sourceToWorld = Transform.createIdentity();
+  /** Current inverse placement transform, used for converting world coordinate input to be placement relative */
+  private worldToLocal?: Transform;
   /** GeometryStream entries */
   public readonly geometryStream: GeometryStreamProps = [];
 
-  /** Create a new GeometryStreamBuilder with source to world transform for specifying input in world coordinates instead of local */
-  public constructor(transform?: Transform) {
-    if (transform)
-      this.sourceToWorld.setFrom(transform);
+  /** Supply optional local to world transform. Used to transform world coordinate input relative to element placement.
+   * For a GeometricElement's placement to be meaningful, world coordinate geometry should never be appended to an element with an identity placement.
+   * Can be called with undefined or identity transform to start appending geometry supplied in local coordinates again.
+   */
+  public setLocalToWorld(localToWorld?: Transform) {
+    this.worldToLocal = (undefined === localToWorld || localToWorld.isIdentity() ? undefined : localToWorld.inverse());
   }
 
-  /** Create a new GeometryStreamBuilder with source to world supplied as a Point2d and Angle */
-  public static from2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)): GeometryStreamBuilder {
-    return new GeometryStreamBuilder(Transform.createOriginAndMatrix(Point3d.createFrom(origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), angle)!));
+  /** Supply local to world transform from Point3d and YawPitchRollAngles */
+  public setLocalToWorld3d(origin: Point3d, angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)) {
+    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toRotMatrix()));
   }
 
-  /** Create a new GeometryStreamBuilder with source to world supplied as a Point3d and YawPitchRollAngles */
-  public static from3d(origin: Point3d, angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)): GeometryStreamBuilder {
-    return new GeometryStreamBuilder(Transform.createOriginAndMatrix(origin, angles.toRotMatrix()));
+  /** Supply local to world transform from Point2d and Angle */
+  public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
+    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), angle)!));
   }
 
   /** Change sub-category or reset to sub-category appearance for subsequent geometry.
@@ -94,28 +91,18 @@ export class GeometryStreamBuilder {
   /** Change GeometryParams for subsequent geometry.
    *  It is not valid to change the sub-category when defining a GeometryPart. GeometryParts inherit the symbology of their instance for anything not explicitly overridden.
    */
-  public appendGeometryParamsChange(geomParams: GeometryParams, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
-    if (GeomCoordSystem.Local === coord) {
-      const appearance: GeometryAppearanceProps = {
-        subCategory: geomParams.subCategoryId,
-        color: geomParams.appearanceOverrides.color ? geomParams.getLineColor() : undefined,
-        weight: geomParams.appearanceOverrides.weight ? geomParams.getWeight() : undefined,
-        style: geomParams.appearanceOverrides.style ? (geomParams.getLineStyle() ? geomParams.getLineStyle()!.styleId : new Id64()) : undefined,
-        transparency: geomParams.getTransparency(),
-        displayPriority: geomParams.getDisplayPriority(),
-        geometryClass: geomParams.getGeometryClass(),
-      };
-      this.geometryStream.push({ appearance });
-      return true;
-    }
-    return this.appendGeometryParamsChange(geomParams); // NEEDSWORK: Handle GeomCoordSystem.World when support added for patterns and linestyles...
-  }
-
-  /** Append a GeometryPart instance with relative position, orientation, and scale to a GeometryStreamEntryProps array for creating a GeometricElement2d.
-   *  Not valid when defining a GeometryPart as nested GeometryParts are not allowed.
-   */
-  public appendGeometryPart2d(partId: Id64, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
-    this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined, rotation: instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined, scale: instanceScale } });
+  public appendGeometryParamsChange(geomParams: GeometryParams): boolean {
+    const appearance: GeometryAppearanceProps = {
+      subCategory: geomParams.subCategoryId,
+      color: geomParams.appearanceOverrides.color ? geomParams.getLineColor() : undefined,
+      weight: geomParams.appearanceOverrides.weight ? geomParams.getWeight() : undefined,
+      style: geomParams.appearanceOverrides.style ? (geomParams.getLineStyle() ? geomParams.getLineStyle()!.styleId : new Id64()) : undefined,
+      transparency: geomParams.getTransparency(),
+      displayPriority: geomParams.getDisplayPriority(),
+      geometryClass: geomParams.getGeometryClass(),
+    };
+    // NOTE: Will need to check worldToLocal when support added for patterns and linestyles...
+    this.geometryStream.push({ appearance });
     return true;
   }
 
@@ -123,35 +110,61 @@ export class GeometryStreamBuilder {
    *  Not valid when defining a GeometryPart as nested GeometryParts are not allowed.
    */
   public appendGeometryPart3d(partId: Id64, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean {
-    this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin, rotation: instanceRotation, scale: instanceScale } });
+    if (undefined === this.worldToLocal) {
+      this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin, rotation: instanceRotation, scale: instanceScale } });
+      return true;
+    }
+    const partTrans = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toRotMatrix() : RotMatrix.createIdentity());
+    if (undefined !== instanceScale)
+      partTrans.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
+    const resultTrans = partTrans.multiplyTransformTransform(this.worldToLocal);
+    const scales = new Vector3d();
+    if (!resultTrans.matrix.normalizeColumnsInPlace(scales))
+      return false;
+    const newRotation = YawPitchRollAngles.createFromRotMatrix(resultTrans.matrix);
+    if (undefined === newRotation)
+      return false;
+    this.geometryStream.push({ geomPart: { part: partId, origin: resultTrans.getOrigin(), rotation: newRotation, scale: scales.x } });
     return true;
   }
 
+  /** Append a GeometryPart instance with relative position, orientation, and scale to a GeometryStreamEntryProps array for creating a GeometricElement2d.
+   *  Not valid when defining a GeometryPart as nested GeometryParts are not allowed.
+   */
+  public appendGeometryPart2d(partId: Id64, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
+    return this.appendGeometryPart3d(partId, instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined, instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined, instanceScale);
+  }
+
   /** Append a TextString supplied in either local or world coordinates to the GeometryStreamProps array */
-  public appendTextString(textString: TextString, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
-    if (GeomCoordSystem.Local === coord) {
+  public appendTextString(textString: TextString): boolean {
+    if (undefined === this.worldToLocal) {
       this.geometryStream.push({ textString });
       return true;
     }
     const localTextString = new TextString(textString);
-    if (!localTextString.transformInPlace(this.sourceToWorld.inverse()!))
+    if (!localTextString.transformInPlace(this.worldToLocal))
       return false;
-    return this.appendTextString(localTextString);
+    this.geometryStream.push({ textString: localTextString });
+    return true;
   }
 
   /** Append a GeometryQuery supplied in either local or world coordinates to the GeometryStreamProps array */
-  public appendGeometryQuery(geometry: GeometryQuery, coord: GeomCoordSystem = GeomCoordSystem.Local): boolean {
-    if (GeomCoordSystem.Local === coord) {
+  public appendGeometryQuery(geometry: GeometryQuery): boolean {
+    if (undefined === this.worldToLocal) {
       const geomData = GeomJson.Writer.toIModelJson(geometry);
       if (undefined === geomData)
         return false;
       this.geometryStream.push(geomData);
       return true;
     }
-    const localGeometry = geometry.cloneTransformed(this.sourceToWorld.inverse()!);
+    const localGeometry = geometry.cloneTransformed(this.worldToLocal);
     if (undefined === localGeometry)
       return false;
-    return this.appendGeometryQuery(localGeometry);
+    const localGeomData = GeomJson.Writer.toIModelJson(localGeometry);
+    if (undefined === localGeomData)
+      return false;
+    this.geometryStream.push(localGeomData);
+    return true;
   }
 }
 

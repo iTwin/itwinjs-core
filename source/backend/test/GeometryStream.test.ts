@@ -7,7 +7,7 @@ import {
 } from "@bentley/geometry-core";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeomCoordSystem,
+  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
@@ -28,7 +28,7 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodelWithFonts);
   });
 
-  it.skip("json encoding and decoding roundtrip of TextString in world coords", async () => {
+  it("json encoding and decoding roundtrip of TextString in world coords", async () => {
     // tslint:disable-next-line:no-debugger
     // debugger;
 
@@ -40,7 +40,9 @@ describe("GeometryStream", () => {
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
-    const builder = GeometryStreamBuilder.from3d(testOrigin, testAngles);
+    const builder = new GeometryStreamBuilder();
+
+    builder.setLocalToWorld3d(testOrigin, testAngles); // Establish world to local transform...
 
     const textProps: TextStringProps = {
       text: "ABC",
@@ -52,7 +54,7 @@ describe("GeometryStream", () => {
     };
 
     const textString = new TextString(textProps);
-    const status = builder.appendTextString(textString, GeomCoordSystem.World);
+    const status = builder.appendTextString(textString);
     assert.isTrue(status);
 
     const elementProps: GeometricElement3dProps = {
@@ -84,7 +86,7 @@ describe("GeometryStream", () => {
     }
   });
 
-  it.skip("json encoding and decoding roundtrip of GeometryPart", async () => {
+  it("json encoding and decoding roundtrip of GeometryPart", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
@@ -121,7 +123,7 @@ describe("GeometryStream", () => {
     assert.isDefined(value.geom);
   });
 
-  it.skip("json encoding and decoding roundtrip of arcs", async () => {
+  it("json encoding and decoding roundtrip of arcs", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
