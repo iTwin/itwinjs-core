@@ -856,7 +856,7 @@ describe("iModel", () => {
     }
   });
 
-  it.skip("should be able to create a standalone IModel", async () => {
+  it("should be able to create a standalone IModel", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Manufacturing",
