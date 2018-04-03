@@ -26,6 +26,16 @@ describe("ViewState", () => {
 
   after(async () => { if (imodel) imodel.closeStandalone(); });
 
+  const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
+    const compare = new DeepCompare();
+    const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
+
+    const val = compare.compare(JSON.parse(JSON.stringify(v1)), JSON.parse(JSON.stringify(v2State)));
+    if (!val)
+      assert.isUndefined(compare.errorTracker, str);
+    assert.isTrue(val, str);
+  };
+
   it("should be able to create ViewState from SpatialViewDefinition", async () => {
     assert.equal(viewState.code.value, "A Views - View 1", "Code value is A Views - View 1");
     assert.equal(viewState.displayStyle.id.value, "0x36", "Display Style Id is 0x36");
@@ -45,7 +55,7 @@ describe("ViewState", () => {
     assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
 
     const v2 = viewState.clone<SpatialViewState>();
-    assert.deepEqual(viewState, v2);
+    compareView(viewState, v2.toJSON(), "v2 clone");
 
     assert.notEqual(v2.origin, viewState.origin); // make sure we're really looking at a copy
     assert.notEqual(v2.extents, viewState.extents);
@@ -65,15 +75,6 @@ describe("ViewState", () => {
     assert.isTrue(acs.getRotation().isExactEqual(StandardView.Iso));
   });
 
-  const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
-    const compare = new DeepCompare();
-    const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
-
-    const val = compare.compare(JSON.parse(JSON.stringify(v1)), JSON.parse(JSON.stringify(v2State)));
-    if (!val)
-      assert.isUndefined(compare.errorTracker, str);
-    assert.isTrue(val, str);
-  };
 
   it("view volume adjustments", async () => {
     const testParams: any = {
