@@ -80,7 +80,6 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
 }
 
 describe("BriefcaseManager", () => {
-  debugger
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
