@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef, ColorByName, Light, LightProps, Spot, LightType, SpotProps } from "@bentley/imodeljs-common";
+import { ViewFlags, RenderMode, ColorDef, Light, LightProps, Spot, LightType, SpotProps } from "@bentley/imodeljs-common";
 
 describe("Render", () => {
 
