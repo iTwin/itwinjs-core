@@ -266,14 +266,14 @@ export abstract class GraphicBuilder {
 
   /**
    * Draw a light-weight surface or solid primitive.
-   * @remarks Solid primitives can be capped or uncapped, they include cones, torus, box, spheres, and sweeps.
+   * @note Solid primitives can be capped or uncapped, they include cones, torus, box, spheres, and sweeps.
    */
   public abstract addSolidPrimitive(primitive: SolidPrimitive): void;
 
   /** Draw a BSpline surface. */
   public abstract addBSplineSurface(surface: BSplineSurface3d): void;
 
-  /** @remarks Wireframe fill display supported for non-illuminated meshes. */
+  /** @note Wireframe fill display supported for non-illuminated meshes. */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
 
   /** Draw a BRep surface/solid entity from the solids kernel. */
