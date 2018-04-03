@@ -519,7 +519,7 @@ export class IModelDb extends IModel {
     return new Id64(result);
   }
 
-  /** @deprecated */
+  /** deprecated */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this._newNotOpenError();

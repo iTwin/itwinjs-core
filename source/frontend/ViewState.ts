@@ -388,7 +388,7 @@ export abstract class ViewState extends ElementState {
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
    * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
    * of space shown in the view.) If undefined, no additional white space is added.
-   * @note, for 2d views, only the X and Y values of volume are used.
+   * @note for 2d views, only the X and Y values of volume are used.
    */
   public lookAtVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
     const rangeBox = volume.corners();
@@ -676,7 +676,7 @@ export abstract class ViewState3d extends ViewState {
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
    * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-   * @e If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the Viewport is synchronized from this view.
    */
   public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
