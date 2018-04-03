@@ -468,9 +468,6 @@ export const enum GeometryClass {
   Pattern = 3,
 }
 
-export class Texture {
-}
-
 export class Material {
 }
 
@@ -931,4 +928,20 @@ export class FeatureTable {
   public findFeature(index: number): Feature | undefined { return this.map.get(index); }
   public clear(): void { this.map.clear(); }
   public static fromFeatureTable(table: FeatureTable): FeatureTable { return new FeatureTable(table.maxFeatures, table.modelId, table.map); }
+}
+
+export class TextureCreateParams {
+  constructor(public key: Id64,
+              public pitch: number = 0,
+              public isTileSection: boolean = false,
+              public isGlyph: boolean = false,
+              public isRGBE: boolean = false) {}
+}
+
+/** A Texture for rendering */
+export class Texture {
+  public get key(): Id64 { return this.params.key; }
+  public get isGlyph(): boolean { return this.params.isGlyph; }
+  constructor(public params: TextureCreateParams) {}
+  // public getImageSource(): ImageSource;
 }
