@@ -7,12 +7,11 @@ import {
 } from "@bentley/geometry-core";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder,
+  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { DictionaryModel, IModelDb, GeometricElement3d } from "../backend";
-import { TextString, TextStringProps } from "@bentley/imodeljs-common/lib/geometry/TextString";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
