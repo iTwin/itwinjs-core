@@ -444,13 +444,13 @@ export interface ECSqlColumnInfo {
   getType(): ECSqlValueType;
 
   /** Gets the name of the property backing the column.
-   * @remarks If this column is backed by a generated property, i.e. it represents ECSQL expression,
+   * @note If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * the access string consists of the name of the generated property.
    */
   getPropertyName(): string;
 
   /** Gets the full access string to the corresponding ECSqlValue starting from the root class.
-   * @remarks If this column is backed by a generated property, i.e. it represents ECSQL expression,
+   * @note If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * the access string consists of the ECSQL expression.
    */
   getAccessString(): string;
@@ -464,7 +464,7 @@ export interface ECSqlColumnInfo {
   isGeneratedProperty(): boolean;
 
   /** Gets the table space in which this root class is persisted.
-   * @remarks for classes in the primary file the table space is MAIN. For classes in attached
+   * @note for classes in the primary file the table space is MAIN. For classes in attached
    * files, the table space is the name by which the file was attached. For generated properties the table space is empty.
    */
   getRootClassTableSpace(): string;

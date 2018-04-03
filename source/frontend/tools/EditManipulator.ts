@@ -83,7 +83,7 @@ export abstract class EditManipulator {
    * selected to start the modify operation is given responsibility for setting up the modification.
    * If called, the manipulator is responsible for setting the anchor point that will be used by all
    * active manipulators to the center of it's selected control. This manipulator can also enable AccuSnap/AccuDraw.
-   * @param[in,out] ev Current button event, point needs to be set to center of selected control.
+   * @param ev Current button event, point needs to be set to center of selected control.
    * @note If you merely want a control to handle clicks, implement _OnClick instead.
    * @return false to reject starting modify dynamics.
    * @see _OnClick
@@ -118,8 +118,8 @@ export abstract class EditManipulator {
    * It is expected that this is where all the work is done to update the element.
    * Using the anchor point from _OnModifyStart and the supplied button event for the cursor
    * location, update the element data.
-   * @param[in] ev Current button event,
-   * @param[in] isDynamics Whether manipulator is being called from _OnModify or _OnModifyAccept.
+   * @param ev Current button event,
+   * @param isDynamics Whether manipulator is being called from _OnModify or _OnModifyAccept.
    * @return SUCCESS if modify operation could be applied.
    */
   public abstract doModify(ev: BeButtonEvent, isDynamics: boolean): BentleyStatus;

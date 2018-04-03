@@ -178,8 +178,7 @@ class BriefcaseCache {
 }
 
 /** Utility to manage briefcases
- * @description
- * Folder structure for cached imodels:
+ *  Folder structure for cached imodels:
  *  /assets/imodels/                => cachePath (can be specified)
  *    iModelId1/                    => iModelPath
  *      csets/                      => csetPath
@@ -231,7 +230,7 @@ export class BriefcaseManager {
   private static buildScratchPath(): string { return path.join(IModelHost.configuration!.briefcaseCacheDir, "scratch"); }
 
   /** Get information on the briefcases that have been cached on disk
-   * @description Format of returned JSON:
+   *  Format of returned JSON:
    *  {
    *    "iModelId1": [
    *      {
