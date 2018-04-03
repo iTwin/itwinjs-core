@@ -17,7 +17,7 @@
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./test/**/*.test.ts",
     "pretest": "npm run copy:test-assets && rush build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/backend/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
+    "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
   },
   "repository": {},
   "keywords": [
