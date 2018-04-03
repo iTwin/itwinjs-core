@@ -4,7 +4,6 @@
 import { AccessToken, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { assert } from "@bentley/bentleyjs-core";
 
 /** Option to specify the version of the iModel to be acquired and used */
 export class IModelVersion {
@@ -37,7 +36,6 @@ export class IModelVersion {
    * before any change sets have been applied.
    */
   public static asOfChangeSet(changeSetId: string): IModelVersion {
-    assert(typeof changeSetId !== undefined && changeSetId !== "0", "Specify a valid change set id");
     const version = new IModelVersion();
 
     if (changeSetId === "") {

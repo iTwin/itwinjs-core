@@ -13,7 +13,7 @@ import {
 } from "../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName,
+  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -854,6 +854,55 @@ describe("iModel", () => {
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.isUndefined(el2after.relatedElement);
     }
+  });
+
+  it.skip("should be able to create a standalone IModel", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Manufacturing",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: new Guid(true),
+    };
+
+    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", args);
+    assert.equal(iModel.getGuid().value, args.guid.value);
+    assert.equal(iModel.rootSubject.name, args.rootSubject.name);
+    assert.equal(iModel.rootSubject.description, args.rootSubject.description);
+    assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);
+    assert.equal(iModel.projectExtents.low.y, args.projectExtents.low.y);
+    assert.equal(iModel.projectExtents.low.z, args.projectExtents.low.z);
+    assert.equal(iModel.globalOrigin.x, args.globalOrigin.x);
+    assert.equal(iModel.globalOrigin.y, args.globalOrigin.y);
+    assert.equal(iModel.globalOrigin.z, 0);
+
+    const client = iModel.queryFilePropertyString({ name: "Client", namespace: "dgn_Db" });
+    assert.equal(client, args.client, "query Client property");
+
+    const dbguid = iModel.queryFilePropertyBlob({ name: "DbGuid", namespace: "be_Db" });
+    assert.equal(dbguid!.byteLength, 16, "query guid property");
+
+    const myPropsStr: FilePropertyProps = { name: "MyProp", namespace: "test1", id: 1, subId: 1 };
+    const myStrVal = "this is a test";
+    let stat = iModel.saveFileProperty(myPropsStr, myStrVal);
+    assert.equal(stat, 0, "saveFileProperty as string");
+    const readFromDb = iModel.queryFilePropertyString(myPropsStr);
+    assert.equal(readFromDb, myStrVal, "query string after save");
+
+    const myPropsBlob: FilePropertyProps = { name: "MyBlob", namespace: "test1", id: 10 };
+    const testRange = new Uint32Array(500);
+    testRange.fill(11);
+    const blobVal = testRange.buffer as ArrayBuffer;
+    stat = iModel.saveFileProperty(myPropsBlob, blobVal);
+    assert.equal(stat, 0, "saveFileProperty as blob");
+    const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
+    assert.deepEqual(blobFromDb, blobVal, "query blob after save");
+
+    stat = iModel.deleteFileProperty(myPropsStr);
+    assert.equal(stat, 0, "deleteFileProperty");
+    assert.isUndefined(iModel.queryFilePropertyString(myPropsStr), "property was deleted");
+
+    iModel.closeStandalone();
   });
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", () => {

@@ -2,9 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestConfig } from "./TestConfig";
-import { ConnectClient, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { AuthorizationToken, AccessToken, UserProfile } from "@bentley/imodeljs-clients";
-import { Project, IModel, Briefcase } from "@bentley/imodeljs-clients";
+import {
+  ConnectClient, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken,
+  AccessToken, UserProfile, Project, IModel, Briefcase,
+} from "@bentley/imodeljs-clients";
 import { assert, expect } from "chai";
 
 export class HubTestUtils {

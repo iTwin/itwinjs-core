@@ -2,17 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import {
-  Point3d, YawPitchRollAngles, Arc3d,
-} from "@bentley/geometry-core";
+import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson } from "@bentley/geometry-core";
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeomCoordSystem,
+  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeomCoordSystem, TextString, TextStringProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { DictionaryModel, IModelDb, GeometricElement3d } from "../backend";
-import { TextString, TextStringProps } from "@bentley/imodeljs-common/lib/geometry/TextString";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;

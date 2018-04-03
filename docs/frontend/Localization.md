@@ -53,7 +53,7 @@ If you are using React for user interface development, please note that you shou
 
 The primary way of initiating actions in IModelJs applications is by authoring a subclass of the [Tool](./Tool#ToolClass) class. Each such Tool subclass is registered with the system by calling the register method on its class object. The register method takes an optional *nameSpace* argument that specifies the I18NNamespace that contains the localization strings for the tool, including its keyin, flyover, and description properties. The Tool's keyin property is used by the command parser to allow the user to type in the tool name to execute it. The flyover property is displayed when the cursor hovers over the Tool icon, and the description property is displayed in various contexts.
 
-The keys for each of those properties are synthesized from the Tool's namespace and toolId. For example, the translation key for the keyin property is <Namespace>:tools.<toolId>.keyin. Now suppose you author a PlaceSprinkler command in the Irrigation application. Your Tool class might look like this:
+The keys for each of those properties are synthesized from the Tool's namespace and toolId. For example, the translation key for the keyin property is \<Namespace\>:tools.\<toolId\>.keyin. Now suppose you author a PlaceSprinkler command in the Irrigation application. Your Tool class might look like this:
 
 ```ts
 class PlaceSprinkler extends InteractiveTool {
@@ -62,7 +62,7 @@ class PlaceSprinkler extends InteractiveTool {
 }
 
 // register the PlaceSprinkler class.
-toyToolsNS: I18NNamespace = IModelApp.registerNamespace ("IrrigationTools");
+const toyToolsNS: I18NNamespace = IModelApp.registerNamespace ("IrrigationTools");
 PlaceSprinkler.register(toyToolsNS);
 ```
 
@@ -86,7 +86,7 @@ Then the appropriate entry in the english version of IrrigationTools.json file m
  ```
 
 If you omit the "flyover" key, the keyin property is used for the flyover text. Similarly, if "description" key is not found, the fallback is the value of the flyover property.
- 
+
 In this example, the prompt1 and prompt2 keys are not used by the system - they could be used by your application during the operation of the Place Sprinkler command. They would be retrieved using this code:
 
 ```ts

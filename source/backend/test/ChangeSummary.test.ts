@@ -4,16 +4,12 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { IModelDb } from "../IModelDb";
+import { IModelJsFs, IModelHost, IModelDb, BriefcaseManager } from "../backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ChangeSet } from "@bentley/imodeljs-clients";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelJsFs } from "../IModelJsFs";
-import { IModelHost } from "../IModelHost";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -220,7 +216,7 @@ describe("ChangeSummary", () => {
       assert.exists(iModel);
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
       assert.isTrue(IModelJsFs.existsSync(changesFilePath));
 
       assert.exists(iModel);
@@ -264,7 +260,7 @@ describe("ChangeSummary", () => {
       assert.exists(iModel);
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
       assert.isTrue(IModelJsFs.existsSync(changesFilePath));
 
       assert.exists(iModel);
@@ -296,7 +292,7 @@ describe("ChangeSummary", () => {
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
 
       // WIP
       ChangeSummaryManager.attachChangeCache(iModel);

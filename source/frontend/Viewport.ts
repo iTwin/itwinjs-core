@@ -6,8 +6,7 @@ import {
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -104,7 +103,7 @@ class Animator {
   }
 }
 
-export const enum RemoveMe { No, Yes }
+export const enum RemoveMe { No = 0, Yes = 1 }
 
 /**
  * An object to animate a transition of viewport.

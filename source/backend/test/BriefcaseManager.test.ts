@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption, Guid } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
@@ -80,6 +80,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
 }
 
 describe("BriefcaseManager", () => {
+  debugger
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
@@ -695,29 +696,6 @@ describe("BriefcaseManager", () => {
     iModel.saveChanges("inserted generic objects");
 
     iModel.close(accessToken);
-  });
-
-  it.skip("should be able to create a standalone IModel", async () => {
-    const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
-      client: "ABC Manufacturing",
-      globalOrigin: { x: 10, y: 10 },
-      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
-      guid: new Guid(true),
-    };
-
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", args);
-    assert.equal(iModel.getGuid().value, args.guid.value);
-    assert.equal(iModel.rootSubject.name, args.rootSubject.name);
-    assert.equal(iModel.rootSubject.description, args.rootSubject.description);
-    assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);
-    assert.equal(iModel.projectExtents.low.y, args.projectExtents.low.y);
-    assert.equal(iModel.projectExtents.low.z, args.projectExtents.low.z);
-    assert.equal(iModel.globalOrigin.x, args.globalOrigin.x);
-    assert.equal(iModel.globalOrigin.y, args.globalOrigin.y);
-    assert.equal(iModel.globalOrigin.z, 0);
-
-    iModel.closeStandalone();
   });
 
   it.skip("should test AutoPush", async () => {

@@ -2,21 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
   ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv,
 } from "@bentley/imodeljs-clients";
-import { Element, InformationPartitionElement } from "../Element";
-import { IModelDb } from "../IModelDb";
 import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
-import { DefinitionModel, Model } from "../Model";
-import { SpatialCategory } from "../Category";
-import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
+import {
+  IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats,
+} from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
-import { Logger } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 Logger.initializeToConsole();
