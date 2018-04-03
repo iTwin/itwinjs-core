@@ -10,6 +10,8 @@ import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 
+export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
+
 export const enum RenderMode {
   Wireframe = 0,
   HiddenLine = 3,
