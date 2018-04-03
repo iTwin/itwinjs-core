@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
+import { AccessToken, IModelHubClient, ChangeSet, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 
@@ -105,7 +105,7 @@ export class IModelVersion {
 
   /** Gets the last change set that was applied to the imodel */
   private static async getLatestChangeSetId(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string): Promise<string> {
-    const changeSets: ChangeSet[] = await hubClient.getChangeSets(accessToken, iModelId, false /*=includeDownloadLink*/);
+    const changeSets: ChangeSet[] = await hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().top(1).latest());
     // todo: Need a more efficient iModel Hub API to get this information from the Hub.
 
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
@@ -113,10 +113,7 @@ export class IModelVersion {
 
   /** Get the change set from the specified named version */
   private static async getChangeSetFromNamedVersion(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string, versionName: string): Promise<string> {
-    const versions = await hubClient.getVersions(accessToken, iModelId, {
-      $select: "ChangeSetId",
-      $filter: `Name+eq+'${versionName}'`,
-    });
+    const versions = await hubClient.Versions().get(accessToken, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
 
     if (!versions[0] || !versions[0].changeSetId) {
       return Promise.reject(new IModelError(BentleyStatus.ERROR));

@@ -202,7 +202,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummary for single changeset", async () => {
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -250,7 +250,7 @@ describe("ChangeSummary", () => {
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
