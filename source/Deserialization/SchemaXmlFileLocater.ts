@@ -2,7 +2,6 @@ import { SchemaKey, ECVersion, Schema, SchemaMatchType, SchemaCache, ECObjectsEr
 import * as fs from "fs";
 import * as path from "path";
 import * as glob from "glob";
-import "../util/StringExt";
 
 export class CandidateSchema extends Schema {
   constructor(fileName: string, searchPath: string, key: SchemaKey) {
@@ -14,7 +13,22 @@ export class CandidateSchema extends Schema {
   public searchPath: string;
 }
 
-export class SchemaXmlFileLocator {
+declare global {
+  interface String {
+    format(...params: string[]): string;
+  }
+}
+
+String.prototype.format = function() {
+  const args = arguments;
+  return this.replace(/{(\d+)}/g, (match, theNumber) => {
+    return typeof args[theNumber] !== "undefined"
+      ? args[theNumber]
+      : match;
+  });
+};
+
+export class SchemaXmlFileLocater {
   private _searchPaths: string[];
   private _knownSchemas: SchemaCache;
 
@@ -24,6 +38,13 @@ export class SchemaXmlFileLocator {
   }
 
   public addSchemaSearchPaths(schemaPaths: string[]) {
+    for (const schemaPath of schemaPaths) {
+      if (schemaPaths.find((entry) => entry === schemaPath))
+        continue;
+
+      this._searchPaths.push(schemaPath);
+    }
+
     this._searchPaths.push(...schemaPaths);
   }
 
