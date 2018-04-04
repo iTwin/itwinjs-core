@@ -1,15 +1,12 @@
-import { SchemaFileLocator, CandidateSchema } from "../source/SchemaFileLocater";
+import { SchemaXmlFileLocator, CandidateSchema } from "../source/Deserialization/SchemaXmlFileLocater";
 import { SchemaKey, SchemaMatchType, ECObjectsError, ECObjectsStatus } from "../source";
 import Schema from "../source/Metadata/Schema";
 import { assert } from "chai";
 import * as path from "path";
 
-describe("SchemaFileLocator tests:", () => {
+describe("SchemaXmlFileLocator tests:", () => {
   const paths: string[] = [];
-  const locator = new SchemaFileLocator();
-
-  // tslint:disable-next-line:no-debugger
-  debugger;
+  const locator = new SchemaXmlFileLocator();
 
   beforeEach(() => {
     const srcName = __dirname + "\\assets\\";

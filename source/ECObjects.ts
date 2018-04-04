@@ -382,6 +382,22 @@ export class ECVersion {
 
     return new ECVersion(+read, +write, +minor);
   }
+
+  /**
+   * Compares two schema versions and returns a negative number if this
+   * schema version is less than the given version, a positive number if
+   * greater, and 0 if the version is an exact match.
+   * @param rhs The schema to compare.
+   */
+  public compare(rhv: ECVersion): number {
+    if (this.read !== rhv.read)
+      return this.read - rhv.read;
+
+    if (this.write !== rhv.write)
+      return this.write - rhv.write;
+
+    return this.minor - rhv.minor;
+  }
 }
 
 /**
@@ -460,13 +476,7 @@ export class SchemaKey {
    * @param rhs The schema to compare.
    */
   public compareByVersion(rhs: SchemaKey): number {
-    if (this.readVersion !== rhs.readVersion)
-      return this.readVersion - rhs.readVersion;
-
-    if (this.writeVersion !== rhs.writeVersion)
-      return this.writeVersion - rhs.writeVersion;
-
-    return this.minorVersion - rhs.minorVersion;
+    return this.version.compare(rhs.version);
   }
 
   /**

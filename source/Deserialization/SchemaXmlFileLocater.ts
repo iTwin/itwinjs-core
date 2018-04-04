@@ -1,8 +1,8 @@
-import { SchemaKey, ECVersion, Schema, SchemaMatchType, SchemaCache, ECObjectsError, ECObjectsStatus } from ".";
+import { SchemaKey, ECVersion, Schema, SchemaMatchType, SchemaCache, ECObjectsError, ECObjectsStatus } from "../";
 import * as fs from "fs";
 import * as path from "path";
 import * as glob from "glob";
-import "./util/StringExt";
+import "../util/StringExt";
 
 export class CandidateSchema extends Schema {
   constructor(fileName: string, searchPath: string, key: SchemaKey) {
@@ -14,7 +14,7 @@ export class CandidateSchema extends Schema {
   public searchPath: string;
 }
 
-export class SchemaFileLocator {
+export class SchemaXmlFileLocator {
   private _searchPaths: string[];
   private _knownSchemas: SchemaCache;
 
@@ -76,7 +76,7 @@ export class SchemaFileLocator {
     return schemaList;
   }
 
-  private getSchemaFile(schemaPath: string): any | undefined{
+  private getSchemaFile(schemaPath: string): any | undefined {
     if (!fs.existsSync(schemaPath))
       return undefined;
 
@@ -90,9 +90,9 @@ export class SchemaFileLocator {
     }
 
     return false;
-    }
+  }
 
-    private dependsOn(schema: Schema, possibleDependency: Schema): boolean {
+  private dependsOn(schema: Schema, possibleDependency: Schema): boolean {
     if (this.directlyReferences(schema, possibleDependency))
         return true;
 
