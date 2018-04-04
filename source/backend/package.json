@@ -30,13 +30,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/bentleyjs-core": "^7.3.12",
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "^7.3.2",
+    "@bentley/bentleyjs-core": "^7.3.12",
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0",

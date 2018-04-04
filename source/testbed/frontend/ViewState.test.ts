@@ -75,7 +75,6 @@ describe("ViewState", () => {
     assert.isTrue(acs.getRotation().isExactEqual(StandardView.Iso));
   });
 
-
   it("view volume adjustments", async () => {
     const testParams: any = {
       margin: new MarginPercent(0, 0, 0, 0),

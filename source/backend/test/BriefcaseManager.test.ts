@@ -86,7 +86,7 @@ describe("BriefcaseManager", () => {
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
-  const testElementCounts = [80, 81, 82];
+  const testElementCounts = [27, 28, 29];
 
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
@@ -98,6 +98,7 @@ describe("BriefcaseManager", () => {
   };
 
   before(async () => {
+
     let startTime = new Date().getTime();
     console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
 
@@ -109,6 +110,7 @@ describe("BriefcaseManager", () => {
     testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, TestConfig.iModelName);
 
     testChangeSets = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
+    testChangeSets.shift(); // The first change set is a schema change that was not named
     expect(testChangeSets.length).greaterThan(2);
 
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
@@ -116,10 +118,8 @@ describe("BriefcaseManager", () => {
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
-    }
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
@@ -272,9 +272,6 @@ describe("BriefcaseManager", () => {
   });
 
   it.skip("should merge changes so that two branches of an iModel converge", () => {
-    // tslint:disable-next-line:no-debugger
-    debugger;
-
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
     const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
@@ -457,14 +454,18 @@ describe("BriefcaseManager", () => {
     const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.first());
     assert.exists(iModelFirstVersion);
 
+    let elementCount: number;
     for (const [arrayIndex, versionName] of testVersionNames.entries()) {
-      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
-      assert.exists(iModelFromVersion);
-
-      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
+      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
       assert.exists(iModelFromChangeSet);
 
-      const elementCount = getElementCount(iModelFromVersion);
+      elementCount = getElementCount(iModelFromChangeSet);
+      assert.equal(elementCount, testElementCounts[arrayIndex]);
+
+      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
+      assert.exists(iModelFromVersion);
+
+      elementCount = getElementCount(iModelFromVersion);
       assert.equal(elementCount, testElementCounts[arrayIndex]);
     }
 
