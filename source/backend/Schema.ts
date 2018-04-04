@@ -7,7 +7,14 @@ import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Entity } from "./Entity";
 
-/** Base class for all schema classes. */
+/** Base class for all schema classes.
+ * A Schema represents an ECSchema in TypeScript, so that you can write programs that work with strongly typed classes.
+ * You do not have to define a Schema class in order to work with instances of the classes in that schema. See [[IModelDb.importSchema]].
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:ClassRegistry.registerModule]]
+ * ```
+ */
 export class Schema {
   public get name(): string { return this.constructor.name; }
 
