@@ -118,10 +118,8 @@ describe("BriefcaseManager", () => {
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
-    }
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });

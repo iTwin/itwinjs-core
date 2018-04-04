@@ -175,17 +175,8 @@ export class IModelTestUtils {
     const projectId: string = await IModelTestUtils.getTestProjectId(accessToken, projectName);
     const iModelId: string = await IModelTestUtils.getTestIModelId(accessToken, projectId, iModelName);
 
-    try {
-      const briefcaseIds = new Array<number>();
-      let ii = 5; // todo: IModelHub needs to provide a better way for testing this limit. We are arbitrarily testing for 5 briefcases here!
-      while (ii-- > 0) {
-        const briefcaseId: number = (await IModelTestUtils.hubClient.Briefcases().create(accessToken, iModelId)).briefcaseId!;
-        briefcaseIds.push(briefcaseId);
-      }
-      for (const briefcaseId of briefcaseIds) {
-        await IModelTestUtils.hubClient.Briefcases().delete(accessToken, iModelId, briefcaseId);
-      }
-    } catch (error) {
+    const briefcases: Briefcase[] = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
+    if (briefcases.length > 16) {
       console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
       await IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
     }
