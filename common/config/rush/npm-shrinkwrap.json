@@ -95,18 +95,18 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-0W+Xdy/hBHem2eyhpkF/xVYivC0=",
+      "integrity": "sha1-dDp6xTt4PmaQGy4EgpJ7AtczoOE=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.3.4",
         "@bentley/imodeljs-clients": "5.0.3",
+<<<<<<< HEAD
         "@bentley/imodeljs-native-platform-api": "15.1.0",
         "@bentley/imodeljs-native-platform-electron": "15.1.0",
         "@bentley/imodeljs-native-platform-node": "15.1.0",
         "cpx": "1.5.0",
         "fs-extra": "5.0.0",
         "js-base64": "2.4.3",
-        "mocha": "3.5.3",
         "nyc": "11.6.0",
         "rimraf": "2.6.2",
         "source-map-support": "0.5.4",
@@ -118,7 +118,11 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
+<<<<<<< HEAD
       "integrity": "sha1-AV2hkbE/X0qwnKHdzG7LU2ydoBs=",
+=======
+      "integrity": "sha1-TQS8cEE+Ydtiyi+kGErbmu3TeJg=",
+>>>>>>> 27f4db90946c9d494e1d8bb376285c16164b7d7d
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.3.4",
@@ -129,7 +133,11 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
+<<<<<<< HEAD
       "integrity": "sha1-5WU6tM5EayU2FAZb4RAzxVhZMYc=",
+=======
+      "integrity": "sha1-r7KPD7CAh1Fm30KCSinygpxLYzI=",
+>>>>>>> 27f4db90946c9d494e1d8bb376285c16164b7d7d
       "requires": {
         "@bentley/bentleyjs-tools": "3.2.1",
         "@types/body-parser": "1.16.8",
@@ -181,7 +189,11 @@
     },
     "@rush-temp/imodeljs-core-sample-code": {
       "version": "file:projects/imodeljs-core-sample-code.tgz",
+<<<<<<< HEAD
       "integrity": "sha1-H09C9ADn1L0QPJ9GnywwAsAx9M4=",
+=======
+      "integrity": "sha1-bZx5Y2nvQOTxXv2CYko48HqWP8E=",
+>>>>>>> 27f4db90946c9d494e1d8bb376285c16164b7d7d
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.3.4",
@@ -207,7 +219,11 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
+<<<<<<< HEAD
       "integrity": "sha1-Sy3oAOBJ/ynvTBFAfWH3Ahhj8J0=",
+=======
+      "integrity": "sha1-MEGwYtDIKFfezzxj3y8GZU1GNJg=",
+>>>>>>> 27f4db90946c9d494e1d8bb376285c16164b7d7d
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.3.4",
@@ -233,7 +249,11 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
+<<<<<<< HEAD
       "integrity": "sha1-Be/N6cRIbBojsOY7h7c3+h3JnhU=",
+=======
+      "integrity": "sha1-QNxVowu3T4mNLOasrR4qlfYIU3I=",
+>>>>>>> 27f4db90946c9d494e1d8bb376285c16164b7d7d
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.3.4",

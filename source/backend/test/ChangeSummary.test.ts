@@ -10,6 +10,7 @@ import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSu
 import { IModelJsFs, IModelHost, IModelDb, BriefcaseManager } from "../backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestConfig } from "./TestConfig";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -18,14 +19,14 @@ describe("ChangeSummary", () => {
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadOnlyTest");
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, TestConfig.iModelName);
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "ReadOnlyTest");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "NoVersionsTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
     }
 
     const changesPath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);

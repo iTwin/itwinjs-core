@@ -4,7 +4,7 @@
 import { TestConfig } from "./TestConfig";
 import {
   ConnectClient, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken,
-  AccessToken, UserProfile, Project, IModel, Briefcase, IModelQuery
+  AccessToken, UserProfile, Project, IModel, Briefcase, IModelQuery, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
 import { assert, expect } from "chai";
 
@@ -16,7 +16,7 @@ export class HubTestUtils {
   public testIModel!: IModel;
   public testBriefcase!: Briefcase;
 
-  constructor() { this.hubClient = new IModelHubClient("QA"); }
+  constructor() { this.hubClient = new IModelHubClient("QA", new AzureFileHandler()); }
 
   public async initialize(): Promise<void> {
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestConfig.email, TestConfig.password);

@@ -32,13 +32,13 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^7.3.1",
-    "@bentley/imodeljs-clients": "^5.0.0",
+    "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7.3.2",
     "@bentley/geometry-core": "^7.3.1",
-    "@bentley/imodeljs-clients": "^5.0.0",
+    "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",

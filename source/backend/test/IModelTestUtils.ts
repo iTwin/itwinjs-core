@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
-  ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv,
+  ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
 import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
 import {
@@ -101,7 +101,7 @@ export class IModelTestUtils {
   private static _hubClient: IModelHubClient | undefined;
   public static get hubClient(): IModelHubClient {
     if (!IModelTestUtils._hubClient)
-    IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig, new AzureFileHandler());
     return IModelTestUtils._hubClient!;
   }
 
@@ -126,7 +126,7 @@ export class IModelTestUtils {
     const config = new IModelHostConfiguration();
     config.iModelHubDeployConfig = deployConfig;
     IModelTestUtils._connectClient = new ConnectClient(deployConfig);
-    IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(deployConfig, new AzureFileHandler());
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
