@@ -34,13 +34,8 @@ export class Handle {
     }
   }
 
-  public isValid(): boolean {
-    return Handle.INVALID_VALUE !== this.value;
-  }
-
-  public rawInit(): void {
-    this.value = Handle.INVALID_VALUE; // for member of union...
-  }
+  public isValid(): boolean { return Handle.INVALID_VALUE !== this.value; }
+  public rawInit(): void { this.value = Handle.INVALID_VALUE; } // for member of union...
 }
 
 /** A handle to buffer, such as a vertex or index buffer. */
@@ -58,7 +53,7 @@ export class BufferHandle extends Handle {
   }
 
   private setBufferData(gl: WebGLRenderingContext, target: number, sizeOrArrayBuf: number | ArrayBufferView | ArrayBuffer, usage: number) {
-    gl.bufferData(target, sizeOrArrayBuf, usage);
+    gl.bufferData(target, sizeOrArrayBuf as any, usage);
 
     // #if defined(TRACK_MEMORY_USAGE)
     //     assert(0 == GetBytesUsed());

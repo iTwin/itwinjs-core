@@ -220,24 +220,36 @@ const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 /** a number in 0xTTBBGGRR format */
 export type ColorDefProps = number | ColorDef;
 
-/** a value for a color.  */
+/**
+ * A integer representation of a color.
+ * Colors are stored as 4 components: Red, Blue, Green, and Transparency (0=fully opaque). Each is an 8-bit integer between 0-255.
+ * Much confusion results from attempting to interpret those 4 one-byte values as a 4 byte integer. There are generally two sources
+ * of confusion:
+ * 1. the order the Red, Green, and Blue bytes
+ * 2. whether to specify transparency or opacity (sometimes referred to as "alpha")
+ *
+ * Generally, iModelJs prefers to use 0xTTBBGGRR (red in the low byte. 0==fully opaque in high byte) but this class provides methods
+ * to convert to 0xRRGGBB (see #getRgb) and 0xAABBGGRR (red in the low byte, 0==fully transparent in high byte. see #getAbgr).
+ * The constructor also accepts strings in the common HTML formats.
+ */
 export class ColorDef {
   private _tbgr: number;
 
-  /** swap the red and blue values of a 32-bit integer representing a color. Alpha and green are unchanged. */
+  /** swap the red and blue values of a 32-bit integer representing a color. Transparency and green are unchanged. */
   public static rgb2bgr(val: number): number { scratchUInt32[0] = val; return scratchBytes[3] << 24 + scratchBytes[0] << 16 + scratchBytes[1] << 8 + scratchBytes[2]; }
 
   /**
    * Ctor for ColorDef.
    * @param val value to use.
-   * if a number, it is interpreted as a 0xTTBBGGRR (NOTE: RED is in the low byte, high byte is transparency) value.
+   * if a number, it is interpreted as a 0xTTBBGGRR (Red in the low byte, high byte is transparency 0==fully opaque) value.
+   *
    * if a string, must be in one of the following forms:
    * * "rgb(255,0,0)"
    * * "rgba(255,0,0,255)"
    * * "rgb(100%,0%,0%)"
    * * "hsl(120,50%,50%)"
    * * "#rrbbgg
-   * * "red"(see values from ColorByName)
+   * * "blanchedAlmond"(see possible values from ColorByName. Case insensitve.)
    */
   public constructor(val?: string | ColorDefProps) {
     this._tbgr = 0;
@@ -271,11 +283,13 @@ export class ColorDef {
   }
 
   /** get the r,g,b,t values from this ColorDef. Returned as an object with {r, g, b, t} members. Values will be integers between 0-255. */
-  public getColors() { scratchUInt32[0] = this._tbgr; return { b: scratchBytes[2], g: scratchBytes[1], r: scratchBytes[0], t: scratchBytes[3] }; }
+  public get colors() { scratchUInt32[0] = this._tbgr; return { b: scratchBytes[2], g: scratchBytes[1], r: scratchBytes[0], t: scratchBytes[3] }; }
+
+  /** the color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
   public get tbgr(): number { return this._tbgr; }
   public set tbgr(tbgr: number) { this._tbgr = tbgr | 0; }
 
-  /** get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==opaque) converted to alpha (255==opaque).  */
+  /** get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
   public getAbgr(): number { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - scratchBytes[3]; return scratchUInt32[0]; }
 
   /** get the RGB value of the color as a number in 0xRRGGBB format (i.e blue is in the low byte). Transparency is ignored. Value will be from 0 to 2^24 */
@@ -287,10 +301,15 @@ export class ColorDef {
   public setAlpha(alpha: number): void { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
   /** get the alpha value for this ColorDef. Will be between 0-255 */
   public getAlpha(): number { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
+
+  /** the "known name" for this ColorDef. Will be undefined if color value is not in #ColorByName list */
+  public get name(): string | undefined { return ColorByName[this._tbgr]; }
+
   /** convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
   public toHexString(): string { return "#" + ("000000" + this.getRgb().toString(16)).slice(-6); }
+
   /** convert this ColorDef to a string in the form "rgb(r,g,b)" where values are decimal digits of the respective colors */
-  public toRgbString(): string { const c = this.getColors(); return "rgb(" + (c.r | 0) + "," + (c.g | 0) + "," + (c.b | 0) + ")"; }
+  public toRgbString(): string { const c = this.colors; return "rgb(" + (c.r | 0) + "," + (c.g | 0) + "," + (c.b | 0) + ")"; }
   private fromString(val: string): ColorDef {
     if (typeof val !== "string")
       return this;
@@ -369,8 +388,8 @@ export class ColorDef {
   }
 
   public lerp(inCol: ColorDef, alpha: number): ColorDef {
-    const color = inCol.getColors();
-    const c = this.getColors();
+    const color = inCol.colors;
+    const c = this.colors;
     c.r += (color.r - c.r) * alpha;
     c.g += (color.g - c.g) * alpha;
     c.b += (color.b - c.b) * alpha;
@@ -409,7 +428,7 @@ export class ColorDef {
 
   public toHSL(opt?: HSLColor): HSLColor {
     // h,s,l ranges are in 0.0 - 1.0
-    const col = this.getColors();
+    const col = this.colors;
     col.r /= 255;
     col.g /= 255;
     col.b /= 255;
@@ -443,7 +462,7 @@ export class ColorDef {
   /** create an HSVColor from this ColorDef */
   public toHSV(out?: HSVColor): HSVColor {
     const hsv = out ? out : new HSVColor();
-    const { r, g, b } = this.getColors();
+    const { r, g, b } = this.colors;
     let min = (r < g) ? r : g;
     if (b < min)
       min = b;
@@ -523,8 +542,8 @@ export class ColorDef {
   }
 
   private visibilityCheck(other: ColorDef): number {
-    const fg = this.getColors();
-    const bg = other.getColors();
+    const fg = this.colors;
+    const bg = other.colors;
     // Compute luminosity
     const red = Math.abs(fg.r - bg.r);
     const green = Math.abs(fg.g - bg.g);

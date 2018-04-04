@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { GL, Handle, BufferHandle, QBufferHandle2d, QBufferHandle3d, AttributeHandle, UniformHandle, QParams } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Point2d, Point3d, Range2d, Range3d } from "@bentley/geometry-core";
-import { XY, XYZ } from "@bentley/geometry-core";
+import { XY, XYZ, Point2d, Point3d, Range2d, Range3d } from "@bentley/geometry-core";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
 const haveWebGL = false;

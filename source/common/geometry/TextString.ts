@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
+import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps, Transform, Vector3d } from "@bentley/geometry-core";
 
 /** Properties for a TextString class */
 export interface TextStringProps {
@@ -75,5 +75,25 @@ export class TextString {
     if (!this.origin.isAlmostZero()) val.origin = this.origin;
     if (!this.rotation.isIdentity()) val.rotation = this.rotation;
     return val;
+  }
+
+  public transformInPlace(transform: Transform): boolean {
+    const newOrigin = transform.multiplyPoint(this.origin, this.origin);
+    const newTransform = this.rotation.toRotMatrix().multiplyMatrixTransform(transform);
+    const scales = new Vector3d();
+    if (!newTransform.matrix.normalizeColumnsInPlace(scales))
+      return false;
+    const newRotation = YawPitchRollAngles.createFromRotMatrix(newTransform.matrix);
+    if (undefined === newRotation)
+      return false;
+    const newHeight = this.height * scales.y;
+    const newWidth = this.width * scales.x;
+    if (newHeight < 1.0e-10 || newWidth < 1.0e-10)
+      return false;
+    this.origin.setFrom(newOrigin);
+    this.rotation.setFrom(newRotation);
+    this.height = newHeight;
+    this.widthFactor = (newHeight === newWidth ? undefined : (newWidth / newHeight));
+    return true;
   }
 }

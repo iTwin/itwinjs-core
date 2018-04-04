@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, ChangeSet, UserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, UserInfo, IModelHubClient, ChangeSetQuery, UserInfoQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
 import { IModelHost } from "./IModelHost";
@@ -143,7 +143,7 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig);
+    const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
 
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
     assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
@@ -192,7 +192,7 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (!foundUserEmail) {
-            const userInfo: UserInfo = await hubClient.getUserInfo(accessToken, iModelId, userId);
+            const userInfo: UserInfo = (await hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(userId)))[0];
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
             userInfoCache.set(userId, userEmail !== undefined ? userEmail : "");
@@ -218,14 +218,17 @@ export class ChangeSummaryManager {
 
   private static async retrieveChangeSetInfos(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string, endChangeSetId: string, startChangeSetId?: string): Promise<ChangeSet[]> {
     if (startChangeSetId === endChangeSetId)
-      return [await hubClient.getChangeSet(accessToken, iModelId, endChangeSetId, false)];
+      return await hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(startChangeSetId));
 
-    const changeSetInfos: ChangeSet[] = await hubClient.getChangeSets(accessToken, iModelId, false, startChangeSetId);
+    const query = new ChangeSetQuery();
+    if (startChangeSetId)
+      query.fromId(startChangeSetId);
+    const changeSetInfos: ChangeSet[] = await hubClient.ChangeSets().get(accessToken, iModelId, query);
 
     // getChangeSets does not retrieve the specified from-changeset itself, but only its direct child. So we must retrieve the from-changeset
     // ourselves first
     if (startChangeSetId) {
-      const startChangeSetInfo: ChangeSet = await hubClient.getChangeSet(accessToken, iModelId, startChangeSetId, false);
+      const startChangeSetInfo: ChangeSet = (await hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(startChangeSetId)))[0];
       changeSetInfos.unshift(startChangeSetInfo);
     }
 

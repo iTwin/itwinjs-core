@@ -4,16 +4,13 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { IModelDb } from "../IModelDb";
+import { IModelJsFs, IModelHost, IModelDb, BriefcaseManager } from "../backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ChangeSet } from "@bentley/imodeljs-clients";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelJsFs } from "../IModelJsFs";
-import { IModelHost } from "../IModelHost";
+import { TestConfig } from "./TestConfig";
 
 describe("ChangeSummary", () => {
   let accessToken: AccessToken;
@@ -22,14 +19,14 @@ describe("ChangeSummary", () => {
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadOnlyTest");
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, TestConfig.iModelName);
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "ReadOnlyTest");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "NoVersionsTest");
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
     }
 
     const changesPath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
@@ -206,7 +203,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummary for single changeset", async () => {
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -220,7 +217,7 @@ describe("ChangeSummary", () => {
       assert.exists(iModel);
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
       assert.isTrue(IModelJsFs.existsSync(changesFilePath));
 
       assert.exists(iModel);
@@ -254,7 +251,7 @@ describe("ChangeSummary", () => {
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
@@ -264,7 +261,7 @@ describe("ChangeSummary", () => {
       assert.exists(iModel);
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
       assert.isTrue(IModelJsFs.existsSync(changesFilePath));
 
       assert.exists(iModel);
@@ -296,7 +293,7 @@ describe("ChangeSummary", () => {
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, {currentChangeSetOnly: true});
+      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
 
       // WIP
       ChangeSummaryManager.attachChangeCache(iModel);

@@ -4,7 +4,7 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
-import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges, IModelQuery } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
 import { ConcurrencyControl } from "../ConcurrencyControl";
@@ -13,6 +13,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { ChangeSetToken } from "../BriefcaseManager";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestConfig } from "./TestConfig";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -85,7 +86,7 @@ describe("BriefcaseManager", () => {
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
-  const testElementCounts = [80, 81, 82];
+  const testElementCounts = [27, 28, 29];
 
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
@@ -97,6 +98,7 @@ describe("BriefcaseManager", () => {
   };
 
   before(async () => {
+
     let startTime = new Date().getTime();
     console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
 
@@ -104,10 +106,11 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     startTime = new Date().getTime();
 
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadOnlyTest");
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, TestConfig.iModelName);
 
-    testChangeSets = await IModelTestUtils.hubClient.getChangeSets(accessToken, testIModelId, false);
+    testChangeSets = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
+    testChangeSets.shift(); // The first change set is a schema change that was not named
     expect(testChangeSets.length).greaterThan(2);
 
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
@@ -115,10 +118,8 @@ describe("BriefcaseManager", () => {
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "ReadOnlyTest");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "NoVersionsTest");
-    }
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
@@ -271,9 +272,6 @@ describe("BriefcaseManager", () => {
   });
 
   it.skip("should merge changes so that two branches of an iModel converge", () => {
-    // tslint:disable-next-line:no-debugger
-    debugger;
-
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
     const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
@@ -456,14 +454,18 @@ describe("BriefcaseManager", () => {
     const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.first());
     assert.exists(iModelFirstVersion);
 
+    let elementCount: number;
     for (const [arrayIndex, versionName] of testVersionNames.entries()) {
-      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
-      assert.exists(iModelFromVersion);
-
-      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
+      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
       assert.exists(iModelFromChangeSet);
 
-      const elementCount = getElementCount(iModelFromVersion);
+      elementCount = getElementCount(iModelFromChangeSet);
+      assert.equal(elementCount, testElementCounts[arrayIndex]);
+
+      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
+      assert.exists(iModelFromVersion);
+
+      elementCount = getElementCount(iModelFromVersion);
       assert.equal(elementCount, testElementCounts[arrayIndex]);
     }
 
@@ -481,21 +483,21 @@ describe("BriefcaseManager", () => {
     // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
     IModelTestUtils.setIModelHubDeployConfig("DEV");
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
-    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
+    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
     assert(devProjectId);
-    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, "ReadOnlyTest");
+    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, TestConfig.iModelName);
     assert(devIModelId);
-    const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, devIModelId, false);
+    const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
     const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(devIModel);
 
     IModelTestUtils.setIModelHubDeployConfig("QA");
-    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
+    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
     assert(qaProjectId);
-    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, "ReadOnlyTest");
+    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, TestConfig.iModelName);
     assert(qaIModelId);
-    const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(accessToken, qaIModelId, false);
+    const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);
     const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(qaIModel);
@@ -547,22 +549,77 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency", async () => {
+  it.skip("should push changes with codes", async () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
-    const iModelName = "ReadWriteTest";
-    const iModels: HubIModel[] = await IModelTestUtils.hubClient.getIModels(accessToken, testProjectId, {
-      $select: "*",
-      $filter: "Name+eq+'" + iModelName + "'",
-    });
+    const iModelName = "CodesPushTest";
+    const iModels: HubIModel[] = await IModelTestUtils.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelTestUtils.hubClient.deleteIModel(accessToken, testProjectId, iModelTemp.wsgId);
+      await IModelTestUtils.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", "TestSubject");
+    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = rwIModel.iModelToken.iModelId;
+    assert.isNotEmpty(rwIModelId);
+    timer.end();
+
+    timer = new Timer("querying codes");
+    const initialCodes = await IModelTestUtils.hubClient.Codes().get(accessToken, rwIModelId!);
+    timer.end();
+
+    timer = new Timer("make local changes");
+    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, Code.createEmpty(), true);
+
+    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert();
+
+    // Insert a few elements
+    const elements: Element[] = [
+      IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId),
+      IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId),
+    ];
+
+    for (const el of elements)
+      rwIModel.elements.insertElement(el);
+
+    rwIModel.saveChanges("inserted generic objects");
+    timer.end();
+
+    timer = new Timer("push changes");
+
+    // Push the changes to the hub
+    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    await rwIModel.pushChanges(accessToken);
+    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    assert(!!postPushChangeSetId);
+    expect(prePushChangeSetId !== postPushChangeSetId);
+
+    timer.end();
+
+    timer = new Timer("querying codes");
+    const codes = await IModelTestUtils.hubClient.Codes().get(accessToken, rwIModelId!);
+    timer.end();
+    expect(codes.length > initialCodes.length);
+  });
+
+  it.skip("should write to briefcase with optimistic concurrency", async () => {
+    let timer = new Timer("delete iModels");
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "ReadWriteTest";
+    const iModels: HubIModel[] = await IModelTestUtils.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    for (const iModelTemp of iModels) {
+      await IModelTestUtils.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+    }
+    timer.end();
+
+    // Create a new iModel on the Hub (by uploading a seed file)
+    timer = new Timer("create iModel");
+    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -695,11 +752,6 @@ describe("BriefcaseManager", () => {
     iModel.saveChanges("inserted generic objects");
 
     iModel.close(accessToken);
-  });
-
-  it("should be able to create a standalone IModel", async () => {
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", "TestSubject");
-    iModel.closeStandalone();
   });
 
   it.skip("should test AutoPush", async () => {

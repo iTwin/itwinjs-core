@@ -2,21 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
-  ConnectClient, Project, IModelHubClient, Briefcase, DeploymentEnv,
+  ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
-import { Element, InformationPartitionElement } from "../Element";
-import { IModelDb } from "../IModelDb";
-import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance } from "@bentley/imodeljs-common";
-import { DefinitionModel, Model } from "../Model";
-import { SpatialCategory } from "../Category";
-import { IModelJsFs, IModelJsFsStats } from "../IModelJsFs";
+import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
+import {
+  IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats,
+} from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelHostConfiguration, IModelHost } from "../IModelHost";
 import * as path from "path";
-import { Logger } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 Logger.initializeToConsole();
@@ -104,7 +101,7 @@ export class IModelTestUtils {
   private static _hubClient: IModelHubClient | undefined;
   public static get hubClient(): IModelHubClient {
     if (!IModelTestUtils._hubClient)
-      IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig, new AzureFileHandler());
     return IModelTestUtils._hubClient!;
   }
 
@@ -129,12 +126,12 @@ export class IModelTestUtils {
     const config = new IModelHostConfiguration();
     config.iModelHubDeployConfig = deployConfig;
     IModelTestUtils._connectClient = new ConnectClient(deployConfig);
-    IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(deployConfig, new AzureFileHandler());
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)
-      userCredentials = TestUsers.regular;
+    userCredentials = TestUsers.regular;
     const env = IModelTestUtils._iModelHubDeployConfig;
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
@@ -155,10 +152,7 @@ export class IModelTestUtils {
   }
 
   public static async getTestIModelId(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
-    const iModels = await IModelTestUtils.hubClient.getIModels(accessToken, projectId, {
-      $select: "*",
-      $filter: "Name+eq+'" + iModelName + "'",
-    });
+    const iModels = await IModelTestUtils.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 
@@ -167,9 +161,9 @@ export class IModelTestUtils {
 
   private static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
     const promises = new Array<Promise<void>>();
-    const briefcases = await IModelTestUtils.hubClient.getBriefcases(accessToken, iModelId);
+    const briefcases = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcase.briefcaseId!));
+      promises.push(IModelTestUtils.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
     });
     await Promise.all(promises);
   }
@@ -181,17 +175,8 @@ export class IModelTestUtils {
     const projectId: string = await IModelTestUtils.getTestProjectId(accessToken, projectName);
     const iModelId: string = await IModelTestUtils.getTestIModelId(accessToken, projectId, iModelName);
 
-    try {
-      const briefcaseIds = new Array<number>();
-      let ii = 5; // todo: IModelHub needs to provide a better way for testing this limit. We are arbitrarily testing for 5 briefcases here!
-      while (ii-- > 0) {
-        const briefcaseId: number = await IModelTestUtils.hubClient.acquireBriefcase(accessToken, iModelId);
-        briefcaseIds.push(briefcaseId);
-      }
-      for (const briefcaseId of briefcaseIds) {
-        await IModelTestUtils.hubClient.deleteBriefcase(accessToken, iModelId, briefcaseId);
-      }
-    } catch (error) {
+    const briefcases: Briefcase[] = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
+    if (briefcases.length > 16) {
       console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
       await IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
     }
@@ -207,16 +192,16 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static createStandaloneIModel(filename: string, rootSubjectName: string): IModelDb {
+  public static createStandaloneIModel(fileName: string, args: CreateIModelProps): IModelDb {
     const destPath = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(destPath))
       IModelJsFs.mkdirSync(destPath);
 
-    const pathname = path.join(destPath, filename);
+    const pathname = path.join(destPath, fileName);
     if (IModelJsFs.existsSync(pathname))
       IModelJsFs.unlinkSync(pathname);
 
-    const iModel: IModelDb = IModelDb.createStandalone(pathname, rootSubjectName);
+    const iModel: IModelDb = IModelDb.createStandalone(pathname, args);
 
     assert.isNotNull(iModel);
     assert.isTrue(IModelJsFs.existsSync(pathname));

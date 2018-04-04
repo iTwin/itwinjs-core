@@ -17,7 +17,7 @@
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./test/**/*.test.ts",
     "pretest": "npm run copy:test-assets && rush build",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/backend/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
+    "webpackformobile": "cpx ./test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./test/mobile.webpack.config.js"
   },
   "repository": {},
   "keywords": [
@@ -30,15 +30,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^7.3.2",
-    "@bentley/geometry-core": "^7.2.0",
-    "@bentley/imodeljs-clients": "^4.2.0",
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "^7.3.2",
-    "@bentley/geometry-core": "^7.2.0",
-    "@bentley/imodeljs-clients": "^4.2.0",
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",
@@ -47,7 +47,7 @@
     "source-map-support": "^0.5.0",
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
-    "typescript": "~2.6.2",
+    "typescript": "~2.7.2",
     "webpack": "^3.10.0"
   },
   "//dependencies": [
@@ -64,9 +64,9 @@
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~13.0.0",
-    "@bentley/imodeljs-native-platform-node": "~13.0.0",
-    "@bentley/imodeljs-native-platform-electron": "~13.0.0",
+    "@bentley/imodeljs-native-platform-api": "~14.1.0",
+    "@bentley/imodeljs-native-platform-node": "~14.1.0",
+    "@bentley/imodeljs-native-platform-electron": "~14.1.0",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },

@@ -3,18 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
-import { DictionaryModel } from "../Model";
-import { SpatialCategory } from "../Category";
-import { ECSqlStatement } from "../ECSqlStatement";
-import { Element } from "../Element";
-import { IModelDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { GeometricElementProps, Code, Appearance, IModel } from "@bentley/imodeljs-common";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelJsFs } from "../IModelJsFs";
 import * as fs from "fs";
+import { IModelTestUtils } from "./IModelTestUtils";
+import { KnownTestLocations } from "./KnownTestLocations";
+import { Id64, DbResult } from "@bentley/bentleyjs-core";
+import { IModelJsFs, SpatialCategory, ECSqlStatement, Element, IModelDb, DictionaryModel } from "../backend";
+import { GeometricElementProps, Code, Appearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { Point3d, Arc3d, IModelJson as GeomJson } from "@bentley/geometry-core";
 
 describe.skip("PerformanceElementsTests", () => {
   let seedIModel: IModelDb;
@@ -38,6 +33,52 @@ describe.skip("PerformanceElementsTests", () => {
   };
   const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
 
+  function createElems(className: string, count: number, iModelName: IModelDb, modId: Id64, catId: Id64): any[] {
+    const elementColl: Element[] = [];
+    for (let m = 0; m < count; ++m) {
+      // add Geometry
+      const geomArray: Arc3d[] = [
+        Arc3d.createXY(Point3d.create(0, 0), 5),
+        Arc3d.createXY(Point3d.create(5, 5), 2),
+        Arc3d.createXY(Point3d.create(-5, -5), 20),
+      ];
+      const geometryStream: GeometryStreamProps = [];
+      for (const geom of geomArray) {
+        const arcData = GeomJson.Writer.toIModelJson(geom);
+        geometryStream.push(arcData);
+      }
+      // Create props
+      const elementProps: GeometricElementProps = {
+        classFullName: "PerfTestDomain:" + className,
+        iModel: iModelName,
+        model: modId,
+        category: catId,
+        code: Code.createEmpty(),
+        geom: geometryStream,
+      };
+      if (className === "PerfElementSub3") {
+        elementProps.sub3Str = values.sub3Str;
+        elementProps.sub3Long = values.sub3Long;
+        elementProps.sub3Double = values.sub3Double;
+      }
+      if (className === "PerfElementSub3" || className === "PerfElementSub2") {
+        elementProps.sub2Str = values.sub2Str;
+        elementProps.sub2Long = values.sub2Long;
+        elementProps.sub2Double = values.sub2Double;
+      }
+      if (className === "PerfElementSub3" || className === "PerfElementSub2" || className === "PerfElementSub1") {
+        elementProps.sub1Str = values.sub1Str;
+        elementProps.sub1Long = values.sub1Long;
+        elementProps.sub1Double = values.sub1Double;
+      }
+      elementProps.baseStr = values.baseStr;
+      elementProps.baseLong = values.baseLong;
+      elementProps.baseDouble = values.baseDouble;
+      const geomElement = seedIModel.elements.createElement(elementProps);
+      elementColl.push(geomElement);
+    }
+    return elementColl;
+  }
   function verifyProps(testElement: Element): boolean {
     let passed: boolean = false;
     switch (testElement.classFullName) {
@@ -93,40 +134,13 @@ describe.skip("PerformanceElementsTests", () => {
         assert.isFalse(undefined === defaultCategoryId);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
         if (undefined === spatialCategoryId) {
-          spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance());
+          spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
         }
         spatialCategoryId1 = spatialCategoryId;
+        const elementColl = createElems(className, dbSize, seedIModel, newModelId, spatialCategoryId);
         for (let m = 0; m < dbSize; ++m) {
-          // Create props
-          const elementProps: GeometricElementProps = {
-            classFullName: "PerfTestDomain:" + className,
-            iModel: seedIModel,
-            model: newModelId,
-            category: spatialCategoryId,
-            code: Code.createEmpty(),
-          };
-          if (className === "PerfElementSub3") {
-            elementProps.sub3Str = values.sub3Str;
-            elementProps.sub3Long = values.sub3Long;
-            elementProps.sub3Double = values.sub3Double;
-          }
-          if (className === "PerfElementSub3" || className === "PerfElementSub2") {
-            elementProps.sub2Str = values.sub2Str;
-            elementProps.sub2Long = values.sub2Long;
-            elementProps.sub2Double = values.sub2Double;
-          }
-          if (className === "PerfElementSub3" || className === "PerfElementSub2" || className === "PerfElementSub1") {
-            elementProps.sub1Str = values.sub1Str;
-            elementProps.sub1Long = values.sub1Long;
-            elementProps.sub1Double = values.sub1Double;
-          }
-          elementProps.baseStr = values.baseStr;
-          elementProps.baseLong = values.baseLong;
-          elementProps.baseDouble = values.baseDouble;
-          const id = seedIModel.elements.insertElement(seedIModel.elements.createElement(elementProps));
+          const id = seedIModel.elements.insertElement(elementColl[m]);
           assert.isTrue(id.isValid(), "insert worked");
-          if (0 === (m % 100))
-            seedIModel.saveChanges();
           (perfElemIdlist[className] || (perfElemIdlist[className] = [])).push(id);
         }
         seedIModel.saveChanges();
@@ -147,57 +161,25 @@ describe.skip("PerformanceElementsTests", () => {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Insert_" + className + "_" + dbSize + "_" + opCount + ".bim";
-          const ifperfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const testFileName = "ImodelPerformance_Insert_" + className + "_" + opCount + ".bim";
+          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const elementColl = createElems(className, opCount, perfimodel, newModelId, spatialCategoryId1);
           const startTime = new Date().getTime();
-          // first construct elements
-          const elementPropsColl: any = [];
-          for (let i = 0; i < dbSize; ++i) {
-            // Create props
-            const elementProps: GeometricElementProps = {
-              classFullName: "PerfTestDomain:" + className,
-              iModel: ifperfimodel,
-              model: newModelId,
-              category: spatialCategoryId1,
-              code: Code.createEmpty(),
-            };
-            if (className === "PerfElementSub3") {
-              elementProps.sub3Str = values.sub3Str;
-              elementProps.sub3Long = values.sub3Long;
-              elementProps.sub3Double = values.sub3Double;
-            }
-            if (className === "PerfElementSub3" || className === "PerfElementSub2") {
-              elementProps.sub2Str = values.sub2Str;
-              elementProps.sub2Long = values.sub2Long;
-              elementProps.sub2Double = values.sub2Double;
-            }
-            if (className === "PerfElementSub3" || className === "PerfElementSub2" || className === "PerfElementSub1") {
-              elementProps.sub1Str = values.sub1Str;
-              elementProps.sub1Long = values.sub1Long;
-              elementProps.sub1Double = values.sub1Double;
-            }
-            elementProps.baseStr = values.baseStr;
-            elementProps.baseLong = values.baseLong;
-            elementProps.baseDouble = values.baseDouble;
-            elementPropsColl.push(elementProps);
-          }
-          // console.time("ImodelJsTest.MeasureInsertPerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
           for (let j = 0; j < opCount; ++j) {
-            const id = ifperfimodel.elements.insertElement(ifperfimodel.elements.createElement(elementPropsColl[j]));
+            const id = perfimodel.elements.insertElement(elementColl[j]);
             assert.isTrue(id.isValid(), "insert worked");
           }
-          // console.timeEnd("ImodelJsTest.MeasureInsertPerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsInsert," + elapsedTime + "," + opCount +
             ",\"Element API Insert   \'" + className + "\' [Initial count: " + dbSize + "]\",Insert," + dbSize + "\n");
-          ifperfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
+          perfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
             assert.equal(row.count, dbSize + opCount);
           });
-          IModelTestUtils.closeIModel(ifperfimodel);
+          IModelTestUtils.closeIModel(perfimodel);
         }
       }
     }
@@ -208,29 +190,27 @@ describe.skip("PerformanceElementsTests", () => {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Delete_" + className + "_" + dbSize + "_" + opCount + ".bim";
-          const ifperfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const testFileName = "ImodelPerformance_Delete_" + className + "_" + opCount + ".bim";
+          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
           const startTime = new Date().getTime();
-          // console.time("ImodelJsTest.MeasureDeletePerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
           for (let i = 0; i < opCount; ++i) {
             try {
-              ifperfimodel.elements.deleteElement(perfElemIdlist[className][i]);
+              perfimodel.elements.deleteElement(perfElemIdlist[className][i]);
             } catch (err) {
               assert.isTrue(false);
             }
           }
-          // console.timeEnd("ImodelJsTest.MeasureDeletePerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsDelete," + elapsedTime + "," + opCount +
             ",\"Element API Delete   \'" + className + "\' [Initial count: " + dbSize + "]\",Delete," + dbSize + "\n");
-          ifperfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
+          perfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
             assert.equal(row.count, dbSize - opCount);
           });
-          IModelTestUtils.closeIModel(ifperfimodel);
+          IModelTestUtils.closeIModel(perfimodel);
         }
       }
     }
@@ -241,22 +221,19 @@ describe.skip("PerformanceElementsTests", () => {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Read_" + className + "_" + dbSize + "_" + opCount + ".bim";
-          const ifperfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const testFileName = "ImodelPerformance_Read_" + className + "_" + opCount + ".bim";
+          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
           const startTime = new Date().getTime();
-          // console.time("ImodelJsTest.MeasureReadPerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
           for (let i = 0; i < opCount; ++i) {
-            const elemFound: Element = ifperfimodel.elements.getElement(perfElemIdlist[className][i]);
-            assert.equal(elemFound.baseStr, "PerfElement - InitValue");
+            const elemFound: Element = perfimodel.elements.getElement(perfElemIdlist[className][i]);
             assert.isTrue(verifyProps(elemFound));
           }
-          // console.timeEnd("ImodelJsTest.MeasureReadPerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsRead," + elapsedTime + "," + opCount +
-            ",\"Element API Read   \'" + className + "\' [Initial count:" + dbSize + "]\",Read," + dbSize + "\n");
-          IModelTestUtils.closeIModel(ifperfimodel);
+            ",\"Element API Read   \'" + className + "\' [Initial count: " + dbSize + "]\",Read," + dbSize + "\n");
+          IModelTestUtils.closeIModel(perfimodel);
         }
       }
     }
@@ -267,34 +244,49 @@ describe.skip("PerformanceElementsTests", () => {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Update_" + className + "_" + dbSize + "_" + opCount + ".bim";
-          const ifperfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const startTime = new Date().getTime();
-          // console.time("ImodelJsTest.MeasureUpdatePerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
-          for (let m = 0; m < opCount; ++m) {
-            const elemFound: Element = ifperfimodel.elements.getElement(perfElemIdlist[className][m]);
+          const testFileName = "ImodelPerformance_Update_" + className + "_" + opCount + ".bim";
+          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          // first construct modified elements
+          const elementColl: any = [];
+          for (let i = 0; i < opCount; ++i) {
+            const elemFound: Element = perfimodel.elements.getElement(perfElemIdlist[className][i]);
             const editElem = elemFound.copyForEdit<Element>();
             editElem.baseStr = "PerfElement - UpdatedValue";
+            // add Geometry
+            const geomArray: Arc3d[] = [
+              Arc3d.createXY(Point3d.create(0, 0), 2),
+              Arc3d.createXY(Point3d.create(5, 5), 5),
+              Arc3d.createXY(Point3d.create(-5, -5), 10),
+            ];
+            const geometryStream: GeometryStreamProps = [];
+            for (const geom of geomArray) {
+              const arcData = GeomJson.Writer.toIModelJson(geom);
+              geometryStream.push(arcData);
+            }
+            editElem.setUserProperties("geom", geometryStream);
+            elementColl.push(editElem);
+          }
+          // now lets update and record time
+          const startTime = new Date().getTime();
+          for (let m = 0; m < opCount; ++m) {
             try {
-              ifperfimodel.elements.updateElement(editElem);
+              perfimodel.elements.updateElement(elementColl[m]);
             } catch (_err) {
               assert.fail("Element.update failed");
             }
           }
-          // console.timeEnd("ImodelJsTest.MeasureUpdatePerformance." + className + ".DbSize." + dbSize + ".OpCount." + opCount);
+          const endTime = new Date().getTime();
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
-            const elemFound: Element = ifperfimodel.elements.getElement(perfElemIdlist[className][i]);
+            const elemFound: Element = perfimodel.elements.getElement(perfElemIdlist[className][i]);
             assert.equal(elemFound.baseStr, "PerfElement - UpdatedValue");
           }
-
-          const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsUpdate," + elapsedTime + "," + opCount +
             ",\"Element API Update   \'" + className + "\' [Initial count: " + dbSize + "]\",Update," + dbSize + "\n");
 
-          IModelTestUtils.closeIModel(ifperfimodel);
+          IModelTestUtils.closeIModel(perfimodel);
         }
       }
     }

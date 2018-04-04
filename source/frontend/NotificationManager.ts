@@ -170,7 +170,7 @@ export class NotificationManager {
 
   /**
    * End an activity message.
-   * @param[in] reason       Reason for the end of the Activity Message.
+   * @param reason       Reason for the end of the Activity Message.
    * @return true if the message was ended successfully, false if the activityMessage could not be ended.
    */
   public endActivityMessage(_reason: ActivityMessageEndReason) { return true; }

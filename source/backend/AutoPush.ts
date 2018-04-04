@@ -15,7 +15,6 @@ export interface AppActivityMonitor {
 
 /** An implementation of AppActivityMonitor that should be suitable for most backends. */
 export class BackendActivityMonitor implements AppActivityMonitor {
-
   // intervalMillis - the length of time in seconds of inactivity that indicates that the backend is in a lull.
   constructor(public idleIntervalSeconds: number = 1) {
   }

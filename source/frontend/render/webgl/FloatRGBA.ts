@@ -23,7 +23,7 @@ export class FloatRgb {
    * @param def A ColorDef used to create a new FloatRgb.
    */
   public initFromColorDef(def: ColorDef): void {
-    const colors = def.getColors();
+    const colors = def.colors;
     this.red = colors.r / 255.0;
     this.green = colors.g / 255.0;
     this.blue = colors.b / 255.0;
@@ -101,7 +101,7 @@ export class FloatRgba {
    * @param preMulRgba A ColorDef used to create a new FloatRgba.
    */
   public initFromColorDef(def: ColorDef): void {
-    const colors = def.getColors();
+    const colors = def.colors;
     this.red = colors.r / 255.0;
     this.green = colors.g / 255.0;
     this.blue = colors.b / 255.0;
@@ -180,7 +180,7 @@ export class FloatPreMulRgba {
    */
   public initFromColorDef(colorDef: ColorDef): void {
     // if !defined(DEBUG_PREMUL_RGBA)
-    const colors = colorDef.getColors();
+    const colors = colorDef.colors;
     this.red = colors.r / 255.0;
     this.green = colors.g / 255.0;
     this.blue = colors.b / 255.0;

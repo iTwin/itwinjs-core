@@ -7,7 +7,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, ElementLoadProps,
+  FontMap, FontMapProps, ElementLoadProps, CreateIModelProps, FilePropertyProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element } from "./Element";
@@ -93,7 +93,7 @@ export class IModelDb extends IModel {
    */
   public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb) => void>();
   /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
-  public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _hubName: string, _rootSubjectName: string, _hubDescription?: string, _rootSubjectDescription?: string) => void>();
+  public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _args: CreateIModelProps) => void>();
   /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
   public static readonly onCreated = new BeEvent<(_imodelDb: IModelDb) => void>();
 
@@ -161,20 +161,19 @@ export class IModelDb extends IModel {
 
   /**
    * Create a standalone local Db
-   * @param pathname The pathname of the iModel
-   * @param rootSubjectName Name of the root subject.
-   * @param rootSubjectDescription Description of the root subject.
+   * @param fileName The name for the iModel
+   * @param args The parameters of the iModel
    */
-  public static createStandalone(pathname: string, rootSubjectName: string, rootSubjectDescription?: string): IModelDb {
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(pathname, rootSubjectName, rootSubjectDescription);
+  public static createStandalone(fileName: string, args: CreateIModelProps): IModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
     // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
     return IModelDb.constructIModelDb(briefcaseEntry);
   }
 
   /** Create an iModel on the Hub */
-  public static async create(accessToken: AccessToken, contextId: string, hubName: string, rootSubjectName: string, hubDescription?: string, rootSubjectDescription?: string): Promise<IModelDb> {
-    IModelDb.onCreate.raiseEvent(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
-    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, hubName, rootSubjectName, hubDescription, rootSubjectDescription);
+  public static async create(accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+    IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.create(accessToken, contextId, fileName, args);
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, contextId);
     IModelDb.setFirstAccessToken(imodelDb.briefcase!.iModelId, accessToken);
     IModelDb.onCreated.raiseEvent(imodelDb);
@@ -520,7 +519,7 @@ export class IModelDb extends IModel {
     return new Id64(result);
   }
 
-  /** @deprecated */
+  /** deprecated */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this._newNotOpenError();
@@ -604,17 +603,35 @@ export class IModelDb extends IModel {
     }
   }
 
+  /** query a "file property" from this iModel, as a string.
+   * @returns the property string or undefined if the property is not present.
+   */
+  public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.briefcase!.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
+
+  /** query a "file property" from this iModel, as a blob.
+   * @returns the property blob or undefined if the property is not present.
+   */
+  public queryFilePropertyBlob(prop: FilePropertyProps): ArrayBuffer | undefined { return this.briefcase!.nativeDb.queryFileProperty(JSON.stringify(prop), false) as ArrayBuffer | undefined; }
+
+  /** save a "file property" to this iModel
+   * @param prop the FilePropertyProps that describes the new property
+   * @param value either a string or a blob to save as the file property
+   * @returns 0 if successful, status otherwise
+   */
+  public saveFileProperty(prop: FilePropertyProps, value: string | ArrayBuffer): DbResult { return this.briefcase!.nativeDb.saveFileProperty(JSON.stringify(prop), value); }
+
+  /** delete a "file property" from this iModel
+   * @param prop the FilePropertyProps that describes the property
+   * @returns 0 if successful, status otherwise
+   */
+  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.briefcase!.nativeDb.saveFileProperty(JSON.stringify(prop), undefined); }
+
   /** Execute a test from native code
    * @param testName The name of the test
    * @param params parameters for the test
    * @hidden
    */
-  public executeTest(testName: string, params: any): any {
-    if (!this.briefcase)
-      throw this._newNotOpenError();
-
-    return JSON.parse(this.briefcase.nativeDb.executeTest(testName, JSON.stringify(params)));
-  }
+  public executeTest(testName: string, params: any): any { return JSON.parse(this.briefcase!.nativeDb.executeTest(testName, JSON.stringify(params))); }
 }
 
 /** The collection of models in an [[IModelDb]]. */
