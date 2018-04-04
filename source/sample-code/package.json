@@ -19,18 +19,13 @@
   },
   "repository": {},
   "//dependencies": [
-    "NOTE: sample-code is set up like a real app. Like a real app, it knows what platform it runs on.",
-    "Therefore, it can specify the addon that it needs. In this case, it depends on the Winx64 node addon.",
-    "We could add another layer of packaging, if we wanted to, so that 'testbed' would contain only platform-neutral",
-    "dependencies. Then we would define platform-specific packages, such as 'testbed-windows' that would contain",
-    "platform-specific dependencies and possibly deployment packaging details that are platform-specific. For now,",
-    "we just make testbed winx64-specific."
+    "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "^7.3.12",
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-backend": "0",
-    "@bentley/imodeljs-n_8_9-win32-x64": "^14.1.0",
+    "@bentley/imodeljs-n_8-win32-x64": "~15.2.0",
     "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-frontend": "0",
