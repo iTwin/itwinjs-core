@@ -513,8 +513,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.only("should open briefcases of specific versions in Readonly mode", async () => {
-    debugger;
+  it("should open briefcases of specific versions in Readonly mode", async () => {
     const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.first());
     assert.exists(iModelFirstVersion);
 

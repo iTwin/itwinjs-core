@@ -3,16 +3,24 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { PhysicalElement } from "../Element";
-import { ElementMultiAspect, ElementUniqueAspect } from "../ElementAspect";
-import { IModelDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { PhysicalElement } from "../../Element";
+import { ElementMultiAspect, ElementUniqueAspect } from "../../ElementAspect";
+import { IModelDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { BriefcaseManager } from "../../backend";
+import { IModelHubClient } from "@bentley/imodeljs-clients";
+import { MockAssetUtil } from "../MockAssetUtil";
+import * as TypeMoq from "typemoq";
 
 describe("ElementAspect", () => {
 
   let iModel: IModelDb;
+  const assetDir = "./test/assets/_mocks_";
 
   before(() => {
+    const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
     iModel = IModelTestUtils.openIModel("ElementAspectTest.bim");
   });

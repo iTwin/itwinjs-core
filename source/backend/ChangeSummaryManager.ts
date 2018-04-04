@@ -61,6 +61,8 @@ export interface ChangeSummaryExtractOptions {
 
 /** Class to extract change summaries for a briefcase. */
 export class ChangeSummaryManager {
+  public static hubClient?: IModelHubClient;
+
   /** Determines whether the Changes cache file is attached to the specified iModel or not
    * @param iModel iModel to check whether a Changes cache file is attached
    * @returns Returns true if the Changes cache file is attached to the iModel. false otherwise
@@ -143,9 +145,9 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig);
+    if (!this.hubClient) this.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig);
 
-    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
+    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(this.hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
     assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
     perfLogger.dispose();
@@ -192,7 +194,7 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (!foundUserEmail) {
-            const userInfo: UserInfo = await hubClient.getUserInfo(accessToken, iModelId, userId);
+            const userInfo: UserInfo = await this.hubClient.getUserInfo(accessToken, iModelId, userId);
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
             userInfoCache.set(userId, userEmail !== undefined ? userEmail : "");

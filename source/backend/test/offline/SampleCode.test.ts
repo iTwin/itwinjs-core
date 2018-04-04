@@ -4,12 +4,14 @@
 import { assert } from "chai";
 import { BisCore } from "../../BisCore";
 import { Element, InformationPartitionElement } from "../../Element";
+import { BriefcaseManager } from "../../backend";
 import { IModelDb } from "../../IModelDb";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ElementProps } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
+import { AccessToken, IModelHubClient } from "@bentley/imodeljs-clients";
+import * as TypeMoq from "typemoq";
 
 /** Sample code organized as tests to make sure that it builds and runs successfully. */
 describe("Sample Code", () => {
@@ -17,6 +19,8 @@ describe("Sample Code", () => {
   let accessToken: AccessToken;
 
   before(async () => {
+    const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
     iModel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     accessToken = await IModelTestUtils.getTestUserAccessToken();
   });

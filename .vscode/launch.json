@@ -12,7 +12,7 @@
       "cwd": "${workspaceFolder}/source/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/source/backend/lib/test/integration",
+        "--testDir=${workspaceFolder}/source/backend/lib/test/integrated",
         "--debug"
       ],
       "port": 9229,
@@ -21,12 +21,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Backend Unit Tests",
+      "name": "Run Backend Tests (Offline)",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/source/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/source/backend/lib/test/unit",
+        "--testDir=${workspaceFolder}/source/backend/lib/test/offline",
         "--debug"
       ],
       "port": 9229,
