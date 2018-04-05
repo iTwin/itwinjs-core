@@ -8,11 +8,51 @@ import { IModelDb } from "./IModelDb";
 import { Entity } from "./Entity";
 
 /** Base class for all schema classes.
- * A Schema represents an ECSchema in TypeScript, so that you can write programs that work with strongly typed classes.
- * You do not have to define a Schema class in order to work with instances of the classes in that schema. See [[IModelDb.importSchema]].
+ * A Schema represents an ECSchema in TypeScript. It is a collection of [[Entity]]-based classes.
+ *
+ * <h2>ECSchema</h2>
+ *
+ * "EC" stands for "Engineering Content".
+ * An "ECSchema" defines an EC data model. You can think of it as a namespace
+ * for a set of ECClasses. An "ECClass" defines a class within an EC data model. An ECClass
+ * consists of "ECProperties" which define the properties of the class. Relationships among ECClasses are described by
+ * "ECRelationshipClasses". An analogy to SQL is often helpful.
+ * ECClasses are like table definitions. ECProperties are like the column definitions within a table. ECRelationshipClasses are like link table definitions.
+ * ECProperties can define primitive types, but can also define arrays or structs (think of TypeScript array and class concepts).
+ *
+ * <h2>Element Subclasses</h2>
+ *
+ * Define a subclass of [[Element]] in order to represent a specialization. To define a subclass, you must write an ECClass that subclasses from Element.
+ * The ECClass must be defined in an ECSchema.
+ * The same is true of subclassing [[ElementAspect]].
+ *
+ * An ECSchema must be imported into an iModel before apps can insert and query instances of the ECClasses that it defines.
+ *
+ * <h2>TypeScript and ECSchemas and ECClasses</h2>
+ *
+ * Once an ECSchema has been imported into an iModel, you can work with Elements, Models, and ElementAspects from that schema
+ * without writing TypeScript classes to represent them. A JavaScript class will be generated dynamically to represent each ECClass that you
+ * access, if there is no pre-registered TypeScript class to represent it.
+ *
+ * You <em>may</em> write a TypeScript [[Schema]] class to represent an ECSchema and TypeScript [[Element]]-based or [[ElementAspect]]-based classes to represent some or all of its ECClasses.
+ * The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods and type-safe constructors for it, in order to
+ * provide and centralize the business logic that applications can use when working with that specific class.
+ *
+ * <h2>Schema Registration</h2>
+ *
+ * If you do choose to write a Schema to represent an ECSchema in TypeScript, then apps must register it before using it. That is, and app must call [[Schemas.registerSchema]] for each Schema that it plans to use.
+ *
+ * Since an ECSchema must be imported into an iModel before apps can work with it, a hand-written Schema must ensure that its underlying ECSchema has been imported into each IModelDb.
+ * This means that the supporting ECSchama.xml file must be accessible at run time. In practice, that means that ECSchema.xml files must be delivered as part of a package that defines a
+ * Schema, and apps must include these assets in their deliverables.
+ *
  * <p><em>Example:</em>
  * ``` ts
  * [[include:ClassRegistry.registerModule]]
+ * ```
+ * where TestPartitionElement.ts might look like this:
+ * ``` ts
+ * [[include:Element.subclass]]
  * ```
  */
 export class Schema {

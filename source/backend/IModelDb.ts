@@ -470,10 +470,7 @@ export class IModelDb extends IModel {
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
-   * You must import a schema into an iModel before you can insert instances of the classes in that schema.
-   * You may define TypeScript classes to represent an ECSchema and the ECClasses in it. See [[Schema]].
-   * Note that you can get and create elements in an imported schema without defining a TypeScript Schema class or any TypeScript classes to represent the classes in the schema.
-   * JavaScript classes are generated dynamically to represent classes in an imported schema that has no class representation registered for it.
+   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
    */
   public importSchema(schemaFileName: string) {
