@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@bentley/imodeljs-common";
+import { GatewayRequest } from "@bentley/imodeljs-common";
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -97,7 +97,7 @@ describe("Gateway", () => {
   });
 
   it("should report aggregate operation load profile information", async () => {
-    const load = Gateway.aggregateLoad;
+    const load = GatewayRequest.aggregateLoad;
     const frontendInitialReq = load.lastRequest;
     const frontendInitialResp = load.lastResponse;
 
@@ -112,5 +112,10 @@ describe("Gateway", () => {
     const backendAggregate2 = await TestGateway.getProxy().op7();
     assert.isAbove(backendAggregate2.lastRequest, backendAggregate1.lastRequest);
     assert.isAbove(backendAggregate2.lastResponse, backendAggregate1.lastResponse);
+  });
+
+  it("should support acknowledging requests", async () => {
+    await TestGateway.getProxy().op6({ x: 1, y: 2 });
+    await TestGateway.getProxy().op8();
   });
 });

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelGateway, BentleyCloudGatewayConfiguration, GatewayElectronConfiguration } from "@bentley/imodeljs-common";
+import { IModelGateway, BentleyCloudGatewayConfiguration, GatewayElectronConfiguration, GatewayOperation, IModelToken } from "@bentley/imodeljs-common";
 import { TestGateway } from "../common/TestGateway";
 
 export class TestbedConfig {
@@ -15,10 +15,15 @@ export class TestbedConfig {
   public static initializeGatewayConfig() {
     const gateways = [IModelGateway, TestGateway];
 
-    if (TestbedConfig.useIPC)
+    if (TestbedConfig.useIPC) {
       GatewayElectronConfiguration.initialize({}, gateways);
-    else
+    } else {
       TestbedConfig.gatewayConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, gateways);
+
+      for (const gateway of gateways) {
+        GatewayOperation.forEach(gateway, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test"));
+      }
+    }
   }
 
   public static sendToMainSync(msg: TestbedIpcMessage) {
