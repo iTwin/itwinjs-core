@@ -184,9 +184,15 @@ export class GatewayRequest<TResponse = any> {
         return this.handleResponse();
       }
 
-      case GatewayProtocolEvent.AcknowledgementReceived: return this.acknowledge();
+      case GatewayProtocolEvent.AcknowledgementReceived: {
+        return this.acknowledge();
+      }
 
-      case GatewayProtocolEvent.BackendErrorReceived:
+      case GatewayProtocolEvent.BackendErrorReceived: {
+        this._connecting = false;
+        return;
+      }
+
       case GatewayProtocolEvent.ConnectionAborted:
       case GatewayProtocolEvent.ConnectionErrorReceived:
       case GatewayProtocolEvent.UnknownErrorReceived: {
@@ -206,7 +212,13 @@ export class GatewayRequest<TResponse = any> {
         return this.resolve(result);
       }
 
-      case GatewayRequestStatus.Rejected: return this.protocol.events.raiseEvent(GatewayProtocolEvent.BackendErrorReceived, this);
+      case GatewayRequestStatus.Rejected: {
+        const event = GatewayProtocolEvent.BackendErrorReceived;
+        this.protocol.events.raiseEvent(event, this);
+        const error = this.protocol.supplyErrorForEvent(event, this);
+        error.message = this.getResponseText();
+        return this.reject(error);
+      }
 
       case GatewayRequestStatus.Provisioning:
       case GatewayRequestStatus.Pending: {

@@ -20,8 +20,8 @@ export class GatewayElectronRequest extends GatewayRequest {
   /** Sends the request. */
   protected send(): void {
     try {
-      interop.ipcRenderer.once(`${CHANNEL}${this.id}`, (_evt: any, arg: string) => {
-        this.fulfillment = JSON.parse(arg);
+      interop.ipcRenderer.once(`${CHANNEL}${this.id}`, (_evt: any, arg: any) => {
+        this.fulfillment = arg;
         this.protocol.events.raiseEvent(GatewayProtocolEvent.ResponseLoaded, this);
       });
 
@@ -44,6 +44,6 @@ export class GatewayElectronRequest extends GatewayRequest {
 
   /** Supplies response text. */
   public getResponseText(): string {
-    return this.fulfillment.result;
+    return this.fulfillment.result || "";
   }
 }
