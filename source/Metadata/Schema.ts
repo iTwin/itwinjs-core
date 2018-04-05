@@ -7,12 +7,12 @@ import CustomAttributeClass from "./CustomAttributeClass";
 import Mixin from "./Mixin";
 import EntityClass from "./EntityClass";
 import RelationshipClass from "./RelationshipClass";
-import SchemaChild from "./SchemaChild";
+import SchemaItem from "./SchemaItem";
 import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
-import { SchemaChildKey, SchemaKey, ECClassModifier, PrimitiveType, ECVersion } from "../ECObjects";
+import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
@@ -30,7 +30,7 @@ export default class Schema implements CustomAttributeContainerProps {
   protected _description?: string;
   protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
-  private readonly _children: SchemaChild[];
+  private readonly _items: SchemaItem[];
   /**
    * Constructs an empty Schema with the given name and version, (optionally) in a given context.
    * @param name The schema's name
@@ -56,7 +56,7 @@ export default class Schema implements CustomAttributeContainerProps {
     this._schemaKey = (typeof(nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
     this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
     this.references = [];
-    this._children = [];
+    this._items = [];
   }
 
   get schemaKey() {
@@ -147,9 +147,9 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   protected createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration {
-    const child = new Enumeration(this, name, primitiveType);
-    this.addChild(child);
-    return child;
+    const item = new Enumeration(this, name, primitiveType);
+    this.addItem(item);
+    return item;
   }
 
   /**
@@ -157,11 +157,11 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    */
   protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
-    return this.createChild<KindOfQuantity>(KindOfQuantity, name);
+    return this.createItem<KindOfQuantity>(KindOfQuantity, name);
   }
 
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
-    return this.createChild<KindOfQuantity>(KindOfQuantity, name);
+    return this.createItem<KindOfQuantity>(KindOfQuantity, name);
   }
 
   /**
@@ -169,45 +169,45 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    */
   protected async createPropertyCategory(name: string): Promise<PropertyCategory> {
-    return this.createChild<PropertyCategory>(PropertyCategory, name);
+    return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
 
   protected createPropertyCategorySync(name: string): PropertyCategory {
-    return this.createChild<PropertyCategory>(PropertyCategory, name);
+    return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
   private createClass<T extends ECClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
-    const child = new type(this, name, modifier);
-    this.addChild(child);
-    return child;
+    const item = new type(this, name, modifier);
+    this.addItem(item);
+    return item;
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createChild<T extends SchemaChild>(type: (new (schema: Schema, name: string) => T), name: string): T {
-    const child = new type(this, name);
-    this.addChild(child);
-    return child;
+  private createItem<T extends SchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
+    const item = new type(this, name);
+    this.addItem(item);
+    return item;
   }
 
-  private getLocalChild(name: string): SchemaChild| undefined {
+  private getLocalItem(name: string): SchemaItem| undefined {
     // Case-insensitive search
-    return this._children.find((child) => child.name.toLowerCase() === name.toLowerCase());
+    return this._items.find((item) => item.name.toLowerCase() === name.toLowerCase());
   }
 
   /**
-   * Attempts to find a schema child with a name matching, case-insensitive, the provided name. It will look for the schema child in the context of this schema.
+   * Attempts to find a schema item with a name matching, case-insensitive, the provided name. It will look for the schema item in the context of this schema.
    * If the name is a full name, it will search in the reference schema matching the name.
-   * @param name The name of the schema child to search for.
+   * @param name The name of the schema item to search for.
    */
-  public async getChild<T extends SchemaChild>(name: string, includeReference?: boolean): Promise<T | undefined> {
-    const [schemaName, childName] = SchemaChild.parseFullName(name);
+  public async getItem<T extends SchemaItem>(name: string, includeReference?: boolean): Promise<T | undefined> {
+    const [schemaName, itemName] = SchemaItem.parseFullName(name);
 
-    let foundChild;
+    let foundItem;
     if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
       // Case-insensitive search
-      foundChild = this.getLocalChild(childName);
-      if (!foundChild && this._context) {
+      foundItem = this.getLocalItem(itemName);
+      if (!foundItem && this._context) {
         // this._context.
       }
 
@@ -216,94 +216,56 @@ export default class Schema implements CustomAttributeContainerProps {
       if (!refSchema)
         return undefined;
 
-      // Since we are only passing the childName to the reference schema it will not check its own referenced schemas.
-      foundChild = refSchema.getChild<T>(childName, includeReference);
+      // Since we are only passing the itemName to the reference schema it will not check its own referenced schemas.
+      foundItem = refSchema.getItem<T>(itemName, includeReference);
     }
 
-    return Promise.resolve(foundChild ? foundChild as T : foundChild);
-  }
-
-  public getChildByKeySync<T extends SchemaChild>(key: SchemaChildKey, includeReferences?: boolean): T | undefined {
-    key;
-    includeReferences;
-    // TODO: Deprecate?
-    // let foundChild;
-    // if (this.schemaKey.matches(key.schemaKey, SchemaMatchType.Exact)) {
-    //   // Check the already loaded children
-    //   foundChild = this._children.find((child) => key.compareByName(child.name));
-    //   if (!foundChild)
-    //     return foundChild; // undefined
-
-    //   if (this._context)
-    //     foundChild = this._context.getSchemaChild(key);
-    // } else if (includeReferences) {
-    //   // Given that the child should be located in a ref schema we need to actually ask that ref schema instead of looking in the context.
-    //   // We do not want to accidentally load a child that matches but is not in a ref schema.
-
-    //   let refSchema;
-    //   if (key.schemaKey) {
-    //     refSchema = this.references.find((schema) => key.schemaKey.compareByName(schema.schemaKey.name));
-    //     if (refSchema)
-    //       foundChild = refSchema.getChildByKeySync()
-    //   }
-
-    // }
-
-    return undefined; // foundChild ? foundChild as T : foundChild;
-  }
-
-  public getChildSync<T extends SchemaChild>(name: string, includeReference?: boolean): T | undefined {
-    name;
-    includeReference;
-    // TODO: Deprecate?
-    return undefined;
+    return Promise.resolve(foundItem ? foundItem as T : foundItem);
   }
 
   /**
    *
-   * @param child
+   * @param item
    */
-  protected async addChild<T extends SchemaChild>(child: T): Promise<void> {
-    if (undefined !== this.getLocalChild(child.name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
+  protected async addItem<T extends SchemaItem>(item: T): Promise<void> {
+    if (undefined !== this.getLocalItem(item.name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
 
-    this._children.push(child);
+    this._items.push(item);
     return Promise.resolve();
   }
 
-  protected addChildSync<T extends SchemaChild>(child: T): void {
-    if (undefined !== this.getLocalChild(child.name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateChild, `The SchemaChild ${child.name} cannot be added to the schema ${this.name} because it already exists`);
+  protected addItemSync<T extends SchemaItem>(item: T): void {
+    if (undefined !== this.getLocalItem(item.name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
 
-    this._children.push(child);
+    this._items.push(item);
   }
 
   /**
    * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
    * @param name The name of the class to return.
    */
-  public getClass<T extends ECClass>(name: string): Promise<T | undefined> { return this.getChild<T>(name); }
-
-  public getClassSync<T extends ECClass>(name: string): T | undefined { return this.getChildSync<T>(name); }
+  public getClass<T extends ECClass>(name: string): Promise<T | undefined> { return this.getItem<T>(name); }
 
   /**
    *
    */
-  public getChildren<T extends SchemaChild>(): T[] {
-    if (!this._children)
+  public getItems<T extends SchemaItem>(): T[] {
+    if (!this._items)
       return [];
 
-    return this._children as T[];
+    return this._items as T[];
   }
 
   /**
    *
    */
   public getClasses(): ECClass[] {
-    if (!this._children)
+    if (!this._items)
       return [];
 
-    const classList = this._children.filter((child) => child instanceof ECClass);
+    const classList = this._items.filter((item) => item instanceof ECClass);
 
     if (!classList)
       return [];
@@ -437,8 +399,8 @@ export abstract class MutableSchema extends Schema {
   public abstract createKindOfQuantitySync(name: string): KindOfQuantity;
   public abstract async createPropertyCategory(name: string): Promise<PropertyCategory>;
   public abstract createPropertyCategorySync(name: string): PropertyCategory;
-  public abstract async addChild<T extends SchemaChild>(child: T): Promise<void>;
-  public abstract addChildSync<T extends SchemaChild>(child: T): void;
+  public abstract async addItem<T extends SchemaItem>(item: T): Promise<void>;
+  public abstract addItemSync<T extends SchemaItem>(item: T): void;
   public abstract async addReference(refSchema: Schema): Promise<void>;
   public abstract addReferenceSync(refSchema: Schema): void;
 }

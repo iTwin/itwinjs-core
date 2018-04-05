@@ -5,7 +5,7 @@
 import ECClass from "./Class";
 import EntityClass from "./EntityClass";
 import { LazyLoadedEntityClass } from "../Interfaces";
-import { ECClassModifier, SchemaChildType } from "../ECObjects";
+import { ECClassModifier, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
@@ -14,11 +14,11 @@ import Schema from "./Schema";
  * A Typescript class representation of a Mixin.
  */
 export default class Mixin extends ECClass {
-  public readonly type: SchemaChildType.Mixin;
+  public readonly type: SchemaItemType.Mixin;
   public appliesTo: LazyLoadedEntityClass;
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaChildType.Mixin, ECClassModifier.Abstract);
+    super(schema, name, SchemaItemType.Mixin, ECClassModifier.Abstract);
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -30,7 +30,7 @@ export default class Mixin extends ECClass {
     if (typeof(jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
 
-    const tmpClass = await this.schema.getChild<EntityClass>(jsonObj.appliesTo, true);
+    const tmpClass = await this.schema.getItem<EntityClass>(jsonObj.appliesTo, true);
     if (!tmpClass)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 

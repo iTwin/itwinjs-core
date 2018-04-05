@@ -10,51 +10,51 @@ import { ECObjectsError } from "../../source/Exception";
 
 describe("Mixin", () => {
   describe("deserialization", () => {
-    function createSchemaJsonWithChildren(childrenJson: any): any {
+    function createSchemaJsonWithItems(itemsJson: any): any {
       return {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
-          ...childrenJson,
+        items: {
+          ...itemsJson,
         },
       };
     }
     function createSchemaJson(mixinJson: any): any {
-      return createSchemaJsonWithChildren({
+      return createSchemaJsonWithItems({
         TestMixin: {
-          schemaChildType: "Mixin",
+          schemaItemType: "Mixin",
           ...mixinJson,
         },
         TestEntity: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
         },
       });
     }
 
     it("should succeed with fully defined", async () => {
-      const testSchema = createSchemaJsonWithChildren({
+      const testSchema = createSchemaJsonWithItems({
         TestMixin: {
-          schemaChildType: "Mixin",
+          schemaItemType: "Mixin",
           baseClass: "TestSchema.BaseMixin",
           appliesTo: "TestSchema.TestEntity",
         },
         BaseMixin: {
-          schemaChildType: "Mixin",
+          schemaItemType: "Mixin",
           appliesTo: "TestSchema.TestEntity",
         },
         TestEntity: {
-          schemaChildType: "EntityClass",
+          schemaItemType: "EntityClass",
         },
       });
 
       const schema = await Schema.fromJson(testSchema);
       assert.isDefined(schema);
 
-      const entity = await schema.getChild<EntityClass>("TestEntity");
-      const baseMixin = await schema.getChild<Mixin>("BaseMixin");
+      const entity = await schema.getItem<EntityClass>("TestEntity");
+      const baseMixin = await schema.getItem<Mixin>("BaseMixin");
 
-      const mixin = await schema.getChild<Mixin>("TestMixin");
+      const mixin = await schema.getItem<Mixin>("TestMixin");
       assert.isDefined(mixin);
 
       assert.isDefined(await mixin!.appliesTo);
@@ -81,7 +81,7 @@ describe("Mixin", () => {
   describe("fromJson", () => {
     let testEntity: EntityClass;
     let testMixin: Mixin;
-    const baseJson = { schemaChildType: "Mixin" };
+    const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(async () => {
       const schema = new Schema("TestSchema", 1, 0, 0);

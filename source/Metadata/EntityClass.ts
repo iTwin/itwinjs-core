@@ -6,7 +6,7 @@ import ECClass from "./Class";
 import Mixin from "./Mixin";
 import RelationshipClass from "./RelationshipClass";
 import { LazyLoadedMixin } from "../Interfaces";
-import { ECClassModifier, RelatedInstanceDirection, SchemaChildType, parseStrengthDirection } from "../ECObjects";
+import { ECClassModifier, RelatedInstanceDirection, SchemaItemType, parseStrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty, AnyProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -16,11 +16,11 @@ import Schema from "./Schema";
  * A Typescript class representation of an ECEntityClass.
  */
 export default class EntityClass extends ECClass {
-  public readonly type: SchemaChildType.EntityClass;
+  public readonly type: SchemaItemType.EntityClass;
   protected _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, SchemaChildType.EntityClass, modifier);
+    super(schema, name, SchemaItemType.EntityClass, modifier);
   }
 
   get mixins(): LazyLoadedMixin[] {
@@ -71,7 +71,7 @@ export default class EntityClass extends ECClass {
 
     let resolvedRelationship: RelationshipClass | undefined;
     if (typeof(relationship) === "string")
-      resolvedRelationship = await this.schema.getChild<RelationshipClass>(relationship, true);
+      resolvedRelationship = await this.schema.getItem<RelationshipClass>(relationship, true);
     else
       resolvedRelationship = relationship;
 
@@ -100,7 +100,7 @@ export default class EntityClass extends ECClass {
         if (typeof(name) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
-        const tempMixin = await this.schema.getChild<Mixin>(name, true);
+        const tempMixin = await this.schema.getItem<Mixin>(name, true);
         if (!tempMixin)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
 

@@ -10,7 +10,7 @@ import { SchemaDeserializationVisitor } from "../../source/Interfaces";
 import SchemaReadHelper from "../../source/Deserialization/Helper";
 import * as sinon from "sinon";
 import { AnyClass } from "../../source/Interfaces";
-import { SchemaChildType } from "../../source/ECObjects";
+import { SchemaItemType } from "../../source/ECObjects";
 import { NavigationProperty } from "../../source/Metadata/Property";
 
 describe("Full Schema Deserialization", () => {
@@ -151,40 +151,40 @@ describe("Full Schema Deserialization", () => {
     });
   });
 
-  describe("with children", () => {
+  describe("with items", () => {
     const baseJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
       name: "TestSchema",
       version: "1.2.3",
     };
 
-    it("should throw for invalid children attribute", async () => {
-      let json: any = { ...baseJson, children: 0 };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'children' property. It should be of type 'object'.`);
+    it("should throw for invalid items attribute", async () => {
+      let json: any = { ...baseJson, items: 0 };
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' property. It should be of type 'object'.`);
 
-      json = { ...baseJson, children: [ {} ] };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'children' property. It should be of type 'object'.`);
+      json = { ...baseJson, items: [ {} ] };
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' property. It should be of type 'object'.`);
     });
 
-    it("should throw for child with invalid name", async () => {
-      const json = { ...baseJson, children: { "": {} } };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `A SchemaChild in TestSchema has an invalid name.`);
+    it("should throw for item with invalid name", async () => {
+      const json = { ...baseJson, items: { "": {} } };
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `A SchemaItem in TestSchema has an invalid name.`);
     });
 
-    it("should throw for child with missing schemaChildType", async () => {
+    it("should throw for item with missing schemaItemType", async () => {
       const json = {
         ...baseJson,
-        children: { BadChild: {} },
+        items: { BadItem: {} },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaChild BadChild is missing the required schemaChildType property.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadItem is missing the required schemaItemType property.`);
     });
 
-    it("should throw for child with invalid schemaChildType", async () => {
+    it("should throw for item with invalid schemaItemType", async () => {
       const json = {
         ...baseJson,
-        children: { BadChild: { schemaChildType: 0 } },
+        items: { BadItem: { schemaItemType: 0 } },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaChild BadChild has an invalid 'schemaChildType' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadItem has an invalid 'schemaItemType' property. It should be of type 'string'.`);
     });
   });
 
@@ -211,11 +211,11 @@ describe("Full Schema Deserialization", () => {
     it("should call all visit methods", async () => {
       const schemaJson = {
         ...baseJson,
-        children: {
-          TestEnum: { schemaChildType: "Enumeration", backingTypeName: "int" },
-          TestCategory: { schemaChildType: "PropertyCategory" },
-          TestClass: { schemaChildType: "EntityClass" },
-          TestKoQ: { schemaChildType: "KindOfQuantity" },
+        items: {
+          TestEnum: { schemaItemType: "Enumeration", backingTypeName: "int" },
+          TestCategory: { schemaItemType: "PropertyCategory" },
+          TestClass: { schemaItemType: "EntityClass" },
+          TestKoQ: { schemaItemType: "KindOfQuantity" },
         },
       };
       let testSchema = new Schema();
@@ -226,25 +226,25 @@ describe("Full Schema Deserialization", () => {
       expect(mockVisitor.visitEmptySchema.calledOnce).to.be.true;
       expect(mockVisitor.visitEmptySchema.calledWithExactly(testSchema)).to.be.true;
 
-      const testEnum = await testSchema.getChild("TestEnum");
+      const testEnum = await testSchema.getItem("TestEnum");
       expect(testEnum).to.exist;
       expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
       expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
       expect(mockVisitor.visitEnumeration.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
 
-      const testCategory = await testSchema.getChild("TestCategory");
+      const testCategory = await testSchema.getItem("TestCategory");
       expect(testCategory).to.exist;
       expect(mockVisitor.visitPropertyCategory.calledOnce).to.be.true;
       expect(mockVisitor.visitPropertyCategory.calledWithExactly(testCategory)).to.be.true;
       expect(mockVisitor.visitPropertyCategory.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
 
-      const testClass = await testSchema.getChild("TestClass");
+      const testClass = await testSchema.getItem("TestClass");
       expect(testClass).to.exist;
       expect(mockVisitor.visitClass.calledOnce).to.be.true;
       expect(mockVisitor.visitClass.calledWithExactly(testClass)).to.be.true;
       expect(mockVisitor.visitClass.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
 
-      const testKoq = await testSchema.getChild("TestKoQ");
+      const testKoq = await testSchema.getItem("TestKoQ");
       expect(testKoq).to.exist;
       expect(mockVisitor.visitKindOfQuantity.calledOnce).to.be.true;
       expect(mockVisitor.visitKindOfQuantity.calledWithExactly(testKoq)).to.be.true;
@@ -261,14 +261,14 @@ describe("Full Schema Deserialization", () => {
     it("should safely handle Mixin-appliesTo-EntityClass-extends-Mixin cycle", async () => {
       const schemaJson = {
         ...baseJson,
-        children: {
+        items: {
           AMixin: {
-            schemaChildType: "Mixin",
+            schemaItemType: "Mixin",
             appliesTo: "TestSchema.BEntityClass",
             description: "Description for AMixin",
           },
           BEntityClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             baseClass: "TestSchema.AMixin",
             description: "Description for BEntityClass",
           },
@@ -278,9 +278,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaChildType.EntityClass && c.baseClass)
+          if (c.type === SchemaItemType.EntityClass && c.baseClass)
             descriptions.push((await c.baseClass).description!);
-          else if (c.type === SchemaChildType.Mixin && c.appliesTo)
+          else if (c.type === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
         }),
       };
@@ -293,10 +293,10 @@ describe("Full Schema Deserialization", () => {
       expect(mockVisitor.visitClass.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
-      const testMixin = await testSchema.getChild("AMixin");
+      const testMixin = await testSchema.getItem("AMixin");
       expect(testMixin).to.exist;
 
-      const testEntity = await testSchema.getChild("BEntityClass");
+      const testEntity = await testSchema.getItem("BEntityClass");
       expect(testEntity).to.exist;
 
       expect(mockVisitor.visitClass.firstCall.calledWithExactly(testEntity)).to.be.true;
@@ -311,14 +311,14 @@ describe("Full Schema Deserialization", () => {
     it("should safely handle EntityClass-extends-Mixin-appliesTo-EntityClass cycle", async () => {
       const schemaJson = {
         ...baseJson,
-        children: {
+        items: {
           AEntityClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             baseClass: "TestSchema.BMixin",
             description: "Description for AEntityClass",
           },
           BMixin: {
-            schemaChildType: "Mixin",
+            schemaItemType: "Mixin",
             appliesTo: "TestSchema.AEntityClass",
             description: "Description for BMixin",
           },
@@ -328,9 +328,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaChildType.EntityClass && c.baseClass)
+          if (c.type === SchemaItemType.EntityClass && c.baseClass)
             descriptions.push((await c.baseClass).description!);
-          else if (c.type === SchemaChildType.Mixin && c.appliesTo)
+          else if (c.type === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
         }),
       };
@@ -343,10 +343,10 @@ describe("Full Schema Deserialization", () => {
       expect(mockVisitor.visitClass.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
-      const testEntity = await testSchema.getChild("AEntityClass");
+      const testEntity = await testSchema.getItem("AEntityClass");
       expect(testEntity).to.exist;
 
-      const testMixin = await testSchema.getChild("BMixin");
+      const testMixin = await testSchema.getItem("BMixin");
       expect(testMixin).to.exist;
 
       expect(mockVisitor.visitClass.firstCall.calledWithExactly(testMixin)).to.be.true;
@@ -361,9 +361,9 @@ describe("Full Schema Deserialization", () => {
     it("should safely handle EntityClass-navProp-RelationshipClass-constraint-EntityClass cycle", async () => {
       const schemaJson = {
         ...baseJson,
-        children: {
+        items: {
           AEntityClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             description: "Description for AEntityClass",
             properties: [
               {
@@ -375,7 +375,7 @@ describe("Full Schema Deserialization", () => {
             ],
           },
           BRelationshipClass: {
-            schemaChildType: "RelationshipClass",
+            schemaItemType: "RelationshipClass",
             description: "Description for BRelationshipClass",
             source: {
               constraintClasses: [ "TestSchema.AEntityClass" ],
@@ -390,9 +390,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaChildType.RelationshipClass)
+          if (c.type === SchemaItemType.RelationshipClass)
             descriptions.push((await c.source.abstractConstraint!).description!);
-          else if (c.type === SchemaChildType.EntityClass) {
+          else if (c.type === SchemaItemType.EntityClass) {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
@@ -407,10 +407,10 @@ describe("Full Schema Deserialization", () => {
       expect(mockVisitor.visitClass.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
-      const testEntity = await testSchema.getChild("AEntityClass");
+      const testEntity = await testSchema.getItem("AEntityClass");
       expect(testEntity).to.exist;
 
-      const testRelationship = await testSchema.getChild("BRelationshipClass");
+      const testRelationship = await testSchema.getItem("BRelationshipClass");
       expect(testRelationship).to.exist;
 
       expect(mockVisitor.visitClass.firstCall.calledWithExactly(testRelationship)).to.be.true;
@@ -425,9 +425,9 @@ describe("Full Schema Deserialization", () => {
     it("should safely handle RelationshipClass-constraint-EntityClass-navProp-RelationshipClass cycle", async () => {
       const schemaJson = {
         ...baseJson,
-        children: {
+        items: {
           ARelationshipClass: {
-            schemaChildType: "RelationshipClass",
+            schemaItemType: "RelationshipClass",
             description: "Description for ARelationshipClass",
             source: {
               constraintClasses: [ "TestSchema.BEntityClass" ],
@@ -437,7 +437,7 @@ describe("Full Schema Deserialization", () => {
             },
           },
           BEntityClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             description: "Description for BEntityClass",
             properties: [
               {
@@ -454,9 +454,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaChildType.RelationshipClass)
+          if (c.type === SchemaItemType.RelationshipClass)
             descriptions.push((await c.source.abstractConstraint!).description!);
-          else if (c.type === SchemaChildType.EntityClass) {
+          else if (c.type === SchemaItemType.EntityClass) {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
@@ -471,10 +471,10 @@ describe("Full Schema Deserialization", () => {
       expect(mockVisitor.visitClass.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
-      const testRelationship = await testSchema.getChild("ARelationshipClass");
+      const testRelationship = await testSchema.getItem("ARelationshipClass");
       expect(testRelationship).to.exist;
 
-      const testEntity = await testSchema.getChild("BEntityClass");
+      const testEntity = await testSchema.getItem("BEntityClass");
       expect(testEntity).to.exist;
 
       expect(mockVisitor.visitClass.firstCall.calledWithExactly(testEntity)).to.be.true;

@@ -12,20 +12,20 @@ import { CustomAttributeContainerType } from "../../source/index";
 describe("CustomAttributeClass", () => {
 
   describe("deserialization", () => {
-    function createSchemaJsonWithChildren(childrenJson: any): any {
+    function createSchemaJsonWithItems(itemsJson: any): any {
       return {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
-          ...childrenJson,
+        items: {
+          ...itemsJson,
         },
       };
     }
     function createSchemaJson(caClassJson: any): any {
-      return createSchemaJsonWithChildren({
+      return createSchemaJsonWithItems({
         TestCAClass: {
-          schemaChildType: "CustomAttributeClass",
+          schemaItemType: "CustomAttributeClass",
           ...caClassJson,
         },
       });
@@ -62,7 +62,7 @@ describe("CustomAttributeClass", () => {
 
   describe("fromJson", () => {
     let testClass: CustomAttributeClass;
-    const baseJson = {schemaChildType: "CustomAttributeClass"};
+    const baseJson = {schemaItemType: "CustomAttributeClass"};
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);

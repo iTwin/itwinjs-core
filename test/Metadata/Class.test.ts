@@ -10,7 +10,7 @@ import { SchemaContext } from "../../source/Context";
 import { DelayedPromiseWithProps } from "../../source/DelayedPromise";
 import ECClass, { MutableClass } from "../../source/Metadata/Class";
 import { ECObjectsError } from "../../source/Exception";
-import { SchemaChildType } from "../../source/ECObjects";
+import { SchemaItemType } from "../../source/ECObjects";
 import * as sinon from "sinon";
 
 describe("ECClass", () => {
@@ -68,12 +68,12 @@ describe("ECClass", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
+        items: {
           testBaseClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
           },
           testClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             baseClass: "TestSchema.testBaseClass",
           },
         },
@@ -102,9 +102,9 @@ describe("ECClass", () => {
             version: "1.0.5",
           },
         ],
-        children: {
+        items: {
           testClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             baseClass: "RefSchema.BaseClassInRef",
           },
         },
@@ -132,12 +132,12 @@ describe("ECClass", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
+        items: {
           testStruct: {
-            schemaChildType: "StructClass",
+            schemaItemType: "StructClass",
           },
           testClass: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             properties: [
               {
                 propertyType: "PrimitiveProperty",
@@ -186,21 +186,21 @@ describe("ECClass", () => {
     class MockECClass extends ECClass {}
 
     beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass", SchemaChildType.EntityClass);
+      testClass = new MockECClass(schema, "TestClass", SchemaItemType.EntityClass);
     });
 
     it("should throw for invalid modifier", async () => {
       expect(testClass).to.exist;
-      const invalidModifierJson = { schemaChildType: "EntityClass", modifier: 0 };
+      const invalidModifierJson = { schemaItemType: "EntityClass", modifier: 0 };
       await expect(testClass.fromJson(invalidModifierJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'modifier' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid baseClass", async () => {
       expect(testClass).to.exist;
-      const invalidBaseClassJson = { schemaChildType: "EntityClass", baseClass: 0 };
+      const invalidBaseClassJson = { schemaItemType: "EntityClass", baseClass: 0 };
       await expect(testClass.fromJson(invalidBaseClassJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
-      const unloadedBaseClassJson = { schemaChildType: "EntityClass", baseClass: "ThisClassDoesNotExist" };
+      const unloadedBaseClassJson = { schemaItemType: "EntityClass", baseClass: "ThisClassDoesNotExist" };
       await expect(testClass.fromJson(unloadedBaseClassJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
@@ -210,10 +210,10 @@ describe("ECClass", () => {
     class MockECClass extends ECClass {}
 
     beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass", SchemaChildType.EntityClass);
+      testClass = new MockECClass(schema, "TestClass", SchemaItemType.EntityClass);
     });
 
-    it("should call visitClass on a SchemaChildVisitor object", async () => {
+    it("should call visitClass on a SchemaItemVisitor object", async () => {
       expect(testClass).to.exist;
       const mockVisitor = { visitClass: sinon.spy() };
       await testClass.accept(mockVisitor);
@@ -221,7 +221,7 @@ describe("ECClass", () => {
       expect(mockVisitor.visitClass.calledWithExactly(testClass)).to.be.true;
     });
 
-    it("should safely handle a SchemaChildVisitor without visitClass defined", async () => {
+    it("should safely handle a SchemaItemVisitor without visitClass defined", async () => {
       expect(testClass).to.exist;
       await testClass.accept({});
     });
@@ -243,15 +243,15 @@ describe("ECClass", () => {
         name: "TestSchema",
         version: "01.00.00",
         alias: "ts",
-        children: {
-          A: { schemaChildType: "EntityClass" },
-          B: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A" },
-          C: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A" },
-          D: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A" },
-          E: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
-          F: { schemaChildType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
-          G: { schemaChildType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
-          H: { schemaChildType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
+        items: {
+          A: { schemaItemType: "EntityClass" },
+          B: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+          C: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+          D: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A" },
+          E: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
+          F: { schemaItemType: "Mixin",         appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+          G: { schemaItemType: "EntityClass",   baseClass: "TestSchema.A", mixins: [ "TestSchema.B" ] },
+          H: { schemaItemType: "EntityClass",   baseClass: "TestSchema.G", mixins: [ "TestSchema.E", "TestSchema.F" ] },
         },
       };
       const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];

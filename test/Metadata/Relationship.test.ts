@@ -41,23 +41,23 @@ describe("RelationshipClass", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
+        items: {
           TestRelationship: {
-            schemaChildType: "RelationshipClass",
+            schemaItemType: "RelationshipClass",
             ...relClassJson,
           },
           SourceBaseEntity: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
           },
           TargetBaseEntity: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
           },
           TestSourceEntity: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             baseClass: "TestSchema.SourceBaseEntity",
           },
           TestTargetEntity: {
-            schemaChildType: "EntityClass",
+            schemaItemType: "EntityClass",
             baseClass: "TestSchema.TargetBaseEntity",
           },
         },
@@ -203,7 +203,7 @@ describe("RelationshipClass", () => {
   });
 
   describe("fromJson", () => {
-    const baseJson = { schemaChildType: "RelationshipClass" };
+    const baseJson = { schemaItemType: "RelationshipClass" };
     let testRelationship: RelationshipClass;
 
     beforeEach(() => {

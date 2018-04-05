@@ -95,7 +95,7 @@ export abstract class Property {
       if (typeof(jsonObj.category) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'category' attribute. It should be of type 'string'.`);
 
-      const propertyCategory = await this.class.schema.getChild<PropertyCategory>(jsonObj.category, true);
+      const propertyCategory = await this.class.schema.getItem<PropertyCategory>(jsonObj.category, true);
       if (!propertyCategory)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${jsonObj.category}") that cannot be found.`);
 
@@ -106,7 +106,7 @@ export abstract class Property {
       if (typeof(jsonObj.kindOfQuantity) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
 
-      const kindOfQuantity = await this.class.schema.getChild<KindOfQuantity>(jsonObj.kindOfQuantity, true);
+      const kindOfQuantity = await this.class.schema.getItem<KindOfQuantity>(jsonObj.kindOfQuantity, true);
       if (!kindOfQuantity)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${jsonObj.kindOfQuantity}") that cannot be found.`);
 

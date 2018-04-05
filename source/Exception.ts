@@ -7,7 +7,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 export const enum ECObjectsStatus {
   ECOBJECTS_ERROR_BASE = 0x10000,
   Success = 0,
-  DuplicateChild = ECOBJECTS_ERROR_BASE + 1,
+  DuplicateItem = ECOBJECTS_ERROR_BASE + 1,
   DuplicateProperty = ECOBJECTS_ERROR_BASE + 2,
   DuplicateSchema = ECOBJECTS_ERROR_BASE + 3,
   ImmutableSchema = ECOBJECTS_ERROR_BASE + 4,
@@ -35,7 +35,7 @@ export class ECObjectsError extends Error {
 
   public toDebugString(): string {
     switch (this.errorNumber) {
-      case ECObjectsStatus.DuplicateChild: return this._appendMessage("ECObjectsStatus.DuplicateChild");
+      case ECObjectsStatus.DuplicateItem: return this._appendMessage("ECObjectsStatus.DuplicateItem");
       case ECObjectsStatus.DuplicateProperty: return this._appendMessage("ECObjectsStatus.DuplicateProperty");
       case ECObjectsStatus.DuplicateSchema: return this._appendMessage("ECObjectsStatus.DuplicateSchema");
       case ECObjectsStatus.ImmutableSchema: return this._appendMessage("ECObjectsStatus.ImmutableSchema");

@@ -3,9 +3,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { SchemaKey, SchemaMatchType, SchemaChildKey } from "./ECObjects";
+import { SchemaKey, SchemaMatchType, SchemaItemKey } from "./ECObjects";
 import Schema, { MutableSchema } from "./Metadata/Schema";
-import SchemaChild from "./Metadata/SchemaChild";
+import SchemaItem from "./Metadata/SchemaItem";
 
 export class SchemaMap extends Array<Schema> { }
 
@@ -16,50 +16,9 @@ export interface ISchemaLocater {
   getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined>;
 }
 
-export interface ISchemaChildLocater {
-  getSchemaChild<T extends SchemaChild>(schemaChildKey: SchemaChildKey): Promise<T | undefined>;
+export interface ISchemaItemLocater {
+  getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
 }
-
-// export class SchemaChildReturn<T extends SchemaChild> {
-//   private readonly _parent: SchemaChild;
-//   private _thisChild: T | undefined;
-//   public key: SchemaChildKey;
-
-//   constructor(key: SchemaChildKey, parentChild: SchemaChild) {
-//     this._parent = parentChild;
-//     this.key = key;
-//   }
-
-//   public async get<S extends SchemaChild>(): Promise<S> {
-//     if (this._thisChild)
-//       Promise.resolve(this._thisChild);
-
-//     const schema = await this._parent.schema;
-//     if (!schema)
-//       return Promise.reject("");
-
-//     if (schema.schemaKey.matches(this.key.schemaKey, SchemaMatchType.Latest)) {
-//       const tempClass = schema.getChild<S>(this.key.name, false);
-//       return tempClass === undefined ? Promise.reject("") : Promise.resolve(tempClass);
-//     }
-
-//     if (!schema.references || schema.references.length === 0)
-//       return Promise.reject("");
-
-//     const foundSchema = schema.references.find((tempSchema: ECSchema) => {
-//       return tempSchema.schemaKey.matches(this.key.schemaKey, SchemaMatchType.Latest);
-//     });
-
-//     if (!foundSchema)
-//       return Promise.reject("");
-
-//     const foundChild = foundSchema.getChild<S>(this.key.name, false);
-//     if (!foundChild)
-//       return Promise.reject("");
-
-//     return Promise.resolve(foundChild);
-//   }
-// }
 
 /**
  *
@@ -174,13 +133,13 @@ export class SchemaCache implements ISchemaLocater {
 }
 
 /**
- * The SchemaContext, context object is used to facilitate schema and schema children location.
+ * The SchemaContext, context object is used to facilitate schema and schema item location.
  *
  * The context controls the lifetime of each schema that it knows about. It has to be explicitly removed from the context in order to delete a schema object.
  *
  * The context is made up of a group of Schema Locators.
  */
-export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
+export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   private _locaters: ISchemaLocater[];
 
   private knownSchemas: SchemaCache;
@@ -205,15 +164,15 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
   }
 
   /**
-   * Adds the given SchemaChild to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
-   * @param schemaChild The SchemaChild to add
+   * Adds the given SchemaItem to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
+   * @param schemaItem The SchemaItem to add
    */
-  public async addSchemaChild(schemaChild: SchemaChild) {
-    const schema = await this.getSchema(schemaChild.key.schemaKey, SchemaMatchType.Exact);
+  public async addSchemaItem(schemaItem: SchemaItem) {
+    const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);
     if (!schema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema child ${schemaChild.name} to the schema ${schemaChild.key.schemaKey.toString()} because the schema could not be located.`);
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema item ${schemaItem.name} to the schema ${schemaItem.key.schemaKey.toString()} because the schema could not be located.`);
 
-    await (schema as MutableSchema).addChild(schemaChild);
+    await (schema as MutableSchema).addItem(schemaItem);
     return;
   }
 
@@ -231,11 +190,11 @@ export class SchemaContext implements ISchemaLocater, ISchemaChildLocater {
     return undefined;
   }
 
-  public async getSchemaChild<T extends SchemaChild>(schemaChildKey: SchemaChildKey): Promise<T | undefined> {
-    const schema = await this.getSchema(schemaChildKey.schemaKey, SchemaMatchType.Latest);
+  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
+    const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (!schema)
       return undefined;
 
-    return schema.getChild<T>(schemaChildKey.name, false);
+    return schema.getItem<T>(schemaItemKey.name, false);
   }
 }

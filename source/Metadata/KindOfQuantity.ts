@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaChild from "./SchemaChild";
+import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaChildType } from "../ECObjects";
-import { SchemaChildVisitor } from "../Interfaces";
+import { SchemaItemType } from "../ECObjects";
+import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export class FormatUnitSet {
@@ -16,8 +16,8 @@ export class FormatUnitSet {
 /**
  * A Typescript class representation of a KindOfQuantity.
  */
-export default class KindOfQuantity extends SchemaChild {
-  public readonly type: SchemaChildType.KindOfQuantity;
+export default class KindOfQuantity extends SchemaItem {
+  public readonly type: SchemaItemType.KindOfQuantity;
   protected _precision: number;
   protected _presentationUnits: FormatUnitSet[];
   protected _persistenceUnit: FormatUnitSet;
@@ -29,7 +29,7 @@ export default class KindOfQuantity extends SchemaChild {
   get persistenceUnit() { return this._persistenceUnit; }
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaChildType.KindOfQuantity);
+    super(schema, name, SchemaItemType.KindOfQuantity);
     this._presentationUnits = [];
   }
 
@@ -79,7 +79,7 @@ export default class KindOfQuantity extends SchemaChild {
     }
   }
 
-  public async accept(visitor: SchemaChildVisitor) {
+  public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitKindOfQuantity)
       await visitor.visitKindOfQuantity(this);
   }

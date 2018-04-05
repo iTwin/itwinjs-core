@@ -16,9 +16,9 @@ describe("Enumeration", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
+        items: {
           testEnum: {
-            schemaChildType: "Enumeration",
+            schemaItemType: "Enumeration",
             backingTypeName: "string",
             description: "Test description",
             label: "Test Enumeration",
@@ -28,7 +28,7 @@ describe("Enumeration", () => {
       };
 
       const ecSchema = await Schema.fromJson(testSchema);
-      const testEnum = await ecSchema.getChild<Enumeration>("testEnum");
+      const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
 
       if (!testEnum)
@@ -44,9 +44,9 @@ describe("Enumeration", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
-        children: {
+        items: {
           testEnum: {
-            schemaChildType: "Enumeration",
+            schemaItemType: "Enumeration",
             backingTypeName: "integer",
             enumerators: [
               {
@@ -59,7 +59,7 @@ describe("Enumeration", () => {
       };
 
       const ecSchema = await Schema.fromJson(testSchema);
-      const testEnum = await ecSchema.getChild<Enumeration>("testEnum");
+      const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
     });
   });
@@ -68,7 +68,7 @@ describe("Enumeration", () => {
     let testEnum: Enumeration;
     let testStringEnum: Enumeration;
     let testEnumSansPrimType: Enumeration;
-    const baseJson = { schemaChildType: "Enumeration" };
+    const baseJson = { schemaItemType: "Enumeration" };
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -257,7 +257,7 @@ describe("Enumeration", () => {
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
     });
 
-    it("should call visitEnumeration on a SchemaChildVisitor object", async () => {
+    it("should call visitEnumeration on a SchemaItemVisitor object", async () => {
       expect(testEnum).to.exist;
       const mockVisitor = { visitEnumeration: sinon.spy() };
       await testEnum.accept(mockVisitor);
@@ -265,7 +265,7 @@ describe("Enumeration", () => {
       expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
     });
 
-    it("should safely handle a SchemaChildVisitor without visitEnumeration defined", async () => {
+    it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
       expect(testEnum).to.exist;
       await testEnum.accept({});
     });

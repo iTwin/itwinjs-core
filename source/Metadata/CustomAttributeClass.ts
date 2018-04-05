@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import { CustomAttributeContainerType, ECClassModifier, SchemaChildType, parseCustomAttributeContainerType } from "../ECObjects";
+import { CustomAttributeContainerType, ECClassModifier, SchemaItemType, parseCustomAttributeContainerType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import Schema from "./Schema";
 
@@ -11,11 +11,11 @@ import Schema from "./Schema";
  * A Typescript class representation of an ECCustomAttributeClass.
  */
 export default class CustomAttributeClass extends ECClass {
-  public readonly type: SchemaChildType.CustomAttributeClass;
+  public readonly type: SchemaItemType.CustomAttributeClass;
   public containerType: CustomAttributeContainerType;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, SchemaChildType.CustomAttributeClass, modifier);
+    super(schema, name, SchemaItemType.CustomAttributeClass, modifier);
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
