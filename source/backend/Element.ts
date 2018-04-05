@@ -9,7 +9,7 @@ import {
   Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, GeometryPartProps,
+  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
   AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
 } from "@bentley/imodeljs-common";
 
@@ -566,8 +566,27 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
   }
 }
 
+/**
+ * The definition element for a line style
+ */
+export class LineStyle extends DefinitionElement implements LineStyleProps {
+  public description?: string;
+  public data!: string;
+  constructor(props: LineStyleProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a LineStyle definition given a name that is meant to be unique within the scope of the specified model.
+   * @param iModel The IModel
+   * @param scopeModelId The scope of the LineStyle.
+   * @param codeValue The name of the LineStyle
+   * @return A LineStyle Code
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: Id64, codeValue: string): Code {
+    return new Code({ spec: iModel.codeSpecs.getByName(CodeSpecNames.LineStyle()).id, scope: scopeModelId.value, value: codeValue });
+  }
+}
+
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
-  public type = 0;
+  public type!: number;
   public description?: string;
   public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -577,7 +596,7 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
   public origin?: Point2d;
-  public angle = 0;
+  public angle!: number;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -586,9 +605,9 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
   public origin?: Point3d;
-  public yaw = 0;
-  public pitch = 0;
-  public roll = 0;
+  public yaw!: number;
+  public pitch!: number;
+  public roll!: number;
   public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -602,7 +621,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * The spatial location of a light source
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
-  public enabled = false;
+  public enabled!: boolean;
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }
 
