@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecjs",
-  "version": "0.3.0",
+  "version": "0.3.1-alpha",
   "description": "ECObjects core concepts in typescript",
   "license": "UNLICENSED",
   "main": "lib/index.js",
@@ -46,7 +46,8 @@
     "typescript": "^2.6.1"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^7.0.1"
+    "@bentley/bentleyjs-core": "^7.0.1",
+    "@types/glob": "^5.0.35"
   },
   "nyc": {
     "include": [

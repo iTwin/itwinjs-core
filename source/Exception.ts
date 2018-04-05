@@ -24,6 +24,7 @@ export const enum ECObjectsStatus {
   InvalidType = ECOBJECTS_ERROR_BASE + 15,
   MissingSchemaUrl = ECOBJECTS_ERROR_BASE + 16,
   UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 17,
+  InvalidSchemaXML = ECOBJECTS_ERROR_BASE + 18,
 }
 
 export class ECObjectsError extends Error {

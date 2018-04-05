@@ -293,4 +293,16 @@ describe("SchemaKey ", () => {
       expect(key.compareByName(incompatibleKey)).to.be.false;
     });
   });
+
+  // Tests to ensure the schemaKey compareByVersion exists
+  // and calls into ECVersion.compare.  See ECVersion.test.ts
+  // for more comprehensive cases.
+  describe("compareByVersion", () => {
+    it("exact match, returns zero", async () => {
+      const leftSchema = new Schema("LeftSchema", 1, 2, 3);
+      const rightSchema = new Schema("RightSchema", 1, 2, 3);
+      const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
+      assert.equal(result, 0);
+    });
+  });
 });
