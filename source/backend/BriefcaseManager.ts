@@ -4,7 +4,7 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ChangeSet, IModel as HubIModel,
   ContainsSchemaChanges, Briefcase, Code, IModelHubResponseError, IModelHubResponseErrorId,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetProcessOption, BeEvent, DbResult, OpenMode, assert, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -290,7 +290,7 @@ export class BriefcaseManager {
 
     const startTime = new Date().getTime();
 
-    BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig);
+    BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler());
     if (!accessToken)
       return;
 

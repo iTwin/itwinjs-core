@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
-  ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv,
+  ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
 import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
 import {
@@ -101,7 +101,7 @@ export class IModelTestUtils {
   private static _hubClient: IModelHubClient | undefined;
   public static get hubClient(): IModelHubClient {
     if (!IModelTestUtils._hubClient)
-    IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig, new AzureFileHandler());
     return IModelTestUtils._hubClient!;
   }
 
@@ -126,7 +126,7 @@ export class IModelTestUtils {
     const config = new IModelHostConfiguration();
     config.iModelHubDeployConfig = deployConfig;
     IModelTestUtils._connectClient = new ConnectClient(deployConfig);
-    IModelTestUtils._hubClient = new IModelHubClient(deployConfig);
+    IModelTestUtils._hubClient = new IModelHubClient(deployConfig, new AzureFileHandler());
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
@@ -175,17 +175,8 @@ export class IModelTestUtils {
     const projectId: string = await IModelTestUtils.getTestProjectId(accessToken, projectName);
     const iModelId: string = await IModelTestUtils.getTestIModelId(accessToken, projectId, iModelName);
 
-    try {
-      const briefcaseIds = new Array<number>();
-      let ii = 5; // todo: IModelHub needs to provide a better way for testing this limit. We are arbitrarily testing for 5 briefcases here!
-      while (ii-- > 0) {
-        const briefcaseId: number = (await IModelTestUtils.hubClient.Briefcases().create(accessToken, iModelId)).briefcaseId!;
-        briefcaseIds.push(briefcaseId);
-      }
-      for (const briefcaseId of briefcaseIds) {
-        await IModelTestUtils.hubClient.Briefcases().delete(accessToken, iModelId, briefcaseId);
-      }
-    } catch (error) {
+    const briefcases: Briefcase[] = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
+    if (briefcases.length > 16) {
       console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
       await IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
     }
@@ -322,7 +313,7 @@ export class IModelTestUtils {
   // Create a SpatialCategory, insert it, and set its default appearance
   public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: Appearance): Id64 {
     const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
-    cat.id = cat.insert();
+    cat.id = definitionModel.iModel.elements.insertElement(cat);
     cat.setDefaultAppearance(appearance);
     return cat.id;
   }

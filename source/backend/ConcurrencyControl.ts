@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery } from "@bentley/imodeljs-clients";
+import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
 import {  Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
@@ -229,7 +229,7 @@ export class ConcurrencyControl {
   }
 
   private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
-  private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv()); }
+  private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv(), new AzureFileHandler()); }
 
   /** process the Lock-specific part of the request. */
   private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {

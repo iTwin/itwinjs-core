@@ -60,4 +60,8 @@ export abstract class TestGateway extends Gateway {
   public async op7(): Promise<GatewayOperationsProfile> {
     return this.forward.apply(this, arguments);
   }
+
+  public async op8(): Promise<void> {
+    return this.forward.apply(this, arguments);
+  }
 }

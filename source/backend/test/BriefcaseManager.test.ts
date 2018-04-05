@@ -13,6 +13,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { ChangeSetToken } from "../BriefcaseManager";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestConfig } from "./TestConfig";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -85,7 +86,7 @@ describe("BriefcaseManager", () => {
   let testIModelId: string;
   let testChangeSets: ChangeSet[];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
-  const testElementCounts = [80, 81, 82];
+  const testElementCounts = [27, 28, 29];
 
   let iModelLocalReadonlyPath: string;
   let iModelLocalReadWritePath: string;
@@ -97,6 +98,7 @@ describe("BriefcaseManager", () => {
   };
 
   before(async () => {
+
     let startTime = new Date().getTime();
     console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
 
@@ -104,10 +106,11 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     startTime = new Date().getTime();
 
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "ReadOnlyTest");
+    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, TestConfig.iModelName);
 
     testChangeSets = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
+    testChangeSets.shift(); // The first change set is a schema change that was not named
     expect(testChangeSets.length).greaterThan(2);
 
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
@@ -115,10 +118,8 @@ describe("BriefcaseManager", () => {
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "ReadOnlyTest");
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", "NoVersionsTest");
-    }
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
@@ -271,9 +272,6 @@ describe("BriefcaseManager", () => {
   });
 
   it.skip("should merge changes so that two branches of an iModel converge", () => {
-    // tslint:disable-next-line:no-debugger
-    debugger;
-
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
     const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
@@ -456,14 +454,18 @@ describe("BriefcaseManager", () => {
     const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.first());
     assert.exists(iModelFirstVersion);
 
+    let elementCount: number;
     for (const [arrayIndex, versionName] of testVersionNames.entries()) {
-      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
-      assert.exists(iModelFromVersion);
-
-      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
+      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(testChangeSets[arrayIndex].wsgId));
       assert.exists(iModelFromChangeSet);
 
-      const elementCount = getElementCount(iModelFromVersion);
+      elementCount = getElementCount(iModelFromChangeSet);
+      assert.equal(elementCount, testElementCounts[arrayIndex]);
+
+      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named(versionName));
+      assert.exists(iModelFromVersion);
+
+      elementCount = getElementCount(iModelFromVersion);
       assert.equal(elementCount, testElementCounts[arrayIndex]);
     }
 
@@ -481,9 +483,9 @@ describe("BriefcaseManager", () => {
     // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
     IModelTestUtils.setIModelHubDeployConfig("DEV");
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
-    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
+    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
     assert(devProjectId);
-    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, "ReadOnlyTest");
+    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, TestConfig.iModelName);
     assert(devIModelId);
     const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
@@ -491,9 +493,9 @@ describe("BriefcaseManager", () => {
     assert.exists(devIModel);
 
     IModelTestUtils.setIModelHubDeployConfig("QA");
-    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, "iModelJsTest");
+    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
     assert(qaProjectId);
-    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, "ReadOnlyTest");
+    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, TestConfig.iModelName);
     assert(qaIModelId);
     const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);

@@ -135,6 +135,11 @@ export interface ElementAspectProps extends EntityProps {
   element: Id64Props;
 }
 
+export interface LineStyleProps extends ElementProps {
+  description?: string;
+  data: string;
+}
+
 export interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;
 }

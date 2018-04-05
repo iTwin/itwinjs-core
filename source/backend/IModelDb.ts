@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** The IModelDb Module */
+/** @module IModelDb */
 import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
@@ -74,21 +74,16 @@ export class IModelDb extends IModel {
   public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
 
-  /** Event raised just before a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only.
-   * This event is not raised for standalone IModelDbs.
-   *
-   * <em>Example:</em>
+  /** Event raised just before a connected IModelDb is opened.<p><em>Example:</em>
    * ``` ts
-   * [[include:IModelDb.onOpened]]
+   * [[include:IModelDb.onOpen]]
    * ```
    */
   public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openMode: OpenMode, _version: IModelVersion) => void>();
   /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only.
-   * This event is not raised for standalone IModelDbs.
-   *
-   * <em>Example:</em>
+   * This event is not raised for standalone IModelDbs. <p><em>Example:</em>
    * ``` ts
-   * [[include:IModelDb.onOpen]]
+   * [[include:IModelDb.onOpened]]
    * ```
    */
   public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb) => void>();
@@ -474,7 +469,10 @@ export class IModelDb extends IModel {
     this.briefcase.nativeDb.abandonChanges();
   }
 
-  /** Import an ECSchema. */
+  /** Import an ECSchema. On success, the schema definition is stored in the iModel.
+   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
+   * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
+   */
   public importSchema(schemaFileName: string) {
     if (!this.briefcase) throw this._newNotOpenError();
     const stat = this.briefcase.nativeDb.importSchema(schemaFileName);

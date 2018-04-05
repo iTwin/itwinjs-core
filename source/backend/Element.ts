@@ -9,7 +9,7 @@ import {
   Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, GeometryPartProps,
+  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
   AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
 } from "@bentley/imodeljs-common";
 
@@ -24,6 +24,18 @@ import {
  * has a "code" that identifies it's meaning in the real world. Additionally, Elements may have a "federationGuid"
  * to hold a GUID, if the element was assigned that GUID by some other federated database. The iModel database enforces
  * uniqueness of id, code, and federationGuid.
+ *
+ * <h2>Element Subclasses</h2>
+ *
+ * Define a subclass of [[Element]] in order to represent a specialization, such as a specific type of physical thing,
+ * a specific abstract idea, or a specific type of information record.
+ * See [[Schema]] for an explanation of how ECClasses are defined and how to represent them in TypeScript.
+ * As noted, you do not have to define a TypeScript class for each specialization of Element.
+ * You would do that in order to hand-coded methods and type-safe constructors for it.
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:Element.subclass]]
+ * ```
  */
 export abstract class Element extends Entity implements ElementProps {
   /** the ModelId of the Model containing this element */
@@ -554,8 +566,27 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
   }
 }
 
+/**
+ * The definition element for a line style
+ */
+export class LineStyle extends DefinitionElement implements LineStyleProps {
+  public description?: string;
+  public data!: string;
+  constructor(props: LineStyleProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a LineStyle definition given a name that is meant to be unique within the scope of the specified model.
+   * @param iModel The IModel
+   * @param scopeModelId The scope of the LineStyle.
+   * @param codeValue The name of the LineStyle
+   * @return A LineStyle Code
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: Id64, codeValue: string): Code {
+    return new Code({ spec: iModel.codeSpecs.getByName(CodeSpecNames.LineStyle()).id, scope: scopeModelId.value, value: codeValue });
+  }
+}
+
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
-  public type = 0;
+  public type!: number;
   public description?: string;
   public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -565,7 +596,7 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
   public origin?: Point2d;
-  public angle = 0;
+  public angle!: number;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -574,9 +605,9 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
   public origin?: Point3d;
-  public yaw = 0;
-  public pitch = 0;
-  public roll = 0;
+  public yaw!: number;
+  public pitch!: number;
+  public roll!: number;
   public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
@@ -590,7 +621,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * The spatial location of a light source
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
-  public enabled = false;
+  public enabled!: boolean;
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }
 

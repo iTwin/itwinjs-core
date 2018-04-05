@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { AccessToken, ChangeSet, UserInfo, IModelHubClient, ChangeSetQuery, UserInfoQuery } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, UserInfo, IModelHubClient, ChangeSetQuery, UserInfoQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
 import { IModelHost } from "./IModelHost";
@@ -143,7 +143,7 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig);
+    const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
 
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
     assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
