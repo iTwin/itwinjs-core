@@ -18,8 +18,8 @@ export class TestPartitionElement extends InformationPartitionElement {
   // You do not have to re-define the constructor. The base class constructor
   // will take care of defining testProperty when loading an instance of
   // this new class. You would re-define the constructor if you want to provide "overrides"
-  // for apps to use. For example, we might define a constructor that takes just the
-  // parent Subject. Note that we must *always* define a constructor that takes a ElementProps 
+  // for apps to use. For example, you might define a constructor that takes just the
+  // parent Subject. Note that you must *always* define a constructor that takes a ElementProps 
   // (or a subclass of it) and an IModel.
   public constructor(parent: Subject);
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb);
