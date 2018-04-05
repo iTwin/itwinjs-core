@@ -241,7 +241,12 @@ export class SchemaXmlFileLocater {
 
     const result = new glob.GlobSync(fullPath, {sync: true});
     for (const match of result.found) {
-      const fileName = path.basename(match, ".ecschema.xml");
+      let fileName = path.basename(match, ".ecschema.xml");
+      // TODO: should this be moved or handled elsewhere?
+      // Handles two version file names - SchemaKey.parseString supports only 3 version names.
+      if (/[^\d]\.\d?\d\.\d?\d$/.test(fileName))
+        fileName = fileName + ".00";
+
       let schemaKey: SchemaKey;
       try {
         schemaKey = SchemaKey.parseString(fileName);
@@ -249,7 +254,7 @@ export class SchemaXmlFileLocater {
         continue;
       }
       if (schemaKey.matches(desiredKey, matchType)) {
-        foundFiles.push(new CandidateSchema(fullPath, schemaPath, schemaKey));
+        foundFiles.push(new CandidateSchema(match, schemaPath, schemaKey));
       }
     }
   }
