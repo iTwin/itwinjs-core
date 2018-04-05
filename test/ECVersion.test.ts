@@ -49,4 +49,55 @@ describe("ECVersion", () => {
       assert.equal("1.0.14", testVersion.toString());
     });
   });
+
+  describe("compareByVersion", () => {
+    it("right-hand read version is less, returns positive", async () => {
+      const leftVersion = new ECVersion(2, 2, 3);
+      const rightVersion = new ECVersion(1, 2, 3);
+      const result = leftVersion.compare(rightVersion);
+      assert.isTrue(result > 0);
+    });
+
+    it("right-hand write version is less, returns positive", async () => {
+      const leftVersion = new ECVersion(1, 2, 3);
+      const rightVersion = new ECVersion(1, 1, 3);
+      const result = leftVersion.compare(rightVersion);
+      assert.isTrue(result > 0);
+    });
+
+    it("right-hand minor version is less, returns positive", async () => {
+      const leftVersion = new ECVersion(1, 2, 3);
+      const rightVersion = new ECVersion(1, 2, 2);
+      const result = leftVersion.compare(rightVersion);
+      assert.isTrue(result > 0);
+    });
+
+    it("right-hand read version is greater, returns negative", async () => {
+      const leftVersion = new ECVersion(1, 2, 3);
+      const rightVersion = new ECVersion(2, 2, 3);
+      const result = leftVersion.compare(rightVersion);
+      assert.isTrue(result < 0);
+    });
+
+    it("right-hand write version is greater, returns negative", async () => {
+      const leftVersion = new ECVersion(1, 1, 3);
+      const rightVersion = new ECVersion(1, 2, 3);
+      const result = leftVersion.compare(rightVersion);
+      assert.isTrue(result < 0);
+    });
+
+    it("right-hand minor version is greater, returns negative", async () => {
+      const leftVersion = new ECVersion(1, 2, 2);
+      const rightVersion = new ECVersion(1, 2, 3);
+      const result = leftVersion.compare(rightVersion);
+      assert.isTrue(result < 0);
+    });
+
+    it("exact match, returns zero", async () => {
+      const leftVersion = new ECVersion(1, 2, 3);
+      const rightVersion = new ECVersion(1, 2, 3);
+      const result = leftVersion.compare(rightVersion);
+      assert.equal(result, 0);
+    });
+  });
 });

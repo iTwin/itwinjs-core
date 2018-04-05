@@ -201,9 +201,9 @@ export class SchemaXmlFileLocater {
       twoVersionSuffix = ".{0}.*.ecschema.xml".format(readVersion.padStart(2, "0"));
       threeVersionSuffix = ".{0}.*.*.ecschema.xml".format(readVersion.padStart(2, "0"));
     } else {
-    twoVersionSuffix = ".{0}.{1}.ecschema.xml".format(readVersion.padStart(2, "0"), writeVersion.padStart(2, "0"));
-    threeVersionSuffix = ".{0}.{1}.{2}.ecschema.xml".format(readVersion.padStart(2, "0"), writeVersion.padStart(2, "0"),
-                          minorVersion.padStart(2, "0"));
+      twoVersionSuffix = ".{0}.{1}.ecschema.xml".format(readVersion.padStart(2, "0"), writeVersion.padStart(2, "0"));
+      threeVersionSuffix = ".{0}.{1}.{2}.ecschema.xml".format(readVersion.padStart(2, "0"), writeVersion.padStart(2, "0"),
+                            minorVersion.padStart(2, "0"));
     }
 
     const twoVersionExpression = desiredKey.name + twoVersionSuffix;
