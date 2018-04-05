@@ -1,17 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayDefinition } from "../Gateway";
-import { GatewayConfiguration } from "./GatewayConfiguration";
-import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
+import { GatewayDefinition } from "../../Gateway";
+import { GatewayConfiguration } from "../core/GatewayConfiguration";
+import { GatewayRequest, GatewayRequestEventHandler } from "../core/GatewayRequest";
+import { OpenAPIInfo } from "./OpenAPI";
 import { BentleyCloudGatewayProtocol } from "./BentleyCloudGatewayProtocol";
 
 /** Initialization parameters for BentleyCloudGatewayConfiguration. */
 export interface BentleyCloudGatewayParams {
-  info: GatewayHttpProtocol.OpenAPIInfo;
+  info: OpenAPIInfo;
   protocol?: typeof BentleyCloudGatewayProtocol;
   uriPrefix?: string;
-  pendingRequestListener?: GatewayHttpProtocol.PendingOperationRequestListener;
+  pendingRequestListener?: GatewayRequestEventHandler;
 }
 
 /** Operating parameters for Bentley cloud gateway deployments. */
@@ -20,13 +21,13 @@ export abstract class BentleyCloudGatewayConfiguration extends GatewayConfigurat
   public applicationAuthorizationKey = "Authorization";
 
   /** The protocol of the configuration. */
-  public abstract protocol: BentleyCloudGatewayProtocol;
+  public abstract readonly protocol: BentleyCloudGatewayProtocol;
 
   /** Performs gateway configuration for the application. */
-  public static initialize(params: BentleyCloudGatewayParams, gateways: GatewayDefinition[]) {
+  public static initialize(params: BentleyCloudGatewayParams, gateways: GatewayDefinition[]): BentleyCloudGatewayConfiguration {
     const protocol = class extends (params.protocol || BentleyCloudGatewayProtocol) {
-      public openAPIPathPrefix = () => (params.uriPrefix || "");
-      public openAPIInfo = () => params.info;
+      public pathPrefix = params.uriPrefix || "";
+      public info = params.info;
     };
 
     const config = class extends BentleyCloudGatewayConfiguration {
@@ -34,14 +35,16 @@ export abstract class BentleyCloudGatewayConfiguration extends GatewayConfigurat
       public protocol: BentleyCloudGatewayProtocol = new protocol(this);
     };
 
-    for (const gateway of gateways)
-      Gateway.setConfiguration(gateway, () => config);
+    for (const gateway of gateways) {
+      GatewayConfiguration.assign(gateway, () => config);
+    }
 
-    const instance = GatewayConfiguration.getInstance(config);
-    if (params.pendingRequestListener)
-      instance.protocol.pendingOperationRequestListeners.push(params.pendingRequestListener);
+    if (params.pendingRequestListener) {
+      GatewayRequest.events.addListener(params.pendingRequestListener);
+    }
 
-    instance.initializeGateways();
+    const instance = GatewayConfiguration.obtain(config);
+    GatewayConfiguration.initializeGateways(instance);
 
     return instance;
   }

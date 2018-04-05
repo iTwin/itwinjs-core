@@ -4,7 +4,7 @@
 import { IModelDb } from "./IModelDb";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
-import { Gateway, IModelError } from "@bentley/imodeljs-common";
+import { GatewayRequest, IModelError } from "@bentley/imodeljs-common";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 
@@ -22,7 +22,7 @@ export class BackendActivityMonitor implements AppActivityMonitor {
   public isIdle(): boolean {
     // If it has been over the specified amount of time since the last request was received,
     // then we *guess* the backend is in a lull and that the lull will continue for a similar amount of time.
-    const millisSinceLastPost: number = Date.now() - Gateway.aggregateLoad.lastRequest;
+    const millisSinceLastPost: number = Date.now() - GatewayRequest.aggregateLoad.lastRequest;
     return (millisSinceLastPost >= (this.idleIntervalSeconds * 1000));
 
   }

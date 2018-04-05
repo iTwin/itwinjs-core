@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
-import { Gateway, GatewayOperationsProfile } from "@bentley/imodeljs-common";
+import { Gateway, GatewayRequest, GatewayOperationsProfile } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 
 export class TestGatewayImpl extends Gateway implements TestGateway {
@@ -35,6 +35,10 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
   }
 
   public async op7(): Promise<GatewayOperationsProfile> {
-    return Gateway.aggregateLoad;
+    return GatewayRequest.aggregateLoad;
+  }
+
+  public async op8(): Promise<void> {
+    return;
   }
 }
