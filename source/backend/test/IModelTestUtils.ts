@@ -313,7 +313,7 @@ export class IModelTestUtils {
   // Create a SpatialCategory, insert it, and set its default appearance
   public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: Appearance): Id64 {
     const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
-    cat.id = cat.insert();
+    cat.id = definitionModel.iModel.elements.insertElement(cat);
     cat.setDefaultAppearance(appearance);
     return cat.id;
   }
