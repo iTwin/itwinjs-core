@@ -6,7 +6,10 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ElementAspectProps } from "@bentley/imodeljs-common";
 
-/** ElementAspect */
+/** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
+ * Semantically, an Element Aspect can be considered part of the Element. Thus, an Element Aspect is deleted if its owning Element is deleted.
+ * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
+ */
 export class ElementAspect extends Entity implements ElementAspectProps {
   public element: Id64;
 
@@ -16,10 +19,10 @@ export class ElementAspect extends Entity implements ElementAspectProps {
   }
 }
 
-/** ElementUniqueAspect */
+/** An Element Unique Aspect is an Element Aspect where there can be only zero or one instance of the Element Aspect class per Element. See [[IModelDb.getUniqueAspect]] */
 export class ElementUniqueAspect extends ElementAspect {
 }
 
-/** ElementMultiAspect */
+/** An Element Multi-Aspect is an Element Aspect where there can be <em>n</em> instances of the Element Aspect class per Element. See [[IModelDb.getMultiAspects]] */
 export class ElementMultiAspect extends ElementAspect {
 }
