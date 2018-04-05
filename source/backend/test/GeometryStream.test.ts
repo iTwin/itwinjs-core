@@ -2,13 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson } from "@bentley/geometry-core";
-import { Id64, Guid } from "@bentley/bentleyjs-core";
+import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d } from "@bentley/geometry-core";
+import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps,
+  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LineStyleProps, FilePropertyProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { DictionaryModel, IModelDb, GeometricElement3d } from "../backend";
+import { IModelDb, GeometricElement3d } from "../backend";
+import { LineStyle } from "../Element";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -24,10 +25,196 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodelWithFonts);
   });
 
-  it("json encoding and decoding roundtrip of TextString in world coords", async () => {
+  it.skip("json encoding and decoding of linestyle", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    enum LineStyleComponentType {
+      Unknown = 0,
+      PointSymbol = 1,
+      Compound = 2,
+      LineCode = 3,
+      LinePoint = 4,
+      Internal = 6,
+      RasterImage = 7,
+    }
+
+    /** Create line code component */
+    type LineStyleStrokeProps =
+      { length: number } |
+      { orgWidth?: number } |
+      { endWidth?: number } |
+      { strokeMode?: number } | /** 0 for gap, 1 for dash */
+      { widthMode?: number } |
+      { capMode?: number };
+
+    type LineStyleStrokes = LineStyleStrokeProps[];
+
+    interface LineStyleLineCodeProps {
+      descr: string;
+      phase?: number;
+      options?: number;
+      maxIter?: number;
+      strokes: LineStyleStrokes;
+    }
+
+    const lsStrokes: LineStyleStrokes = [];
+    lsStrokes.push({ length: 0.25, strokeMode: 1 });
+    lsStrokes.push({ length: 0.1 });
+    lsStrokes.push({ length: 0.1, strokeMode: 1 });
+    lsStrokes.push({ length: 0.1 });
+    lsStrokes.push({ length: 0.1, strokeMode: 1 });
+    lsStrokes.push({ length: 0.1 });
+    lsStrokes.push({ length: 0.25, strokeMode: 1 });
+    lsStrokes.push({ length: 0.1 });
+
+    const lsCmpnDef1: LineStyleLineCodeProps = { descr: "TestLineCode", strokes: lsStrokes };
+    const lsStrVal1 = JSON.stringify(lsCmpnDef1);
+
+    const lineCodeId = 1; // NEEDSWORK: Use get next avail when node addon updated...
+    const lsPropsStr1: FilePropertyProps = { name: "LineCodeV1", namespace: "dgn_LStyle", id: lineCodeId };
+
+    const stat1 = imodel.saveFileProperty(lsPropsStr1, lsStrVal1);
+    assert.equal(stat1, 0, "saveFileProperty as string");
+    const readFromDb1 = imodel.queryFilePropertyString(lsPropsStr1);
+    assert.equal(readFromDb1, lsStrVal1, "query string after save");
+
+    /** Create point symbol component */
+    type LineStylePointSymbolProps =
+      { geomPartId: Id64Props } |
+      { baseX?: number } |
+      { baseY?: number } |
+      { baseZ?: number } |
+      { sizeX?: number } |
+      { sizeY?: number } |
+      { sizeZ?: number } |
+      { symFlags?: number } |
+      { scale?: number };
+
+    const lsCmpnDef2: LineStylePointSymbolProps = { geomPartId: new Id64() }; // NEEDSWORK: Create geometry part...
+    const lsStrVal2 = JSON.stringify(lsCmpnDef2);
+
+    const lineSymbId = 1; // NEEDSWORK: Use get next avail when node addon updated...
+    const lsPropsStr2: FilePropertyProps = { name: "PointSymV1", namespace: "dgn_LStyle", id: lineSymbId };
+
+    const stat2 = imodel.saveFileProperty(lsPropsStr2, lsStrVal2);
+    assert.equal(stat2, 0, "saveFileProperty as string");
+    const readFromDb2 = imodel.queryFilePropertyString(lsPropsStr2);
+    assert.equal(readFromDb2, lsStrVal2, "query string after save");
+
+    /** Create line point component */
+    type LineStyleSymbolProps =
+      { symId: number } | /** id of LineStyleComponentType.PointSymbol component */
+      { strokeNum?: number } |
+      { xOffset?: number } |
+      { yOffset?: number } |
+      { angle?: number } |
+      { mod1?: number };
+
+    type LineStyleSymbols = LineStyleSymbolProps[];
+
+    interface LineStyleLinePointProps {
+      descr: string;
+      lcId: number; /** id of LineStyleComponentType.LineCode component */
+      symbols: LineStyleSymbols;
+    }
+
+    const lsSymbols: LineStyleSymbols = [];
+    lsSymbols.push({ symId: lineSymbId, strokeNum: 2 });
+    lsSymbols.push({ symId: lineSymbId, strokeNum: 4 });
+
+    const lsCmpnDef3: LineStyleLinePointProps = { descr: "TestLinePoint", lcId: lineCodeId, symbols: lsSymbols };
+    const lsStrVal3 = JSON.stringify(lsCmpnDef3);
+
+    const linePointId = 1; // NEEDSWORK: Use get next avail when node addon updated...
+    const lsPropsStr3: FilePropertyProps = { name: "LinePointV1", namespace: "dgn_LStyle", id: linePointId };
+
+    const stat3 = imodel.saveFileProperty(lsPropsStr3, lsStrVal3);
+    assert.equal(stat3, 0, "saveFileProperty as string");
+    const readFromDb3 = imodel.queryFilePropertyString(lsPropsStr3);
+    assert.equal(readFromDb3, lsStrVal3, "query string after save");
+
+    /** Create compound component */
+    type LineStyleComponentProps =
+      { id: number } | /** id of LineCodeV1 or PointSymV1 component */
+      { type: LineStyleComponentType } | /** type of component for specified id */
+      { offset?: number };
+
+    type LineStyleComponents = LineStyleComponentProps[];
+
+    interface LineStyleCompoundProps {
+      comps: LineStyleComponents;
+    }
+
+    const lsCmpns: LineStyleComponents = [];
+    lsCmpns.push({ id: linePointId, type: LineStyleComponentType.LinePoint });
+    lsCmpns.push({ id: lineCodeId, type: LineStyleComponentType.LineCode });
+
+    const lsCmpnDef4: LineStyleCompoundProps = { comps: lsCmpns };
+    const lsStrVal4 = JSON.stringify(lsCmpnDef4);
+
+    const compoundId = 1; // NEEDSWORK: Use get next avail when node addon updated...
+    const lsPropsStr4: FilePropertyProps = { name: "CompoundV1", namespace: "dgn_LStyle", id: compoundId };
+
+    const stat4 = imodel.saveFileProperty(lsPropsStr4, lsStrVal4);
+    assert.equal(stat4, 0, "saveFileProperty as string");
+    const readFromDb4 = imodel.queryFilePropertyString(lsPropsStr4);
+    assert.equal(readFromDb4, lsStrVal4, "query string after save");
+
+    /* Crete line style definition element */
+    interface LineStyleDataProps {
+      compId: number;
+      compType: LineStyleComponentType;
+      flags?: number;
+      unitDef?: number;
+      }
+
+    const lsDataProps: LineStyleDataProps = {
+      compId: 1,
+      compType: LineStyleComponentType.Compound,
+    };
+
     // tslint:disable-next-line:no-debugger
     // debugger;
 
+    const lsProps: LineStyleProps = {
+      classFullName: "BisCore:LineStyle",
+      iModel: imodel,
+      model: IModel.getDictionaryId(),
+      code: LineStyle.createCode(imodel, IModel.getDictionaryId(), "TestDashDotDotDash"),
+      data: JSON.stringify(lsDataProps),
+    };
+
+    const lsId = imodel.elements.insertElement(lsProps);
+    assert.isTrue(lsId.isValid());
+
+/** */
+    const geometryStream: GeometryStreamProps = [];
+
+    geometryStream.push({ appearance: { style: lsId } });
+    geometryStream.push(GeomJson.Writer.toIModelJson(LineSegment3d.create(Point3d.createZero(), Point3d.create(10, 0, 0))));
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: geometryStream,
+    };
+
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    assert.isTrue(newId.isValid());
+    imodel.saveChanges();
+/** */
+
+  });
+
+  it("json encoding and decoding roundtrip of TextString in world coords", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodelWithFonts.elements.getElement(new Id64("0x38"));
     assert.isTrue(seedElement instanceof GeometricElement3d);
@@ -59,7 +246,6 @@ describe("GeometryStream", () => {
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
-      federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: builder.geometryStream,
       placement: { origin: testOrigin, angles: testAngles },
@@ -101,11 +287,10 @@ describe("GeometryStream", () => {
       geometryStream.push(arcData);
     }
 
-    const dictionary: DictionaryModel = imodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     const partProps: GeometryPartProps = {
       classFullName: "BisCore:GeometryPart",
       iModel: imodel,
-      model: dictionary,
+      model: IModel.getDictionaryId(),
       code: Code.createEmpty(),
       geom: geometryStream,
     };
@@ -144,7 +329,6 @@ describe("GeometryStream", () => {
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
-      federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: geometryStream,
     };
