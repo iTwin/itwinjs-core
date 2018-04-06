@@ -114,7 +114,7 @@ describe("Gateway", () => {
     assert.isAbove(backendAggregate2.lastResponse, backendAggregate1.lastResponse);
   });
 
-  it.only("should support pending operations", async () => {
+  it("should support pending operations", async () => {
     const op8 = GatewayOperation.lookup(TestGateway, "op8");
 
     let receivedPending = false;
