@@ -190,6 +190,8 @@ describe("SchemaXmlFileLocater tests:", () => {
   });
 
   it("buildDependencyOrderedSchemaList succeeds", () => {
+    // tslint:disable-next-line:no-debugger
+    debugger;
     // Arrange
     locator.addSchemaSearchPaths(paths);
     const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
@@ -197,7 +199,6 @@ describe("SchemaXmlFileLocater tests:", () => {
     // ensure refs in wrong order for valid test
     assert.equal(importSchema.references[0].name, "SchemaC");
     assert.equal(importSchema.references[1].name, "SchemaB");
-    assert.equal(importSchema.references[2].name, "SchemaD");
 
     // Act
     const schemaList = locator.buildDependencyOrderedSchemaList(importSchema);

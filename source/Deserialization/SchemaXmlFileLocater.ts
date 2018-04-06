@@ -82,15 +82,6 @@ export class SchemaXmlFileLocater {
     return schema;
   }
 
-  public getSchemaReferenceKeys(schema: CandidateSchema): SchemaKey[] {
-    const file = this.getSchemaFile(schema.fileName);
-    if (!file)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${schema.fileName}, for the schema ${schema.schemaKey.name}`);
-
-    const keys = this._getSchemaReferenceKeys(file.toString());
-    return keys;
-  }
-
   public locateSchema(key: SchemaKey, matchType: SchemaMatchType): CandidateSchema | undefined {
     const foundSchema = this._knownSchemas.getSchemaSync(key, matchType);
     if (foundSchema)
@@ -105,14 +96,24 @@ export class SchemaXmlFileLocater {
     return maxCandidate;
   }
 
-  public buildDependencyOrderedSchemaList(insertSchema: Schema): Schema[] {
-    const schemaList: Schema[] = [];
+  public getSchemaReferenceKeys(schema: CandidateSchema): SchemaKey[] {
+    const file = this.getSchemaFile(schema.fileName);
+    if (!file)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${schema.fileName}, for the schema ${schema.schemaKey.name}`);
 
-    this.insertSchemaInDependencyOrderedList(schemaList, insertSchema);
+    const keys = this._getSchemaReferenceKeys(file.toString());
+    return keys;
+  }
+
+  public buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[] {
+    if (!schemas)
+      schemas = [];
+
+    this.insertSchemaInDependencyOrderedList(schemas, insertSchema);
     for (const reference of insertSchema.references) {
-      this.insertSchemaInDependencyOrderedList(schemaList, reference);
+      this.buildDependencyOrderedSchemaList(reference, schemas);
     }
-    return schemaList;
+    return schemas;
   }
 
   private getSchemaFile(schemaPath: string): any | undefined {
