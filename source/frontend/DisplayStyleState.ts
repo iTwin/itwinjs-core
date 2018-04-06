@@ -41,6 +41,8 @@ export abstract class DisplayStyleState extends ElementState {
 
   public getMonochromeColor(): ColorDef { return ColorDef.fromJSON(this.getStyle("monochromeColor")); }
   public setMonochromeColor(val: ColorDef): void { this.setStyle("monochromeColor", val); }
+
+  public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 }
 
 /** A DisplayStyle for 2d views */

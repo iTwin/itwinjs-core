@@ -10,15 +10,14 @@ import { Schema, Schemas } from "./Schema";
 export class ClassRegistry {
   private static readonly classMap = new Map<string, typeof Entity>();
   private static getKey(schemaName: string, className: string) { return (schemaName + ":" + className).toLowerCase(); }
-  public static lookupClass(name: string) { return this.classMap.get(name.toLowerCase()); }
+  private static lookupClass(name: string) { return this.classMap.get(name.toLowerCase()); }
 
-  /** Check if the specified Error is a not-found error */
+  /** @hidden */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
 
-  /** Construct a class-not-found exception */
-  public static makeClassNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "class " + className + "not found"); }
+  private static makeClassNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "class " + className + "not found"); }
 
-  /** Construct a metadata-not-found exception */
+  /** @hidden */
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for " + className); }
 
   /**
@@ -39,9 +38,13 @@ export class ClassRegistry {
     return new entityClass(props, iModel);
   }
 
+  /** @hidden */
   public static register(entityClass: typeof Entity) { this.classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
+  /** @hidden */
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
+  /** @hidden */
   public static getRegisteredSchema(domainName: string) { return Schemas.getRegisteredSchema(domainName); }
+  /** @hidden */
   public static getSchemaBaseClass() { return Schema; }
 
   private static generateProxySchema(schemaName: string): typeof Schema {
@@ -84,7 +87,7 @@ export class ClassRegistry {
     return generatedClass;
   }
 
-  /** Register all of the classes that derive from Entity, that are found in a given module
+  /** Register all of the classes that derive from Entity, that are found in a given module. See the example in [[Schema]]
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */

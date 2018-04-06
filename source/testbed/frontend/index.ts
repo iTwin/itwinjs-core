@@ -11,7 +11,7 @@ import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 
 TestbedConfig.initializeGatewayConfig();
 if (TestbedConfig.gatewayConfig)
-  TestbedConfig.gatewayConfig.protocol.openAPIPathPrefix = () => `http://localhost:${TestbedConfig.serverPort}`;
+  TestbedConfig.gatewayConfig.protocol.pathPrefix = `http://localhost:${TestbedConfig.serverPort}`;
 
 const { ipcRenderer, remote } = require("electron");
 TestbedConfig.ipc = ipcRenderer;

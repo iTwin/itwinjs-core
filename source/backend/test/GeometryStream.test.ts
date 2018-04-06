@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson } from "@bentley/geometry-core";
-import { Id64, Guid } from "@bentley/bentleyjs-core";
+import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d } from "@bentley/geometry-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import {
   Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { DictionaryModel, IModelDb, GeometricElement3d } from "../backend";
+import { IModelDb, GeometricElement3d, LineStyleDefinition } from "../backend";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -24,10 +24,85 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodelWithFonts);
   });
 
-  it("json encoding and decoding roundtrip of TextString in world coords", async () => {
+  it("json encoding and decoding of linestyle", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
     // tslint:disable-next-line:no-debugger
     // debugger;
 
+    const lsStrokes: LineStyleDefinition.Strokes = [];
+    lsStrokes.push({ length: 0.25, orgWidth: 0.0, endWidth: 0.025, strokeMode: 1, widthMode: 3 });
+    lsStrokes.push({ length: 0.1 });
+    lsStrokes.push({ length: 0.1, orgWidth: 0.025, endWidth: 0.025, strokeMode: 1, widthMode: 3 });
+    lsStrokes.push({ length: 0.1 });
+    lsStrokes.push({ length: 0.25, orgWidth: 0.025, endWidth: 0.0, strokeMode: 1, widthMode: 3 });
+    lsStrokes.push({ length: 0.1 });
+
+    const lineCodeData = LineStyleDefinition.Utils.createLineCode(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes } );
+    assert.isTrue(undefined !== lineCodeData);
+
+    const partStream: GeometryStreamProps = [];
+    partStream.push(GeomJson.Writer.toIModelJson(Arc3d.createXY(Point3d.createZero(), 0.05)));
+
+    const partProps: GeometryPartProps = {
+      classFullName: "BisCore:GeometryPart",
+      iModel: imodel,
+      model: IModel.getDictionaryId(),
+      code: Code.createEmpty(),
+      geom: partStream,
+    };
+
+    const partId = imodel.elements.insertElement(partProps);
+    assert.isTrue(partId.isValid());
+
+    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbol(imodel, { geomPartId: partId } ); // base and size will be set automatically...
+    assert.isTrue(undefined !== pointSymbolData);
+
+    const lsSymbols: LineStyleDefinition.Symbols = [];
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: 3 }); // NEEDSWORK: Add enums for stuff like mod1...
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: 3 });
+
+    const linePointData = LineStyleDefinition.Utils.createLinePoint(imodel, { descr: "TestGapSymbolsLinePoint", lcId: lineCodeData!.compId, symbols: lsSymbols } );
+    assert.isTrue(undefined !== linePointData);
+
+    const lsComponents: LineStyleDefinition.Components = [];
+    lsComponents.push({ id: linePointData!.compId, type: linePointData!.compType });
+    lsComponents.push({ id: lineCodeData!.compId, type: lineCodeData!.compType });
+
+    const compoundData = LineStyleDefinition.Utils.createCompound(imodel, { comps: lsComponents } );
+    assert.isTrue(undefined !== compoundData);
+
+    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.getDictionaryId(), "TestDashCircleDotCircleDashStyle", compoundData!);
+    assert.isTrue(styleId.isValid());
+
+    // const styleId2a = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.getDictionaryId(), LineStyleDefinition.LinePixels.Code4);
+    // assert.isTrue(styleId2a.isValid());
+    // const styleId2b = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.getDictionaryId(), LineStyleDefinition.LinePixels.Code4);
+    // assert.isTrue(styleId2a.equals(styleId2b));
+
+    const geometryStream: GeometryStreamProps = [];
+    geometryStream.push({ appearance: { style: styleId } });
+    geometryStream.push(GeomJson.Writer.toIModelJson(LineSegment3d.create(Point3d.createZero(), Point3d.create(10, 0, 0))));
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: geometryStream,
+    };
+
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(newId.isValid());
+    imodel.saveChanges();
+  });
+
+  it("json encoding and decoding roundtrip of TextString in world coords", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodelWithFonts.elements.getElement(new Id64("0x38"));
     assert.isTrue(seedElement instanceof GeometricElement3d);
@@ -59,7 +134,6 @@ describe("GeometryStream", () => {
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
-      federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: builder.geometryStream,
       placement: { origin: testOrigin, angles: testAngles },
@@ -101,11 +175,10 @@ describe("GeometryStream", () => {
       geometryStream.push(arcData);
     }
 
-    const dictionary: DictionaryModel = imodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
     const partProps: GeometryPartProps = {
       classFullName: "BisCore:GeometryPart",
       iModel: imodel,
-      model: dictionary,
+      model: IModel.getDictionaryId(),
       code: Code.createEmpty(),
       geom: geometryStream,
     };
@@ -144,7 +217,6 @@ describe("GeometryStream", () => {
       model: seedElement.model,
       category: seedElement.category,
       code: Code.createEmpty(),
-      federationGuid: new Guid(true),
       userLabel: "UserLabel-" + 1,
       geom: geometryStream,
     };

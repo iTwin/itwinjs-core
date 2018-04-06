@@ -898,9 +898,16 @@ describe("iModel", () => {
     const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
     assert.deepEqual(blobFromDb, blobVal, "query blob after save");
 
-    stat = iModel.deleteFileProperty(myPropsStr);
+    let next = iModel.queryNextAvailableFileProperty(myPropsBlob);
+    assert.equal(11, next, "queryNextAvailableFileProperty blob");
+
+    next = iModel.queryNextAvailableFileProperty(myPropsStr);
+    assert.equal(2, next, "queryNextAvailableFileProperty str");
+    assert.equal(0, iModel.deleteFileProperty(myPropsStr));
     assert.equal(stat, 0, "deleteFileProperty");
     assert.isUndefined(iModel.queryFilePropertyString(myPropsStr), "property was deleted");
+    next = iModel.queryNextAvailableFileProperty(myPropsStr);
+    assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");
 
     iModel.closeStandalone();
   });
