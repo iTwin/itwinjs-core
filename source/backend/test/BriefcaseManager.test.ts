@@ -80,7 +80,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
   return { modelId, spatialCategoryId };
 }
 
-describe("BriefcaseManager", () => {
+describe.skip("BriefcaseManager", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
