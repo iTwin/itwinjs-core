@@ -4,7 +4,7 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken, ConnectClient, IModelHubClient, Project } from "@bentley/imodeljs-clients";
+import { AccessToken, ConnectClient, IModelHubClient, Project, IModelQuery } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../ChangeSummaryManager";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -61,10 +61,7 @@ describe.skip("ChangeSummary", () => {
 
     // Get test iModelIds from the mocked iModelHub client
     for (const iModelInfo of testIModels) {
-      const iModels = await iModelHubClientMock.object.getIModels(spoofAccessToken as any, testProjectId, {
-        $select: "*",
-        $filter: `Name+eq+'${iModelInfo.name}'`,
-      });
+      const iModels = await iModelHubClientMock.object.IModels().get(spoofAccessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
       assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
       assert(iModels[0].wsgId, `No IModelId returned for ${iModelInfo.name} iModel`);
       iModelInfo.id = iModels[0].wsgId;
@@ -72,12 +69,12 @@ describe.skip("ChangeSummary", () => {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // getChangeSets
-      iModelInfo.changeSets = await iModelHubClientMock.object.getChangeSets(spoofAccessToken as any, iModelInfo.id, false);
+      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(spoofAccessToken as any, iModelInfo.id);
       expect(iModelInfo.changeSets);
 
       // downloadChangeSets
       const csetDir = path.join(cacheDir, iModelInfo.id, "csets");
-      await iModelHubClientMock.object.downloadChangeSets(iModelInfo.changeSets, csetDir);
+      await iModelHubClientMock.object.ChangeSets().download(iModelInfo.changeSets, csetDir);
     }
     MockAssetUtil.verifyIModelInfo(testIModels);
 
@@ -261,7 +258,7 @@ describe.skip("ChangeSummary", () => {
   });
 
   it.skip("Extract ChangeSummary for single changeset", async () => {
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(spoofAccessToken, testIModels[1].id, false);
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(spoofAccessToken, testIModels[1].id);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -310,7 +307,7 @@ describe.skip("ChangeSummary", () => {
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.getChangeSets(spoofAccessToken, testIModels[1].id, false);
+    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(spoofAccessToken, testIModels[1].id);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;

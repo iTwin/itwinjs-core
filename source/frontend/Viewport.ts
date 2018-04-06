@@ -6,8 +6,7 @@ import {
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -16,7 +15,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d } from "@bentley/imodeljs-common";
+import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 
 /** A rectangle in view coordinates. */
@@ -104,7 +103,7 @@ class Animator {
   }
 }
 
-export const enum RemoveMe { No, Yes }
+export const enum RemoveMe { No = 0, Yes = 1 }
 
 /**
  * An object to animate a transition of viewport.
@@ -208,6 +207,9 @@ export class Viewport {
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
+
+  public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
+  public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
@@ -1293,7 +1295,7 @@ export class Viewport {
 
   /** Get a color that will contrast to the current background color of this Viewport. Either Black or White depending on which will have the most contrast. */
   public getContrastToBackgroundColor(): ColorDef {
-    const bgColor = this.view.backgroundColor.getColors();
+    const bgColor = this.view.backgroundColor.colors;
     const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
     return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
   }

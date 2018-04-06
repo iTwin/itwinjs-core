@@ -21,9 +21,9 @@ export class DynamicsContext extends ViewContext {
 
 export class SnapContext extends ViewContext {
   public snapDetail?: SnapDetail; // result of the snap
-  public snapAperture: number;
-  public snapMode: SnapMode;
-  public snapDivisor: number;
+  public snapAperture = 10;
+  public snapMode = SnapMode.Invalid;
+  public snapDivisor = 2;
 
   public async snapToPath(_thisPath: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
     //   if (!Application.locateManager.isSnappableModel(thisPath.getModel())   {

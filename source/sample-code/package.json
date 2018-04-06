@@ -27,11 +27,11 @@
     "we just make testbed winx64-specific."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^7.3.2",
-    "@bentley/geometry-core": "^7.2.0",
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-backend": "0",
-    "@bentley/imodeljs-n_8_9-win32-x64": "^13.0.0",
-    "@bentley/imodeljs-clients": "^4.2.0",
+    "@bentley/imodeljs-n_8_9-win32-x64": "^14.1.0",
+    "@bentley/imodeljs-clients": "^5.0.3",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-frontend": "0",
     "body-parser": "^1.18.2",
@@ -51,6 +51,6 @@
   "devDependencies": {
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
-    "typescript": "~2.6.2"
+    "typescript": "~2.7.2"
   }
 }

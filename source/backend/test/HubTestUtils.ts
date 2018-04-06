@@ -2,22 +2,21 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestConfig } from "./TestConfig";
-import { ConnectClient, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { AuthorizationToken, AccessToken, UserProfile } from "@bentley/imodeljs-clients";
-import { Project, IModel, Briefcase } from "@bentley/imodeljs-clients";
+import {
+  ConnectClient, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken,
+  AccessToken, UserProfile, Project, IModel, Briefcase, IModelQuery, AzureFileHandler,
+} from "@bentley/imodeljs-clients";
 import { assert, expect } from "chai";
 
 export class HubTestUtils {
-  public accessToken: AccessToken;
+  public accessToken!: AccessToken;
   public hubClient: IModelHubClient;
-  public testUserProfile: UserProfile;
-  public testProject: Project;
-  public testIModel: IModel;
-  public testBriefcase: Briefcase;
+  public testUserProfile!: UserProfile;
+  public testProject!: Project;
+  public testIModel!: IModel;
+  public testBriefcase!: Briefcase;
 
-  constructor() {
-    this.hubClient = new IModelHubClient("QA");
-  }
+  constructor() { this.hubClient = new IModelHubClient("QA", new AzureFileHandler()); }
 
   public async initialize(): Promise<void> {
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(TestConfig.email, TestConfig.password);
@@ -41,10 +40,7 @@ export class HubTestUtils {
   }
 
   private async getTestIModel(accessToken: AccessToken, project: Project): Promise<IModel> {
-    const imodels = await this.hubClient.getIModels(accessToken, project.wsgId, {
-      $select: "*",
-      $filter: "Name+eq+'" + TestConfig.iModelName + "'",
-    });
+    const imodels = await this.hubClient.IModels().get(accessToken, project.wsgId, new IModelQuery().byName(TestConfig.iModelName));
 
     const imodel = imodels[0];
     assert.isDefined(imodel.wsgId);
@@ -54,10 +50,9 @@ export class HubTestUtils {
   }
 
   private async getTestBriefcase(accessToken: AccessToken, iModel: IModel): Promise<Briefcase> {
-    let briefcases = await this.hubClient.getBriefcases(accessToken, iModel.wsgId);
+    let briefcases = await this.hubClient.Briefcases().get(accessToken, iModel.wsgId);
     if (briefcases.length === 0) {
-      await this.hubClient.acquireBriefcase(accessToken, iModel.wsgId);
-      briefcases = await this.hubClient.getBriefcases(accessToken, iModel.wsgId);
+      briefcases = [await this.hubClient.Briefcases().create(accessToken, iModel.wsgId)];
       assert(briefcases.length > 0);
     }
 

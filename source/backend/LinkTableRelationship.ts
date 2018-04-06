@@ -77,7 +77,7 @@ export interface ElementGroupsMembersProps extends LinkTableRelationshipProps {
  * BisCore:ElementGroupsMembers
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
-  public memberPriority: number;
+  public memberPriority!: number;
 
   /** @hidden */
   constructor(props: ElementGroupsMembersProps, iModel: IModelDb) { super(props, iModel); }
@@ -104,13 +104,11 @@ export interface ElementDrivesElementProps extends LinkTableRelationshipProps {
  * BisCore:ElementDrivesElement
  */
 export class ElementDrivesElement extends LinkTableRelationship implements ElementDrivesElementProps {
-  public status: number;
-  public priority: number;
+  public status!: number;
+  public priority!: number;
 
   /** @hidden */
-  constructor(props: ElementDrivesElementProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
+  constructor(props: ElementDrivesElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create an instance of the ElementDrivesElement relationship.
    * @param iModel The iModel that will contain the relationship
@@ -146,7 +144,7 @@ export class IModelDbLinkTableRelationships {
    * Insert a new relationship instance into the iModel.
    * @param props The properties of the new relationship instance.
    * @returns The Id of the newly inserted relationship instance.
-   * @remarks The id property of the props object is set as a side effect of this function.
+   * @note The id property of the props object is set as a side effect of this function.
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: LinkTableRelationshipProps): Id64 {

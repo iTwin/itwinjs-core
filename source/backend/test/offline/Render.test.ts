@@ -18,7 +18,7 @@ describe("Render", () => {
     assert.equal(blue.getRgb(), 0xff);
     assert.isTrue(blue.equals(new ColorDef(blue)));
 
-    const colors = color3.getColors();
+    const colors = color3.colors;
     ColorDef.from(colors.r, colors.g, colors.b, 0x30, color3);
     assert.isTrue(color3.equals(ColorDef.from(0xa, 2, 3, 0x30)));
 

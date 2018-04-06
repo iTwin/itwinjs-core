@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { RequestQueryOptions, AccessToken, DeploymentEnv, MultiCode, IModelHubClient, CodeState } from "@bentley/imodeljs-clients";
+import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
 import {  Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
@@ -176,58 +176,33 @@ export class ConcurrencyControl {
       return Promise.reject(err);
   }
 
-  private buildCodeRequest(briefcaseEntry: BriefcaseEntry, codeSpecId: string, codeScope: string): MultiCode {
-    const thisReq = new MultiCode();
-    thisReq.briefcaseId = briefcaseEntry.briefcaseId;
-    thisReq.state = CodeState.Reserved;
-    thisReq.codeSpecId = codeSpecId;
-    thisReq.codeScope = codeScope;
-    thisReq.values = [];
-    return thisReq;
+  private buildHubCodes(briefcaseEntry: BriefcaseEntry, codeSpecId: string, codeScope: string, value?: string): HubCode {
+    const requestCode = new HubCode();
+    requestCode.briefcaseId = briefcaseEntry.briefcaseId;
+    requestCode.state = CodeState.Reserved;
+    requestCode.codeSpecId = codeSpecId;
+    requestCode.codeScope = codeScope;
+    requestCode.value = value;
+    return requestCode;
   }
 
-  private buildCodeRequests(briefcaseEntry: BriefcaseEntry, req: ConcurrencyControl.Request): Map<string, any> | undefined {
+  private buildHubCodesFromCode(briefcaseEntry: BriefcaseEntry, code: Code): HubCode {
+    return this.buildHubCodes(briefcaseEntry, code.spec.toString(), code.scope, code.value);
+  }
+
+  private buildHubCodesFromRequest(briefcaseEntry: BriefcaseEntry, req: ConcurrencyControl.Request): HubCode[] | undefined {
     const reqAny = ConcurrencyControl.convertRequestToAny(req);
     if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
       return undefined;
 
-    const bySpecId: Map<string, any> = new Map();
-    for (const cReq of reqAny.Codes) {
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(cReq.Id);
-      if (byScope === undefined)
-        bySpecId.set(cReq.Id, (byScope = new Map()));
-
-      let thisReq: MultiCode | undefined = byScope.get(cReq.Scope);
-      if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, cReq.Id, cReq.Scope);
-        byScope.set(cReq.Scope, (thisReq = thisReq));
-      }
-      thisReq.values!.push(cReq.Name);
-    }
-    return bySpecId;
+    return reqAny.Codes().map((cReq: any) => this.buildHubCodes(briefcaseEntry, cReq.Id, cReq.Scope, cReq.Name));
   }
 
-  private buildCodeRequestsFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): Map<string, any> {
-    const bySpecId: Map<string, any> = new Map();
-    for (const code of codes) {
-      if (code.value === undefined)
-        continue;
-      const specId = code.spec.toString();
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(specId);
-      if (byScope === undefined)
-        bySpecId.set(specId, (byScope = new Map()));
-
-      let thisReq: MultiCode | undefined = byScope.get(code.scope);
-      if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, specId, code.scope);
-        byScope.set(code.scope, (thisReq = thisReq));
-      }
-      thisReq.values!.push(code.value);
-    }
-    return bySpecId;
+  private buildHubCodesFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): HubCode[] | undefined {
+    return codes.map((code: Code) => this.buildHubCodesFromCode(briefcaseEntry, code));
   }
 
-  private buildLockRequests(_briefcaseInfo: BriefcaseEntry, req: ConcurrencyControl.Request): Map<string, any> | undefined {
+  private buildLockRequests(_briefcaseInfo: BriefcaseEntry, req: ConcurrencyControl.Request): HubCode[] | undefined {
     const reqAny: any = ConcurrencyControl.convertRequestToAny(req);
 
     if (!reqAny.hasOwnProperty("Locks") || reqAny.Locks.length === 0)
@@ -255,8 +230,11 @@ export class ConcurrencyControl {
   }
 
   private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
-  public getIModelHubClient(): IModelHubClient { return this._hubClient || new IModelHubClient(this.getDeploymentEnv()); }
-  public setIModelHubClient(client: IModelHubClient) { this._hubClient = client; }
+  public setIModelHubClient(hubClient: IModelHubClient) { this._hubClient = hubClient; }
+  public getIModelHubClient(): IModelHubClient {
+    if (!this._hubClient) { this._hubClient = new IModelHubClient(this.getDeploymentEnv(), new AzureFileHandler()); }
+    return this._hubClient;
+  }
 
   /** process the Lock-specific part of the request. */
   private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {
@@ -279,32 +257,26 @@ export class ConcurrencyControl {
   }
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
-  private async reserveCodes2(bySpecId: Map<string, any>, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<MultiCode[]> {
+  private async reserveCodes2(request: HubCode[], briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
     const imodelHubClient = this.getIModelHubClient();
-    const results: MultiCode[] = [];
-    for (const [, thisSpec] of bySpecId) {
-      for (const [, thisReq] of thisSpec) {
-        results.push(await imodelHubClient.requestMultipleCodes(accessToken, briefcaseEntry.iModelId, thisReq));
-      }
-    }
-    return results;
+    return await imodelHubClient.Codes().update(accessToken, briefcaseEntry.iModelId, request);
   }
 
   /** process the Code-specific part of the request. */
-  private async reserveCodesFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<MultiCode[]> {
-    const bySpecId = this.buildCodeRequests(briefcaseEntry, req);
-    if (bySpecId === undefined)
+  private async reserveCodesFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
+    const request = this.buildHubCodesFromRequest(briefcaseEntry, req);
+    if (request === undefined)
       return [];
 
-    return this.reserveCodes2(bySpecId, briefcaseEntry, accessToken);
+    return this.reserveCodes2(request, briefcaseEntry, accessToken);
   }
 
   /** Reserve the specified codes */
-  public async reserveCodes(accessToken: AccessToken, codes: Code[]): Promise<MultiCode[]> {
+  public async reserveCodes(accessToken: AccessToken, codes: Code[]): Promise<HubCode[]> {
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel._newNotOpenError());
 
-    const bySpecId = this.buildCodeRequestsFromCodes(this._iModel.briefcase, codes);
+    const bySpecId = this.buildHubCodesFromCodes(this._iModel.briefcase, codes);
     if (bySpecId === undefined)
       return Promise.reject(new IModelError(IModelStatus.NotFound));
 
@@ -312,13 +284,11 @@ export class ConcurrencyControl {
   }
 
   // Query the state of the Codes for the specified CodeSpec and scope.
-  public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<MultiCode[]> {
+  public async queryCodeStates(accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<HubCode[]> {
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel._newNotOpenError());
 
-    const queryOptions: RequestQueryOptions = {
-      $filter: `CodeSpecId+eq+'${specId}'+and+CodeScope+eq+'${scopeId}'`,
-    };
+    const query = new CodeQuery().byCodeSpecId(specId.toString()).byCodeScope(scopeId);
 
     /* NEEDS WORK
     if (value !== undefined) {
@@ -327,19 +297,11 @@ export class ConcurrencyControl {
     */
 
     const imodelHubClient = this.getIModelHubClient();
-    return imodelHubClient.getMultipleCodes(accessToken, this._iModel.briefcase.iModelId, queryOptions);
+    return imodelHubClient.Codes().get(accessToken, this._iModel.briefcase.iModelId, query);
   }
 
   /** Abandon any pending requests for locks or codes. */
   public abandonRequest() { this.extractPendingRequest(); }
-
-  private static anyFound(a1: string[], a2: string[]) {
-    for (const a of a1) {
-      if (a2.includes(a))
-        return true;
-    }
-    return false;
-  }
 
   /**
    * Check to see if *all* of the codes in the specified request are available.
@@ -352,21 +314,20 @@ export class ConcurrencyControl {
     // throw new Error("TBD");
     if (req === undefined)
       req = this.pendingRequest;
-    const bySpecId = this.buildCodeRequests(this._iModel.briefcase, req);
 
-    if (bySpecId !== undefined) {
-      for (const [specId, thisSpec] of bySpecId) {
-        for (const [scopeId, thisReq] of thisSpec) {
-          // Query the state of all codes in this spec and scope
-          const multiCodes = await this.queryCodeStates(accessToken, new Id64(specId), scopeId);
-          for (const multiCode of multiCodes) {
-            if (multiCode.state !== CodeState.Available) {
-              if (ConcurrencyControl.anyFound(multiCode.values!, thisReq.values)) {
-                return false;
-              }
-            }
-          }
-        }
+    const hubCodes = this.buildHubCodesFromRequest(this._iModel.briefcase, req);
+
+    if (!hubCodes)
+      return true;
+
+    const codesHandler = this.getIModelHubClient().Codes();
+    const chunkSize = 100;
+    for (let i = 0; i < hubCodes.length; i += chunkSize) {
+      const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));
+      const result = await codesHandler.get(accessToken, this._iModel.briefcase.iModelId, query);
+      for (const code of result) {
+        if (code.state !== CodeState.Available)
+          return false;
       }
     }
     return true;
@@ -529,8 +490,8 @@ export namespace ConcurrencyControl {
 
   /** Thrown when iModelHub denies or cannot process a request. */
   export class RequestError extends IModelError {
-    public unavailableCodes: MultiCode[] = [];
-    public unavailableLocks: MultiCode[] = [];
+    public unavailableCodes: HubCode[] = [];
+    public unavailableLocks: HubCode[] = [];
   }
 
   /** Code manager */
@@ -573,7 +534,7 @@ export namespace ConcurrencyControl {
      * @param scopeId The scope to query
      * @param value Optional. The Code value to query.
      */
-    public async query(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<MultiCode[]> {
+    public async query(accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<HubCode[]> {
       return this._iModel.concurrencyControl.queryCodeStates(accessToken, specId, scopeId, value);
     }
   }

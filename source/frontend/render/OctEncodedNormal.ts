@@ -6,7 +6,7 @@ import { PointUtil } from "./Utility";
 import { assert } from "@bentley/bentleyjs-core";
 
 export class OctEncodedNormal {
-  private _value: number;
+  private _value = 0;
   public get value(): number { return PointUtil.toUint16(this._value); }
   constructor(val: number | Vector3d) { this.init(val); }
   public init(val: number | Vector3d) { this._value = PointUtil.isNumber(val) ? val : OctEncodedNormal.encode(val); }

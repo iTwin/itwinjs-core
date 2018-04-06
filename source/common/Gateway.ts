@@ -111,7 +111,7 @@ export abstract class Gateway {
   public configuration = this.supplyConfiguration();
 
   /** The default configuration for a gateway class. */
-  public defaultConfigurationSupplier: GatewayConfigurationSupplier;
+  public defaultConfigurationSupplier!: GatewayConfigurationSupplier;
 
   /** The application-supplied configuration for a gateway class. */
   public applicationConfigurationSupplier: GatewayConfigurationSupplier | undefined;
@@ -141,16 +141,16 @@ export abstract class Gateway {
     return this.configuration.protocol.obtainGatewayImplementationResult<T>(this.constructor as any, operation, ...parameters);
   }
 
-  /** @internal */
+  /** @hidden */
   private static _aggregateLoad = {
     lastRequest: 0,
     lastResponse: 0,
   };
 
-  /** @internal */
+  /** @hidden */
   public static recordRequest() { Gateway._aggregateLoad.lastRequest = new Date().getTime(); }
 
-  /** @internal */
+  /** @hidden */
   public static recordResponse() { Gateway._aggregateLoad.lastResponse = new Date().getTime(); }
 }
 
