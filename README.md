@@ -89,7 +89,7 @@ rush rebuild --from @bentley/ecpresentation-frontend
 
 In the repository root location:
 ```bash
-npm run test
+rush test
 ```
 
 ### Test dependencies

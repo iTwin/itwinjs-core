@@ -12,6 +12,18 @@
       "summary": "Lints all projects",
       "documentation": "Runs Linter on every project",
       "parallelized": true
+    },
+    {
+      "name": "test",
+      "summary": "Runs tests on all projects",
+      "documentation": "Runs tests on every project",
+      "parallelized": false
+    },
+    {
+      "name": "cover",
+      "summary": "Runs test coverage on all projects",
+      "documentation": "Runs tests coverage on every project",
+      "parallelized": false
     }
   ]
 }

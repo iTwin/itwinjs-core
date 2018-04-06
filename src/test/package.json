@@ -9,14 +9,13 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "clean": "rimraf lib",
+    "build": "echo disabled",
+    "clean": "echo disabled",
     "lint": "tslint -p ./tsconfig.json",
-    "test": "concurrently --names \"BACKEND,FRONTEND,INTEGRATION\" \"npm run test:unit:backend\" \"npm run test:unit:frontend\" \"npm run test:integration\"",
-    "test:unit": "concurrently --names \"BACKEND,FRONTEND\" \"npm run test:unit:backend\" \"npm run test:unit:frontend\"",
-    "test:unit:frontend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/unit/frontend\"",
-    "test:unit:backend": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/unit/backend\"",
-    "test:integration": "node node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/integration\""
+    "test": "mocha --opts ../../mocha.opts  ./**.test.ts",
+    "cover": "nyc npm run test:cover",
+    "require": "node require.js ../frontend/lib ../common/lib ../backend/lib",
+    "test:cover": "npm run require && mocha --recursive ./**.test.ts"
   },
   "dependencies": {},
   "devDependencies": {
@@ -26,7 +25,6 @@
     "@bentley/ecpresentation-frontend": "~0.0.20",
     "@bentley/bentleyjs-core": "^7.3.6",
     "@bentley/geometry-core": "^6.0.10",
-    "@bentley/imodeljs-clients": "^4.2.1",
     "@bentley/imodeljs-common": "~0.69.0",
     "@bentley/imodeljs-backend": "~0.70.1",
     "@bentley/imodeljs-e_1_6_11-win32-x64": "^12.0.0",
@@ -35,18 +33,30 @@
     "@bentley/imodeljs-n_8_9-win32-x64": "^12.0.0",
     "@bentley/imodeljs-native-platform-node": "^12.0.0",
     "@types/chai": "^4.0.10",
-    "@types/chai-spies": "0.0.0",
-    "@types/faker": "^4.1.0",
     "@types/mocha": "^2.2.44",
-    "faker": "^4.1.0",
     "chai": "^4.1.2",
-    "chai-spies": "1.0.0",
-    "concurrently": "^3.5.0",
     "mocha": "^4.0.1",
-    "nyc": "^11.4.1",
+    "nyc": "^11.6.0",
     "rimraf": "^2.6.2",
-    "tsconfig-paths": "^2.6.0",
+    "source-map-support": "^0.5.0",
+    "ts-node": "^3.3.0",
+    "tsconfig-paths": "^2.7.2",
     "tslint": "^5.8.0",
     "typemoq": "^2.1.0"
+  },
+  "nyc": {
+    "nycrc-path": "../../.nycrc",
+    "report-dir": "../coverage/integration",
+    "temp-directory": "../coverage/integration/.nyc_output",
+    "cwd": "../",
+    "include": [
+      "frontend/lib/**/*.js",
+      "common/lib/**/*.js",
+      "backend/lib/**/*.js"
+    ],
+    "extension": [
+      ".js"
+    ],
+    "all": false
   }
 }

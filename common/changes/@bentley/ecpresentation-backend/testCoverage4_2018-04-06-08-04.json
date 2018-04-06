@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-backend",
+      "comment": "Setup test coverage",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-backend",
+  "email": "Aidas.Kilinskas@Bentley.com"
+}

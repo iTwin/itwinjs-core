@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as moq from "typemoq";
-import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
-import * as addonTypes from "@bentley/ecpresentation-backend/lib/AddonResponses";
+import * as addonTypes from "./AddonResponses";
 import { NativePlatformRegistry, IModelHost } from "@bentley/imodeljs-backend";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-common/lib/Hierarchy";
+import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "./ECPresentationManager";
 // import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-backend/lib/common/Content";
 // import { InstanceKeysList } from "@bentley/ecpresentation-backend/lib/common/EC";
 // import { createRandomECInstanceKey } from "../../helpers/random/EC";
