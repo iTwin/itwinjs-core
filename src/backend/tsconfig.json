@@ -4,14 +4,15 @@
     "target": "es2017",
     "module": "commonjs",
     "skipLibCheck": true,
-    "baseUrl": "./node_modules",
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "baseUrl": "./node_modules"
   },
   "include": [
     "./**/*.ts"
   ],
   "exclude": [
     "lib",
-    "node_modules"
+    "node_modules",
+    "**/*.test.ts"
   ]
 }

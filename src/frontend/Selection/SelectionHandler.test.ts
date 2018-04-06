@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { SelectionManager, SelectionHandler, SelectionChangeEvent } from "@bentley/ecpresentation-frontend/lib/Selection";
 import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import { expect, spy, use } from "chai";
 import * as spies from "chai-spies";
 import * as moq from "typemoq";
+import { SelectionManager } from "./SelectionManager";
+import { SelectionHandler } from "./SelectionHandler";
+import { SelectionChangeEvent } from "./SelectionChangeEvent";
 
 describe("SelectionHandler", () => {
 
@@ -26,6 +28,7 @@ describe("SelectionHandler", () => {
   describe("clearSelection", () => {
 
     it("calls manager's clearSelection", () => {
+
       selectionHandler.clearSelection();
       mockSelectionManager.verify((x) => x.clearSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
     });
@@ -53,8 +56,8 @@ describe("SelectionHandler", () => {
   describe("replaceSelection", () => {
 
     it("calls manager's replaceSelection", () => {
-      selectionHandler.removeFromSelection([]);
-      mockSelectionManager.verify((x) => x.removeFromSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue([]), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
+      selectionHandler.replaceSelection([]);
+      mockSelectionManager.verify((x) => x.replaceSelection(moq.It.isValue(source), moq.It.isAny(), moq.It.isValue([]), moq.It.isValue(0), moq.It.isValue(ruleset)), moq.Times.once());
     });
 
   });

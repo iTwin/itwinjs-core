@@ -15,7 +15,9 @@
     "start": "imodeljs-react-scripts start",
     "build": "echo Disabled",
     "clean": "rimraf lib",
-    "lint": "echo Linting is part of build, no need to lint separately"
+    "cover": "echo disabled",
+    "lint": "echo Linting is part of build, no need to lint separately",
+    "test": "echo disabled"
   },
   "dependencies": {
     "@bentley/ecpresentation-backend": "~0.0.31",

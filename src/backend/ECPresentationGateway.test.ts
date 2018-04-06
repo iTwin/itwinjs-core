@@ -3,8 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as moq from "typemoq";
-import ECPresentationManager from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
-import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/ECPresentationGateway";
 import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
 import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
 import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
@@ -12,9 +10,11 @@ import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresenta
 import { SelectionInfo, Content } from "@bentley/ecpresentation-common/lib/content";
 import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { createRandomECInstanceKey } from "../../helpers/random/EC";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../../helpers/random/Hierarchy";
-import { createRandomDescriptor } from "../../helpers/random/Content";
+import { createRandomECInstanceKey } from "../testHelpers/random/EC";
+import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../testHelpers/random/Hierarchy";
+import { createRandomDescriptor } from "../testHelpers/random/Content";
+import ECPresentationManager from "./ECPresentationManager";
+import ECPresentationGateway from "./ECPresentationGateway";
 
 describe("ECPresentationGatewayImpl", () => {
 

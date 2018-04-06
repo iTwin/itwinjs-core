@@ -3,9 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect, spy, use } from "chai";
 import * as spies from "chai-spies";
-import { SelectionManagerImpl, SelectedItem } from "@bentley/ecpresentation-frontend/lib/Selection";
 import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
 import * as moq from "typemoq";
+import { SelectedItem } from "./SelectedItem";
+import { SelectionManagerImpl } from "./SelectionManagerImpl";
 
 const source: string = "test";
 
@@ -22,7 +23,6 @@ describe("SelectionManagerImpl", () => {
   let baseSelection: SelectedItem[];
   const mockImodelToken = moq.Mock.ofType<IModelToken>();
   use(spies);
-  // use(() => spies);
   beforeEach(() => {
     selectionManager = new SelectionManagerImpl();
     mockImodelToken.reset();
@@ -39,6 +39,7 @@ describe("SelectionManagerImpl", () => {
       for (const key of baseSelection) {
         expect(selectedItemsSet.contains(key)).true;
       }
+
     });
 
     it("adds selection on non empty selection", () => {

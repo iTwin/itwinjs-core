@@ -16,6 +16,8 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
+    "cover": "echo wip",
+    "test": "echo wip",
     "lint": "tslint -p ./tsconfig.json",
     "prepublishOnly": "npm run build"
   },
@@ -28,6 +30,15 @@
     "@bentley/imodeljs-common": "~0.69.0",
     "rimraf": "^2.6.2",
     "typescript": "^2.6.2",
-    "tslint": "^5.8.0"
+    "tslint": "^5.8.0",
+    "source-map-support": "^0.5.0",
+    "ts-node": "^3.3.0",
+    "tsconfig-paths": "^2.7.2",
+    "nyc": "^11.6.0"
+  },
+  "nyc": {
+    "nycrc-path": "../../.nycrc",
+    "temp-directory": "../../coverage/common/.nyc_output",
+    "report-dir": "../../coverage/common"
   }
 }

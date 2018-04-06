@@ -25,42 +25,69 @@
       "request": "launch",
       "name": "Tests: Backend",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/src/backend",
+      "env": {
+        "TS_NODE_CACHE_DIRECTORY": "${workspaceRoot}/ts-node"
+      },
       "args": [
-        "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/src/test/lib/unit/backend",
-        "--debug"
+        "--opts",
+        "../../mocha.opts",
+        "--timeout",
+        "0",
+        "${workspaceFolder}/src/backend/**/*.test.ts"
       ],
-      "port": 9229,
+      "runtimeArgs": [
+        "--inspect-brk"
+      ],
+      "outFiles": ["${workspaceRoot}/ts-node/**"],
+      "port": 9229
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Frontend",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/src/frontend",
+      "env": {
+        "TS_NODE_CACHE_DIRECTORY": "${workspaceRoot}/ts-node"
+      },
       "args": [
-        "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/src/test/lib/unit/frontend",
-        "--debug"
+        "--opts",
+         "../../mocha.opts",
+        "--timeout",
+         "0",
+        "${workspaceFolder}/src/frontend/**/*.test.ts"
       ],
-      "port": 9229,
+      "runtimeArgs": [
+        "--inspect-brk"
+      ],
+      "outFiles": ["${workspaceRoot}/ts-node/**"],
+      "port": 9229
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Integration",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/src/test",
+      "env": {
+        "TS_NODE_CACHE_DIRECTORY": "${workspaceRoot}/ts-node"
+      },
       "args": [
-        "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/src/test/lib/integration",
-        "--debug"
+        "--opts",
+        "../../mocha.opts",
+        "--timeout",
+        "0",
+        "${workspaceFolder}/src/test/**/SelectionManagerImpl.test.ts"
       ],
-      "port": 9229,
+      "runtimeArgs": [
+        "--inspect-brk"
+      ],
+      "outFiles": ["${workspaceRoot}/ts-node/**"],
+      "port": 9229
     },
     {
       "type": "node",

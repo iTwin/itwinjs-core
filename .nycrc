@@ -1,23 +1,25 @@
 {
-  "include": [
-    "src/common/**/*.ts",
-    "src/frontend/**/*.ts",
-    "src/backend/**/*.ts"
-  ],
-  "exclude": [
-    "src/test/*",
-    "src/common/lib/*",
-    "src/backend/lib/*",
-    "src/frontend/lib/*"
-  ],
-  "extension": [
-    ".ts"
-  ],
-  "reporter": [
-    "text-summary",
-    "lcov"
-  ],
-  "report-dir": "./coverage",
-  "temp-directory": "./coverage/.nyc_output",
-  "all": true
-}
+    "require": [
+      "source-map-support/register",
+      "ts-node/register",
+      "tsconfig-paths/register"
+    ],
+    "include": [
+      "**/*.ts"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "lib",
+      "node_modules",
+      "**/*.test.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "reporter": [
+      "text-summary",
+      "html",
+      "json"
+    ],
+    "all": true
+    }

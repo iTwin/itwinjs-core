@@ -18,6 +18,7 @@
     "src/test/lib": true,
     "src/test/node_modules": true,
     "common/temp": true,
+    "ts-node": true,
     "**/*.build.log": true,
     "**/*.build.error.log": true,
     "**/package-deps.json": true,
