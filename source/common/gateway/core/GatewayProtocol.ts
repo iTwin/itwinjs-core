@@ -46,6 +46,7 @@ export enum GatewayProtocolEvent {
   AcknowledgementReceived,
   RequestReceived,
   BackendResponseCreated,
+  BackendReportedPending,
   BackendErrorOccurred,
   AcknowledgementCreated,
 }
