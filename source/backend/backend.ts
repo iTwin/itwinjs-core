@@ -20,6 +20,7 @@ export * from "./IModelJsFs";
 export * from "./IModelHost";
 export * from "./KnownLocations";
 export * from "./LinkTableRelationship";
+export * from "./LineStyle";
 export * from "./Model";
 export * from "./Schema";
 export * from "./ViewDefinition";
