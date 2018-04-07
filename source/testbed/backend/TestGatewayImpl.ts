@@ -2,8 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
-import { Gateway, GatewayRequest, GatewayOperationsProfile } from "@bentley/imodeljs-common";
+import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
+
+let op8Initializer = 0;
 
 export class TestGatewayImpl extends Gateway implements TestGateway {
   public static register() {
@@ -38,7 +40,12 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
     return GatewayRequest.aggregateLoad;
   }
 
-  public async op8(): Promise<void> {
-    return;
+  public async op8(x: number, y: number): Promise<{ initializer: number; sum: number }> {
+    if (!op8Initializer) {
+      op8Initializer = TestGateway.OP8_INITIALIZER;
+      throw new GatewayPendingResponse(TestGateway.OP8_PENDING_MESSAGE);
+    } else {
+      return { initializer: op8Initializer, sum: x + y };
+    }
   }
 }

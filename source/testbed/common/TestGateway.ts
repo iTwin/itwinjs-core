@@ -19,6 +19,9 @@ export class TestOp1Params {
 }
 
 export abstract class TestGateway extends Gateway {
+  public static readonly OP8_INITIALIZER = 5;
+  public static readonly OP8_PENDING_MESSAGE = "Initializing op8";
+
   public static version = "1.0.0";
 
   public static types = () => [
@@ -61,7 +64,7 @@ export abstract class TestGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  public async op8(): Promise<void> {
+  public async op8(_x: number, _y: number): Promise<{ initializer: number; sum: number }> {
     return this.forward.apply(this, arguments);
   }
 }

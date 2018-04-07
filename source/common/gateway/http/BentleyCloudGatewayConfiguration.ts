@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { GatewayDefinition } from "../../Gateway";
 import { GatewayConfiguration } from "../core/GatewayConfiguration";
-import { GatewayRequest, GatewayRequestEventHandler } from "../core/GatewayRequest";
+import { GatewayRequest, GatewayRequestEventHandler, GatewayRequestEvent } from "../core/GatewayRequest";
 import { OpenAPIInfo } from "./OpenAPI";
 import { BentleyCloudGatewayProtocol } from "./BentleyCloudGatewayProtocol";
 
@@ -39,12 +39,18 @@ export abstract class BentleyCloudGatewayConfiguration extends GatewayConfigurat
       GatewayConfiguration.assign(gateway, () => config);
     }
 
-    if (params.pendingRequestListener) {
-      GatewayRequest.events.addListener(params.pendingRequestListener);
-    }
-
     const instance = GatewayConfiguration.obtain(config);
     GatewayConfiguration.initializeGateways(instance);
+
+    if (params.pendingRequestListener) {
+      const listener = params.pendingRequestListener;
+
+      GatewayRequest.events.addListener((type, request) => {
+        if (type === GatewayRequestEvent.PendingUpdateReceived && request.protocol === instance.protocol) {
+          listener(type, request);
+        }
+      });
+    }
 
     return instance;
   }

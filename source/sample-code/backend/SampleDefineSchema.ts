@@ -18,7 +18,7 @@ export class TestSchema extends Schema {
 
   /** An app must call this to register the TestSchema schema prior to using it. */
   public static registerSchema() {
-    // Make sure that this Schema is registered. 
+    // Make sure that this Schema is registered.
     // An app may call this more than once. Make sure that's harmless.
     if (Schemas.getRegisteredSchema(TestSchema.name) !== undefined)
       return;
@@ -29,7 +29,7 @@ export class TestSchema extends Schema {
     IModelDb.onOpened.addListener((imodeldb: IModelDb) => {
       if (TestSchema.getClass("TestPartitionElement", imodeldb) === undefined) {
         // Must import the schema. The schema must have been delivered by the app in the
-        // assets directory. Note that, for portability, make sure the case of 
+        // assets directory. Note that, for portability, make sure the case of
         // the filename is correct!
         imodeldb.importSchema(KnownLocations.assetsDir + "/TestSchema.ecschema.xml");
       }
