@@ -19,7 +19,7 @@
 |**Drawing Model**|A 2d model.
 |**EC**|An abbreviation for Entity Content. This prefix is used to refer to the metadata system of iModels.
 |**ECClass**|A named set of properties and relationships that defines a type of thing. Data in iModels are defined by ECClasses.
-|**ECDb**|A SQLite database conforming to the rules of EC. iModels are a type of ECDb.
+|**ECDb**|A [SQLite](https://www.sqlite.org/index.html) database conforming to the rules of EC. iModels are a type of ECDb.
 |**ECEF**|[Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) Coordinates (also known as ECR "earth-centered rotational").
 |**ECProperty**|A named member of an ECClass.
 |**ECRelationship**|A named type of relationship and cardinality between instances of ECClasses.
