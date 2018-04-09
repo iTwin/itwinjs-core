@@ -31,16 +31,22 @@ export abstract class Geometry {
   // public get feature() { return this.displayParams.isValid() ? new Feature(this.entityId, this.displayParams.subCategoryId, this.displayParams.class) : new Feature(); }
   // public static createFacetOptions(chordTolerance: number): StrokeOptions { }
 
-  public static createFromGeom(/* geometry: GeometryQuery, */ tf: Transform, tileRange: Range3d, entityId: Id64, params: any /* should be DisplayParams */, isCurved: boolean /*, iModel: IModelConnection, disjoint: boolean */): Geometry {
-    // Original call in c++ => // return PrimitiveGeometry::Create(geometry, tf, range, entityId, params, isCurved, db, disjoint);
-    // return PrimitiveGeometry.create(geometry, tf, tileRange, entityId, params, isCurved, iModel, disjoint);
-
-    return new PrimitiveGeometry(tf, tileRange, entityId, params, isCurved); // This is temporary until PrimitiveGeometry is created
+  public static createFromGeom(geometry: GeometryQuery, tf: Transform, tileRange: Range3d, entityId: Id64, params: any /* should be DisplayParams */, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
+    return PrimitiveGeometry.create(geometry, tf, tileRange, entityId, params, isCurved, disjoint);
   }
 }
 
 export class PrimitiveGeometry extends Geometry { // This is temporary until PrimitiveGeometry is actually translated
+  public inCache = false;
 
+  public constructor(public geometry: GeometryQuery, tf: Transform, range: Range3d, elemId: Id64, params: any /* should be DisplayParams*/, isCurved: boolean, /*iModel: IModelConnection,*/ public disjoint: boolean) {
+    super(tf, range, elemId, params, isCurved/*, iModel*/);
+  }
+
+  public static create(geometry: GeometryQuery, tf: Transform, range: Range3d, elemId: Id64, params: any /* should be DisplayParams*/, isCurved: boolean, /* iModel: IModelConnection,*/ disjoint: boolean) {
+    assert(!disjoint || geometry instanceof CurveCollection);
+    return new PrimitiveGeometry(geometry, tf, range, elemId, params, isCurved, /* iModel, */ disjoint);
+  }
 }
 
 export class GeometryList {
@@ -48,7 +54,7 @@ export class GeometryList {
   public isComplete = false;
   public isCurved = false;
 
-  public empty() { return this.list.length === 0; }
+  public get isEmpty() { return this.list.length === 0; }
   public size() { return this.list.length; }
   public push_back(geom: Geometry) { this.list.push(geom); this.isCurved = this.isCurved || geom.isCurved; }
   public append(src: GeometryList) { this.list.concat(src.list); this.isCurved = this.isCurved || src.isCurved; }
@@ -89,13 +95,14 @@ export class GeometryAccumulator {
   }
 
   public get iModel() { return undefined; } // temporary until DisplayParamsCache exists! // return this.displayParamsCache.iModel; }
+  public get isEmpty(): boolean { return !!this.geometries && this.geometries.isEmpty; }
 
-  public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: any /* should be DisplayParams */, transform: Transform, /*disjoint: boolean,*/ clip?: ClipVector) {
+  public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: any /* should be DisplayParams */, transform: Transform, disjoint: boolean, clip?: ClipVector) {
     if (this.surfacesOnly && !curves.isAnyRegionType()) { return true; } // ignore...
     const isCurved: boolean = false; // containsNonLinearPrimitive() function doesn't exist?? // curves.containsNonLinearPrimitive();
-    return this.addGeometry(curves, isCurved, displayParams, transform, /*disjoint,*/ clip);
+    return this.addGeometry(curves, isCurved, displayParams, transform, disjoint, clip);
   }
-  public addGeometry(geom: GeometryQuery, isCurved: boolean, displayParams: any /* should be DisplayParams */, transform: Transform, /* disjoint: boolean, */ clip?: ClipVector, range?: Range3d) {
+  public addGeometry(geom: GeometryQuery, isCurved: boolean, displayParams: any /* should be DisplayParams */, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d) {
     let range3d;
     if (!range) {
       if (!geom.range(undefined, range3d)) { return false; }
@@ -111,7 +118,7 @@ export class GeometryAccumulator {
       range3d = range;
     }
     if (!range3d) { range3d = new Range3d(); }
-    const geometry = Geometry.createFromGeom(/* geom, */ transform, range3d, this.elementId, displayParams, isCurved /*, this.iModel, disjoint */);
+    const geometry = Geometry.createFromGeom(geom, transform, range3d, this.elementId, displayParams, isCurved, /*this.iModel,*/ disjoint);
     if (!geometry) { return false; }
     geometry.clip = clip;
     if (this.geometries) { this.geometries.push_back(geometry); }
@@ -165,7 +172,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     const graphic: Graphic = this.accum ? this.finishGraphic(this.accum) : new Graphic();
     // assert(graphic.isValid()); // isValid function doesn't actually exist yet in Graphic class.
     this._isOpen = false;
-    if (this.accum) { this.accum.clear(); } // clear function doesn't exist yet for GeometryAccumulator class.
+    if (this.accum) { this.accum.clear(); }
     return graphic;
   }
 
@@ -195,12 +202,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curve = Path.create(ellipse);
     }
 
-    if (filled && !isEllipse /* && !ellipse.isFullEllipse() // isFullEllipse() function doesn't exist?? */) {
+    if (filled && !isEllipse && !ellipse.sweep.isFullCircle()) {
       const gapSegment: CurvePrimitive = LineSegment3d.create(ellipse.startPoint(), ellipse.endPoint());
       (gapSegment as any).markerBits = 0x00010000; // Set the CURVE_PRIMITIVE_BIT_GapCurve marker bit
       curve.children.push(gapSegment);
     }
-    if (this.accum) { this.accum.addCurveVector(curve, /*filled,*/ curve.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, this.currClip /*, false*/); }
+    if (this.accum) { this.accum.addCurveVector(curve, /*filled,*/ curve.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, false, this.currClip); }
   }
 
   public addLineString(points: Point3d[]): void {
@@ -221,7 +228,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public addCurveVector(curves: CurveCollection, filled: boolean, disjoint?: boolean): void {
     if (disjoint !== undefined) {
       assert(!filled || !disjoint);
-      if (this.accum) { this.accum.addCurveVector(curves, /*filled,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, this.currClip/*, disjoint*/); }
+      if (this.accum) { this.accum.addCurveVector(curves, /*filled,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, disjoint, this.currClip); }
     }
     let numDisjoint = 0;
     let haveContinuous = false;
@@ -244,7 +251,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     if (haveDisjoint !== haveContinuous) {
       // The typical case...
       assert(!filled || !haveDisjoint);
-      if (this.accum) { this.accum.addCurveVector(curves, /*filled,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, this.currClip/*, haveDisjoint*/); }
+      if (this.accum) { this.accum.addCurveVector(curves, /*filled,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, haveDisjoint, this.currClip); }
       return;
     }
 
@@ -259,8 +266,8 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       });
       curves.children.filter((child) => !GeometryListBuilder.isDisjointCurvePrimitive(child));
     }
-    if (this.accum) { this.accum.addCurveVector(curves, /*false,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, this.currClip/*, false*/); }
-    if (this.accum) { this.accum.addCurveVector(disjointCurves, /*false,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, this.currClip/*, true*/); }
+    if (this.accum) { this.accum.addCurveVector(curves, /*false,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, false, this.currClip); }
+    if (this.accum) { this.accum.addCurveVector(disjointCurves, /*false,*/ curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams(), this.localToWorldTransform, true, this.currClip); }
   }
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
   public get geometryParams(): GeometryParams | undefined { return this.geometryParamsValid ? this._geometryParams : undefined; }
