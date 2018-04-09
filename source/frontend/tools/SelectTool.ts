@@ -522,14 +522,14 @@ export class SelectionTool extends PrimitiveTool {
 
   private drawPlus(graphic: GraphicBuilder, size: number, x: number, y: number): void {
     const pts = [new Point2d(x, y), new Point2d(x + size, y)];
-    graphic.addLineString2d(2, pts, 0.0);
+    graphic.addLineString2d(pts, 0.0);
     pts[1].x = x - size;
-    graphic.addLineString2d(2, pts, 0.0);
+    graphic.addLineString2d(pts, 0.0);
     pts[1].x = x;
     pts[1].y = y + size;
-    graphic.addLineString2d(2, pts, 0.0);
+    graphic.addLineString2d(pts, 0.0);
     pts[1].y = y - size;
-    graphic.addLineString2d(2, pts, 0.0);
+    graphic.addLineString2d(pts, 0.0);
   }
 
   private drawDragStateIndicator(context: DecorateContext): void {
@@ -573,14 +573,14 @@ export class SelectionTool extends PrimitiveTool {
       viewPts[1] = corner;
 
       graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
-      graphic.addLineString(2, viewPts);
+      graphic.addLineString(viewPts);
     } else {
       viewPts[0] = viewPts[4] = origin;
       viewPts[1] = new Point3d(corner.x, origin.y, corner.z);
       viewPts[2] = corner;
       viewPts[3] = new Point3d(origin.x, corner.y, origin.z);
       graphic.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 1, this.useFenceOverlap(ev) ? LinePixels.Code2 : LinePixels.Solid);
-      graphic.addLineString(5, viewPts);
+      graphic.addLineString(viewPts);
     }
     context.addViewOverlay(graphic.finish()!);
   }
