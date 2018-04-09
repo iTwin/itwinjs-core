@@ -2,10 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode } from "@bentley/bentleyjs-core";
 import { XYAndZ } from "@bentley/geometry-core";
 import { CodeSpec, CodeSpecNames, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
+import { TestGateway } from "../common/TestGateway";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
@@ -131,7 +132,38 @@ describe("IModelConnection", () => {
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
       { id: { type: ECSqlStringType.Id, value: expectedRow.id }, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
+  }).timeout(99999);
 
+  it("Change cache file generation when attaching change cache", async () => {
+    assert.exists(iModel);
+    await TestGateway.getProxy().deleteChangeCache(iModel.iModelToken);
+    await TestGateway.getProxy().attachChangeCache(iModel.iModelToken);
+    const changeSummaryRows: any[] = await iModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
+    assert.equal(changeSummaryRows.length, 1);
+    assert.equal(changeSummaryRows[0].cnt, 0);
+    const changeSetRows = await iModel.executeQuery("SELECT count(*) cnt FROM imodelchange.ChangeSet");
+    assert.equal(changeSetRows.length, 1);
+    assert.equal(changeSetRows[0].cnt, 0);
+  }).timeout(99999);
+
+  it("Change cache file generation during change summary extraction", async () => {
+    assert.exists(iModel);
+    // for now, imodel must be open readwrite for changesummary extraction
     await iModel.close(TestData.accessToken);
+
+    const testIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, OpenMode.ReadWrite);
+    try {
+      await TestGateway.getProxy().deleteChangeCache(testIModel.iModelToken);
+      await TestGateway.getProxy().extractChangeSummaries(testIModel.iModelToken, {currentChangeSetOnly: true});
+      await TestGateway.getProxy().attachChangeCache(testIModel.iModelToken);
+
+      const changeSummaryRows: any[] = await testIModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
+      assert.equal(changeSummaryRows.length, 1);
+      const changeSetRows = await testIModel.executeQuery("SELECT count(*) cnt FROM imodelchange.ChangeSet");
+      assert.equal(changeSetRows.length, 1);
+      assert.equal(changeSetRows[0].cnt, changeSummaryRows[0].cnt);
+    } finally {
+    await testIModel.close(TestData.accessToken);
+    }
   }).timeout(99999);
 });

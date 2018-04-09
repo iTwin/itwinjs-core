@@ -98,6 +98,7 @@
     "structs",
     "subclassing",
     "subgraphic",
+    "superset",
     "symb",
     "system",
     "testbed",
@@ -116,4 +117,5 @@
   "typescript.autoImportSuggestions.enabled": false,
   "guides.normal.width": 3,
   "typescript.tsdk": "node_modules\\typescript\\lib",
+  "files.trimTrailingWhitespace": true,
 }
