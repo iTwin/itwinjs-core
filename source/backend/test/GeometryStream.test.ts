@@ -9,7 +9,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { GeometricElement3d, GeometryPart, IModelDb, LineStyleDefinition } from "../backend";
-import { LineStyle } from "../Element";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
