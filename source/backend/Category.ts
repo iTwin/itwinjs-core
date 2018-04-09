@@ -142,7 +142,7 @@ export class SpatialCategory extends Category {
   public static create(scopeModel: DefinitionModel, categoryName: string): SpatialCategory {
     return scopeModel.iModel.elements.createElement({
       iModel: scopeModel.iModel,
-      classFullName: "BisCore:SpatialCategory",
+      classFullName: SpatialCategory.classFullName,
       model: scopeModel.id,
       code: SpatialCategory.createCode(scopeModel, categoryName),
     }) as SpatialCategory;

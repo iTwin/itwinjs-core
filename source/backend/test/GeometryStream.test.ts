@@ -8,7 +8,7 @@ import {
   Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { IModelDb, GeometricElement3d, LineStyleDefinition } from "../backend";
+import { GeometricElement3d, GeometryPart, IModelDb, LineStyleDefinition } from "../backend";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -176,7 +176,7 @@ describe("GeometryStream", () => {
     }
 
     const partProps: GeometryPartProps = {
-      classFullName: "BisCore:GeometryPart",
+      classFullName: GeometryPart.classFullName,
       iModel: imodel,
       model: IModel.getDictionaryId(),
       code: Code.createEmpty(),
