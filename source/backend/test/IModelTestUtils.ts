@@ -10,7 +10,7 @@ import {
 import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as path from "path";
@@ -276,7 +276,7 @@ export class IModelTestUtils {
 
     //  The modeled element
     const modeledElementProps: ElementProps = {
-      classFullName: "BisCore:PhysicalPartition",
+      classFullName: PhysicalPartition.classFullName,
       iModel: testImodel,
       parent: { id: testImodel.elements.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
       model: testImodel.models.repositoryModelId,
@@ -288,7 +288,7 @@ export class IModelTestUtils {
     assert.isTrue(modeledElementId.isValid());
 
     // The model
-    const newModel = testImodel.models.createModel({ modeledElement: { id: modeledElementId, relClassName: "BisCore:PhysicalModelBreaksDownPhysicalPortion" }, classFullName: "BisCore:PhysicalModel", isPrivate: privateModel });
+    const newModel = testImodel.models.createModel({ modeledElement: modeledElementId, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     newModelId = testImodel.models.insertModel(newModel);
 
     assert.isTrue(newModelId.isValid());
@@ -327,7 +327,6 @@ export class IModelTestUtils {
       category: categoryId,
       code: elemCode ? elemCode : Code.createEmpty(),
     };
-
     return testImodel.elements.createElement(elementProps);
   }
 

@@ -8,7 +8,7 @@ import {
   Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LineStyleProps, FilePropertyProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { IModelDb, GeometricElement3d } from "../backend";
+import { GeometricElement3d, GeometryPart, IModelDb } from "../backend";
 import { LineStyle } from "../Element";
 
 describe("GeometryStream", () => {
@@ -180,7 +180,7 @@ describe("GeometryStream", () => {
     // debugger;
 
     const lsProps: LineStyleProps = {
-      classFullName: "BisCore:LineStyle",
+      classFullName: LineStyle.classFullName,
       iModel: imodel,
       model: IModel.getDictionaryId(),
       code: LineStyle.createCode(imodel, IModel.getDictionaryId(), "TestDashDotDotDash"),
@@ -288,7 +288,7 @@ describe("GeometryStream", () => {
     }
 
     const partProps: GeometryPartProps = {
-      classFullName: "BisCore:GeometryPart",
+      classFullName: GeometryPart.classFullName,
       iModel: imodel,
       model: IModel.getDictionaryId(),
       code: Code.createEmpty(),

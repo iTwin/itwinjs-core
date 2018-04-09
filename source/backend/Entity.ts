@@ -67,8 +67,8 @@ export class Entity implements EntityProps {
   /** call a function for each property of this Entity. Function arguments are property name and property metadata. */
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.classFullName, true, func, includeCustom); }
 
-  /** static method to get the full name of this class, in the form "schema.class"  */
-  public static get sqlName(): string { return this.schema.name + "." + this.name; }
+  /** static method to get the full name of this class, in the form "schema:class"  */
+  public static get classFullName(): string { return this.schema.name + ":" + this.name; }
 
   /** get full class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this.schemaName + ":" + this.className; }

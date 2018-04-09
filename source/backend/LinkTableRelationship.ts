@@ -63,7 +63,7 @@ export class ElementRefersToElements extends LinkTableRelationship {
    * @param classFullName The full name of the ElementRefersToElements class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementRefersToElements base class.
    * @return an instance of the specified class.
    */
-  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, classFullName: string = "BisCore:ElementRefersToElements"): ElementRefersToElements {
+  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, classFullName: string = ElementRefersToElements.classFullName): ElementRefersToElements {
     return iModel.linkTableRelationships.createInstance({ sourceId, targetId, classFullName }) as ElementRefersToElements;
   }
 }
@@ -89,7 +89,7 @@ export class ElementGroupsMembers extends ElementRefersToElements {
    * @param classFullName The full name of the ElementGroupsMembers class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementGroupsMembers base class.
    * @return an instance of the specified class.
    */
-  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, classFullName: string = "BisCore:ElementGroupsMembers", memberPriority: number = 0): ElementGroupsMembers {
+  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, classFullName: string = ElementGroupsMembers.classFullName, memberPriority: number = 0): ElementGroupsMembers {
     return iModel.linkTableRelationships.createInstance({ sourceId, targetId, memberPriority, classFullName }) as ElementGroupsMembers;
   }
 }
@@ -117,7 +117,7 @@ export class ElementDrivesElement extends LinkTableRelationship implements Eleme
    * @param classFullName The full name of the ElementDrivesElement class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementDrivesElement base class.
    * @return an instance of the specified class.
    */
-  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, priority: number = 0, classFullName: string = "BisCore:ElementDrivesElement"): ElementDrivesElement {
+  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, priority: number = 0, classFullName: string = ElementDrivesElement.classFullName): ElementDrivesElement {
     return iModel.linkTableRelationships.createInstance({ sourceId, targetId, priority, classFullName }) as ElementDrivesElement;
   }
 }
