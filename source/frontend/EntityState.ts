@@ -79,12 +79,9 @@ export class ElementState extends EntityState implements ElementProps {
     if (this.code.spec.isValid())
       val.code = this.code;
     val.model = this.model;
-    if (this.parent)
-      val.parent = this.parent;
-    if (this.federationGuid)
-      val.federationGuid = this.federationGuid;
-    if (this.userLabel)
-      val.userLabel = this.userLabel;
+    val.parent = this.parent;
+    val.federationGuid = this.federationGuid;
+    val.userLabel = this.userLabel;
     return val;
   }
 }
