@@ -14,6 +14,22 @@ let obtainLock = 0;
 /** @hidden @internal */
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
+/** A gateway operation control response. */
+export abstract class GatewayControlResponse {
+}
+
+/** A pending gateway operation response. */
+export class GatewayPendingResponse extends GatewayControlResponse {
+  /** Extended status regarding the pending operation. */
+  public message: string;
+
+  /** Constructs a pending response. */
+  public constructor(message: string = "") {
+    super();
+    this.message = message;
+  }
+}
+
 /** Manages requests and responses for a gateway configuration. */
 export class GatewayControlChannel {
   private pendingInterval: any = undefined;
@@ -65,6 +81,7 @@ export class GatewayControlChannel {
         break;
       }
 
+      case GatewayProtocolEvent.BackendReportedPending:
       case GatewayProtocolEvent.BackendErrorOccurred:
       case GatewayProtocolEvent.BackendResponseCreated: {
         aggregateLoad.lastResponse = now;
@@ -82,6 +99,9 @@ export class GatewayControlChannel {
         aggregateLoad.lastRequest = request.lastSubmitted;
         break;
       }
+
+      case GatewayRequestStatus.Provisioning:
+      case GatewayRequestStatus.Pending:
       case GatewayRequestStatus.Resolved:
       case GatewayRequestStatus.Rejected: {
         aggregateLoad.lastResponse = request.lastUpdated;

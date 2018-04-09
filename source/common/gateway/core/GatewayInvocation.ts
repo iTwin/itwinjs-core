@@ -10,6 +10,7 @@ import { GatewayRegistry } from "./GatewayRegistry";
 import { GatewayRequestStatus } from "./GatewayRequest";
 import { GatewayProtocol, GatewayProtocolEvent, SerializedGatewayRequest, GatewayRequestFulfillment } from "./GatewayProtocol";
 import { GatewayMarshaling } from "./GatewayMarshaling";
+import { GatewayPendingResponse } from "./GatewayControl";
 
 /** A gateway operation invocation in response to a request. */
 export class GatewayInvocation {
@@ -68,6 +69,12 @@ export class GatewayInvocation {
       protocol.events.raiseEvent(GatewayProtocolEvent.BackendResponseCreated, this);
       return { result, status };
     }, (reason) => {
+      if (reason instanceof GatewayPendingResponse) {
+        this._pending = true;
+        protocol.events.raiseEvent(GatewayProtocolEvent.BackendReportedPending, this);
+        return { result: reason.message, status: protocol.getCode(this.status) };
+      }
+
       this._threw = true;
       const result = this.supplyErrorMessage(reason);
       const status = protocol.getCode(this.status);

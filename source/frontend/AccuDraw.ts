@@ -1673,10 +1673,10 @@ export class AccuDraw {
       const colorZ = this.frameColor.adjustForContrast(bgColor, 100);
       pts[1] = this.origin;
       graphic.setSymbology(colorZ, colorZ, 2);
-      graphic.addLineString(2, pts);
+      graphic.addLineString(pts);
       pts[0] = pts[1];
       graphic.setSymbology(colorZ, colorZ, 4);
-      graphic.addLineString(2, pts);
+      graphic.addLineString(pts);
     }
 
     // Get snap point from AccuSnap/Tentative or use raw point...
@@ -1712,16 +1712,16 @@ export class AccuDraw {
             pts[3] = pts[0].plusScaled(this.axes.x, xOffset);
             pts[4] = pts[0];
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(5, pts);
+            graphic.addLineString(pts);
 
             pts[1] = pts[2];  /* used by z offset */
           } else {  /* just X */
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(2, pts);
+            graphic.addLineString(pts);
           }
         } else if (yIsOffset) {  /* just Y */
           graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-          graphic.addLineString(2, pts);
+          graphic.addLineString(pts);
         }
       }
     }
@@ -1737,12 +1737,12 @@ export class AccuDraw {
           if (zOffset > Constants.SMALL_ANGLE || zOffset < -Constants.SMALL_ANGLE) {
             pts[2] = this.rawPoint;
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(2, [pts[1], pts[2]]);
+            graphic.addLineString([pts[1], pts[2]]);
           }
         } else {
           pts[1] = this.rawPoint;
           graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-          graphic.addLineString(2, pts);
+          graphic.addLineString(pts);
         }
       }
     }
@@ -1773,7 +1773,7 @@ export class AccuDraw {
     if (axisIsIndexed) {
       pts[0] = ptP;
       graphic.setSymbology(colorIndex, colorIndex, 4);
-      graphic.addLineString(2, pts);
+      graphic.addLineString(pts);
     }
 
     // Distance Indexing:
@@ -1797,7 +1797,7 @@ export class AccuDraw {
       pts[0] = ptP.plusScaled(vec, len);
       pts[1] = ptP.plusScaled(vec, -len);
       graphic.setSymbology(colorIndex, colorIndex, 3);
-      graphic.addLineString(2, pts);
+      graphic.addLineString(pts);
     }
 
     // XY Lock:
@@ -1816,17 +1816,17 @@ export class AccuDraw {
         switch (locked) {
           case LockedStates.X_BM:
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(2, [pts[1], pts[2]]);
+            graphic.addLineString([pts[1], pts[2]]);
             break;
 
           case LockedStates.Y_BM:
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(2, pts);
+            graphic.addLineString(pts);
             break;
 
           case LockedStates.XY_BM:
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
-            graphic.addLineString(3, pts);
+            graphic.addLineString(pts);
             break;
         }
       }
@@ -1885,7 +1885,7 @@ export class AccuDraw {
           new Point3d(-1.0, -1.0, 0.0)];
         shapePts[4] = shapePts[0];
         graphic.addShape(5, shapePts, true);
-        graphic.addLineString(5, shapePts);
+        graphic.addLineString(shapePts);
       }
     } else {
       let nSides, radius;
@@ -1909,7 +1909,7 @@ export class AccuDraw {
       shapePtsP[nSides] = shapePtsP[0];
 
       graphic.addShape(nSides + 1, shapePtsP, true);
-      graphic.addLineString(nSides + 1, shapePtsP);
+      graphic.addLineString(shapePtsP);
     }
 
     // Display sticky z-lock indicator as frame inset...
@@ -1926,7 +1926,7 @@ export class AccuDraw {
           new Point3d(0.5, -0.5, 0.0),
           new Point3d(-0.5, -0.5, 0.0)];
         shapePts[4] = shapePts[0];
-        graphic.addLineString(5, shapePts);
+        graphic.addLineString(shapePts);
       }
     }
 
@@ -1940,28 +1940,28 @@ export class AccuDraw {
     const linePts: Point3d[] = [];
     linePts[0] = new Point3d(1.2, 0.0, 0.0);
     linePts[1] = new Point3d(0.8, 0.0, 0.0);
-    graphic.addLineString(2, linePts);
+    graphic.addLineString(linePts);
 
     // Display negative "X" tick...
     graphic.setSymbology(frameColor, frameColor, 1);
 
     linePts[0].set(-1.2, 0.0, 0.0);
     linePts[1].set(-0.8, 0.0, 0.0);
-    graphic.addLineString(2, linePts);
+    graphic.addLineString(linePts);
 
     // Display positive "Y" tick...
     graphic.setSymbology(yColor, yColor, 4);
 
     linePts[0].set(0.0, 1.2, 0.0);
     linePts[1].set(0.0, 0.8, 0.0);
-    graphic.addLineString(2, linePts);
+    graphic.addLineString(linePts);
 
     // Display negative "Y" tick...
     graphic.setSymbology(frameColor, frameColor, 1);
 
     linePts[0].set(0.0, -1.2, 0.0);
     linePts[1].set(0.0, -0.8, 0.0);
-    graphic.addLineString(2, linePts);
+    graphic.addLineString(linePts);
 
     context.addWorldOverlay(graphic.finish()!); // add compass as world overlay decorator
   }
