@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.71.0",
+  "version": "0.72.2",
   "description": "iModelJs components common to frontend and backend",
   "main": "lib/common.js",
   "typings": "lib/common",
@@ -22,7 +22,13 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {},
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-common",
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
+  ],
+  "dependencies": {
+    "uuid": "^3.2.1"
+  },
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
@@ -40,7 +46,8 @@
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-clients": "^5.0.3",
     "rimraf": "^2.6.2",
-    "typescript": "~2.7.2"
+    "typescript": "~2.7.2",
+    "@types/uuid": "^3.4.3"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

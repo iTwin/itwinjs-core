@@ -1,49 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayImplementation, GatewayDefinition } from "../Gateway";
-import { GatewayConfiguration } from "./GatewayConfiguration";
-import { IModelError } from "../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { GatewayRegistry } from "./GatewayRegistry";
+import { GatewayOperation } from "./GatewayOperation";
+import { GatewayProtocol } from "./GatewayProtocol";
 
-/**
- * Global store of gateway parameters.
- * @private
- * @hidden
- */
-export class GatewayRegistry {
-  private static _instance: GatewayRegistry;
-  private _token: symbol;
-
-  private constructor(token: symbol) {
-    this._token = token;
-  }
-
-  public static instance(token: symbol) {
-    if (!GatewayRegistry._instance) {
-      const globalObj: any = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
-
-      if (!globalObj[token])
-        globalObj[token] = new GatewayRegistry(token);
-
-      GatewayRegistry._instance = globalObj[token];
-    }
-
-    const instance = GatewayRegistry._instance;
-    if (instance._token !== token)
-      throw new IModelError(BentleyStatus.ERROR, "Gateway registry is invalid.");
-
-    return instance;
-  }
-
-  public proxies: Map<string, Gateway> = new Map();
-  public implementations: Map<string, Gateway> = new Map();
-  public implementationClasses: Map<string, GatewayImplementation> = new Map();
-  // tslint:disable-next-line:ban-types
-  public types: Map<string, Function> = new Map();
-}
-
-const registry = GatewayRegistry.instance(Symbol.for("@bentley/imodeljs-core/common/Gateway"));
+let marshalingScope = "";
 
 /** Gateway type marshaling directives. */
 export enum GatewayMarshalingDirective {
@@ -55,35 +17,23 @@ export enum GatewayMarshalingDirective {
   Unregistered = "__unregistered__",
 }
 
-/** An application protocol for a gateway. */
-export abstract class GatewayProtocol {
-  private static marshalingScope = "";
+/** @hidden @internal */
+export class GatewayMarshaling {
+  private constructor() { }
 
-  /** The configuration for the protocol. */
-  public configuration: GatewayConfiguration;
-
-  /** Creates a protocol. */
-  public constructor(configuration: GatewayConfiguration) {
-    this.configuration = configuration;
+  /** Serializes a value. */
+  public static serialize(operation: GatewayOperation, _protocol: GatewayProtocol, value: any) {
+    marshalingScope = operation.gateway.name;
+    return JSON.stringify(value, GatewayMarshaling.marshal);
   }
 
-  /** Obtains the implementation result for a gateway operation. */
-  public abstract obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T>;
+  /** Deserializes a value. */
+  public static deserialize(_operation: GatewayOperation, _protocol: GatewayProtocol, value: any) {
+    if (value === "") {
+      return undefined;
+    }
 
-  /** Serializes a gateway operation value. */
-  public serializeOperationValue(gatewayName: string, value: any) {
-    GatewayProtocol.marshalingScope = gatewayName;
-    return JSON.stringify(value, GatewayProtocol.marshal);
-  }
-
-  /** Deserializes a gateway operation value. */
-  public deserializeOperationValue(value: any) {
-    return (value === "") ? undefined : JSON.parse(value, GatewayProtocol.unmarshal);
-  }
-
-  /** Records a gateway operation response. */
-  protected static recordOperationResponse() {
-    Gateway.recordResponse();
+    return JSON.parse(value, GatewayMarshaling.unmarshal);
   }
 
   /** JSON.stringify replacer callback that marshals JavaScript class instances. */
@@ -100,8 +50,8 @@ export abstract class GatewayProtocol {
     }
 
     if (typeof (originalValue) === "object" && originalValue !== null && !Array.isArray(originalValue) && originalValue.constructor !== Object) {
-      const name = `${GatewayProtocol.marshalingScope}_${originalValue.constructor.name}`;
-      const unregistered = !registry.types.has(name);
+      const name = `${marshalingScope}_${originalValue.constructor.name}`;
+      const unregistered = !GatewayRegistry.instance.types.has(name);
 
       if (custom) {
         return {
@@ -151,7 +101,7 @@ export abstract class GatewayProtocol {
 
       delete value[GatewayMarshalingDirective.Unregistered]; // may use this information later
 
-      const type = registry.types.get(name);
+      const type = GatewayRegistry.instance.types.get(name);
 
       const customJSON = value[GatewayMarshalingDirective.JSON];
       if (customJSON) {
@@ -192,22 +142,5 @@ export abstract class GatewayProtocol {
     }
 
     return value;
-  }
-}
-
-/** Direct function call protocol within a single JavaScript context (suitable for testing). */
-export class GatewayDirectProtocol extends GatewayProtocol {
-  public obtainGatewayImplementationResult<T>(gateway: GatewayDefinition, operation: string, ...parameters: any[]): Promise<T> {
-    return new Promise<T>(async (resolve, reject) => {
-      try {
-        const impl = Gateway.getImplementationForGateway(gateway);
-        const result = await impl.invoke<T>(operation, ...parameters);
-        GatewayProtocol.recordOperationResponse();
-        resolve(result);
-      } catch (e) {
-        GatewayProtocol.recordOperationResponse();
-        reject(e);
-      }
-    });
   }
 }

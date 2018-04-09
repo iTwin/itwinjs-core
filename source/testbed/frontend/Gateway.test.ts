@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@bentley/imodeljs-common";
+import { GatewayRequest, Gateway, GatewayOperation, GatewayRequestEvent } from "@bentley/imodeljs-common";
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -97,7 +97,7 @@ describe("Gateway", () => {
   });
 
   it("should report aggregate operation load profile information", async () => {
-    const load = Gateway.aggregateLoad;
+    const load = GatewayRequest.aggregateLoad;
     const frontendInitialReq = load.lastRequest;
     const frontendInitialResp = load.lastResponse;
 
@@ -112,5 +112,33 @@ describe("Gateway", () => {
     const backendAggregate2 = await TestGateway.getProxy().op7();
     assert.isAbove(backendAggregate2.lastRequest, backendAggregate1.lastRequest);
     assert.isAbove(backendAggregate2.lastResponse, backendAggregate1.lastResponse);
+  });
+
+  it("should support pending operations", async () => {
+    const op8 = GatewayOperation.lookup(TestGateway, "op8");
+
+    let receivedPending = false;
+
+    const removeListener = GatewayRequest.events.addListener((type: GatewayRequestEvent, request: GatewayRequest) => {
+      if (type !== GatewayRequestEvent.PendingUpdateReceived || request.operation !== op8)
+        return;
+
+      assert.isFalse(receivedPending);
+      receivedPending = true;
+      assert.equal(request.extendedStatus, TestGateway.OP8_PENDING_MESSAGE);
+    });
+
+    Gateway.getProxyForGateway(TestGateway).configuration.pendingOperationRetryInterval = 1;
+
+    const response1 = await TestGateway.getProxy().op8(1, 1);
+    assert.equal(response1.initializer, TestGateway.OP8_INITIALIZER);
+    assert.equal(response1.sum, 2);
+
+    const response2 = await TestGateway.getProxy().op8(2, 2);
+    assert.equal(response2.initializer, TestGateway.OP8_INITIALIZER);
+    assert.equal(response2.sum, 4);
+
+    assert.isTrue(receivedPending);
+    removeListener();
   });
 });

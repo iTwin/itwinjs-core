@@ -112,17 +112,17 @@ export class TentativePoint {
   /** draw the cross as 4 lines rather than 2, so that there's no hole in the middle when drawn in dashed symbology */
   private drawTpCross(graphic: GraphicBuilder, tpSize: number, x: number, y: number): void {
     const tpCross: Point2d[] = [new Point2d(x, y), new Point2d(x + tpSize, y)];
-    graphic.addLineString2d(2, tpCross, 0.0);
+    graphic.addLineString2d(tpCross, 0.0);
 
     tpCross[1].x = x - tpSize;
-    graphic.addLineString2d(2, tpCross, 0.0);
+    graphic.addLineString2d(tpCross, 0.0);
 
     tpCross[1].x = x;
     tpCross[1].y = y + tpSize;
-    graphic.addLineString2d(2, tpCross, 0.0);
+    graphic.addLineString2d(tpCross, 0.0);
 
     tpCross[1].y = y - tpSize;
-    graphic.addLineString2d(2, tpCross, 0.0);
+    graphic.addLineString2d(tpCross, 0.0);
   }
 
   public displayTP(context: DecorateContext): void {

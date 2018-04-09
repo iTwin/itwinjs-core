@@ -13,15 +13,22 @@ export interface SubCategoryProps extends ElementProps {
   description?: string;
 }
 
-/** a Subcategory defines the appearance for graphics in Geometric elements */
+/** a SubCategory defines the appearance for graphics in Geometric elements */
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public description?: string;
+
+  /** Construct a SubCategory.
+   * @param props The properties of the SubCategory
+   * @param iModel The IModelDb where the SubCategory may be inserted.
+   */
   public constructor(props: SubCategoryProps, iModel: IModelDb) {
     super(props, iModel);
     this.appearance = new Appearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
   }
+
+  /** @hidden */
   public toJSON(): SubCategoryProps {
     const val = super.toJSON();
     val.appearance = this.appearance.toJSON();
@@ -30,9 +37,13 @@ export class SubCategory extends DefinitionElement {
     return val;
   }
 
+  /** Get the SubCategory's Code value. That is the name of the SubCategory. */
   public getSubCategoryName(): string { return this.code.getValue(); }
+  /** Get the unique ID of the SubCategory. */
   public getSubCategoryId(): Id64 { return this.id; }
+  /** Get the ID of the parent Category. */
   public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
+  /** Query if this is the default SubCategory of its parent Category. */
   public isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
 }
 
@@ -50,6 +61,8 @@ export class Category extends DefinitionElement implements CategoryProps {
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
   }
+
+  /** @hidden */
   public toJSON(): CategoryProps {
     const val = super.toJSON();
     val.rank = this.rank;
@@ -58,9 +71,10 @@ export class Category extends DefinitionElement implements CategoryProps {
     return val;
   }
 
+  /** Get the ID of the default SubCategory for this Category. */
   public myDefaultSubCategoryId(): Id64 { return IModelDb.getDefaultSubCategoryId(this.id); }
 
-  /** Set the default appearance of this category */
+  /** Set the appearance of the default SubCategory for this Category */
   public setDefaultAppearance(app: Appearance): void {
     const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).copyForEdit();
     subCat.appearance = app;
@@ -70,7 +84,13 @@ export class Category extends DefinitionElement implements CategoryProps {
 
 /** Categorizes 2d graphical elements. */
 export class DrawingCategory extends Category {
+  /** Construct a DrawingCategory
+   * @param opts  The properties of the new DrawingCategory
+   * @param iModel The IModelDb where the DrawingCategory may be inserted.
+   */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+
+  /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
   public static getCodeSpecName(): string { return CodeSpecNames.DrawingCategory(); }
 
   /** Create a Code for a DrawingCategory given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -87,7 +107,13 @@ export class DrawingCategory extends Category {
 
 /** Categorizes SpatialElements. */
 export class SpatialCategory extends Category {
+  /** Construct a SpatialCategory
+   * @param opts  The properties of the new SpatialCategory
+   * @param iModel The IModelDb where the SpatialCategory may be inserted.
+   */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+
+  /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
   public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
@@ -121,11 +147,4 @@ export class SpatialCategory extends Category {
       code: SpatialCategory.createCode(scopeModel, categoryName),
     }) as SpatialCategory;
   }
-
-  /** Inserts this SpatialCategory into the iModel and initializes its default sub-category with the specified appearance.
-   * @return The persistent SpatialCategory.
-   * @throws IModelError if insert failed.
-   * @see setDefaultAppearance
-   */
-  public insert(): Id64 { return this.iModel.elements.insertElement(this); }
 }

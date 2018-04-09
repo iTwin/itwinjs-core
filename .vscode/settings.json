@@ -1,6 +1,11 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "editor.tabSize": 2,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/common/temp": true
+  },
   "files.exclude": {
     "node_modules": true,
     "lib": true,
@@ -93,6 +98,7 @@
     "structs",
     "subclassing",
     "subgraphic",
+    "superset",
     "symb",
     "system",
     "testbed",
@@ -111,4 +117,5 @@
   "typescript.autoImportSuggestions.enabled": false,
   "guides.normal.width": 3,
   "typescript.tsdk": "node_modules\\typescript\\lib",
+  "files.trimTrailingWhitespace": true,
 }

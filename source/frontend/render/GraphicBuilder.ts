@@ -6,6 +6,7 @@ import { Transform,
          Point3d,
          Point2d,
          ClipVector,
+         CurveCollection,
          Range3d,
          Range2d,
          Vector3d,
@@ -176,24 +177,22 @@ export abstract class GraphicBuilder {
 
   /**
    * Draw a 3D line string.
-   * @param numPoints Number of vertices in points array.
    * @param points Array of vertices in the line string.
    */
-  public abstract addLineString(numPoints: number, points: Point3d[]): void;
+  public abstract addLineString(points: Point3d[]): void;
 
   /** Helper for adding a series of line strings */
-  public addLineStrings(...lines: Array<[number, Point3d[]]>): void { this.convertToLineStringParams(...lines).forEach((l) => this.addLineString(l.numPoints, l.points)); }
+  public addLineStrings(...lines: Array<[number, Point3d[]]>): void { this.convertToLineStringParams(...lines).forEach((l) => this.addLineString(l.points)); }
 
   /** Helper for converting an array of string param data each of which are stored as array into an array of line string params */
   public convertToLineStringParams(...lines: Array<[number, Point3d[]]>): Array<{ numPoints: number, points: Point3d[] }> { return lines.map((l) => ({ numPoints: l[0], points: l[1] })); }
 
   /**
    * Draw a 2D line string.
-   * @param numPoints Number of vertices in points array.
    * @param points Array of vertices in the line string.
    * @param zDepth Z depth value in local coordinates.
    */
-  public abstract addLineString2d(numPoints: number, points: Point2d[], zDepth: number): void;
+  public abstract addLineString2d(points: Point2d[], zDepth: number): void;
 
   /**
    * Draw a 3D point string. A point string is displayed as a series of points, one at each vertex in the array, with no vectors connecting the vertices.
@@ -256,6 +255,7 @@ export abstract class GraphicBuilder {
   public abstract addBSplineCurve2d(curve: BSplineCurve3d, filled: boolean, zDepth: number): void;
 
   /** Draw a curve vector */
+  public abstract addCurveVector(curves: CurveCollection, filled: boolean): void;
   // public abstract addCurveVector(curves: CurveVector, filled: boolean, zDepth: number): void;
 
   /**
@@ -347,7 +347,7 @@ export abstract class GraphicBuilder {
     tmpPts[2] = new Point2d(range.high.x, range.high.y);
     tmpPts[3] = new Point2d(range.low.x, range.high.y);
     tmpPts[4] = tmpPts[0];
-    this.addLineString2d(5, tmpPts, zDepth);
+    this.addLineString2d(tmpPts, zDepth);
   }
 
   public abstract addSubGraphic(graphic: Graphic, trans: Transform, params: GraphicParams, clip?: ClipVector): void;
