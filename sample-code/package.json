@@ -8,7 +8,7 @@
     "cleanbackend": "rimraf lib out/backend",
     "copybackendassets": "cpx ./backend_test_assets/**/* ./out/backend/assets",
     "pretestbackend": "npm run copybackendassets && rush build",
-    "testbackend": "npm run pretestbackend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./out/backend\"",
+    "testbackend": "npm run pretestbackend && node ../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../\" --testDir=\"./out/backend\"",
     "buildfrontend": "cd ./frontend && tsc --outDir ../out/frontend",
     "cleanfrontend": "rimraf lib out/frontend",
     "buildcommon": "cd ./common && tsc --outDir ../out/common",
