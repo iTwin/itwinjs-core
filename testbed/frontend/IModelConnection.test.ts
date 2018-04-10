@@ -146,7 +146,7 @@ describe("IModelConnection", () => {
     assert.equal(changeSetRows[0].cnt, 0);
   }).timeout(99999);
 
-  it("Change cache file generation during change summary extraction", async () => {
+  it.skip("Change cache file generation during change summary extraction", async () => {
     assert.exists(iModel);
     // for now, imodel must be open readwrite for changesummary extraction
     await iModel.close(TestData.accessToken);
@@ -165,5 +165,5 @@ describe("IModelConnection", () => {
     } finally {
     await testIModel.close(TestData.accessToken);
     }
-  }).timeout(99999);
+  }); // .timeout(99999);
 });
