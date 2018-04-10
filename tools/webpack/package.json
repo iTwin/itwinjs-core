@@ -86,12 +86,12 @@
     "react": "^16.1.1",
     "react-dom": "^16.1.1",
     "react-test-renderer": "^16.1.1",
-    "typescript": "~2.6.0"
+    "typescript": "^2.6.0"
   },
   "devDependencies": {
     "react": "^16.1.1",
     "react-dom": "^16.1.1",
     "react-test-renderer": "^16.1.1",
-    "typescript": "~2.6.0"
+    "typescript": "^2.6.0"
   }
 }
