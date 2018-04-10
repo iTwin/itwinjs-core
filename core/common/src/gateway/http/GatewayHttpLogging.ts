@@ -7,6 +7,7 @@ import { GatewayInvocation } from "../core/GatewayInvocation";
 import { GatewayHttpRequest } from "./GatewayHttpRequest";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ServerError } from "../../IModelError";
+import { GatewayDefinition } from "../../Gateway";
 
 const loggingCategory = "imodeljs-gateway.GatewayHttpProtocol";
 
@@ -38,12 +39,16 @@ export class GatewayHttpLogging {
     }
   }
 
+  private static getGatewayName(g: string | GatewayDefinition): string {
+    return (typeof g === "string") ? g : g.name;
+  }
+
   public static logRequest(message: string, object: GatewayHttpRequest | SerializedGatewayRequest): void {
-    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path }));
+    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path, operation: object.operation.name, gateway: GatewayHttpLogging.getGatewayName(object.operation.gateway) }));
   }
 
   private static logResponse(message: string, object: GatewayHttpRequest | SerializedGatewayRequest, status: number): void {
-    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path, status }));
+    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path, operation: object.operation.name, gateway: GatewayHttpLogging.getGatewayName(object.operation.gateway), status }));
   }
 
   private static logErrorFrontend(message: string, request: GatewayHttpRequest): void {

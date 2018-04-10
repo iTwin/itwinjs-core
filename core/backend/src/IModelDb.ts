@@ -307,7 +307,8 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Execute a query against this IModelDb.
+  /** Execute a query against this IModelDb. This is just a convenience method that calls [[withPreparedStatement]], [[ECSqlStatement.bindValues]], [[ECSqlStatement.step]],
+   * and [[ECSqlStatement.getRow]].
    * @param ecsql The ECSql statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
@@ -391,7 +392,7 @@ export class IModelDb extends IModel {
 
   /**
    * Commit pending changes to this iModel.
-   * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
+   * <em>note:</em> If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
    * @param _description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */

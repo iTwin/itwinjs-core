@@ -12,7 +12,7 @@ export type GatewayImplementation<T extends Gateway = Gateway> = new () => T;
 export abstract class Gateway {
   /**
    * Initializes a gateway class.
-   * @note This function must be called on the frontend and on the backend for each gateway class used by an application.
+   * <em>note:</em> This function must be called on the frontend and on the backend for each gateway class used by an application.
    */
   public static initialize<T extends Gateway>(definition: GatewayDefinition<T>): void {
     GatewayRegistry.instance.initializeGateway(definition);

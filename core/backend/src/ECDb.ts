@@ -90,8 +90,10 @@ export class ECDb implements IDisposable {
    */
   public importSchema(pathName: string): void {
     const status = this.nativeDb.importSchema(pathName);
-    if (status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(status, "Failed to import schema");
+    if (status !== DbResult.BE_SQLITE_OK) {
+      Logger.logError(loggingCategory, "Failed to import schema from '" + pathName + "'.");
+      throw new IModelError(status, "Failed to import schema from '" + pathName + "'.");
+    }
   }
 
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.

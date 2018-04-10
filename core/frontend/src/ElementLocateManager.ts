@@ -17,7 +17,7 @@ export const enum LocateAction {
 
 /**
  * Values to return from a locate filter.
- * @note It would be rare and extreme for a locate filter to ever return Accept.
+ * <em>note:</em> It would be rare and extreme for a locate filter to ever return Accept.
  * <p>Usually, filters will return Reject to indicate the element is unacceptable, or Neutral to
  * indicate that the element is acceptable <i>as far as this filter is concerned.</i> By returning Accept, a
  * single filter can cause the element to be accepted, <b>without calling other filters</b> that might otherwise reject the element.

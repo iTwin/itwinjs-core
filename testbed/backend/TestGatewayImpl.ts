@@ -4,7 +4,6 @@
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
 
 let op8Initializer = 0;
@@ -54,12 +53,7 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
   public async attachChangeCache(iModelToken: IModelToken): Promise<void> { return ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken)); }
 
   public async extractChangeSummaries(iModelToken: IModelToken, options: any): Promise<void> {
-    const iModel: IModelDb = IModelDb.find(iModelToken);
-    if (!iModel.briefcase)
-      throw new Error("No valid iModelDb found for passed iModelToken");
-
-    const accessToken: AccessToken = IModelDb.getAccessToken(iModel.briefcase.iModelId);
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, options as ChangeSummaryExtractOptions);
+    await ChangeSummaryManager.extractChangeSummaries(IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(iModelToken: IModelToken): Promise<void> {

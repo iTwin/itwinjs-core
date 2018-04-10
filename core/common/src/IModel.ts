@@ -124,7 +124,7 @@ export abstract class IModel implements IModelProps {
   }
 
   /** Check if this iModel has been opened read-only or not. */
-  public isReadonly() { return this.token.openMode === OpenMode.Readonly; }
+  public isReadonly(): boolean { return this.token.openMode === OpenMode.Readonly; }
 
   /** get the default subCategoryId for the supplied categoryId */
   public static getDefaultSubCategoryId(categoryId: Id64): Id64 { return categoryId.isValid() ? new Id64([categoryId.getLow() + 1, categoryId.getHigh()]) : new Id64(); }

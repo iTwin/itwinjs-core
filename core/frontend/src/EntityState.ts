@@ -43,7 +43,7 @@ export class EntityState implements EntityProps {
 
   /**
    * Get full class name of this Entity in the form "SchemaName:ClassName".
-   * @note Subclasses from other than the BisCore domain should override their static member "schemaName" with their schema name.
+   * <em>note:</em> Subclasses from other than the BisCore domain should override their static member "schemaName" with their schema name.
    */
   public static getClassFullName(): string { return this.schemaName + ":" + this.className; }
 
@@ -51,7 +51,7 @@ export class EntityState implements EntityProps {
 
   /**
    * Get the ECClass name for this EntityState.
-   * @note This default implementation relies on all EntityState subclasses using their ECClass name as their JavaScript class name, <em>with "State" appended to the end </em>.
+   * <em>note:</em> This default implementation relies on all EntityState subclasses using their ECClass name as their JavaScript class name, <em>with "State" appended to the end </em>.
    * If this is not true, you must override this method.
    */
   public static get className(): string { return this.name.slice(0, this.name.lastIndexOf("State")); }

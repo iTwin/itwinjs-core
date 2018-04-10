@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
+import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl, ECSqlStatement } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common";
+import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, DbResult, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
@@ -49,8 +49,9 @@ describe("Sample Code", () => {
     // The model
     const newModel = outputImodel.models.createModel({ modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
     const newModelId = outputImodel.models.insertModel(newModel);
+    assert.isTrue(newModelId.isValid());
 
-    return newModelId;
+    return modeledElementId;
   }
   // __PUBLISH_EXTRACT_END__
 
@@ -158,6 +159,33 @@ describe("Sample Code", () => {
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
     // __PUBLISH_EXTRACT_END__
 
+  });
+
+  it("should demonstrate ECSqlStatements", () => {
+    const expectedEid = createNewModel(iModel.elements.getRootSubject(), "CodeValue1", false);
+
+    // __PUBLISH_EXTRACT_START__ ECSqlStatement.Examples
+    // Look up an element's ID by its CodeValue.
+    // Note that the statement is formulated to be general, so that it can be cached and possibly reused.
+    // A placeholder is used to represent the particular CodeValue that we want to look up.
+    const eidFound: string = iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore.Element WHERE (CodeValue=?)", (stmt: ECSqlStatement) => {
+      // Bind the particular CodeValue string that we care about to the statement.
+      // Note that bindings begin with index 1.
+      stmt.bindString(1, "CodeValue1");
+      // Step the statement to get the first result.
+      const res = stmt.step();
+      // If no element has this CodeValue, indicate an error by throwing an exception.
+      if (DbResult.BE_SQLITE_ROW !== res)
+        throw new IModelError(IModelStatus.NotFound);
+      // If an element was found, return its ID.
+      // Note that results begin with index 0.
+      return stmt.getValue(0).getId();
+    });
+
+    // Check that the expected element was found.
+    // Note that ECSqlValue.getId returns a string that represents the id.
+    assert.equal(eidFound, expectedEid.toString());
+    // __PUBLISH_EXTRACT_END__
   });
 
 });

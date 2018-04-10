@@ -29,7 +29,7 @@ export class IModelConnection extends IModel {
 
   /**
    * Event called immediately before an IModelConnection is closed.
-   * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
+   * <em>note:</em> Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
