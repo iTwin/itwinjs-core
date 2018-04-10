@@ -2,7 +2,7 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
-!lib/asserts/**
+!lib/assets/**
 assets/**
 test
 !public/**
