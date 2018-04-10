@@ -11,6 +11,72 @@ import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 
+export const enum AsThickenedLine { No = 0, Yes = 1 }
+
+/**
+ * A renderer-specific object that can be placed into a display list.
+ */
+export abstract class Graphic {
+  constructor(public readonly iModel: IModel) { }
+}
+
+/**
+ * The "cooked" material and symbology for a Render::Graphic. This determines the appearance
+ * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
+ */
+export class GraphicParams {
+  public isFilled = false;
+  public isBlankingRegion = false;
+  public linePixels = LinePixels.Solid;
+  public rasterWidth = 1;
+  public readonly lineColor = new ColorDef();
+  public readonly fillColor = new ColorDef();
+  public trueWidthStart = 0;
+  public trueWidthEnd = 0;
+  public lineTexture?: Texture;
+  public material?: Material;
+  public gradient?: Gradient.Symb;
+
+  // void Cook(GeometryParamsCR, ViewContextR);
+  // void Init() {* this = GraphicParams(); }
+  // Compare two GraphicParams.
+  // DGNPLATFORM_EXPORT bool operator == (GraphicParamsCR rhs) const ;
+  // copy operator
+  // DGNPLATFORM_EXPORT GraphicParamsR operator = (GraphicParamsCR rhs);
+
+  /** set the line color
+   *  @param lineColor the new line color for this GraphicParams.
+   */
+  public setLineColor(lineColor: ColorDef) { this.lineColor.setFrom(lineColor); }
+  public setLineTransparency(transparency: number) { this.lineColor.setAlpha(transparency); }
+
+  /**
+   * Set the current fill color for this GraphicParams.
+   * @param fillColor the new fill color for this GraphicParams.
+   */
+  public setFillColor(fillColor: ColorDef) { this.fillColor.setFrom(fillColor); }
+  public setFillTransparency(transparency: number) { this.fillColor.setAlpha(transparency); }
+
+  /** Set the linear pixel pattern for this GraphicParams. This is only valid for overlay decorators in pixel mode. */
+  public setLinePixels(code: LinePixels) { this.linePixels = code; this.lineTexture = undefined; }
+
+  public static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid): GraphicParams {
+    const graphicParams = new GraphicParams();
+    graphicParams.setLineColor(lineColor);
+    graphicParams.setFillColor(fillColor);
+    graphicParams.rasterWidth = lineWidth;
+    graphicParams.setLinePixels(linePixels);
+    return graphicParams;
+  }
+
+  public static FromBlankingFill(fillColor: ColorDef): GraphicParams {
+    const graphicParams = new GraphicParams();
+    graphicParams.setFillColor(fillColor);
+    graphicParams.isBlankingRegion = true;
+    return graphicParams;
+  }
+}
+
 export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
 
 export const enum RenderMode {
@@ -18,6 +84,43 @@ export const enum RenderMode {
   HiddenLine = 3,
   SolidFill = 4,
   SmoothShade = 6,
+}
+
+export class GraphicList {
+  public list: Graphic[] = [];
+  public isEmpty(): boolean { return this.list.length === 0; }
+  public clear() { this.list.length = 0; }
+  public add(graphic: Graphic) { this.list.push(graphic); }
+  public getCount(): number { return this.list.length; }
+  public at(index: number): Graphic | undefined { return this.list[index]; }
+  public get length(): number { return this.list.length; }
+  constructor(...graphics: Graphic[]) { graphics.forEach(this.add); }
+}
+
+export class DecorationList extends GraphicList {
+}
+
+/**
+ * A set of GraphicLists of various types of Graphics that are "decorated" into the Render::Target,
+ * in addition to the Scene.
+ */
+export class Decorations {
+  public viewBackground?: Graphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
+  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
+  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
+}
+
+export class GraphicBranch {
+  public get entries(): Graphic[] { return this._entries; }
+  constructor(private _entries: Graphic[] = [],
+              private _viewFlagOverrides: ViewFlag.Overrides = new ViewFlag.Overrides()) {}
+  public add(graphic: Graphic): void { this._entries.push(graphic); }
+  public addRange(graphics: Graphic[]): void { graphics.forEach(this.add); }
+  public setViewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides = ovr; }
+  public getViewFlags(flags: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags); }
+  public clear() { this._entries = []; }
 }
 
 /**
@@ -299,9 +402,9 @@ export namespace ViewFlag {
     public clear() { this.present = 0; }
 
     /** Apply these overrides to the supplied ViewFlags */
-    public apply(base: ViewFlags) {
+    public apply(base: ViewFlags): ViewFlags {
       if (!this.anyOverridden())
-        return;
+        return base;
 
       if (this.isPresent(PresenceFlag.kDimensions)) base.setShowDimensions(this.values.showDimensions());
       if (this.isPresent(PresenceFlag.kPatterns)) base.setShowPatterns(this.values.showPatterns());
@@ -324,6 +427,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.setUseHlineMaterialColors(this.values.useHlineMaterialColors());
       if (this.isPresent(PresenceFlag.kEdgeMask)) base.setEdgeMask(this.values.getEdgeMask());
       if (this.isPresent(PresenceFlag.kRenderMode)) base.setRenderMode(this.values.getRenderMode());
+      return base;
     }
   }
 }
@@ -748,82 +852,6 @@ export class GeometryParams {
   }
 }
 
-/**
- * The "cooked" material and symbology for a Render::Graphic. This determines the appearance
- * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
- */
-export class GraphicParams {
-  public isFilled = false;
-  public isBlankingRegion = false;
-  public linePixels = LinePixels.Solid;
-  public rasterWidth = 1;
-  public readonly lineColor = new ColorDef();
-  public readonly fillColor = new ColorDef();
-  public trueWidthStart = 0;
-  public trueWidthEnd = 0;
-  public lineTexture?: Texture;
-  public material?: Material;
-  public gradient?: Gradient.Symb;
-
-  // void Cook(GeometryParamsCR, ViewContextR);
-  // void Init() {* this = GraphicParams(); }
-  // Compare two GraphicParams.
-  // DGNPLATFORM_EXPORT bool operator == (GraphicParamsCR rhs) const ;
-  // copy operator
-  // DGNPLATFORM_EXPORT GraphicParamsR operator = (GraphicParamsCR rhs);
-
-  /** set the line color
-   *  @param lineColor the new line color for this GraphicParams.
-   */
-  public setLineColor(lineColor: ColorDef) { this.lineColor.setFrom(lineColor); }
-  public setLineTransparency(transparency: number) { this.lineColor.setAlpha(transparency); }
-
-  /**
-   * Set the current fill color for this GraphicParams.
-   * @param fillColor the new fill color for this GraphicParams.
-   */
-  public setFillColor(fillColor: ColorDef) { this.fillColor.setFrom(fillColor); }
-  public setFillTransparency(transparency: number) { this.fillColor.setAlpha(transparency); }
-
-  /** Set the linear pixel pattern for this GraphicParams. This is only valid for overlay decorators in pixel mode. */
-  public setLinePixels(code: LinePixels) { this.linePixels = code; this.lineTexture = undefined; }
-
-  public static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid): GraphicParams {
-    const graphicParams = new GraphicParams();
-    graphicParams.setLineColor(lineColor);
-    graphicParams.setFillColor(fillColor);
-    graphicParams.rasterWidth = lineWidth;
-    graphicParams.setLinePixels(linePixels);
-    return graphicParams;
-  }
-
-  public static FromBlankingFill(fillColor: ColorDef): GraphicParams {
-    const graphicParams = new GraphicParams();
-    graphicParams.setFillColor(fillColor);
-    graphicParams.isBlankingRegion = true;
-    return graphicParams;
-  }
-}
-
-/**
- * A renderer-specific object that can be placed into a display list.
- */
-export class Graphic {
-}
-
-export const enum AsThickenedLine { No = 0, Yes = 1 }
-
-export class GraphicList {
-  public list: Graphic[] = [];
-  public isEmpty(): boolean { return this.list.length === 0; }
-  public clear() { this.list.length = 0; }
-  public add(graphic: Graphic) { this.list.push(graphic); }
-  public getCount(): number { return this.list.length; }
-}
-
-export class DecorationList extends GraphicList {
-}
-
 export namespace Hilite {
   /**  Describes the width of the outline applied to hilited geometry. */
   export const enum Silhouette {
@@ -849,18 +877,6 @@ export namespace Hilite {
     /** Change the color, preserving all other settings */
     public setColor(color: ColorDef) { this.color.setFrom(color); }
   }
-}
-
-/**
- * A set of GraphicLists of various types of Graphics that are "decorated" into the Render::Target,
- * in addition to the Scene.
- */
-export class Decorations {
-  public viewBackground?: Graphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
 }
 
 /**
