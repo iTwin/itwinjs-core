@@ -7,7 +7,6 @@ import ContentDataProvider from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyRecord } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { ECPresentationManager } from "@bentley/ecpresentation-common";
 
 let favoritesCategory: content.CategoryDescription | undefined;
 function getFavoritesCategory(): content.CategoryDescription {
@@ -105,8 +104,8 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   private _keys: KeySet;
 
   /** Constructor. */
-  constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string) {
-    super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.PROPERTY_PANE);
+  constructor(imodelToken: IModelToken, rulesetId: string) {
+    super(imodelToken, rulesetId, content.DefaultContentDisplayTypes.PROPERTY_PANE);
     this._includeFieldsWithNoValues = true;
     this._favorites = {};
     this._keys = new KeySet();

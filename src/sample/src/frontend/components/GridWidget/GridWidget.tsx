@@ -2,8 +2,7 @@ import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NavNodeKey, KeySet } from "@bentley/ecpresentation-common";
-import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
-import { GridDataProvider } from "@bentley/ecpresentation-controls";
+import { GridDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
 import { SelectionManager, SelectedItem, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 import "./GridWidget.css";
 
@@ -55,7 +54,6 @@ const initialState: GridState = {
   error: undefined,
 };
 class Grid extends React.Component<GridProps, GridState> {
-  private _presentationManager: ECPresentationManager;
   private _dataProvider: GridDataProvider;
   private _selectionHandler: SelectionHandler;
   private _hasSelection: boolean;
@@ -64,8 +62,7 @@ class Grid extends React.Component<GridProps, GridState> {
     super(props, context);
     this.state = initialState;
     this._hasSelection = false;
-    this._presentationManager = new ECPresentationManager();
-    this._dataProvider = new GridDataProvider(this._presentationManager, props.imodelToken, props.rulesetId);
+    this._dataProvider = new GridDataProvider(props.imodelToken, props.rulesetId);
     this._selectionHandler = new SelectionHandler(this.props.selectionManager, "Grid", props.rulesetId, props.imodelToken, this.onSelectionChanged);
   }
 
@@ -86,7 +83,7 @@ class Grid extends React.Component<GridProps, GridState> {
     if (newProps.rulesetId !== this.props.rulesetId || newProps.imodelToken !== this.props.imodelToken) {
       this._selectionHandler.rulesetId = newProps.rulesetId;
       this._selectionHandler.imodelToken = newProps.imodelToken;
-      this._dataProvider = new GridDataProvider(this._presentationManager, newProps.imodelToken, newProps.rulesetId);
+      this._dataProvider = new GridDataProvider(newProps.imodelToken, newProps.rulesetId);
     }
   }
 

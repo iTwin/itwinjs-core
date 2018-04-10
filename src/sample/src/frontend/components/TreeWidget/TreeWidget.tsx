@@ -1,7 +1,6 @@
 import * as React from "react";
 import Tree, { TreeNode } from "rc-tree";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
 import { TreeDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
 import { SelectionManager, SelectedItem, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 
@@ -19,7 +18,6 @@ export interface State {
   treeData: TreeData[];
 }
 export default class TreeWidget extends React.Component<Props, State> {
-  private _manager: ECPresentationManager;
   private _dataProvider: TreeDataProvider;
   private _items: Map<string, TreeData>;
   private _selectionHandler: SelectionHandler;
@@ -28,14 +26,13 @@ export default class TreeWidget extends React.Component<Props, State> {
     super(props, context);
     this._items = new Map<string, TreeData>();
     this.state = { treeData: [] };
-    this._manager = new ECPresentationManager();
     this._selectionHandler = new SelectionHandler(this.props.selectionManager, "Tree", props.rulesetId, props.imodel.iModelToken);
-    this._dataProvider = new TreeDataProvider(this._manager, props.imodel.iModelToken, props.rulesetId);
+    this._dataProvider = new TreeDataProvider(props.imodel.iModelToken, props.rulesetId);
     this.loadNodes();
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    this._dataProvider = new TreeDataProvider(this._manager, nextProps.imodel.iModelToken, nextProps.rulesetId);
+    this._dataProvider = new TreeDataProvider(nextProps.imodel.iModelToken, nextProps.rulesetId);
     this._selectionHandler.imodelToken = nextProps.imodel.iModelToken;
     this._selectionHandler.rulesetId = nextProps.rulesetId;
     this._items.clear();

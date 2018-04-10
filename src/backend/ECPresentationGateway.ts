@@ -1,30 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelToken, Gateway } from "@bentley/imodeljs-common";
+import { IModelToken } from "@bentley/imodeljs-common";
 import { ECPresentationGatewayDefinition, ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
 import { resetParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
-import ECPresentationManager from "./ECPresentationManager";
+import ECPresentation from "./ECPresentation";
 
 /** The backend implementation of ECPresentationGatewayDefinition. */
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
 
-  private _manager?: ECPresentationManagerDefinition;
-
-  /** @hidden */
   public getManager(): ECPresentationManagerDefinition {
-    if (!this._manager)
-      this._manager = new ECPresentationManager();
-    return this._manager;
-  }
-
-  /** @hidden */
-  public setManager(mgr: ECPresentationManagerDefinition | undefined): void {
-    this._manager = mgr;
+    return ECPresentation.manager;
   }
 
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
@@ -76,6 +66,3 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return await this.getManager().saveValueChange(token, instancesInfo, propertyAccessor, value, options);
   }
 }
-
-/** Auto-register the gateway when this file is included. */
-Gateway.registerImplementation(ECPresentationGatewayDefinition, ECPresentationGateway);

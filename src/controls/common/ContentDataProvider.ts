@@ -3,12 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
-import { ECPresentationManager } from "@bentley/ecpresentation-common";
+import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 
 /** Base class for all data providers that are based on @ref PresentationManager. */
 export default abstract class ContentDataProvider {
-  private _manager: ECPresentationManager;
   private _rulesetId: string;
   private _displayType: string;
   private _descriptor: Readonly<content.Descriptor> | undefined;
@@ -22,8 +21,7 @@ export default abstract class ContentDataProvider {
    * load data for. See @ref ContentDisplayType
    * @param imodelToken Token of the imodel to pull data from.
    */
-  constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string, displayType: string) {
-    this._manager = manager;
+  constructor(imodelToken: IModelToken, rulesetId: string, displayType: string) {
     this._rulesetId = rulesetId;
     this._displayType = displayType;
     this._imodelToken = imodelToken;
@@ -79,7 +77,7 @@ export default abstract class ContentDataProvider {
   public async getContentDescriptor(keys: KeySet, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
     if (!this._configuredDescriptor) {
       if (!this._descriptor) {
-        this._descriptor = await this._manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
+        this._descriptor = await ECPresentation.manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
           selectionInfo, this.createRequestOptions());
       }
       this._configuredDescriptor = this.configureContentDescriptor(this._descriptor);
@@ -118,7 +116,7 @@ export default abstract class ContentDataProvider {
   protected async getContent(keys: KeySet, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
     if (!this._content) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      this._content = await this._manager.getContent(this.imodelToken, descriptor, keys,
+      this._content = await ECPresentation.manager.getContent(this.imodelToken, descriptor, keys,
         { pageStart, pageSize }, this.createRequestOptions());
     }
     return this._content;
@@ -132,7 +130,7 @@ export default abstract class ContentDataProvider {
   protected async getContentSetSize(keys: KeySet, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (undefined === this._contentSetSize) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      this._contentSetSize = await this._manager.getContentSetSize(this.imodelToken, descriptor,
+      this._contentSetSize = await ECPresentation.manager.getContentSetSize(this.imodelToken, descriptor,
         keys, this.createRequestOptions());
     }
     return this._contentSetSize;

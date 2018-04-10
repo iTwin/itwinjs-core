@@ -8,7 +8,6 @@ import ContentBuilder, { PropertyDescription } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { isPrimitiveDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
 import { InstanceKey, KeySet, PageOptions } from "@bentley/ecpresentation-common";
-import { ECPresentationManager } from "@bentley/ecpresentation-common";
 
 export enum SortDirection {
   Ascending,
@@ -223,8 +222,8 @@ export default class TableViewDataProvider extends ContentDataProvider {
   private _keys: KeySet;
 
   /** Constructor. */
-  constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
-    super(manager, imodelToken, rulesetId, content.DefaultContentDisplayTypes.GRID);
+  constructor(imodelToken: IModelToken, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
+    super(imodelToken, rulesetId, content.DefaultContentDisplayTypes.GRID);
     this._pages = new PageContainer(pageSize, cachedPagesCount);
     this._keys = new KeySet();
   }

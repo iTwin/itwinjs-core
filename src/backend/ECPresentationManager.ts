@@ -8,10 +8,6 @@ import { StructFieldMemberDescription, isStructDescription } from "@bentley/ecpr
 import { createDescriptorOverrides } from "@bentley/ecpresentation-common/lib/content/Descriptor";
 import * as types from "@bentley/ecpresentation-common";
 import * as responseTypes from "./AddonResponses";
-import ECPresentationGateway from "./ECPresentationGateway";
-
-// make sure the gateway gets registered (hopefully this is temporary)
-ECPresentationGateway;
 
 export interface Props {
   /** @hidden */

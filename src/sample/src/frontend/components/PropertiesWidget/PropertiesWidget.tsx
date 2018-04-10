@@ -2,8 +2,7 @@ import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NavNodeKey, KeySet } from "@bentley/ecpresentation-common";
-import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
-import { PropertyPaneDataProvider, PropertyRecord } from "@bentley/ecpresentation-controls";
+import { PropertyPaneDataProvider, TreeNodeItem, PropertyRecord } from "@bentley/ecpresentation-controls";
 import { isPrimitiveValue, isStructValue, isArrayValue } from "@bentley/ecpresentation-controls";
 import { SelectionManager, SelectionChangeEventArgs, SelectedItem, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 import "./PropertiesWidget.css";
@@ -52,7 +51,6 @@ const initialState: PropertyPaneState = {
   error: undefined,
 };
 class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState> {
-  private _presentationManager: ECPresentationManager;
   private _dataProvider: PropertyPaneDataProvider;
   private _selectionHandler: SelectionHandler;
   private _hasSelection: boolean;
@@ -60,8 +58,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     super(props, context);
     this.state = initialState;
     this._hasSelection = false;
-    this._presentationManager = new ECPresentationManager();
-    this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, props.imodelToken, props.rulesetId);
+    this._dataProvider = new PropertyPaneDataProvider(props.imodelToken, props.rulesetId);
     this._selectionHandler = new SelectionHandler(this.props.selectionManager, "Properties", props.rulesetId, props.imodelToken, this.onSelectionChanged);
   }
 
@@ -87,7 +84,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     if (newProps.rulesetId !== this.props.rulesetId || newProps.imodelToken !== this.props.imodelToken) {
       this._selectionHandler.rulesetId = newProps.rulesetId;
       this._selectionHandler.imodelToken = newProps.imodelToken;
-      this._dataProvider = new PropertyPaneDataProvider(this._presentationManager, newProps.imodelToken, newProps.rulesetId);
+      this._dataProvider = new PropertyPaneDataProvider(newProps.imodelToken, newProps.rulesetId);
     }
   }
 

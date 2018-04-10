@@ -12,19 +12,27 @@ import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
 import { createRandomECInstanceKey } from "../test-helpers/random/EC";
 import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../test-helpers/random/Hierarchy";
 import { createRandomDescriptor } from "../test-helpers/random/Content";
+import { initializeGateway } from "../test-helpers/GatewayHelper";
 import ECPresentationManager from "./ECPresentationManager";
 import ECPresentationGateway from "./ECPresentationGateway";
+import ECPresentation from "./ECPresentation";
 
 describe("ECPresentationGatewayImpl", () => {
 
-  it("is registered after including module", () => {
-    Gateway.initialize(ECPresentationGateway);
+  afterEach(() => {
+    ECPresentation.terminate();
+  });
+
+  it("is registered after calling ECPresentation.initialize", () => {
+    ECPresentation.initialize();
+    initializeGateway(ECPresentationGateway);
     const impl = Gateway.getProxyForGateway(ECPresentationGatewayDefinition);
     assert.isNotNull(impl);
     assert.instanceOf(impl, ECPresentationGateway);
   });
 
   it("uses default ECPresentationManager implementation if not overridden", () => {
+    ECPresentation.initialize();
     const gateway = new ECPresentationGateway();
     assert.instanceOf(gateway.getManager(), ECPresentationManager);
   });
@@ -45,7 +53,7 @@ describe("ECPresentationGatewayImpl", () => {
     const mock = moq.Mock.ofType<ECPresentationManager>();
     beforeEach(() => {
       mock.reset();
-      gateway.setManager(mock.object);
+      ECPresentation.manager = mock.object;
     });
 
     it("calls manager's getRootNodes", async () => {

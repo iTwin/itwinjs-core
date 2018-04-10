@@ -10,9 +10,7 @@ describe("ECPresentationGateway", () => {
   describe("getProxy", () => {
 
     it("throws when not registered", () => {
-      assert.throws(() => {
-        ECPresentationGateway.getProxy();
-      });
+      assert.throws(() => ECPresentationGateway.getProxy());
     });
 
     it("returns gateway when registered", () => {

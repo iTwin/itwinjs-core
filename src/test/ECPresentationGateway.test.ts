@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/*
 // testing imports:
 import { assert } from "chai";
 import * as moq from "typemoq";
@@ -46,3 +47,4 @@ describe.skip("ECPresentationManager", () => {
   });
 
 });
+*/
