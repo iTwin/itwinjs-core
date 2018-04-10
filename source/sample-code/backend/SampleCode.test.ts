@@ -179,15 +179,12 @@ describe("Sample Code", () => {
         throw new IModelError(IModelStatus.NotFound);
       // If an element was found, return its ID.
       // Note that results begin with index 0.
-      // Note that IDs are returned as strings by ECSql. Even though I call getId,
-      // the return value will be a string. It will be a formatted hex value.
       return stmt.getValue(0).getId();
     });
 
-    // Check that we got the element that we expected.
-    // Note that since the Id was returned by ECSql as a string, I must convert
-    // it to an Id64 before using it.
-    assert.deepEqual(new Id64(eidFound), expectedEid);
+    // Check that the expected element was found.
+    // Note that ECSqlValue.getId returns a string that represents the id.
+    assert.equal(eidFound, expectedEid.toString());
     // __PUBLISH_EXTRACT_END__
   });
 
