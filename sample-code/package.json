@@ -1,0 +1,51 @@
+{
+  "name": "imodeljs-core-sample-code",
+  "//private": "NOTE: this is a private package that is never published",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "buildbackend": "cd ./backend && tsc --outDir ../out/backend",
+    "cleanbackend": "rimraf lib out/backend",
+    "copybackendassets": "cpx ./backend_test_assets/**/* ./out/backend/assets",
+    "pretestbackend": "npm run copybackendassets && rush build",
+    "testbackend": "npm run pretestbackend && node ../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../\" --testDir=\"./out/backend\"",
+    "buildfrontend": "cd ./frontend && tsc --outDir ../out/frontend",
+    "cleanfrontend": "rimraf lib out/frontend",
+    "buildcommon": "cd ./common && tsc --outDir ../out/common",
+    "cleancommon": "rimraf lib out/common",
+    "build": "npm run buildbackend && npm run buildfrontend && npm run buildcommon",
+    "clean": "npm run cleanbackend && npm run cleanfrontend && npm run cleancommon",
+    "test": "npm run testbackend"
+  },
+  "repository": {},
+  "//dependencies": [
+    "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
+  ],
+  "dependencies": {
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-backend": "0",
+    "@bentley/imodeljs-n_8-win32-x64": "~15.2.0",
+    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/imodeljs-common": "0",
+    "@bentley/imodeljs-frontend": "0",
+    "body-parser": "^1.18.2",
+    "chai": "^4.1.2",
+    "commander": "^2.14.1",
+    "electron": "1.6.11",
+    "express": "^4.16.2",
+    "fs-extra": "^5.0.0",
+    "fuse.js": "^3.2.0",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
+    "js-base64": "^2.4.0",
+    "save": "^2.3.2",
+    "webpack": "^3.10.0"
+  },
+  "devDependencies": {
+    "cpx": "^1.5.0",
+    "rimraf": "^2.6.2",
+    "typescript": "~2.7.2"
+  }
+}

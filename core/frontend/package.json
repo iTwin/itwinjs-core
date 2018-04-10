@@ -1,0 +1,50 @@
+{
+  "name": "@bentley/imodeljs-frontend",
+  "version": "0.72.3",
+  "description": "iModelJs frontend components",
+  "main": "lib/frontend.js",
+  "typings": "lib/frontend",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib package-deps.json",
+    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1",
+    "docs": "cd ../.. && npm run docs:frontend"
+  },
+  "repository": {},
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/imodeljs-common": "0"
+  },
+  "devDependencies": {
+    "rimraf": "^2.6.2",
+    "typescript": "~2.7.2",
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/imodeljs-common": "0"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-frontend",
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+  ],
+  "dependencies": {
+    "fuse.js": "^3.2.0",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
+    "js-base64": "^2.4.0"
+  }
+}
