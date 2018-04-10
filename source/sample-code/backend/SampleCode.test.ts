@@ -161,7 +161,7 @@ describe("Sample Code", () => {
 
   });
 
-  it.only("should demonstrate ECSqlStatements", () => {
+  it("should demonstrate ECSqlStatements", () => {
     const expectedEid = createNewModel(iModel.elements.getRootSubject(), "CodeValue1", false);
 
     // __PUBLISH_EXTRACT_START__ ECSqlStatement.Examples
