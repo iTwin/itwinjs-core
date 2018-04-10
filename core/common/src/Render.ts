@@ -94,7 +94,7 @@ export class GraphicList {
   public getCount(): number { return this.list.length; }
   public at(index: number): Graphic | undefined { return this.list[index]; }
   public get length(): number { return this.list.length; }
-  constructor(...graphics: Graphic[]) { graphics.forEach(this.add); }
+  constructor(...graphics: Graphic[]) { graphics.forEach(this.add.bind(this)); }
 }
 
 export class DecorationList extends GraphicList {

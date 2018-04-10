@@ -16,7 +16,7 @@ function withinTol(x: number, y: number): boolean {
   return Math.abs(x - y) < 0.0000000000001;
 }
 
-const iModelLocation = path.join(__dirname, "../../../backend/test/assets/test.bim");
+const iModelLocation = path.join(__dirname, "../../../core/backend/lib/test/assets/test.bim");
 
 describe("Graphic", () => {
   let iModel: IModelConnection;

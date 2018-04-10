@@ -46,9 +46,9 @@ export class GatewayInvocation {
 
   /** Constructs an invocation. */
   public constructor(protocol: GatewayProtocol, request: SerializedGatewayRequest) {
-    protocol.events.raiseEvent(GatewayProtocolEvent.RequestReceived, this);
     this.request = request;
     this.operation = GatewayOperation.lookup(request.operation.gateway, request.operation.name);
+    protocol.events.raiseEvent(GatewayProtocolEvent.RequestReceived, this);
 
     try {
       this._threw = false;
