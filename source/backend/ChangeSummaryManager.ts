@@ -114,7 +114,6 @@ export class ChangeSummaryManager {
   /** Extracts change summaries from the specified iModel.
    * Change summaries are extracted from the specified startChangeSetId up through the change set the iModel was opened with.
    * If startChangeSetId is undefined, the first changeset will be used.
-   * @param accessToken Delegation token of the authorized user.
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel, and it must be opened
    * with [[OpenMode.ReadWrite]].
    * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
@@ -122,7 +121,7 @@ export class ChangeSummaryManager {
    * @param options Extraction options
    * @throws [[IModelError]] if the iModel is standalone,r was not opened in readwrite mode.
    */
-  public static async extractChangeSummaries(accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
+  public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
     // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.isReadonly() || iModel.briefcase.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open in readwrite mode and must not be a standalone iModel.");
@@ -145,6 +144,7 @@ export class ChangeSummaryManager {
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
     const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
 
+    const accessToken: AccessToken = IModelDb.getAccessToken(iModelId);
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
     assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);

@@ -168,7 +168,7 @@ describe.skip("ChangeSummary", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     assert.exists(iModel);
     try {
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
+      await ChangeSummaryManager.extractChangeSummaries(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -217,7 +217,7 @@ describe.skip("ChangeSummary", () => {
       assert.exists(iModel);
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
+      await ChangeSummaryManager.extractChangeSummaries(iModel, { currentChangeSetOnly: true });
       assert.isTrue(IModelJsFs.existsSync(changesFilePath));
 
       assert.exists(iModel);
@@ -261,7 +261,7 @@ describe.skip("ChangeSummary", () => {
       assert.exists(iModel);
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
+      await ChangeSummaryManager.extractChangeSummaries(iModel, { currentChangeSetOnly: true });
       assert.isTrue(IModelJsFs.existsSync(changesFilePath));
 
       assert.exists(iModel);
@@ -293,7 +293,7 @@ describe.skip("ChangeSummary", () => {
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel, { currentChangeSetOnly: true });
+      await ChangeSummaryManager.extractChangeSummaries(iModel, { currentChangeSetOnly: true });
 
       // WIP
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -321,7 +321,7 @@ describe.skip("ChangeSummary", () => {
     let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     try {
       assert.exists(iModel);
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
+      await ChangeSummaryManager.extractChangeSummaries(iModel);
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
@@ -335,7 +335,7 @@ describe.skip("ChangeSummary", () => {
     assert.exists(iModel.briefcase);
     assert.isTrue(iModel.briefcase!.isStandalone);
     try {
-      await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
+      await ChangeSummaryManager.extractChangeSummaries(iModel);
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
@@ -346,7 +346,7 @@ describe.skip("ChangeSummary", () => {
 
   it("Query ChangeSummary content", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
-    await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel);
+    await ChangeSummaryManager.extractChangeSummaries(iModel);
     assert.exists(iModel);
     ChangeSummaryManager.attachChangeCache(iModel);
     assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
