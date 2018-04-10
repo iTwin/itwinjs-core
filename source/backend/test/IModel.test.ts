@@ -9,7 +9,7 @@ import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
   IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
-  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation,
+  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel,
 } from "../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
@@ -249,14 +249,14 @@ describe("iModel", () => {
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = imodel1.models.getSubModel(code1);
     // By this point, we expect the submodel's class to be in the class registry *cache*
-    const geomModel = ClassRegistry.getClass("BisCore:PhysicalModel", imodel1);
+    const geomModel = ClassRegistry.getClass(PhysicalModel.classFullName, imodel1);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
   });
 
   it("should produce an array of rows", () => {
-    const rows: any[] = imodel1.executeQuery("SELECT * FROM " + Category.sqlName);
+    const rows: any[] = imodel1.executeQuery(`SELECT * FROM ${Category.classFullName}`);
     assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
@@ -279,7 +279,7 @@ describe("iModel", () => {
   });
 
   it("should be some categories", () => {
-    const categoryRows: any[] = imodel1.executeQuery("SELECT ECInstanceId FROM " + Category.sqlName);
+    const categoryRows: any[] = imodel1.executeQuery(`SELECT ECInstanceId FROM ${Category.classFullName}`);
     assert.exists(categoryRows, "Should have some Category ids");
     for (const categoryRow of categoryRows!) {
       const categoryId = new Id64(categoryRow.id);
@@ -301,7 +301,7 @@ describe("iModel", () => {
       }
 
       // get the subcategories
-      const queryString: string = "SELECT ECInstanceId FROM " + SubCategory.sqlName + " WHERE Parent.Id=?";
+      const queryString: string = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE Parent.Id=?`;
       const subCategoryRows: any[] = imodel1.executeQuery(queryString, [categoryId]);
       assert.exists(subCategoryRows, "Should have at least one SubCategory");
       for (const subCategoryRow of subCategoryRows) {
@@ -357,7 +357,7 @@ describe("iModel", () => {
   });
 
   it("should be children of RootSubject", () => {
-    const queryString: string = "SELECT ECInstanceId FROM " + Model.sqlName + " WHERE ParentModel.Id=" + imodel2.models.repositoryModelId;
+    const queryString: string = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=${imodel2.models.repositoryModelId}`;
     const modelRows: any[] = imodel2.executeQuery(queryString);
     assert.exists(modelRows, "Should have at least one model within rootSubject");
     for (const modelRow of modelRows) {
@@ -488,7 +488,7 @@ describe("iModel", () => {
 
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
-    assert.equal(obj.ecclass, "BisCore:Element");
+    assert.equal(obj.ecclass, Element.classFullName);
     assert.isArray(obj.baseClasses);
     assert.equal(obj.baseClasses.length, 0);
 
@@ -511,7 +511,7 @@ describe("iModel", () => {
   }
 
   it("should get metadata for class", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:Element");
+    const metaData: EntityMetaData = imodel1.getMetaData(Element.classFullName);
     assert.exists(metaData);
     checkElementMetaData(metaData);
   });
@@ -689,7 +689,7 @@ describe("iModel", () => {
     const newModelPersist = testImodel.models.getModel(newModelId);
 
     // Check that it has the properties that we set.
-    assert.equal(newModelPersist.classFullName, "BisCore:PhysicalModel");
+    assert.equal(newModelPersist.classFullName, PhysicalModel.classFullName);
     assert.isTrue(newModelPersist.isPrivate);
     assert.deepEqual(newModelPersist.modeledElement, modeledElementId);
 
@@ -739,16 +739,16 @@ describe("iModel", () => {
     testImodel.linkTableRelationships.insertInstance(r2);
 
     // Look up by id
-    const g1 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
-    const g2 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r2.id) as ElementGroupsMembers;
+    const g1 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
+    const g2 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r2.id) as ElementGroupsMembers;
 
     assert.deepEqual(g1.id, r1.id);
-    assert.equal(g1.classFullName, "BisCore:ElementGroupsMembers");
+    assert.equal(g1.classFullName, ElementGroupsMembers.classFullName);
     assert.deepEqual(g2.id, r2.id);
-    assert.equal(g2.classFullName, "BisCore:ElementGroupsMembers");
+    assert.equal(g2.classFullName, ElementGroupsMembers.classFullName);
 
     // Look up by source and target
-    const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
+    const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
     assert.deepEqual(g1byst, g1);
 
     // TODO: Do an ECSql query to verify that 0->1 and 0->2 relationships can be found
@@ -757,7 +757,7 @@ describe("iModel", () => {
     r1.memberPriority = 1;
     testImodel.linkTableRelationships.updateInstance(r1);
 
-    const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.sqlName, r1.id) as ElementGroupsMembers;
+    const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
     assert.equal(g11.memberPriority, 1, "memberPriority");
 
     // Delete relationship instance property

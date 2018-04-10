@@ -102,7 +102,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-M5TODQ5ilmoRRsFP9fZvjhn1bms=",
+      "integrity": "sha1-874cRyXgrwlUnE508gNxqtRqjXw=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.4.3",
@@ -125,7 +125,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-HAgT7KP1QdA3RfK9B2fl+Dahegg=",
+      "integrity": "sha1-vF7ZqcDTmllKhrJCFUpoLGxbS0k=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.4.3",
@@ -138,7 +138,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-hUFJV8EcfU+KrtGn7BXMs29OTio=",
+      "integrity": "sha1-LttinAVh9p5XCm6Iuw+TZYzRl4A=",
       "requires": {
         "@bentley/bentleyjs-tools": "3.2.5",
         "@types/body-parser": "1.16.8",
@@ -190,7 +190,7 @@
     },
     "@rush-temp/imodeljs-core-sample-code": {
       "version": "file:projects/imodeljs-core-sample-code.tgz",
-      "integrity": "sha1-iYQOImtknx3mTsK7sZ2zIHClYnE=",
+      "integrity": "sha1-eaiRUHNqQf38bOjbq9gXeGN3S0E=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.4.3",
@@ -216,7 +216,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-03Aso5nGMOsu7D61/V5K7jZ9i4k=",
+      "integrity": "sha1-q5XIWAgNN0AmLfHoaHjSsRipyr4=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.4.3",
@@ -242,7 +242,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-MSIpmeGAmSyi505K029ee2hkBhs=",
+      "integrity": "sha1-oV/VwCG/XTHzZrTHCPN1l0HqX3U=",
       "requires": {
         "@bentley/bentleyjs-core": "7.3.12",
         "@bentley/geometry-core": "7.4.3",
@@ -2502,15 +2502,15 @@
       "resolved": "https://registry.npmjs.org/electron/-/electron-1.6.11.tgz",
       "integrity": "sha1-vnnA69zv7bW/KBF0CYAPpTus7/o=",
       "requires": {
-        "@types/node": "7.0.59",
+        "@types/node": "7.0.60",
         "electron-download": "3.3.0",
         "extract-zip": "1.6.6"
       },
       "dependencies": {
         "@types/node": {
-          "version": "7.0.59",
-          "resolved": "https://registry.npmjs.org/@types/node/-/node-7.0.59.tgz",
-          "integrity": "sha512-FRRJ2hkgzySTgLnwQhXQCGkLRu1ImISVu/YKYWXCIbF6261nqXwDPQ+6xPzZw+c2Il2Zx2JfM/t0tCaw8wzbmA=="
+          "version": "7.0.60",
+          "resolved": "https://registry.npmjs.org/@types/node/-/node-7.0.60.tgz",
+          "integrity": "sha512-ZfCUDgCOPBDn0aAsyBOcNh1nLksuGp3LAL+8GULccZN2IkMBG2KfiwFIRrIuQkLKg1W1dIB9kQZ9MIF3IgAqlw=="
         }
       }
     },

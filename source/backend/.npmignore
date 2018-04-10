@@ -2,7 +2,8 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/assets/**
+assets/**
 test
 !public/**
-!assets/**
 !package.json

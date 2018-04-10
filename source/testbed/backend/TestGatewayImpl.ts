@@ -2,8 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
-import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse } from "@bentley/imodeljs-common";
+import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
 
 let op8Initializer = 0;
 
@@ -47,5 +48,20 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
     } else {
       return { initializer: op8Initializer, sum: x + y };
     }
+  }
+
+  public async attachChangeCache(iModelToken: IModelToken): Promise<void> { return ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken)); }
+
+  public async extractChangeSummaries(iModelToken: IModelToken, options: any): Promise<void> {
+    await ChangeSummaryManager.extractChangeSummaries(IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
+  }
+
+  public async deleteChangeCache(iModelToken: IModelToken): Promise<void> {
+    if (!iModelToken.iModelId)
+      throw new Error("iModelToken is invalid. Must not be a standalone iModel");
+
+    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModelToken.iModelId);
+    if (IModelJsFs.existsSync(changesPath))
+      IModelJsFs.unlinkSync(changesPath);
   }
 }

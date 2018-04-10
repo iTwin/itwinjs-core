@@ -1,0 +1,9 @@
+{
+  "collections": {
+    "overview": {
+      "contents": [],
+      "displayName": "Overview"
+    }
+  },
+  "home": "overview\\iModelJsOverview"
+}

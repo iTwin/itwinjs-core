@@ -1255,11 +1255,11 @@ export class Viewport {
     ellipse.vector0.normalize(normal);
     const pt1 = pt.plusScaled(normal, length);
     const pt2 = pt.plusScaled(normal, -length);
-    graphic.addLineString(2, [pt1, pt2]);
+    graphic.addLineString([pt1, pt2]);
     ellipse.vector90.normalize(normal);
     pt.plusScaled(normal, length, pt1);
     pt.plusScaled(normal, -length, pt2);
-    graphic.addLineString(2, [pt1, pt2]);
+    graphic.addLineString([pt1, pt2]);
     context.addWorldOverlay(graphic.finish()!);
   }
 

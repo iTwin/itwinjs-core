@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayOperationsProfile } from "@bentley/imodeljs-common";
+import { Gateway, GatewayOperationsProfile, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 
 export class TestOp1Params {
@@ -65,6 +65,18 @@ export abstract class TestGateway extends Gateway {
   }
 
   public async op8(_x: number, _y: number): Promise<{ initializer: number; sum: number }> {
+    return this.forward.apply(this, arguments);
+  }
+
+  /** exposed in test gateway so that this functionality can be tested from the frontend perspective */
+  public async attachChangeCache(_iModelToken: IModelToken): Promise<void> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public async extractChangeSummaries(_iModelToken: IModelToken, _options: any): Promise<void> {
+    return this.forward.apply(this, arguments);
+  }
+  public async deleteChangeCache(_iModelToken: IModelToken): Promise<void> {
     return this.forward.apply(this, arguments);
   }
 }

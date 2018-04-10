@@ -830,7 +830,7 @@ export class IModelDbElements {
     if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);
     if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode);
 
-    return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
+    return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
       stmt.bindId(1, code.spec);
       stmt.bindId(2, new Id64(code.scope));
       stmt.bindString(3, code.value!);
@@ -904,7 +904,7 @@ export class IModelDbElements {
    * @throws [[IModelError]]
    */
   public queryChildren(elementId: Id64): Id64[] {
-    const rows: any[] = this._iModel.executeQuery("SELECT ECInstanceId FROM " + Element.sqlName + " WHERE Parent.Id=?", [elementId]);
+    const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
     const childIds: Id64[] = [];
     for (const row of rows) {
       childIds.push(new Id64(row.id));
