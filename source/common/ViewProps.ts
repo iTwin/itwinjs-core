@@ -68,7 +68,7 @@ export interface AuxCoordSystemProps extends ElementProps {
 
 /**
  * Properties of AuxCoordSystem2d
- * @note angle is stored in degrees
+ * <em>note:</em> angle is stored in degrees
  */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
   origin?: XYProps;
@@ -77,7 +77,7 @@ export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
 
 /**
  * Properties of AuxCoordSystem3d
- * @note All angles are stored in degrees
+ * <em>note:</em> All angles are stored in degrees
  */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   origin?: XYZProps;

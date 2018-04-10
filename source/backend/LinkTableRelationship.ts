@@ -144,7 +144,7 @@ export class IModelDbLinkTableRelationships {
    * Insert a new relationship instance into the iModel.
    * @param props The properties of the new relationship instance.
    * @returns The Id of the newly inserted relationship instance.
-   * @note The id property of the props object is set as a side effect of this function.
+   * <em>note:</em> The id property of the props object is set as a side effect of this function.
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: LinkTableRelationshipProps): Id64 {

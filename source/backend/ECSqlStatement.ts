@@ -9,10 +9,11 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlValueIterator, NativeECDb, NativeDgnDb } from "@bentley/imodeljs-native-platform-api";
 
 /** The result of an **ECSQL INSERT** statement as returned from [[ECSqlStatement.stepForInsert]].
+ * <em>note:</em> Insert statements can be used with ECDb only, not with IModelDb.
  *
- *  If the step was successful, the ECSqlInsertResult contains
- *  [[DbResult.BE_SQLITE_DONE]] and the ECInstanceId of the newly created instance.
- *  In case of failure it contains the [[DbResult]] error code.
+ * If the step was successful, the ECSqlInsertResult contains
+ * [[DbResult.BE_SQLITE_DONE]] and the ECInstanceId of the newly created instance.
+ * In case of failure it contains the [[DbResult]] error code.
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) { }
@@ -20,8 +21,8 @@ export class ECSqlInsertResult {
 
 /** An ECSQL Statement.
  *
- * A statement must be prepared before it can be executed. See [[IModelDb.withPreparedStatement]] or
- * [[ECDb.withPreparedStatement]].
+ * A statement must be prepared before it can be executed, and it must be <em>released</em> when no longer needed. See [[IModelDb.withPreparedStatement]] or
+ * [[ECDb.withPreparedStatement]] for a convenient and reliable way to prepare, execute, and then release a statement.
  *
  * A statement may contain parameters that must be filled in before use by calling [[ECSqlStatement.bindValues]]
  * or the other **bindXXX** methods.
@@ -31,6 +32,16 @@ export class ECSqlInsertResult {
  * or by [[ECSqlStatement.getValue]] when individual values are needed.
  * Alternatively, query results of an **ECSQL SELECT** statement can be stepped through by using
  * standard iteration syntax, such as "for of".
+ *
+ * <em>note:</em> Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
+ * statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
+ * The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
+ * See [[IModelDb.withPreparedStatement]]
+ *
+ * <em>Examples:</em>
+ * ```ts
+ * [[include:ECSqlStatement.Examples]]
+ * ```
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: NativeECSqlStatement | undefined;
@@ -71,7 +82,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement.
-   * @Note Do not call this method directly on a statement that is being managed by a statement cache.
+   * <em>note:</em> Do not call this method directly on a statement that is being managed by a statement cache.
    */
   public dispose(): void {
     if (this.isShared())
@@ -230,12 +241,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *  * [[DbResult.BE_SQLITE_DONE]] if the statement has no more rows.
    *  * Error status in case of errors.
    *  For **ECSQL INSERT, UPDATE, DELETE** statements the method returns
-   *  * [[DbResult.BE_SQLITE_DONE]] if the statement has been executed successfully.
+   *  * [[DbResult.BE_SQLITE_DONE]] if the statement has been executed successfully. <em>note:</em>: Insert statements can be used with ECDb only, not with IModelDb.
    *  * Error status in case of errors.
    */
   public step(): DbResult { return this._stmt!.step(); }
 
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
+   * <em>note:</em>: Insert statements can be used with ECDb only, not with IModelDb.
    * created instance.
    * @returns Returns the generated ECInstanceId in case of success and the status of the step
    * call. In case of error, the respective error code is returned.
@@ -444,13 +456,13 @@ export interface ECSqlColumnInfo {
   getType(): ECSqlValueType;
 
   /** Gets the name of the property backing the column.
-   * @note If this column is backed by a generated property, i.e. it represents ECSQL expression,
+   * <em>note:</em> If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * the access string consists of the name of the generated property.
    */
   getPropertyName(): string;
 
   /** Gets the full access string to the corresponding ECSqlValue starting from the root class.
-   * @note If this column is backed by a generated property, i.e. it represents ECSQL expression,
+   * <em>note:</em> If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * the access string consists of the ECSQL expression.
    */
   getAccessString(): string;
@@ -464,7 +476,7 @@ export interface ECSqlColumnInfo {
   isGeneratedProperty(): boolean;
 
   /** Gets the table space in which this root class is persisted.
-   * @note for classes in the primary file the table space is MAIN. For classes in attached
+   * <em>note:</em> for classes in the primary file the table space is MAIN. For classes in attached
    * files, the table space is the name by which the file was attached. For generated properties the table space is empty.
    */
   getRootClassTableSpace(): string;

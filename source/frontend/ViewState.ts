@@ -160,7 +160,7 @@ export abstract class ViewState extends ElementState {
   public abstract setExtents(viewDelta: Vector3d): void;
 
   /** Change the rotation of the view.
-   *  @note rot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
+   *  <em>note:</em> rot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
    */
   public abstract setRotation(viewRot: RotMatrix): void;
 
@@ -388,7 +388,7 @@ export abstract class ViewState extends ElementState {
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
    * @param margin The amount of "white space" to leave around the view volume (which essentially increases the volume
    * of space shown in the view.) If undefined, no additional white space is added.
-   * @note for 2d views, only the X and Y values of volume are used.
+   * <em>note:</em> for 2d views, only the X and Y values of volume are used.
    */
   public lookAtVolume(volume: Range3d, aspect?: number, margin?: MarginPercent) {
     const rangeBox = volume.corners();
@@ -644,7 +644,7 @@ export abstract class ViewState3d extends ViewState {
   /**
    * Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
    * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
-   * @note To turn the camera back on, call #lookAt
+   * <em>note:</em> To turn the camera back on, call #lookAt
    */
   public turnCameraOff() { this.cameraOn = false; }
 
@@ -676,7 +676,7 @@ export abstract class ViewState3d extends ViewState {
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
    * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * <em>note:</em> If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the Viewport is synchronized from this view.
    */
   public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
@@ -752,7 +752,7 @@ export abstract class ViewState3d extends ViewState {
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-   * @note The aspect ratio of the view remains unchanged.
+   * <em>note:</em> The aspect ratio of the view remains unchanged.
    */
   public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
     const focusDist = eyePoint.vectorTo(targetPoint).magnitude();   // Set focus at target point
@@ -803,7 +803,7 @@ export abstract class ViewState3d extends ViewState {
    * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
    *  (i.e. about the current eyePoint).
-   * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
+   * <em>note:</em> Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
@@ -856,7 +856,7 @@ export abstract class ViewState3d extends ViewState {
 
   /** Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
    * lens angle, rotation, back distance, and front distance unchanged.
-   * @note The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
+   * <em>note:</em> The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
    */
   public centerFocusDistance(): void {
     const backDist = this.getBackDistance();
@@ -908,21 +908,21 @@ export abstract class ViewState3d extends ViewState {
 
   /** Set the lens angle for this view.
    *  @param angle The new lens angle in radians. Must be greater than 0 and less than pi.
-   *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
+   *  <em>note:</em> This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
    *  is subsequently modified and the lens angle is used to position the eyepoint.
-   *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
+   *  <em>note:</em> To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
    */
   public setLensAngle(angle: Angle): void { this.camera.setLensAngle(angle); }
 
   /** Change the location of the eyePoint for the camera in this view.
    * @param pt The new eyepoint.
-   * @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
+   * <em>note:</em> This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
    * The most common method for user-level camera positioning is #lookAt.
    */
   public setEyePoint(pt: XYAndZ): void { this.camera.setEyePoint(pt); }
 
   /** Set the focus distance for this view.
-   *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
+   *  <em>note:</em> Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
    *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect
    */
   public setFocusDistance(dist: number): void { this.camera.setFocusDistance(dist); }

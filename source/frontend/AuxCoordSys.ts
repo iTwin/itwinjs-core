@@ -43,7 +43,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
    * Create a new AuxCoordSystem.
    * @param acsName the name for the new AuxCoordSystem
    * @param iModel the iModel for which the ACS applies.
-   * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
+   * <em>note:</em> call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
    */
   public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
     const myCode = new Code({ spec: CodeSpecNames.AuxCoordSystemSpatial(), scope: IModelConnection.getDictionaryId().toString(), value: acsName });

@@ -794,7 +794,7 @@ export class Viewport {
    * @param adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
    * @param box optional Frustum for return value
    * @return the view frustum
-   * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
+   * <em>note:</em> The "adjusted" box may be either larger or smaller than the "unadjusted" box.
    */
   public getFrustum(sys: CoordSystem = CoordSystem.World, adjustedBox: boolean = true, box?: Frustum): Frustum {
     box = box ? box.initNpc() : new Frustum();
@@ -936,7 +936,7 @@ export class Viewport {
    * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
    * @param placements element placement(s). Will zoom to the union of the placements.
    * @param margin the amount of white space to leave around elements
-   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * <em>note:</em> Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
   public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
     const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
@@ -958,7 +958,7 @@ export class Viewport {
    * Zoom the view to a volume of space, in world coordinates.
    * @param volume The low and high corners, in world coordinates.
    * @param margin the amount of white space to leave around elements
-   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * <em>note:</em> Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, margin?: MarginPercent) {
     const range = Range3d.fromJSON(volume);

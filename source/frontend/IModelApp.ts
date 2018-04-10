@@ -95,7 +95,7 @@ export class IModelApp {
 
   /**
    * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
-   * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
+   * <em>note:</em> The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
   protected static onStartup(): void { }
 
