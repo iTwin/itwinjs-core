@@ -23,12 +23,12 @@
     "rush:build": "node ./common/rush.js rebuild -v",
     "rush:lint": "node ./common/rush.js lint",
     "build": "echo use 'rush rebuild'",
-    "clean": "echo use 'rush clean'",
+    "clean": "rimraf cover ts-node",
     "lint": "echo use 'rush lint'",
     "start": "cd src/sample && npm start",
     "test": "echo use 'rush test'",
     "cover": "echo use 'rush cover'",
-    "cover:merge": "node coverage/merge.js"
+    "cover:merge": "node scripts/merge-coverage-reports.js --coverageDir ./coverage"
   },
   "dependencies": {},
   "devDependencies": {
@@ -37,6 +37,7 @@
     "istanbul-reports":"^1.3.0",
     "istanbul-lib-coverage":"^1.2.0",
     "tslint-consistent-codestyle": "^1.11.0",
-    "typescript": "^2.6.2"
+    "typescript": "^2.6.2",
+    "yargs": "^11.0.0"
   }
 }

@@ -7,10 +7,7 @@
 /src/test/node_modules
 
 # testing
-/coverage/backend
-/coverage/frontend
-/coverage/integration
-/coverage/merged
+/coverage
 /ts-node
 
 # production

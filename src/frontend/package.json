@@ -17,10 +17,12 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
-    "cover": "nyc mocha --recursive **/*.test.ts",
+    "cover": "nyc npm run test:cover",
     "lint": "tslint -p ./tsconfig.json",
+    "prepublishOnly": "npm run build",
+    "require": "node ../../scripts/require-lib-modules.js --base ./",
     "test": "mocha --opts ../../mocha.opts **/*.test.ts",
-    "prepublishOnly": "npm run build"
+    "test:cover": "npm run require && mocha --recursive **/*.test.ts"
     },
   "dependencies": {
     "@bentley/ecpresentation-common": "~0.0.4"

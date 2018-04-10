@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 // import FrontendGatewayImpl from "@bentley/ecpresentation-frontend/lib/ECPresentationGateway";
 import ECPresentationManagerFrontend from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
 // backend imports:
-import BackendGatewayConfiguration from "../testHelpers/TestGatewayConfiguration";
+import BackendGatewayConfiguration from "../test-helpers/TestGatewayConfiguration";
 import ECPresentationManagerBackend, { NodeAddonDefinition } from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
 import ECPresentationGatewayBackend from "@bentley/ecpresentation-backend/lib/ECPresentationGateway";
 import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";

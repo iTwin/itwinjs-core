@@ -11,10 +11,10 @@
   "scripts": {
     "build": "echo disabled",
     "clean": "echo disabled",
-    "lint": "tslint -p ./tsconfig.json",
-    "test": "mocha --opts ../../mocha.opts  ./**.test.ts",
     "cover": "nyc npm run test:cover",
-    "require": "node require.js ../frontend/lib ../common/lib ../backend/lib",
+    "lint": "tslint -p ./tsconfig.json",
+    "require": "node ../../scripts/require-dependency-modules.js --base ./ @bentley/ecpresentation-frontend @bentley/ecpresentation-common @bentley/ecpresentation-backend",
+    "test": "mocha --opts ../../mocha.opts  ./**.test.ts",
     "test:cover": "npm run require && mocha --recursive ./**.test.ts"
   },
   "dependencies": {},
@@ -42,7 +42,8 @@
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
     "tslint": "^5.8.0",
-    "typemoq": "^2.1.0"
+    "typemoq": "^2.1.0",
+    "yargs": "^11.0.0"
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",

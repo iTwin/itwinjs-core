@@ -10,9 +10,9 @@ import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresenta
 import { SelectionInfo, Content } from "@bentley/ecpresentation-common/lib/content";
 import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { createRandomECInstanceKey } from "../testHelpers/random/EC";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../testHelpers/random/Hierarchy";
-import { createRandomDescriptor } from "../testHelpers/random/Content";
+import { createRandomECInstanceKey } from "../test-helpers/random/EC";
+import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../test-helpers/random/Hierarchy";
+import { createRandomDescriptor } from "../test-helpers/random/Content";
 import ECPresentationManager from "./ECPresentationManager";
 import ECPresentationGateway from "./ECPresentationGateway";
 

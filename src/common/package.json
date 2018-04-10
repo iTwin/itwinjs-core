@@ -16,10 +16,12 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
-    "cover": "echo wip",
-    "test": "echo wip",
+    "cover": "nyc npm run test:cover",
     "lint": "tslint -p ./tsconfig.json",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "require": "node ../../scripts/require-lib-modules.js --base ./",
+    "test": "mocha --opts ../../mocha.opts **/*.test.ts",
+    "test:cover": "npm run require && mocha --recursive **/*.test.ts"
   },
   "//peerDependencies": [
     "No need to repeat all of the dependencies are already expressed by frontend and backend."
@@ -28,13 +30,21 @@
     "@bentley/bentleyjs-core": "^7.3.6",
     "@bentley/bentleyjs-tools": "^2.2.0",
     "@bentley/imodeljs-common": "~0.69.0",
+    "@types/chai": "^4.0.10",
+    "@types/chai-spies": "0.0.0",
+    "@types/faker": "^4.1.0",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "chai-spies": "1.0.0",
+    "faker": "^4.1.0",
+    "nyc": "^11.6.0",
     "rimraf": "^2.6.2",
-    "typescript": "^2.6.2",
-    "tslint": "^5.8.0",
     "source-map-support": "^0.5.0",
+    "tslint": "^5.8.0",
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
-    "nyc": "^11.6.0"
+    "typemoq": "^2.1.0",
+    "typescript": "^2.6.2"
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",

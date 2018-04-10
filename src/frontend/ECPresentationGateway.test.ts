@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import FrontendGatewayConfiguration from "../testHelpers/TestGatewayConfiguration";
+import FrontendGatewayConfiguration from "../test-helpers/TestGatewayConfiguration";
 import ECPresentationGateway from "./ECPresentationGateway";
 
 describe("ECPresentationGateway", () => {
