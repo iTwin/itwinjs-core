@@ -166,7 +166,7 @@ describe("Sample Code", () => {
 
     // __PUBLISH_EXTRACT_START__ ECSqlStatement.Examples
     // Look up an element's ID by its CodeValue.
-    // Note that the statement is general way, so that it can be cached and possibly reused.
+    // Note that the statement is formulated to be general, so that it can be cached and possibly reused.
     // A placeholder is used to represent the particular CodeValue that we want to look up.
     const eidFound: string = iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore.Element WHERE (CodeValue=?)", (stmt: ECSqlStatement) => {
       // Bind the particular CodeValue string that we care about to the statement.

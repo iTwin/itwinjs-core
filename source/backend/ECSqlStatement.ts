@@ -36,9 +36,8 @@ export class ECSqlInsertResult {
  * <em>note:</em> Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
  * statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
  * The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
- * See [[IModelDb.withPreparedStatement]]
  *
- * <em>Examples:</em>
+ * <em>Example:</em>
  * ```ts
  * [[include:ECSqlStatement.Examples]]
  * ```

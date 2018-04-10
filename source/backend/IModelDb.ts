@@ -289,7 +289,7 @@ export class IModelDb extends IModel {
   }
   private releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
 
-  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it. Calls [[getPreparedStatement]] and [[ECSqlStatement.releasePreparedStatement]]
+  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
    * @param ecsql The ECSql statement to execute
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
