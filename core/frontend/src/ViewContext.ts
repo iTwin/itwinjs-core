@@ -5,9 +5,12 @@ import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform } from "@bentley/geometry-core";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
-import { GraphicType, GraphicBuilder } from "./render/GraphicBuilder";
+import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imodeljs-common";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
+import { IModelConnection } from "./IModelConnection";
+import { PrimitiveBuilder } from "./render/Geometry";
+import { Target, System } from "./render/System";
 
 export class ViewContext {
   constructor(public viewport?: Viewport) { }
@@ -84,7 +87,12 @@ export class SnapContext extends ViewContext {
 }
 
 export class RenderContext extends ViewContext {
-  public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined { return undefined; }
+  public get target(): Target { return this.viewport.target; }
+  constructor(public viewport: Viewport) { super(viewport); }
+  public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined {
+    return this._createGraphic(GraphicBuilderCreateParams.create(_type, this.viewport, _tf));
+  }
+  private _createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return this.target.createGraphic(params); }
 }
 
 export class DecorateContext extends RenderContext {
@@ -183,4 +191,9 @@ export class DecorateContext extends RenderContext {
     //   context.AddWorldOverlay(* graphic -> Finish());
   }
 
+}
+
+export class PrimitiveBuilderContext extends ViewContext {
+  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: System) { super(viewport); }
+  public static fromPrimitiveBuilder(builder: PrimitiveBuilder): PrimitiveBuilderContext { return new PrimitiveBuilderContext(builder.viewport, builder.iModel, builder.system); }
 }

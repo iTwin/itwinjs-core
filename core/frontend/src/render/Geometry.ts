@@ -2,13 +2,40 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, Id64 } from "@bentley/bentleyjs-core";
-import { Transform, Range3d, Arc3d, LineSegment3d, CurvePrimitive, GeometryQuery, ClipVector, AnyCurve, Loop, Path, BagOfCurves, LineString3d, Point2d, Point3d, PointString3d, CurveCollection } from "@bentley/geometry-core";
-import { Graphic, GraphicParams, GeometryParams } from "@bentley/imodeljs-common";
+import { Transform,
+         Range3d,
+         Arc3d,
+         LineSegment3d,
+         CurvePrimitive,
+         GeometryQuery,
+         ClipVector,
+         AnyCurve,
+         Loop,
+         Path,
+         BagOfCurves,
+         LineString3d,
+         Point2d,
+         Point3d,
+         PointString3d,
+         CurveCollection,
+         BSplineCurve3d,
+         BSplineSurface3d,
+         SolidPrimitive,
+         Polyface } from "@bentley/geometry-core";
+import { Graphic,
+         GraphicParams,
+         GeometryParams,
+         AsThickenedLine,
+         TextString,
+         GraphicBranch } from "@bentley/imodeljs-common";
 // import { IModelConnection } from "../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { QParams3d } from "./QPoint";
-// import { ViewContext } from "../ViewContext";
+import { PrimitiveBuilderContext } from "../ViewContext";
 // import { Feature } from "../../common/Render";
+import { GeometryOptions } from "./primitives/Primitives";
+import { System } from "./System";
+import { ViewContext } from "../ViewContext";
 
 export abstract class Geometry {
   public facetCount: number;
@@ -132,6 +159,8 @@ export class GeometryAccumulator {
     this.elementId = elemId;
     this.surfacesOnly = surfacesOnly;
   }
+
+  public saveToGraphicList(_graphics: Graphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void {} //tslint:disable-line
 }
 
 export abstract class GeometryListBuilder extends GraphicBuilder {
@@ -164,12 +193,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
 
-  public _finish(): Graphic {
-    if (!this.isOpen) {
+  public _finish(): Graphic | undefined {
+    if (!this.isOpen || !this.accum) {
       assert(false);
-      return new Graphic();
+      return undefined;
     }
-    const graphic: Graphic = this.accum ? this.finishGraphic(this.accum) : new Graphic();
+    const graphic = this.finishGraphic(this.accum);
     // assert(graphic.isValid()); // isValid function doesn't actually exist yet in Graphic class.
     this._isOpen = false;
     if (this.accum) { this.accum.clear(); }
@@ -293,4 +322,62 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this._isOpen = true;
     this.reset();
   }
+}
+
+export class PrimitiveBuilder extends GeometryListBuilder {
+  public primitives: Graphic[] = [];
+  constructor(public system: System, public params: GraphicBuilderCreateParams, public elemId: Id64 = new Id64()) { super(system, params, elemId); }
+  public addSubGraphic(gf: Graphic, subToGf: Transform, _gfParams: GraphicParams, clips?: ClipVector): void {
+    // ###TODO_ELEMENT_TILE: Overriding GraphicParams?
+    // ###TODO_ELEMENT_TILE: Clip...
+    if (!clips || !subToGf.isIdentity()) {
+      const branch = new GraphicBranch([ gf ]);
+      const graphic = this.system.createBranch(branch, this.iModel, subToGf, clips!);
+      this.primitives.push(graphic);
+    } else this.primitives.push(gf);
+  }
+
+  public createSubGraphic(subToGf: Transform, _clip: ClipVector): GraphicBuilder {
+    const tf = subToGf.isIdentity() ? this.localToWorldTransform : Transform.createIdentity();
+    const params = this.params.subGraphic(tf);
+    return this.system.createGraphic(params);
+  }
+
+  public finishGraphic(accum: GeometryAccumulator): Graphic {
+    if (!accum.isEmpty) {
+      // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
+      // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
+      // No point generating edges for graphics that are always rendered in smooth shade mode.
+      const options = GeometryOptions.fromGraphicBuilderCreateParams(this.params);
+      const context = PrimitiveBuilderContext.fromPrimitiveBuilder(this);
+      const tolerance = this.computeTolerance(accum);
+      accum.saveToGraphicList(this.primitives, options, tolerance, context);
+    }
+    return (this.primitives.length !== 1) ? this.system.createGraphicList(this.primitives, this.iModel) : this.primitives.pop() as Graphic;
+  }
+
+  public computeTolerance(accum: GeometryAccumulator): number {
+    const toleranceMult = 0.25;
+    if (this.params.isViewCoordinates) return toleranceMult;
+    if (!this.params.viewport) return 20;
+    const range = accum.geometries!.computeRange(); // NB: Already multiplied by transform...
+    // NB: Geometry::CreateFacetOptions() will apply any scale factors from transform...no need to do it here.
+    const pt = range.low.interpolate(0.5, range.high);
+    return this.params.viewport!.getPixelSizeAtPoint(pt) * toleranceMult;
+  }
+
+  public reset(): void {}
+  public addBSplineCurve(_curve: BSplineCurve3d, _filled: boolean): void {} //tslint:disable-line
+  public addBSplineCurve2d(_curve: BSplineCurve3d, _filled: boolean, _zDepth: number): void {} //tslint:disable-line
+  public addBSplineSurface(_surface: BSplineSurface3d): void {} //tslint:disable-line
+  public addPointString(_numPoints: number, _points: Point3d[]): void {} //tslint:disable-line
+  public addPointString2d(_numPoints: number, _points: Point2d[], _zDepth: number): void {} //tslint:disable-line
+  public addPolyface(_meshData: Polyface, _filled: boolean): void {} //tslint:disable-line
+  public addShape(_numPoints: number, _points: Point3d[], _filled: boolean): void {} //tslint:disable-line
+  public addShape2d(_numPoints: number, _points: Point2d[], _filled: boolean, _zDepth: number): void {} //tslint:disable-line
+  public addSolidPrimitive(_primitive: SolidPrimitive): void {} //tslint:disable-line
+  public addTextString(_text: TextString): void {} //tslint:disable-line
+  public addTextString2d(_text: TextString, _zDepth: number): void {} //tslint:disable-line
+  public addTriStrip(_numPoints: number, _points: Point3d[], _asThickenedLine: AsThickenedLine): void {} //tslint:disable-line
+  public addTriStrip2d(_numPoints: number, _points: Point2d[], _asThickenedLine: AsThickenedLine, _zDepth: number): void {} //tslint:disable-line
 }

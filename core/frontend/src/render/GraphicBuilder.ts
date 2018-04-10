@@ -165,7 +165,7 @@ export abstract class GraphicBuilder {
   public wantStrokePattern(_pattern: PatternParams): boolean { return true; }
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
-  public abstract _finish(): Graphic;
+  public abstract _finish(): Graphic | undefined;
   public finish(): Graphic | undefined { return this.isOpen ? this._finish() : undefined; }
 
   /**

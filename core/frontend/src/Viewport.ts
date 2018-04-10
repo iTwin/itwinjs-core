@@ -17,6 +17,7 @@ import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
+import { Target } from "./render/System";
 
 /** A rectangle in view coordinates. */
 export class ViewRect {
@@ -208,6 +209,7 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
+  public get target(): Target { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
@@ -215,7 +217,7 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState) { this.setCursor(); this.saveViewUndo(); }
+  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState, private _target?: Target) { this.setCursor(); this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
@@ -794,7 +796,7 @@ export class Viewport {
    * @param adjustedBox If true, retrieve the adjusted box. Otherwise retrieve the box that came from the view definition.
    * @param box optional Frustum for return value
    * @return the view frustum
-   * <em>note:</em> The "adjusted" box may be either larger or smaller than the "unadjusted" box.
+   * @note The "adjusted" box may be either larger or smaller than the "unadjusted" box.
    */
   public getFrustum(sys: CoordSystem = CoordSystem.World, adjustedBox: boolean = true, box?: Frustum): Frustum {
     box = box ? box.initNpc() : new Frustum();
@@ -936,7 +938,7 @@ export class Viewport {
    * Zoom the view to a show the tightest box around a given set of elements. Does not change view rotation.
    * @param placements element placement(s). Will zoom to the union of the placements.
    * @param margin the amount of white space to leave around elements
-   * <em>note:</em> Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
   public zoomToElements(placements: Placement3dProps[] | Placement2dProps[] | Placement2dProps | Placement3dProps, margin?: MarginPercent) {
     const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotMatrix);
@@ -958,7 +960,7 @@ export class Viewport {
    * Zoom the view to a volume of space, in world coordinates.
    * @param volume The low and high corners, in world coordinates.
    * @param margin the amount of white space to leave around elements
-   * <em>note:</em> Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+   * @note Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, margin?: MarginPercent) {
     const range = Range3d.fromJSON(volume);
