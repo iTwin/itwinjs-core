@@ -487,8 +487,6 @@ export class BriefcaseManager {
     const iModel: HubIModel = (await BriefcaseManager.hubClient!.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
 
     const briefcase = new BriefcaseEntry();
-    briefcase.changeSetId = "";
-    briefcase.changeSetIndex = 0;
     briefcase.iModelId = iModelId;
     briefcase.isOpen = false;
     briefcase.openMode = openMode;
@@ -499,12 +497,16 @@ export class BriefcaseManager {
       downloadToPathname = BriefcaseManager.buildReadOnlyPath(iModelId, iModel.name!);
       briefcase.briefcaseId = BriefcaseId.Standalone;
       await BriefcaseManager.downloadSeedFile(accessToken, iModelId, downloadToPathname);
+      briefcase.changeSetId = "";
+      briefcase.changeSetIndex = 0;
     } else {
       const hubBriefcase: HubBriefcase = await BriefcaseManager.acquireBriefcase(accessToken, iModelId);
       downloadToPathname = BriefcaseManager.buildReadWritePath(iModelId, +hubBriefcase.briefcaseId!, iModel.name!);
       briefcase.briefcaseId = hubBriefcase.briefcaseId!;
       briefcase.fileId = hubBriefcase.fileId;
       await BriefcaseManager.downloadBriefcase(hubBriefcase, downloadToPathname);
+      briefcase.changeSetId = hubBriefcase.mergedChangeSetId!;
+      briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
     }
     briefcase.pathname = downloadToPathname;
 
