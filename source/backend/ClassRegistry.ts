@@ -87,7 +87,8 @@ export class ClassRegistry {
     return generatedClass;
   }
 
-  /** Register all of the classes that derive from Entity, that are found in a given module. See the example in [[Schema]]
+  /**
+   * Register all of the classes that derive from Entity, that are found in a given module. See the example in [[Schema]]
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */
@@ -115,15 +116,15 @@ export class ClassRegistry {
 
     // Make sure that we have all base classes registered.
     // This recurses. I have to know that the super class is defined and registered before defining a derived class.
-    if (metadata!.baseClasses && metadata.baseClasses.length !== 0) {
+    if (metadata!.baseClasses && metadata.baseClasses.length !== 0)
       this.getClass(metadata.baseClasses[0], iModel);
-    }
 
     // Now we can generate the class from the classDef.
     return this.generateClassForEntity(metadata);
   }
 
-  /** Get the Entity class for the specified Entity.
+  /**
+   * Get the Entity class for the specified Entity.
    * @param fullName The name of the Entity
    * @param iModel The IModel that contains the class definitions
    * @returns A promise that resolves to an object containing a result property set to the Entity.
@@ -142,7 +143,9 @@ export class ClassRegistry {
   }
 }
 
-/** A cache that records mappings between class names and class metadata */
+/**
+ * A cache that records mappings between class names and class metadata
+ */
 export class MetaDataRegistry {
   private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
 
