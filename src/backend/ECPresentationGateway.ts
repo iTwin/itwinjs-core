@@ -2,13 +2,12 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken, Gateway } from "@bentley/imodeljs-common";
-import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common/lib/content";
+import { ECPresentationGatewayDefinition, ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
+import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
+import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
 import { resetParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
-import { PageOptions, ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
 import ECPresentationManager from "./ECPresentationManager";
 
 /** The backend implementation of ECPresentationGatewayDefinition. */

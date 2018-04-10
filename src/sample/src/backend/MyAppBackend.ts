@@ -4,7 +4,7 @@
 import * as path from "path";
 import initLogging from "./logging";
 import { IModelDb, IModelHost } from "@bentley/imodeljs-backend";
-import ECPresentationManager from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
+import { ECPresentationManager } from "@bentley/ecpresentation-backend";
 
 // initialize logging
 initLogging();

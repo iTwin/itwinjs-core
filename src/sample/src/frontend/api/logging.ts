@@ -1,5 +1,5 @@
-import { GetMetaDataFunction } from "@bentley/imodeljs-common/lib/IModelError";
-import { LogFunction, Logger } from "@bentley/bentleyjs-core/lib/Logger";
+import { GetMetaDataFunction } from "@bentley/imodeljs-common";
+import { LogFunction, Logger } from "@bentley/bentleyjs-core";
 
 // tslint:disable:no-console
 export default function init() {

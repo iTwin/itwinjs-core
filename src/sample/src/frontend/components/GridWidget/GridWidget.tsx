@@ -1,8 +1,8 @@
 import * as React from "react";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { InstanceKey } from "@bentley/ecpresentation-common";
+import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
 import TableViewDataProvider from "@bentley/ecpresentation-frontend/lib/Controls/TableViewDataProvider";
 import { SelectionManager, SelectedItem, SelectionChangeEventArgs, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 import "./GridWidget.css";

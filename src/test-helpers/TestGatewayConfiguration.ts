@@ -1,9 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { GatewayDefinition, Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import { GatewayConfiguration } from "@bentley/imodeljs-common/lib/gateway/GatewayConfiguration";
-import { GatewayProtocol, GatewayDirectProtocol } from "@bentley/imodeljs-common/lib/gateway/GatewayProtocol";
+import { GatewayProtocol, GatewayDirectProtocol, GatewayConfiguration, GatewayDefinition, Gateway } from "@bentley/imodeljs-common";
 
 export default class TestGatewayConfiguration extends GatewayConfiguration {
   public gateways: () => GatewayDefinition[] = () => [];

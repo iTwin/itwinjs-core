@@ -2,16 +2,12 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, Logger } from "@bentley/bentleyjs-core";
-import * as responseTypes from "./AddonResponses";
-import * as ec from "@bentley/ecpresentation-common/lib/EC";
-import { NavNode, NavNodeKey, ECInstanceNodeKey, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
-import * as content from "@bentley/ecpresentation-common/lib/content";
-import { createDescriptorOverrides } from "@bentley/ecpresentation-common/lib/content/Descriptor";
-import { StructFieldMemberDescription, isStructDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
-import { PageOptions, ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
+import { StructFieldMemberDescription, isStructDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
+import { createDescriptorOverrides } from "@bentley/ecpresentation-common/lib/content/Descriptor";
+import * as types from "@bentley/ecpresentation-common";
+import * as responseTypes from "./AddonResponses";
 import ECPresentationGateway from "./ECPresentationGateway";
 
 // make sure the gateway gets registered (hopefully this is temporary)
@@ -23,7 +19,7 @@ export interface Props {
   rulesetDirectories?: string[];
 }
 
-export default class ECPresentationManager implements ECPInterface {
+export default class ECPresentationManager implements types.ECPresentationManager {
 
   private _addon?: NodeAddonDefinition;
 
@@ -43,7 +39,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this._addon!;
   }
 
-  public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
+  public async getRootNodes(token: IModelToken, pageOptions: types.PageOptions, options: object): Promise<Array<Readonly<types.NavNode>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
       options,
@@ -58,7 +54,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getChildren(token: IModelToken, parent: NavNode, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
+  public async getChildren(token: IModelToken, parent: types.NavNode, pageOptions: types.PageOptions, options: object): Promise<Array<Readonly<types.NavNode>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
       nodeKey: parent.key,
       pageOptions,
@@ -67,7 +63,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params, Conversion.createNodesList);
   }
 
-  public async getChildrenCount(token: IModelToken, parent: NavNode, options: object): Promise<number> {
+  public async getChildrenCount(token: IModelToken, parent: types.NavNode, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
       nodeKey: parent.key,
       options,
@@ -75,15 +71,15 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getNodePaths(_token: IModelToken, _paths: NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
+  public async getNodePaths(_token: IModelToken, _paths: types.NavNodeKeyPath[], _markedIndex: number, _options: object): Promise<Array<Readonly<types.NavNodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
-  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<Array<Readonly<NavNodePathElement>>> {
+  public async getFilteredNodesPaths(_token: IModelToken, _filterText: string, _options: object): Promise<Array<Readonly<types.NavNodePathElement>>> {
     throw new Error("Not implemented.");
   }
 
-  public async getContentDescriptor(token: IModelToken, displayType: string, keys: ec.InstanceKeysList, selection: content.SelectionInfo | undefined, options: object): Promise<Readonly<content.Descriptor>> {
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: types.InstanceKeysList, selection: types.SelectionInfo | undefined, options: object): Promise<Readonly<types.Descriptor>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
@@ -93,7 +89,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params, Conversion.createContentDescriptor);
   }
 
-  public async getContentSetSize(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, options: object): Promise<number> {
+  public async getContentSetSize(token: IModelToken, descriptor: types.Descriptor, keys: types.InstanceKeysList, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentSetSize, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -102,7 +98,7 @@ export default class ECPresentationManager implements ECPInterface {
     return this.request(token, params);
   }
 
-  public async getContent(token: IModelToken, descriptor: content.Descriptor, keys: ec.InstanceKeysList, pageOptions: PageOptions, options: object): Promise<Readonly<content.Content>> {
+  public async getContent(token: IModelToken, descriptor: types.Descriptor, keys: types.InstanceKeysList, pageOptions: types.PageOptions, options: object): Promise<Readonly<types.Content>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       descriptorOverrides: createDescriptorOverrides(descriptor),
@@ -116,7 +112,7 @@ export default class ECPresentationManager implements ECPInterface {
     throw new Error("Not implemented.");
   }
 
-  public async saveValueChange(_token: IModelToken, _instancesInfo: ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<Array<Readonly<ECInstanceChangeResult>>> {
+  public async saveValueChange(_token: IModelToken, _instancesInfo: types.ChangedECInstanceInfo[], _propertyAccessor: string, _value: any, _options: object): Promise<Array<Readonly<types.ECInstanceChangeResult>>> {
     // note: should probably handle this in typescript rather than forwarding to node addon
     throw new Error("Not implemented.");
   }
@@ -183,10 +179,10 @@ export enum NodeAddonRequestTypes {
 }
 
 namespace Conversion {
-  export function createNodesList(r: responseTypes.Node[]): NavNode[] {
+  export function createNodesList(r: responseTypes.Node[]): types.NavNode[] {
     if (!r)
       throw new Error("Invalid nodes' response");
-    const nodes = new Array<NavNode>();
+    const nodes = new Array<types.NavNode>();
     for (const rNode of r) {
       nodes.push({
         nodeId: rNode.NodeId,
@@ -214,18 +210,18 @@ namespace Conversion {
     return key.Type === "ECInstanceNode";
   }
 
-  function createNavNodeKey(r: responseTypes.NodeKey): NavNodeKey {
+  function createNavNodeKey(r: responseTypes.NodeKey): types.NavNodeKey {
     const key = {
       type: r.Type,
       pathFromRoot: r.PathFromRoot,
       classId: r.ECClassId,
-    } as NavNodeKey;
+    } as types.NavNodeKey;
     if (isECInstanceNodeKey(r))
-      return { ...key, instanceId: r.ECInstanceId } as ECInstanceNodeKey;
+      return { ...key, instanceId: r.ECInstanceId } as types.ECInstanceNodeKey;
     return key;
   }
 
-  function createClassInfo(r: responseTypes.ClassInfo): ec.ClassInfo {
+  function createClassInfo(r: responseTypes.ClassInfo): types.ClassInfo {
     return {
       id: r.Id,
       name: r.Name,
@@ -233,19 +229,19 @@ namespace Conversion {
     };
   }
 
-  function createInstanceKey(r: responseTypes.ECInstanceKey): ec.InstanceKey {
+  function createInstanceKey(r: responseTypes.ECInstanceKey): types.InstanceKey {
     return {
       classId: r.ECClassId,
       instanceId: r.ECInstanceId,
     };
   }
 
-  function createInstanceKeyList(r: responseTypes.ECInstanceKey[]): ec.InstanceKey[] {
+  function createInstanceKeyList(r: responseTypes.ECInstanceKey[]): types.InstanceKey[] {
     return r.map((k: responseTypes.ECInstanceKey) => createInstanceKey(k));
   }
 
-  function createContentItem(descriptor: content.Descriptor, r: responseTypes.ContentSetItem): content.Item {
-    let classInfo: ec.ClassInfo | undefined;
+  function createContentItem(descriptor: types.Descriptor, r: responseTypes.ContentSetItem): types.Item {
+    let classInfo: types.ClassInfo | undefined;
     if (r.ClassInfo)
       classInfo = createClassInfo(r.ClassInfo);
     const item = {
@@ -257,15 +253,15 @@ namespace Conversion {
       displayValues: r.DisplayValues,
       mergedFieldNames: r.MergedFieldNames || [],
       fieldPropertyValueKeys: createItemValueKeys(descriptor, r.FieldValueKeys || {}),
-    } as content.Item;
+    } as types.Item;
     return item;
   }
 
-  export function createContent(r: responseTypes.Content): content.Content {
+  export function createContent(r: responseTypes.Content): types.Content {
     if (!r)
       throw new Error("Invalid content response");
     const descriptor = createContentDescriptor(r.Descriptor);
-    const cont: content.Content = {
+    const cont: types.Content = {
       descriptor,
       contentSet: [],
     };
@@ -274,8 +270,8 @@ namespace Conversion {
     return cont;
   }
 
-  function createItemValueKeys(_descriptor: content.Descriptor, _fieldValueKeysResp: { [fieldName: string]: any[] }): content.FieldPropertyValueKeys {
-    const result: content.FieldPropertyValueKeys = {};
+  function createItemValueKeys(_descriptor: types.Descriptor, _fieldValueKeysResp: { [fieldName: string]: any[] }): types.FieldPropertyValueKeys {
+    const result: types.FieldPropertyValueKeys = {};
     /*for (const field of descriptor.fields) {
       if (!field.isPropertiesField || field.description.isArrayDescription || field.description.isStructDescription) {
         // only property-based fields have value keys
@@ -283,7 +279,7 @@ namespace Conversion {
         continue;
       }
 
-      const itemValueKeys = new Array<content.PropertyValueKeys>();
+      const itemValueKeys = new Array<types.PropertyValueKeys>();
       const propertyKeysArr = fieldValueKeysResp[field.name];
       if (!propertyKeysArr) {
         continue;
@@ -294,28 +290,28 @@ namespace Conversion {
           assert(false);
           continue;
         }
-        itemValueKeys.push(new content.PropertyValueKeys(field, fieldProperty, propertyKeys.Keys));
+        itemValueKeys.push(new types.PropertyValueKeys(field, fieldProperty, propertyKeys.Keys));
       }
       result[field.name] = itemValueKeys;
     }*/
     return result;
   }
 
-  export function createContentDescriptor(r: responseTypes.Descriptor): content.Descriptor {
+  export function createContentDescriptor(r: responseTypes.Descriptor): types.Descriptor {
     if (!r)
       throw new Error("Invalid descriptor response");
 
-    const selectClasses = new Array<content.SelectClassInfo>();
+    const selectClasses = new Array<types.SelectClassInfo>();
     for (const respClass of r.SelectClasses)
       selectClasses.push(createSelectClassInfo(respClass));
 
-    const categories: { [name: string]: content.CategoryDescription } = {};
-    const fields = new Array<content.Field>();
+    const categories: { [name: string]: types.CategoryDescription } = {};
+    const fields = new Array<types.Field>();
     for (const respField of r.Fields)
       fields.push(createField(respField, categories));
 
-    let sortingField: content.Field | undefined;
-    const sortDirection = r.SortDirection as content.SortDirection;
+    let sortingField: types.Field | undefined;
+    const sortDirection = r.SortDirection as types.SortDirection;
     if (r.SortingFieldIndex > 0 && r.SortingFieldIndex < fields.length)
       sortingField = fields[r.SortingFieldIndex];
 
@@ -327,23 +323,23 @@ namespace Conversion {
       sortingField,
       sortDirection,
       filterExpression: r.FilterExpression,
-    } as content.Descriptor;
+    } as types.Descriptor;
     return descriptor;
   }
 
-  function createFieldType(r: responseTypes.FieldTypeDescription): content.TypeDescription {
+  function createFieldType(r: responseTypes.FieldTypeDescription): types.TypeDescription {
     switch (r.ValueFormat) {
       case "Primitive":
         return {
-          valueFormat: content.PropertyValueFormat.Primitive,
+          valueFormat: types.PropertyValueFormat.Primitive,
           typeName: r.TypeName,
-        } as content.PrimitiveTypeDescription;
+        } as types.PrimitiveTypeDescription;
       case "Array":
         return {
-          valueFormat: content.PropertyValueFormat.Array,
+          valueFormat: types.PropertyValueFormat.Array,
           typeName: r.TypeName,
           memberType: createFieldType((r as responseTypes.FieldArrayTypeDescription).MemberType),
-        } as content.ArrayTypeDescription;
+        } as types.ArrayTypeDescription;
       case "Struct":
         const structMembers = new Array<StructFieldMemberDescription>();
         for (const member of (r as responseTypes.FieldStructTypeDescription).Members) {
@@ -354,20 +350,20 @@ namespace Conversion {
           });
         }
         return {
-          valueFormat: content.PropertyValueFormat.Struct,
+          valueFormat: types.PropertyValueFormat.Struct,
           typeName: r.TypeName,
           members: structMembers,
-        } as content.StructTypeDescription;
+        } as types.StructTypeDescription;
     }
     assert(false, "Unknown value format");
     return {
-      valueFormat: content.PropertyValueFormat.Primitive,
+      valueFormat: types.PropertyValueFormat.Primitive,
       typeName: r.TypeName,
-    } as content.PrimitiveTypeDescription;
+    } as types.PrimitiveTypeDescription;
   }
 
-  function createSelectClassInfo(r: responseTypes.SelectClassInfo): content.SelectClassInfo {
-    const relatedPropertyPaths = new Array<ec.RelationshipPathInfo>();
+  function createSelectClassInfo(r: responseTypes.SelectClassInfo): types.SelectClassInfo {
+    const relatedPropertyPaths = new Array<types.RelationshipPathInfo>();
     for (const pr of r.RelatedPropertyPaths)
       relatedPropertyPaths.push(createRelationshipPath(pr));
     const info = {
@@ -375,16 +371,16 @@ namespace Conversion {
       isSelectPolymorphic: r.IsPolymorphic,
       pathToPrimaryClass: createRelationshipPath(r.PathToPrimaryClass),
       relatedPropertyPaths,
-    } as content.SelectClassInfo;
+    } as types.SelectClassInfo;
     return info;
   }
 
-  function createFieldEditor(_r: responseTypes.Editor): content.EditorDescription | undefined {
+  function createFieldEditor(_r: responseTypes.Editor): types.EditorDescription | undefined {
     return undefined;
     /* todo:
     if (!r)
       return null;
-    const editor = new content.EditorDescription(r.Name);
+    const editor = new types.EditorDescription(r.Name);
     for (const paramsName in r.Params) {
       let unknownParams: any = r.Params[paramsName];
       switch (paramsName) {
@@ -430,7 +426,7 @@ namespace Conversion {
     return editor;*/
   }
 
-  function createCategory(r: responseTypes.Category, categories: { [name: string]: content.CategoryDescription }): content.CategoryDescription {
+  function createCategory(r: responseTypes.Category, categories: { [name: string]: types.CategoryDescription }): types.CategoryDescription {
     if (categories.hasOwnProperty(r.Name))
       return categories[r.Name];
     const category = {
@@ -439,20 +435,20 @@ namespace Conversion {
       description: r.Description,
       priority: r.Priority,
       expand: r.Expand,
-    } as content.CategoryDescription;
+    } as types.CategoryDescription;
     categories[category.name] = category;
     return category;
   }
 
-  function createChoices(r: responseTypes.EnumerationChoice[]): ec.EnumerationChoice[] {
-    const choices = new Array<ec.EnumerationChoice>();
+  function createChoices(r: responseTypes.EnumerationChoice[]): types.EnumerationChoice[] {
+    const choices = new Array<types.EnumerationChoice>();
     for (const choice of r)
       choices.push({ label: choice.Label, value: choice.Value });
     return choices;
   }
 
-  function createECPropertyInfo(r: responseTypes.ECProperty): ec.PropertyInfo {
-    const propertyInfo: ec.PropertyInfo = {
+  function createECPropertyInfo(r: responseTypes.ECProperty): types.PropertyInfo {
+    const propertyInfo: types.PropertyInfo = {
       classInfo: createClassInfo(r.ActualClassInfo),
       name: r.Name,
       type: r.Type,
@@ -470,7 +466,7 @@ namespace Conversion {
     return propertyInfo;
   }
 
-  function createRelatedClassInfo(r: responseTypes.RelatedClass): ec.RelatedClassInfo {
+  function createRelatedClassInfo(r: responseTypes.RelatedClass): types.RelatedClassInfo {
     return {
       sourceClassInfo: createClassInfo(r.SourceClassInfo),
       targetClassInfo: createClassInfo(r.TargetClassInfo),
@@ -479,28 +475,28 @@ namespace Conversion {
     };
   }
 
-  function createRelationshipPath(r: responseTypes.RelatedClassPath): ec.RelationshipPathInfo {
-    const path = new Array<ec.RelatedClassInfo>();
+  function createRelationshipPath(r: responseTypes.RelatedClassPath): types.RelationshipPathInfo {
+    const path = new Array<types.RelatedClassInfo>();
     for (const pr of r)
       path.push(createRelatedClassInfo(pr));
     return path;
   }
 
-  function createFieldProperty(r: responseTypes.FieldProperty): content.Property {
+  function createFieldProperty(r: responseTypes.FieldProperty): types.Property {
     const propertyInfo = createECPropertyInfo(r.Property);
-    const relatedClassPath = new Array<ec.RelatedClassInfo>();
+    const relatedClassPath = new Array<types.RelatedClassInfo>();
     for (const pr of r.RelatedClassPath)
       relatedClassPath.push(createRelatedClassInfo(pr));
     const property = {
       property: propertyInfo,
       relatedClassPath,
-    } as content.Property;
+    } as types.Property;
     return property;
   }
 
-  function createPropertiesField(r: responseTypes.ECPropertiesField, type: content.TypeDescription, editor: content.EditorDescription | undefined,
-    category: content.CategoryDescription, parent: content.NestedContentField | undefined): content.PropertiesField {
-    const properties = new Array<content.Property>();
+  function createPropertiesField(r: responseTypes.ECPropertiesField, type: types.TypeDescription, editor: types.EditorDescription | undefined,
+    category: types.CategoryDescription, parent: types.NestedContentField | undefined): types.PropertiesField {
+    const properties = new Array<types.Property>();
     for (const pr of r.Properties)
       properties.push(createFieldProperty(pr));
     return {
@@ -513,14 +509,14 @@ namespace Conversion {
       priority: r.Priority,
       isReadOnly: r.IsReadOnly,
       parent,
-    } as content.PropertiesField;
+    } as types.PropertiesField;
   }
 
-  function createNestedContentField(r: responseTypes.NestedContentField, type: content.TypeDescription, editor: content.EditorDescription | undefined,
-    categories: { [name: string]: content.CategoryDescription }, parent?: content.NestedContentField): content.NestedContentField {
+  function createNestedContentField(r: responseTypes.NestedContentField, type: types.TypeDescription, editor: types.EditorDescription | undefined,
+    categories: { [name: string]: types.CategoryDescription }, parent?: types.NestedContentField): types.NestedContentField {
     assert(isStructDescription(type), "Nested content fields' type should be 'struct'");
     const category = categories[r.Category.Name];
-    const nestedFields = new Array<content.Field>();
+    const nestedFields = new Array<types.Field>();
     const field = {
       category,
       name: r.Name,
@@ -533,7 +529,7 @@ namespace Conversion {
       priority: r.Priority,
       isReadOnly: r.IsReadOnly,
       parent,
-    } as content.NestedContentField;
+    } as types.NestedContentField;
     for (const nestedField of r.NestedFields)
       nestedFields.push(createField(nestedField, categories, field));
     return field;
@@ -547,7 +543,7 @@ namespace Conversion {
     return (field as any).ContentClassInfo;
   }
 
-  function createField(r: responseTypes.Field, categories: { [name: string]: content.CategoryDescription }, parent?: content.NestedContentField): content.Field {
+  function createField(r: responseTypes.Field, categories: { [name: string]: types.CategoryDescription }, parent?: types.NestedContentField): types.Field {
     const type = createFieldType(r.Type);
     const editor = createFieldEditor(r.Editor!);
     const category = createCategory(r.Category, categories);
@@ -565,6 +561,6 @@ namespace Conversion {
       priority: r.Priority,
       isReadOnly: r.IsReadOnly,
       parent,
-    } as content.Field;
+    } as types.Field;
   }
 }

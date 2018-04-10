@@ -23,7 +23,7 @@
     "rush:build": "node ./common/rush.js rebuild -v",
     "rush:lint": "node ./common/rush.js lint",
     "build": "echo use 'rush rebuild'",
-    "clean": "rimraf cover ts-node",
+    "clean": "rimraf coverage ts-node",
     "lint": "echo use 'rush lint'",
     "start": "cd src/sample && npm start",
     "test": "echo use 'rush test'",

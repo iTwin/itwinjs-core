@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
-import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common/lib/content";
-import { rebuildParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
-import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
-import { PageOptions, ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import ECPresentationGateway from "./ECPresentationGateway";
 import { IModelToken } from "@bentley/imodeljs-common";
+import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
+import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
+import { ECPresentationManager as ECPInterface } from "@bentley/ecpresentation-common";
+import { rebuildParentship } from "@bentley/ecpresentation-common/lib/content/Descriptor";
+import ECPresentationGateway from "./ECPresentationGateway";
 
-class ECPresentationManager implements ECPInterface {
+export default class ECPresentationManager implements ECPInterface {
   public async getRootNodes(token: IModelToken, pageOptions: PageOptions, options: object): Promise<Array<Readonly<NavNode>>> {
     return await ECPresentationGateway.getProxy().getRootNodes(token, pageOptions, options);
   }
@@ -66,5 +66,3 @@ class ECPresentationManager implements ECPInterface {
     return await ECPresentationGateway.getProxy().saveValueChange(token, instancesInfo, propertyAccessor, value, options);
   }
 }
-
-export default ECPresentationManager;

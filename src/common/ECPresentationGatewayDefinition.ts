@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
+import { Gateway } from "@bentley/imodeljs-common";
+import { IModelToken } from "@bentley/imodeljs-common";
 import { NavNode, NavNodeKeyPath, NavNodePathElement } from "./Hierarchy";
 import * as content from "./content";
 import { ChangedECInstanceInfo, ECInstanceChangeResult } from "./Changes";

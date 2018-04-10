@@ -1,8 +1,8 @@
 // tslint:disable:no-var-requires
 import { app as electron } from "electron";
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
-import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/ECPresentationGateway";
+import { Gateway } from "@bentley/imodeljs-common";
+import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
+import { ECPresentationGateway } from "@bentley/ecpresentation-backend";
 import app from "./MyAppBackend";
 
 if (electron) {

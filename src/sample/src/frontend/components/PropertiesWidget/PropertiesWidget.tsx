@@ -1,10 +1,10 @@
 import * as React from "react";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { IModelConnection } from "@bentley/imodeljs-frontend/lib/IModelConnection";
-import { InstanceKey } from "@bentley/ecpresentation-common/lib/EC";
-import ECPresentationManager from "@bentley/ecpresentation-frontend/lib/ECPresentationManager";
-import PropertyPaneDataProvider from "@bentley/ecpresentation-frontend/lib/Controls/PropertyPaneDataProvider";
-import { isPrimitiveValue, isStructValue, isArrayValue, PropertyRecord } from "@bentley/ecpresentation-frontend/lib/Controls/ContentBuilder";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { InstanceKey } from "@bentley/ecpresentation-common";
+import { ECPresentationManager } from "@bentley/ecpresentation-frontend";
+import { PropertyPaneDataProvider } from "@bentley/ecpresentation-controls";
+import { isPrimitiveValue, isStructValue, isArrayValue, PropertyRecord } from "@bentley/ecpresentation-controls/common/ContentBuilder";
 import { SelectionManager, SelectionChangeEventArgs, SelectedItem, SelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend/lib/Selection";
 import "./PropertiesWidget.css";
 

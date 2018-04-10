@@ -3,18 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as moq from "typemoq";
-import * as addonTypes from "./AddonResponses";
-import { NativePlatformRegistry, IModelHost } from "@bentley/imodeljs-backend";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
-import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-common/lib/Hierarchy";
+import { NativePlatformRegistry, IModelHost } from "@bentley/imodeljs-backend";
+import { PageOptions } from "@bentley/ecpresentation-common";
+import { NavNode, /*, NavNodeKeyPath, NavNodePathElement*/ NavNodeKey } from "@bentley/ecpresentation-common";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "./ECPresentationManager";
-// import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-backend/lib/common/Content";
-// import { InstanceKeysList } from "@bentley/ecpresentation-backend/lib/common/EC";
-// import { createRandomECInstanceKey } from "../../helpers/random/EC";
-// import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../../helpers/random/Hierarchy";
-// import { createRandomDescriptor } from "../../helpers/random/Content";
+import * as addonTypes from "./AddonResponses";
 
 describe("ECPresentationManager", () => {
 

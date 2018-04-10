@@ -4,7 +4,14 @@
     "target": "es2017",
     "module": "commonjs",
     "skipLibCheck": true,
-    "baseUrl": "./node_modules"
+    "outDir": "./lib",
+    "baseUrl": "./node_modules",
+    "paths": {
+      "*": [
+        "@types/*",
+        "*"
+      ]
+    }
   },
   "exclude": [
     "lib",

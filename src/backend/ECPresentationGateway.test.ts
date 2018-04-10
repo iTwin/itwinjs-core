@@ -3,13 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as moq from "typemoq";
-import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
-import { Gateway } from "@bentley/imodeljs-common/lib/Gateway";
-import { IModelToken } from "@bentley/imodeljs-common/lib/IModel";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
-import { SelectionInfo, Content } from "@bentley/ecpresentation-common/lib/content";
-import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { Gateway, IModelToken } from "@bentley/imodeljs-common";
+import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
+import { SelectionInfo, Content } from "@bentley/ecpresentation-common";
+import { PageOptions } from "@bentley/ecpresentation-common";
 import { createRandomECInstanceKey } from "../test-helpers/random/EC";
 import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../test-helpers/random/Hierarchy";
 import { createRandomDescriptor } from "../test-helpers/random/Content";

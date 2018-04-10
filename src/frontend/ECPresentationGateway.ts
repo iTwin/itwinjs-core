@@ -2,12 +2,11 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken, Gateway } from "@bentley/imodeljs-common";
-import ECPresentationGatewayDefinition from "@bentley/ecpresentation-common/lib/ECPresentationGatewayDefinition";
-import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common/lib/Hierarchy";
-import * as c from "@bentley/ecpresentation-common/lib/content";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common/lib/Changes";
-import { PageOptions } from "@bentley/ecpresentation-common/lib/ECPresentationManager";
-import { InstanceKeysList } from "@bentley/ecpresentation-common/lib/EC";
+import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
+import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
+import { NavNode, NavNodeKeyPath, NavNodePathElement } from "@bentley/ecpresentation-common";
+import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
+import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
 
 export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
   /** Returns the ECPresentationGateway instance for the frontend. */
@@ -39,15 +38,15 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: c.SelectionInfo | undefined, _options: object): Promise<Readonly<c.Descriptor>> {
+  public async getContentDescriptor(_token: IModelToken, _displayType: string, _keys: InstanceKeysList, _selection: SelectionInfo | undefined, _options: object): Promise<Readonly<Descriptor>> {
     return await this.forward.apply(this, arguments);
   }
 
-  public async getContentSetSize(_token: IModelToken, _descriptor: c.Descriptor, _keys: InstanceKeysList, _options: object): Promise<number> {
+  public async getContentSetSize(_token: IModelToken, _descriptor: Descriptor, _keys: InstanceKeysList, _options: object): Promise<number> {
     return this.forward.apply(this, arguments);
   }
 
-  public async getContent(_token: IModelToken, _descriptor: c.Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<Readonly<c.Content>> {
+  public async getContent(_token: IModelToken, _descriptor: Descriptor, _keys: InstanceKeysList, _pageOptions: PageOptions, _options: object): Promise<Readonly<Content>> {
     return await this.forward.apply(this, arguments);
   }
 
