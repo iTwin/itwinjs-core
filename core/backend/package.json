@@ -1,0 +1,100 @@
+{
+  "name": "@bentley/imodeljs-backend",
+  "version": "0.73.0",
+  "description": "iModelJs backend components",
+  "main": "lib/backend.js",
+  "typings": "lib/backend",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=8.9.0 <9.0"
+  },
+  "scripts": {
+    "build": "tsc 1>&2 && npm run copy:assets",
+    "clean": "rimraf lib package-deps.json",
+    "docs": "cd ../.. && npm run docs:backend",
+    "copy:assets": "cpx ./assets/**/* ./lib/assets",
+    "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
+    "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
+    "pretest": "npm run copy:test-assets && rush build",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
+    "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
+  },
+  "repository": {},
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^5.0.3",
+    "@bentley/imodeljs-common": "0"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-clients": "^5.0.3",
+    "@bentley/imodeljs-common": "0",
+    "cpx": "^1.5.0",
+    "mocha": "^3.5.3",
+    "nyc": "^11.4.1",
+    "rimraf": "^2.6.2",
+    "source-map-support": "^0.5.0",
+    "ts-node": "^3.3.0",
+    "tsconfig-paths": "^2.7.2",
+    "typescript": "~2.7.2",
+    "webpack": "^3.10.0"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies are specific to imodeljs-backend",
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: backend directly depends on the node and electron addons as a help to apps. Most apps by far will use one",
+    "or the other of these addons. And, most apps will be installed by npm. So, by putting these dependencies here, we can ",
+    "relieve most apps of the burden of even thinking about 'the addon'. In fact, the addon is not really separate from",
+    "imodeljs-backend but is just part of its internal implementation. We want apps to think about backend, not the addon.",
+    "NOTE: While, imodeljs-native-platform-api seems like it should be a devDependency, it is actually required at run time.",
+    "The NativePlatformRegistry reads it in order to learn what API was used to compile backend. (Also, if we don't make it a real dependency here, then ",
+    "apps would have to depend on it, as imodeljs-native-platform-node has a peerDependency on it.",
+    "NOTE: These dependencies do not suffice to supply the imodeljs-backend or testbed unit tests with the addons that they need.",
+    "*** Keep this in synch with nativePlatformForTests ***"
+  ],
+  "dependencies": {
+    "@bentley/imodeljs-native-platform-api": "~15.2.0",
+    "@bentley/imodeljs-native-platform-node": "~15.2.0",
+    "@bentley/imodeljs-native-platform-electron": "~15.2.0",
+    "fs-extra": "^5.0.0",
+    "js-base64": "^2.4.0"
+  },
+  "//optionalDependencies": [
+    "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"
+  ],
+  "nyc": {
+    "include": [
+      "*.ts"
+    ],
+    "exclude": [
+      "./test/*",
+      "**/*.d.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "source-map-support/register",
+      "tsconfig-paths/register",
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "lcov",
+      "cobertura"
+    ],
+    "report-dir": "./lib/backend/test/coverage",
+    "all": true
+  }
+}

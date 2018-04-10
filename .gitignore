@@ -3,12 +3,9 @@ node_modules
 
 # build output
 .nyc_output
-/source/common/lib
-/source/backend/lib
-/source/backend/test/output
-/source/frontend/lib
-/source/testbed/lib
-/source/sample-code/out
+lib
+/core/backend/src/test/output
+/sample-code/out
 /generated-docs
 
 # rush-specific

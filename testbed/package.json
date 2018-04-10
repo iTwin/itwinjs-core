@@ -1,0 +1,48 @@
+{
+  "name": "imodeljs-core-testbed",
+  "//private": "NOTE: this is a private package that is never published",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc 1>&2 && npm run copy:frontendpublic  && npm run copy:testpublic",
+    "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
+    "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
+    "copy:testpublic": "cpx ./public/**/* ./lib/backend/public"
+  },
+  "repository": {},
+  "//dependencies": [
+    "NOTE: testbed is set up like a real app. Like a real app, it knows what platform it runs on.",
+    "Therefore, it can specify the addon that it needs. In this case, it depends on the Winx64 electron addon.",
+    "We could add another layer of packaging, if we wanted to, so that 'testbed' would contain only platform-neutral",
+    "dependencies. Then we would define platform-specific packages, such as 'testbed-windows' that would contain",
+    "platform-specific dependencies and possibly deployment packaging details that are platform-specific. For now,",
+    "we just make testbed winx64-specific."
+  ],
+  "dependencies": {
+    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/imodeljs-backend": "0",
+    "@bentley/imodeljs-e_1_6_11-win32-x64": "~15.2.0",
+    "@bentley/imodeljs-clients": "^5.0.3",
+    "@bentley/imodeljs-common": "0",
+    "@bentley/imodeljs-frontend": "0",
+    "body-parser": "^1.18.2",
+    "chai": "^4.1.2",
+    "commander": "^2.14.1",
+    "electron": "1.6.11",
+    "express": "^4.16.2",
+    "fs-extra": "^5.0.0",
+    "fuse.js": "^3.2.0",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
+    "js-base64": "^2.4.0",
+    "save": "^2.3.2",
+    "webpack": "^3.10.0"
+  },
+  "devDependencies": {
+    "cpx": "^1.5.0",
+    "rimraf": "^2.6.2",
+    "typescript": "~2.7.2"
+  }
+}
