@@ -268,8 +268,16 @@ export class ChangeSummaryManager {
       return changesFile;
     }
 
+    try {
     ChangeSummaryManager.createChangesFile(iModel, changesFile, changesPath);
     return changesFile;
+    } catch (e) {
+      // delete cache file again in case it was created but schema import failed
+      if (IModelJsFs.existsSync(changesPath))
+        IModelJsFs.removeSync(changesPath);
+
+      throw e;
+    }
   }
 
   private static createChangesFile(iModel: IModelDb, changesFile: ECDb, changesFilePath: string): void {
