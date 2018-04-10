@@ -75,10 +75,10 @@
   ],
   "nyc": {
     "include": [
-      "*.ts"
+      "./src/**/*.ts"
     ],
     "exclude": [
-      "./test/*",
+      "./src/test/*",
       "**/*.d.ts"
     ],
     "extension": [
@@ -94,7 +94,7 @@
       "lcov",
       "cobertura"
     ],
-    "report-dir": "./lib/backend/test/coverage",
+    "report-dir": "./lib/test/coverage",
     "all": true
   }
 }
