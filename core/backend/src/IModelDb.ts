@@ -10,7 +10,7 @@ import {
   FontMap, FontMapProps, ElementLoadProps, CreateIModelProps, FilePropertyProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
-import { Element } from "./Element";
+import { Element, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
@@ -688,14 +688,11 @@ export class IModelDbModels {
    */
   public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
     const modeledElement = this._iModel.elements.getElement(modeledElementId);
-    if (modeledElement.id.equals(this._iModel.elements.rootSubjectId))
+    if (modeledElement.id.equals(IModel.rootSubjectId))
       throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
 
     return this.getModel(modeledElement.id);
   }
-
-  /** The Id of the repository model. */
-  public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
   /** Create a new model in memory.
    * See the example in [[InformationPartitionElement]].
@@ -912,11 +909,8 @@ export class IModelDbElements {
     return childIds;
   }
 
-  /** The Id of the root subject element. */
-  public get rootSubjectId(): Id64 { return new Id64("0x1"); }
-
   /** Get the root subject element. */
-  public getRootSubject(): Element { return this.getElement(this.rootSubjectId); }
+  public getRootSubject(): Subject { return this.getElement(IModel.rootSubjectId); }
 
   /** Query for aspects rows (by aspect class name) associated with this element.
    * @throws [[IModelError]]

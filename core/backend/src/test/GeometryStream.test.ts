@@ -48,9 +48,9 @@ describe("GeometryStream", () => {
     partStream.push(GeomJson.Writer.toIModelJson(Arc3d.createXY(Point3d.createZero(), 0.05)));
 
     const partProps: GeometryPartProps = {
-      classFullName: "BisCore:GeometryPart",
+      classFullName: GeometryPart.classFullName,
       iModel: imodel,
-      model: IModel.getDictionaryId(),
+      model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: partStream,
     };
@@ -75,12 +75,12 @@ describe("GeometryStream", () => {
     const compoundData = LineStyleDefinition.Utils.createCompound(imodel, { comps: lsComponents } );
     assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.getDictionaryId(), "TestDashCircleDotCircleDashStyle", compoundData!);
+    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData!);
     assert.isTrue(styleId.isValid());
 
-    // const styleId2a = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.getDictionaryId(), LineStyleDefinition.LinePixels.Code4);
+    // const styleId2a = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, LineStyleDefinition.LinePixels.Code4);
     // assert.isTrue(styleId2a.isValid());
-    // const styleId2b = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.getDictionaryId(), LineStyleDefinition.LinePixels.Code4);
+    // const styleId2b = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, LineStyleDefinition.LinePixels.Code4);
     // assert.isTrue(styleId2a.equals(styleId2b));
 
     const geometryStream: GeometryStreamProps = [];
@@ -178,7 +178,7 @@ describe("GeometryStream", () => {
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
       iModel: imodel,
-      model: IModel.getDictionaryId(),
+      model: IModel.dictionaryId,
       code: Code.createEmpty(),
       geom: geometryStream,
     };

@@ -243,7 +243,7 @@ describe("iModel", () => {
     assert.equal(formatter.fmtFlags.angMode, 1, "fmtFlags");
     assert.equal(formatter.mastUnit.label, "m", "mastUnit is meters");
     testCopyAndJson(model2);
-    let model = imodel1.models.getModel(imodel1.models.repositoryModelId);
+    let model = imodel1.models.getModel(IModel.repositoryModelId);
     assert.exists(model);
     testCopyAndJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
@@ -357,7 +357,7 @@ describe("iModel", () => {
   });
 
   it("should be children of RootSubject", () => {
-    const queryString: string = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=${imodel2.models.repositoryModelId}`;
+    const queryString: string = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=${IModel.repositoryModelId}`;
     const modelRows: any[] = imodel2.executeQuery(queryString);
     assert.exists(modelRows, "Should have at least one model within rootSubject");
     for (const modelRow of modelRows) {
@@ -718,7 +718,7 @@ describe("iModel", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: ColorByName.darkRed }));
@@ -784,7 +784,7 @@ describe("iModel", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary = testImodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance());
@@ -916,7 +916,7 @@ describe("iModel", () => {
 
     const ifperfimodel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
-    const dictionary: DictionaryModel = ifperfimodel.models.getModel(IModel.getDictionaryId()) as DictionaryModel;
+    const dictionary: DictionaryModel = ifperfimodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
 
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");
