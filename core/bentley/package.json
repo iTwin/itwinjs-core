@@ -1,0 +1,38 @@
+{
+  "name": "@bentley/bentleyjs-core",
+  "version": "7.3.12",
+  "description": "Bentley JavaScript core components",
+  "main": "lib/bentleyjs-core.js",
+  "typings": "lib/bentleyjs-core",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/bentleyjs-core"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
+    "pretest": "npm run build",
+    "test": "node node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson --tsIndexFile=bentleyjs-core.ts"
+  },
+  "keywords": [
+    "Bentley",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "^3.2.1",
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.42",
+    "commander": "^2.11.0",
+    "once": "^1.4.0",
+    "rimraf": "^2.6.2",
+    "typescript": "~2.6.2"
+  }
+}
