@@ -53,6 +53,7 @@ describe("LRUMap", () => {
     asserteq(currentSize - 1, c.size);
   });
 
+  /*
   const verifyEntries = (c: any) => {
     asserteq(c.size, 4);
     asserteq(c.limit, 4);
@@ -63,7 +64,9 @@ describe("LRUMap", () => {
     asserteq(c.get("angela"), 24);
     asserteq(c.get("bob"), 48);
   };
+  */
 
+  /*
   it("tests", () => {
     // with explicit limit
     verifyEntries(new LRUMap(4, [
@@ -127,7 +130,9 @@ describe("LRUMap", () => {
     asserteq(c.size, 3);
     asserteq(c.limit, 4);
   });
+  */
 
+  /*
   it("delete", () => {
     const c = new LRUMap([
       ["adam", 29],
@@ -146,6 +151,7 @@ describe("LRUMap", () => {
     asserteq(c.oldest, undefined);
     asserteq(c.newest, undefined);
   });
+  */
 
   it("clear", () => {
     const c = new LRUMap(4);
