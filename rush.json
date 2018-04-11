@@ -9,6 +9,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/bentleyjs-core",
+      "projectFolder": "core/bentley",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@bentley/imodeljs-common",
       "projectFolder": "core/common",
       "shouldPublish": true
