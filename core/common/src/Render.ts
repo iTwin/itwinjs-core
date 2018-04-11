@@ -13,6 +13,15 @@ import { CameraProps } from "./ViewProps";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
+export enum FillFlags {
+  None       = 0,               // No fill, e.g. for any non-planar geometry.
+  ByView     = 1 << 0,          // Use element fill color, when fill enabled by view
+  Always     = 1 << 1,          // Use element fill color, even when fill is disabled by view
+  Behind     = 1 << 2,          // Always rendered behind other geometry belonging to the same element. e.g., text background.
+  Blanking   = Behind | Always, // Use element fill color, always rendered behind other geometry belonging to the same element.
+  Background = 1 << 3,          // Use background color specified by view
+}
+
 /**
  * A renderer-specific object that can be placed into a display list.
  */

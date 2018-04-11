@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64 } from "@bentley/bentleyjs-core";
-import { GraphicParams, GeometryParams, ColorDef, GeometryClass, LinePixels, FillDisplay } from "@bentley/imodeljs-common";
+import { GraphicParams, GeometryParams, ColorDef, GeometryClass, LinePixels, FillDisplay, FillFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { System } from "./System";
 
@@ -24,13 +24,13 @@ export class DisplayParams {
   public fillColor: ColorDef = ColorDef.white; // meshes only
   public width: number = 0; // linear and mesh (edges)
   public linePixels: LinePixels = LinePixels.Solid; // linear and mesh (edges)
-  // public fillFlags: FillFlags; // meshes only // FillFalgs doesn't exist yet!!!
+  public fillFlags: FillFlags = FillFlags.None; // meshes only
   public geomClass: GeometryClass = GeometryClass.Primary;
   public ignoreLighting: boolean = false; // always true for text and linear geometry; true for meshes only if normals not desired
   public hasRegionOutline: boolean = false;
 
   public constructor() { }
-  public static create(type: DisplayParamsType, categoryId: Id64, subCategoryId: Id64, /*gradient: GradientSymb,*/ materialId: Id64, lineColor: ColorDef, fillColor: ColorDef, width: number, linePixels: LinePixels, /*fillFlags: FillFlags,*/ geomClass: GeometryClass/*, iModel: IModelConnection, renderSys: System*/): DisplayParams {
+  public static create(type: DisplayParamsType, categoryId: Id64, subCategoryId: Id64, /*gradient: GradientSymb,*/ materialId: Id64, lineColor: ColorDef, fillColor: ColorDef, width: number, linePixels: LinePixels, fillFlags: FillFlags, geomClass: GeometryClass/*, iModel: IModelConnection, renderSys: System*/): DisplayParams {
     const output = new DisplayParams();
     output.type = type;
     output.categoryId = categoryId;
@@ -42,7 +42,7 @@ export class DisplayParams {
     output.width = width;
     output.linePixels = linePixels;
     // output.gradient = gradient;
-    // output.fillFlags = fillFlags;
+    output.fillFlags = fillFlags;
     // if (materialId.isValid()) { output.material = renderSys.getMaterial(materialId, iModel); }
     return output;
   }
@@ -56,9 +56,9 @@ export class DisplayParams {
     output.initLinear(lineColor, width, px, cat, sub, gc);
     return output;
   }
-  public static createMesh(lineColor: ColorDef, fillColor: ColorDef, width: number, px: LinePixels, /*mat: Material, grad, GradientSymb, tx: TextureMapping, ff: FillFlags,*/ cat: Id64, sub: Id64, gc: GeometryClass): DisplayParams {
+  public static createMesh(lineColor: ColorDef, fillColor: ColorDef, width: number, px: LinePixels, /*mat: Material, grad, GradientSymb, tx: TextureMapping,*/ ff: FillFlags, cat: Id64, sub: Id64, gc: GeometryClass): DisplayParams {
     const output = new DisplayParams();
-    output.initMesh(lineColor, fillColor, width, px, /*mat, grad, tx, ff,*/ cat, sub, gc);
+    output.initMesh(lineColor, fillColor, width, px, /*mat, grad, tx,*/ ff, cat, sub, gc);
     return output;
   }
 
@@ -66,8 +66,8 @@ export class DisplayParams {
     let catId = new Id64();
     let subCatId = new Id64();
     let geomClass = GeometryClass.Primary;
-    // let fillFlags: FillFlags = filled ? FillFlags.ByView : FillFlags.None;
-    // if (gf.isBlankingRegion) { fillFlags |= FillFlags.Blanking; }
+    let fillFlags: FillFlags = filled ? FillFlags.ByView : FillFlags.None;
+    if (gf.isBlankingRegion) { fillFlags |= FillFlags.Blanking; }
 
     // TFS#786614: BRep with multiple face attachments - params may no longer be resolved.
     // Doesn't matter - we will create GeometryParams for each of the face attachments - only need the
@@ -76,19 +76,19 @@ export class DisplayParams {
       catId = geom.categoryId;
       subCatId = geom.subCategoryId;
       geomClass = geom.getGeometryClass();
-      // if (geom.getPatternParams()) { fillFlags |= FillFlags.Behind; }
+      if (geom.getPatternParams()) { fillFlags |= FillFlags.Behind; }
       if (filled) {
         if (FillDisplay.Always === geom.getFillDisplay()) {
-          // fillFlags |= FillFlags.Always;
-          // fillFlags &= ~FillFlags.ByView;
+          fillFlags |= FillFlags.Always;
+          fillFlags &= ~FillFlags.ByView;
         }
-        // if (geom.isFillColorFromViewBackground()) { fillFlags |= FillFlags.Background; }
+        if (geom.isFillColorFromViewBackground()) { fillFlags |= FillFlags.Background; }
       }
     }
       // const grad = gf.gradient;
       // const tex: TextureMapping;
       // if (grad) { tex = new TextureMapping(sys.getTexture(grad, iModel)); }
-    return DisplayParams.createMesh(gf.lineColor, gf.fillColor, gf.rasterWidth, gf.linePixels, /*gf.material, grad, tex, fillFlags,*/ catId, subCatId, geomClass);
+    return DisplayParams.createMesh(gf.lineColor, gf.fillColor, gf.rasterWidth, gf.linePixels, /*gf.material, grad, tex,*/ fillFlags, catId, subCatId, geomClass);
   }
   public static forText(gf: GraphicParams, geom: GeometryParams) {
     let catId = new Id64();
@@ -124,13 +124,13 @@ export class DisplayParams {
     }
   }
 
-  public initMesh(lineColor: ColorDef, fillColor: ColorDef, width: number, pixels: LinePixels, /*mat: Material, grad: GradientSymb, tex: TextureMapping, fillFlags: FillFlags,*/
+  public initMesh(lineColor: ColorDef, fillColor: ColorDef, width: number, pixels: LinePixels, /*mat: Material, grad: GradientSymb, tex: TextureMapping,*/ fillFlags: FillFlags,
     catId: Id64, subCatId: Id64, geomClass: GeometryClass) {
     this.initGeomParams(catId, subCatId, geomClass);
     this.type = DisplayParamsType.Mesh;
     this.lineColor = lineColor;
     this.fillColor = fillColor;
-    // this.fillFlags = fillFlags;
+    this.fillFlags = fillFlags;
     // this.material = mat;
     // this.gradient = grad;
     this.width = width;
@@ -145,7 +145,7 @@ export class DisplayParams {
     this.type = DisplayParamsType.Text;
     this.lineColor = this.fillColor = lineColor;
     this.ignoreLighting = true;
-    // this.fillFlags = FillFlags.Always;
+    this.fillFlags = FillFlags.Always;
   }
   public initLinear(lineColor: ColorDef, width: number, pixels: LinePixels, catId: Id64, subCatId: Id64, geomClass: GeometryClass): void {
     this.initGeomParams(catId, subCatId, geomClass);
@@ -184,7 +184,7 @@ export class DisplayParams {
     }
   }
   public neverRegionOutline(): boolean { return this.hasBlankingFill() /*|| (this.gradient.isValid() && !this.gradient.getIsOutlined())*/; }
-  public hasBlankingFill(): boolean { return false; /*FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking);*/ }
+  public hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
   public hasFillTransparency(): boolean { return 0 !== this.fillColor.getAlpha(); }
   public hasLineTransparency(): boolean { return 0 !== this.lineColor.getAlpha(); }
   public isTextured(): boolean { return false; } // return this.textureMapping.isValid(); }
@@ -203,7 +203,7 @@ export class DisplayParamsCache {
   }
   public getFromDisplayParams(toFind: DisplayParams): DisplayParams {
     const matches = this.set.filter((x) => x === toFind || (x.type === toFind.type && x.ignoreLighting === toFind.ignoreLighting && x.width === toFind.width
-      /*&& x.material === toFind.material*/ && x.linePixels === toFind.linePixels /*&& x.fillFlags === toFind.fillFlags*/ && x.categoryId === toFind.categoryId
+      /*&& x.material === toFind.material*/ && x.linePixels === toFind.linePixels && x.fillFlags === toFind.fillFlags && x.categoryId === toFind.categoryId
       && x.hasRegionOutline === toFind.hasRegionOutline /*&& x.getTextureMapping().getTexture() === toFind.getTextureMapping().getTexture()*/
       && x.fillColor === toFind.fillColor && x.lineColor === toFind.lineColor && x.subCategoryId === toFind.subCategoryId && x.geomClass === toFind.geomClass));
     if (matches.length === 0) {
