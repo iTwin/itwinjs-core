@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps,
+  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { GeometricElement3d, GeometryPart, IModelDb, LineStyleDefinition } from "../backend";
@@ -30,19 +30,21 @@ describe("GeometryStream", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
+    // sample for 1-7, sample for simple dash-dot, sample for continuous, sample with symbols...
+
     // tslint:disable-next-line:no-debugger
     // debugger;
 
     const lsStrokes: LineStyleDefinition.Strokes = [];
-    lsStrokes.push({ length: 0.25, orgWidth: 0.0, endWidth: 0.025, strokeMode: 1, widthMode: 3 });
+    lsStrokes.push({ length: 0.25, orgWidth: 0.0, endWidth: 0.025, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Both });
     lsStrokes.push({ length: 0.1 });
-    lsStrokes.push({ length: 0.1, orgWidth: 0.025, endWidth: 0.025, strokeMode: 1, widthMode: 3 });
+    lsStrokes.push({ length: 0.1, orgWidth: 0.025, endWidth: 0.025, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Both });
     lsStrokes.push({ length: 0.1 });
-    lsStrokes.push({ length: 0.25, orgWidth: 0.025, endWidth: 0.0, strokeMode: 1, widthMode: 3 });
+    lsStrokes.push({ length: 0.25, orgWidth: 0.025, endWidth: 0.0, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Both });
     lsStrokes.push({ length: 0.1 });
 
-    const lineCodeData = LineStyleDefinition.Utils.createLineCode(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes } );
-    assert.isTrue(undefined !== lineCodeData);
+    const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes } );
+    assert.isTrue(undefined !== strokePatternData);
 
     const partStream: GeometryStreamProps = [];
     partStream.push(GeomJson.Writer.toIModelJson(Arc3d.createXY(Point3d.createZero(), 0.05)));
@@ -58,30 +60,31 @@ describe("GeometryStream", () => {
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(partId.isValid());
 
-    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbol(imodel, { geomPartId: partId } ); // base and size will be set automatically...
+    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId } ); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
 
     const lsSymbols: LineStyleDefinition.Symbols = [];
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: 3 }); // NEEDSWORK: Add enums for stuff like mod1...
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: 3 });
 
-    const linePointData = LineStyleDefinition.Utils.createLinePoint(imodel, { descr: "TestGapSymbolsLinePoint", lcId: lineCodeData!.compId, symbols: lsSymbols } );
-    assert.isTrue(undefined !== linePointData);
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData!.compId, symbols: lsSymbols } );
+    assert.isTrue(undefined !== strokePointData);
 
     const lsComponents: LineStyleDefinition.Components = [];
-    lsComponents.push({ id: linePointData!.compId, type: linePointData!.compType });
-    lsComponents.push({ id: lineCodeData!.compId, type: lineCodeData!.compType });
+    lsComponents.push({ id: strokePointData!.compId, type: strokePointData!.compType });
+    lsComponents.push({ id: strokePatternData!.compId, type: strokePatternData!.compType });
 
-    const compoundData = LineStyleDefinition.Utils.createCompound(imodel, { comps: lsComponents } );
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents } );
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData!);
     assert.isTrue(styleId.isValid());
 
-    // const styleId2a = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, LineStyleDefinition.LinePixels.Code4);
-    // assert.isTrue(styleId2a.isValid());
-    // const styleId2b = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, LineStyleDefinition.LinePixels.Code4);
-    // assert.isTrue(styleId2a.equals(styleId2b));
+    // NEEDSWORK: Create separate test...
+    const styleId2a = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, LinePixels.Code4);
+    assert.isTrue(styleId2a.isValid());
+    const styleId2b = LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, LinePixels.Code4);
+    assert.isTrue(styleId2a.equals(styleId2b));
 
     const geometryStream: GeometryStreamProps = [];
     geometryStream.push({ appearance: { style: styleId } });
