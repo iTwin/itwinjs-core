@@ -4,7 +4,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "buildbackend": "cd ./backend && tsc --outDir ../out/backend",
+    "buildbackend": "cd ./backend && tsc --outDir ../out/backend 1>&2",
     "cleanbackend": "rimraf lib out/backend",
     "copybackendassets": "cpx ./backend_test_assets/**/* ./out/backend/assets",
     "pretestbackend": "npm run copybackendassets && rush build",

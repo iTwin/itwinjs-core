@@ -82,6 +82,13 @@ export interface FilePropertyProps {
 
 /** Represents an iModel. */
 export abstract class IModel implements IModelProps {
+  /** The Id of the repository model. */
+  public static readonly repositoryModelId = new Id64("0x1");
+  /** The Id of the root subject element. */
+  public static readonly rootSubjectId = new Id64("0x1");
+  /** The Id of the dictionary model. */
+  public static readonly dictionaryId = new Id64("0x10");
+
   /** Name of the iModel */
   public name!: string;
   /** The name and description of the root subject of this iModel */
@@ -128,7 +135,4 @@ export abstract class IModel implements IModelProps {
 
   /** get the default subCategoryId for the supplied categoryId */
   public static getDefaultSubCategoryId(categoryId: Id64): Id64 { return categoryId.isValid() ? new Id64([categoryId.getLow() + 1, categoryId.getHigh()]) : new Id64(); }
-
-  /** Get the Id of the special dictionary model */
-  public static getDictionaryId(): Id64 { return new Id64("0x10"); }
 }

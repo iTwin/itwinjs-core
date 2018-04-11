@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Code, CodeSpecNames, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps } from "@bentley/imodeljs-common";
+import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, Code, CodeSpecNames, IModel } from "@bentley/imodeljs-common";
 import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
@@ -46,8 +46,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
    * <em>note:</em> call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
    */
   public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
-    const myCode = new Code({ spec: CodeSpecNames.AuxCoordSystemSpatial(), scope: IModelConnection.getDictionaryId().toString(), value: acsName });
-    return new AuxCoordSystemSpatialState({ model: IModelConnection.getDictionaryId(), code: myCode, classFullName: this.getClassFullName() }, iModel);
+    const myCode = new Code({ spec: CodeSpecNames.AuxCoordSystemSpatial(), scope: IModel.dictionaryId.toString(), value: acsName });
+    return new AuxCoordSystemSpatialState({ model: IModel.dictionaryId, code: myCode, classFullName: this.getClassFullName() }, iModel);
   }
 
   public constructor(props: AuxCoordSystemProps, iModel: IModelConnection) {
