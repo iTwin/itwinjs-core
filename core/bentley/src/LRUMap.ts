@@ -91,31 +91,14 @@ export class LRUMap<K, V> {
   /** Most recently-used entry. Invalidated when map is modified. */
   public newest?: Entry<K, V>;
 
-  /** Construct a new LRUMap to hold up to limit entries.
-   * When the size == limit, a `set` operation will evict the oldest entry.
-   * If `entries` is provided, all entries are added to the new map.
-   * `entries` should be an Array or other iterable object whose elements are
-   * key-value pairs (2-element Arrays). Each key-value pair is added to the new Map.
-   * null is treated as undefined.
+  /**
+   * Construct a new LRUMap to hold up to limit entries.
    */
-  constructor(limit: number | [any], entries?: Iterable<[K, V]>) {
-    if (typeof limit !== "number") {
-      // called as (entries)
-      entries = limit;
-      limit = 0;
-    }
-
+  constructor(limit: number) {
     this.size = 0;
     this.limit = limit;
     this.oldest = this.newest = undefined;
     this._keymap = new Map<K, Entry<K, V>>();
-
-    if (entries) {
-      this.assign(entries);
-      if (limit < 1) {
-        this.limit = this.size;
-      }
-    }
   }
 
   private markEntryAsUsed(entry: Entry<K, V>) {
@@ -261,7 +244,7 @@ export class LRUMap<K, V> {
     if (!entry) return;
     this._keymap.delete(entry.key);
     if (entry.newer && entry.older) {
-      // relink the older entry with the newer entry
+      // re-link the older entry with the newer entry
       entry.older.newer = entry.newer;
       entry.newer.older = entry.older;
     } else if (entry.newer) {
