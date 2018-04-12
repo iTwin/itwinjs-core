@@ -40,9 +40,9 @@ export class HalfEdge {
   private _id: any;   // immutable id useful for debuggging.
   public get id() { return this._id; }
 
-  private _facePredecessor: HalfEdge;
-  private _faceSuccessor: HalfEdge;
-  private _edgeMate: HalfEdge;
+  private _facePredecessor!: HalfEdge;
+  private _faceSuccessor!: HalfEdge;
+  private _edgeMate!: HalfEdge;
   /** previous half edge "around the face"
    */
   public get facePredecessor(): HalfEdge { return this._facePredecessor; }
@@ -149,12 +149,12 @@ export class HalfEdge {
   }
   // These members are specific to the z-sweep trapezoidal decomposition and earlobe triangulation.
   // previous and next nodes in z-order
-  public prevZ: HalfEdge;
-  public nextZ: HalfEdge;
+  public prevZ!: HalfEdge;
+  public nextZ!: HalfEdge;
   // indicates whether this is a steiner point
   public steiner: boolean;
   // z-order curve value
-  public zOrder: number;
+  public zOrder!: number;
 
   private static totalNodesCreated = 0;
   public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {

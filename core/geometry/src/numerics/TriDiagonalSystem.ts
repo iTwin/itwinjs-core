@@ -27,7 +27,7 @@ export class TriDiagonalSystem {
   // Solution vector
   private x: Float64Array;
 
-  private dataState: DataState;
+  private dataState!: DataState;
 
   constructor(n: number) {
     this.aLeft = new Float64Array(n);

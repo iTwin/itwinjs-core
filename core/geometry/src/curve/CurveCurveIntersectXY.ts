@@ -36,7 +36,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   private extendA: boolean;
   private geometryB: GeometryQuery;
   private extendB: boolean;
-  private results: CurveLocationDetailArrayPair;
+  private results!: CurveLocationDetailArrayPair;
 
   private reinitialize() {
     this.results = new CurveLocationDetailArrayPair();

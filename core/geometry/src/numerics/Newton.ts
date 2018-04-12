@@ -34,11 +34,11 @@ export abstract class AbstractNewtonIterator {
     this.successiveConvergenceTarget = successiveConvergenceTarget;
     this.maxIterations = maxIterations;
   }
-  protected numAccepted: number;
+  protected numAccepted: number = 0;
   protected successiveConvergenceTarget: number;
   protected stepSizeTolerance: number;
   protected maxIterations: number;
-  public numIterations: number;
+  public numIterations: number = 0;
   public testConvergence(delta: number): boolean {
     if (Math.abs(delta) < this.stepSizeTolerance) {
       this.numAccepted++;
@@ -67,14 +67,14 @@ export abstract class AbstractNewtonIterator {
 export abstract class NewtonEvaluatorRtoRD {
 
   public abstract evaluate(x: number): boolean;
-  public currentF: number;
-  public currentdFdX: number;
+  public currentF!: number;
+  public currentdFdX!: number;
 }
 export class Newton1dUnbounded extends AbstractNewtonIterator {
   private func: NewtonEvaluatorRtoRD;
-  private currentStep: number;
-  private currentX: number;
-  private target: number;
+  private currentStep!: number;
+  private currentX!: number;
+  private target!: number;
   public constructor(func: NewtonEvaluatorRtoRD) {
     super();
     this.func = func;
@@ -106,13 +106,13 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
 export abstract class NewtonEvaluatorRtoR {
 
   public abstract evaluate(x: number): boolean;
-  public currentF: number;
+  public currentF!: number;
 }
 
 export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
   private func: NewtonEvaluatorRtoR;
-  private currentStep: number;
-  private currentX: number;
+  private currentStep!: number;
+  private currentX!: number;
   public derivativeH: number; // step size for approximate derivative
 
   public constructor(func: NewtonEvaluatorRtoR) {
