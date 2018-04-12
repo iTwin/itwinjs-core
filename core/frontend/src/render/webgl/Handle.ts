@@ -4,10 +4,10 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { Logger } from "@bentley/bentleyjs-core";
+import { QParams } from "@bentley/imodeljs-common";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { Range2d, Range3d } from "@bentley/geometry-core";
 import { Matrix3, Matrix4 } from "../Matrix";
-import { QParams } from "../QPoint";
 import { XY, XYZ } from "@bentley/geometry-core";
 
 /** A handle to some GL resource.

@@ -2,10 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
+import { QPoint3dList, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import { BufferHandle } from "./Handle";
-import { FeatureIndexType, FeatureIndex } from "./FeatureIndex";
 import { GL } from "./GL";
-import { QPoint3dList } from "../QPoint";
 
 export class FeatureIndices {
   public type: FeatureIndexType;

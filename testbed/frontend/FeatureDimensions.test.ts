@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { LUTParams, getFeatureName, FeatureDimension, FeatureDimensions, FeatureDimensionsIterator, FeatureIndexType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FeatureIndexType } from "@bentley/imodeljs-common";
+import { LUTParams, getFeatureName, FeatureDimension, FeatureDimensions, FeatureDimensionsIterator } from "@bentley/imodeljs-frontend/lib/rendering";
 
 describe("LUTParams", () => {
   it("should create and store LUTParams", () => {

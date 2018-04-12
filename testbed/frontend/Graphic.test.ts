@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-frontend/lib/rendering";
+import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Graphic, GraphicList, IModel } from "@bentley/imodeljs-common";
+import { Graphic, GraphicList, IModel, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import * as path from "path";
 
 export class FakeGraphic extends Graphic {
