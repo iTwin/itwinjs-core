@@ -27,6 +27,7 @@
       "args": [
         "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/source/backend/lib/test/offline",
+        "--offline",
         "--debug"
       ],
       "port": 9229,
