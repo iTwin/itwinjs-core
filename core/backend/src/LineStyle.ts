@@ -53,12 +53,12 @@ export namespace LineStyleDefinition {
   export enum StrokeWidth {
     /** Stroke draws as one pixel wide line */
     None = 0,
-    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to left side of stroke */
+    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to left side of stroke */
     Left = 1,
-    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to right side of stroke */
+    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to right side of stroke */
     Right = 2,
-    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to both sides of stroke */
-    Both = 3,
+    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to both sides of stroke */
+    Full = 3,
   }
 
   /** Controls appearance of stroke end caps. If StrokeCap is >= Hexagon, the end cap is stroked as an arc and the value of
@@ -198,8 +198,10 @@ export namespace LineStyleDefinition {
 
   /** Identifies a symbol and it's location and orientation relative to a stroke pattern */
   export type SymbolProps =
-    /** The file property id of [[ComponentType.PointSymbol]] component */
+    /** The file property id of the symbol component, assumed to be [[ComponentType.PointSymbol]] if symType is undefined. */
     { symId: number } |
+    /** The component type, leave undefined if symId is a [[ComponentType.PointSymbol]] */
+    { symType?: ComponentType } |
     /** The 0 based stroke index for base stroke pattern [[ComponentType.StrokePattern]] component */
     { strokeNum?: number } |
     /** Symbol x offset distance in meters */
@@ -219,8 +221,10 @@ export namespace LineStyleDefinition {
   export interface StrokePointProps {
     /** Name for this stroke point component */
     descr: string;
-    /** The file property id of [[ComponentType.StrokePattern]] component */
+    /** The file property id of the stroke component, assumed to be [[ComponentType.StrokePattern]] if lcType is undefined */
     lcId: number;
+    /** The component type, leave undefined if lcId is a [[ComponentType.StrokePattern]] */
+    lcType?: ComponentType;
     /** Array of symbols */
     symbols: Symbols;
   }
@@ -267,7 +271,7 @@ export namespace LineStyleDefinition {
     None = 0x00,
     /** Only snap to center line and not individual strokes and symbols of line style */
     NoSnap = 0x04,
-    /** Style represents a continous line with width */
+    /** Style represents a continous line with width (determined by looking at components if not set) */
     Continuous = 0x08,
     /** Style represents physical geometry and should be scaled as such */
     Physical = 0x80,
@@ -354,8 +358,8 @@ export namespace LineStyleDefinition {
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
     public static createStyle(imodel: IModelDb, scopeModelId: Id64, name: string, props: StyleProps): Id64 {
-      if (undefined === (props as any).styleFlags) // If flags weren't supplied, default to not snapping to stroke geometry.
-        (props as any).styleFlags = StyleFlags.NoSnap;
+      if (undefined === (props as any).flags) // If flags weren't supplied, default to not snapping to stroke geometry.
+        (props as any).flags = StyleFlags.NoSnap;
 
       const lsProps: LineStyleProps = {
         classFullName: "BisCore:LineStyle",
@@ -366,6 +370,34 @@ export namespace LineStyleDefinition {
       };
 
       return imodel.elements.insertElement(lsProps);
+    }
+
+    /** Query for a continuous line style that can be used to create curves with physical width instead of weight in pixels and create one if it does not already exist.
+     * There are 2 ways to define a continuous line style:
+     * - Width is not specified in the style itself and instead will be supplied as an override for each curve that is drawn.
+     *  - Defined using [[ComponentType.Internal]] with component id 0 [[LinePixels::Solid] which has special behavior of being affected by width overrides.
+     * - Width is specified in the style.
+     *  - Defined using a single stroke component that is a long dash.
+     *
+     * @throws [[IModelError]] if unable to insert the line style definition element.
+     */
+    public static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64, width?: number): Id64 {
+      if (width === undefined) {
+        const name0 = "Continuous";
+        const lsId0 = this.queryStyle(imodel, scopeModelId, name0);
+        return (undefined === lsId0 ? this.createStyle(imodel, scopeModelId, name0, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap }) : lsId0);
+      }
+
+      const name = "Continuous-" + width;
+      const lsId = this.queryStyle(imodel, scopeModelId, name);
+      if (undefined !== lsId)
+        return lsId;
+
+      const strokePatternData = this.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }] });
+      if (undefined === strokePatternData)
+        throw new IModelError(IModelStatus.BadArg, "Unable to insert stroke component");
+
+      return this.createStyle(imodel, scopeModelId, name, { compId: strokePatternData!.compId, compType: strokePatternData!.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
     }
 
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.
