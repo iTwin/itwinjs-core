@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { FeatureIndexType, FeatureIndex } from "./FeatureIndex";
+import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 
 export class IndexedPrimitiveParamsFeatures {
   public type: FeatureIndexType;

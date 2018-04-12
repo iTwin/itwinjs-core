@@ -82,19 +82,20 @@ export namespace LineStyleDefinition {
   }
 
   /** A stroke representing either a dash or gap in a stroke pattern */
-  export type StrokeProps =
+  export interface StrokeProps {
     /** Length of stroke in meters */
-    { length: number } |
+    length: number;
     /** Width at start of stroke. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
-    { orgWidth?: number } |
+    orgWidth?: number;
     /** Width at end of stroke, same as start width if not present. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
-    { endWidth?: number } |
+    endWidth?: number;
     /** Type and behavior of stroke */
-    { strokeMode?: StrokeMode } |
+    strokeMode?: StrokeMode;
     /** How to apply orgWidth and endWidth to stroke */
-    { widthMode?: StrokeWidth } |
+    widthMode?: StrokeWidth;
     /** Appearance of stroke end cap */
-    { capMode?: StrokeCap };
+    capMode?: StrokeCap;
+  }
 
   export type Strokes = StrokeProps[];
 
@@ -142,25 +143,26 @@ export namespace LineStyleDefinition {
   /** Point symbol component defintion [[ComponentType.PointSymbol]].
    * A point symbol component identifies a GeometryPart for reference by a [[SymbolProps]].
    */
-  export type PointSymbolProps =
+  export interface PointSymbolProps {
     /** GeometryPart Id to use as a pattern symbol */
-    { geomPartId: Id64Props } |
+    geomPartId: Id64Props;
     /** GeometryPart.bbox.low.x */
-    { baseX?: number } |
+    baseX?: number;
     /** GeometryPart.bbox.low.y */
-    { baseY?: number } |
+    baseY?: number;
     /** GeometryPart.bbox.low.z */
-    { baseZ?: number } |
+    baseZ?: number;
     /** GeometryPart.bbox.high.x */
-    { sizeX?: number } |
+    sizeX?: number;
     /** GeometryPart.bbox.high.y */
-    { sizeY?: number } |
+    sizeY?: number;
     /** GeometryPart.bbox.high.z */
-    { sizeZ?: number } |
+    sizeZ?: number;
     /** Symbol behavior flags */
-    { symFlags?: PointSymbolFlags } |
+    symFlags?: PointSymbolFlags;
     /** Symbol scale, defaults to 1 */
-    { scale?: number };
+    scale?: number;
+  }
 
   /** Symbol options for location, orientation, and behavior */
   export enum SymbolOptions {
@@ -197,21 +199,22 @@ export namespace LineStyleDefinition {
   }
 
   /** Identifies a symbol and it's location and orientation relative to a stroke pattern */
-  export type SymbolProps =
+  export interface SymbolProps {
     /** The file property id of the symbol component, assumed to be [[ComponentType.PointSymbol]] if symType is undefined. */
-    { symId: number } |
+    symId: number;
     /** The component type, leave undefined if symId is a [[ComponentType.PointSymbol]] */
-    { symType?: ComponentType } |
+    symType?: ComponentType;
     /** The 0 based stroke index for base stroke pattern [[ComponentType.StrokePattern]] component */
-    { strokeNum?: number } |
+    strokeNum?: number;
     /** Symbol x offset distance in meters */
-    { xOffset?: number } |
+    xOffset?: number;
     /** Symbol y offset distance in meters */
-    { yOffset?: number } |
+    yOffset?: number;
     /** Symbol rotation in radians */
-    { angle?: number } |
+    angle?: number;
     /** Must set location for symbol as default value is [[SymbolOptions.None]] */
-    { mod1?: SymbolOptions };
+    mod1?: SymbolOptions;
+  }
 
   export type Symbols = SymbolProps[];
 
@@ -248,13 +251,14 @@ export namespace LineStyleDefinition {
   }
 
   /** Identifies a component by file property id and type */
-  export type ComponentProps =
+  export interface ComponentProps {
     /** The file property id of [[ComponentType.StrokePattern]] or [[ComponentType.StrokePoint]] component */
-    { id: number } |
+    id: number;
     /** The type of component for specified file property id */
-    { type: ComponentType } |
+    type: ComponentType;
     /** Offset distance for this component, default is 0 */
-    { offset?: number };
+    offset?: number;
+  }
 
   export type Components = ComponentProps[];
 

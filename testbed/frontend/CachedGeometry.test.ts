@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GL, BufferHandle, FeatureIndexType, FeatureIndex, FeatureIndices, PointCloudGeometryCreateParams, QPoint3dList } from "@bentley/imodeljs-frontend/lib/rendering";
+import { QPoint3dList, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { GL, BufferHandle,  FeatureIndices, PointCloudGeometryCreateParams } from "@bentley/imodeljs-frontend/lib/rendering";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
 const haveWebGL = false;

@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { ColorIndex } from "../webgl/FeatureIndex";
+import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
 export class ColorMap {
   public map: Map<number, number> = new Map<number, number>();
