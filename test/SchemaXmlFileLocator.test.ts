@@ -124,8 +124,6 @@ describe("SchemaXmlFileLocater tests:", () => {
   });
 
   it("getSchema, full version, succeeds", async () => {
-    // tslint:disable-next-line:no-debugger
-    debugger;
     // Arrange
     locator.addSchemaSearchPaths(paths);
 
@@ -168,15 +166,15 @@ describe("SchemaXmlFileLocater tests:", () => {
     // Arrange
     locator.addSchemaSearchPaths(paths);
     const stub = sinon.stub(fs, "readFileSync");
-    stub.withArgs(sinon.match("SchemaC.ecschema.xml")).returns(undefined);
+    stub.withArgs(sinon.match("SchemaC.04.00.04.ecschema.xml")).returns(undefined);
     stub.callThrough();
 
     // Act
-    const schema = await locator.getSchema(new SchemaKey("SchemaC", 3, 3, 0), SchemaMatchType.Latest);
+    const schema = await locator.getSchema(new SchemaKey("SchemaC", 4, 0, 4), SchemaMatchType.Latest);
     stub.restore();
 
     // Assert
-    assert.deepEqual(schema!.schemaKey.version, new ECVersion(3, 3, 1));
+    assert.deepEqual(schema!.schemaKey.version, new ECVersion(3, 3, 3));
   });
 
   it("getSchema, readFileSync returns undefined, match type exact, schema not found", async () => {
@@ -194,7 +192,7 @@ describe("SchemaXmlFileLocater tests:", () => {
     assert.isUndefined(schema);
   });
 
-  it("getSchema, existsSync returns false, 'latest' schema is skipped", async () => {
+  it("getSchema, existsSync returns false, schema undefined.", async () => {
     // Arrange
     locator.addSchemaSearchPaths(paths);
     const stub = sinon.stub(fs, "existsSync");
@@ -202,12 +200,12 @@ describe("SchemaXmlFileLocater tests:", () => {
     stub.callThrough();
 
     // Act
-    const schema = await locator.getSchema(new SchemaKey("SchemaC", 3, 3, 0), SchemaMatchType.Latest);
+    const schema = await locator.getSchema(new SchemaKey("SchemaC", 3, 3, 3), SchemaMatchType.LatestReadCompatible);
     stub.restore();
 
     // Assert
     // Schema v.3.3.3 is skipped over
-    assert.deepEqual(schema!.schemaKey.version, new ECVersion(3, 3, 1));
+    assert.isUndefined(schema);
   });
 
   it("getSchema, references set", async () => {
@@ -217,6 +215,24 @@ describe("SchemaXmlFileLocater tests:", () => {
     const schemaB = await locator.getSchema(new SchemaKey("SchemaB", 2, 2, 2), SchemaMatchType.Exact);
     const schemaC = await locator.getSchema(new SchemaKey("SchemaC", 3, 3, 3), SchemaMatchType.Exact);
     const schemaD = await locator.getSchema(new SchemaKey("SchemaD", 4, 4, 4), SchemaMatchType.Exact);
+
+    // Assert
+    assert.isDefined(stub);
+    assert.equal(stub!.references.length, 2);
+    assert.deepEqual(stub!.references[0], schemaC);
+    assert.deepEqual(stub!.references[1], schemaB);
+    assert.deepEqual(stub!.references[0].references[0], schemaD);
+    assert.deepEqual(stub!.references[1].references[0], schemaC);
+    assert.deepEqual(stub!.references[1].references[1], schemaD);
+  });
+
+  it("getSchema, 2 digit references, references set", async () => {
+    // Act
+    locator.addSchemaSearchPaths(paths);
+    const stub = await locator.getSchema(new SchemaKey("SchemaA", 2, 0, 2), SchemaMatchType.Exact);
+    const schemaB = await locator.getSchema(new SchemaKey("SchemaB", 3, 0, 3), SchemaMatchType.Exact);
+    const schemaC = await locator.getSchema(new SchemaKey("SchemaC", 4, 0, 4), SchemaMatchType.Exact);
+    const schemaD = await locator.getSchema(new SchemaKey("SchemaD", 5, 0, 5), SchemaMatchType.Exact);
 
     // Assert
     assert.isDefined(stub);
@@ -244,7 +260,7 @@ describe("SchemaXmlFileLocater tests:", () => {
     // Assert
     assert.isDefined(stub);
     assert.equal(stub!.schemaKey.name, "SchemaA");
-    assert.equal(stub!.schemaKey.version.toString(), "1.1.1");
+    assert.equal(stub!.schemaKey.version.toString(), "2.0.2");
   });
 
   it("getSchema, latest write compatible, succeeds", async () => {

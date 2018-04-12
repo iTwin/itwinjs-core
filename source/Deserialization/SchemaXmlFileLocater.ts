@@ -144,7 +144,7 @@ export class SchemaXmlFileLocater implements ISchemaLocater {
     */
 
     const schema = new Schema(maxCandidate) as T;
-    this.addSchemaReferences(schema);
+    await this.addSchemaReferences(schema);
     this._knownSchemas.addSchema(schema);
 
     return schema;
@@ -234,11 +234,12 @@ export class SchemaXmlFileLocater implements ISchemaLocater {
       if (!name || name.length !== 2 || !versionMatch || versionMatch.length !== 2)
         throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Invalid ECSchemaReference xml encountered in the schema file`);
 
-      // minor version maybe missing, so add "0"
+      // write version maybe missing, so insert "0"
       let versionString = versionMatch[1];
       const versionParts = versionString.split(".");
       if (versionParts.length === 2)
-        versionParts.push("0");
+        versionParts.splice(1, 0, "0");
+
       versionString = versionParts.join(".");
 
       const key = new SchemaKey(name[1], ECVersion.fromString(versionString));
@@ -315,8 +316,11 @@ export class SchemaXmlFileLocater implements ISchemaLocater {
       let fileName = path.basename(match, ".ecschema.xml");
       // TODO: should this be moved or handled elsewhere?
       // Handles two version file names - SchemaKey.parseString supports only 3 version names.
-      if (/[^\d]\.\d?\d\.\d?\d$/.test(fileName))
-        fileName = fileName + ".00";
+      if (/[^\d]\.\d?\d\.\d?\d$/.test(fileName)) {
+        const parts = fileName.split(".");
+        parts.splice(2, 0, "00");
+        fileName = parts.join(".");
+      }
 
       const schemaKey = SchemaKey.parseString(fileName);
 
