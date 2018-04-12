@@ -20,7 +20,7 @@
 |**DisplayStyle**|A named set of choices for the way Geometry is displayed in a view. Many ViewDefinitions may refer to the same DisplayStyle.
 |**Domain**|A named set of EC Classes that define the information for a particular discipline or field of work. All classes in a Domain ultimately must derive from a BisCore class. The ECClasses for a Domain are defined in a ECSchema file, an hence the terms *Domain* and *ECSchema* are often used interchangeably.
 |**DrawingModel**|A 2d model that holds drawing graphics. DrawingModels may be dimensional or non-dimensional.
-|**EC**|An abbreviation for Entity Content. This prefix is used to refer to the metadata system of iModels.
+|**EC**|An abbreviation for Entity Classification. This prefix is used to refer to the metadata system of iModels.
 |**ECClass**|A named set of properties and relationships that defines a type of object. Data in iModels are defined by ECClasses.
 |**ECDb**|A [SQLite](https://www.sqlite.org/index.html) database conforming to the rules of EC. iModels are a type of ECDb.
 |**EcefLocation**|The position and orientation, in [Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) (also known as ECR "earth-centered rotational") coordinates, of the origin of the Spatial Coordinate System of an iModel.
