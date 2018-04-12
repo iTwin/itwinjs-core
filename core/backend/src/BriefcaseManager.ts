@@ -400,7 +400,26 @@ export class BriefcaseManager {
     else if (!briefcase.isOpen)
       BriefcaseManager.openBriefcase(briefcase);
 
-    await BriefcaseManager.pullAndMergeChanges(accessToken, briefcase, IModelVersion.asOfChangeSet(changeSetId));
+    let changeSetProcessOption: ChangeSetProcessOption | undefined;
+    if (changeSetIndex > briefcase.changeSetIndex) {
+      changeSetProcessOption = ChangeSetProcessOption.Merge;
+    } else if (changeSetIndex < briefcase.changeSetIndex) {
+      if (openMode === OpenMode.ReadWrite) {
+        Logger.logWarning(loggingCategory, `No support to open an older version in ReadWrite mode. Cannot open briefcase ${briefcase.iModelId}:${briefcase.briefcaseId}.`);
+        await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+        return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Cannot merge when there are reversed changes"));
+      }
+      changeSetProcessOption = ChangeSetProcessOption.Reverse;
+    }
+
+    try {
+      if (changeSetProcessOption)
+        await BriefcaseManager.applyChangeSets(accessToken, briefcase, IModelVersion.asOfChangeSet(changeSetId), changeSetProcessOption);
+    } catch (error) {
+      Logger.logWarning(loggingCategory, `Error merging changes to briefcase  ${briefcase.iModelId}:${briefcase.briefcaseId}. Deleting it so that it can be re-fetched again.`);
+      await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+      return Promise.reject(error);
+    }
 
     if (isNewBriefcase)
       BriefcaseManager.cache.addBriefcase(briefcase);
@@ -514,8 +533,12 @@ export class BriefcaseManager {
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
     const res: DbResult = nativeDb.setupBriefcase(JSON.stringify(briefcase));
-    if (DbResult.BE_SQLITE_OK !== res)
+    if (DbResult.BE_SQLITE_OK !== res) {
+      Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
+      await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
       throw new IModelError(res, briefcase.pathname);
+    }
+    assert(nativeDb.getParentChangeSetId() === briefcase.changeSetId);
 
     briefcase.openMode = openMode; // Restore briefcase's openMode
     briefcase.nativeDb = nativeDb;
@@ -563,6 +586,8 @@ export class BriefcaseManager {
   /** Deletes a briefcase from the hub (if it exists) */
   private static async deleteBriefcaseFromHub(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     assert(!!briefcase.iModelId);
+    if (briefcase.briefcaseId === BriefcaseId.Standalone)
+      return;
 
     try {
       await BriefcaseManager.hubClient!.Briefcases().get(accessToken, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
@@ -584,7 +609,7 @@ export class BriefcaseManager {
     BriefcaseManager.cache.deleteBriefcase(briefcase);
   }
 
-  /** Deletes a briefcase, and releases it's references in the iModelHub */
+  /** Deletes a briefcase, and releases it's references in the iModelHub if necessary */
   private static async deleteBriefcase(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
     BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
@@ -847,6 +872,7 @@ export class BriefcaseManager {
       case ChangeSetProcessOption.Merge:
         briefcase.changeSetId = targetChangeSetId;
         briefcase.changeSetIndex = targetChangeSetIndex;
+        assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId);
         break;
       case ChangeSetProcessOption.Reinstate:
         if (targetChangeSetIndex === briefcase.changeSetIndex) {
