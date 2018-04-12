@@ -6,12 +6,168 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Point2d, XYAndZ, Transform, Angle, Vector3d } from "@bentley/geometry-core";
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
+import { QPoint3d, QParams3d } from "./QPoint";
+import { OctEncodedNormal } from "./OctEncodedNormal";
+import { ColorIndex, FeatureIndex } from "./FeatureIndex";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
+
+export enum FillFlags {
+  None       = 0,               // No fill, e.g. for any non-planar geometry.
+  ByView     = 1 << 0,          // Use element fill color, when fill enabled by view
+  Always     = 1 << 1,          // Use element fill color, even when fill is disabled by view
+  Behind     = 1 << 2,          // Always rendered behind other geometry belonging to the same element. e.g., text background.
+  Blanking   = Behind | Always, // Use element fill color, always rendered behind other geometry belonging to the same element.
+  Background = 1 << 3,          // Use background color specified by view
+}
+
+/* An individual polyline which indexes into a shared set of vertices */
+export class PolylineData { // should vertIndex be a number[] instead ???
+  public constructor(public vertIndex = 0, public numIndices = 0, public startDistance = 0, public rangeCenter = new Point3d()) { }
+
+  public isValid(): boolean { return 0 < this.numIndices; }
+  public reset(): void { this.numIndices = 0; this.vertIndex = 0; this.startDistance = 0; }
+  // public init(polyline: MeshPolyline) {
+  //   this.numIndices = polyline.getIndices().length;
+  //   this.vertIndex = 0 < this.numIndices ? polyline.getIndices().data() : 0;
+  //   this.startDistance = polyline.getStartDistance();
+  //   this.rangeCenter = polyline.getRangeCenter();
+  //   return this.isValid();
+  // }
+}
+
+/* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
+export class IndexedPolylineArgs {
+  // public colors = new ColorIndex(); //////////// must be moved to common!!!!!!!!!!
+  // public features = new FeatureIndex();
+  public width = 0;
+  public linePixels = LinePixels.Solid;
+  public disjoint = false;
+  public constructor(public points?: QPoint3d, public numPoints = 0, public lines = new PolylineData(), public numLines = 0, public pointParams?: QParams3d,
+                     public is2d = false, public isPlanar = false) { }
+}
+
+export class MeshPolyline {
+  public indices: number[] = [];
+  public rangeCenter = new Point3d();
+  public constructor(public startDistance = 0, rangeCenter?: Point3d, indices?: number[]) {
+    if (rangeCenter) { this.rangeCenter = rangeCenter; }
+    if (indices) { this.indices = indices.slice(); }
+  }
+  public addIndex(index: number) { if (this.indices.length === 0 || this.indices[this.indices.length - 1] !== index) this.indices.push(index); }
+  public clear() { this.indices = []; }
+}
+
+export const enum MeshEdgeFlags {
+  Invisible = 1,
+  Visible = 0,
+}
+
+export class MeshEdge {
+  public indices = [0, 0];
+  public constructor(index0?: number, index1?: number) {
+    if (!index0 || !index1) { return; }
+    if (index0 < index1) {
+      this.indices[0] = index0;
+      this.indices[1] = index1;
+    } else {
+      this.indices[0] = index1;
+      this.indices[1] = index0;
+    }
+  }
+}
+
+export class MeshEdges {
+  public visible: MeshEdge[] = [];
+  public silhouette: MeshEdge[] = [];
+  public polylines: MeshEdge[] = [];
+  public silhouetteNormals = new OctEncodedNormal(0);
+  public constructor() { }
+}
+
+export class EdgeArgs {
+  public edges: MeshEdge[] = [];
+
+  public clear(): void { this.edges = []; }
+  public init(meshEdges: MeshEdges) {
+    const visible = meshEdges.visible;
+    if (visible.length === 0) { return false; }
+    this.edges = visible;
+    return true;
+  }
+  public isValid(): boolean { return this.edges.length !== 0; }
+  public get numEdges() { return this.edges.length; }
+}
+
+export class SilhouetteEdgeArgs extends EdgeArgs {
+  public normals?: OctEncodedNormal;
+  public clear() { this.normals = undefined; super.clear(); }
+  public init(meshEdges: MeshEdges) {
+    const silhouette = meshEdges.silhouette;
+    if (silhouette.length === 0) { return false; }
+    this.edges = silhouette;
+    this.normals = meshEdges.silhouetteNormals;
+    return true;
+  }
+}
+
+export class PolylineEdgeArgs {
+  public constructor(public lines: PolylineData[] = [] /*, public numLines = 0*/) { }
+  public get numLines() { return this.lines.length; }
+  public isValid() { return this.lines.length !== 0; }
+  public clear() { this.lines = []; }
+  public init(polylines: PolylineData[]) {
+    this.lines = 0 < this.numLines ? polylines : [];
+    return this.isValid();
+  }
+}
+
+// The vertices of the edges are shared with those of the surface
+export class TriMeshArgsEdges {
+  public edges = new EdgeArgs();
+  public silhouettes = new SilhouetteEdgeArgs();
+  public polylines = new PolylineEdgeArgs();
+  public width = 0;
+  public linePixels = LinePixels.Solid;
+
+  public clear(): void {
+    this.edges = new EdgeArgs();
+    this.silhouettes = new SilhouetteEdgeArgs();
+    this.polylines = new PolylineEdgeArgs();
+    this.width = 0;
+    this.linePixels = LinePixels.Solid;
+  }
+  public isValid(): boolean { return this.edges.isValid() || this.silhouettes.isValid() || this.polylines.isValid(); }
+}
+
+/* Information needed to draw a triangle mesh and its edges. */
+export class TriMeshArgs {
+  public edges = new TriMeshArgsEdges();
+  public numIndices = 0;
+  public vertIndex = 0; // should vertIndex be a number[] instead ???
+  public numPoints = 0;
+  public points?: QPoint3d;
+  public normals?: OctEncodedNormal;
+  public textureUv = new Point2d();
+  public texture?: Texture;
+  public colors = new ColorIndex();
+  public features = new FeatureIndex();
+  public pointParams?: QParams3d;
+  public material?: Material;
+  public fillFlags = FillFlags.None;
+  public isPlanar = false;
+  public is2d = false;
+
+  // public toPolyface(): IndexedPolyface {
+  //   let polyFace = IndexedPolyface.create(); // PolyfaceHeaderPtr polyFace = PolyfaceHeader::CreateFixedBlockIndexed(3);
+  //   let pointIndex = polyFace.pointCount;
+  //   pointIndex. // In Progress!!
+  // }
+}
 
 /**
  * A renderer-specific object that can be placed into a display list.

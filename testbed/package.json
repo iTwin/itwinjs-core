@@ -19,7 +19,7 @@
     "we just make testbed winx64-specific."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-backend": "0",
     "@bentley/imodeljs-e_1_6_11-win32-x64": "~15.2.0",

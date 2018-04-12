@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl, ECSqlStatement } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, DbResult, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, DbResult, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
@@ -40,7 +40,7 @@ describe("Sample Code", () => {
       classFullName: "BisCore:PhysicalPartition",
       iModel: outputImodel,
       parent: { id: parentElement.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
-      model: iModel.models.repositoryModelId,
+      model: IModel.repositoryModelId,
       code: modelCode,
     };
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);

@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Angle, Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core";
 
+// portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
+
 /** A position defined by longitude, latitude, and height above the WSG84 ellipsoid . */
 export class Cartographic {
   /**

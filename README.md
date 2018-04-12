@@ -1,33 +1,49 @@
-﻿# imodeljs-core
+﻿# The iModelJs Library
 
 Copyright © Bentley Systems, Inc. 2018
 
-iModelJs extends the iModel technology stack to provide a JavaScript library (built using [TypeScript](https://www.typescriptlang.org/)) for querying, displaying, and modifying iModels.
-It can be used to build:
+The iModelJs library is an open source library for creating and accessing iModels.
 
-* Backend agents and other web services
-* Web applications with browser frontends
-* Desktop applications that use web UI frameworks
-* Mobile applications that use web UI frameworks
+## Getting Started With iModelJs
 
-imodeljs-core is the name of the overall git repository.
-The source code is organized according to where it can run:
+* [This Overview](./docs/index) explains the purpose and organization of the library.
+* [These Tutorials](./docs/tutorials/index) provide examples of its use.
+* The [API Documentation](./api/) gives details of the classes and functions.
+* [Additional Resources](./docs/overview/CommunityResources) are available to ask questions and get further help.
+* [Release Notes](./ReleaseNotes) describes changes from previous versions.
+* [Contributions](./Contributing) to iModelJs are welcome.
 
-| Directory      | Design Requirements |
-|----------------|---------------------|
-| core/common/   | Designed to run either in frontend or backend. Must adhere to frontend restrictions. |
-| core/backend/  | Designed for backend requirements. Runs in a standalone JavaScript engine (Node in this case). May have file system dependencies  |
-| core/frontend/ | Designed for frontend requirements. Must be able to run in a web browser. Cannot have file system or Node dependencies. |
-| sample-code/   | Houses sample source code snippets |
-| testbed/       | Used for testing the frontend, but includes a test backend and test gateway |
+## About this Repository
+
+This repository is a *monorepo* that holds the source code to several iModelJs npm packages. It is built using [Rush](http://rushjs.io/).
+
+See [rush.json](./rush.json) for the list of packages. These packages are described below:
+
+* `package.json`
+  * Private, not published
+  * Provides the npm scripts to work with this repository
+  * Identifies the overall devDependencies (union of backend, frontend, and test devDependencies). Many devDependencies are in common between backend and frontend, so consolidating them makes them easier to manage.
+* `core/bentley/package.json`
+  * Controls the version number and package dependencies for **@bentley/bentleyjs-core**
+* `core/common/package.json`
+  * Controls the version number for **@bentley/imodeljs-common**
+  * Controls the package dependencies for the source code in common to both the backend and frontend
+* `core/backend/package.json`
+  * Controls the version number and package dependencies for **@bentley/imodeljs-backend**
+* `core/frontend/package.json`
+  * Controls the version number and package dependencies for **@bentley/imodeljs-frontend**
+* `testbed/package.json`
+  * Private, not published
+  * Testbed application for testing frontend/backend interaction
 
 ## Prerequisites
 
-* **Node**: an installation of the latest security patch of Node 8.9.x downloaded from [nodejs.org](https://nodejs.org/en/). The Node installation also includes the **npm** package manager.
-* **rush**: to install `npm install -g @microsoft/rush`, for more information see: [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush)
-* **Visual Studio Code**: an optional dependency, but the repository structure is optimized for use with [Code](https://code.visualstudio.com/).
+* [Git](https://git-scm.com/)
+* [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 8.9.x. The Node installation also includes the **npm** package manager.
+* [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
+* [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
-## Authentication
+## (Bentley Developers only) Authentication
 
 Configure npm and log in to the Bentley npm registry with the following commands:
 
@@ -51,20 +67,6 @@ The individual commands orchestrate separate backend, frontend, and test steps a
 
 Note that it is a good idea to `rush install` after each `git pull` as dependencies may have changed.
 
-## Migrating to New Build Instructions
-
-Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over the **install** and **build** steps.
-
-| Build step           | New Command      | Old Command      |
-|----------------------|------------------|------------------|
-| Install dependencies | rush install     | npm install      |
-| Check dependencies   | rush check       | N/A              |
-| Clean output         | rush clean       | npm run clean    |
-| Rebuild source       | rush rebuild     | npm run build -s |
-| Incremental build    | rush build       | N/A              |
-| Run tests            | npm test -s      | npm test -s      |
-| Run lint rules       | npm run lint -s  | npm run lint -s  |
-
 ## Updating dependencies/devDependencies
 
 1. Edit the appropriate `package.json` file to update the semantic version range
@@ -79,30 +81,6 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 
 The full list of npm scripts can be found in the root `package.json` file.
 
-## Managing the packages in the imodeljs-core repository
-
-The imodeljs-core repository is a *monorepo*.
-That is, multiple packages are managed within a single git repository.
-See [rush.json](./rush.json) for the list of packages.
-Also, these packages are described below:
-
-* `package.json`
-  * Private, not published
-  * Provides the npm scripts to work with this repository
-  * Identifies the overall devDependencies (union of backend, frontend, and test devDependencies). Many devDependencies are in common between backend and frontend, so consolidating them makes them easier to manage.
-* `core/common/package.json`
-  * Controls the version number for **@bentley/imodeljs-common**
-  * Controls the package dependencies for the source code in common to both the backend and frontend
-* `core/backend/package.json`
-  * Controls the version number for **@bentley/imodeljs-backend**
-  * Controls the backend package dependencies
-* `core/frontend/package.json`
-  * Controls the version number for and dependencies of **@bentley/imodeljs-frontend**
-  * Controls the frontend package dependencies
-* `testbed/package.json`
-  * Private, not published
-  * Testbed application for testing frontend/backend interaction
-
 ### Installing dependencies and devDependencies
 
 The single `rush install` command run at the root of the repository installs devDependencies at the root and iterates into common, backend, frontend, and testbed to install dependencies.
@@ -110,20 +88,13 @@ After a successful install, you will notice multiple **node_modules** directorie
 
 | node_modules Directory      | Contents                |
 |-----------------------------|-------------------------|
-| node_modules/               | Overall devDependencies |
-| core/common/node_modules/   | Backend dependencies    |
-| core/backend/node_modules/  | Backend dependencies    |
-| core/frontend/node_modules/ | Frontend dependencies   |
-| testbed/node_modules/       | Testbed dependencies    |
+| node_modules/               | Overall devDependencies
+| core/bentley/node_modules/  | bentleyjs dependencies
+| core/common/node_modules/   | common dependencies
+| core/backend/node_modules/  | Backend dependencies
+| core/frontend/node_modules/ | Frontend dependencies
+| testbed/node_modules/       | Testbed dependencies
 
-With Rush, the node_modules directories listed above are symlinks to a *common* package managed by Rush.
+With Rush, the node_modules directories listed above are symbolic links to a *common* package managed by Rush.
 
-## Build Output and Publishing
-
-| Output Directory   | Published As      |
-|--------------------|-------------------|
-| core/common/lib/   | **@bentley/imodeljs-backend**  |
-| core/backend/lib/  | **@bentley/imodeljs-backend**  |
-| core/frontend/lib/ | **@bentley/imodeljs-frontend** |
-
-Note that these packages are published by Bentley CI builds only.
+Note that the packages are published by CI builds only.

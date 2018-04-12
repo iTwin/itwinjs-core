@@ -4,7 +4,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "buildbackend": "cd ./backend && tsc --outDir ../out/backend",
+    "buildbackend": "cd ./backend && tsc --outDir ../out/backend 1>&2",
     "cleanbackend": "rimraf lib out/backend",
     "copybackendassets": "cpx ./backend_test_assets/**/* ./out/backend/assets",
     "pretestbackend": "npm run copybackendassets && rush build",
@@ -22,7 +22,7 @@
     "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-backend": "0",
     "@bentley/imodeljs-n_8-win32-x64": "~15.2.0",

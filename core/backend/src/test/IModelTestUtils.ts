@@ -7,7 +7,7 @@ import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
   ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
-import { IModelGateway, Code, Gateway, ElementProps, GeometricElementProps, Appearance, CreateIModelProps } from "@bentley/imodeljs-common";
+import { Appearance, Code, CreateIModelProps, ElementProps, Gateway, GeometricElementProps, IModel, IModelGateway } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
@@ -278,8 +278,8 @@ export class IModelTestUtils {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       iModel: testImodel,
-      parent: { id: testImodel.elements.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
-      model: testImodel.models.repositoryModelId,
+      parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      model: IModel.repositoryModelId,
       code: newModelCode,
     };
     const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);

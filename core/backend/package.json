@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.73.3",
+  "version": "0.74.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -30,13 +30,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-clients": "^5.0.5",
     "@bentley/imodeljs-common": "0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "^7.3.12",
+    "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "^7.3.1",
     "@bentley/imodeljs-clients": "^5.0.5",
     "@bentley/imodeljs-common": "0",

@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { LUTDimension, getFeatureName, FeatureDimensions, FeatureDimension } from "./FeatureDimensions";
-import { FeatureIndexType } from "./FeatureIndex";
+import { FeatureIndexType } from "@bentley/imodeljs-common";
 
 // Specifies whether an 'active clip volume' has been applied to the view.
 export const enum WithClipVolume { No, Yes }
