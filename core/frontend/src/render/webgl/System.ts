@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "../QPoint";
+import { PointUtil, QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { XY, XYZ } from "@bentley/geometry-core";
-import { PointUtil } from "../Utility";
 
 export const enum ContextState {
   Uninitialized,
