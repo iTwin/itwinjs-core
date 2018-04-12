@@ -1,0 +1,76 @@
+{
+  "name": "@bentley/geometry-core",
+  "version": "7.4.4",
+  "description": "Bentley Core Geometry library",
+  "main": "lib/geometry-core.js",
+  "typings": "lib/geometry-core",
+  "repository": {
+    "type": "git",
+    "url": "http://tfs.bentley.com:8080//tfs/ProductLine/Platform%20Technology/_git/geometry-core.git"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "^3.2.1",
+    "@types/chai": "^4.1.2",
+    "@types/flatbuffers": "^1.6.5",
+    "@types/mocha": "^2.2.47",
+    "@types/node": "^8.5.9",
+    "chai": "^4.1.2",
+    "cpx": "^1.5.0",
+    "debug": "^2.6.9",
+    "mocha": "^3.5.3",
+    "nyc": "^11.4.1",
+    "rimraf": "^2.6.2",
+    "semver": "^5.5.0",
+    "ts-node": "^3.3.0",
+    "typedoc": "^0.9.0",
+    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typescript": "~2.6.2"
+  },
+  "scripts": {
+    "build": "npm run copyassets && tsc",
+    "watch": "tsc --watch",
+    "copyassets": "cpx ./source/assets/**/* ./lib/assets",
+    "copytestassets": "cpx ./source/test/assets/**/* ./lib/test/assets",
+    "test": "npm run copytestassets && npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+    "test:tsnode": "npm run copytestassets && npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
+    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
+    "clean": "rimraf ./lib",
+    "docs": "npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --tsIndexFile=geometry-core.ts",
+    "cover": "nyc npm run test:tsnode",
+    "cover:docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
+    "module": "cd source && node ../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule.js --recursively=true",
+    "imported": "npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/getallimported.js --rootDir=./lib --recursively=true"
+  },
+  "keywords": [
+    "Bentley",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {},
+  "nyc": {
+    "include": [
+      "source/**/*.ts"
+    ],
+    "exclude": [
+      "source/test/*",
+      "**/*.d.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "lcov",
+      "cobertura"
+    ],
+    "report-dir": "./lib/test/coverage",
+    "all": true
+  }
+}
