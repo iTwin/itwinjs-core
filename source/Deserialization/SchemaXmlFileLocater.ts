@@ -234,7 +234,14 @@ export class SchemaXmlFileLocater implements ISchemaLocater {
       if (!name || name.length !== 2 || !versionMatch || versionMatch.length !== 2)
         throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Invalid ECSchemaReference xml encountered in the schema file`);
 
-      const key = new SchemaKey(name[1], ECVersion.fromString(versionMatch[1]));
+      // minor version maybe missing, so add "0"
+      let versionString = versionMatch[1];
+      const versionParts = versionString.split(".");
+      if (versionParts.length === 2)
+        versionParts.push("0");
+      versionString = versionParts.join(".");
+
+      const key = new SchemaKey(name[1], ECVersion.fromString(versionString));
       keys.push(key);
     }
 
