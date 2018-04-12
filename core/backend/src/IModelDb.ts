@@ -41,12 +41,10 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
  * An IModelDb is a full-featured database.
  * Use [[ECSqlStatement]] to write custom queries on the contents of an IModelDb.
  *
- * An iModel is a multi-user database that is stored in the cloud.
- *
  * As a local copy, an IModelDb represents a version of an iModel.
  * Use [[IModelDb.pullAndMergeChanges]] to update a local IModelDb to incorporate recent changes made by others.
  *
- * An IModelDb also serves as a staging area where an app can change the content of an iModel and then submit the changes to iModelHub.
+ * An IModelDb also serves as a staging area where an app can change the content of an iModel and then later submit the changes to iModelHub.
  * Use [[IModelDb.saveChanges]] to commit changes locally. [[IModelDb.txns]] manages local transactions, and it supports local undo/redo.
  * Use [[IModelDb.pushChanges]] to push local changes to iModelHub as a changeset, so that others can see them. After
  * being pushed to iModelHub, a changeset becomes part of the iModel's permanent history.
