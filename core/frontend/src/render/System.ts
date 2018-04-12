@@ -14,7 +14,7 @@ import { AntiAliasPref,
 import { Viewport } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { GLESBranch, GLESList } from "./Graphic";
-import { PrimitiveBuilder } from "./Geometry";
+import { PrimitiveBuilder } from "./primitives/Geometry";
 import { IModelConnection } from "../IModelConnection";
 
 /**
