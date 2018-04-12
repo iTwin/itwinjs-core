@@ -397,6 +397,9 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string) {
+    if (this.openMode === OpenMode.Readonly)
+      throw new IModelError(IModelStatus.ReadOnly, "", Logger.logError);
+
     if (!this.briefcase)
       throw this._newNotOpenError();
 
