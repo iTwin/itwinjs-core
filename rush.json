@@ -9,28 +9,33 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/bentleyjs-core",
+      "projectFolder": "core/bentley",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@bentley/imodeljs-common",
-      "projectFolder": "source/common",
+      "projectFolder": "core/common",
       "shouldPublish": true
     },
     {
       "packageName": "@bentley/imodeljs-backend",
-      "projectFolder": "source/backend",
+      "projectFolder": "core/backend",
       "shouldPublish": true
     },
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "projectFolder": "source/frontend",
+      "projectFolder": "core/frontend",
       "shouldPublish": true
     },
     {
       "packageName": "imodeljs-core-testbed",
-      "projectFolder": "source/testbed",
+      "projectFolder": "testbed",
       "shouldPublish": false
     },
     {
       "packageName": "imodeljs-core-sample-code",
-      "projectFolder": "source/sample-code",
+      "projectFolder": "sample-code",
       "shouldPublish": false
     }
   ],

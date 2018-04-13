@@ -1,0 +1,409 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { Id64Props, DbResult, Id64, IModelStatus } from "@bentley/bentleyjs-core";
+import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
+import { IModelDb } from "./IModelDb";
+import { LineStyle } from "./backend";
+
+/** A line style definition is a uniquely named pattern that repeats as it's displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
+ * There are three varieties of line styles:
+ * - A style described by a stroke pattern (series of dashes and gaps) that may also include symbol graphics.
+ * - A style using pre-defined pixel bit patterns [[LinePixels]] for dashed display (Code1-Code7).
+ * - A style that uses a texture.
+ *
+ * A definition is defined by one or more components. A component is saved as a "file property" and can be referenced by other components. The line style definition references a component
+ * by file property id and type and is saved as a dictionary element.
+ */
+export namespace LineStyleDefinition {
+
+  /** Line style component type identifiers */
+  export enum ComponentType {
+    /** Component type for [[PointSymbolProps]] */
+    PointSymbol = 1,
+    /** Component type for [[CompoundProps]] */
+    Compound = 2,
+    /** Component type for [[StrokePatternProps]] */
+    StrokePattern = 3,
+    /** Component type for [[StrokePointProps]] */
+    StrokePoint = 4,
+    /** Component type for [[LinePixels]], never saved as a file property */
+    Internal = 6,
+    /** Component type for [[RasterImageProps]] */
+    RasterImage = 7,
+  }
+
+  /** Mask of values for StrokeMode */
+  export enum StrokeMode {
+    /** Stroke represents a blank space */
+    Gap = 0x00,
+    /** Stroke represents a solid dash */
+    Dash = 0x01,
+    /** Treat stroke as rigid and continue past a corner to complete the stroke as opposed to breaking at the corner */
+    Ray = 0x02,
+    /** Stroke length can be stretched when [[StrokePatternOptions.Iteration]] and [[StrokePatternOptions.AutoPhase]] options are set, applicable to both Gap and Dash strokes */
+    Scale = 0x04,
+    /** Invert stroke in first stroke pattern */
+    FirstInvert = 0x08,
+    /** Invert stroke in last stroke pattern */
+    LastInvert = 0x10,
+  }
+
+  /** Define constant width or tapered strokes with distance specified in meters */
+  export enum StrokeWidth {
+    /** Stroke draws as one pixel wide line */
+    None = 0,
+    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to left side of stroke */
+    Left = 1,
+    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to right side of stroke */
+    Right = 2,
+    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to both sides of stroke */
+    Both = 3,
+  }
+
+  /** Controls appearance of stroke end caps. If StrokeCap is >= Hexagon, the end cap is stroked as an arc and the value of
+   * StrokeCap indicates the number of vectors in the arc.
+   */
+  export enum StrokeCap {
+    /** Stroke displays as a closed polygon */
+    Closed = 0,
+    /** Stroke displays lines at specified width instead of a polygon */
+    Open = 1,
+    /** Stroke length extended by half the stroke width */
+    Extended = 2,
+    /** Stroke end cap is a hexagon */
+    Hexagon = 3,
+    /** Stroke end cap is an octagon */
+    Octagon = 4,
+    /** Stroke end cap is a decagon */
+    Decagon = 5,
+    /** Stroke end cap is an arc */
+    Arc = 30,
+  }
+
+  /** A stroke representing either a dash or gap in a stroke pattern */
+  export type StrokeProps =
+    /** Length of stroke in meters */
+    { length: number } |
+    /** Width at start of stroke. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
+    { orgWidth?: number } |
+    /** Width at end of stroke, same as start width if not present. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
+    { endWidth?: number } |
+    /** Type and behavior of stroke */
+    { strokeMode?: StrokeMode } |
+    /** How to apply orgWidth and endWidth to stroke */
+    { widthMode?: StrokeWidth } |
+    /** Appearance of stroke end cap */
+    { capMode?: StrokeCap };
+
+  export type Strokes = StrokeProps[];
+
+  /** Options to control how stroke pattern is applied to underlying curve */
+  export enum StrokePatternOptions {
+    /** Use default stroke behavior */
+    None = 0x00,
+    /** [[StrokePatternProps.phase]] represents fractional distance into first stroke of pattern */
+    AutoPhase = 0x01,
+    /** Use [[StrokePatternProps.maxIter]] to limit the number of iterations of the stroke pattern */
+    Iteration = 0x08,
+    /** Single segment mode restarts the stroke pattern at corners instead of continuing around corners */
+    Segment = 0x10,
+    /** Center the line style and stretch the ends */
+    CenterStretch = 0x20,
+  }
+
+  /** Stroke pattern component definition [[ComponentType.StrokePattern]].
+   * A stroke pattern component consists of a series of dashes and gaps having specified lengths and widths in meters. Simple dash-dot type line styles that do not
+   * include point symbols can be created by referencing a stroke pattern component by it's file property id.
+   */
+  export interface StrokePatternProps {
+    /** Name for this stroke pattern */
+    descr: string;
+    /** Skip into the pattern before starting to draw. Value treated as fraction of the first stroke when [[StrokePatternOptions.AutoPhase]] set. Value used as distance when [[StrokePatternOptions.CenterStretch]] is not set. */
+    phase?: number;
+    /** Options mask for this stroke pattern */
+    options?: StrokePatternOptions;
+    /** The entire stroke pattern will be repeated no more than maxIter on curve or segment when [[StrokePatternOptions.Iteration]] is set and stroke pattern includes stretchable strokes. */
+    maxIter?: number;
+    /** Array of strokes, maximum number that will be used is 32 */
+    strokes: Strokes;
+  }
+
+  /** Flags to identify point symbol behavior */
+  export enum PointSymbolFlags {
+    /** Default symbol behavior */
+    None = 0x0,
+    /** Symbol includes 3d geometry */
+    Is3d = 0x01,
+    /** Symbol does not allow scaling */
+    NoScale = 0x02,
+    }
+
+  /** Point symbol component defintion [[ComponentType.PointSymbol]].
+   * A point symbol component identifies a GeometryPart for reference by a [[SymbolProps]].
+   */
+  export type PointSymbolProps =
+    /** GeometryPart Id to use as a pattern symbol */
+    { geomPartId: Id64Props } |
+    /** GeometryPart.bbox.low.x */
+    { baseX?: number } |
+    /** GeometryPart.bbox.low.y */
+    { baseY?: number } |
+    /** GeometryPart.bbox.low.z */
+    { baseZ?: number } |
+    /** GeometryPart.bbox.high.x */
+    { sizeX?: number } |
+    /** GeometryPart.bbox.high.y */
+    { sizeY?: number } |
+    /** GeometryPart.bbox.high.z */
+    { sizeZ?: number } |
+    /** Symbol behavior flags */
+    { symFlags?: PointSymbolFlags } |
+    /** Symbol scale, defaults to 1 */
+    { scale?: number };
+
+  /** Symbol options for location, orientation, and behavior */
+  export enum SymbolOptions {
+    /** No point symbol */
+    None = 0x00,
+    /** Symbol at origin of stroke */
+    Origin = 0x01,
+    /** Symbol at end of stroke */
+    End = 0x02,
+    /** symbol at center of stroke */
+    Center = 0x03,
+    /** Symbol at curve start point */
+    CurveOrigin = 0x0004,
+    /** Symbol at curve end point */
+    CurveEnd = 0x0008,
+    /** Symbol at each vertex */
+    CurveVertex = 0x0010,
+    /** Adjust symbol rotation left->right */
+    AdjustRotation = 0x0020,
+    /** Angle of symbol not relative to stroke direction */
+    AbsoluteRotation = 0x0040,
+    /** No scale on variable strokes */
+    NoScale = 0x0100,
+    /** No clip on partial strokes */
+    NoClip = 0x0200,
+    /** No partial strokes */
+    NoPartial = 0x0400,
+    /** Project partial origin */
+    ProjectOrigin = 0x0800,
+    /** Use color from symbol instead of inheriting curve color */
+    UseColor = 0x4000,
+    /** Use weight from symbol instead of inheriting curve weight */
+    UseWeight = 0x8000,
+  }
+
+  /** Identifies a symbol and it's location and orientation relative to a stroke pattern */
+  export type SymbolProps =
+    /** The file property id of [[ComponentType.PointSymbol]] component */
+    { symId: number } |
+    /** The 0 based stroke index for base stroke pattern [[ComponentType.StrokePattern]] component */
+    { strokeNum?: number } |
+    /** Symbol x offset distance in meters */
+    { xOffset?: number } |
+    /** Symbol y offset distance in meters */
+    { yOffset?: number } |
+    /** Symbol rotation in radians */
+    { angle?: number } |
+    /** Must set location for symbol as default value is [[SymbolOptions.None]] */
+    { mod1?: SymbolOptions };
+
+  export type Symbols = SymbolProps[];
+
+  /** Stroke point component defintion [[ComponentType.PointStroke]].
+   * A stroke point component identifies the locations of point symbol components relative to a base stroke pattern component.
+   */
+  export interface StrokePointProps {
+    /** Name for this stroke point component */
+    descr: string;
+    /** The file property id of [[ComponentType.StrokePattern]] component */
+    lcId: number;
+    /** Array of symbols */
+    symbols: Symbols;
+  }
+
+  /** Raster component defintion [[ComponentType.RasterImage]].
+   * A raster component identifies a texture for a line style.
+   */
+  export interface RasterImageProps {
+    /** Name for this raster image component */
+    descr: string;
+    /** Raster width */
+    x: number;
+    /** Raster height */
+    y: number;
+    /** True width flag */
+    trueWidth?: number;
+    /** Raster flags */
+    flags?: number;
+    /** The file property id of raster image */
+    imageId?: number;
+  }
+
+  /** Identifies a component by file property id and type */
+  export type ComponentProps =
+    /** The file property id of [[ComponentType.StrokePattern]] or [[ComponentType.StrokePoint]] component */
+    { id: number } |
+    /** The type of component for specified file property id */
+    { type: ComponentType } |
+    /** Offset distance for this component, default is 0 */
+    { offset?: number };
+
+  export type Components = ComponentProps[];
+
+  /** Compound component definition [[ComponentType.Compound]].
+   * A compound component is used to link stroke pattern and stroke point components in order to create a style that displays dashes, gaps, and symbols.
+   */
+  export interface CompoundProps {
+    comps: Components;
+  }
+
+  /** Flags to describe a style or control style behavior */
+  export enum StyleFlags {
+    /** Use defaults */
+    None = 0x00,
+    /** Only snap to center line and not individual strokes and symbols of line style */
+    NoSnap = 0x04,
+    /** Style represents a continous line with width */
+    Continuous = 0x08,
+    /** Style represents physical geometry and should be scaled as such */
+    Physical = 0x80,
+  }
+
+  /** The line style definition element data */
+  export interface StyleProps {
+    /** The file property id for either a [[ComponentType.StrokePattern]] or [[ComponentType.Compound]] component */
+    compId: number;
+    /** The type of component for specified file property id */
+    compType: ComponentType;
+    /** Style behavior flags. Defaults to [[StyleFlags.NoSnap]] if left undefined */
+    flags?: StyleFlags;
+    /** Style scale, defaults to 1 */
+    unitDef?: number;
+  }
+
+  /** Helper methods for creating and querying line styles */
+  export class Utils {
+
+    /** Create a file property for a new stroke pattern component. */
+    public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps | undefined {
+      const fileProps: FilePropertyProps = { name: "LineCodeV1", namespace: "dgn_LStyle" };
+      fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
+      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.StrokePattern } : undefined);
+    }
+
+    /** Create a file property for a new point symbol component.
+     * If base and size parameters are not supplied, queries GeometryPart by id in order to set them.
+     */
+    public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined {
+      const anyProps = (props as any); // if part extents weren't supplied, set them up now.
+      if (!anyProps.baseX && !anyProps.baseY && !anyProps.baseZ && !anyProps.sizeX && !anyProps.sizeY && !anyProps.sizeZ) {
+        const geomPart = iModel.elements.getElement(anyProps.geomPartId);
+        if (!geomPart)
+          return undefined;
+
+        anyProps.baseX = geomPart.bbox.low.x;
+        anyProps.baseY = geomPart.bbox.low.y;
+        anyProps.baseZ = geomPart.bbox.low.z;
+
+        anyProps.sizeX = geomPart.bbox.high.x;
+        anyProps.sizeY = geomPart.bbox.high.y;
+        anyProps.sizeZ = geomPart.bbox.high.z;
+      }
+
+      const fileProps: FilePropertyProps = { name: "PointSymV1", namespace: "dgn_LStyle" };
+      fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
+      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.PointSymbol } : undefined);
+    }
+
+    /** Create a file property for a new stroke point component. */
+    public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps | undefined {
+      const fileProps: FilePropertyProps = { name: "LinePointV1", namespace: "dgn_LStyle" };
+      fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
+      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.StrokePoint } : undefined);
+    }
+
+    /** Create a file property for a new compound component. */
+    public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps | undefined {
+      const fileProps: FilePropertyProps = { name: "CompoundV1", namespace: "dgn_LStyle" };
+      fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
+      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.Compound } : undefined);
+    }
+
+    /** Create a file property for a new raster image component. */
+    public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: ArrayBuffer): StyleProps | undefined {
+      const rasterFileProps: FilePropertyProps = { name: "RasterImageV1", namespace: "dgn_LStyle" };
+      rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
+      if (DbResult.BE_SQLITE_OK !== iModel.saveFileProperty(rasterFileProps, image))
+        return undefined;
+      (props as any).imageId = rasterFileProps.id;
+      const fileProps: FilePropertyProps = { name: "RasterComponentV1", namespace: "dgn_LStyle" };
+      fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
+      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.RasterImage } : undefined);
+    }
+
+    /** Query for an existing line style with the supplied name. */
+    public static queryStyle(imodel: IModelDb, scopeModelId: Id64, name: string): Id64 | undefined {
+      return imodel.elements.queryElementIdByCode(LineStyle.createCode(imodel, scopeModelId, name));
+    }
+
+    /** Insert a new line style with the supplied name.
+     * @throws [[IModelError]] if unable to insert the line style definition element.
+     */
+    public static createStyle(imodel: IModelDb, scopeModelId: Id64, name: string, props: StyleProps): Id64 {
+      if (undefined === (props as any).styleFlags) // If flags weren't supplied, default to not snapping to stroke geometry.
+        (props as any).styleFlags = StyleFlags.NoSnap;
+
+      const lsProps: LineStyleProps = {
+        classFullName: "BisCore:LineStyle",
+        iModel: imodel,
+        model: scopeModelId,
+        code: LineStyle.createCode(imodel, scopeModelId, name),
+        data: JSON.stringify(props),
+      };
+
+      return imodel.elements.insertElement(lsProps);
+    }
+
+    /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.
+     * Most applications should instead use [[createStrokePatternComponent]] to define a style with physical dash and gap lengths.
+     * Unlike other components, [[ComponentType.Internal]] uses the line code as the compId instead of a file property id.
+     * @throws [[IModelError]] if supplied an invalid [[LinePixels]] value or if unable to insert the line style definition element.
+     */
+    public static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64, linePixels: LinePixels): Id64 {
+      let lineCode;
+      switch (linePixels) {
+        case LinePixels.Code1:
+          lineCode = 1;
+          break;
+        case LinePixels.Code2:
+          lineCode = 2;
+          break;
+        case LinePixels.Code3:
+          lineCode = 3;
+          break;
+        case LinePixels.Code4:
+          lineCode = 4;
+          break;
+        case LinePixels.Code5:
+          lineCode = 5;
+          break;
+        case LinePixels.Code6:
+          lineCode = 6;
+          break;
+        case LinePixels.Code7:
+          lineCode = 7;
+          break;
+        default:
+          throw new IModelError(IModelStatus.BadArg, "Invalid LinePixels");
+      }
+      const name = "LinePixelsCodeNumber-" + lineCode;
+      const lsId = this.queryStyle(imodel, scopeModelId, name);
+      return (undefined === lsId ? this.createStyle(imodel, scopeModelId, name, { compId: lineCode, compType: ComponentType.Internal }) : lsId);
+    }
+
+  }
+}

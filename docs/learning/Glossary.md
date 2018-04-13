@@ -40,6 +40,7 @@
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
 |**Frustum**|An 8-point [truncated pyramid](https://en.wikipedia.org/wiki/Viewing_frustum) that defines the volume of space visible in a View. The front and back planes must be parallel and their centers must align at right angles.
 |**Gateway**|The mechanism by which the frontend communicates with the backend. Different Gateways are used when the frontend and backend are connected via HTTP vs connected on the same computer via sockets.
+|**GeometricElement**|A subclass of Element that can include geometry (in its GeometryStream.) Only GeometricElements are visible in Views.
 |**GeometricModel**|A subclass of Model that can hold GeometricElements.
 |**GeometryPart**|A named GeometryStream that can be shared by many GeometricElements.
 |**GeometryStream**|A collection of geometric primitives that describes the geometric properties of a GeometricElement. Individual members of GeometryStream may be on different SubCategories and may reference GeometryParts.
@@ -67,7 +68,7 @@
 |**Spatial Coordinate System**|The 3d coordinate system of an iModel. The units are always meters (see ACS). The origin (0,0,0) of the Spatial Coordinate System may be oriented on the earth via an EcefLocation.
 |**SpatialModel**|A subclass of GeometricModel that holds 3d Elements in the iModel's Spatial Coordinate System.
 |**SpatialViewDefinition**|A subclass of ViewDefinition that displays one or more SpatialModels.
-|**SubCategory**|A subdivision of a Category. SubCategories allow GeometricElements to have multiple pieces of Geometry that can be independently visible and styled. It is important to understand that a SubCategory is **not** a Category (i.e. Categories do not *nest*) and that a SubCategory always subdivides a single Category.
+|**SubCategory**|A subdivision of a Category. SubCategories allow GeometricElements to have multiple pieces of Geometry that can be made independently visible and styled. It is important to understand that a SubCategory is **not** a Category (i.e. Categories do *not* nest) and that a SubCategory always subdivides a single Category.
 |**SubCategoryAppearance**|The appearance (e.g. color, weight, style, etc.) of geometry on a SubCategory. Every SubCategory has a default SubCategoryAppearance and Views can optionally override its values.
 |**TentativePoint**|A TypeScript class in the frontend that implements a technique for *tentatively* snapping to interesting points in a View. Usually the TentativePoint action is mapped to the center mouse button.
 |**TextString**|A TypeScript class that holds a *run* of unicode-encoded text that all has the same size, font, style, etc.

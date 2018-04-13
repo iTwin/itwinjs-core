@@ -13,14 +13,13 @@ It can be used to build:
 imodeljs-core is the name of the overall git repository.
 The source code is organized according to where it can run:
 
-| Directory            | Design Requirements |
-|----------------------|---------------------|
-| source/backend/      | Designed for backend requirements. Runs in a standalone JavaScript engine (Node in this case). May have file system and Node dependencies  |
-| source/backend/test/ | Specific for unit tests. The test framework puts the frontend and backend together in a single executable. |
-| source/frontend/     | Designed for frontend requirements. Must be able to run in a web browser. Cannot have file system or Node dependencies. |
-| source/common/       | Design to run either in frontend or backend. Must adhere to frontend restrictions. |
-| source/gateway/      | Configures how the frontend talks to the backend. This source code is used by both the frontend and backend. |
-| source/testbed/      | Used for testing the frontend, but includes a test backend and test gateway |
+| Directory      | Design Requirements |
+|----------------|---------------------|
+| core/common/   | Designed to run either in frontend or backend. Must adhere to frontend restrictions. |
+| core/backend/  | Designed for backend requirements. Runs in a standalone JavaScript engine (Node in this case). May have file system dependencies  |
+| core/frontend/ | Designed for frontend requirements. Must be able to run in a web browser. Cannot have file system or Node dependencies. |
+| sample-code/   | Houses sample source code snippets |
+| testbed/       | Used for testing the frontend, but includes a test backend and test gateway |
 
 ## Prerequisites
 
@@ -77,7 +76,6 @@ Now, [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush) takes over t
 1. Build TypeDoc documentation for all packages: `npm run docs`
 2. Build TypeDoc documentation for frontend, backend, or common only: `npm run docs:frontend`, `npm run docs:backend`, `npm run docs:common` from top-level directory or `npm run docs` from package directory
 3. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
-4. Run code coverage for the frontend, backend and common folders using the tests (coverage output to source/test/lib/coverage) : `npm run cover`
 
 The full list of npm scripts can be found in the root `package.json` file.
 
@@ -92,36 +90,40 @@ Also, these packages are described below:
   * Private, not published
   * Provides the npm scripts to work with this repository
   * Identifies the overall devDependencies (union of backend, frontend, and test devDependencies). Many devDependencies are in common between backend and frontend, so consolidating them makes them easier to manage.
-* `source/backend/package.json`
+* `core/common/package.json`
+  * Controls the version number for **@bentley/imodeljs-common**
+  * Controls the package dependencies for the source code in common to both the backend and frontend
+* `core/backend/package.json`
   * Controls the version number for **@bentley/imodeljs-backend**
   * Controls the backend package dependencies
-* `source/frontend/package.json`
+* `core/frontend/package.json`
   * Controls the version number for and dependencies of **@bentley/imodeljs-frontend**
   * Controls the frontend package dependencies
-* `source/testbed/package.json`
+* `testbed/package.json`
   * Private, not published
   * Testbed application for testing frontend/backend interaction
 
 ### Installing dependencies and devDependencies
 
-The single `rush install` command run at the root of the repository installs devDependencies at the root and iterates into backend, frontend, and testbed to install dependencies.
+The single `rush install` command run at the root of the repository installs devDependencies at the root and iterates into common, backend, frontend, and testbed to install dependencies.
 After a successful install, you will notice multiple **node_modules** directories:
 
-| node_modules Directory        | Contents                |
-|-------------------------------|-------------------------|
-| node_modules/                 | Overall devDependencies |
-| source/backend/node_modules/  | Backend dependencies    |
-| source/frontend/node_modules/ | Frontend dependencies   |
-| source/testbed/node_modules/  | Testbed dependencies    |
+| node_modules Directory      | Contents                |
+|-----------------------------|-------------------------|
+| node_modules/               | Overall devDependencies |
+| core/common/node_modules/   | Backend dependencies    |
+| core/backend/node_modules/  | Backend dependencies    |
+| core/frontend/node_modules/ | Frontend dependencies   |
+| testbed/node_modules/       | Testbed dependencies    |
 
 With Rush, the node_modules directories listed above are symlinks to a *common* package managed by Rush.
 
 ## Build Output and Publishing
 
-| Output Directory     | Published As      |
-|----------------------|-------------------|
-| source/backend/lib/  | imodeljs-backend  |
-| source/frontend/lib/ | imodeljs-frontend |
+| Output Directory   | Published As      |
+|--------------------|-------------------|
+| core/common/lib/   | **@bentley/imodeljs-backend**  |
+| core/backend/lib/  | **@bentley/imodeljs-backend**  |
+| core/frontend/lib/ | **@bentley/imodeljs-frontend** |
 
-Note that imodeljs-core/source/common/ is built into both the **imodeljs-backend** and **imodeljs-frontend** packages.
 Note that these packages are published by Bentley CI builds only.

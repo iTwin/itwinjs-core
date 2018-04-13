@@ -7,23 +7,14 @@
     "**/common/temp": true
   },
   "files.exclude": {
-    "node_modules": true,
-    "lib": true,
     ".nyc_output": true,
-    "source/backend/lib": true,
-    "source/backend/node_modules": true,
-    "source/common/lib": true,
-    "source/common/node_modules": true,
-    "source/frontend/lib": true,
-    "source/frontend/node_modules": true,
-    "source/test/lib": true,
-    "source/test/node_modules": true,
-    "source/testbed/lib": true,
-    "source/testbed/node_modules": true,
     "**/*.build.log": true,
     "**/*.build.error.log": true,
     "common/temp": true,
-    "**/package-deps.json": true
+    "**/generated-docs": true,
+    "**/package-deps.json": true,
+    "**/node_modules": true,
+    "**/lib": true
   },
   "cSpell.words": [
     "Accu",

@@ -9,25 +9,41 @@
       "request": "launch",
       "name": "Run Backend Tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/source/backend",
+      "cwd": "${workspaceFolder}/core/backend/src/test",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/source/backend/lib/test/integrated",
+        "--testDir=${workspaceFolder}/core/backend/lib/test",
         "--debug"
       ],
       "port": 9229,
-      "protocol": "inspector"
+      "protocol": "inspector",
+      "outputCapture": "std"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Offline)",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/source/backend",
+      "cwd": "${workspaceFolder}/core/backend/src/test",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/source/backend/lib/test/offline",
-        "--offline",
+        "--testDir=${workspaceFolder}/core/backend/lib/test",
+        "--debug",
+        "--offline"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run sample-code Tests",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/sample-code",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/sample-code/out/backend",
         "--debug"
       ],
       "port": 9229,
@@ -38,10 +54,10 @@
       "type": "node",
       "request": "launch",
       "name": "_Testbed (backend)",
-      "cwd": "${workspaceFolder}/source/testbed/",
-      "runtimeExecutable": "${workspaceFolder}\\source\\testbed\\node_modules\\.bin\\electron",
+      "cwd": "${workspaceFolder}/testbed/",
+      "runtimeExecutable": "${workspaceFolder}\\testbed\\node_modules\\.bin\\electron",
       "runtimeArgs": [
-        "${workspaceFolder}/source/testbed/floss/electron/index.js",
+        "${workspaceFolder}/testbed/floss/electron/index.js",
         "{\"debug\":true, \"noDevTools\":true, \"path\":\"lib/frontend/index.js\", \"grep\":\"\", \"fgrep\":\"\"}",
         "--debug-brk=5858",
         "--remote-debugging-port=9223"
@@ -50,7 +66,7 @@
       "port": 5858,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/source/testbed/lib/**/*.js"
+        "${workspaceRoot}/testbed/lib/**/*.js"
       ]
     },
     {
