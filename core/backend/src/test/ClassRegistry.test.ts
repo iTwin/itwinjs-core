@@ -5,19 +5,30 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code } from "@bentley/imodeljs-common";
-import { DefinitionElement, EntityMetaData, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../backend";
+import { EntityMetaData, IModelDb } from "../backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { BriefcaseManager } from "../backend";
+import { IModelHubClient } from "@bentley/imodeljs-clients";
+import { MockAssetUtil } from "./MockAssetUtil";
+import * as TypeMoq from "typemoq";
 
 describe("Class Registry", () => {
   let imodel: IModelDb;
+  const assetDir = "./test/assets/_mocks_";
 
   before(() => {
+    const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
+    BriefcaseManager.hubClient = iModelHubClientMock.object;
+
+    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
+
     imodel = IModelTestUtils.openIModel("test.bim");
     assert.exists(imodel);
   });
 
   after(() => {
+    if (imodel)
     IModelTestUtils.closeIModel(imodel);
   });
 
@@ -32,10 +43,10 @@ describe("Class Registry", () => {
         return;
       assert.equal(metaData.ecclass, el.classFullName);
       // I happen to know that this is a BisCore:RepositoryLink
-      assert.equal(metaData.ecclass, RepositoryLink.classFullName);
+      assert.equal(metaData.ecclass, "BisCore:RepositoryLink");
       //  Check the metadata on the class itself
       assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0], UrlLink.classFullName);
+      assert.equal(metaData.baseClasses[0], "BisCore:UrlLink");
       assert.equal(metaData.customAttributes![0].ecclass, "BisCore:ClassHasHandler");
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
       assert.exists(metaData.properties);
@@ -53,9 +64,9 @@ describe("Class Registry", () => {
         return;
       assert.equal(metaData.ecclass, el2.classFullName);
       // I happen to know that this is a BisCore.SpatialViewDefinition
-      assert.equal(metaData.ecclass, SpatialViewDefinition.classFullName);
+      assert.equal(metaData.ecclass, "BisCore:SpatialViewDefinition");
       assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0], ViewDefinition3d.classFullName);
+      assert.equal(metaData.baseClasses[0], "BisCore:ViewDefinition3d");
       assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.modelSelector);
       const n = metaData.properties.modelSelector;
@@ -70,7 +81,7 @@ describe("Class Registry", () => {
     const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
 
     assert.equal(testDomainClass.baseClasses.length, 2);
-    assert.equal(testDomainClass.baseClasses[0], DefinitionElement.classFullName);
+    assert.equal(testDomainClass.baseClasses[0], "BisCore:DefinitionElement");
     assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
 
     // Ensures the IMixin has been loaded as part of getMetadata call above.
