@@ -3,7 +3,7 @@
   "//private": "NOTE: This 'root' package is private. It is never published",
   "private": true,
   "description": "iModelJs core components",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/imodeljs-core"
@@ -33,6 +33,7 @@
     "test:backendwebpackformobile": "cd core/backend && npm run webpackformobile",
     "test:frontend": "cd testbed && npm run build && node bin/testbed.js",
     "test:sample-code": "cd sample-code && npm run test",
+    "test:perf": "cd core/backend && npm run perftest",
     "testbed": "cd testbed && node bin/testbed.js --debug",
     "cover:geometry": "cd core/geometry && npm run cover",
     "cover:backend": "cd core/backend && npm run cover",
@@ -50,11 +51,12 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": [
-    "NOTE: dependencies will be empty here and specified in core/common, core/backend, core/frontend, and testbed."
+    "NOTE: dependencies will be empty here and specified in core/common, core/backend, core/frontend, and testbed.",
   ],
   "//devDependencies": [
     "NOTE: These are the union of all devDependencies for core/common, core/backend, core/frontend, and testbed",
-    "WIP: Temporarily workaround monorepo/symlink issues by adding a devDependencies on @bentley/bentleyjs-core and @bentley/geometry-core"
+    "WIP: Temporarily workaround monorepo/symlink issues by adding a devDependencies on @bentley/bentleyjs-core and @bentley/geometry-core",
+    "WIP: bentleyjs-core@7.3.2 is a peer dependency of imodeljs-clients@5.1.0"
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "7",

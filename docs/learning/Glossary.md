@@ -20,14 +20,14 @@
 |**DisplayStyle**|A named set of choices for the way Geometry is displayed in a view. Many ViewDefinitions may refer to the same DisplayStyle.
 |**Domain**|A named set of EC Classes that define the information for a particular discipline or field of work. All classes in a Domain ultimately must derive from a BisCore class. The ECClasses for a Domain are defined in a ECSchema file, an hence the terms *Domain* and *ECSchema* are often used interchangeably.
 |**DrawingModel**|A 2d model that holds drawing graphics. DrawingModels may be dimensional or non-dimensional.
-|**EC**|An abbreviation for Entity Content. This prefix is used to refer to the metadata system of iModels.
+|**EC**|An abbreviation for Entity Classification. This prefix is used to refer to the metadata system of iModels.
 |**ECClass**|A named set of properties and relationships that defines a type of object. Data in iModels are defined by ECClasses.
 |**ECDb**|A [SQLite](https://www.sqlite.org/index.html) database conforming to the rules of EC. iModels are a type of ECDb.
 |**EcefLocation**|The position and orientation, in [Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) (also known as ECR "earth-centered rotational") coordinates, of the origin of the Spatial Coordinate System of an iModel.
 |**ECProperty**|A named member of an ECClass.
 |**ECRelationship**|A named type of relationship and cardinality between instances of ECClasses.
 |**ECSchema**|A named group of ECClasses and ECRelationships.
-|**ECSql**|A superset of SQL that uses ECClass and ECProperties names in place of table and column names.
+|**ECSQL**|A superset of SQL that uses ECClass and ECProperties names in place of table and column names (see [ECSQL](ECSQL.md)).
 |**Electron**|A tool for building [desktop apps in JavaScript and HTML](https://electronjs.org).
 |**Element**|The base class in Bis for an *Entity with a Code*. Elements also have an ElementId, a FederationGuid, and an ElementUserLabel. There is also a backend TypeScript class called Element.
 |**ElementAspect**|An ECClass that holds information related to (and owned by) a single Element. Semantically, an ElementAspect can be considered part of the Element, but defined independently. Thus, ElementAspects are deleted when their owning Element is deleted.

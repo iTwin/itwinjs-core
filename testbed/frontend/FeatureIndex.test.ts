@@ -2,8 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ColorIndex } from "@bentley/imodeljs-frontend/lib/rendering";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
 describe("ColorIndex", () => {
   it("should create, store and retrieve from ColorIndex", () => {

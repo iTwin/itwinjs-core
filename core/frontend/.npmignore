@@ -5,3 +5,4 @@
 test
 !public/**
 !package.json
+!*.md

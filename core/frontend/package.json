@@ -1,10 +1,10 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.74.0",
+  "version": "0.74.2",
   "description": "iModelJs frontend components",
   "main": "lib/frontend.js",
   "typings": "lib/frontend",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
@@ -24,7 +24,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "7",
-    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/imodeljs-clients": "^5.1.0",
     "@bentley/imodeljs-common": "0"
   },
   "devDependencies": {
@@ -32,7 +32,7 @@
     "typescript": "~2.7.2",
     "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "7",
-    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/imodeljs-clients": "^5.1.0",
     "@bentley/imodeljs-common": "0"
   },
   "//dependencies": [

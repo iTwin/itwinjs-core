@@ -4,7 +4,7 @@
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {},
   "scripts": {
     "build": "tsc 1>&2",

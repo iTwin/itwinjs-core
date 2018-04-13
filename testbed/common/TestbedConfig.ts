@@ -4,12 +4,14 @@
 import { IModelGateway, BentleyCloudGatewayConfiguration, GatewayElectronConfiguration, GatewayOperation, IModelToken } from "@bentley/imodeljs-common";
 import { TestGateway } from "../common/TestGateway";
 
+declare var ___TESTBED_IPC_RENDERER___: any;
+
 export class TestbedConfig {
   public static gatewayParams = { info: { title: "imodeljs-core-testbed", version: "v1.0" } };
   public static serverPort = process.env.PORT || 3000;
   public static swaggerURI = "/v3/swagger.json";
   public static gatewayConfig: BentleyCloudGatewayConfiguration;
-  public static ipc: any;
+  public static get ipc(): any { return ___TESTBED_IPC_RENDERER___; }
   public static useIPC = false;
 
   public static initializeGatewayConfig() {

@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Geometry, Arc3d } from "@bentley/geometry-core";
+import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
@@ -16,7 +17,6 @@ import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
-import { IModelApp } from "./IModelApp";
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,

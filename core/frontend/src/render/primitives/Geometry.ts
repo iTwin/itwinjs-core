@@ -27,16 +27,16 @@ import { Graphic,
          GeometryParams,
          AsThickenedLine,
          TextString,
+         QParams3d,
          // Feature,
          GraphicBranch } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
-import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
-import { QParams3d } from "./QPoint";
-import { PrimitiveBuilderContext } from "../ViewContext";
-import { GeometryOptions } from "./primitives/Primitives";
-import { System } from "./System";
-import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "./DisplayParams";
-import { ViewContext } from "../ViewContext";
+import { IModelConnection } from "../../IModelConnection";
+import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
+import { PrimitiveBuilderContext } from "../../ViewContext";
+import { GeometryOptions } from "./Primitives";
+import { System } from "../System";
+import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "../DisplayParams";
+import { ViewContext } from "../../ViewContext";
 
 export abstract class Geometry {
   public facetCount: number;
