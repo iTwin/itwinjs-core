@@ -2,7 +2,7 @@
   "name": "imodeljs-core-sample-code",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "buildbackend": "cd ./backend && tsc --outDir ../out/backend 1>&2",
     "cleanbackend": "rimraf lib out/backend",

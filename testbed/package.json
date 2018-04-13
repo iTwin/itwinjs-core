@@ -2,7 +2,7 @@
   "name": "imodeljs-core-testbed",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:testpublic && npm run webpack:frontend",
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",

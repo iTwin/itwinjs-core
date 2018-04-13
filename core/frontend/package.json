@@ -4,7 +4,7 @@
   "description": "iModelJs frontend components",
   "main": "lib/frontend.js",
   "typings": "lib/frontend",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
