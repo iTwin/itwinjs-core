@@ -4,10 +4,11 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:frontendpublic  && npm run copy:testpublic",
+    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:testpublic && npm run webpack:frontend",
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
     "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
-    "copy:testpublic": "cpx ./public/**/* ./lib/backend/public"
+    "copy:testpublic": "cpx ./public/**/* ./lib/backend/public",
+    "webpack:frontend": "webpack --config webpack.config.js"
   },
   "repository": {},
   "//dependencies": [
@@ -37,12 +38,14 @@
     "i18next-browser-languagedetector": "^2.1.0",
     "i18next-xhr-backend": "^1.5.1",
     "js-base64": "^2.4.0",
-    "save": "^2.3.2",
-    "webpack": "^3.10.0"
+    "save": "^2.3.2"
   },
   "devDependencies": {
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
-    "typescript": "~2.7.2"
+    "typescript": "~2.7.2",
+    "null-loader": "latest",
+    "webpack": "^3.10.0",
+    "node-glob": "^1.2.0"
   }
 }

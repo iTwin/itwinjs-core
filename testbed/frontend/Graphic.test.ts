@@ -7,6 +7,7 @@ import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } fr
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Graphic, GraphicList, IModel, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import * as path from "path";
+import { CONSTANTS } from "../common/Testbed";
 
 export class FakeGraphic extends Graphic {
   constructor(iModel: IModel) { super(iModel); }
@@ -16,7 +17,7 @@ function withinTol(x: number, y: number): boolean {
   return Math.abs(x - y) < 0.0000000000001;
 }
 
-const iModelLocation = path.join(__dirname, "../../../core/backend/lib/test/assets/test.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 describe("Graphic", () => {
   let iModel: IModelConnection;
