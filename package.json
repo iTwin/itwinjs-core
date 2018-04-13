@@ -48,8 +48,12 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": [
-    "NOTE: dependencies will be empty here and specified in core/common, core/backend, core/frontend, and testbed."
+    "NOTE: dependencies will be empty here and specified in core/common, core/backend, core/frontend, and testbed.",
+    "WIP: bentleyjs-core@7.3.2 is a peer dependency of imodeljs-clients@5.0.5"
   ],
+  "dependencies": {
+    "@bentley/bentleyjs-core": "7"
+  },
   "//devDependencies": "NOTE: These are the union of all devDependencies for core/common, core/backend, core/frontend, and testbed",
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^3.2.5",

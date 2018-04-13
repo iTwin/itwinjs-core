@@ -27,7 +27,7 @@
 |**ECProperty**|A named member of an ECClass.
 |**ECRelationship**|A named type of relationship and cardinality between instances of ECClasses.
 |**ECSchema**|A named group of ECClasses and ECRelationships.
-|**ECSql**|A superset of SQL that uses ECClass and ECProperties names in place of table and column names.
+|**ECSQL**|A superset of SQL that uses ECClass and ECProperties names in place of table and column names (see [ECSQL](ECSQL.md)).
 |**Electron**|A tool for building [desktop apps in JavaScript and HTML](https://electronjs.org).
 |**Element**|The base class in Bis for an *Entity with a Code*. Elements also have an ElementId, a FederationGuid, and an ElementUserLabel. There is also a backend TypeScript class called Element.
 |**ElementAspect**|An ECClass that holds information related to (and owned by) a single Element. Semantically, an ElementAspect can be considered part of the Element, but defined independently. Thus, ElementAspects are deleted when their owning Element is deleted.
