@@ -7,3 +7,5 @@ assets/**
 test
 !public/**
 !package.json
+!*.md
+

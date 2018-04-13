@@ -4,7 +4,7 @@
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=8.9.0 <9.0"
   },
