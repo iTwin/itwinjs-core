@@ -31,6 +31,7 @@
     "test:backendwebpackformobile": "cd core/backend && npm run webpackformobile",
     "test:frontend": "cd testbed && npm run build && node bin/testbed.js",
     "test:sample-code": "cd sample-code && npm run test",
+    "test:perf": "cd core/backend && npm run perftest",
     "testbed": "cd testbed && node bin/testbed.js --debug",
     "cover:backend": "cd core/backend && npm run cover",
     "module:backend": "cd core/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
