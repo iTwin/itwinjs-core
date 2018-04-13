@@ -4,16 +4,9 @@
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
-  "repository": {
-    "type": "git",
-    "url": "http://tfs.bentley.com:8080//tfs/ProductLine/Platform%20Technology/_git/geometry-core.git"
-  },
+  "repository": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "^3.2.1",
-    "@types/chai": "^4.1.2",
-    "@types/flatbuffers": "^1.6.5",
-    "@types/mocha": "^2.2.47",
-    "@types/node": "^8.5.9",
+    "@types/lodash": "4.14.106",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
@@ -21,25 +14,21 @@
     "nyc": "^11.4.1",
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
+    "source-map-support": "^0.5.0",
     "ts-node": "^3.3.0",
+    "tsconfig-paths": "^2.7.2",
     "typedoc": "^0.9.0",
-    "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~2.6.2"
+    "typescript": "~2.7.2"
   },
   "scripts": {
-    "build": "npm run copyassets && tsc",
+    "build": "tsc 1>&2",
+    "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
-    "copyassets": "cpx ./source/assets/**/* ./lib/assets",
-    "copytestassets": "cpx ./source/test/assets/**/* ./lib/test/assets",
-    "test": "npm run copytestassets && npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/test.js",
-    "test:tsnode": "npm run copytestassets && npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js",
-    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
-    "clean": "rimraf ./lib",
-    "docs": "npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --tsIndexFile=geometry-core.ts",
-    "cover": "nyc npm run test:tsnode",
-    "cover:docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js",
-    "module": "cd source && node ../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule.js --recursively=true",
-    "imported": "npm run build && node node_modules/@bentley/bentleyjs-tools/scripts/getallimported.js --rootDir=./lib --recursively=true"
+    "pretest": "rush build -t @bentley/geometry-core",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./src/geometry-core.ts --baseUrl=./node_modules --out=../../generated-docs/geometry --json=../../generated-docs/geometry/json/file.json %TYPEDOC_THEME%",
+    "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
+    "cover:docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js"
   },
   "keywords": [
     "Bentley",
@@ -53,16 +42,18 @@
   "dependencies": {},
   "nyc": {
     "include": [
-      "source/**/*.ts"
+      "./src/**/*.ts"
     ],
     "exclude": [
-      "source/test/*",
+      "./src/test/*",
       "**/*.d.ts"
     ],
     "extension": [
       ".ts"
     ],
     "require": [
+      "source-map-support/register",
+      "tsconfig-paths/register",
       "ts-node/register"
     ],
     "reporter": [

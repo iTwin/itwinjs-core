@@ -32,7 +32,7 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 import * as fs from "fs";
 
 // Variables used for testing
-let outputFolderPath = "./source/test/output";
+let outputFolderPath = "./src/test/output";
 
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(outputFolderPath))

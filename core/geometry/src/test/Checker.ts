@@ -5,6 +5,7 @@ import { Geometry, Angle } from "../Geometry";
 import { XYZ, Point2d, Point3d, Vector3d, Vector2d, Segment1d } from "../PointVector";
 import { Transform, RotMatrix } from "../Transform";
 
+import { GrowableFloat64Array } from "../GrowableArray";
 import { Range3d } from "../Range";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Arc3d } from "../curve/Arc3d";
@@ -12,7 +13,6 @@ import { LineString3d } from "../curve/LineString3d";
 import { Point4d, Matrix4d } from "../numerics/Geometry4d";
 import { Complex } from "../numerics/Complex";
 
-import { GrowableFloat64Array } from "GrowableArray";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 
 /* tslint:disable:variable-name no-console*/

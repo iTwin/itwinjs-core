@@ -12,7 +12,7 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import * as fs from "fs";
 
-let outputFolderPath = "./source/test/output";
+let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(outputFolderPath))
   fs.mkdirSync(outputFolderPath);

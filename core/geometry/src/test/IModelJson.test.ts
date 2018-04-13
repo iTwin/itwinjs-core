@@ -19,7 +19,7 @@ import * as fs from "fs";
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
-  public static outputRootDirectory = "./source/test/output";
+  public static outputRootDirectory = "./src/test/output";
   public static saveGeometry(geometry: GeometryQuery[], directoryName: string | undefined, fileName: string) {
 
     let path = GeometryCoreTestIO.outputRootDirectory;
@@ -35,9 +35,9 @@ export class GeometryCoreTestIO {
 }
 
 // directory containing imjs files produced by native geomlibs tests:
-const iModelJsonNativeSamplesDirectory = "./source/test/iModelJsonSamples/fromNative/";
+const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";
 // directory containing imjs files produced by prior executions of this test file:
-const iModelJsonSamplesDirectory = "./source/test/iModelJsonSamples/fromGC/";
+const iModelJsonSamplesDirectory = "./src/test/iModelJsonSamples/fromGC/";
 
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(GeometryCoreTestIO.outputRootDirectory))

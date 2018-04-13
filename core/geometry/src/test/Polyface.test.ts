@@ -18,7 +18,7 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 /* tslint:disable:no-console */
-let outputFolderPath = "./source/test/output";
+let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(outputFolderPath))
   fs.mkdirSync(outputFolderPath);

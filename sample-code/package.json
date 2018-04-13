@@ -7,7 +7,7 @@
     "buildbackend": "cd ./backend && tsc --outDir ../out/backend 1>&2",
     "cleanbackend": "rimraf lib out/backend",
     "copybackendassets": "cpx ./backend_test_assets/**/* ./out/backend/assets",
-    "pretestbackend": "npm run copybackendassets && rush build",
+    "pretestbackend": "npm run copybackendassets && rush build -t imodeljs-core-sample-code",
     "testbackend": "npm run pretestbackend && node ../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../\" --testDir=\"./out/backend\"",
     "buildfrontend": "cd ./frontend && tsc --outDir ../out/frontend",
     "cleanfrontend": "rimraf lib out/frontend",
@@ -23,7 +23,7 @@
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "7",
-    "@bentley/geometry-core": "^7.3.1",
+    "@bentley/geometry-core": "7",
     "@bentley/imodeljs-backend": "0",
     "@bentley/imodeljs-n_8-win32-x64": "~15.2.0",
     "@bentley/imodeljs-clients": "^5.0.5",
