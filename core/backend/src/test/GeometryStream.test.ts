@@ -246,6 +246,11 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodelWithFonts.elements.getElement(new Id64("0x38"));
     assert.isTrue(seedElement instanceof GeometricElement3d);
+
+    // Update test to include embedding font, etc.
+//    const fontData = imodel.embedFont({ id: 0, type: FontType.TrueType, name: "Arial" });
+//    assert.isTrue(fontData.id !== 0);
+
     const fonts = imodelWithFonts.getFontMap();
     assert.isTrue(fonts.fonts.size > 0);
 
