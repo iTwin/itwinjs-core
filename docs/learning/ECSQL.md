@@ -25,13 +25,15 @@ This is not a comprehensive documentation of the SQL subset of ECSQL. This docum
 to standard SQL and the cases where less known features of the standard are used.
 Standard SQL refers to SQL-92 (aka SQL 2), and to SQL-99 (aka SQL 3) whenever SQL-92 is not sufficient.
 
+> All ECSQL examples in the following sections refer to classes and relationships from the **BisCore** ECSchema (unless mentioned otherwise).
+
 ## Fully qualifying ECClasses in ECSQL
 
 The classes used in an ECSQL have to be fully qualified by their schemas.
 
 Syntax: `<Schema name or alias>.<Class name>`
 
-> Instead of the '.' you can also use ':' as delimiter between schema and class name.
+> Instead of '.' you can also use ':' as delimiter between schema and class name.
 
 ### Example
 
@@ -55,7 +57,7 @@ Parameter type | Description
 
 ### Example
 
-`SELECT ECInstanceId FROM bis.GeometricElement3d WHERE Model=? AND LastMod >=?`
+`SELECT ECInstanceId FROM bis.GeometricElement3d WHERE Model=? AND LastMod>=?`
 
 `SELECT ECInstanceId FROM bis.GeometricElement3d LIMIT :pagesize OFFSET (:pageno * :pagesize)`
 
@@ -63,7 +65,7 @@ See also sections [ECInstanceId and ECClassId](#ecinstanceid-and-ecclassid) and 
 
 ## Basic data types in ECSQL
 
-ECSQL supports all primitive types built into EC. This means that in addition to the basic numeric and string data types in SQL-92, ECSQL also supports boolean, BLOBs, date times and points.
+ECSQL supports all primitive types built into EC. This means that in addition to the basic numeric and string data types in SQL-92, ECSQL also supports boolean, BLOBs, date-times and points.
 
 ### Boolean
 
@@ -84,17 +86,17 @@ boolean value already. So the above examples can also be written like this:
 
 ### DateTime
 
-ECSQL supports `DATE` for dates without time and `TIMESTAMP` for dates with time.
+ECSQL supports both dates without time (`DATE`) and dates with time (`TIMESTAMP`).
 
-> The SQL-99 features for local times and time zones are not supported because they imply
-> implicit time zone conversions which are tricky to do right in general and portable way. Therefore time
-> zone conversions are to be handled by the application.
+> ECSQL does not support time zone conversions. Time zone conversions are to be handled by the application.
 
 #### Literals
 
 `DATE 'yyyy-mm-dd'`
 
-`TIMESTAMP 'yyyy-mm-dd hh:mm:ss[.nnn]'`
+`TIMESTAMP 'yyyy-mm-dd hh:mm:ss[.nnn][Z]'`
+
+The time stamp format matches the [ISO 8601 standard](https://www.iso.org/iso-8601-date-and-time-format.html) (see also https://en.wikipedia.org/wiki/ISO_8601)
 
 #### Basic functions
 
@@ -107,7 +109,9 @@ Function | Description
 
 `SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod > DATE '2018-01-01'`
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod < TIMESTAMP '2017-07-15 12:00:00'`
+`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod < TIMESTAMP '2017-07-15T12:00:00Z'`
+
+`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod BETWEEN :startperiod AND :endperiod`
 
 ### Points
 
@@ -260,6 +264,18 @@ Return the Model for an Element with the specified condition (No join needed):
 
 `SELECT Model FROM bis.Element WHERE ECInstanceId=?`
 
+## Polymorphic Queries
+
+By default, any ECClass in the FROM clause of an ECSQL is treated polymorphically, i.e. all its sub-classes are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.
+
+### Examples
+
+ECSQL | Description
+--- | ---
+`SELECT ECInstanceId FROM bis.Element WHERE Model=?``  | Returns all Elements of any subclass in the specified Model
+`SELECT ECInstanceId FROM bis.SpatialViewDefinition WHERE ModelSelector=?``  | Returns SpatialViewDefinitions rows and rows of its subclasses for the specified ModelSelector
+`SELECT ECInstanceId FROM ONLY bis.SpatialViewDefinition WHERE ModelSelector=?``  | Returns only SpatialViewDefinitions rows for the specified ModelSelect, but no rows from its subclasse.
+
 ## LIMIT and OFFSET
 
 One way to implement paging is to use the `LIMIT` and `OFFSET` clauses in ECSQL.
@@ -276,3 +292,15 @@ Return only the first 50 matching Elements:
 Return the 201st through 250th matching Element:
 
 `SELECT ECInstanceId,CodeValue,Parent FROM BisCore.Element WHERE Model=? LIMIT 50 OFFSET 200`
+
+## SQL Functions
+
+SQL functions, either built into SQLite or custom SQL functions, can be used in ECSQL.
+
+### Examples
+
+`SELECT substr(CodeValue,1,5) FROM bis.Element WHERE Model=?`
+
+`SELECT ECInstanceId FROM bis.Element WHERE lower(UserLabel)=?`
+
+See also [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html).
