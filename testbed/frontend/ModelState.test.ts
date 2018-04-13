@@ -6,8 +6,9 @@ import * as path from "path";
 import { ModelSelectorState, IModelConnection, DrawingModelState, SheetModelState, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
+import { CONSTANTS } from "../common/Testbed";
 
-const iModelLocation = path.join(__dirname, "../../../core/backend/lib/test/assets/CompatibilityTestSeed.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
 
 describe("ModelState", () => {
   let imodel: IModelConnection;

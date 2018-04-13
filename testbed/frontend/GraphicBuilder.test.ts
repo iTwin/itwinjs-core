@@ -6,9 +6,10 @@ import { Point3d, Transform } from "@bentley/geometry-core";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { GraphicBuilderCreateParams, GraphicType, GraphicBuilderTileCorners } from "@bentley/imodeljs-frontend/lib/rendering";
 import * as path from "path";
+import { CONSTANTS } from "../common/Testbed";
 
-const iModelLocation = path.join(__dirname, "../../../core/backend/lib/test/assets/test.bim");
-const iModelLocation2 = path.join(__dirname, "../../../core/backend/lib/test/assets/testImodel.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
+const iModelLocation2 = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/testImodel.bim");
 
 describe("GraphicBuilderTileCorners", () => {
   it("works as expected", () => {
