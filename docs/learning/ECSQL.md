@@ -109,7 +109,7 @@ Function | Description
 
 `SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod > DATE '2018-01-01'`
 
-`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod < TIMESTAMP '2017-07-15T12:00:00Z'`
+`SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod < TIMESTAMP '2017-07-15T12:00:00.000Z'`
 
 `SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod BETWEEN :startperiod AND :endperiod`
 
