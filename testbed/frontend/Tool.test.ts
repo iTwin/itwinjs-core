@@ -5,8 +5,9 @@ import * as path from "path";
 import { assert } from "chai";
 import { IModelApp, IModelConnection, ElementAgenda, ModifyElementSource, SelectEventType } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { CONSTANTS } from "../common/Testbed";
 
-const iModelLocation = path.join(__dirname, "../../../core/backend/lib/test/assets/test.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 describe("Tools", () => {
   let imodel: IModelConnection;
