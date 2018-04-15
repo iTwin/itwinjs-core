@@ -160,7 +160,7 @@ describe("BriefcaseManager", () => {
 
   });
 
-  it.only("should be able to open a first version IModel in Readonly mode", async () => {
+  it("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
     // let onOpenCalled: boolean = false;
     // const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openModeIn: OpenMode, _versionIn: IModelVersion) => {
@@ -250,7 +250,7 @@ describe("BriefcaseManager", () => {
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
   });
 
-  it.skip("should reuse open briefcases in ReadWrite mode", async () => {
+  it("should reuse open briefcases in ReadWrite mode", async () => {
     // Act
     let timer = new Timer("open briefcase first time");
     const iModel0: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);

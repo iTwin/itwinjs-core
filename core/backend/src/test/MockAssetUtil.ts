@@ -112,7 +112,7 @@ export class MockAssetUtil {
       .returns((token: AccessToken, id: string) => {
         token.toTokenString();
         if (id === "b74b6451-cca3-40f1-9890-42c769a28f3e" || id === "233e1f55-561d-42a4-8e80-d6f91743863e")
-          return Promise.resolve("dbe4b3824129f99e4eb485fb7cd9d2fea2354be1");
+          return Promise.resolve("1b186c485d182c46c02b99aff4fb12637263438f");
         else
           return Promise.resolve("");
       });
