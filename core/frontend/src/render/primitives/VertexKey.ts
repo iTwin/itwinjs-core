@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "@bentley/geometry-core";
-import { QPoint3d } from "../QPoint";
+import { QPoint3d } from "@bentley/imodeljs-common";
 
 export class VertexKeyNormalAndPosition {
   public readonly data = new Uint16Array(4);

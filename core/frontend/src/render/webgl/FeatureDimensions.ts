@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
-import { FeatureIndexType } from "./FeatureIndex";
+import { FeatureIndexType } from "@bentley/imodeljs-common";
 
 /** Describes the dimensionality of a texture used as a look-up table. */
 export const enum LUTDimension {

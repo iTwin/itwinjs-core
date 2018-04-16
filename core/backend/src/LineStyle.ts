@@ -53,12 +53,12 @@ export namespace LineStyleDefinition {
   export enum StrokeWidth {
     /** Stroke draws as one pixel wide line */
     None = 0,
-    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to left side of stroke */
+    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to left side of stroke */
     Left = 1,
-    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to right side of stroke */
+    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to right side of stroke */
     Right = 2,
-    /** [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to both sides of stroke */
-    Both = 3,
+    /** Half [[StrokeProps.orgWidth]] and [[StrokeProps.endWidth]] applied to both sides of stroke */
+    Full = 3,
   }
 
   /** Controls appearance of stroke end caps. If StrokeCap is >= Hexagon, the end cap is stroked as an arc and the value of
@@ -82,19 +82,20 @@ export namespace LineStyleDefinition {
   }
 
   /** A stroke representing either a dash or gap in a stroke pattern */
-  export type StrokeProps =
+  export interface StrokeProps {
     /** Length of stroke in meters */
-    { length: number } |
+    length: number;
     /** Width at start of stroke. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
-    { orgWidth?: number } |
+    orgWidth?: number;
     /** Width at end of stroke, same as start width if not present. Behavior controlled by [[StrokeWidth]], choose value other than [[StrokeWidth.None]] */
-    { endWidth?: number } |
+    endWidth?: number;
     /** Type and behavior of stroke */
-    { strokeMode?: StrokeMode } |
+    strokeMode?: StrokeMode;
     /** How to apply orgWidth and endWidth to stroke */
-    { widthMode?: StrokeWidth } |
+    widthMode?: StrokeWidth;
     /** Appearance of stroke end cap */
-    { capMode?: StrokeCap };
+    capMode?: StrokeCap;
+  }
 
   export type Strokes = StrokeProps[];
 
@@ -142,25 +143,26 @@ export namespace LineStyleDefinition {
   /** Point symbol component defintion [[ComponentType.PointSymbol]].
    * A point symbol component identifies a GeometryPart for reference by a [[SymbolProps]].
    */
-  export type PointSymbolProps =
+  export interface PointSymbolProps {
     /** GeometryPart Id to use as a pattern symbol */
-    { geomPartId: Id64Props } |
+    geomPartId: Id64Props;
     /** GeometryPart.bbox.low.x */
-    { baseX?: number } |
+    baseX?: number;
     /** GeometryPart.bbox.low.y */
-    { baseY?: number } |
+    baseY?: number;
     /** GeometryPart.bbox.low.z */
-    { baseZ?: number } |
+    baseZ?: number;
     /** GeometryPart.bbox.high.x */
-    { sizeX?: number } |
+    sizeX?: number;
     /** GeometryPart.bbox.high.y */
-    { sizeY?: number } |
+    sizeY?: number;
     /** GeometryPart.bbox.high.z */
-    { sizeZ?: number } |
+    sizeZ?: number;
     /** Symbol behavior flags */
-    { symFlags?: PointSymbolFlags } |
+    symFlags?: PointSymbolFlags;
     /** Symbol scale, defaults to 1 */
-    { scale?: number };
+    scale?: number;
+  }
 
   /** Symbol options for location, orientation, and behavior */
   export enum SymbolOptions {
@@ -197,19 +199,22 @@ export namespace LineStyleDefinition {
   }
 
   /** Identifies a symbol and it's location and orientation relative to a stroke pattern */
-  export type SymbolProps =
-    /** The file property id of [[ComponentType.PointSymbol]] component */
-    { symId: number } |
+  export interface SymbolProps {
+    /** The file property id of the symbol component, assumed to be [[ComponentType.PointSymbol]] if symType is undefined. */
+    symId: number;
+    /** The component type, leave undefined if symId is a [[ComponentType.PointSymbol]] */
+    symType?: ComponentType;
     /** The 0 based stroke index for base stroke pattern [[ComponentType.StrokePattern]] component */
-    { strokeNum?: number } |
+    strokeNum?: number;
     /** Symbol x offset distance in meters */
-    { xOffset?: number } |
+    xOffset?: number;
     /** Symbol y offset distance in meters */
-    { yOffset?: number } |
+    yOffset?: number;
     /** Symbol rotation in radians */
-    { angle?: number } |
+    angle?: number;
     /** Must set location for symbol as default value is [[SymbolOptions.None]] */
-    { mod1?: SymbolOptions };
+    mod1?: SymbolOptions;
+  }
 
   export type Symbols = SymbolProps[];
 
@@ -219,8 +224,10 @@ export namespace LineStyleDefinition {
   export interface StrokePointProps {
     /** Name for this stroke point component */
     descr: string;
-    /** The file property id of [[ComponentType.StrokePattern]] component */
+    /** The file property id of the stroke component, assumed to be [[ComponentType.StrokePattern]] if lcType is undefined */
     lcId: number;
+    /** The component type, leave undefined if lcId is a [[ComponentType.StrokePattern]] */
+    lcType?: ComponentType;
     /** Array of symbols */
     symbols: Symbols;
   }
@@ -244,13 +251,14 @@ export namespace LineStyleDefinition {
   }
 
   /** Identifies a component by file property id and type */
-  export type ComponentProps =
+  export interface ComponentProps {
     /** The file property id of [[ComponentType.StrokePattern]] or [[ComponentType.StrokePoint]] component */
-    { id: number } |
+    id: number;
     /** The type of component for specified file property id */
-    { type: ComponentType } |
+    type: ComponentType;
     /** Offset distance for this component, default is 0 */
-    { offset?: number };
+    offset?: number;
+  }
 
   export type Components = ComponentProps[];
 
@@ -267,7 +275,7 @@ export namespace LineStyleDefinition {
     None = 0x00,
     /** Only snap to center line and not individual strokes and symbols of line style */
     NoSnap = 0x04,
-    /** Style represents a continous line with width */
+    /** Style represents a continous line with width (determined by looking at components if not set) */
     Continuous = 0x08,
     /** Style represents physical geometry and should be scaled as such */
     Physical = 0x80,
@@ -299,19 +307,19 @@ export namespace LineStyleDefinition {
      * If base and size parameters are not supplied, queries GeometryPart by id in order to set them.
      */
     public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined {
-      const anyProps = (props as any); // if part extents weren't supplied, set them up now.
-      if (!anyProps.baseX && !anyProps.baseY && !anyProps.baseZ && !anyProps.sizeX && !anyProps.sizeY && !anyProps.sizeZ) {
-        const geomPart = iModel.elements.getElement(anyProps.geomPartId);
+      // if part extents weren't supplied, set them up now.
+      if (!props.baseX && !props.baseY && !props.baseZ && !props.sizeX && !props.sizeY && !props.sizeZ) {
+        const geomPart = iModel.elements.getElement(props.geomPartId);
         if (!geomPart)
           return undefined;
 
-        anyProps.baseX = geomPart.bbox.low.x;
-        anyProps.baseY = geomPart.bbox.low.y;
-        anyProps.baseZ = geomPart.bbox.low.z;
+        props.baseX = geomPart.bbox.low.x;
+        props.baseY = geomPart.bbox.low.y;
+        props.baseZ = geomPart.bbox.low.z;
 
-        anyProps.sizeX = geomPart.bbox.high.x;
-        anyProps.sizeY = geomPart.bbox.high.y;
-        anyProps.sizeZ = geomPart.bbox.high.z;
+        props.sizeX = geomPart.bbox.high.x;
+        props.sizeY = geomPart.bbox.high.y;
+        props.sizeZ = geomPart.bbox.high.z;
       }
 
       const fileProps: FilePropertyProps = { name: "PointSymV1", namespace: "dgn_LStyle" };
@@ -339,7 +347,7 @@ export namespace LineStyleDefinition {
       rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
       if (DbResult.BE_SQLITE_OK !== iModel.saveFileProperty(rasterFileProps, image))
         return undefined;
-      (props as any).imageId = rasterFileProps.id;
+      props.imageId = rasterFileProps.id;
       const fileProps: FilePropertyProps = { name: "RasterComponentV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
       return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.RasterImage } : undefined);
@@ -354,8 +362,8 @@ export namespace LineStyleDefinition {
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
     public static createStyle(imodel: IModelDb, scopeModelId: Id64, name: string, props: StyleProps): Id64 {
-      if (undefined === (props as any).styleFlags) // If flags weren't supplied, default to not snapping to stroke geometry.
-        (props as any).styleFlags = StyleFlags.NoSnap;
+      if (undefined === props.flags)
+        props.flags = StyleFlags.NoSnap; // If flags weren't supplied, default to not snapping to stroke geometry.
 
       const lsProps: LineStyleProps = {
         classFullName: "BisCore:LineStyle",
@@ -366,6 +374,34 @@ export namespace LineStyleDefinition {
       };
 
       return imodel.elements.insertElement(lsProps);
+    }
+
+    /** Query for a continuous line style that can be used to create curves with physical width instead of weight in pixels and create one if it does not already exist.
+     * There are 2 ways to define a continuous line style:
+     * - Width is not specified in the style itself and instead will be supplied as an override for each curve that is drawn.
+     *  - Defined using [[ComponentType.Internal]] with component id 0 [[LinePixels::Solid] which has special behavior of being affected by width overrides.
+     * - Width is specified in the style.
+     *  - Defined using a single stroke component that is a long dash.
+     *
+     * @throws [[IModelError]] if unable to insert the line style definition element.
+     */
+    public static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64, width?: number): Id64 {
+      if (width === undefined) {
+        const name0 = "Continuous";
+        const lsId0 = this.queryStyle(imodel, scopeModelId, name0);
+        return (undefined === lsId0 ? this.createStyle(imodel, scopeModelId, name0, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap }) : lsId0);
+      }
+
+      const name = "Continuous-" + width;
+      const lsId = this.queryStyle(imodel, scopeModelId, name);
+      if (undefined !== lsId)
+        return lsId;
+
+      const strokePatternData = this.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }] });
+      if (undefined === strokePatternData)
+        throw new IModelError(IModelStatus.BadArg, "Unable to insert stroke component");
+
+      return this.createStyle(imodel, scopeModelId, name, { compId: strokePatternData!.compId, compType: strokePatternData!.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
     }
 
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.

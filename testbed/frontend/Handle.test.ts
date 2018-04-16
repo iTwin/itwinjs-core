@@ -2,8 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GL, Handle, BufferHandle, QBufferHandle2d, QBufferHandle3d, AttributeHandle, UniformHandle, QParams } from "@bentley/imodeljs-frontend/lib/rendering";
+import { GL, Handle, BufferHandle, QBufferHandle2d, QBufferHandle3d, AttributeHandle, UniformHandle } from "@bentley/imodeljs-frontend/lib/rendering";
 import { XY, XYZ, Point2d, Point3d, Range2d, Range3d } from "@bentley/geometry-core";
+import { QParams } from "@bentley/imodeljs-common";
 
 // ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
 const haveWebGL = false;

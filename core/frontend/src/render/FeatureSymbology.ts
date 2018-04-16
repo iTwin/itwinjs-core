@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, Cloneable } from "@bentley/imodeljs-common";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
-import { Cloneable } from "./Utility";
 
 export namespace FeatureSymbology {
   export class AppearanceFlags {

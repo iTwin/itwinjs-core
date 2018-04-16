@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { QParams3d, QPoint3d } from "@bentley/imodeljs-frontend/lib/rendering";
+import { QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import { XYZ, Point3d, Range3d } from "@bentley/geometry-core";
 
 function expectPointsEqual(lhs: XYZ, rhs: XYZ, tolerance: number) {

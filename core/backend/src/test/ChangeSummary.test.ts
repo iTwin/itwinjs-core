@@ -291,10 +291,10 @@ describe.skip("ChangeSummary", () => {
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-      // TODO ADDITIONAL MOCK SET UP FOR ASOFCHANGESET
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(changesetId));
     try {
       assert.exists(iModel);
+      await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(changesetId));
 
       // now extract change summary for that one changeset
       await ChangeSummaryManager.extractChangeSummaries(iModel, {currentChangeSetOnly: true});
@@ -339,6 +339,7 @@ describe.skip("ChangeSummary", () => {
     let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(firstChangesetId));
     try {
       assert.exists(iModel);
+      await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(firstChangesetId));
 
       // now extract change summary for that one changeset
       await ChangeSummaryManager.extractChangeSummaries(iModel, {currentChangeSetOnly: true});

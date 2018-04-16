@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { QPoint3d, VertexKeyNormalAndPosition } from "@bentley/imodeljs-frontend/lib/rendering";
+import { QPoint3d } from "@bentley/imodeljs-common";
+import { VertexKeyNormalAndPosition } from "@bentley/imodeljs-frontend/lib/rendering";
 
 describe("VertexKeyNormalAndPosition", () => {
   it("VertexKeyNormalAndPosition works as expected", () => {
