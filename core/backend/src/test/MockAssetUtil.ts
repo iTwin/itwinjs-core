@@ -7,8 +7,9 @@ import { IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel, Briefcase, /*MultiCode, Version,*/
-  SeedFile, SeedFileInitState, UserProfile, /*UserInfo,*/ IModelQuery,
+  SeedFile, SeedFileInitState, UserProfile, Version, IModelQuery,
   ChangeSetQuery, IModelHandler, BriefcaseHandler, ChangeSetHandler,
+  VersionHandler, VersionQuery,
 } from "@bentley/imodeljs-clients";
 
 /** Parse a single typed instance from a JSON string using ECJsonTypeMap */
@@ -94,7 +95,7 @@ export class MockAssetUtil {
   //                                                                                                    "89bd6d5016ea2d644681a45c6cd090cff2de5cf2.cs",
   //                                                                                                    "e4c807479cdc387cd5286488d650246f6ab1a05c.cs"]],
   //                                                          ["0aea4c09-09f4-449d-bf47-045228d259ba", []]]);
-  // private static versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
+  private static versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
   public static verifyIModelInfo(testIModelInfos: TestIModelInfo[]) {
     assert(testIModelInfos.length === this.iModelMap.size, "IModelInfo array has the wrong number of entries");
@@ -111,8 +112,10 @@ export class MockAssetUtil {
                                                                       TypeMoq.It.isAny()))
       .returns((token: AccessToken, id: string) => {
         token.toTokenString();
-        if (id === "b74b6451-cca3-40f1-9890-42c769a28f3e" || id === "233e1f55-561d-42a4-8e80-d6f91743863e")
+        if (id === "233e1f55-561d-42a4-8e80-d6f91743863e")
           return Promise.resolve("1b186c485d182c46c02b99aff4fb12637263438f");
+        else if (id === "b74b6451-cca3-40f1-9890-42c769a28f3e")
+          return Promise.resolve("89bd6d5016ea2d644681a45c6cd090cff2de5cf2");
         else
           return Promise.resolve("");
       });
@@ -140,6 +143,7 @@ export class MockAssetUtil {
     const iModelHandlerMock = TypeMoq.Mock.ofType(IModelHandler);
     const briefcaseHandlerMock = TypeMoq.Mock.ofType(BriefcaseHandler);
     const changeSetHandlerMock = TypeMoq.Mock.ofType(ChangeSetHandler);
+    const versionHandlerMock = TypeMoq.Mock.ofType(VersionHandler);
 
     // For any call with the specified iModel name, grab that iModel's json file and parse it into an instance
     iModelHandlerMock.setup((f: IModelHandler) => f.create(TypeMoq.It.isAny(),
@@ -215,7 +219,8 @@ export class MockAssetUtil {
       .returns((_tok: AccessToken, iModelId: string, seedPathname: string) => {
         const iModelName = this.iModelMap.get(iModelId);
         if (iModelName) {
-          const testModelPath = path.join(assetDir, iModelName, "0", `${iModelName}.bim`);
+          const tokens = seedPathname.split("\\");
+          const testModelPath = path.join(assetDir, iModelName, tokens[tokens.length - 2], tokens[tokens.length - 1]);
           IModelJsFs.copySync(testModelPath, seedPathname);
           const retResponse: Response = {
             status: 200,
@@ -284,7 +289,7 @@ export class MockAssetUtil {
             }
             return Promise.resolve(csets);
           }
-          return Promise.reject(`No matching asset found for ChangeSet with id: ${query.getId()}`);
+          throw Promise.reject(`No matching asset found for ChangeSet with id: ${query.getId()}`);
         }
         throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       }).verifiable();
@@ -307,8 +312,28 @@ export class MockAssetUtil {
         .then(() => Promise.resolve());
       }).verifiable();
 
+    versionHandlerMock.setup((f: VersionHandler) => f.get(TypeMoq.It.isAny(),
+                                                          TypeMoq.It.isAnyString(),
+                                                          TypeMoq.It.isAny()))
+      .returns((_tok: AccessToken, iModelId: string, query: VersionQuery) => {
+        const iModelName = this.iModelMap.get(iModelId);
+        if (iModelName) {
+          for (const versionName of this.versionNames) {
+            if (query.getQueryOptions().$filter!.includes(versionName)) {
+              const versionPath = path.join(assetDir, iModelName, "versions", `${iModelName}${versionName}.json`);
+              const buff = IModelJsFs.readFileSync(versionPath);
+              const jsonObj = JSON.parse(buff.toString());
+              return Promise.resolve(getTypedInstances<Version>(Version, jsonObj));
+            }
+          }
+          throw Promise.reject(`No matching version found for name ${query.getQueryOptions.name} for iModel ${iModelId}`);
+        }
+        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+      });
+
     iModelHubClientMock.setup((f: IModelHubClient) => f.IModels()).returns(() => iModelHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.Briefcases()).returns(() => briefcaseHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.ChangeSets()).returns(() => changeSetHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.Versions()).returns(() => versionHandlerMock.object);
   }
 }

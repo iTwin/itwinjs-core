@@ -121,6 +121,7 @@ describe("BriefcaseManager", () => {
 
         // getChangeSets
         iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken as any, iModelInfo.id);
+        iModelInfo.changeSets.shift();
         expect(iModelInfo.changeSets);
 
         // downloadChangeSets
