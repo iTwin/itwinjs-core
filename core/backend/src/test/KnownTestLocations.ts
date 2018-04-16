@@ -2,13 +2,13 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import {KnownLocations as PlatformKnownLocations} from "../KnownLocations";
+import { Platform } from "../Platform";
 
 export class KnownTestLocations {
 
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
-    const imodeljsMobile = PlatformKnownLocations.imodeljsMobile;
+    const imodeljsMobile = Platform.imodeljsMobile;
     if (imodeljsMobile !== undefined) {
       return imodeljsMobile.knownLocations.assetsDir;
     }
@@ -19,7 +19,7 @@ export class KnownTestLocations {
 
   /** The directory where tests can write. */
   public static get outputDir(): string {
-    const imodeljsMobile = PlatformKnownLocations.imodeljsMobile;
+    const imodeljsMobile = Platform.imodeljsMobile;
     if (imodeljsMobile !== undefined) {
       return imodeljsMobile.knownLocations.tempDir;
     }
