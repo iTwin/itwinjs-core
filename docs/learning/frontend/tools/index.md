@@ -7,7 +7,7 @@ A [Tool](./link) is a JavaScript class that performs an action on behalf of a us
 * Interactive Tools are used for graphical interactions with the IModel. When invoked, they become the active tool, reacting to user input such as data points, mouse movements, gestures, keystrokes, and resets. Interactive Tools are the most flexible Tool type, but they are also the most challenging to implement. iModelJS provides some specializations of Interactive Tool that are easier to implement.
 * Primitive Tools are simplified Interactive Tools that are used to place elements in the design when there is no need locate existing elements. They are implemented as subclass of PrimitiveTool.
 
-The IModelJs core package provides a comprehensive set of Viewing Tools, so most iModelJs applications do not need to implement their own.
+The iModelJs core package provides a comprehensive set of Viewing Tools, so most iModelJs applications do not need to implement their own.
 
 iModelJS also provides a Select Tool, which allows users to select existing elements and interact with them through EditorManipulators that are provided by the element handlers. Providing a capable EditorManipulator for an element often eliminates the need for  modification tools specific to that element type.
 

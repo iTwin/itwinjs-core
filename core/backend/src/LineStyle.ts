@@ -307,19 +307,19 @@ export namespace LineStyleDefinition {
      * If base and size parameters are not supplied, queries GeometryPart by id in order to set them.
      */
     public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined {
-      const anyProps = (props as any); // if part extents weren't supplied, set them up now.
-      if (!anyProps.baseX && !anyProps.baseY && !anyProps.baseZ && !anyProps.sizeX && !anyProps.sizeY && !anyProps.sizeZ) {
-        const geomPart = iModel.elements.getElement(anyProps.geomPartId);
+      // if part extents weren't supplied, set them up now.
+      if (!props.baseX && !props.baseY && !props.baseZ && !props.sizeX && !props.sizeY && !props.sizeZ) {
+        const geomPart = iModel.elements.getElement(props.geomPartId);
         if (!geomPart)
           return undefined;
 
-        anyProps.baseX = geomPart.bbox.low.x;
-        anyProps.baseY = geomPart.bbox.low.y;
-        anyProps.baseZ = geomPart.bbox.low.z;
+        props.baseX = geomPart.bbox.low.x;
+        props.baseY = geomPart.bbox.low.y;
+        props.baseZ = geomPart.bbox.low.z;
 
-        anyProps.sizeX = geomPart.bbox.high.x;
-        anyProps.sizeY = geomPart.bbox.high.y;
-        anyProps.sizeZ = geomPart.bbox.high.z;
+        props.sizeX = geomPart.bbox.high.x;
+        props.sizeY = geomPart.bbox.high.y;
+        props.sizeZ = geomPart.bbox.high.z;
       }
 
       const fileProps: FilePropertyProps = { name: "PointSymV1", namespace: "dgn_LStyle" };
@@ -347,7 +347,7 @@ export namespace LineStyleDefinition {
       rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
       if (DbResult.BE_SQLITE_OK !== iModel.saveFileProperty(rasterFileProps, image))
         return undefined;
-      (props as any).imageId = rasterFileProps.id;
+      props.imageId = rasterFileProps.id;
       const fileProps: FilePropertyProps = { name: "RasterComponentV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
       return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.RasterImage } : undefined);
@@ -362,8 +362,8 @@ export namespace LineStyleDefinition {
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
     public static createStyle(imodel: IModelDb, scopeModelId: Id64, name: string, props: StyleProps): Id64 {
-      if (undefined === (props as any).flags) // If flags weren't supplied, default to not snapping to stroke geometry.
-        (props as any).flags = StyleFlags.NoSnap;
+      if (undefined === props.flags)
+        props.flags = StyleFlags.NoSnap; // If flags weren't supplied, default to not snapping to stroke geometry.
 
       const lsProps: LineStyleProps = {
         classFullName: "BisCore:LineStyle",

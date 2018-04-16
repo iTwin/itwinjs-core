@@ -4,12 +4,12 @@
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {},
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib",
-    "pretest": "rush build",
+    "clean": "rimraf lib package-deps.json",
+    "pretest": "rush build -t @bentley/bentleyjs-core",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
     "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson --tsIndexFile=bentleyjs-core.ts"
   },

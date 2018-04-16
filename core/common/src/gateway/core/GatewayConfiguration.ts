@@ -54,7 +54,7 @@ export abstract class GatewayConfiguration {
   }
 }
 
-// Default configuration (suitable for testing)
+// A default configuration that can be used for basic testing within a library.
 class GatewayDefaultConfiguration extends GatewayConfiguration {
   public gateways = () => [];
   public protocol: GatewayProtocol = new GatewayDirectProtocol(this);
@@ -62,12 +62,13 @@ class GatewayDefaultConfiguration extends GatewayConfiguration {
   public applicationAuthorizationValue = "Basic Og==";
 }
 
-/** @hidden @internal */
+// A default protocol that can be used for basic testing within a library.
 export class GatewayDirectProtocol extends GatewayProtocol {
   public readonly requestType = GatewayDirectRequest;
 }
 
-class GatewayDirectRequest extends GatewayRequest {
+// A default request type that can be used for basic testing within a library.
+export class GatewayDirectRequest extends GatewayRequest {
   public headers: Map<string, string> = new Map();
   public fulfillment: GatewayRequestFulfillment = { result: "", status: 0 };
 

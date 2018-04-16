@@ -9,7 +9,7 @@ import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./rende
 import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imodeljs-common";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { PrimitiveBuilder } from "./render/Geometry";
+import { PrimitiveBuilder } from "./render/primitives/Geometry";
 import { Target, System } from "./render/System";
 
 export class ViewContext {

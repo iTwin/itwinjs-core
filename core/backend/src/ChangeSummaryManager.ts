@@ -127,7 +127,7 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open in readwrite mode and must not be a standalone iModel.");
 
     const iModelId: string = iModel.briefcase.iModelId;
-    const endChangeSetId: string = iModel.briefcase.changeSetId;
+    const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
     assert(endChangeSetId.length !== 0);
 
     let startChangeSetId: string | undefined;
