@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, AngleProps, GeometryQuery, XYProps, XYZProps,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, AngleProps, GeometryQuery, XYProps, XYZProps, LowAndHighXYZ,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
@@ -84,7 +84,7 @@ export interface AreaPatternProps {
 }
 
 export interface MaterialProps {
-  materialId: Id64Props;
+  materialId?: Id64Props;
   origin?: XYZProps;
   size?: XYZProps;
   rotation?: YawPitchRollProps;
@@ -111,6 +111,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   material?: MaterialProps;
   geomPart?: GeometryPartInstanceProps;
   textString?: TextStringProps;
+  subRange?: LowAndHighXYZ;
 }
 
 export type GeometryStreamProps = GeometryStreamEntryProps[];
