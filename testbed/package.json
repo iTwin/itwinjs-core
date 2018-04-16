@@ -8,6 +8,7 @@
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
     "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
     "copy:testpublic": "cpx ./public/**/* ./lib/backend/public",
+    "docs": "",
     "webpack:frontend": "webpack --config webpack.config.js"
   },
   "repository": {},
