@@ -26,7 +26,7 @@
     "watch": "tsc --watch",
     "pretest": "rush build -t @bentley/geometry-core",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./src/geometry-core.ts --baseUrl=./node_modules --out=../../generated-docs/geometry --json=../../generated-docs/geometry/json/file.json %TYPEDOC_THEME%",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --baseUrl=./node_modules --out=../../generated-docs/geometry --json=../../generated-docs/geometry/json/file.json %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
     "cover:docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js"
   },
