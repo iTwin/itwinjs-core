@@ -1,4 +1,4 @@
-# IModelHub - The Backbone for iModelJs Applications
+# iModelHub - The Backbone for iModelJs Applications
 
 [iModelHub](https:/www.iModelHub.com) is a cloud service for managing and coordinating access to [iModels](./iModels).
 
