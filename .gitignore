@@ -4,6 +4,7 @@ node_modules
 # build output
 .nyc_output
 lib
+/core/geometry/src/test/output
 /core/backend/src/test/output
 /sample-code/out
 /generated-docs

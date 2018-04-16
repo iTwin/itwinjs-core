@@ -15,7 +15,7 @@ program
 
 floss(
   {
-    path: "lib/frontend/index.js",
+    path: "bootstrap.js",
     debug: program.debug,
     timeout: program.timeout || 999999,
     noDevTools: program.noDevTools,

@@ -19,10 +19,12 @@
   "cSpell.words": [
     "Accu",
     "BENTLEYCONFIG",
+    "Backends",
     "Elems",
     "Frenet",
     "Intersectable",
     "Keypoint",
+    "Kubernetes",
     "Linestyle",
     "Nums",
     "Obscurable",
@@ -69,6 +71,7 @@
     "hilite",
     "hilited",
     "hline",
+    "imodeljs",
     "intsct",
     "is",
     "keyin",
@@ -106,7 +109,6 @@
     "zbuffer"
   ],
   "typescript.autoImportSuggestions.enabled": false,
-  "guides.normal.width": 3,
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "files.trimTrailingWhitespace": true,
 }

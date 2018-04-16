@@ -6,8 +6,9 @@ import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, ViewRect, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
+import { CONSTANTS } from "../common/Testbed";
 
-const iModelLocation = path.join(__dirname, "../../../core/backend/lib/test/assets/test.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 /** For creating a Viewport without a canvas */
 class TestViewport extends Viewport {

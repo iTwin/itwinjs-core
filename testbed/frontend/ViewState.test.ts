@@ -10,8 +10,9 @@ import {
   SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
   ModelSelectorState, IModelConnection, DisplayStyle3dState,
 } from "@bentley/imodeljs-frontend";
+import { CONSTANTS } from "../common/Testbed";
 
-const iModelLocation = path.join(__dirname, "../../../core/backend/lib/test/assets/test.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
