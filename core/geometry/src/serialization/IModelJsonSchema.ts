@@ -34,56 +34,73 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 
 export namespace IModelJson {
 
-  export type GeometryProps =
-    CurvePrimitiveProps |
-    SolidPrimitiveProps |
-    IndexedMeshProps
-    ;
+  export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps {
+    indexedMesh?: IndexedMeshProps;
+    point?: XYZProps;
+    bsurf?: BSplineSurfaceProps;
+  }
 
-  export type CurvePrimitiveProps =
-    { lineSegment: [XYZProps, XYZProps] } |
-    { lineString: XYZProps[] } |
-    { bcurve: BcurveProps } |
-    { transitionSpiral: TransitionSpiralProps } |
-    { arc: ArcByVectorProps | [XYZProps, XYZProps, XYZProps] };
+  export interface CurvePrimitiveProps {
+    lineSegment?: [XYZProps, XYZProps];
+    lineString?: XYZProps[];
+    bcurve?: BcurveProps;
+    transitionSpiral?: TransitionSpiralProps;
+    arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
+  }
+
+  export interface PointProps {
+    point?: XYZProps;
+  }
+
+  /**
+   * Right side (content) properties for {bsurf: BSplineSurfaceProps}
+   *
+   */
+  export interface BSplineSurfaceProps {
+    orderU: number;
+    orderV: number;
+    points: [[[number]]];   // each inner array is xyz or xyzw for a single control point. each middle array is a row of control points.
+    uKnots: [number];
+    vKnots: [number];
+  }
 
   /**
    * Interface for a collection of curves, eg. as used as a swept contour.
    *
    */
-  export type CurveCollectionProps =
+  export interface CurveCollectionProps extends PlanarRegionProps {
     /** A sequence of curves joined head to tail: */
-    { path: [CurvePrimitiveProps] } |
+    path?: [CurvePrimitiveProps];
     /** A collection of curves with no required structure or connections: */
-    { bagofCurves: [CurveCollectionProps] } |
-    /** A loop, parityRegion, or unionRegion which bounds area: */
-    PlanarRegionProps;
+    bagofCurves?: [CurveCollectionProps];
+  }
 
   /**
    * Interface for a collection of curves that bound a planar region
    *
    */
-  export type PlanarRegionProps =
+  export interface PlanarRegionProps {
     /** A sequence of curves which connect head to tail, with the final connecting back to the first */
-    { loop: [CurvePrimitiveProps] } |
+    loop?: [CurvePrimitiveProps];
     /** A collection of loops, with composite inside/outside determined by parity rules.
      * (The single outer boundary with one or more holes is a parityRegion)
      */
-    { parityRegion: [{ loop: [CurvePrimitiveProps] }] } |
-    { unionRegion: [PlanarRegionProps] };
+    parityRegion?: [{ loop: [CurvePrimitiveProps] }];
+    unionRegion?: [PlanarRegionProps];
+  }
   /**
    * Interface for solid primitives: box, sphere, cylinder, cone, torusPipe, linear sweep, rotational sweep, ruled sweep.
    */
-  export type SolidPrimitiveProps =
-    { cylinder: CylinderProps } |
-    { box: BoxProps } |
-    { sphere: SphereProps } |
-    { cone: ConeProps } |
-    { torusPipe: TorusPipeProps } |
-    { linearSweep: LinearSweepProps } |
-    { rotationalSweep: RotationalSweepProps } |
-    { ruledSweep: RuledSweepProps };
-
+  export interface SolidPrimitiveProps {
+    cylinder?: CylinderProps;
+    box?: BoxProps;
+    sphere?: SphereProps;
+    cone?: ConeProps;
+    torusPipe?: TorusPipeProps;
+    linearSweep?: LinearSweepProps;
+    rotationalSweep?: RotationalSweepProps;
+    ruledSweep?: RuledSweepProps;
+  }
   /**
    * * There are multiple ways to specify an orientation
    * * A "Best" among these is application specific.
@@ -928,12 +945,12 @@ export namespace IModelJson {
     }
 
     public static parse(json?: any): any {
-      if (json as object) {
+      if (json !== undefined && json as object) {
         if (json.lineSegment !== undefined) {
           return Reader.parseLineSegmentProps(json.lineSegment);
-        } else if (json.hasOwnProperty("lineString")) {
+        } else if (json.lineString !== undefined) {
           return LineString3d.create(Reader.parsePointArray(json.lineString));
-        } else if (json.hasOwnProperty("arc")) {
+        } else if (json.arc !== undefined) {
           return Reader.parseArcObject(json.arc);
         } else if (json.hasOwnProperty("point")) {
           return Reader.parseCoordinate(json.point);
