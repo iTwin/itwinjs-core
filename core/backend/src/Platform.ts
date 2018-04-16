@@ -58,4 +58,3 @@ export class KnownLocations {
     return os.tmpdir();
   }
 }
-
