@@ -2,11 +2,15 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // this is the nodejs-specific implementation of the IModelJsFs pseudo-interface.
-// On mobile platforms, this file is not included, and the platform implements and projects IModelJsFs.
+// On mobile platforms, this file is not included. Instead, the iModelJs host app implements IModelJsFs in native code and projects it into JavaScript.
+
+/** @module Portability */
 
 import * as fs from "fs-extra";
 
-/** Information about a file */
+/** Information about a file. See [[IModelJsFs.lstatSync]]
+ * TODO: define File Mode Constants: S_IWUSR, et al.
+ */
 export class IModelJsFsStats {
   constructor(
     public size: number,
@@ -17,11 +21,11 @@ export class IModelJsFsStats {
     public isFile: boolean,
     public isSocket: boolean,
     public isSymbolicLink: boolean,
-    public isReadOnly: boolean,
+    public mode: number,
   ) { }
 }
 
-/** File system operations */
+/** File system operations that are defined on all platforms. See also [[Platform]] and [[KnownLocations]] */
 export class IModelJsFs {
 
   /** Does file or directory exist? */
@@ -68,7 +72,7 @@ export class IModelJsFs {
       stats.isFile(),
       stats.isSocket(),
       stats.isSymbolicLink(),
-      false);
+      stats.mode);
   }
 
 }

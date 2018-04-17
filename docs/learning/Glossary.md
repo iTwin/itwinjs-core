@@ -50,6 +50,7 @@
 |**IModelApp**|The *administrator* class for frontend applications. By subclassing IModelApp, applications can control the behavior of the frontend services.
 |**IModelConnection**|A TypeScript class in the frontend that represents the connection to the iModel on the backend.
 |**iModelHub**|A cloud service that coordinates access to iModels. It grants permission to approved iModelJs applications to access Briefcases of iModels on behalf of a authorized user. It also accepts and distributes ChangeSets to form the immutable and authoritative *timeline of changes* for an iModel.
+|**JSON wire format**|See Wire format
 |**L10N**|An abbreviation for [Localization](https://en.wikipedia.org/wiki/Internationalization_and_localization).
 |**LineStyle**|A named pattern that is repeated along a path when it is displayed to represent the meaning of the path.
 |**Model**|A set of Elements used to describe another Element (its *ModeledElement*) in more detail. Every Element is *contained in* one and only one Model via a ModelContainsElements relationship. In this manner, Models form a hierarchy of Elements. There are many subclasses of Model (e.g. PhysicalModel, FunctionalModel, etc.)
@@ -81,3 +82,4 @@
 |**ViewState**|A TypeScript class in the frontend that holds a copy of the *state* of a ViewDefinition. A ViewState is modified by viewing operations (e.g. pan, zoom, rotate, etc.). There are a parallel set of subclasses of ViewState for the subclasses of ViewDefinition.
 |**WebGL**|A [JavaScript API](https://www.khronos.org/webgl/) for rendering into an HTML document via OpenGL.
 |**Webpack**|A tool for [bundling JavaScript applications](https://webpack.js.org/)
+|**Wire format**|The JSON representation of objects that must be used when transferring data to/from an iModelJs app. Defined by the *Props* interfaces and types in a schema.

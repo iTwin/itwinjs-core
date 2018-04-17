@@ -97,12 +97,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public bindNull(parameter: number | string): void { this.getBinder(parameter).bindNull(); }
 
-  /** bind a Range3d as a blob to the specified ECSQL parameter
-   * @param parameter Index(1-based) or name of the parameter
-   * @param range
-   */
-  public bindRange3d(parameter: number | string, range: LowAndHighXYZ): void { this.bindBlob(parameter, Range3d.toFloat64Array(range).buffer); }
-
   /** Binds a BLOB value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param BLOB value as either an ArrayBuffer or a Base64 string
@@ -156,6 +150,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param val Point3d value
    */
   public bindPoint3d(parameter: number | string, val: XYAndZ): void { this.getBinder(parameter).bindPoint3d(val.x, val.y, val.z); }
+
+  /** Binds a Range3d as a blob to the specified ECSQL parameter
+   * @param parameter Index(1-based) or name of the parameter
+   * @param val Range3d value
+   */
+  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void { this.bindBlob(parameter, Range3d.toFloat64Array(val).buffer); }
 
   /** Binds an string to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter

@@ -19,7 +19,7 @@ export interface LinkTableRelationshipProps extends EntityProps {
 
 /** Base class for all link table ECRelationships */
 export class LinkTableRelationship extends Entity implements LinkTableRelationshipProps {
-  public readonly sourceId: Id64; // Warning: Do not change these property names. They must match the internal names that EC/ECSql assigns to source and target.
+  public readonly sourceId: Id64; // Warning: Do not change these property names. They must match the internal names that EC/ECSQL assigns to source and target.
   public readonly targetId: Id64;
   public readonly sourceClassName?: string;
   public readonly targetClassName?: string;
