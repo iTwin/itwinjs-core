@@ -73,6 +73,22 @@ export class GatewayRegistry {
     this.implementationClasses.set(definition.name, implementation);
   }
 
+  public setImplementationInstance<TDefinition extends Gateway, TImplementation extends TDefinition>(definition: GatewayDefinition<TDefinition>, instance?: TImplementation): TImplementation {
+    const registeredImplementation = this.implementationClasses.get(definition.name) as GatewayImplementation<TImplementation>;
+    if (!registeredImplementation)
+      throw new IModelError(BentleyStatus.ERROR, `An gateway implementation class for "${definition.name}" is not registered.`);
+
+    if (definition.prototype.configurationSupplier)
+      registeredImplementation.prototype.configurationSupplier = definition.prototype.configurationSupplier;
+
+    const implementation = instance || new registeredImplementation();
+    if (!(implementation instanceof registeredImplementation))
+      throw new IModelError(BentleyStatus.ERROR, `Invalid gateway implementation.`);
+
+    this.implementations.set(definition.name, implementation);
+    return implementation;
+  }
+
   public initializeGateway<T extends Gateway>(definition: GatewayDefinition<T>) {
     let directProtocol = false;
 
@@ -102,14 +118,7 @@ export class GatewayRegistry {
 
     const registeredImplementation = this.implementationClasses.get(definition.name) as GatewayImplementation<T>;
     if (registeredImplementation) {
-      if (this.implementations.has(definition.name))
-        throw new IModelError(BentleyStatus.ERROR, `Gateway implementation for "${definition.name}" is already initialized.`);
-
-      if (definition.prototype.configurationSupplier)
-        registeredImplementation.prototype.configurationSupplier = definition.prototype.configurationSupplier;
-
-      const implementation = new registeredImplementation();
-      this.implementations.set(definition.name, implementation);
+      const implementation = this.setImplementationInstance(definition);
       directProtocol = implementation.configuration.protocol instanceof GatewayDirectProtocol;
     }
 

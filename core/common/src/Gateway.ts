@@ -28,6 +28,11 @@ export abstract class Gateway {
     GatewayRegistry.instance.registerImplementation(definition, implementation);
   }
 
+  /** Supply the instance of the gateway implementation class for the backend (optional). */
+  public static supplyImplementationInstance<TDefinition extends Gateway, TImplementation extends TDefinition>(definition: GatewayDefinition<TDefinition>, instance: TImplementation): void {
+    GatewayRegistry.instance.setImplementationInstance(definition, instance);
+  }
+
   /** The configuration for the gateway. */
   public readonly configuration = GatewayConfiguration.supply(this);
 

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelGateway, BentleyCloudGatewayConfiguration, GatewayElectronConfiguration, GatewayOperation, IModelToken } from "@bentley/imodeljs-common";
-import { TestGateway } from "../common/TestGateway";
+import { TestGateway, TestGateway2 } from "../common/TestGateway";
 
 declare var ___TESTBED_IPC_RENDERER___: any;
 
@@ -15,7 +15,7 @@ export class TestbedConfig {
   public static useIPC = false;
 
   public static initializeGatewayConfig() {
-    const gateways = [IModelGateway, TestGateway];
+    const gateways = [IModelGateway, TestGateway, TestGateway2];
 
     if (TestbedConfig.useIPC) {
       GatewayElectronConfiguration.initialize({}, gateways);
@@ -34,6 +34,6 @@ export class TestbedConfig {
 }
 
 export interface TestbedIpcMessage {
-  name: "pendingResponseQuota";
+  name: string;
   value: any;
 }
