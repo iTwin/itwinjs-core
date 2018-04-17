@@ -80,7 +80,7 @@ An app will normally implement the pessimistic policy by using high-level APIs t
 
 Note that, if there are newer ChangeSets affecting a model or an element, a briefcase must pull before it can lock. That enforces a pull -> lock -> change -> push pattern.
 
- ![optimistic concurrency flow](./ConcurrencyControl.2.jpg)
+ ![optimistic concurrency flow](./PessimisticConcurrencyControl.jpg)
 
 Locks are normally released when the briefcase pushes its changes, or they may be released if the briefcase abandons its changes.
 
@@ -97,7 +97,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
  Suppose, for example, that two briefcases were editing different properties of the same element at the same time. Suppose that the first briefcase pushed first, creating ChangeSet#1. Now, the second briefcase must pull and merge before it can push.
 
- ![optimistic concurrency flow](./ConcurrencyControl.1.jpg)
+ ![optimistic concurrency flow](./OptimisticConcurrencyControl.jpg)
 
  Working without locks also opens up the possibility that local changes may overlap with in-coming ChangeSets. When ChangeSets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
 
