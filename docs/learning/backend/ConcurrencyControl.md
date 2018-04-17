@@ -58,7 +58,7 @@ Note that the optimistic concurrency control policy does not apply to Codes.
 
 ### Pessimistic Concurrency Control
 
- To set up an iModel to use the pessimistic concurrency control, specify the ConcurrencyControl.PessimisticPolicy, as follows:
+ To set up an iModel to use the pessimistic concurrency control policy, specify the ConcurrencyControl.PessimisticPolicy, as follows:
  ``` ts
      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
  ```
