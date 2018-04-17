@@ -54,11 +54,16 @@ Note that the optimistic concurrency control policy does not apply to Codes.
 
  Preemptive locking is always required when importing Schemas or changing or inserting CodeSpecs. The APIs for those objects take care of locking automatically, so there is nothing special for an app to do.
 
- For models and elements, there are two locking policy options: pessimistic and optimistic. The app implements the policy that is prescribed for the iModel.
+ For models and elements, there are two locking policy options: pessimistic and optimistic. The [ConcurrencyControl]($imodeljs-backend.ConcurrencyControl) class specifies the concurrency control policy for an iModel. The app must check the ```iModelDb.concurrencyControl``` property to learn the policy and then implement it.
 
 ### Pessimistic Concurrency Control
 
-The pessimistic concurrency policy requires that models and elements must be locked before local changes can be pushed to iModelHub.
+ To set up an iModel to use the pessimistic concurrency control, specify the ConcurrencyControl.PessimisticPolicy, as follows:
+ ``` ts
+     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
+ ```
+
+The pessimistic concurrency policy requires that models and elements must be locked before local changes can be pushed to iModelHub. Locking prevents concurrent changes and forces briefcase transactions affecting the same models and elements to be sequential.
 
 For reference, the pessimistic locking rules are as follows:
 |Operation|LockType|Lock Level|
@@ -73,13 +78,50 @@ For reference, the pessimistic locking rules are as follows:
 
 An app will normally implement the pessimistic policy by using high-level APIs to build lock requests based on the intended operation, as explained [below](#acquiring-locks-and-reserving-codes).
 
+Note that, if there are newer ChangeSets affecting a model or an element, a briefcase must pull before it can lock. That enforces a pull -> lock -> change -> push pattern.
+
+ ![optimistic concurrency flow](./ConcurrencyControl.2.jpg)
+
 Locks are normally released when the briefcase pushes its changes, or they may be released if the briefcase abandons its changes.
 
 ### Optimistic Concurrency Control
 
- An optimistic concurrency policy allows apps to modify elements and models in an iModel without acquiring locks. This opens up the possibility that other apps may add ChangeSets to the timeline while the local editing session is in progress. In that case, when these ChangeSets are merged into the local briefcase, the merge algorithm checks for conflicts. If conflicts are found, it applies the [conflict-resolution policy]($imodeljs-backend.ConcurrencyControl.ConflictResolutionPolicy) that is part of the iModel's optimistic concurrency policy. A conflict-resolution policy may specify that, when an in-coming change conflicts with a local change, the in-coming change may be accepted, replacing the local change, or the in-coming change may be rejected, retaining the local change instead. Resolution policies are specified for the various combinations of changes that could conflict, including update vs. update, update vs. delete, and delete vs. update. Conflict detection and resolution is done at the level of individual element properties. So, it is very fine-grained. That allows many kinds of changes to be made simultaneously without conflicting in this most basic sense. A schema may also specify rules to check for conflicts on a higher level.
+ To set up an iModel to use optimistic concurrency control, specify the ConcurrencyControl.OptimisticPolicy, as follows:
+ ``` ts
+     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+ ```
+
+ An optimistic concurrency policy allows apps to modify elements and models in an iModel without acquiring locks. In this case, the app uses change-merging to reconcile local changes before pushing.
+
+ Working without locks opens up the possibility that other apps may add ChangeSets to the timeline while the local editing session is in progress. The briefcase must then merge before it can push.
+
+ Suppose, for example, that two briefcases were editing different properties of the same element at the same time. Suppose that the first briefcase pushed first, creating ChangeSet#1. Now, the second briefcase must pull and merge before it can push.
+
+ ![optimistic concurrency flow](./ConcurrencyControl.1.jpg)
+
+ Working without locks also opens up the possibility that local changes may overlap with in-coming ChangeSets. When ChangeSets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
+
+ If conflicts are found, the change-merging algorithm applies the conflict-resolution policy that is part of the iModel's optimistic concurrency policy. Actually, the iModel has a separate resolution policy for each combination of changes that could conflict. The [ConcurrencyControl.ConflictResolutionPolicy]($imodeljs-backend.ConcurrencyControl.ConflictResolutionPolicy) class defines the conflict-resolution policies for an iModel.
+
+ In general, there are three options when an in-coming change conflicts with a local change, which are members of ConcurrencyControl.OnConflict:
+ * AcceptIncomingChange - Accept the in-coming change, replacing the local change
+ * RejectIncomingChange - Reject the in-coming change, retaining the local change instead
+ * RejectChangeSet - Reject the entire in-coming ChangeSet
+
+ In some cases, the accept or reject option is not available. In the case where rejection is not an option, then the policy may be to reject the in-coming ChangeSet as a whole. That allows the app to re-work the local change and try again. The briefcase must still pull and merge before it can push.
+
+ The defaults conflict-resolution policies are:
+ |Local Change|RemoteChange|Resolution|
+ |------------|------------|--------|--------|-------|
+ |update|update|ConcurrencyControl.OnConflict.RejectIncomingChange
+ |update|delete|ConcurrencyControl.OnConflict.AcceptIncomingChange (reject not support)
+ |delete|update|ConcurrencyControl.OnConflict.RejectIncomingChange (accept not supported)
+
+ Property-level change-merging is very fine-grained, and so it allows many kinds of changes to be made simultaneously without conflicts. A schema may also specify rules to check for conflicts on a higher level.
 
  Only models and elements may be changed optimistically. Locking is required when importing Schemas or changing or inserting CodeSpecs.
+
+ [1]: foo "Reject is not allowed."
 
 ## Acquiring Locks and Reserving Codes
 
