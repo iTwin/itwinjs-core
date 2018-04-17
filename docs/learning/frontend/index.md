@@ -12,8 +12,6 @@ The **imodeljs-frontend** package always runs inside a web browser:
 * Writing [Tools](./Tools) for handling events from users
 * Communicating with the Backend via a [Gateway](./Gateway)
 * Displaying [Views](./Views) of iModels
-*
-
-
+* Executing [ECSQL queries](./ExecutingECSQL) on iModels
 
 ## TODO - add compatibility list

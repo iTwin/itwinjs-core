@@ -4,7 +4,13 @@
     {
       "name": "clean",
       "summary": "Cleans build output within each package",
-      "documentation": "Iterates through each package in the monorepo and runs the clean script",
+      "documentation": "Iterates through each package in the monorepo and runs the 'clean' script",
+      "parallelized": true
+    },
+    {
+      "name": "docs",
+      "summary": "Builds the API reference docs for each package",
+      "documentation": "Iterates through each package in the monorepo and runs the 'docs' script",
       "parallelized": true
     }
   ]
