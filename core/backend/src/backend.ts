@@ -18,7 +18,7 @@ export * from "./ElementPropertyFormatter";
 export * from "./Entity";
 export * from "./IModelJsFs";
 export * from "./IModelHost";
-export * from "./KnownLocations";
+export * from "./Platform";
 export * from "./LinkTableRelationship";
 export * from "./LineStyle";
 export * from "./Model";

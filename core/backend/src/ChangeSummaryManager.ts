@@ -12,7 +12,7 @@ import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-comm
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
-import { KnownLocations } from "./KnownLocations";
+import { KnownLocations } from "./Platform";
 
 /** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
 export enum ChangeOpCode {

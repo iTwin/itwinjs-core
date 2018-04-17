@@ -1,0 +1,62 @@
+[
+{"parityRegion":[
+ {"loop":[
+  {"arc":
+   {"center":[-5,0,0],
+    "vectorX":[2,0,0],
+    "vectorY":[0,2,0],
+    "sweepStartEnd":[0,360]
+   }
+  }]
+ },
+ {"loop":[
+  {"arc":
+   {"center":[-5,0,0],
+    "vectorX":[1,0,0],
+    "vectorY":[0,1,0],
+    "sweepStartEnd":[0,360]
+   }
+  }]
+ }]
+},
+{"parityRegion":[
+ {"loop":[
+  {"lineString":[[0,0,0],
+   [10,0,0],
+   [10,8,0],
+   [0,8,0]]
+  }]
+ },
+ {"loop":[
+  {"lineString":[[1,2,0],
+   [4,2,0],
+   [4,4,0],
+   [1,4,0]]
+  }]
+ }]
+},
+{"parityRegion":[
+ {"loop":[
+  {"lineString":[[0,0,0],
+   [10,0,0],
+   [10,8,0],
+   [0,8,0]]
+  }]
+ },
+ {"loop":[
+  {"lineString":[[1,2,0],
+   [4,2,0],
+   [4,4,0],
+   [1,4,0]]
+  }]
+ },
+ {"loop":[
+  {"arc":
+   {"center":[6,4,0],
+    "vectorX":[0.5,0,0],
+    "vectorY":[0,0.5,0],
+    "sweepStartEnd":[0,360]
+   }
+  }]
+ }]
+}]

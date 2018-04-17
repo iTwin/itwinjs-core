@@ -751,7 +751,7 @@ describe("iModel", () => {
     const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
     assert.deepEqual(g1byst, g1);
 
-    // TODO: Do an ECSql query to verify that 0->1 and 0->2 relationships can be found
+    // TODO: Do an ECSQL query to verify that 0->1 and 0->2 relationships can be found
 
     // Update relationship instance property
     r1.memberPriority = 1;
@@ -763,7 +763,7 @@ describe("iModel", () => {
     // Delete relationship instance property
     testImodel.linkTableRelationships.deleteInstance(r1);
 
-    // TODO: Do an ECSql query to verify that 0->1 is gone but 0->2 is still there.
+    // TODO: Do an ECSQL query to verify that 0->1 is gone but 0->2 is still there.
     testImodel.saveChanges("");
 
   });

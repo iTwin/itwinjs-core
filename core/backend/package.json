@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.74.1",
+  "version": "0.74.2",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -15,9 +15,9 @@
     "copy:assets": "cpx ./assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "pretest": "npm run copy:test-assets && rush build",
+    "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "perftest": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\"",
+    "perftest": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {},
@@ -32,14 +32,14 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "7",
-    "@bentley/geometry-core": "^7.3.1",
-    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/geometry-core": "7",
+    "@bentley/imodeljs-clients": "^5.1.0",
     "@bentley/imodeljs-common": "0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "7",
-    "@bentley/geometry-core": "^7.3.1",
-    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/geometry-core": "7",
+    "@bentley/imodeljs-clients": "^5.1.0",
     "@bentley/imodeljs-common": "0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",

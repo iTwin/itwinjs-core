@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, YawPitchRollProps,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, AngleProps, GeometryQuery, XYProps, XYZProps, LowAndHighXYZ,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
-import { GeometryClass, GeometryParams } from "../Render";
+import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
@@ -31,7 +31,64 @@ export interface GeometryAppearanceProps {
   geometryClass?: GeometryClass;
 }
 
-// NEEDSWORK: StyleModifierProps/AreaFillProps/AreaPatternProps/MaterialProps...
+export interface StyleModifierProps {
+  scale?: number;
+  dashScale?: number;
+  gapScale?: number;
+  startWidth?: number;
+  endWidth?: number;
+  distPhase?: number;
+  fractPhase?: number;
+  centerPhase?: boolean;
+  segmentMode?: boolean;
+  physicalWidth?: boolean;
+  normal?: XYZProps;
+  rotation?: YawPitchRollProps;
+}
+
+export interface AreaFillProps {
+  display: FillDisplay;
+  color?: ColorDef;
+  backgroundFill?: BackgroundFill;
+  transparency?: number;
+  mode?: Gradient.Mode;
+  flags?: number;
+  angle?: AngleProps;
+  tint?: number;
+  shift?: number;
+  colors?: ColorDef[];
+  values?: number[];
+}
+
+export interface HatchDefLineProps {
+  angle?: AngleProps;
+  through?: XYProps;
+  offset?: XYProps;
+  dashes?: number[];
+}
+
+export interface AreaPatternProps {
+  origin?: XYZProps;
+  rotation?: YawPitchRollProps;
+  space1?: number;
+  space2?: number;
+  angle1?: AngleProps;
+  angle2?: AngleProps;
+  scale?: number;
+  color?: ColorDef;
+  weight?: number;
+  invisibleBoundary?: boolean;
+  snappable?: boolean;
+  symbolId?: Id64Props;
+  defLine?: HatchDefLineProps[];
+}
+
+export interface MaterialProps {
+  materialId?: Id64Props;
+  origin?: XYZProps;
+  size?: XYZProps;
+  rotation?: YawPitchRollProps;
+}
 
 /** GeometryStream entry to a GeometryPart for a GeometricElement */
 export interface GeometryPartInstanceProps {
@@ -45,12 +102,17 @@ export interface GeometryPartInstanceProps {
   scale?: number;
 }
 
-/** Allowed GeometryStream entries */
-export type GeometryStreamEntryProps =
-  { appearance: GeometryAppearanceProps } |
-  { geomPart: GeometryPartInstanceProps } |
-  { textString: TextStringProps } |
-  GeomJson.GeometryProps;
+/** Allowed GeometryStream entries - should only set one value */
+export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
+  appearance?: GeometryAppearanceProps;
+  styleMod?: StyleModifierProps;
+  fill?: AreaFillProps;
+  pattern?: AreaPatternProps;
+  material?: MaterialProps;
+  geomPart?: GeometryPartInstanceProps;
+  textString?: TextStringProps;
+  subRange?: LowAndHighXYZ;
+}
 
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
