@@ -7,8 +7,8 @@ import { ConnectClient, Project, IModelHubClient, IModelQuery } from "@bentley/i
 
 export class TestData {
   public static user = {
-    email: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
+    email: "Regular.IModelJsTestUser@mailinator.com",
+    password: "Regular@iMJs",
   };
 
   public static connectClient = new ConnectClient("QA");
