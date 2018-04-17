@@ -65,9 +65,9 @@
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~15.2.0",
-    "@bentley/imodeljs-native-platform-node": "~15.2.0",
-    "@bentley/imodeljs-native-platform-electron": "~15.2.0",
+    "@bentley/imodeljs-native-platform-api": "~15.3.1",
+    "@bentley/imodeljs-native-platform-node": "~15.3.1",
+    "@bentley/imodeljs-native-platform-electron": "~15.3.1",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },
