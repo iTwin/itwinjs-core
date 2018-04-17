@@ -5,7 +5,8 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
-import { TestGatewayImpl } from "./TestGatewayImpl";
+import { TestGatewayImpl, TestGateway2Impl } from "./TestGatewayImpl";
+import { CONSTANTS } from "../common/Testbed";
 
 let pendingsSent = 0;
 let pendingResponseQuota = 0;
@@ -14,9 +15,16 @@ let pendingResponseQuota = 0;
 const { ipcMain } = require("electron");
 ipcMain.on("testbed", (event: any, arg: any) => {
   const msg: TestbedIpcMessage = arg;
-  if (msg.name === "pendingResponseQuota") {
+  if (msg.name === CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE) {
     pendingResponseQuota = msg.value;
     pendingsSent = 0;
+    event.returnValue = true;
+  } else if (msg.name === CONSTANTS.REGISTER_TEST_GATEWAY2IMPL_CLASS_MESSAGE) {
+    TestGateway2Impl.register();
+    TestGateway2Impl.instantiate();
+    event.returnValue = true;
+  } else if (msg.name === CONSTANTS.REPLACE_TEST_GATEWAY2IMPL_INSTANCE_MESSAGE) {
+    TestGateway2Impl.instantiate();
     event.returnValue = true;
   }
 });

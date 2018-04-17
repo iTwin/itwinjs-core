@@ -269,10 +269,10 @@ export class IModelDb extends IModel {
     return new IModelError(IModelStatus.NotOpen, "IModelDb not open" + this.name, Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
   }
 
-  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSql statement to prepare
+  /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSQL statement to prepare
    * @returns the prepared statement
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
     const cachedStatement = this.statementCache.find(ecsql);
@@ -289,7 +289,7 @@ export class IModelDb extends IModel {
   private releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
 
   /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
-   * @param ecsql The ECSql statement to execute
+   * @param ecsql The ECSQL statement to execute
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
    */
@@ -308,7 +308,7 @@ export class IModelDb extends IModel {
 
   /** Execute a query against this IModelDb. This is just a convenience method that calls [[withPreparedStatement]], [[ECSqlStatement.bindValues]], [[ECSqlStatement.step]],
    * and [[ECSqlStatement.getRow]].
-   * @param ecsql The ECSql statement to execute
+   * @param ecsql The ECSQL statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
    * for named parameters.
@@ -532,8 +532,8 @@ export class IModelDb extends IModel {
     return idHexStr!;
   }
 
-  /** Prepare an ECSql statement.
-   * @param sql The ECSql statement to prepare
+  /** Prepare an ECSQL statement.
+   * @param sql The ECSQL statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
