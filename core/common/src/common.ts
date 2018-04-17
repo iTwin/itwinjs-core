@@ -36,4 +36,6 @@ export * from "./gateway/core/GatewayRequest";
 export * from "./gateway/core/GatewayControl";
 export * from "./gateway/electron/GatewayElectronConfiguration";
 export * from "./gateway/http/BentleyCloudGatewayConfiguration";
-export * from "./gateway/IModelGateway";
+export * from "./gateway/IModelReadGateway";
+export * from "./gateway/IModelWriteGateway";
+export * from "./gateway/StandaloneIModelGateway";
