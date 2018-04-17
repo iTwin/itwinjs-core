@@ -48,17 +48,16 @@ describe.skip("ChangeSummary", () => {
       BriefcaseManager.hubClient = iModelHubClientMock.object;
 
       // Get test projectId from the mocked connection client
-      const project: Project = await connectClientMock.object.getProject(accessToken as any, {
+      const project: Project = await connectClientMock.object.getProject(accessToken, {
         $select: "*",
         $filter: "Name+eq+'NodeJstestproject'",
       });
-      // connectClientMock.verify((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
       assert(project && project.wsgId, "No projectId returned from connectionClient mock");
       testProjectId = project.wsgId;
 
       // Get test iModelIds from the mocked iModelHub client
       for (const iModelInfo of testIModels) {
-        const iModels = await iModelHubClientMock.object.IModels().get(accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
+        const iModels = await iModelHubClientMock.object.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelInfo.name));
         assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
         assert(iModels[0].wsgId, `No IModelId returned for ${iModelInfo.name} iModel`);
         iModelInfo.id = iModels[0].wsgId;
@@ -66,7 +65,8 @@ describe.skip("ChangeSummary", () => {
         iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
         // getChangeSets
-        iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken as any, iModelInfo.id);
+        iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken, iModelInfo.id);
+        iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
         expect(iModelInfo.changeSets);
 
         // downloadChangeSets

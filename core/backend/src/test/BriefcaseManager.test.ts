@@ -106,7 +106,6 @@ describe("BriefcaseManager", () => {
         $select: "*",
         $filter: "Name+eq+'NodeJstestproject'",
       });
-      // connectClientMock.verify((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(1));
       assert(project && project.wsgId, "No projectId returned from connectionClient mock");
       testProjectId = project.wsgId;
 
@@ -121,7 +120,7 @@ describe("BriefcaseManager", () => {
 
         // getChangeSets
         iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken as any, iModelInfo.id);
-        iModelInfo.changeSets.shift();
+        iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
         expect(iModelInfo.changeSets);
 
         // downloadChangeSets
@@ -163,21 +162,21 @@ describe("BriefcaseManager", () => {
 
   it("should be able to open a first version IModel in Readonly mode", async () => {
     // Arrange
-    // let onOpenCalled: boolean = false;
-    // const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openModeIn: OpenMode, _versionIn: IModelVersion) => {
-    //   onOpenCalled = true;
-    //   assert.deepEqual(accessTokenIn, accessToken);
-    //   assert.equal(contextIdIn, testProjectId);
-    //   assert.equal(iModelIdIn, testIModels[0].id);
-    //   assert.equal(openModeIn, OpenMode.Readonly);
-    // };
-    // IModelDb.onOpen.addListener(onOpenListener);
-    // let onOpenedCalled: boolean = false;
-    // const onOpenedListener = (iModelDb: IModelDb) => {
-    //   onOpenedCalled = true;
-    //   assert.equal(iModelDb.iModelToken.iModelId, testIModels[0].id);
-    // };
-    // IModelDb.onOpened.addListener(onOpenedListener);
+    let onOpenCalled: boolean = false;
+    const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openModeIn: OpenMode, _versionIn: IModelVersion) => {
+      onOpenCalled = true;
+      assert.deepEqual(accessTokenIn, accessToken);
+      assert.equal(contextIdIn, testProjectId);
+      assert.equal(iModelIdIn, testIModels[0].id);
+      assert.equal(openModeIn, OpenMode.Readonly);
+    };
+    IModelDb.onOpen.addListener(onOpenListener);
+    let onOpenedCalled: boolean = false;
+    const onOpenedListener = (iModelDb: IModelDb) => {
+      onOpenedCalled = true;
+      assert.equal(iModelDb.iModelToken.iModelId, testIModels[0].id);
+    };
+    IModelDb.onOpened.addListener(onOpenedListener);
     let version: IModelVersion;
     if (offline)
       version = iModelVersionMock.object;
@@ -191,17 +190,17 @@ describe("BriefcaseManager", () => {
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-    // assert.isTrue(onOpenedCalled);
-    // assert.isTrue(onOpenCalled);
-    // IModelDb.onOpen.removeListener(onOpenListener);
-    // IModelDb.onOpened.removeListener(onOpenedListener);
+    assert.isTrue(onOpenedCalled);
+    assert.isTrue(onOpenCalled);
+    IModelDb.onOpen.removeListener(onOpenListener);
+    IModelDb.onOpened.removeListener(onOpenedListener);
 
     expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
     const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
   });
 
-  it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it.skip("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.ReadWrite, "iModel not set to ReadWrite mode");
@@ -214,14 +213,12 @@ describe("BriefcaseManager", () => {
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
-    // Arrange
     let version: IModelVersion;
     if (offline)
       version = iModelVersionMock.object;
     else
       version = IModelVersion.latest();
 
-    // Act
     let timer = new Timer("open briefcase first time");
     const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, version);
     assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
@@ -244,14 +241,13 @@ describe("BriefcaseManager", () => {
     }
     timer.end();
 
-    // Assert
     const briefcases2 = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
   });
 
-  it("should reuse open briefcases in ReadWrite mode", async () => {
+  it.skip("should reuse open briefcases in ReadWrite mode", async () => {
     // Act
     let timer = new Timer("open briefcase first time");
     const iModel0: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
@@ -271,7 +267,6 @@ describe("BriefcaseManager", () => {
     }
     timer.end();
 
-    // Assert
     const briefcases2 = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
@@ -301,19 +296,16 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
-      // Arrange
       let version: IModelVersion;
       if (offline)
         version = iModelVersionMock.object;
       else
         version = IModelVersion.latest();
 
-      // Act
       const iModelNoVer = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly, version);
       assert.exists(iModelNoVer);
       assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
 
-      // Assert
     });
 
   it("Should track the AccessTokens that are used to open IModels", async () => {
@@ -328,7 +320,7 @@ describe("BriefcaseManager", () => {
     }
   });
 
-  it("should build concurrency control request", async () => {
+  it.skip("should build concurrency control request", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite);
 
     const el: Element = iModel.elements.getRootSubject();

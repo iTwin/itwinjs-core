@@ -85,16 +85,6 @@ export class MockAssetUtil {
                                                       ["b74b6451-cca3-40f1-9890-42c769a28f3e", "ReadWriteTest"],
                                                       ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
 
-  // private static versionMap = new Map<string, string[]>([["c3e1146f-8c81-430d-a974-ac840657b7ac", ["0", "1", "2", "3"]],
-  //                                                        ["b74b6451-cca3-40f1-9890-42c769a28f3e", ["0"]],
-  //                                                        ["0aea4c09-09f4-449d-bf47-045228d259ba", ["0"]]]);
-  // private static changeSetMap = new Map<string, string[]>([["c3e1146f-8c81-430d-a974-ac840657b7ac", ["9f7f9612720be2bb999301407b999139392bd552.cs",
-  //                                                                                                    "89bd6d5016ea2d644681a45c6cd090cff2de5cf2.cs",
-  //                                                                                                    "e4c807479cdc387cd5286488d650246f6ab1a05c.cs"]],
-  //                                                          ["b74b6451-cca3-40f1-9890-42c769a28f3e", ["9f7f9612720be2bb999301407b999139392bd552.cs",
-  //                                                                                                    "89bd6d5016ea2d644681a45c6cd090cff2de5cf2.cs",
-  //                                                                                                    "e4c807479cdc387cd5286488d650246f6ab1a05c.cs"]],
-  //                                                          ["0aea4c09-09f4-449d-bf47-045228d259ba", []]]);
   private static versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
   public static verifyIModelInfo(testIModelInfos: TestIModelInfo[]) {
@@ -130,7 +120,7 @@ export class MockAssetUtil {
         const buff = IModelJsFs.readFileSync(assetPath);
         const jsonObj = JSON.parse(buff.toString())[0];
         return Promise.resolve(getTypedInstance<Project>(Project, jsonObj));
-      }).verifiable();
+      });
   }
 
   /** Setup functions for the iModelHubClient mock */
@@ -163,7 +153,7 @@ export class MockAssetUtil {
           }
         }
         throw Promise.reject(`No matching asset found for iModel with name: ${hubName}`);
-      }).verifiable();
+      });
 
     // For any call with request parameters contianing the iModel name, grab that iModel's json file
     // and parse it into an instance
@@ -192,7 +182,7 @@ export class MockAssetUtil {
           return Promise.resolve(getTypedInstances<HubIModel>(HubIModel, jsonObj));
         }
         throw Promise.reject(`No matching asset found for iModel with id: ${query.getId()}`);
-      }).verifiable();
+      });
 
     // For any call with a specified iModelId, remove the specified iModel from the cache if it currently
     // resides there
@@ -208,19 +198,17 @@ export class MockAssetUtil {
           return Promise.resolve();
         }
         throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
-      }).verifiable();
+      });
 
     // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
     // into the provided cache location
-    // for (const version of this.versionMap.get(pair[0])!) {
     iModelHandlerMock.setup((f: IModelHandler) => f.download(TypeMoq.It.isAny(),
                                                              TypeMoq.It.isAnyString(),
                                                              TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, iModelId: string, seedPathname: string) => {
         const iModelName = this.iModelMap.get(iModelId);
         if (iModelName) {
-          const tokens = seedPathname.split("\\");
-          const testModelPath = path.join(assetDir, iModelName, tokens[tokens.length - 2], tokens[tokens.length - 1]);
+          const testModelPath = path.join(assetDir, iModelName, `${iModelName}.bim`);
           IModelJsFs.copySync(testModelPath, seedPathname);
           const retResponse: Response = {
             status: 200,
@@ -232,7 +220,6 @@ export class MockAssetUtil {
         }
         throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
-    // }
 
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(),
                                                                             TypeMoq.It.isAnyString()))
@@ -292,7 +279,7 @@ export class MockAssetUtil {
           throw Promise.reject(`No matching asset found for ChangeSet with id: ${query.getId()}`);
         }
         throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
-      }).verifiable();
+      });
 
     // For any call with a path containing a specified iModel name, grab the associated change set files and copy them
     // into the provided cache location
@@ -300,8 +287,9 @@ export class MockAssetUtil {
                                                                               TypeMoq.It.isAnyString()))
       .returns((csets: ChangeSet[], outPath: string) => {
         for (const cset of csets) {
-          if (!IModelJsFs.existsSync(outPath))
-            IModelJsFs.copySync(cset.uploadUrl!, outPath);
+          const csetPath = path.join(outPath, cset.fileName!);
+          if (!IModelJsFs.existsSync(csetPath))
+            IModelJsFs.copySync(cset.uploadUrl!, csetPath);
         }
         const retResponse: Response = {
           status: 200,
@@ -310,7 +298,7 @@ export class MockAssetUtil {
         };
         return Promise.resolve(retResponse)
         .then(() => Promise.resolve());
-      }).verifiable();
+      });
 
     versionHandlerMock.setup((f: VersionHandler) => f.get(TypeMoq.It.isAny(),
                                                           TypeMoq.It.isAnyString(),
