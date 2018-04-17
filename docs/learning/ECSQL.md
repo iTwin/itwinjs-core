@@ -96,7 +96,7 @@ ECSQL supports both dates without time (`DATE`) and dates with time (`TIMESTAMP`
 
 `TIMESTAMP 'yyyy-mm-dd hh:mm:ss[.nnn][Z]'`
 
-The time stamp format matches the [ISO 8601 standard](https://www.iso.org/iso-8601-date-and-time-format.html) (see also https://en.wikipedia.org/wiki/ISO_8601)
+The time stamp format matches the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601)
 
 #### Basic functions
 

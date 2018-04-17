@@ -11,10 +11,10 @@ though sometimes judgement calls are required where no established convention is
 
 From the same JavaScript codebase, it is possible to create:
 
-* [Backend Agents and Services](./Agents) that process iModels and respond to events from iModelHub
-* [Web Apps](./WebApps) that run in web browsers and communicate with Backends
-* [Desktop Apps](./DesktopApps) that run on personal computers
-* [Mobile Apps](./MobileApps) that run on tablets and phones
+* [Backend Agents and Services](Agents) that process iModels and respond to events from iModelHub
+* [Web Apps](WebApps) that run in web browsers and communicate with Backends
+* [Desktop Apps](DesktopApps) that run on personal computers
+* [Mobile Apps](MobileApps) that run on tablets and phones
 
 ## iModelJs vs. iModelHub
 
@@ -32,10 +32,10 @@ iModelJs applications can be:
 
 Understanding the design and concepts in the iModelJs library requires a basic understanding of:
 
-* [iModels](./iModels) - the persistence layer for iModelJs
-* [IModelHub](./IModelHub) - the cloud-based hub for coordinating access to iModels
-* [iModel Bridges](./IModelBridges) - the services that connect iModels with external data sources
-* it is also helpful to understand the concepts in [BIS](./BisCore), the Base Infrastructure Schema
+* [iModels](iModels) - the persistence layer for iModelJs
+* [IModelHub](IModelHub) - the cloud-based hub for coordinating access to iModels
+* [iModel Bridges](IModelBridges) - the services that connect iModels with external data sources
+* it is also helpful to understand the concepts in [BIS](BisCore), the Base Infrastructure Schema
 * The [Programmer Documentation](../learning/index) explains the API in more detail.
 
 ## JavaScript vs. TypeScript

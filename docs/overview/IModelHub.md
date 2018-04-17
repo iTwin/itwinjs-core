@@ -6,7 +6,7 @@ Like [Git](https://git-scm.com/) repositories for source code, in the iModel eco
 
 ## The Connection between iModelJs and iModelHub
 
-1. Every iModel has an [identity](./iModels#every-imodel-has-a-guid) registered in iModelHub.
+1. Every iModel has an [identity](iModels#every-imodel-has-a-guid) registered in iModelHub.
 2. Users log into iModelHub for authentication.
 3. iModelJs backends have an identity registered with iModelHub.
 4. iModel owners decide which users and which applications have access to their iModels.

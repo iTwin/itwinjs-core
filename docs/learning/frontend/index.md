@@ -7,13 +7,10 @@ The **imodeljs-frontend** package always runs inside a web browser:
 
 ## The frontend package provides services for:
 
-* [Adminstration](./IModelApp) via the IModelApp class
-* [Localization](./Localization) of strings and user interface
-* Writing [Tools](./Tools) for handling events from users
-* Communicating with the Backend via a [Gateway](./Gateway)
-* Displaying [Views](./Views) of iModels
-*
+* [Adminstration](IModelApp) via the IModelApp class
+* [Localization](Localization) of strings and user interface
+* Writing [Tools](Tools) for handling events from users
+* Communicating with the Backend via a [Gateway](Gateway)
+* Displaying [Views](Views) of iModels
 
-
-
-## TODO - add compatibility list
+## TODO - add browser compatibility list
