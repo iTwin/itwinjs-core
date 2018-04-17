@@ -5,6 +5,7 @@ import { Gateway, GatewayRequestEvent, GatewayRequest, GatewayOperation } from "
 import { TestGateway, TestOp1Params } from "../common/TestGateway";
 import { assert } from "chai";
 import { TestbedConfig } from "../common/TestbedConfig";
+import { CONSTANTS } from "../common/Testbed";
 
 if (TestbedConfig.gatewayConfig) {
   describe("Gateway.HttpProtocol", () => {
@@ -31,14 +32,14 @@ if (TestbedConfig.gatewayConfig) {
 
       Gateway.getProxyForGateway(TestGateway).configuration.pendingOperationRetryInterval = 1;
 
-      assert(TestbedConfig.sendToMainSync({ name: "pendingResponseQuota", value: expectedPendings }));
+      assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE, value: expectedPendings }));
 
       const params = new TestOp1Params(1, 1);
       const remoteSum = await TestGateway.getProxy().op1(params);
       assert.equal(pendingsReceived, expectedPendings);
       assert.equal(remoteSum, params.sum());
 
-      assert(TestbedConfig.sendToMainSync({ name: "pendingResponseQuota", value: 0 }));
+      assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE, value: 0 }));
       removeListener();
     });
   });

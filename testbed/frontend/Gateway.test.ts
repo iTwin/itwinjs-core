@@ -2,9 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { GatewayRequest, Gateway, GatewayOperation, GatewayRequestEvent } from "@bentley/imodeljs-common";
-import { TestGateway, TestOp1Params } from "../common/TestGateway";
+import { TestGateway, TestOp1Params, TestGateway2 } from "../common/TestGateway";
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { TestbedConfig } from "../common/TestbedConfig";
+import { CONSTANTS } from "../common/Testbed";
 
 const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -140,5 +142,24 @@ describe("Gateway", () => {
 
     assert.isTrue(receivedPending);
     removeListener();
+  });
+
+  it("should support supplied gateway implementation instances", async () => {
+    try {
+      await TestGateway2.getProxy().op1(1);
+      assert(false);
+    } catch (err) {
+      assert(true);
+    }
+
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.REGISTER_TEST_GATEWAY2IMPL_CLASS_MESSAGE, value: undefined }));
+
+    const response1 = await TestGateway2.getProxy().op1(1);
+    assert.equal(response1, 1);
+
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.REPLACE_TEST_GATEWAY2IMPL_INSTANCE_MESSAGE, value: undefined }));
+
+    const response2 = await TestGateway2.getProxy().op1(2);
+    assert.equal(response2, 2);
   });
 });

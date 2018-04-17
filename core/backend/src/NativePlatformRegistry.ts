@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
-import { KnownLocations } from "./KnownLocations";
+import { Platform } from "./Platform";
 import * as path from "path";
 
 // tslint:disable-next-line:no-eval
@@ -79,9 +79,9 @@ export class NativePlatformRegistry {
   /** Load and register the standard platform. */
   public static loadAndRegisterStandardNativePlatform(dir?: string) {
 
-    if (KnownLocations.imodeljsMobile !== undefined) {
+    if (Platform.imodeljsMobile !== undefined) {
       // We are running in imodeljs (our mobile platform)
-      NativePlatformRegistry.register((self as any).imodeljsMobile.imodeljsNative);
+      NativePlatformRegistry.register(Platform.imodeljsMobile.imodeljsNative);
       return;
     }
 

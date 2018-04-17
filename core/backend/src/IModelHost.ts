@@ -5,7 +5,7 @@ import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { KnownLocations } from "./KnownLocations";
+import { KnownLocations } from "./Platform";
 import { IModelGatewayImpl } from "./IModelGatewayImpl";
 import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
