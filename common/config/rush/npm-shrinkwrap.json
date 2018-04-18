@@ -122,39 +122,39 @@
       }
     },
     "@bentley/imodeljs-e_1_6_11-win32-x64": {
-      "version": "15.2.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-15.2.0.tgz",
-      "integrity": "sha1-Rb6SvZSewhg2hAPVaxv1WXtVOrA="
+      "version": "15.3.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-15.3.1.tgz",
+      "integrity": "sha1-jEXDhOcnRT1PG/lJWZP0cQEjnac="
     },
     "@bentley/imodeljs-n_8-win32-x64": {
-      "version": "15.2.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8-win32-x64/-/imodeljs-n_8-win32-x64-15.2.0.tgz",
-      "integrity": "sha1-1qZZDHfPGemcrkYpoA5IYbTvCDQ="
+      "version": "15.3.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8-win32-x64/-/imodeljs-n_8-win32-x64-15.3.1.tgz",
+      "integrity": "sha1-WW9QNIInbc1M9ijfU0fRGDceGbY="
     },
     "@bentley/imodeljs-native-platform-api": {
-      "version": "15.2.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-15.2.0.tgz",
-      "integrity": "sha1-wEgYRf97HR/wfOlnI1aW4IAZZU0="
+      "version": "15.3.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-15.3.1.tgz",
+      "integrity": "sha1-WS+E93dmHHbdY+vLP6YUZVucSDs="
     },
     "@bentley/imodeljs-native-platform-electron": {
-      "version": "15.2.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-electron/-/imodeljs-native-platform-electron-15.2.0.tgz",
-      "integrity": "sha1-Mgwkhu6CGXq/GVgl4Wi4MPVjWE8=",
+      "version": "15.3.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-electron/-/imodeljs-native-platform-electron-15.3.1.tgz",
+      "integrity": "sha1-PXkfS+8bYk0QTXKIAK+5gV2m9N4=",
       "requires": {
-        "@bentley/imodeljs-e_1_6_11-win32-x64": "15.2.0"
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "15.3.1"
       }
     },
     "@bentley/imodeljs-native-platform-node": {
-      "version": "15.2.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-node/-/imodeljs-native-platform-node-15.2.0.tgz",
-      "integrity": "sha1-nHS8xb9RK9uE669h76t9A6MhPqY=",
+      "version": "15.3.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-node/-/imodeljs-native-platform-node-15.3.1.tgz",
+      "integrity": "sha1-HoQSxB3T6dIsCT1T+CdGk5taK0s=",
       "requires": {
-        "@bentley/imodeljs-n_8-win32-x64": "15.2.0"
+        "@bentley/imodeljs-n_8-win32-x64": "15.3.1"
       }
     },
     "@rush-temp/bentleyjs-core": {
       "version": "file:projects/bentleyjs-core.tgz",
-      "integrity": "sha1-4Lf9IhIsHf77ayjsaGXPbiDlCz8=",
+      "integrity": "sha1-dYz8sKX4LctKco9MtAEcTf1To38=",
       "requires": {
         "rimraf": "2.6.2",
         "typescript": "2.7.2"
@@ -162,7 +162,7 @@
     },
     "@rush-temp/geometry-core": {
       "version": "file:projects/geometry-core.tgz",
-      "integrity": "sha1-kqeoDGtYr0OL7+ERhfjnOF/3Ah0=",
+      "integrity": "sha1-qeSEGQ37FOZbkh0UqLVotErWSQM=",
       "requires": {
         "@types/lodash": "4.14.106",
         "chai": "4.1.2",
@@ -181,12 +181,12 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-xKJg29UVd8IbvONJWAzZSwLopyE=",
+      "integrity": "sha1-jqibvDXSlIBmuIkpie/alt8u0AQ=",
       "requires": {
         "@bentley/imodeljs-clients": "5.2.0",
-        "@bentley/imodeljs-native-platform-api": "15.2.0",
-        "@bentley/imodeljs-native-platform-electron": "15.2.0",
-        "@bentley/imodeljs-native-platform-node": "15.2.0",
+        "@bentley/imodeljs-native-platform-api": "15.3.1",
+        "@bentley/imodeljs-native-platform-electron": "15.3.1",
+        "@bentley/imodeljs-native-platform-node": "15.3.1",
         "cpx": "1.5.0",
         "fs-extra": "5.0.0",
         "js-base64": "2.4.3",
@@ -202,7 +202,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-syGicdMfIS7YWkWAS7QMXsNBBnE=",
+      "integrity": "sha1-CZKzPeysNdKWM3IBH22o7laTssE=",
       "requires": {
         "@bentley/imodeljs-clients": "5.2.0",
         "@types/uuid": "3.4.3",
@@ -213,7 +213,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-OVAYQw0/5M5k9dqhF/cbgF7imdI=",
+      "integrity": "sha1-WqFbDBbjiXaYonlwVYdsufrksWY=",
       "requires": {
         "@bentley/bentleyjs-tools": "3.2.6",
         "@types/body-parser": "1.16.8",
@@ -258,7 +258,7 @@
         "tslint": "5.9.1",
         "typedoc": "0.11.1",
         "typedoc-plugin-external-module-name": "1.1.1",
-        "typedoc-plugin-markdown": "1.1.1",
+        "typedoc-plugin-markdown": "1.1.2",
         "typescript": "2.7.2",
         "webpack": "3.11.0",
         "webpack-stream": "4.0.3"
@@ -266,10 +266,10 @@
     },
     "@rush-temp/imodeljs-core-sample-code": {
       "version": "file:projects/imodeljs-core-sample-code.tgz",
-      "integrity": "sha1-diOkYeZB5K6bWW2m/I6cQZRJ4sI=",
+      "integrity": "sha1-1xnYqayVG1MRhX0EkGF8ADCKIOE=",
       "requires": {
         "@bentley/imodeljs-clients": "5.2.0",
-        "@bentley/imodeljs-n_8-win32-x64": "15.2.0",
+        "@bentley/imodeljs-n_8-win32-x64": "15.3.1",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
         "commander": "2.15.1",
@@ -290,10 +290,10 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-61t63KgEVMm7CZTxUQZPk1zNjoM=",
+      "integrity": "sha1-2bfQgi2ASCDdI3ZMfhV1oBMuAuY=",
       "requires": {
         "@bentley/imodeljs-clients": "5.2.0",
-        "@bentley/imodeljs-e_1_6_11-win32-x64": "15.2.0",
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "15.3.1",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
         "commander": "2.15.1",
@@ -316,7 +316,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-ri4QK7ADglaY43bEG656FX/Q878=",
+      "integrity": "sha1-yIgF/hQ2OIQwyS6qZzGHhwL8bes=",
       "requires": {
         "@bentley/imodeljs-clients": "5.2.0",
         "fuse.js": "3.2.0",
@@ -4644,7 +4644,7 @@
         "stream-browserify": "2.0.1",
         "stream-http": "2.8.1",
         "string_decoder": "1.1.1",
-        "timers-browserify": "2.0.6",
+        "timers-browserify": "2.0.7",
         "tty-browserify": "0.0.0",
         "url": "0.11.0",
         "util": "0.10.3",
@@ -8750,9 +8750,9 @@
       "integrity": "sha1-dkpaEa9QVhkhsTPztE5hhofg9cM="
     },
     "timers-browserify": {
-      "version": "2.0.6",
-      "resolved": "https://registry.npmjs.org/timers-browserify/-/timers-browserify-2.0.6.tgz",
-      "integrity": "sha512-HQ3nbYRAowdVd0ckGFvmJPPCOH/CHleFN/Y0YQCX1DVaB7t+KFvisuyN09fuP8Jtp1CpfSh8O8bMkHbdbPe6Pw==",
+      "version": "2.0.7",
+      "resolved": "https://registry.npmjs.org/timers-browserify/-/timers-browserify-2.0.7.tgz",
+      "integrity": "sha512-U7DtjfsHeYjNAyEz4MdCLGZMY3ySyHIgZZp6ba9uxZlMRMiK5yTHUYc2XfGQHKFgxGcmvBF2jafoNtQYvlDpOw==",
       "requires": {
         "setimmediate": "1.0.5"
       }
@@ -9067,9 +9067,9 @@
       "integrity": "sha512-Erc0MyKDGYIN7kSlIjgifVieZEogg8YwOH8bjW6RXb0y44hVeTER0UoW6Rh+n8leg6rvlPdnH092aFfcd8kRlA=="
     },
     "typedoc-plugin-markdown": {
-      "version": "1.1.1",
-      "resolved": "https://registry.npmjs.org/typedoc-plugin-markdown/-/typedoc-plugin-markdown-1.1.1.tgz",
-      "integrity": "sha512-KMA6k6i3WepZ2PBprnL9CQ4wAimW3e/u3yanQd42h9T19chK7X6hXZDB75459wnd1hbCF4FJO4Xx3L0yNGJt+Q==",
+      "version": "1.1.2",
+      "resolved": "https://registry.npmjs.org/typedoc-plugin-markdown/-/typedoc-plugin-markdown-1.1.2.tgz",
+      "integrity": "sha512-xG0z5Bbt2CF0D9EsVAZzHYQw2Xck/wX1BBZV+6ktFu7DCVpT+Iri5YWc04SU2M/fUev7+QgTzy4Z/8s/+JN/8A==",
       "requires": {
         "turndown": "4.0.1"
       }

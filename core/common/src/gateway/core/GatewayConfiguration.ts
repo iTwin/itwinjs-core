@@ -7,6 +7,8 @@ import { GatewayRequest } from "./GatewayRequest";
 import { INSTANCE } from "./GatewayRegistry";
 import { GatewayControlChannel } from "./GatewayControl";
 
+/** @module Gateway */
+
 export type GatewayConfigurationSupplier = () => { new(): GatewayConfiguration };
 
 /** Operating parameters for a gateway. */
@@ -55,7 +57,7 @@ export abstract class GatewayConfiguration {
 }
 
 // A default configuration that can be used for basic testing within a library.
-class GatewayDefaultConfiguration extends GatewayConfiguration {
+export class GatewayDefaultConfiguration extends GatewayConfiguration {
   public gateways = () => [];
   public protocol: GatewayProtocol = new GatewayDirectProtocol(this);
   public applicationAuthorizationKey = "Authorization";

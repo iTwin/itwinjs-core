@@ -8,6 +8,8 @@ import { GatewayProtocol, GatewayProtocolEvent } from "./GatewayProtocol";
 import { GatewayInvocation } from "./GatewayInvocation";
 import * as uuidv4 from "uuid/v4";
 
+/** @module Gateway */
+
 // tslint:disable:space-before-function-paren
 let obtainLock = 0;
 

@@ -9,6 +9,8 @@ import { GatewayRegistry, OPERATION, POLICY } from "./GatewayRegistry";
 import { GatewayRequestTokenSupplier_T, GatewayRequestIdSupplier_T } from "./GatewayRequest";
 import * as uuidv4 from "uuid/v4";
 
+/** @module Gateway */
+
 /** The policy for a gateway operation. */
 export class GatewayOperationPolicy {
   /** Supplies the IModelToken for an operation request. */
