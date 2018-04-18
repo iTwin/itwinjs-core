@@ -8,6 +8,8 @@ import { GatewayConfiguration } from "./GatewayConfiguration";
 import { GatewayOperation } from "./GatewayOperation";
 import { GatewayMarshaling } from "./GatewayMarshaling";
 
+/** @module Gateway */
+
 /** A serialized gateway operation descriptor. */
 export interface SerializedGatewayOperation {
   gateway: string;

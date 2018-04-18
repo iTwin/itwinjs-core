@@ -7,6 +7,8 @@ import {
 } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 
+/** @module Geometry */
+
 /**
  * A Range3d that is aligned with the axes of a coordinate space.
  */

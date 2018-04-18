@@ -6,6 +6,8 @@ import { XYProps } from "@bentley/geometry-core";
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { RelatedElementProps } from "./ElementProps";
 
+/** @module BisCore */
+
 export interface ModelProps extends EntityProps {
   modeledElement: Id64Props | RelatedElementProps;
   name?: string;

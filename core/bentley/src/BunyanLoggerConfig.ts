@@ -6,6 +6,8 @@ const bunyan = require("bunyan");
 import { GetMetaDataFunction } from "./BentleyError";
 import { LogFunction, Logger } from "./Logger";
 
+/** @module Logging */
+
 /** Helps to configure the bentleyjs-core Logger to use bunyan.
  * To use bunyan for logging output, the app should depend on the bunyan package.
  * The app should create a bunyan logger and then call [[BunyanLoggerConfig.logToBunyan]] to

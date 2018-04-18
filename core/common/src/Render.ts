@@ -14,6 +14,8 @@ import { QPoint3d, QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
 import { ColorIndex, FeatureIndex } from "./FeatureIndex";
 
+/** @module Views */
+
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
 export enum FillFlags {

@@ -25,6 +25,8 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Identifies the overall devDependencies (union of backend, frontend, and test devDependencies). Many devDependencies are in common between backend and frontend, so consolidating them makes them easier to manage.
 * `core/bentley/package.json`
   * Controls the version number and package dependencies for **@bentley/bentleyjs-core**
+* `core/geometry/package.json`
+  * Controls the version number and package dependencies for **@bentley/geometry-core**
 * `core/common/package.json`
   * Controls the version number for **@bentley/imodeljs-common**
   * Controls the package dependencies for the source code in common to both the backend and frontend
@@ -89,8 +91,9 @@ After a successful install, you will notice multiple **node_modules** directorie
 | node_modules Directory      | Contents                |
 |-----------------------------|-------------------------|
 | node_modules/               | Overall devDependencies
-| core/bentley/node_modules/  | bentleyjs dependencies
-| core/common/node_modules/   | common dependencies
+| core/bentley/node_modules/  | @bentley/bentleyjs-core dependencies
+| core/geometry/node_modules/ | @bentley/geometry-core dependencies
+| core/common/node_modules/   | @bentley/imodeljs-common dependencies
 | core/backend/node_modules/  | Backend dependencies
 | core/frontend/node_modules/ | Frontend dependencies
 | testbed/node_modules/       | Testbed dependencies

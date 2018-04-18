@@ -131,8 +131,6 @@ describe("BriefcaseManager", () => {
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
-      console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
-
       accessToken = await IModelTestUtils.getTestUserAccessToken();
       console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
       startTime = new Date().getTime();
@@ -158,6 +156,142 @@ describe("BriefcaseManager", () => {
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
 
+  });
+
+  it("The same promise can have two subscribers, and it will notify both.", async () => {
+    const testPromise = new Promise((resolve, _reject) => {
+      setTimeout(() => resolve("Success!"), 250);
+    });
+
+    let callbackcount = 0;
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+
+    await testPromise;
+
+    assert.equal(callbackcount, 2);
+  });
+
+  it.skip("test change-merging scenarios in optimistic concurrency mode", async () => {
+    const firstUser = accessToken;
+    const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
+    const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.user2);
+
+    const firstIModel: IModelDb = await IModelDb.open(firstUser, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
+    const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
+    const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUser, testProjectId, testIModels[1].id , OpenMode.Readonly);
+    assert.notEqual(firstIModel, secondIModel);
+
+    // Set up optimistic concurrency. Note the defaults are:
+    firstIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    secondIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // Note: neutralObserver's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
+
+    // firstUser: create model, category, and element el1
+    const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(firstIModel, firstUser);
+    const el1 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
+    // const el2 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
+    firstIModel.saveChanges("firstUser created model, category, and two elements");
+    await firstIModel.pushChanges(firstUser);
+
+    // secondUser: pull and merge
+    await secondIModel.pullAndMergeChanges(secondUser);
+
+    // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
+
+    // firstUser: modify el1.userLabel
+    if (true) {
+      const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
+      el1cc.userLabel = el1cc.userLabel + " -> changed by firstUser";
+      firstIModel.elements.updateElement(el1cc);
+      firstIModel.saveChanges("firstUser modified el1.userLabel");
+      await firstIModel.pushChanges(firstUser);
+    }
+
+    // secondUser: modify el1.userLabel
+    let expectedValueofEl1UserLabel: string;
+    if (true) {
+      const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
+      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
+      el1before.userLabel = expectedValueofEl1UserLabel;
+      secondIModel.elements.updateElement(el1before);
+      secondIModel.saveChanges("secondUser modified el1.userLabel");
+
+      // pull + merge => take secondUser's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
+      await secondIModel.pullAndMergeChanges(secondUser);
+      const el1after = secondIModel.elements.getElement(el1);
+      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+
+      await secondIModel.pushChanges(secondUser);
+    }
+
+    // Make sure a neutral observer sees secondUser's change.
+    if (true) {
+      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
+      const elobj = neutralObserverIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // firstUser: pull and see that secondUser has overridden my change
+    if (true) {
+      await firstIModel.pullAndMergeChanges(firstUser);
+      const elobj = firstIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // --- Test 2: Overlapping changes that are not conflicts  ---
+
+    // firstUser: modify el1.userLabel
+    const wasExpectedValueofEl1UserLabel = expectedValueofEl1UserLabel;
+    if (true) {
+      const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
+      assert.equal(el1cc.userLabel, wasExpectedValueofEl1UserLabel);
+      expectedValueofEl1UserLabel = el1cc.userLabel + " -> changed again by firstUser";
+      el1cc.userLabel = expectedValueofEl1UserLabel;
+      firstIModel.elements.updateElement(el1cc);
+      firstIModel.saveChanges("firstUser modified el1.userLabel");
+      await firstIModel.pushChanges(firstUser);
+    }
+
+    // Make sure a neutral observer sees firstUser's changes.
+    if (true) {
+      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
+      const elobj = neutralObserverIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // secondUser: modify el1.userProperties
+    const secondUserPropNs = "secondUser";
+    const secondUserPropName = "property";
+    const expectedValueOfSecondUserProp: string = "x";
+    if (true) {
+      const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
+      assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel);
+      el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp }); // secondUser changes userProperties
+      secondIModel.elements.updateElement(el1before);
+      secondIModel.saveChanges("secondUser modified el1.userProperties");
+      assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel, "secondUser does not change userLabel");
+
+      // pull + merge => no conflict + both changes should be intact
+      await secondIModel.pullAndMergeChanges(secondUser);
+      const el1after = secondIModel.elements.getElement(el1);
+      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(el1after.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
+
+      await secondIModel.pushChanges(secondUser);
+    }
+
+    // firstUser: pull and see both changes
+    if (true) {
+      await firstIModel.pullAndMergeChanges(firstUser);
+      const elobj = firstIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
+    }
   });
 
   it("should be able to open a first version IModel in Readonly mode", async () => {

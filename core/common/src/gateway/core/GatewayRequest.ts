@@ -11,6 +11,8 @@ import { OPERATION } from "./GatewayRegistry";
 import { aggregateLoad } from "./GatewayControl";
 import { IModelToken } from "../../IModel";
 
+/** @module Gateway */
+
 /** Supplies an IModelToken for a gateway request. */
 export type GatewayRequestTokenSupplier_T = (request: GatewayRequest) => IModelToken | undefined;
 

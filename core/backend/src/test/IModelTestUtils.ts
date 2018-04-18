@@ -7,7 +7,7 @@ import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
   ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
-import { Appearance, Code, CreateIModelProps, ElementProps, Gateway, GeometricElementProps, IModel, IModelGateway } from "@bentley/imodeljs-common";
+import { Appearance, Code, CreateIModelProps, ElementProps, Gateway, GeometricElementProps, IModel, IModelReadGateway } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
@@ -35,7 +35,7 @@ const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "native
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Initialize the gateway classes used by tests
-Gateway.initialize(IModelGateway);
+Gateway.initialize(IModelReadGateway);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

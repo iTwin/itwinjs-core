@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module FontsAndSymbology */
+
 /** the type of a font. */
 export const enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
 /** the properties of a Font. This includes a iModel local id, the font type, and the font name. */

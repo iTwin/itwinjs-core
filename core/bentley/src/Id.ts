@@ -7,6 +7,8 @@ export type Id64Set = Set<string>;
 export type Id64Array = string[];
 export type Id64Arg = Id64[] | Id64 | Id64Set | Id64Array | string;
 
+/** @module Ids */
+
 /** A 64 bit id, stored as a hex string. If invalid, value will be "0" */
 export class Id64 {
   public readonly value: string;
