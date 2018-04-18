@@ -1,11 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus } from "./Bentley";
 import { DbResult } from "./BeSQLite";
 import { LogFunction } from "./Logger";
 
 /** @module Errors */
+
+/** Standard status code.
+ * This status code should be rarely used.
+ * Prefer to throw an exception to indicate an error, rather than returning a special status code.
+ * If a status code is to be returned, prefer to return a more specific error status type such as IModelStatus or DbResult.
+ */
+export const enum BentleyStatus {
+  SUCCESS = 0x0000,
+  ERROR = 0x8000,
+}
 
 /** Status codes that are used in conjunction with [[BentleyError]].
  * Error status codes are divided into separate ranges for different kinds of errors. All known ranges at least should be defined here, to avoid collisions.

@@ -76,7 +76,7 @@ export * from "./gateway/StandaloneIModelGateway";
  */
 /**
  * @docs-group-description Gateway
- * Classes for working with Gateways.
+ * Classes for working with Gateways. The key class is #Gateway.
  * For more information on the role of gateways in an app [[?]]
  */
 /**

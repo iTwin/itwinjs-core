@@ -7,6 +7,8 @@ import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
 
+/** @module BisCore */
+
 /** Parameters to create a SubCategory element */
 export interface SubCategoryProps extends ElementProps {
   appearance?: AppearanceProps;

@@ -7,6 +7,8 @@ import { Point2d } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
+/** @module BisCore */
+
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.
  */
