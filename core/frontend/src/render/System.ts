@@ -10,6 +10,7 @@ import { AntiAliasPref,
          HiddenLine,
          ColorDef,
          Graphic,
+         Decorations,
          GraphicBranch } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -52,9 +53,17 @@ export class Plan {
   }
 }
 
+/**
+ * A Render::Target holds the current scene, the current set of dynamic Graphics, and the current decorators.
+ * When frames are composed, all of those Graphics are rendered, as appropriate.
+ * A Render::Target holds a reference to a Render::Device, and a Render::System
+ * Every DgnViewport holds a reference to a Render::Target.
+ */
 export abstract class Target {
-  constructor(public system: System) {}
+  constructor(public system: System,
+              public decorations: Decorations = new Decorations()) {}
   public createGraphic(params: GraphicBuilderCreateParams) { return this.system.createGraphic(params); }
+  public changeDecorations(decorations: Decorations): void { this.decorations = decorations; }
 }
 
 export class OnScreenTarget extends Target {
