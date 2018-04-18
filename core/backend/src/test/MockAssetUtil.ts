@@ -82,7 +82,7 @@ export class TestIModelInfo {
 /** Provides utility functions for working with mock objects */
 export class MockAssetUtil {
   private static iModelMap = new Map<string, string>([["233e1f55-561d-42a4-8e80-d6f91743863e", "ReadOnlyTest"],
-                                                      ["b74b6451-cca3-40f1-9890-42c769a28f3e", "ReadWriteTest"],
+                                                      ["c8060470-c5d0-4288-a1a2-4c98efaa474e", "ReadWriteTest"],
                                                       ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
 
   private static versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
@@ -104,8 +104,8 @@ export class MockAssetUtil {
         token.toTokenString();
         if (id === "233e1f55-561d-42a4-8e80-d6f91743863e")
           return Promise.resolve("1b186c485d182c46c02b99aff4fb12637263438f");
-        else if (id === "b74b6451-cca3-40f1-9890-42c769a28f3e")
-          return Promise.resolve("89bd6d5016ea2d644681a45c6cd090cff2de5cf2");
+        else if (id === "c8060470-c5d0-4288-a1a2-4c98efaa474e")
+          return Promise.resolve("c7c44724278d3568a9c9b3c1f0626ce0c897f427");
         else
           return Promise.resolve("");
       });
@@ -234,6 +234,19 @@ export class MockAssetUtil {
         throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
+    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(),
+                                                              TypeMoq.It.isAnyString()))
+      .returns((_tok: AccessToken, iModelId: string) => {
+        const iModelName = this.iModelMap.get(iModelId);
+        if (iModelName) {
+          const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
+          const buff = IModelJsFs.readFileSync(sampleBriefcasePath);
+          const jsonObj = JSON.parse(buff.toString());
+          return Promise.resolve(getTypedInstances<Briefcase>(Briefcase, jsonObj));
+        }
+        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+      });
+
     // For any call with a specified iModelId, return a dummy briefcaseId. If future test cases demand so, we may
     // need to change this to return specific briefcaseIds
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.download(TypeMoq.It.isAny(),
@@ -248,7 +261,7 @@ export class MockAssetUtil {
           }
         }
         if (iModelName !== "") {
-          const sampleIModelPath = path.join(assetDir, iModelName, "0", `${iModelName}.bim`);
+          const sampleIModelPath = path.join(assetDir, iModelName, `${iModelName}.bim`);
           IModelJsFs.copySync(sampleIModelPath, outPath);
           return Promise.resolve();
         }

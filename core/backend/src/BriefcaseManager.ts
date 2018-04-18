@@ -538,7 +538,9 @@ export class BriefcaseManager {
       await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
       throw new IModelError(res, briefcase.pathname);
     }
-    assert(nativeDb.getParentChangeSetId() === briefcase.changeSetId);
+
+    const nativeParentChangeSetId = nativeDb.getParentChangeSetId();
+    assert(nativeParentChangeSetId === briefcase.changeSetId);
 
     briefcase.openMode = openMode; // Restore briefcase's openMode
     briefcase.nativeDb = nativeDb;

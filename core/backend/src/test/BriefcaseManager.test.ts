@@ -161,7 +161,6 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to open a first version IModel in Readonly mode", async () => {
-    // Arrange
     let onOpenCalled: boolean = false;
     const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openModeIn: OpenMode, _versionIn: IModelVersion) => {
       onOpenCalled = true;
@@ -183,10 +182,8 @@ describe("BriefcaseManager", () => {
     else
       version = IModelVersion.latest();
 
-    // Act
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, version);
 
-    // Assert
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
@@ -200,7 +197,7 @@ describe("BriefcaseManager", () => {
     expect(files.length).greaterThan(0, "iModel .bim file could not be read");
   });
 
-  it.skip("should be able to open a cached first version IModel in ReadWrite mode", async () => {
+  it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.ReadWrite, "iModel not set to ReadWrite mode");
@@ -247,27 +244,26 @@ describe("BriefcaseManager", () => {
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
   });
 
-  it.skip("should reuse open briefcases in ReadWrite mode", async () => {
-    // Act
+  it("should reuse open briefcases in ReadWrite mode", async () => {
     let timer = new Timer("open briefcase first time");
-    const iModel0: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel0: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object);
     assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel0.iModelToken.iModelId === testIModels[1].id, "Incorrect iModel ID");
     timer.end();
 
-    const briefcases = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
+    const briefcases = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
     expect(briefcases.length).greaterThan(0, "iModel .bim file could not be read");
 
     timer = new Timer("open briefcase 5 more times");
     const iModels = new Array<IModelDb>();
     for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+      const iModel: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object);
       assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
       iModels.push(iModel);
     }
     timer.end();
 
-    const briefcases2 = IModelJsFs.readdirSync(testIModels[1].localReadonlyPath);
+    const briefcases2 = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
     expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
     expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
@@ -320,8 +316,8 @@ describe("BriefcaseManager", () => {
     }
   });
 
-  it.skip("should build concurrency control request", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite);
+  it("should build concurrency control request", async () => {
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
 
     const el: Element = iModel.elements.getRootSubject();
     el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
