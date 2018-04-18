@@ -3,6 +3,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64Props } from "@bentley/bentleyjs-core";
 
+/** @module Schemas */
+
 /** The properties of a BIS Entity as they are read/stored from/to the database. */
 export interface EntityProps {
   /** The full name of the EC Class for this entity. Must be in the form "Schema:ClassName" */

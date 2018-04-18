@@ -1,45 +1,28 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { OpenMode, Logger, Id64Set } from "@bentley/bentleyjs-core";
+import { Logger, Id64Set } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams, Gateway, IModelToken, IModel, IModelError, IModelStatus, IModelVersion, AxisAlignedBox3d, IModelGateway } from "@bentley/imodeljs-common";
-import { EntityMetaData } from "./Entity";
-import { IModelDb } from "./IModelDb";
+import { EntityQueryParams, Gateway, IModel, IModelReadGateway, IModelToken, IModelVersion } from "@bentley/imodeljs-common";
+import { EntityMetaData } from "../Entity";
+import { IModelDb } from "../IModelDb";
 
-const loggingCategory = "imodeljs-backend.IModelGatewayImpl";
+/** @module Gateway */
 
-/**
- * The backend implementation of IModelGateway.
+const loggingCategory = "imodeljs-backend.IModelReadGatewayImpl";
+
+/** The backend implementation of IModelGateway.
  * @hidden
  */
-export class IModelGatewayImpl extends Gateway implements IModelGateway {
-  private static _hasReadWriteAccess(iModelToken: IModelToken) { return OpenMode.ReadWrite === iModelToken.openMode; }
-  public static register() { Gateway.registerImplementation(IModelGateway, IModelGatewayImpl); }
-  public async openForRead(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> { return this.open(accessToken, iModelToken); }
-
-  public async openForWrite(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
-    if (!IModelGatewayImpl._hasReadWriteAccess(iModelToken))
-      throw new IModelError(IModelStatus.NotOpenForWrite);
-
-    return this.open(accessToken, iModelToken);
-  }
-
-  private async open(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
+export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway {
+  public static register() { Gateway.registerImplementation(IModelReadGateway, IModelReadGatewayImpl); }
+  public async openForRead(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
     const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
     return await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId!, iModelToken.iModelId!, iModelToken.openMode, iModelVersion);
   }
 
-  /** Ask the backend to open a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend. */
-  public async openStandalone(fileName: string, openMode: OpenMode): Promise<IModel> { return IModelDb.openStandalone(fileName, openMode); }
-
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
     IModelDb.find(iModelToken).close(AccessToken.fromJson(accessToken)!);
-    return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
-  }
-
-  public async closeStandalone(iModelToken: IModelToken): Promise<boolean> {
-    IModelDb.find(iModelToken).closeStandalone();
     return true; // NEEDS_WORK: Promise<void> seems to crash the transport layer.
   }
 
@@ -49,8 +32,6 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     Logger.logTrace(loggingCategory, "IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
     return rows;
   }
-
-  public async saveChanges(iModelToken: IModelToken, description?: string): Promise<void> { IModelDb.find(iModelToken).saveChanges(description); }
 
   public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<string[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
@@ -127,8 +108,6 @@ export class IModelGatewayImpl extends Gateway implements IModelGateway {
     return codeSpecs;
   }
 
-  public async updateProjectExtents(iModelToken: IModelToken, newExtents: AxisAlignedBox3d): Promise<void> { IModelDb.find(iModelToken).updateProjectExtents(newExtents); }
-  public async executeTest(iModelToken: IModelToken, testName: string, params: any): Promise<any> { return IModelDb.find(iModelToken).executeTest(testName, params); }
   public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<any> { return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId); }
   public async readFontJson(iModelToken: IModelToken): Promise<any> { return IModelDb.find(iModelToken).readFontJson(); }
 }

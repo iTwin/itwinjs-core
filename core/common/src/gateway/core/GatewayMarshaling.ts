@@ -5,6 +5,8 @@ import { GatewayRegistry } from "./GatewayRegistry";
 import { GatewayOperation } from "./GatewayOperation";
 import { GatewayProtocol } from "./GatewayProtocol";
 
+/** @module Gateway */
+
 let marshalingScope = "";
 
 /** Gateway type marshaling directives. */

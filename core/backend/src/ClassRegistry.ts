@@ -6,6 +6,8 @@ import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
+/** @module Schemas */
+
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {
   private static readonly classMap = new Map<string, typeof Entity>();

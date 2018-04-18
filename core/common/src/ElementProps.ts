@@ -8,6 +8,8 @@ import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAnd
 import { IModelError, IModelStatus } from "./IModelError";
 import { GeometryStreamProps } from "./common";
 
+/** @module BisCore */
+
 /** The iModelJson properties of an ECNavigationProperty in a BIS schema. */
 export interface RelatedElementProps {
   id: Id64Props;

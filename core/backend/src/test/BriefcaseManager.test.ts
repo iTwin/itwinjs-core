@@ -80,7 +80,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
   return { modelId, spatialCategoryId };
 }
 
-describe.skip("BriefcaseManager", () => {
+describe("BriefcaseManager", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
@@ -120,6 +120,7 @@ describe.skip("BriefcaseManager", () => {
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
     await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
     await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });

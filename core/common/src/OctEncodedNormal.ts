@@ -5,6 +5,8 @@ import { Vector3d } from "@bentley/geometry-core";
 import { PointUtil } from "./Utility";
 import { assert } from "@bentley/bentleyjs-core";
 
+/** @module Views */
+
 export class OctEncodedNormal {
   private _value = 0;
   public get value(): number { return PointUtil.toUint16(this._value); }

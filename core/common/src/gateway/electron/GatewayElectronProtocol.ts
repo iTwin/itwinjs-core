@@ -5,6 +5,8 @@ import { GatewayProtocol, SerializedGatewayRequest } from "../core/GatewayProtoc
 import { GatewayElectronConfiguration } from "./GatewayElectronConfiguration";
 import { GatewayElectronRequest } from "./GatewayElectronRequest";
 
+/** @module Gateway */
+
 /** @hidden @internal */
 export const CHANNEL = "@bentley/imodeljs-common/GatewayElectronProtocol";
 

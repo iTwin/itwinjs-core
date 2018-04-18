@@ -7,6 +7,8 @@ import { GatewayRequest, GatewayRequestEventHandler, GatewayRequestEvent } from 
 import { OpenAPIInfo } from "./OpenAPI";
 import { BentleyCloudGatewayProtocol } from "./BentleyCloudGatewayProtocol";
 
+/** @module Gateway */
+
 /** Initialization parameters for BentleyCloudGatewayConfiguration. */
 export interface BentleyCloudGatewayParams {
   info: OpenAPIInfo;

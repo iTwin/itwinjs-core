@@ -1,8 +1,10 @@
-import { BentleyError, IModelStatus } from "./BentleyError";
-
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { BentleyError, IModelStatus } from "./BentleyError";
+
+/** @module Logging */
+
 // tslint:disable-next-line:no-var-requires
 const seq = require("bunyan-seq");
 // tslint:disable-next-line:no-var-requires

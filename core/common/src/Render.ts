@@ -14,6 +14,8 @@ import { QPoint3d, QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
 import { ColorIndex, FeatureIndex } from "./FeatureIndex";
 
+/** @module Views */
+
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
 export enum FillFlags {
@@ -648,6 +650,7 @@ export namespace Gradient {
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
+    Thematic = 6,
   }
 
   export class Symb {

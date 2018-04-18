@@ -12,7 +12,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestConfig } from "./TestConfig";
 
-describe.skip("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;

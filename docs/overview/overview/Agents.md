@@ -32,7 +32,6 @@ The is often the case where frontends only perform readonly operations on an iMo
 
 iModel Services are usually connected to frontend applications via HTTP over an Internet connection. As such,
 
-
 ## Backends for Desktop applications
 
 Desktop applications can be created with iModelJs using [Electron](https://electronjs.org/). In this case there are still two processes,

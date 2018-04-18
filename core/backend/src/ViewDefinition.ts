@@ -10,6 +10,8 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
+/** @module Views */
+
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export class DisplayStyle extends DefinitionElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }

@@ -13,6 +13,8 @@ import {
   AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
 } from "@bentley/imodeljs-common";
 
+/** @module BisCore */
+
 /**
  * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in Models) are used to model

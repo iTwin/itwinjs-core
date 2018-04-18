@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, AngleProps, GeometryQuery, XYProps, XYZProps, LowAndHighXYZ,
 } from "@bentley/geometry-core";
@@ -10,6 +9,8 @@ import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
+
+/** @module Geometry */
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
  *  GeometryAppearanceProps always signifies a reset to the subCategory appearance for all values without an override.
@@ -46,24 +47,45 @@ export interface StyleModifierProps {
   rotation?: YawPitchRollProps;
 }
 
-export interface AreaFillProps {
-  display: FillDisplay;
-  color?: ColorDef;
-  backgroundFill?: BackgroundFill;
-  transparency?: number;
-  mode?: Gradient.Mode;
-  flags?: number;
+export interface GradientKeyColorProps {
+  value: number;
+  color: ColorDef;
+}
+
+export interface GradientThematicProps {
+  mode?: number;
+  stepCount?: number;
+  margin?: number;
+  marginColor?: ColorDef;
+  colorScheme?: number;
+}
+
+export interface GradientProps {
+  mode: Gradient.Mode;
+  flags?: Gradient.Flags;
   angle?: AngleProps;
   tint?: number;
   shift?: number;
-  colors?: ColorDef[];
-  values?: number[];
+  /** Gradient key value/color pair, 8 maximum */
+  keys: GradientKeyColorProps[];
+  /** Settings applicable to Gradient.Mode.Thematic */
+  thematicSettings?: GradientThematicProps;
+}
+
+/** Area fill property. Can either represent a background color fill, a solid fill, or a gradient fill. */
+export interface AreaFillProps {
+  display: FillDisplay;
+  transparency?: number;
+  backgroundFill?: BackgroundFill;
+  color?: ColorDef;
+  gradient?: GradientProps;
 }
 
 export interface HatchDefLineProps {
   angle?: AngleProps;
   through?: XYProps;
   offset?: XYProps;
+  /** Dash array, max of 20 */
   dashes?: number[];
 }
 
@@ -80,7 +102,7 @@ export interface AreaPatternProps {
   invisibleBoundary?: boolean;
   snappable?: boolean;
   symbolId?: Id64Props;
-  defLine?: HatchDefLineProps[];
+  defLines?: HatchDefLineProps[];
 }
 
 export interface MaterialProps {
