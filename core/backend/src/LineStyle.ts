@@ -6,6 +6,8 @@ import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@ben
 import { IModelDb } from "./IModelDb";
 import { LineStyle } from "./backend";
 
+/** @module FontsAndSymbology */
+
 /** A line style definition is a uniquely named pattern that repeats as it's displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:
  * - A style described by a stroke pattern (series of dashes and gaps) that may also include symbol graphics.

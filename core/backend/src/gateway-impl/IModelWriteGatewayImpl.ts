@@ -6,6 +6,8 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { AxisAlignedBox3d, Gateway, IModel, IModelError, IModelStatus, IModelToken, IModelVersion, IModelWriteGateway } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 
+/** @module Gateway */
+
 /**
  * The backend implementation of IModelWriteGateway.
  * @hidden

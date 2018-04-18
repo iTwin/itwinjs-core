@@ -5,6 +5,8 @@ import { Gateway, IModelToken } from "@bentley/imodeljs-common";
 import { IModelUnitTestGateway } from "@bentley/imodeljs-common/lib/gateway/IModelUnitTestGateway"; // not part of the "barrel"
 import { IModelDb } from "../IModelDb";
 
+/** @module Gateway */
+
 /**
  * The backend implementation of IModelUnitTestGateway.
  * @hidden

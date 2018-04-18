@@ -6,6 +6,8 @@ import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
 import { GatewayRequest, IModelError } from "@bentley/imodeljs-common";
 
+/** @module iModels */
+
 const loggingCategory = "imodeljs-backend.AutoPush";
 
 export interface AppActivityMonitor {

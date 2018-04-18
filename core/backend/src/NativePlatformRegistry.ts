@@ -6,6 +6,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
 import * as path from "path";
 
+/** @module Portability */
+
 // tslint:disable-next-line:no-eval
 const realrequire = eval("require");
 

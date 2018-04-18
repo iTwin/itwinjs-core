@@ -13,6 +13,8 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 
+/** @module iModels */
+
 /**
  * ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
  */

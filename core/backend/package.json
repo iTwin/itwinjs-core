@@ -12,7 +12,7 @@
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib package-deps.json",
     "docs": "cd ../.. && npm run docs:backend",
-    "copy:assets": "cpx ./assets/**/* ./lib/assets",
+    "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend",
@@ -79,6 +79,8 @@
       "./src/**/*.ts"
     ],
     "exclude": [
+      "./src/gateway-impl/*",
+      "./src/perftest/*",
       "./src/test/*",
       "**/*.d.ts"
     ],

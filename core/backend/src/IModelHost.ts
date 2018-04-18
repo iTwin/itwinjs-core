@@ -13,6 +13,8 @@ import { KnownLocations } from "./Platform";
 import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 
+/** @module App */
+
 export class IModelHostConfiguration {
   /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
   public iModelHubDeployConfig: DeploymentEnv = "QA";

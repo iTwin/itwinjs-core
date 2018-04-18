@@ -21,6 +21,8 @@ import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 
+/** @module iModels */
+
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 

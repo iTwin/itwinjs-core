@@ -7,6 +7,8 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
 
+/** @module ECDb */
+
 const loggingCategory = "imodeljs-backend.ECDb";
 
 /** An ECDb file */
