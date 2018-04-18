@@ -19,6 +19,40 @@ import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, Npc
 import { IModelApp } from "./IModelApp";
 import { Target } from "./render/System";
 
+/** viewport synchronization flags */
+export class SyncFlags {
+  public get isValidDecorations(): boolean { return this.decorations; }
+  public get isValidScene(): boolean { return this.scene; }
+  public get isValidController(): boolean { return this.controller; }
+  public get isValidRenderPlan(): boolean { return this.renderPlan; }
+  public get isValidRotatePoint(): boolean { return this.rotatePoint; }
+  public get isFirstDrawComplete(): boolean { return this.firstDrawComplete; }
+  public get isRedrawPending(): boolean { return this.redrawPending; }
+  constructor(private decorations: boolean = false,
+              private scene: boolean = false,
+              private renderPlan: boolean = false,
+              private controller: boolean = false,
+              private rotatePoint: boolean = false,
+              private firstDrawComplete: boolean = false,
+              private redrawPending: boolean = false) {}
+  public invalidateDecorations(): void { this.decorations = false; }
+  public invalidateScene(): void { this.scene = false; this.invalidateDecorations(); }
+  public invalidateRenderPlan(): void { this.renderPlan = false; this.invalidateScene(); }
+  public invalidateController(): void { this.controller = false; this.invalidateRenderPlan(); this.invalidateFirstDrawComplete(); }
+  public invalidateRotatePoint(): void { this.rotatePoint = false; }
+  public invalidateFirstDrawComplete(): void { this.firstDrawComplete = false; }
+  public invalidateRedrawPending(): void { this.redrawPending = false; }
+  public setValidDecorations(): void { this.decorations = true; }
+  public setFirstDrawComplete(): void { this.firstDrawComplete = true; }
+  public setValidScene(): void { this.scene = true; }
+  public setValidController(): void { this.controller = true; }
+  public setValidRenderPlan(): void { this.renderPlan = true; }
+  public setValidRotatePoint(): void { this.rotatePoint = true; }
+  public setRedrawPending(): void { this.redrawPending = true; }
+  /** enables setting instance as readonly so reference is preserved when resetting */
+  public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.firstDrawComplete = other.firstDrawComplete; this.redrawPending = other.redrawPending; }
+}
+
 /** A rectangle in view coordinates. */
 export class ViewRect {
   public constructor(public left = 0, public bottom = 0, public right = 0, public top = 0) { }

@@ -650,6 +650,7 @@ export namespace Gradient {
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
+    Thematic = 6,
   }
 
   export class Symb {
