@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 export * from "./Assert";
 export * from "./BeEvent";
-// export * from "./Bentley";   -- empty
+export * from "./Bentley";
 export * from "./BentleyError";
 export * from "./BeSQLite";
 export * from "./Disposable";
