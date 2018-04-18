@@ -68,6 +68,7 @@
         "Polyface",
         "Polyfaces",
         "postupdate",
+        "readonly",
         "redoable",
         "remotable",
         "remoting",

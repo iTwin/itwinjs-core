@@ -14,6 +14,7 @@
     "**/generated-docs": true,
     "**/package-deps.json": true,
     "**/node_modules": true,
+    "**/out": true,
     "**/lib": true
   },
   "cSpell.words": [
@@ -86,6 +87,7 @@
     "parallelized",
     "pnpm",
     "postupdate",
+    "readonly",
     "redoable",
     "skybox",
     "snappable",

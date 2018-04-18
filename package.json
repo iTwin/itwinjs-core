@@ -38,8 +38,7 @@
     "cover:geometry": "cd core/geometry && npm run cover",
     "cover:backend": "cd core/backend && npm run cover",
     "module:backend": "cd core/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
-    "module:frontend": "cd core/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
-    "updateNativeToTsDictionary": "node ./tasks/updateNativeToTsDictionary.js"
+    "module:frontend": "cd core/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true"
   },
   "keywords": [
     "Bentley",
