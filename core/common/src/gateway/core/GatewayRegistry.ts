@@ -5,7 +5,7 @@ import { Gateway, GatewayImplementation, GatewayDefinition } from "../../Gateway
 import { GatewayDirectProtocol } from "./GatewayConfiguration";
 import { GatewayOperation, GatewayOperationPolicy } from "./GatewayOperation";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 /** @module Gateway */
 
