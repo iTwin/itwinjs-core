@@ -12,7 +12,7 @@ import {
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
 } from "@bentley/imodeljs-frontend";
 
-describe("IModelConnection", () => {
+describe.skip("IModelConnection", () => {
   let iModel: IModelConnection;
 
   before(async () => {
