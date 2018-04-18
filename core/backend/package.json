@@ -79,6 +79,8 @@
       "./src/**/*.ts"
     ],
     "exclude": [
+      "./src/gateway-impl/*",
+      "./src/perftest/*",
       "./src/test/*",
       "**/*.d.ts"
     ],
