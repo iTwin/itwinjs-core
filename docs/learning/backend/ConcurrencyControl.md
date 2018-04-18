@@ -14,22 +14,22 @@ Locks and code reservations are associated with a briefcase while it is making c
 ## Background
 This article assumes that you already know that:
 * An iModel is a multi-user database
-* An app works with a [briefcase](../Glossary.md#Briefcase) using the [IModelDb]($imodeljs-backend.IModelDb) class.
-* A briefcase has a unique identity that is issued and tracked by [iModelHub](../../overview/IModelHub.md).
-* Changes are captured and distributed in the form of [ChangeSets](../Glossary.md#ChangeSets).
-* ChangeSets are ordered in a sequence that is called the [timeline](../../overview/IModelHub.md#the-timeline-of-changes) of the iModel.
+* An app works with a [briefcase](../learning/Glossary.md#Briefcase) using the [IModelDb]($imodeljs-backend.IModelDb) class.
+* A briefcase has a unique identity that is issued and tracked by [iModelHub](../../overview/overview/IModelHub.md).
+* Changes are captured and distributed in the form of [ChangeSets](../learning/Glossary.md#ChangeSets).
+* ChangeSets are ordered in a sequence that is called the [timeline](../../overview/overview/IModelHub.md#the-timeline-of-changes) of the iModel.
 * ChangeSets are stored in iModelHub
-* A [Code](../Glossary.md#Code) is an identifier that assigned to an element and is managed by a central Code Service.
+* A [Code](../learning/Glossary.md#Code) is an identifier that assigned to an element and is managed by a central Code Service.
 
 ## Glossary:
 
 |Term | Definition
 |------------|------------|
-|**Base**|ChangeSet B is based on ChangeSet A if B comes after A in the [timeline](../../overview/IModelHub.md#the-timeline-of-changes).
+|**Base**|ChangeSet B is based on ChangeSet A if B comes after A in the [timeline](../../overview/overview/IModelHub.md#the-timeline-of-changes).
 |**Change-merging**|Same as merge.
 |**Code Reservation**|The right to use a Code
 |**Concurrency Control**|How to coordinate simultaneous transactions while preserving data integrity.
-|**Concurrency Control Policy**|The rules that apps must follow when changing models and elements. May be [optimistic](#optimistic) or [pessimistic](#pessimistic).
+|**Concurrency Control Policy**|The rules that apps must follow when changing models and elements. May be [optimistic](#optimistic-concurrency-control-concurrency-control) or [pessimistic](#pessimistic-concurrency-control).
 |**Conflict**|Arises when two ChangeSets change the same object in different ways, where neither ChangeSet is based on the other.
 |**Conflict-resolution**|Choosing how to resolve a conflict.
 |**Lock**|The right to access a specific type of data with specific sharing permissions.
@@ -39,9 +39,9 @@ This article assumes that you already know that:
 |**Push**|Upload a ChangeSet to iModelHub
 |**Pull**|Download a ChangeSet from iModelHub
 |**Rebase**|Adjust a ChangeSet so that its pre-change state matches the post-change state of some other ChangeSet.
-|**Revision**|The state of an iModel as of a specific point in its [timeline](../../overview/IModelHub.md#the-timeline-of-changes), that is, the result of the ChangeSets up to that point.
-|**Tip**|The most recent revision of an iModel. Also, the most recent ChangeSet in the [timeline](../../overview/IModelHub.md#the-timeline-of-changes).
-|**Transaction**|A set of changes that are committed or abandoned atomically, making up a unit of work. Multiple  transactions to a briefcase are combined into a [ChangeSet](../Glossary.md#ChangeSets).
+|**Revision**|The state of an iModel as of a specific point in its [timeline](../../overview/overview/IModelHub.md#the-timeline-of-changes), that is, the result of the ChangeSets up to that point.
+|**Tip**|The most recent revision of an iModel. Also, the most recent ChangeSet in the [timeline](../../overview/overview/IModelHub.md#the-timeline-of-changes).
+|**Transaction**|A set of changes that are committed or abandoned atomically, making up a unit of work. Multiple  transactions to a briefcase are combined into a [ChangeSet](../learning/Glossary.md#ChangeSets).
 
 
 ## Code Reservation
