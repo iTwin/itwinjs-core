@@ -4,6 +4,8 @@
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
 import { IModel } from "./IModel";
 
+/** @module Codes */
+
 /** Properties that define a Code */
 export interface CodeProps {
   spec: Id64Props;

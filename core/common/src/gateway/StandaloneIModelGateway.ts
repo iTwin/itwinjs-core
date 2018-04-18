@@ -5,6 +5,8 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { Gateway } from "../Gateway";
 import { IModel, IModelToken } from "../IModel";
 
+/** @module Gateway */
+
 /**
  * The Gateway for working with standalone iModels.
  * Products are generally discouraged from using standalone iModels and therefore registering this Gateway.

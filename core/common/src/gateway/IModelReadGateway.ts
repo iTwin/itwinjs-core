@@ -10,6 +10,8 @@ import { EntityQueryParams } from "../EntityProps";
 import { IModel, IModelToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 
+/** @module Gateway */
+
 /**
  * The Gateway for reading from an iModel.
  * All operations only require read-only access.

@@ -4,6 +4,8 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 
+/** @module Views */
+
 export class ColorIndexNonUniform {
   public colors: Uint32Array;
   public indices: Uint16Array;

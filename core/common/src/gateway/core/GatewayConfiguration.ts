@@ -7,6 +7,8 @@ import { GatewayRequest } from "./GatewayRequest";
 import { INSTANCE } from "./GatewayRegistry";
 import { GatewayControlChannel } from "./GatewayControl";
 
+/** @module Gateway */
+
 export type GatewayConfigurationSupplier = () => { new(): GatewayConfiguration };
 
 /** Operating parameters for a gateway. */

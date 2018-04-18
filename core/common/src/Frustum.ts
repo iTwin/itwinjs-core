@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d } from "@bentley/geometry-core";
 
+/** @module Views */
+
 /** The 8 corners of the NPC cube. */
 export const enum Npc {
   _000 = 0,  // Left bottom rear

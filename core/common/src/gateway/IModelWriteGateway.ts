@@ -7,6 +7,8 @@ import { Gateway } from "../Gateway";
 import { IModel, IModelToken } from "../IModel";
 import { AxisAlignedBox3d } from "../geometry/Primitives";
 
+/** @module Gateway */
+
 /**
  * The Gateway for writing to an iModel.
  * All operations require read+write access.

@@ -39,3 +39,63 @@ export * from "./gateway/http/BentleyCloudGatewayConfiguration";
 export * from "./gateway/IModelReadGateway";
 export * from "./gateway/IModelWriteGateway";
 export * from "./gateway/StandaloneIModelGateway";
+
+/** @docs-package-description
+ * The imodeljs-common package contains classes for working with iModels in both frontend and backend.
+ */
+
+/**
+ * @docs-group-description App
+ * Classes for defining an app.
+ * For more information [[?]]
+ */
+/**
+ * @docs-group-description BisCore
+ * Classes for working with the major classes in the BisCore schema.
+ * For more information [[?]]
+ */
+ /**
+  * @docs-group-description Codes
+  * Classes for working with Codes.
+  * For more information [[?]]
+  */
+/**
+ * @docs-group-description ECSql
+ * Classes for working with ECSql.
+ * For more information [[?]]
+ */
+/**
+ * @docs-group-description Errors
+ * Classes for working with errors.
+ * For more information [[?]]
+ */
+/**
+ * @docs-group-description FontsAndSymbology
+ * Classes for working with fonts, colors, and other symbology.
+ * For more information [[?]]
+ */
+/**
+ * @docs-group-description Gateway
+ * Classes for working with Gateways.
+ * For more information on the role of gateways in an app [[?]]
+ */
+/**
+ * @docs-group-description Geometry
+ * Classes for working with geometry.
+ * For more information [[?]]
+ */
+/**
+ * @docs-group-description iModels
+ * Classes for working with iModels.
+ * For more information [[?]]
+ */
+/**
+ * @docs-group-description Schemas
+ * Classes for working with ECSchemas.
+ * For more information [[?]]
+ */
+/**
+ * @docs-group-description Views
+ * Classes for working with views of models and elements.
+ * For more information [[?]]
+ */

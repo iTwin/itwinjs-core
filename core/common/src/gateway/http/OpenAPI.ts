@@ -4,6 +4,8 @@
 import { GatewayOperation } from "../core/GatewayOperation";
 import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 
+/** @module Gateway */
+
 /** An OpenAPI 3.0 root document object. */
 export interface OpenAPIDocument {
   openapi: "3.0.0";

@@ -4,6 +4,8 @@
 import { Id64Props, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "./IModelError";
 
+/** @module ECSql */
+
 /** Describes the different data types an ECSQL value can be of. */
 export enum ECSqlValueType {
   // do not change the values of the enum as it must match its counterpart in the addon
