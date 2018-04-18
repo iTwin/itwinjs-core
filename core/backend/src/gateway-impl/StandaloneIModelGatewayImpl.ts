@@ -5,6 +5,8 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { Gateway, IModel, IModelToken, StandaloneIModelGateway } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 
+/** @module Gateway */
+
 /**
  * The backend implementation of StandaloneIModelGateway.
  * @hidden

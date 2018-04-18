@@ -7,6 +7,8 @@ import { EntityProps, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
+/** @module Schema */
+
 /** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {
   Uninitialized = 0x00,

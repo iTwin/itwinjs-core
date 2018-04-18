@@ -8,6 +8,8 @@ import { ECDb } from "./ECDb";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlValueIterator, NativeECDb, NativeDgnDb } from "@bentley/imodeljs-native-platform-api";
 
+/** @module ECSql */
+
 /** The result of an **ECSQL INSERT** statement as returned from [[ECSqlStatement.stepForInsert]].
  * <em>note:</em> Insert statements can be used with ECDb only, not with IModelDb.
  *

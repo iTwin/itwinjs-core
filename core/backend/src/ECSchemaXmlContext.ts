@@ -5,6 +5,8 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelError } from "@bentley/imodeljs-common";
 import { NativeECSchemaXmlContext } from "@bentley/imodeljs-native-platform-api";
 
+/** @module Schemas */
+
 export type SchemaKey = NativeECSchemaXmlContext.SchemaKey;
 export type SchemaMatchType = NativeECSchemaXmlContext.SchemaMatchType;
 

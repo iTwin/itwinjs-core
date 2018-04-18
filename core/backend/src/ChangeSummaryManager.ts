@@ -14,6 +14,8 @@ import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./Platform";
 
+/** @module iModels */
+
 /** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
 export enum ChangeOpCode {
   Insert = 1,

@@ -16,6 +16,8 @@ import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import * as fs from "fs";
 
+/** @module iModels */
+
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
 /** The Id assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels */

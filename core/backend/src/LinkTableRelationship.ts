@@ -7,6 +7,8 @@ import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common
 import { Id64, Id64Props, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { ECSqlStatement } from "./ECSqlStatement";
 
+/** @module BisCore */
+
 const loggingCategory = "imodeljs-backend.LinkTableRelationship";
 
 /** Properties that are common to all types of link table ECRelationships */

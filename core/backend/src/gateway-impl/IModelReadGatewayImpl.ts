@@ -7,6 +7,8 @@ import { EntityQueryParams, Gateway, IModel, IModelReadGateway, IModelToken, IMo
 import { EntityMetaData } from "../Entity";
 import { IModelDb } from "../IModelDb";
 
+/** @module Gateway */
+
 const loggingCategory = "imodeljs-backend.IModelReadGatewayImpl";
 
 /** The backend implementation of IModelGateway.
