@@ -11,7 +11,7 @@ though sometimes judgement calls are required where no established convention is
 
 From the same JavaScript codebase, it is possible to create:
 
-* [Backend Agents and Services](Agents) that process iModels and respond to events from iModelHub
+* [Backend Agents and Services](Backends) that process iModels and respond to events from iModelHub
 * [Web Apps](WebApps) that run in web browsers and communicate with Backends
 * [Desktop Apps](DesktopApps) that run on personal computers
 * [Mobile Apps](MobileApps) that run on tablets and phones

@@ -163,6 +163,7 @@ ECSQL | Description
 `SELECT Name FROM myschema.Company WHERE Location.Zip=12314` | Returns rows that match the Location's Zip member value
 
 based on this ECSchema snippet:
+
 ```xml
 <ECStructClass typeName="Address">
   <ECProperty propertyName="Street" typeName="string" />
@@ -187,6 +188,7 @@ ECSQL | Description
 `SELECT Name FROM myschema.Company WHERE PhoneNumbers=?` | Returns the companies that match the bound PhoneNumber array. The array must be bound as a whole.
 
 based on this ECSchema snippet:
+
 ```xml
 <ECEntityClass typeName="Company">
   <ECProperty propertyName="Name" typeName="string" />

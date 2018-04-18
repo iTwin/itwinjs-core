@@ -87,6 +87,7 @@
     "parallelized",
     "pnpm",
     "postupdate",
+    "readonly",
     "redoable",
     "skybox",
     "snappable",
