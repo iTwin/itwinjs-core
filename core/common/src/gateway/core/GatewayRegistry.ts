@@ -7,6 +7,8 @@ import { GatewayOperation, GatewayOperationPolicy } from "./GatewayOperation";
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
+/** @module Gateway */
+
 // tslint:disable:ban-types
 
 /** @hidden @internal */

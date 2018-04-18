@@ -5,6 +5,8 @@ import { GatewayRequest } from "../core/GatewayRequest";
 import { GatewayProtocolEvent, GatewayRequestFulfillment } from "../core/GatewayProtocol";
 import { GatewayElectronProtocol, CHANNEL, interop } from "./GatewayElectronProtocol";
 
+/** @module Gateway */
+
 export class GatewayElectronRequest extends GatewayRequest {
   /** Convenience access to the protocol of this request. */
   public readonly protocol: GatewayElectronProtocol = this.gateway.configuration.protocol as any;

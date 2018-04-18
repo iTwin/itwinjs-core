@@ -10,6 +10,8 @@ import { GatewayHttpRequest } from "./GatewayHttpRequest";
 import { OpenAPIInfo, OpenAPIParameter, GatewayOpenAPIDescription } from "./OpenAPI";
 import { GatewayHttpLogging } from "./GatewayHttpLogging";
 
+/** @module Gateway */
+
 /** An http server request object. */
 export interface HttpServerRequest {
   body: string;

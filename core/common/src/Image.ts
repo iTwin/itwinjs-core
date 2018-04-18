@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** format of an image buffer */
+/** @module Views */
+
+ /** format of an image buffer */
 export const enum ImageBufferFormat { Rgba = 0, Rgb = 2, Alpha = 5 }
 
 /** format of an image */

@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 // spell-checker: disable
 
+/** @module FontsAndSymbology */
+
 /**
  * A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).
  * This is different than color values in #RRGGBB format for HTML pages (red and blue are swapped).

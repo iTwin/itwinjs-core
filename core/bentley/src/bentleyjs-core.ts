@@ -18,29 +18,29 @@ export * from "./Time";
  * needed by many different kinds of apps, both client and server.
  */
 /**
+ * docs-group-description BeSQLite
+ * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb.
+ * For more information on iModels: [[?]]
+ */
+/**
  * docs-group-description Errors
  * Classes for working with errors. The key classes are:
  * * #BentleyError
  * * #IModelStatus
  */
 /**
- * docs-group-description Logging
- * Classes for logging. The key classes are:
- * * #Logger
- * * #LogLevel
- */
-/**
  * docs-group-description Events
  * Classes for raising and handling events.
  */
 /**
- * docs-group-description BeSQLite
- * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb.
- * For more information on iModels: [[?]]
- */
-/**
  * docs-group-description Ids
  * Classes for working with unique identifiers.
+ */
+/**
+ * docs-group-description Logging
+ * Classes for logging. The key classes are:
+ * * #Logger
+ * * #LogLevel
  */
 /**
  * docs-group-description Utils

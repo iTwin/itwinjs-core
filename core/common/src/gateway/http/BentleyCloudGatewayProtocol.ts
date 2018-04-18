@@ -10,6 +10,8 @@ import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
 
+/** @module Gateway */
+
 /** An http protocol for Bentley cloud gateway deployments. */
 export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {
   /** The name of the HTTP request header  */

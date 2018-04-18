@@ -6,6 +6,8 @@ import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles 
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { ThumbnailProps } from "./Thumbnail";
 
+/** @module IModels */
+
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
   /** Constructor */

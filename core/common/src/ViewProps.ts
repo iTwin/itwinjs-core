@@ -6,6 +6,8 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps } from "./ElementProps";
 
+/** @module Views */
+
 /** properties that define a ModelSelector */
 export interface ModelSelectorProps extends ElementProps {
   models: string[];

@@ -4,6 +4,8 @@
 import { GatewayRegistry } from "./gateway/core/GatewayRegistry";
 import { GatewayConfiguration, GatewayConfigurationSupplier } from "./gateway/core/GatewayConfiguration";
 
+/** @module Gateway */
+
 // tslint:disable-next-line:ban-types
 export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; types: () => Function[]; }
 export type GatewayImplementation<T extends Gateway = Gateway> = new () => T;

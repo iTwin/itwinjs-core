@@ -8,6 +8,8 @@ import { GatewayProtocolEvent, SerializedGatewayRequest } from "../core/GatewayP
 import { GatewayRequest } from "../core/GatewayRequest";
 import { GatewayHttpProtocol, HttpServerRequest } from "./GatewayHttpProtocol";
 
+/** @module Gateway */
+
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
 export class GatewayHttpRequest extends GatewayRequest {

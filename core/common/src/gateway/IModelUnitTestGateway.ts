@@ -4,6 +4,8 @@
 import { Gateway } from "../Gateway";
 import { IModelToken } from "../IModel";
 
+/** @module Gateway */
+
 /**
  * For unit testing purposes only. This Gateway should not be registered by real products.
  * @hidden
