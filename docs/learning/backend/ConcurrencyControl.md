@@ -24,8 +24,8 @@ This article assumes that you already know that:
 ## Glossary:
 
 |Term | Definition
-|------------|------------|--------|--------|-------|
-|**Base**|One ChangeSet is based on another if it occurs later in the [timeline](../../overview/IModelHub.md#the-timeline-of-changes).
+|------------|------------|
+|**Base**|ChangeSet B is based on ChangeSet A if B comes after A in the [timeline](../../overview/IModelHub.md#the-timeline-of-changes).
 |**Change-merging**|Same as merge.
 |**Code Reservation**|The right to use a Code
 |**Concurrency Control**|How to coordinate simultaneous transactions while preserving data integrity.
@@ -48,7 +48,7 @@ This article assumes that you already know that:
 
 An app must reserve all Codes that it plans to assign to elements during a local editing session. An app can reserve more Codes than it actually uses. For example, an app may reserve a range or block of Codes in a sequence in order to ensure that it can use them, but before it knows exactly how many it will need. When the local ChangeSet is finally pushed, the Code Service sorts out which reserved Codes were actually used and which were not. Unused Codes are returned to the pool, while used Codes are marked as used and unavailable. When an element is deleted, its Code may be returned to the pool(??).
 
-Note that the optimistic concurrency control policy does not apply to Codes.
+The optimistic concurrency control policy does not apply to Codes.
 
 ## Data Write Concurrency Control Policies
 
@@ -59,7 +59,7 @@ Note that the optimistic concurrency control policy does not apply to Codes.
 ### Pessimistic Concurrency Control
 
  To set up an iModel to use the pessimistic concurrency control policy, specify the ConcurrencyControl.PessimisticPolicy, as follows:
- ``` ts
+ ``` typescript-no-lines
      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
  ```
 
@@ -67,27 +67,29 @@ The pessimistic concurrency policy requires that models and elements must be loc
 
 For reference, the pessimistic locking rules are as follows:
 |Operation|LockType|Lock Level|
-|------------|------------|--------|--------|-------|
+|------------|------------|--------|
 |Insert element|Model|Shared
 |Modify element|Element|Exclusive|
 |Delete element|Element|Exclusive|
 |Insert model|DgnDb|Shared|
 |Modify model|Model|Exclusive|
 |Delete model|Model|Exclusive|
-|            |Elements in model|Exclusive|
+|     "      |Elements in model|Exclusive|
 
-An app will normally implement the pessimistic policy by using high-level APIs to build lock requests based on the intended operation, as explained [below](#acquiring-locks-and-reserving-codes).
+An app will normally implement the pessimistic policy by using high-level APIs to build lock requests based on the intended operation, as explained [below](#acquiring-locks-and-reserving-codes). These high-level APIs take care of both acquiring locks and reserving Codes.
 
-Note that, if there are newer ChangeSets affecting a model or an element, a briefcase must pull before it can lock. That enforces a pull -> lock -> change -> push pattern.
+> A briefcase must pull before it can lock and element or model if it is affected by a recently pushed ChangeSet.
 
- ![optimistic concurrency flow](./PessimisticConcurrencyControl.jpg)
+An app that implements the pessimistic concurrency control policy follows the pull -> lock -> change -> push pattern.
+
+ ![pessimistic concurrency example workflow](./PessimisticConcurrencyControl.jpg)
 
 Locks are normally released when the briefcase pushes its changes, or they may be released if the briefcase abandons its changes.
 
 ### Optimistic Concurrency Control
 
  To set up an iModel to use optimistic concurrency control, specify the ConcurrencyControl.OptimisticPolicy, as follows:
- ``` ts
+ ``` typescript-no-lines
      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
  ```
 
@@ -97,7 +99,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
  Suppose, for example, that two briefcases were editing different properties of the same element at the same time. Suppose that the first briefcase pushed first, creating ChangeSet#1. Now, the second briefcase must pull and merge before it can push.
 
- ![optimistic concurrency flow](./OptimisticConcurrencyControl.jpg)
+ ![optimistic concurrency example workflow](./OptimisticConcurrencyControl.jpg)
 
  Working without locks also opens up the possibility that local changes may overlap with in-coming ChangeSets. When ChangeSets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
 
@@ -112,7 +114,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
  The defaults conflict-resolution policies are:
  |Local Change|RemoteChange|Resolution|
- |------------|------------|--------|--------|-------|
+ |------------|------------|--------|
  |update|update|ConcurrencyControl.OnConflict.RejectIncomingChange
  |update|delete|ConcurrencyControl.OnConflict.AcceptIncomingChange (reject not support)
  |delete|update|ConcurrencyControl.OnConflict.RejectIncomingChange (accept not supported)
@@ -132,19 +134,19 @@ A briefcase must reserve codes before pushing a ChangeSet to iModelHub. Under a 
  1. Call [Model.buildConcurrencyControlRequest]($imodeljs-backend.Model.buildConcurrencyControlRequest) and [Element.buildConcurrencyControlRequest]($imodeljs-backend.Element.buildConcurrencyControlRequest) to discover what locks and codes would be needed before making local changes.
 
  1. Call [ConcurrencyControl.request]($imodeljs-backend.ConcurrencyControl.request) to request the locks and/or codes that the planned local operations will require. This may send a request to iModelHub.
-  ==> If the request fails, roll back the local transaction and cancel the local operation.
+  * ==> If the request fails, roll back the local transaction and cancel the local operation.
  1. If the request succeeds, go ahead and make the planned local changes and then call [IModelDb.saveChanges]($imodeljs-backend.IModelDb.saveChanges).
 
  This approach is the safest way to avoid conflicts. It requires that the app must plan ahead before making local changes.
 
- Note that sending a request to iModelHub is a relative expensive operation. Therefore to batch up requests for locks and/or Codes.
+ > Sending a request to iModelHub is a relative expensive operation. Therefore to batch up requests for locks and/or Codes.
 
 ### Acquiring locks and/or codes in bulk mode
 
  1. Insert or update models and elements.
 
  1. Call [ConcurrencyControl.request]($imodeljs-backend.ConcurrencyControl.request) to request the locks and codes that those local operations require.
-  ==> If the request fails, call [IModelDb.cancelChanges]($imodeljs-backend.IModelDb.cancelChanges) to roll back the local transaction.
+  * ==> If the request fails, call [IModelDb.cancelChanges]($imodeljs-backend.IModelDb.cancelChanges) to roll back the local transaction.
  1. If the request succeeds, call [IModelDb.saveChanges]($imodeljs-backend.IModelDb.saveChanges) to commit the local transaction.
 
  Using bulk mode is simpler than using the preemptive approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.
