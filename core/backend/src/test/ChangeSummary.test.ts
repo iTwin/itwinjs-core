@@ -18,7 +18,7 @@ import { TestConfig } from "./TestConfig";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken/*, Timer*/ } from "./MockAssetUtil";
 import * as TypeMoq from "typemoq";
 
-describe.skip("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "true";
   let accessToken: AccessToken = new MockAccessToken();
@@ -164,7 +164,7 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to readonly briefcase", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
     try {
@@ -210,7 +210,7 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("ECSqlStatementCache after detaching Change Cache", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.Readonly, iModelVersionMock.object);
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
     try {
