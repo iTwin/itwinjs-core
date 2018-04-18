@@ -46,24 +46,45 @@ export interface StyleModifierProps {
   rotation?: YawPitchRollProps;
 }
 
-export interface AreaFillProps {
-  display: FillDisplay;
-  color?: ColorDef;
-  backgroundFill?: BackgroundFill;
-  transparency?: number;
-  mode?: Gradient.Mode;
-  flags?: number;
+export interface GradientKeyColorProps {
+  value: number;
+  color: ColorDef;
+}
+
+export interface GradientThematicProps {
+  mode?: number;
+  stepCount?: number;
+  margin?: number;
+  marginColor?: ColorDef;
+  colorScheme?: number;
+}
+
+export interface GradientProps {
+  mode: Gradient.Mode;
+  flags?: Gradient.Flags;
   angle?: AngleProps;
   tint?: number;
   shift?: number;
-  colors?: ColorDef[];
-  values?: number[];
+  /** Gradient key value/color pair, 8 maximum */
+  keys: GradientKeyColorProps[];
+  /** Settings applicable to Gradient.Mode.Thematic */
+  thematicSettings?: GradientThematicProps;
+}
+
+/** Area fill property. Can either represent a background color fill, a solid fill, or a gradient fill. */
+export interface AreaFillProps {
+  display: FillDisplay;
+  transparency?: number;
+  backgroundFill?: BackgroundFill;
+  color?: ColorDef;
+  gradient?: GradientProps;
 }
 
 export interface HatchDefLineProps {
   angle?: AngleProps;
   through?: XYProps;
   offset?: XYProps;
+  /** Dash array, max of 20 */
   dashes?: number[];
 }
 
@@ -80,7 +101,7 @@ export interface AreaPatternProps {
   invisibleBoundary?: boolean;
   snappable?: boolean;
   symbolId?: Id64Props;
-  defLine?: HatchDefLineProps[];
+  defLines?: HatchDefLineProps[];
 }
 
 export interface MaterialProps {
