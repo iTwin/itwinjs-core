@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.76.0",
+  "version": "0.76.1",
   "description": "iModelJs frontend components",
   "main": "lib/frontend.js",
   "typings": "lib/frontend",
