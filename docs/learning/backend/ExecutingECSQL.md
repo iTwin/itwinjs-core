@@ -1,11 +1,11 @@
 # Executing ECSQL with the iModelJs Backend
 
-ECSQL by itself is described in detail here: [ECSQL](../ECSQL)
+ECSQL by itself is described in detail here: [ECSQL](../learning/ECSQL)
 
 Executing an ECSQL statement typically consists of these steps:
 
 1. Prepare the ECSQL
-1. Bind values to the [ECSQL parameters](../ECSQL#ecsql-parameters) (if parameters are used)
+1. Bind values to the [ECSQL parameters](../learning/ECSQL#ecsql-parameters) (if parameters are used)
 1. Execute the ECSQL and iterate the query results (for ECSQL SELECT statements).
 1. Reset the statement and clear its parameter bindings, if the statement should be executed again.
 
@@ -20,13 +20,13 @@ Executing an ECSQL statement typically consists of these steps:
 
 Pass an *array* of values if the parameters are *positional*. Pass an *object of the values keyed on the parameter name* for *named parameters*.
 
-The section ["iModelJs Types used in ECSQL Parameter Bindings"](../ECSQLParameterTypes) describes the iModelJs types to be used for the different ECSQL parameter types.
+The section ["iModelJs Types used in ECSQL Parameter Bindings"](../learning/ECSQLParameterTypes) describes the iModelJs types to be used for the different ECSQL parameter types.
 
 > The values in either the array or object must match the respective types of the parameter.
 
 ### Query Result
 
-The result of the query is returned as an array of JavaScript objects where every array element represents an [ECSQL row](../ECSQLRowFormat).
+The result of the query is returned as an array of JavaScript objects where every array element represents an [ECSQL row](../learning/ECSQLRowFormat).
 
 ## The class ECSqlStatement
 
@@ -70,7 +70,7 @@ To bind values to all parameters in the ECSQL with a single call, the method [EC
 
 Pass an *array* of values if the parameters are *positional*. Pass an *object of the values keyed on the parameter name* for *named parameters*.
 
-The section ["iModelJs Types used in ECSQL Parameter Bindings"](../ECSQLParameterTypes) describes the iModelJs types to be used for the different ECSQL parameter types.
+The section ["iModelJs Types used in ECSQL Parameter Bindings"](../learning/ECSQLParameterTypes) describes the iModelJs types to be used for the different ECSQL parameter types.
 
 > The values in either the array or object must match the respective types of the parameter.
 
@@ -86,7 +86,7 @@ The method returns [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_
 For the current row, the values can be obtained in two ways:
 
 - Column by column: [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
-- Row as a JavaScript object: [ECSqlStatement.getRow]($imodeljs-backend.ECSqlStatement.getRow). See [ECSQL Row Format](../ECSQLRowFormat) for the format of the ECSQL row in iModelJs.
+- Row as a JavaScript object: [ECSqlStatement.getRow]($imodeljs-backend.ECSqlStatement.getRow). See [ECSQL Row Format](../learning/ECSQLRowFormat) for the format of the ECSQL row in iModelJs.
 
 > ECSqlStatement is an iterator. A for loop can be used to iterate over the query results instead of calling [ECSqlStatement.step]($imodeljs-backend.ECSqlStatement.step).
 

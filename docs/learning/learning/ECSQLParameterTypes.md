@@ -1,6 +1,6 @@
 # iModelJs Types used in [ECSQL](ECSQL) Parameter Bindings
 
-The following table list which iModelJs type you can use for binding values to [ECSQL parameters](ECSQL#ecsql-parameters).
+The following table list which iModelJs type you can use for binding values to [ECSQL parameters](./ECSQL#ecsql-parameters).
 
 ECSQL Parameter Type | iModelJs Type
 ------------- | ----------
