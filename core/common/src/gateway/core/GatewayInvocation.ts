@@ -12,6 +12,8 @@ import { GatewayProtocol, GatewayProtocolEvent, SerializedGatewayRequest, Gatewa
 import { GatewayMarshaling } from "./GatewayMarshaling";
 import { GatewayPendingResponse } from "./GatewayControl";
 
+/** @module Gateway */
+
 /** A gateway operation invocation in response to a request. */
 export class GatewayInvocation {
   private _threw: boolean;

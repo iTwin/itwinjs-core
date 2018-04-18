@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps, Transform, Vector3d } from "@bentley/geometry-core";
 
+/** @module Geometry */
+
 /** Properties for a TextString class */
 export interface TextStringProps {
   /** text string */

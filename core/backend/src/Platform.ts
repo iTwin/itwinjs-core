@@ -4,9 +4,7 @@
 import * as path from "path";
 import * as os from "os";
 
-/** @module Portability - Classes to help write portable apps and libraries that will run on any platform,
- * including web apps, node agents and services, Electron desktop apps, and mobile apps.
- */
+/** @module Portability */
 
 /** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]]. */
 export class Platform {

@@ -23,18 +23,9 @@ import * as fs from "fs";
 
 describe("PerformanceElementsTests", () => {
   let seedIModel: IModelDb;
-  let newModelId: Id64;
-  let spatialCategoryId1: Id64;
   const opSizes: any[] = [1000, 2000, 3000];
   const dbSizes: any[] = [10000, 100000, 1000000];
   const classNames: any[] = ["PerfElement", "PerfElementSub1", "PerfElementSub2", "PerfElementSub3"];
-  const perfElemIdlist: any = [];
-  for (const i of classNames) {
-    perfElemIdlist.push({
-        key: classNames[i],
-        value: [],
-    });
-  }
   const values: any = {baseStr: "PerfElement - InitValue", sub1Str: "PerfElementSub1 - InitValue",
                       sub2Str: "PerfElementSub2 - InitValue", sub3Str: "PerfElementSub3 - InitValue",
                       baseLong: "0x989680", sub1Long: "0x1312d00", sub2Long: "0x1c9c380", sub3Long: "0x2625a00",
@@ -45,6 +36,17 @@ describe("PerformanceElementsTests", () => {
     const incr = Math.floor(initialInstanceCount / opCount);
     return incr;
     }
+
+  function getMinElemId(iModelName: IModelDb, className: string): number {
+    let minId: number = 0;
+    iModelName.withPreparedStatement("SELECT min(ECInstanceId) AS [minID] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
+      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+      const row = stmt.getRow();
+      minId = row.minID;
+    });
+    return minId;
+  }
+
   function createElemProps(className: string, iModelName: IModelDb, modId: Id64, catId: Id64): GeometricElementProps {
       // add Geometry
       const geomArray: Arc3d[] = [
@@ -90,7 +92,7 @@ describe("PerformanceElementsTests", () => {
     const elementColl: Element[] = [];
     for (let m = 0; m < count; ++m) {
       const elementProps = createElemProps(className, iModelName, modId, catId);
-      const geomElement = seedIModel.elements.createElement(elementProps);
+      const geomElement = iModelName.elements.createElement(elementProps);
       elementColl.push(geomElement);
     }
     return elementColl;
@@ -140,33 +142,34 @@ describe("PerformanceElementsTests", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const fileName = "Performance_seed_" + className + "_" + dbSize + ".bim";
-        seedIModel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: fileName, enableTransactions: true });
-        const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-        const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        seedIModel.importSchema(testSchemaName);
-        assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
-        [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
-        const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
-        assert.isFalse(undefined === defaultCategoryId);
-        let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
-        if (undefined === spatialCategoryId) {
-          spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+        if (!IModelJsFs.existsSync(path.join(KnownTestLocations.outputDir, fileName))) {
+          seedIModel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: fileName, enableTransactions: true });
+          const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+          const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
+          seedIModel.importSchema(testSchemaName);
+          assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
+          let newModelId: Id64;
+          [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
+          const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
+          assert.isFalse(undefined === defaultCategoryId);
+          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+          if (undefined === spatialCategoryId) {
+            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+          }
+          for (let m = 0; m < dbSize; ++m) {
+            const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = seedIModel.elements.insertElement(geomElement);
+            assert.isTrue(id.isValid(), "insert worked");
+          }
+          seedIModel.saveChanges();
+          seedIModel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
+            assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+            const row = stmt.getRow();
+            assert.equal(row.count, dbSize);
+          });
+          IModelTestUtils.closeIModel(seedIModel);
         }
-        spatialCategoryId1 = spatialCategoryId;
-        for (let m = 0; m < dbSize; ++m) {
-          const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement);
-          assert.isTrue(id.isValid(), "insert worked");
-          (perfElemIdlist[className] || (perfElemIdlist[className] = [])).push(id);
-        }
-        seedIModel.saveChanges();
-        seedIModel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
-          assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-          const row = stmt.getRow();
-          assert.equal(row.count, dbSize);
-        });
-        IModelTestUtils.closeIModel(seedIModel);
       }
     }
     if (!IModelJsFs.existsSync(csvPath))
@@ -180,7 +183,11 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Insert_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const elementColl = createElems(className, opCount, perfimodel, newModelId, spatialCategoryId1);
+          const dictionary: DictionaryModel = perfimodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+          const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
+          let newModelId: Id64;
+          [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(perfimodel, Code.createEmpty(), true);
+          const elementColl = createElems(className, opCount, perfimodel, newModelId, new Id64(defaultCategoryId));
           const startTime = new Date().getTime();
           for (let j = 0; j < opCount; ++j) {
             const id = perfimodel.elements.insertElement(elementColl[j]);
@@ -191,7 +198,7 @@ describe("PerformanceElementsTests", () => {
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsInsert," + elapsedTime + "," + opCount +
                             ",\"Element API Insert   \'" + className + "\' [Initial count: " + dbSize + "]\",Insert," + dbSize + "\n");
-          perfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
+          perfimodel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
             assert.equal(row.count, dbSize + opCount);
@@ -209,10 +216,13 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Delete_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const minId = getMinElemId(perfimodel, className);
+          const incr = determineElementIdIncrement(dbSize, opCount);
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             try {
-              perfimodel.elements.deleteElement(perfElemIdlist[className][i]);
+              const id = new Id64("0x" + (minId + (i * incr)).toString(16));
+              perfimodel.elements.deleteElement(id);
             } catch (err) {
               assert.isTrue(false);
             }
@@ -222,7 +232,7 @@ describe("PerformanceElementsTests", () => {
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsDelete," + elapsedTime + "," + opCount +
                         ",\"Element API Delete   \'" + className + "\' [Initial count: " + dbSize + "]\",Delete," + dbSize + "\n");
-          perfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
+          perfimodel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
             assert.equal(row.count, dbSize - opCount);
@@ -241,9 +251,11 @@ describe("PerformanceElementsTests", () => {
           const testFileName = "ImodelPerformance_Read_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
           const startTime = new Date().getTime();
+          const minId = getMinElemId(perfimodel, className);
           const incr = determineElementIdIncrement(dbSize, opCount);
           for (let i = 0; i < opCount; ++i) {
-            const elemFound: Element = perfimodel.elements.getElement(perfElemIdlist[className][i * incr]);
+            const id = new Id64("0x" + (minId + (i * incr)).toString(16));
+            const elemFound: Element = perfimodel.elements.getElement(id);
             assert.isTrue(verifyProps(elemFound));
           }
           const endTime = new Date().getTime();
@@ -264,10 +276,13 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Update_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const minId = getMinElemId(perfimodel, className);
+          const incr = determineElementIdIncrement(dbSize, opCount);
           // first construct modified elements
           const elementColl: any = [];
           for (let i = 0; i < opCount; ++i) {
-            const elemFound: Element = perfimodel.elements.getElement(perfElemIdlist[className][i]);
+            const id = new Id64("0x" + (minId + (i * incr)).toString(16));
+            const elemFound: Element = perfimodel.elements.getElement(id);
             const editElem = elemFound.copyForEdit<Element>();
             editElem.baseStr = "PerfElement - UpdatedValue";
             // add Geometry
@@ -296,7 +311,8 @@ describe("PerformanceElementsTests", () => {
           const endTime = new Date().getTime();
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
-            const elemFound: Element = perfimodel.elements.getElement(perfElemIdlist[className][i]);
+            const id = new Id64("0x" + (minId + (i * incr)).toString(16));
+            const elemFound: Element = perfimodel.elements.getElement(id);
             assert.equal(elemFound.baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;

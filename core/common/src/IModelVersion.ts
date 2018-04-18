@@ -5,6 +5,8 @@ import { AccessToken, IModelHubClient, ChangeSet, ChangeSetQuery, VersionQuery }
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 
+/** @module IModels */
+
 /** Option to specify the version of the iModel to be acquired and used */
 export class IModelVersion {
   private _first?: boolean;

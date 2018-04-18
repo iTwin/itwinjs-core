@@ -9,6 +9,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { ServerError } from "../../IModelError";
 import { GatewayDefinition } from "../../Gateway";
 
+/** @module Gateway */
+
 const loggingCategory = "imodeljs-gateway.GatewayHttpProtocol";
 
 /** @hidden @internal */

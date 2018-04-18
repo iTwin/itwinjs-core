@@ -7,6 +7,8 @@ import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Entity } from "./Entity";
 
+/** @module Schemas */
+
 /** Base class for all schema classes.
  * A Schema represents an ECSchema in TypeScript. It is a collection of [[Entity]]-based classes.
  *

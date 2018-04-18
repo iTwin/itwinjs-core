@@ -21,7 +21,7 @@ export class IModelJsFsStats {
     public isFile: boolean,
     public isSocket: boolean,
     public isSymbolicLink: boolean,
-    public mode: number,
+    public isReadOnly: boolean,
   ) { }
 }
 
@@ -52,6 +52,16 @@ export class IModelJsFs {
   /** Get the file and directory names in the specified directory. Excludes "." and "..". */
   public static readdirSync(fn: string): string[] { return fs.readdirSync(fn); }
 
+  /** Test if the current user has permission to write to a file. */
+  private static isFileWritable(fn: string): boolean {
+    try {
+      fs.accessSync(fn, fs.constants.W_OK);
+      return true;
+    } catch (_err) {
+      return false;
+    }
+  }
+
   /** Get information about a file. */
   public static lstatSync(fn: string): IModelJsFsStats | undefined {
     const stats = fs.lstatSync(fn);
@@ -67,7 +77,7 @@ export class IModelJsFs {
       stats.isFile(),
       stats.isSocket(),
       stats.isSymbolicLink(),
-      stats.mode);
+      !IModelJsFs.isFileWritable(fn));
   }
 
 }

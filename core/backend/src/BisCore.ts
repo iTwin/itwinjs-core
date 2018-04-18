@@ -11,6 +11,8 @@ import * as categoryMod from "./Category";
 import * as viewMod from "./ViewDefinition";
 import * as linkMod from "./LinkTableRelationship";
 
+/** @module BisCore */
+
 /** Represents the BisCore schema.
  * <p><em>Example:</em>
  * ``` ts
