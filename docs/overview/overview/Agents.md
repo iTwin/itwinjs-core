@@ -4,8 +4,7 @@ In iModelJs terminology, a *backend* refers to a JavaScript program that runs in
 that loads an iModel Briefcase via the **@bentley/imodeljs-native** package.
 
 The imodeljs-native package is written in C++ (hence the term *native*) and can therefore never run inside a
-web browser. It is usually loaded from [Node.js](https://nodejs.org), but is sometimes loaded by other
-JavaScript engines (e.g. on mobile devices.)
+web browser. It is usually loaded from [Node.js](https://nodejs.org), but is sometimes bundled into other executables (e.g. on mobile devices.)
 
 The most important point to understand about the role of the backend is that it *must* have access to the Briefcase (.bim) as a local file.
 The JavaScript class IModelDb provides methods for opening, closing, and accessing the Briefcase.
