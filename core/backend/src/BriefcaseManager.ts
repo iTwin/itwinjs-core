@@ -200,7 +200,7 @@ class BriefcaseCache {
  *      ...
  */
 export class BriefcaseManager {
-  public static hubClient?: IModelHubClient;
+  private static hubClient?: IModelHubClient;
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static standaloneCache: BriefcaseCache = new BriefcaseCache();
 
@@ -209,6 +209,12 @@ export class BriefcaseManager {
     const pathname = path.join(IModelHost.configuration!.briefcaseCacheDir, iModelId, "/");
     return path.normalize(pathname);
   }
+
+  // public static get hubClient(): IModelHubClient {
+  //   if (!BriefcaseManager._hubClient)
+  //     BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
+  //   return BriefcaseManager._hubClient;
+  //   }
 
   public static getChangeSetsPath(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
   public static getChangeSummaryPathname(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
@@ -292,7 +298,10 @@ export class BriefcaseManager {
 
     const startTime = new Date().getTime();
 
-    if (!BriefcaseManager.hubClient) { BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler()); }
+    // Reset the hubclient in case the configuration has changed
+    if (!BriefcaseManager.hubClient)
+      BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
+
     if (!accessToken)
       return;
 

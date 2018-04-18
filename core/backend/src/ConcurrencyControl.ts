@@ -22,7 +22,6 @@ export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
   private _codes?: ConcurrencyControl.Codes;
   private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
-  private _hubClient?: IModelHubClient;
   constructor(private _iModel: IModelDb) { this._pendingRequest = ConcurrencyControl.createRequest(); }
 
   /** @hidden */
@@ -206,11 +205,7 @@ export class ConcurrencyControl {
   }
 
   private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
-  public setIModelHubClient(hubClient: IModelHubClient) { this._hubClient = hubClient; }
-  public getIModelHubClient(): IModelHubClient {
-    if (!this._hubClient) { this._hubClient = new IModelHubClient(this.getDeploymentEnv(), new AzureFileHandler()); }
-    return this._hubClient;
-  }
+  private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv(), new AzureFileHandler()); }
 
   /** process the Lock-specific part of the request. */
   private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {

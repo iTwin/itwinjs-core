@@ -99,7 +99,7 @@ describe("BriefcaseManager", () => {
       MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
       MockAssetUtil.setupIModelVersionMock(iModelVersionMock);
 
-      BriefcaseManager.hubClient = iModelHubClientMock.object;
+      (BriefcaseManager as any).hubClient =  iModelHubClientMock.object;
 
       // Get test projectId from the mocked connection client
       const project: Project = await connectClientMock.object.getProject(accessToken as any, {
