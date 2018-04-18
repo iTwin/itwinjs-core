@@ -1,0 +1,17 @@
+{
+    "collections": {
+        "learning": {
+            "contents": [],
+            "displayName": "Learning"
+        },
+        "backend": {
+            "contents": [],
+            "displayName": "Backend"
+        },
+        "frontend": {
+            "contents": [],
+            "displayName": "Frontend"
+        }
+    },
+    "home": "learning\\index"
+}
