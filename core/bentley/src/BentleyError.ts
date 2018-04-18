@@ -1,10 +1,19 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-import { BentleyStatus } from "./Bentley";
 import { DbResult } from ".//BeSQLite";
 import { LogFunction } from "./Logger";
+
+/** @module Errors */
+
+/**
+ * Standard status code
+ * This should be kept consistent with BentleyStatus defined in Bentley.h
+ */
+export const enum BentleyStatus {
+  SUCCESS = 0x0000,
+  ERROR = 0x8000,
+}
 
 /** Status codes that are used in conjunction with [[BentleyError]].
  * Error status codes are divided into separate ranges for different kinds of errors. All known ranges at least should be defined here, to avoid collisions.

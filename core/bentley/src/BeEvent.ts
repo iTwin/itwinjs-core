@@ -2,6 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+/** @module Events */
+
 export type Listener = (...arg: any[]) => void;
 class EventContext {
   constructor(public listener: Listener | undefined, public scope: any, public once: boolean) { }
