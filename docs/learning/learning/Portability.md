@@ -4,7 +4,7 @@ The technology used by iModelJs makes it possible to write an app once and then 
 
 iModelJs-based agents and services can run anywhere that nodejs is found, and that is just about everywhere.
 
-An iModelJs-based interactive app that follows the iModelJs app architecture can be configured to run as a web app with a supporting web server, a desktop app, or a mobile app. That is, the same app can take all three forms without modifying the code or the user interface definition.
+An iModelJs-based interactive app that follows the iModelJs app architecture can be configured to run as a web app with a supporting web server, a desktop app, or a mobile app. That is, the same app can take all three forms without modifying the code or the user interface definition. You can also [tailor an app to fit each configuration](#making-apps-fit-the-platform) without rewriting or substantially changing it.
 
 ## Cross-Platform Technologies
 The key technology that makes an app portable is JavaScript. JavaScript engines are available on many operating systems and Web browsers. TypeScript compiles to JavaScript.
@@ -61,7 +61,7 @@ With this lengthy introduction, it should be clear that the separation of an int
 
 ## Making Apps Fit the Platform
 
-You will often want to tailor the UI and function of an app for each platform and configuration. For example, a mobile app will usually have a simpler UI than a desktop app, and a mobile app will offer mobile-specific features such as camera and geo-location. Starting with an iModelJs interactive app that is inherently portable and cross-platform, you can tailor it to fit the requirements of the product that you want to produce for each platform or configuration without re-writing it. You can easily:
+You will often want to tailor the UI and function of an app for each platform and configuration. For example, a mobile app will usually have a simpler UI than a desktop app, and a mobile app will offer mobile-specific features such as camera and geo-location. Tailoring is relatively easy, because of the highly factored architecture of an iModelJs app. As a result, you can:
 * Change the GUI
 * Use tailored gateways
 * Use platform-specific modules
@@ -69,7 +69,7 @@ You will often want to tailor the UI and function of an app for each platform an
 Some of these adaptations involve swapping in different resources, such as HTML pages, at packaging time, while some merely require run-time checks. Run-time checks may be based on the `Platform.platformName` property.
 
 ### Change the GUI
-An app's GUI is contained within its frontend. And, the look of the GUI is contained within its HTML and CSS resources. Swapping in a different GUI can be a simple as swapping in a different style sheet or HTML page, leaving the supporting JavaScript the same. You can develop and test the various version of the GUI in a single development environment.
+An app's UI is contained within its frontend. And, the look and feel of the GUI is contained within its HTML and CSS resources. Swapping in a different GUI can be a simple as swapping in a different style sheet or HTML page, leaving the supporting JavaScript the same. You can develop and test the various version of the GUI in a single development environment. You can also write the code-behind to tailor the GUI at run time.
 
 ### Tailored Gateways
 Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs gateway architecture encourages and supports the BFF pattern. Since a gateway is just a TypeScript class, it's easy for an app to implement a set of services. And, it's easy for an app to choose a different mix of gateways at runtime, depending on its configuration.
