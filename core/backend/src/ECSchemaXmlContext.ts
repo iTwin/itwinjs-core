@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Schemas */
+
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelError } from "@bentley/imodeljs-common";
 import { NativeECSchemaXmlContext } from "@bentley/imodeljs-native-platform-api";
-
-/** @module Schemas */
 
 export type SchemaKey = NativeECSchemaXmlContext.SchemaKey;
 export type SchemaMatchType = NativeECSchemaXmlContext.SchemaMatchType;

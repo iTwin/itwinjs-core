@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayDefinition } from "../../Gateway";
 import { GatewayConfiguration } from "../core/GatewayConfiguration";
 import { GatewayElectronProtocol, interop } from "./GatewayElectronProtocol";
-
-/** @module Gateway */
 
 /** Initialization parameters for GatewayElectronConfiguration. */
 export interface GatewayElectronParams {

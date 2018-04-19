@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module FontsAndSymbology */
+
 import { Id64Props, DbResult, Id64, IModelStatus } from "@bentley/bentleyjs-core";
 import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { LineStyle } from "./backend";
-
-/** @module FontsAndSymbology */
 
 /** A line style definition is a uniquely named pattern that repeats as it's displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:

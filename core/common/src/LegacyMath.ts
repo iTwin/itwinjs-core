@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "@bentley/geometry-core";
-
 /** @module Geometry */
+
+import { Point3d, Vector3d } from "@bentley/geometry-core";
 
 export class LegacyMath {
 

@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module IModels */
+
 import { AccessToken, IModelHubClient, ChangeSet, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-
-/** @module IModels */
 
 /** Option to specify the version of the iModel to be acquired and used */
 export class IModelVersion {

@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Gateway } from "../../Gateway";
 import { GatewayProtocolEvent, SerializedGatewayRequest } from "../core/GatewayProtocol";
 import { GatewayRequest } from "../core/GatewayRequest";
 import { GatewayHttpProtocol, HttpServerRequest } from "./GatewayHttpProtocol";
-
-/** @module Gateway */
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 

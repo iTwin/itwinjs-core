@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module Portability */
+
 import * as path from "path";
 import * as os from "os";
-
-/** @module Portability */
 
 /** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]]. */
 export class Platform {
