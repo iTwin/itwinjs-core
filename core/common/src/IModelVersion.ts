@@ -14,7 +14,7 @@ export class IModelVersion {
   private _afterChangeSetId?: string;
   private _versionName?: string;
 
-  public constructor() { }
+  private constructor() { }
 
   /** Describes the first version of the iModel */
   public static first(): IModelVersion {

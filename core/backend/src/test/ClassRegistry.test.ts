@@ -19,7 +19,7 @@ describe("Class Registry", () => {
 
   before(() => {
     const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
-    BriefcaseManager.hubClient = iModelHubClientMock.object;
+    (BriefcaseManager as any).hubClient = iModelHubClientMock.object;
 
     MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
 

@@ -20,7 +20,7 @@ describe("Sample Code", () => {
 
   before(async () => {
     const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
-    BriefcaseManager.hubClient = iModelHubClientMock.object;
+    (BriefcaseManager as any).hubClient = iModelHubClientMock.object;
     iModel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     accessToken = await IModelTestUtils.getTestUserAccessToken();
   });

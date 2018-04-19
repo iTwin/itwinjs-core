@@ -210,12 +210,6 @@ export class BriefcaseManager {
     return path.normalize(pathname);
   }
 
-  // public static get hubClient(): IModelHubClient {
-  //   if (!BriefcaseManager._hubClient)
-  //     BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
-  //   return BriefcaseManager._hubClient;
-  //   }
-
   public static getChangeSetsPath(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
   public static getChangeSummaryPathname(iModelId: string): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
 
@@ -550,8 +544,7 @@ export class BriefcaseManager {
       throw new IModelError(res, briefcase.pathname);
     }
 
-    const nativeParentChangeSetId = nativeDb.getParentChangeSetId();
-    assert(nativeParentChangeSetId === briefcase.changeSetId);
+    assert(nativeDb.getParentChangeSetId() === briefcase.changeSetId);
 
     briefcase.openMode = openMode; // Restore briefcase's openMode
     briefcase.nativeDb = nativeDb;

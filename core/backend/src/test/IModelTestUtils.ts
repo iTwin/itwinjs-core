@@ -16,6 +16,20 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import * as path from "path";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
+/** Class for simple test timing */
+export class Timer {
+  private label: string;
+  constructor(label: string) {
+    // tslint:disable-next-line:no-console
+    console.time(this.label = "\t" + label);
+  }
+
+  public end() {
+    // tslint:disable-next-line:no-console
+    console.timeEnd(this.label);
+  }
+}
+
 Logger.initializeToConsole();
 if (process.env.imodeljs_test_logging_config === undefined) {
   // tslint:disable-next-line:no-console
@@ -104,6 +118,9 @@ export class IModelTestUtils {
     IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig, new AzureFileHandler());
     return IModelTestUtils._hubClient!;
   }
+  public static set hubClient(hubClient: IModelHubClient) {
+    this._hubClient = hubClient;
+  }
 
   private static _iModelHubDeployConfig: DeploymentEnv = "QA";
   public static set iModelHubDeployConfig(deployConfig: DeploymentEnv) {
@@ -159,7 +176,7 @@ export class IModelTestUtils {
     return iModels[0].wsgId;
   }
 
-  public static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
+  private static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
     const promises = new Array<Promise<void>>();
     const briefcases = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
     briefcases.forEach((briefcase: Briefcase) => {

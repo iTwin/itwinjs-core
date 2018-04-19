@@ -4,14 +4,15 @@ import { expect, assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
 import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
 import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
+import { IModelTestUtils, TestUsers, Timer } from "./IModelTestUtils";
 import { BriefcaseManager, ChangeSetToken, KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
 import { ConcurrencyControl } from "../ConcurrencyControl";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { TestIModelInfo, MockAssetUtil, MockAccessToken, Timer } from "./MockAssetUtil";
+import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "./MockAssetUtil";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { TestConfig } from "./TestConfig";
-import { AccessToken, CodeState, ConnectClient, ContainsSchemaChanges, IModel as HubIModel, IModelHubClient, IModelQuery, MultiCode, Project } from "@bentley/imodeljs-clients";
+import { KnownLocations } from "../Platform";
+import { AccessToken, CodeState, ChangeSet, ConnectClient, ContainsSchemaChanges, IModel as HubIModel, IModelHubClient, IModelQuery, MultiCode, Project } from "@bentley/imodeljs-clients";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -79,7 +80,6 @@ describe("BriefcaseManager", () => {
   let accessToken: AccessToken = new MockAccessToken();
   let startTime = new Date().getTime();
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
-  const iModelVersionMock = TypeMoq.Mock.ofType(IModelVersion);
   const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
 
   const getElementCount = (iModel: IModelDb): number => {
@@ -90,14 +90,14 @@ describe("BriefcaseManager", () => {
 
   before(async () => {
     startTime = new Date().getTime();
-    cacheDir = IModelHost.configuration!.briefcaseCacheDir;
 
     if (offline) {
       console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
+      cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/testCache/iModels/"));
+      IModelHost.configuration!.briefcaseCacheDir = cacheDir;
 
       MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
       MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
-      MockAssetUtil.setupIModelVersionMock(iModelVersionMock);
 
       (BriefcaseManager as any).hubClient =  iModelHubClientMock.object;
 
@@ -131,6 +131,7 @@ describe("BriefcaseManager", () => {
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
+      cacheDir = IModelHost.configuration!.briefcaseCacheDir;
       accessToken = await IModelTestUtils.getTestUserAccessToken();
       console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
       startTime = new Date().getTime();
@@ -155,6 +156,10 @@ describe("BriefcaseManager", () => {
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
+
+  });
+
+  afterEach(() => {
 
   });
 
@@ -292,6 +297,113 @@ describe("BriefcaseManager", () => {
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
       assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
     }
+
+    // Make sure a neutral observer sees both changes.
+    if (true) {
+      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
+      const elobj = neutralObserverIModel.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+      assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
+    }
+
+    // --- Test 3: Non-overlapping changes ---
+
+  });
+
+  it.skip("should merge changes so that two branches of an iModel converge", () => {
+    // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
+    // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
+    const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    upgraded.saveChanges();
+    createChangeSet(upgraded);
+
+    // Open two copies of the seed file.
+    const first: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "first.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const second: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "second.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const neutral: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "neutral.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    assert.isTrue(first !== second);
+
+    first.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    second.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // Note: neutral observer's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
+
+    const cshistory: ChangeSetToken[] = [];
+
+    let firstparent: number = -1;
+    let secondparent: number = -1;
+    let neutralparent: number = -1;
+
+    let modelId: Id64;
+    let spatialCategoryId: Id64;
+    let el1: Id64;
+    // first. Create a new model, category, and element.  =>  #0
+    if (true) {
+      [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);
+      const dictionary: DictionaryModel = first.models.getModel(IModel.dictionaryId) as DictionaryModel;
+      const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
+      el1 = first.elements.insertElement(IModelTestUtils.createPhysicalObject(first, modelId, spatialCategoryId));
+      first.saveChanges();
+      cshistory.push(createChangeSet(first));
+      ++firstparent; // (This automatically becomes my parent)
+      assert.isTrue((cshistory.length - 1) === firstparent);
+    }
+
+    if (true) {
+      // first -> second, neutral
+      applyChangeSet(second, cshistory[++secondparent]);
+      assert.isTrue(second.models.getModel(modelId) !== undefined);
+      assert.isTrue(second.elements.getElement(spatialCategoryId) !== undefined);
+      assert.isTrue(second.elements.getElement(el1) !== undefined);
+
+      applyChangeSet(neutral, cshistory[++neutralparent]);
+      assert.isTrue(neutral.models.getModel(modelId) !== undefined);
+      assert.isTrue(neutral.elements.getElement(spatialCategoryId) !== undefined);
+      assert.isTrue(neutral.elements.getElement(el1) !== undefined);
+    }
+
+    // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
+
+    // first: modify el1.userLabel
+    if (true) {
+      const el1cc = (first.elements.getElement(el1)).copyForEdit<Element>();
+      el1cc.userLabel = el1cc.userLabel + " -> changed by first";
+      first.elements.updateElement(el1cc);
+      first.saveChanges("first modified el1.userLabel");
+      cshistory.push(createChangeSet(first));
+      ++firstparent; // (This automatically becomes my parent)
+    }
+
+    // second: modify el1.userLabel
+    let expectedValueofEl1UserLabel: string;
+    if (true) {
+      const el1before = (second.elements.getElement(el1)).copyForEdit<Element>();
+      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by second";
+      el1before.userLabel = expectedValueofEl1UserLabel;
+      second.elements.updateElement(el1before);
+      second.saveChanges("second modified el1.userLabel");
+
+      // merge => take second's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
+      applyChangeSet(second, cshistory[++secondparent]);
+      const el1after = second.elements.getElement(el1);
+      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
+      cshistory.push(createChangeSet(second));
+      ++secondparent; // (This automatically becomes my parent)
+    }
+
+    // Make sure a neutral observer sees secondUser's change.
+    if (true) {
+      applyChangeSet(neutral, cshistory[++neutralparent]);
+      const elobj = neutral.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
+
+    // firstUser: pull and see that secondUser has overridden my change
+    if (true) {
+      applyChangeSet(first, cshistory[++firstparent]);
+      const elobj = first.elements.getElement(el1);
+      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
+    }
   });
 
   it("should be able to open a first version IModel in Readonly mode", async () => {
@@ -309,30 +421,28 @@ describe("BriefcaseManager", () => {
       onOpenedCalled = true;
       assert.equal(iModelDb.iModelToken.iModelId, testIModels[0].id);
     };
-    IModelDb.onOpened.addListener(onOpenedListener);
-    let version: IModelVersion;
-    if (offline)
-      version = iModelVersionMock.object;
-    else
-      version = IModelVersion.latest();
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, version);
+    try {
+      const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
 
-    assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
+      assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
+      assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-    assert.isTrue(onOpenedCalled);
-    assert.isTrue(onOpenCalled);
-    IModelDb.onOpen.removeListener(onOpenListener);
-    IModelDb.onOpened.removeListener(onOpenedListener);
+      assert.isTrue(onOpenedCalled);
+      assert.isTrue(onOpenCalled);
 
-    expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
-    const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
-    expect(files.length).greaterThan(0, "iModel .bim file could not be read");
+      expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
+      const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
+      expect(files.length).greaterThan(0, "iModel .bim file could not be read");
+    } catch (e) {
+
+      IModelDb.onOpen.removeListener(onOpenListener);
+      IModelDb.onOpened.removeListener(onOpenedListener);
+    }
   });
 
   it("should be able to open a cached first version IModel in ReadWrite mode", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object); // Note: No frontend support for ReadWrite open yet
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.ReadWrite, "iModel not set to ReadWrite mode");
 
@@ -344,14 +454,8 @@ describe("BriefcaseManager", () => {
   });
 
   it("should reuse open briefcases in Readonly mode", async () => {
-    let version: IModelVersion;
-    if (offline)
-      version = iModelVersionMock.object;
-    else
-      version = IModelVersion.latest();
-
     let timer = new Timer("open briefcase first time");
-    const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, version);
+    const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel0.iModelToken.iModelId === testIModels[0].id, "Incorrect iModel ID");
     timer.end();
@@ -362,11 +466,7 @@ describe("BriefcaseManager", () => {
     timer = new Timer("open briefcase 5 more times");
     const iModels = new Array<IModelDb>();
     for (let ii = 0; ii < 5; ii++) {
-      let iModel: IModelDb;
-      if (offline)
-        iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, iModelVersionMock.object);
-      else
-        iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
+      const iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
       assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
       iModels.push(iModel);
     }
@@ -375,46 +475,35 @@ describe("BriefcaseManager", () => {
     const briefcases2 = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
     expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
     const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
-    expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
+    expect(diff.length).equals(0, "Cache changed after repeat calls to BriefcaseManager.open");
   });
 
-  it("should reuse open briefcases in ReadWrite mode", async () => {
-    let timer = new Timer("open briefcase first time");
-    const iModel0: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object);
-    assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel0.iModelToken.iModelId === testIModels[1].id, "Incorrect iModel ID");
-    timer.end();
+  it("should reuse closed briefcases in ReadWrite mode", async () => {
+    const files = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
 
-    const briefcases = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
-    expect(briefcases.length).greaterThan(0, "iModel .bim file could not be read");
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
+    assert.exists(iModel);
 
-    timer = new Timer("open briefcase 5 more times");
-    const iModels = new Array<IModelDb>();
-    for (let ii = 0; ii < 5; ii++) {
-      const iModel: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[1].id, OpenMode.ReadWrite, iModelVersionMock.object);
-      assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
-      iModels.push(iModel);
-    }
-    timer.end();
+    const files2 = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
+    expect(files2.length).equals(files.length);
+    const diff = files2.filter((item) => files.indexOf(item) < 0);
+    expect(diff.length).equals(0);
 
-    const briefcases2 = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
-    expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
-    const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
-    expect(diff.length).equals(0, "Briefcase changed after repeat calls to BriefcaseManager.open");
+    iModel.close(accessToken);
   });
 
   it("should open briefcases of specific versions in Readonly mode", async () => {
     const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
     const testElementCounts = [27, 28, 29];
 
-    const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.first());
+    const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.first());
     assert.exists(iModelFirstVersion);
 
     for (const [arrayIndex, versionName] of testVersionNames.entries()) {
-      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.asOfChangeSet(testIModels[0].changeSets[arrayIndex].wsgId));
+      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.asOfChangeSet(testIModels[0].changeSets[arrayIndex].wsgId));
       assert.exists(iModelFromVersion);
 
-      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.named(versionName));
+      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
 
       const elementCount = getElementCount(iModelFromVersion);
@@ -425,14 +514,32 @@ describe("BriefcaseManager", () => {
     assert.exists(iModelLatestVersion);
   });
 
-  it("should open a briefcase of an iModel with no versions", async () => {
-      let version: IModelVersion;
-      if (offline)
-        version = iModelVersionMock.object;
-      else
-        version = IModelVersion.latest();
+  it.skip("should open briefcase of an iModel in both DEV and QA", async () => {
+    // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
+    IModelTestUtils.setIModelHubDeployConfig("DEV");
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
+    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    assert(devProjectId);
+    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, TestConfig.iModelName);
+    assert(devIModelId);
+    const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, devIModelId);
+    expect(devChangeSets.length).equals(0); // needs change sets
+    const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(devIModel);
 
-      const iModelNoVer = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly, version);
+    IModelTestUtils.setIModelHubDeployConfig("QA");
+    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    assert(qaProjectId);
+    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, TestConfig.iModelName);
+    assert(qaIModelId);
+    const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, qaIModelId);
+    expect(qaChangeSets.length).greaterThan(0);
+    const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(qaIModel);
+  });
+
+  it("should open a briefcase of an iModel with no versions", async () => {
+      const iModelNoVer = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly, IModelVersion.latest());
       assert.exists(iModelNoVer);
       assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
 

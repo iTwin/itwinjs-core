@@ -68,7 +68,7 @@ export class IModelDb extends IModel {
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
-  public concurrency?: ConcurrencyControl;
+  private _concurrency?: ConcurrencyControl;
   private _txnManager?: TxnManager;
   protected _fontMap?: FontMap;
   public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
@@ -506,7 +506,7 @@ export class IModelDb extends IModel {
   public get linkTableRelationships(): IModelDbLinkTableRelationships { return this._linkTableRelationships || (this._linkTableRelationships = new IModelDbLinkTableRelationships(this)); }
 
   /** Get the ConcurrencyControl for this IModel. */
-  public get concurrencyControl(): ConcurrencyControl { return (this.concurrency !== undefined) ? this.concurrency : (this.concurrency = new ConcurrencyControl(this)); }
+  public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
 
   /** Get the TxnManager for this IModelDb. */
   public get txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }

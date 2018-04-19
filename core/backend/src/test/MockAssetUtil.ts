@@ -2,14 +2,12 @@ import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
-import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, IModel as HubIModel, Briefcase, /*MultiCode, Version,*/
-  SeedFile, SeedFileInitState, UserProfile, Version, IModelQuery,
-  ChangeSetQuery, IModelHandler, BriefcaseHandler, ChangeSetHandler,
-  VersionHandler, VersionQuery,
+  Response, ChangeSet, IModel as HubIModel, Briefcase, SeedFile, SeedFileInitState,
+  UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
+  ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
 } from "@bentley/imodeljs-clients";
 
 /** Parse a single typed instance from a JSON string using ECJsonTypeMap */
@@ -28,20 +26,6 @@ const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T,
   }
   return instances;
 };
-
-/** Class for simple test timing */
-export class Timer {
-  private label: string;
-  constructor(label: string) {
-    // tslint:disable-next-line:no-console
-    console.time(this.label = "\t" + label);
-  }
-
-  public end() {
-    // tslint:disable-next-line:no-console
-    console.timeEnd(this.label);
-  }
-}
 
 /** Class to allow mocking of accessToken needed for various client operations */
 export class MockAccessToken extends AccessToken {
@@ -94,23 +78,6 @@ export class MockAssetUtil {
     }
   }
 
-  /** Setup functions for the IModelVersion mock */
-  public static async setupIModelVersionMock(iModelVersionMock: TypeMoq.IMock<IModelVersion>) {
-    // For any valid parameters passed, return an empty string indicating first version
-    iModelVersionMock.setup((f: IModelVersion) => f.evaluateChangeSet(TypeMoq.It.isAny(),
-                                                                      TypeMoq.It.isAnyString(),
-                                                                      TypeMoq.It.isAny()))
-      .returns((token: AccessToken, id: string) => {
-        token.toTokenString();
-        if (id === "233e1f55-561d-42a4-8e80-d6f91743863e")
-          return Promise.resolve("1b186c485d182c46c02b99aff4fb12637263438f");
-        else if (id === "c8060470-c5d0-4288-a1a2-4c98efaa474e")
-          return Promise.resolve("c7c44724278d3568a9c9b3c1f0626ce0c897f427");
-        else
-          return Promise.resolve("");
-      });
-  }
-
   /** Setup functions for the ConnectClient mock */
   public static async setupConnectClientMock(connectClientMock: TypeMoq.IMock<ConnectClient>, assetDir: string) {
     // For any parameters passed, grab the Sample Project json file from the assets folder and parse it into an instance
@@ -134,6 +101,7 @@ export class MockAssetUtil {
     const briefcaseHandlerMock = TypeMoq.Mock.ofType(BriefcaseHandler);
     const changeSetHandlerMock = TypeMoq.Mock.ofType(ChangeSetHandler);
     const versionHandlerMock = TypeMoq.Mock.ofType(VersionHandler);
+    const userInfoHandlerMock = TypeMoq.Mock.ofType(UserInfoHandler);
 
     // For any call with the specified iModel name, grab that iModel's json file and parse it into an instance
     iModelHandlerMock.setup((f: IModelHandler) => f.create(TypeMoq.It.isAny(),
@@ -332,9 +300,22 @@ export class MockAssetUtil {
         throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
+    userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(),
+                                                            TypeMoq.It.isAnyString(),
+                                                            TypeMoq.It.isAny()))
+      .returns((_tok: AccessToken, _iModelId: string, _query: UserInfoQuery) => {
+        const user = new UserInfo();
+        user.firstName = "test";
+        user.lastName = "user";
+        user.email = "testuser001@mailinator.com";
+        user.wsgId = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
+        return Promise.resolve([user]);
+      });
+
     iModelHubClientMock.setup((f: IModelHubClient) => f.IModels()).returns(() => iModelHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.Briefcases()).returns(() => briefcaseHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.ChangeSets()).returns(() => changeSetHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.Versions()).returns(() => versionHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.Users()).returns(() => userInfoHandlerMock.object);
   }
 }
