@@ -37,19 +37,19 @@ export const enum Outcome {
 }
 
 export class Priority {
-    constructor(public value: number) {}
-    public increment(): void { this.value++; }
-    public static highest(): Priority { return new Priority(0); }
-    public static lowest(): Priority { return new Priority(0xffff); } // Reserved for the 'idle' task
-  }
+  constructor(public value: number) { }
+  public increment(): void { this.value++; }
+  public static highest(): Priority { return new Priority(0); }
+  public static lowest(): Priority { return new Priority(0xffff); } // Reserved for the 'idle' task
+}
 
 /** A rendering task to be performed on the render thread. */
 export abstract class Task {
   constructor(public priority: Priority,
-              public operation: Operation,
-              public target: Target,
-              public outcome: Outcome = Outcome.Waiting,
-              public elapsedTime: number = 0) {}
+    public operation: Operation,
+    public target: Target,
+    public outcome: Outcome = Outcome.Waiting,
+    public elapsedTime: number = 0) { }
 
   public perform(timer: StopWatch) {
     this.outcome = Outcome.Started;
@@ -71,7 +71,7 @@ export abstract class Task {
 
   /**
    * Determine whether this Task can replace a pending entry in the Queue.
-   * @param[in] other a pending task for the same Render::Target
+   * @param other a pending task for the same Render::Target
    * @return true if this Task should replace the other pending task.
    */
   public replaces(other: Task): boolean { return this.operation === other.operation; }
@@ -81,7 +81,7 @@ export abstract class SceneTask extends Task {
   constructor(priority: Priority, operation: Operation, target: Target, outcome?: Outcome, elapsedTime?: number) { super(priority, operation, target, outcome, elapsedTime); }
   public definesScene(): boolean { return true; }
   public replaces(other: Task): boolean { return super.replaces(other) || !other.definesScene(); }
-  public onQueued(): void {}
+  public onQueued(): void { }
 }
 
 export class ChangeDecorationsTask extends SceneTask {

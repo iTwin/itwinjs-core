@@ -193,19 +193,24 @@ export class IModelConnection extends IModel {
   /**
    * Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
+   * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
+    if (OpenMode.ReadWrite !== this.iModelToken.openMode)
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
     await IModelWriteGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
   }
 
   /**
    * Commit pending changes to this iModel
    * @param description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes.
+   * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
+    if (OpenMode.ReadWrite !== this.iModelToken.openMode)
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
     return await IModelWriteGateway.getProxy().saveChanges(this.iModelToken, description);
   }
 

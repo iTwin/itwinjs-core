@@ -23,8 +23,8 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 
 ## ECSQL
 
-* [Executing ECSQL statements](ExecutingECSQL)
-* [What is ECSQL?](../ECSQL)
+* [Executing ECSQL statements](./ExecutingECSQL)
+* [What is ECSQL?](../learning/ECSQL)
 
 ## Dealing with Codes
 
