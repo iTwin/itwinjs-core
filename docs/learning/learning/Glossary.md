@@ -4,30 +4,30 @@
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information in a different orientation and units.
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS can have relevance outside of iModels, but all information stored in an iModel conforms to BIS.
-|**BisCore**|The base BIS Domain for iModels. All EC Classes stored in an iModel must derive from a BisCore class.
+|**BisCore**|The base BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. Briefcases are obtained from iModelHub and are each assigned a unique Id called a BriefcaseId. Briefcase files have a ".bim" (briefcase of iModel) extension. Briefcases are synchronized via changesets.
 |**Cartographic Coordinates**| A [geographic coordinate system](https://en.wikipedia.org/wiki/Geographic_coordinate_system) based on lat/long/height. If an iModel is geo-located via an EefLocation, Spatial Coordinates may be converted to Cartographic coordinates.
 |**Category**|A property of a GeometricElement that "categorizes" its geometry. That is, every GeometricElement is "in" one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. Note that Categories are not relevant for Elements that are not GeometricElements. Category is a subclass of DefinitionElement.
 |**CategorySelector**|A named group of Categories displayed in a View. Many ViewDefinitions may refer to the same CategorySelector.
 |**ChangeSet**|A group of changes to an iModel. Changesets are created whenever an Briefcase is modified and reflect the union of all Additions, Deletions, and Modifications over a period of time. ChangeSet are assigned an identifier when they are uploaded to iModelHub and every ChangeSet stores the identifier of its parent ChangeSet. In this way the chain of ChangeSets for an iModel in iModelHub forms its "timeline of changes".
 |**ChangeSummary**|A summary of the changes in a ChangeSet in the form of ECClasses and ECProperties.
-|**Class Registry**|A registry of known JavaScript classes that handle ECClasses. The JavaScript class **must** have the same name as the EC Class. When an Entity is loaded from an iModel, a JavaScript instance of the registered class will be created. If no JavaScript class is registered for the EC Class, one is created dynamically.
+|**Class Registry**|A registry of known JavaScript classes that handle ECClasses. The JavaScript class **must** have the same name as the ECClass. When an Entity is loaded from an iModel, a JavaScript instance of the registered class will be created. If no JavaScript class is registered for the ECClass, one is created dynamically.
 |**Code**|An optional three part *human readable* identifier for an Element. A code consists of a CodeSpec, CodeScope, and CodeValue. The combination of all three parts must be unique within an iModel.
 |**CodeScope**|A Code Scope determines a *scope for uniqueness* for the code value. For example, a scope may specify the whole iModel, only within a certain Model, within an assembly, etc. For a given CodeSpec and CodeScope, all CodeValues must be unique.
 |**CodeSpec**|A CodeSpec defines the *specification* (i.e. type) of a code. Often the specification is defined by some external system that enforces conventions, consistency, and validation. A CodeSpec captures the rules for encoding and decoding significant business information into and from a CodeValue. iModels hold a table of the known CodeSpecs, defined by the CodeSpec ECClass, and Elements refer to one of them by Id.
 |**CodeValue**|A human-readable string with the *name* of an Element. CodeValues are formatted according to the rules of its CodeSpec.
 |**DefinitionElement**|A subclass of InformationContentElement that holds configuration-related information that is meant to be referenced (i.e. shared) by other Elements.
 |**DisplayStyle**|A named set of choices for the way Geometry is displayed in a view. Many ViewDefinitions may refer to the same DisplayStyle.
-|**Domain**|A named set of EC Classes that define the information for a particular discipline or field of work. All classes in a Domain ultimately must derive from a BisCore class. The ECClasses for a Domain are defined in a ECSchema file, an hence the terms *Domain* and *ECSchema* are often used interchangeably.
+|**Domain**|A named set of ECClasses that define the information for a particular discipline or field of work. All classes in a Domain ultimately must derive from a BisCore class. The ECClasses for a Domain are defined in a ECSchema file, an hence the terms *Domain* and *ECSchema* are often used interchangeably.
 |**DrawingModel**|A 2d model that holds drawing graphics. DrawingModels may be dimensional or non-dimensional.
-|**EC**|An abbreviation for Entity Classification. This prefix is used to refer to the metadata system of iModels.
+|**EC**|An abbreviation for *Entity Classification*. This prefix is used to refer to the metadata system of iModels.
 |**ECClass**|A named set of properties and relationships that defines a type of object. Data in iModels are defined by ECClasses.
 |**ECDb**|A [SQLite](https://www.sqlite.org/index.html) database conforming to the rules of EC. iModels are a type of ECDb.
 |**EcefLocation**|The position and orientation, in [Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) (also known as ECR "earth-centered rotational") coordinates, of the origin of the Spatial Coordinate System of an iModel.
 |**ECProperty**|A named member of an ECClass.
 |**ECRelationship**|A named type of relationship and cardinality between instances of ECClasses.
 |**ECSchema**|A named group of ECClasses and ECRelationships.
-|**ECSQL**|A superset of SQL that uses ECClass and ECProperties names in place of table and column names (see [ECSQL](ECSQL.md)).
+|**ECSQL**|A superset of SQL that uses ECClass and ECProperties names in place of table and column names (see [ECSQL](./ECSQL)).
 |**Electron**|A tool for building [desktop apps in JavaScript and HTML](https://electronjs.org).
 |**Element**|The base class in Bis for an *Entity with a Code*. Elements also have an ElementId, a FederationGuid, and an ElementUserLabel. There is also a backend TypeScript class called Element.
 |**ElementAspect**|An ECClass that holds information related to (and owned by) a single Element. Semantically, an ElementAspect can be considered part of the Element, but defined independently. Thus, ElementAspects are deleted when their owning Element is deleted.
@@ -81,4 +81,4 @@
 |**ViewState**|A TypeScript class in the frontend that holds a copy of the *state* of a ViewDefinition. A ViewState is modified by viewing operations (e.g. pan, zoom, rotate, etc.). There are a parallel set of subclasses of ViewState for the subclasses of ViewDefinition.
 |**WebGL**|A [JavaScript API](https://www.khronos.org/webgl/) for rendering into an HTML document via OpenGL.
 |**Webpack**|A tool for [bundling JavaScript applications](https://webpack.js.org/)
-|**Wire format**|The JSON representation of objects that must be used when transferring data to/from an iModelJs app. Defined by the *Props* interfaces and types in a schema.
+|**Wire format**|The JSON representation of objects that must be used when transferring data to/from an iModelJs app. See [Props](#Props)
