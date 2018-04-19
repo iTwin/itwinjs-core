@@ -3,6 +3,7 @@
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information in a different orientation and units.
+|**Backend**|The part of an interactive app that is concerned with accessing data in a [briefcase](#Briefcase). May also contain the app's business logic. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends)
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS can have relevance outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The base BIS Domain for iModels. All EC Classes stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. Briefcases are obtained from iModelHub and are each assigned a unique Id called a BriefcaseId. Briefcase files have a ".bim" (briefcase of iModel) extension. Briefcases are synchronized via changesets.
@@ -35,6 +36,7 @@
 |**ElementUserLabel**|An optional string that holds a user-assigned *alias* for an Element. ElementUserLabels are **not** enforced to be unique.
 |**Entity Metadata**|The names and types of the ECProperties and ECRelationships of an Entity ECClass.
 |**Entity**|A physical or non-physical object in the real world, defined by an ECClass.
+|**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends)
 |**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature.
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
