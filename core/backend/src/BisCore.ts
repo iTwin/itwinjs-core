@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Schema, Schemas } from "./Schema";
 import { ClassRegistry } from "./ClassRegistry";
 
@@ -10,8 +12,6 @@ import * as modelMod from "./Model";
 import * as categoryMod from "./Category";
 import * as viewMod from "./ViewDefinition";
 import * as linkMod from "./LinkTableRelationship";
-
-/** @module BisCore */
 
 /** Represents the BisCore schema.
  * <p><em>Example:</em>

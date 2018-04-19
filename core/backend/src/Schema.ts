@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module Schemas */
+
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Entity } from "./Entity";
-
-/** @module Schemas */
 
 /** Base class for all schema classes.
  * A Schema represents an ECSchema in TypeScript. It is a collection of [[Entity]]-based classes.

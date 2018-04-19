@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Point3d } from "@bentley/geometry-core";
 import { Gateway } from "../Gateway";
 import { IModel, IModelToken } from "../IModel";
 import { AxisAlignedBox3d } from "../geometry/Primitives";
-
-/** @module Gateway */
 
 /**
  * The Gateway for writing to an iModel.

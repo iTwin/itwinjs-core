@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract  --out=../../generated-docs/common  --json=../../generated-docs/common/json/file.json  %TYPEDOC_THEME%"
+    "clean": "rimraf lib package-deps.json ../../generated-docs/common",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/common --json=../../generated-docs/common/json/file.json --tsIndexFile=./common.ts  %TYPEDOC_THEME%"
   },
   "repository": {},
   "keywords": [

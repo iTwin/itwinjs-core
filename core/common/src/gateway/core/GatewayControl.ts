@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { Gateway } from "../../Gateway";
 import { GatewayConfiguration } from "./GatewayConfiguration";
 import { GatewayRequest, GatewayRequestEvent, GatewayRequestStatus } from "./GatewayRequest";
 import { GatewayProtocol, GatewayProtocolEvent } from "./GatewayProtocol";
 import { GatewayInvocation } from "./GatewayInvocation";
 import * as uuidv4 from "uuid/v4";
-
-/** @module Gateway */
 
 // tslint:disable:space-before-function-paren
 let obtainLock = 0;

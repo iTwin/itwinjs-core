@@ -22,7 +22,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf ./lib ./src/test/output package-deps.json",
+    "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
     "watch": "tsc --watch",
     "pretest": "rush build -t @bentley/geometry-core",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core";
@@ -9,8 +11,6 @@ import { Gateway } from "../Gateway";
 import { EntityQueryParams } from "../EntityProps";
 import { IModel, IModelToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
-
-/** @module Gateway */
 
 /**
  * The Gateway for reading from an iModel.

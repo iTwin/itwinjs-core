@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
 import { OpenAPIParameter } from "./OpenAPI";
 import { SerializedGatewayOperation } from "../core/GatewayProtocol";
@@ -9,8 +11,6 @@ import { GatewayRequest } from "../core/GatewayRequest";
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
-
-/** @module Gateway */
 
 /** An http protocol for Bentley cloud gateway deployments. */
 export abstract class BentleyCloudGatewayProtocol extends GatewayHttpProtocol {

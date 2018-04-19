@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { Logger, Id64Set } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { EntityQueryParams, Gateway, IModel, IModelReadGateway, IModelToken, IModelVersion } from "@bentley/imodeljs-common";
 import { EntityMetaData } from "../Entity";
 import { IModelDb } from "../IModelDb";
-
-/** @module Gateway */
 
 const loggingCategory = "imodeljs-backend.IModelReadGatewayImpl";
 

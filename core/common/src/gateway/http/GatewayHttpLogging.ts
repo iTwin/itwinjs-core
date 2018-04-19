@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayRequest } from "../core/GatewayRequest";
 import { GatewayProtocolEvent, SerializedGatewayRequest } from "../core/GatewayProtocol";
 import { GatewayInvocation } from "../core/GatewayInvocation";
@@ -8,8 +10,6 @@ import { GatewayHttpRequest } from "./GatewayHttpRequest";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ServerError } from "../../IModelError";
 import { GatewayDefinition } from "../../Gateway";
-
-/** @module Gateway */
 
 const loggingCategory = "imodeljs-gateway.GatewayHttpProtocol";
 

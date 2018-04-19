@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayOperation } from "../core/GatewayOperation";
 import { GatewayHttpProtocol } from "./GatewayHttpProtocol";
-
-/** @module Gateway */
 
 /** An OpenAPI 3.0 root document object. */
 export interface OpenAPIDocument {

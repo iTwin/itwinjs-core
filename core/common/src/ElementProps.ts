@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
 import { IModelError, IModelStatus } from "./IModelError";
 import { GeometryStreamProps } from "./common";
-
-/** @module BisCore */
 
 /** The iModelJson properties of an ECNavigationProperty in a BIS schema. */
 export interface RelatedElementProps {
