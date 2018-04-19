@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { GatewayRequest, GatewayRequestStatus } from "./GatewayRequest";
 import { GatewayInvocation } from "./GatewayInvocation";
 import { GatewayConfiguration } from "./GatewayConfiguration";
 import { GatewayOperation } from "./GatewayOperation";
 import { GatewayMarshaling } from "./GatewayMarshaling";
-
-/** @module Gateway */
 
 /** A serialized gateway operation descriptor. */
 export interface SerializedGatewayOperation {

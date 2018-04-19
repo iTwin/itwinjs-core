@@ -2,6 +2,8 @@
 Gradient/*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
+
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { Light } from "./Lighting";
@@ -13,8 +15,6 @@ import { CameraProps } from "./ViewProps";
 import { QPoint3d, QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
 import { ColorIndex, FeatureIndex } from "./FeatureIndex";
-
-/** @module Views */
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 

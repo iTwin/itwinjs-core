@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Geometry */
+
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, AngleProps, GeometryQuery, XYProps, XYZProps, LowAndHighXYZ,
 } from "@bentley/geometry-core";
@@ -9,8 +11,6 @@ import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
-
-/** @module Geometry */
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
  *  GeometryAppearanceProps always signifies a reset to the subCategory appearance for all values without an override.

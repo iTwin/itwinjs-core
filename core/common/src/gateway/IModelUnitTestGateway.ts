@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { Gateway } from "../Gateway";
 import { IModelToken } from "../IModel";
-
-/** @module Gateway */
 
 /**
  * For unit testing purposes only. This Gateway should not be registered by real products.

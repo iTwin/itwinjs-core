@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
 import { Gateway, GatewayDefinition } from "../../Gateway";
 import { GatewayProtocol, GatewayRequestFulfillment, GatewayProtocolEvent } from "./GatewayProtocol";
 import { GatewayRequest } from "./GatewayRequest";
 import { INSTANCE } from "./GatewayRegistry";
 import { GatewayControlChannel } from "./GatewayControl";
-
-/** @module Gateway */
 
 export type GatewayConfigurationSupplier = () => { new(): GatewayConfiguration };
 

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -11,8 +13,6 @@ import { GatewayRequestStatus } from "./GatewayRequest";
 import { GatewayProtocol, GatewayProtocolEvent, SerializedGatewayRequest, GatewayRequestFulfillment } from "./GatewayProtocol";
 import { GatewayMarshaling } from "./GatewayMarshaling";
 import { GatewayPendingResponse } from "./GatewayControl";
-
-/** @module Gateway */
 
 /** A gateway operation invocation in response to a request. */
 export class GatewayInvocation {

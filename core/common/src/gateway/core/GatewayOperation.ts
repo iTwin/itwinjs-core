@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { IModelError } from "../../IModelError";
 import { IModelToken } from "../../IModel";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
@@ -8,8 +10,6 @@ import { Gateway, GatewayDefinition } from "../../Gateway";
 import { GatewayRegistry, OPERATION, POLICY } from "./GatewayRegistry";
 import { GatewayRequestTokenSupplier_T, GatewayRequestIdSupplier_T } from "./GatewayRequest";
 import * as uuidv4 from "uuid/v4";
-
-/** @module Gateway */
 
 /** The policy for a gateway operation. */
 export class GatewayOperationPolicy {

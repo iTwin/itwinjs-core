@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayProtocol, SerializedGatewayRequest } from "../core/GatewayProtocol";
 import { GatewayElectronConfiguration } from "./GatewayElectronConfiguration";
 import { GatewayElectronRequest } from "./GatewayElectronRequest";
-
-/** @module Gateway */
 
 /** @hidden @internal */
 export const CHANNEL = "@bentley/imodeljs-common/GatewayElectronProtocol";

@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
+
 import { Id64Props } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps } from "./ElementProps";
-
-/** @module Views */
 
 /** properties that define a ModelSelector */
 export interface ModelSelectorProps extends ElementProps {
