@@ -120,7 +120,7 @@ export class MockAssetUtil {
             return Promise.resolve(getTypedInstance<HubIModel>(HubIModel, jsonObj));
           }
         }
-        throw Promise.reject(`No matching asset found for iModel with name: ${hubName}`);
+        return Promise.reject(`No matching asset found for iModel with name: ${hubName}`);
       });
 
     // For any call with request parameters contianing the iModel name, grab that iModel's json file
@@ -149,7 +149,7 @@ export class MockAssetUtil {
           const jsonObj = JSON.parse(buff.toString());
           return Promise.resolve(getTypedInstances<HubIModel>(HubIModel, jsonObj));
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${query.getId()}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${query.getId()}`);
       });
 
     // For any call with a specified iModelId, remove the specified iModel from the cache if it currently
@@ -165,7 +165,7 @@ export class MockAssetUtil {
             IModelJsFs.removeSync(iModelCacheDir);
           return Promise.resolve();
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
     // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
@@ -186,7 +186,7 @@ export class MockAssetUtil {
           return Promise.resolve(retResponse)
           .then(() => Promise.resolve());
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(),
@@ -199,7 +199,7 @@ export class MockAssetUtil {
           const jsonObj = JSON.parse(buff.toString())[0];
           return Promise.resolve(getTypedInstance<Briefcase>(Briefcase, jsonObj));
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(),
@@ -212,7 +212,7 @@ export class MockAssetUtil {
           const jsonObj = JSON.parse(buff.toString());
           return Promise.resolve(getTypedInstances<Briefcase>(Briefcase, jsonObj));
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
     // For any call with a specified iModelId, return a dummy briefcaseId. If future test cases demand so, we may
@@ -233,7 +233,15 @@ export class MockAssetUtil {
           IModelJsFs.copySync(sampleIModelPath, outPath);
           return Promise.resolve();
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${briefcase.iModelId!}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${briefcase.iModelId!}`);
+      });
+
+    // Since the Hub is being mocked away, no action is necessary when deleting a briefacse
+    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.delete(TypeMoq.It.isAny(),
+                                                                 TypeMoq.It.isAnyString(),
+                                                                 TypeMoq.It.isAnyNumber()))
+      .returns((_tok: AccessToken, _iModelId: string, _briefcaseId: number) => {
+        return Promise.resolve();
       });
 
     // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
@@ -257,9 +265,9 @@ export class MockAssetUtil {
             }
             return Promise.resolve(csets);
           }
-          throw Promise.reject(`No matching asset found for ChangeSet with id: ${query.getId()}`);
+          return Promise.reject(`No matching asset found for ChangeSet with id: ${query.getId()}`);
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
     // For any call with a path containing a specified iModel name, grab the associated change set files and copy them
@@ -295,9 +303,9 @@ export class MockAssetUtil {
               return Promise.resolve(getTypedInstances<Version>(Version, jsonObj));
             }
           }
-          throw Promise.reject(`No matching version found for name ${query.getQueryOptions.name} for iModel ${iModelId}`);
+          return Promise.reject(`No matching version found for name ${query.getQueryOptions.name} for iModel ${iModelId}`);
         }
-        throw Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
+        return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
     userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(),
