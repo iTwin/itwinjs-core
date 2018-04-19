@@ -78,8 +78,12 @@ export default class EntityClass extends ECClass {
     if (!resolvedRelationship)
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
 
-    if (typeof(direction) === "string")
-      direction = parseStrengthDirection(direction);
+    if (typeof(direction) === "string") {
+      const tmpDirection = parseStrengthDirection(direction);
+      if (undefined === tmpDirection)
+        throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      direction = tmpDirection;
+    }
 
     const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
     return this.addProperty(new NavigationProperty(this, name, lazyRelationship, direction));

@@ -4,7 +4,7 @@
 
 import Enumeration from "./Enumeration";
 import SchemaItem from "./SchemaItem";
-import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, tryParsePrimitiveType } from "../ECObjects";
+import { ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType } from "../ECObjects";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
@@ -173,7 +173,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       return PrimitiveType.Integer;
 
     if (typeof(primitiveType) === "string") {
-      const resolvedType = tryParsePrimitiveType(primitiveType) || await schema.getItem<Enumeration>(primitiveType, true);
+      const resolvedType = parsePrimitiveType(primitiveType) || await schema.getItem<Enumeration>(primitiveType, true);
       if (resolvedType === undefined)
         throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
@@ -194,7 +194,10 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       if (typeof(jsonObj.modifier) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
 
-      this._modifier = parseClassModifier(jsonObj.modifier);
+      const modifier = parseClassModifier(jsonObj.modifier);
+      if (undefined === modifier)
+        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${jsonObj.modifier}' is not a valid ECClassModifier.`);
+      this._modifier = modifier;
     }
 
     if (undefined !== jsonObj.baseClass) {

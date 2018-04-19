@@ -27,6 +27,9 @@ export default class CustomAttributeClass extends ECClass {
     if (typeof(jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
 
-    this.containerType = parseCustomAttributeContainerType(jsonObj.appliesTo);
+    const containerType = parseCustomAttributeContainerType(jsonObj.appliesTo);
+    if (undefined === containerType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${containerType} is not a valid CustomAttributeContainerType.`);
+    this.containerType = containerType;
   }
 }
