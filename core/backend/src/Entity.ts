@@ -59,7 +59,7 @@ export class Entity implements EntityProps {
   }
 
   /**
-   * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+   * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param _opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(_opcode: DbOpcode): void {

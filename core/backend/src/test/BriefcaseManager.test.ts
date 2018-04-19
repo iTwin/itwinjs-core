@@ -766,7 +766,7 @@ describe("BriefcaseManager", () => {
 
     const iModel = {
       pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, in order to simulate time spent doing push
+        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, to simulate time spent doing push
         lastPushTimeMillis = Date.now();
       },
       iModelToken: {
