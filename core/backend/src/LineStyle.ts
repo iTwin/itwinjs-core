@@ -265,7 +265,7 @@ export namespace LineStyleDefinition {
   export type Components = ComponentProps[];
 
   /** Compound component definition [[ComponentType.Compound]].
-   * A compound component is used to link stroke pattern and stroke point components in order to create a style that displays dashes, gaps, and symbols.
+   * A compound component is used to link stroke pattern and stroke point components to create a style that displays dashes, gaps, and symbols.
    */
   export interface CompoundProps {
     comps: Components;
@@ -306,7 +306,7 @@ export namespace LineStyleDefinition {
     }
 
     /** Create a file property for a new point symbol component.
-     * If base and size parameters are not supplied, queries GeometryPart by id in order to set them.
+     * If base and size parameters are not supplied, queries GeometryPart by id to set them.
      */
     public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined {
       // if part extents weren't supplied, set them up now.

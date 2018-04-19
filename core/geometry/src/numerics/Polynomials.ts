@@ -1457,7 +1457,7 @@ export class TrigPolynomial {
   ///     tolerance</param>
   /// <param name="angles">Roots are placed here. Assumed preallocated with adequate size.</param>
   /// <param name="numRoots">Number of roots  .  Zero roots is possible. (Passed as array of size
-  /// one in order to pass-by-reference)</param>
+  /// one to pass-by-reference)</param>
   /// Returns false if equation is all zeros.   This usually means any angle is a solution.
   // ------------------------------------------------------------------------------------------------
   // Solve a standard basis polynomial.   Immediately use the roots as ordinates

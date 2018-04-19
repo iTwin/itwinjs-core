@@ -31,8 +31,8 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file on the local computer.
  *
- * An IModelDb is used by a service or by the "back end" of an app.
- * "Front end" code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
+ * An IModelDb is used by a service or by the backend of an app.
+ * Frontend code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
  *
  * Use [[IModelDb.open]] to obtain and open an IModelDb from iModelHub.
  *
@@ -546,8 +546,7 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Construct an entity (element or model). This utility method knows how to fetch the required class metadata
-   * if necessary in order to get the entity's class defined as a prerequisite.
+  /** Construct an entity (Element or Model) from an iModel.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
   public constructEntity(props: EntityProps): Entity {
