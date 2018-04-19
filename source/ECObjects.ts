@@ -96,7 +96,7 @@ export const enum StrengthType {
   Embedding,
 }
 
-export const enum RelatedInstanceDirection {
+export const enum StrengthDirection {
   Forward = 1,
   Backward = 2,
 }
@@ -382,19 +382,19 @@ export function strengthToString(strength: StrengthType): string {
   }
 }
 
-export function parseStrengthDirection(direction: string): RelatedInstanceDirection | undefined {
+export function parseStrengthDirection(direction: string): StrengthDirection | undefined {
   const lowerDirection = direction.toLowerCase();
   switch (lowerDirection) {
-    case "forward": return RelatedInstanceDirection.Forward;
-    case "backward": return RelatedInstanceDirection.Backward;
+    case "forward": return StrengthDirection.Forward;
+    case "backward": return StrengthDirection.Backward;
   }
   return undefined;
 }
 
-export function strengthDirectionToString(direction: RelatedInstanceDirection): string {
+export function strengthDirectionToString(direction: StrengthDirection): string {
   switch (direction) {
-    case RelatedInstanceDirection.Forward: return "Forward";
-    case RelatedInstanceDirection.Backward: return "Backward";
+    case StrengthDirection.Forward: return "Forward";
+    case StrengthDirection.Backward: return "Backward";
     default: throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
   }
 }

@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import Schema from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import RelationshipClass from "../../source/Metadata/RelationshipClass";
-import { RelationshipMultiplicity, StrengthType, RelatedInstanceDirection } from "../../source/ECObjects";
+import { RelationshipMultiplicity, StrengthType, StrengthDirection } from "../../source/ECObjects";
 import { ECObjectsError } from "../../source/Exception";
 
 describe("RelationshipMultiplicity", () => {
@@ -118,7 +118,7 @@ describe("RelationshipClass", () => {
       const relClass = await schema.getClass<RelationshipClass>("TestRelationship");
       assert.isDefined(relClass);
       expect(relClass!.strength).equal(StrengthType.Embedding);
-      expect(relClass!.strengthDirection).equal(RelatedInstanceDirection.Backward);
+      expect(relClass!.strengthDirection).equal(StrengthDirection.Backward);
 
       assert.isDefined(relClass!.source);
       expect(relClass!.source!.polymorphic).equal(true);

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ECClassModifier, CustomAttributeContainerType, parseClassModifier,
          PrimitiveType, parsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
-         RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, RelatedInstanceDirection,
+         RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, StrengthDirection,
          parseStrengthDirection, SchemaItemType, schemaItemTypeToString, parseSchemaItemType, classModifierToString, strengthToString,
          strengthDirectionToString, parseRelationshipEnd, primitiveTypeToString } from "../source/ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../source/Exception";
@@ -136,15 +136,15 @@ describe("Parsing/ToString Functions", () => {
   });
 
   it("parseStrengthDirection", () => {
-    expect(parseStrengthDirection("forward")).to.equal(RelatedInstanceDirection.Forward);
-    expect(parseStrengthDirection("BACKWARD")).to.equal(RelatedInstanceDirection.Backward);
+    expect(parseStrengthDirection("forward")).to.equal(StrengthDirection.Forward);
+    expect(parseStrengthDirection("BACKWARD")).to.equal(StrengthDirection.Backward);
     expect(parseStrengthDirection("invalid")).to.be.undefined;
   });
 
   it("strengthDirectionToString", () => {
-    expect(strengthDirectionToString(RelatedInstanceDirection.Backward)).to.equal("Backward");
-    expect(strengthDirectionToString(RelatedInstanceDirection.Forward)).to.equal("Forward");
-    expect(() => strengthDirectionToString(5 as RelatedInstanceDirection)).to.throw(ECObjectsError, "An invalid StrengthDirection has been provided.");
+    expect(strengthDirectionToString(StrengthDirection.Backward)).to.equal("Backward");
+    expect(strengthDirectionToString(StrengthDirection.Forward)).to.equal("Forward");
+    expect(() => strengthDirectionToString(5 as StrengthDirection)).to.throw(ECObjectsError, "An invalid StrengthDirection has been provided.");
   });
 
   it("parseSchemaItemType", () => {

@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
+import { ECClassModifier, StrengthDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
         parseStrength, parseStrengthDirection } from "../ECObjects";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -22,7 +22,7 @@ export default class RelationshipClass extends ECClass {
   public readonly schema: Schema;
   public readonly type: SchemaItemType.RelationshipClass;
   protected _strength: StrengthType = StrengthType.Referencing;
-  protected _strengthDirection: RelatedInstanceDirection = RelatedInstanceDirection.Forward;
+  protected _strengthDirection: StrengthDirection = StrengthDirection.Forward;
   protected _source: RelationshipConstraint;
   protected _target: RelationshipConstraint;
 
@@ -47,7 +47,7 @@ export default class RelationshipClass extends ECClass {
    * @param relationship
    * @param direction
    */
-  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
