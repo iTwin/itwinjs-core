@@ -612,4 +612,8 @@ export class RelationshipMultiplicity {
   public equals(rhs: RelationshipMultiplicity): boolean {
     return this.lowerLimit === rhs.lowerLimit && this.upperLimit === rhs.upperLimit;
   }
+
+  public toString(): string {
+    return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
+  }
 }

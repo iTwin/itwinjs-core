@@ -31,6 +31,20 @@ describe("RelationshipMultiplicity", () => {
       expect(testMul).to.not.exist;
     });
   });
+  describe("toString", () => {
+    it("should successfully return standard multiplicities", () => {
+      expect(RelationshipMultiplicity.zeroOne.toString()).to.equal("(0..1)");
+      expect(RelationshipMultiplicity.zeroMany.toString()).to.equal("(0..*)");
+      expect(RelationshipMultiplicity.oneOne.toString()).to.equal("(1..1)");
+      expect(RelationshipMultiplicity.oneMany.toString()).to.equal("(1..*)");
+    });
+    it("should successfully roundtrip", () => {
+      const testMultiplicityString = "(1..5)";
+      const testMul = RelationshipMultiplicity.fromString(testMultiplicityString);
+      expect(testMul).to.not.be.undefined;
+      expect(testMul!.toString()).to.equal(testMultiplicityString);
+    });
+  });
 });
 
 describe("RelationshipClass", () => {
