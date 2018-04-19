@@ -4,17 +4,17 @@ The iModelJs library is a JavaScript api for creating, querying, displaying, and
 
 ## Using iModelJs
 
-The iModelJs library is a comprehensive set of services that can be used anywhere an iModel may be relevant.
+The iModelJs library has a comprehensive set of APIs that can be used anywhere an iModel may be relevant.
 It is designed to be modular and extensible, with the expectation that iModelJs will be used in environments with many
 other JavaScript frameworks. iModelJs strives to be as consistent as possible with established JavaScript conventions,
 though sometimes judgement calls are required where no established convention is clear.
 
 From the same JavaScript codebase, it is possible to create:
 
-* [Backend Agents and Services](./Backends) that process iModels and respond to events from iModelHub
-* [Web Apps](./WebApps) that run in web browsers and communicate with Backends
-* [Desktop Apps](./DesktopApps) that run on personal computers
-* [Mobile Apps](./MobileApps) that run on tablets and phones
+* [Agents and Services](./App.md#agents-and-services) that process iModels and respond to events from iModelHub
+* [Web Apps](./App.md#web-apps) that run in web browsers and communicate with backends
+* [Desktop Apps](./App.md#desktop-apps) that run on personal computers
+* [Mobile Apps](./App.md#mobile-apps) that run on tablets and phones
 
 ## iModelJs vs. iModelHub
 
@@ -51,7 +51,7 @@ The iModelJs library requires a JavaScript engine with es2017 support.
 The iModelJs library is divided into these sub-packages:
 
 |Package Name|Description
-|--|--
+|---|---
 |**@bentley/bentleyjs-core**|General utilities that can be run in either the frontend or the backend.
 |**@bentley/geometry-core**|Operations on 2d and 3d geometry.
 |**@bentley/imodeljs-backend** |Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code communicates with the frontend via a Gateway. .
