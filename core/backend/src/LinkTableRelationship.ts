@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Id64, Id64Props, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { ECSqlStatement } from "./ECSqlStatement";
-
-/** @module BisCore */
 
 const loggingCategory = "imodeljs-backend.LinkTableRelationship";
 

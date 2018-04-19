@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { ModelProps, GeometricModel2dProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-
-/** @module BisCore */
 
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.

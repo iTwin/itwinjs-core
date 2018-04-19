@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
+
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
@@ -12,8 +14,6 @@ import { LinkTableRelationship } from "./LinkTableRelationship";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
-
-/** @module iModels */
 
 /**
  * ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
