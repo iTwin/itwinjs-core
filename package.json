@@ -20,7 +20,7 @@
     "publish:backend": "cd core/backend && npm publish",
     "publish:frontend": "cd core/frontend && npm publish",
     "predocs": "npm run extract",
-    "docs": "concurrently \"npm run docs:backend\" \"npm run docs:frontend\" \"npm run docs:common\"",
+    "docs": "concurrently \"npm run docs:backend\" \"npm run docs:frontend\" \"npm run docs:common\" \"npm run docs:geometry\" \"npm run docs:bentley\"",
     "docs:backend": "cd core/backend && npm run docs",
     "docs:bentley": "cd core/bentley && npm run docs",
     "docs:common": "cd core/common && npm run docs",
