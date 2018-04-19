@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.76.0",
+  "version": "0.76.1",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets",
-    "clean": "rimraf lib package-deps.json",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/backend  --json=../../generated-docs/backend/json/file.json  %TYPEDOC_THEME%",
+    "clean": "rimraf lib package-deps.json ../../generated-docs/backend",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/backend --json=../../generated-docs/backend/json/file.json  %TYPEDOC_THEME%",
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
