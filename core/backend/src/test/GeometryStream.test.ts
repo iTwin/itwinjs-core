@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType
+  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../backend";
