@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-frontend",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Frontend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -25,9 +25,9 @@
     "require": "node ../../scripts/require-lib-modules.js --base ./",
     "test": "mocha --opts ../../mocha.opts **/*.test.ts",
     "test:cover": "npm run require && mocha --recursive **/*.test.ts"
-    },
+  },
   "dependencies": {
-    "@bentley/ecpresentation-common": "~0.0.4"
+    "@bentley/ecpresentation-common": "~0.0.5"
   },
   "//peerDependencies": [
     "No need to repeat all of the dependencies that I have in common with frontend."
@@ -60,5 +60,5 @@
     "report-dir": "../../coverage/frontend",
     "temp-directory": "../../coverage/frontend/.nyc_output",
     "nycrc-path": "../../.nycrc"
-    }
+  }
 }

@@ -1,6 +1,15 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Wed, 28 Feb 2018 13:44:55 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Apr 2018 13:57:47 GMT and should not be manually modified.
+
+## 0.0.32
+Fri, 20 Apr 2018 13:57:47 GMT
+
+### Patches
+
+- Updated package dependencies
+- Created compound index.ts file that exports package contents so consumers don't have to import each package piece individually through "lib" directory.
+- Setup test coverage
 
 ## 0.0.28
 Wed, 28 Feb 2018 13:44:55 GMT

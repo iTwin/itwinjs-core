@@ -1,6 +1,17 @@
 # Change Log - @bentley/ecpresentation-frontend
 
-This log was last generated on Wed, 28 Feb 2018 13:44:55 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Apr 2018 13:57:47 GMT and should not be manually modified.
+
+## 0.0.21
+Fri, 20 Apr 2018 13:57:47 GMT
+
+### Patches
+
+- Created compound index.ts file that exports package contents so consumers don't have to import each package piece individually through "lib" directory.
+- Updated package dependencies
+- Setup test coverage
+- Moved controls-related code to a separate package @bentley/ecpresentation-controls
+- Unified selection
 
 ## 0.0.17
 Wed, 28 Feb 2018 13:44:55 GMT

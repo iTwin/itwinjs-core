@@ -1,0 +1,28 @@
+{
+  "name": "@bentley/ecpresentation-controls",
+  "entries": [
+    {
+      "version": "0.0.2",
+      "tag": "@bentley/ecpresentation-controls_v0.0.2",
+      "date": "Fri, 20 Apr 2018 13:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Created a new package for ecpresentation-driven controls (moved from @bentley/ecpresentation-frontend)"
+          },
+          {
+            "comment": "Updated package dependencies"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.4` to `~0.0.5`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `~0.0.20` to `~0.0.21`"
+          }
+        ]
+      }
+    }
+  ]
+}

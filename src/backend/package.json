@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -27,7 +27,7 @@
     "test:cover": "npm run require && mocha --recursive **/*.test.ts"
   },
   "dependencies": {
-    "@bentley/ecpresentation-common": "~0.0.4"
+    "@bentley/ecpresentation-common": "~0.0.5"
   },
   "//peerDependencies": [
     "No need to repeat all of the dependencies that I have in common with backend."
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7",
-    "@bentley/bentleyjs-tools": "^2.2.0",    
+    "@bentley/bentleyjs-tools": "^2.2.0",
     "@bentley/geometry-core": "^7",
     "@bentley/imodeljs-backend": "~0.76.1",
     "@bentley/imodeljs-clients": "^5.1.0",

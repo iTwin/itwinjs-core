@@ -2,6 +2,35 @@
   "name": "@bentley/ecpresentation-frontend",
   "entries": [
     {
+      "version": "0.0.21",
+      "tag": "@bentley/ecpresentation-frontend_v0.0.21",
+      "date": "Fri, 20 Apr 2018 13:57:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Created compound index.ts file that exports package contents so consumers don't have to import each package piece individually through \"lib\" directory."
+          },
+          {
+            "comment": "Updated package dependencies"
+          },
+          {
+            "comment": "Setup test coverage"
+          },
+          {
+            "comment": "Moved controls-related code to a separate package @bentley/ecpresentation-controls"
+          },
+          {
+            "comment": "Unified selection"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.4` to `~0.0.5`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.17",
       "tag": "@bentley/ecpresentation-frontend_v0.0.17",
       "date": "Wed, 28 Feb 2018 13:44:55 GMT",
