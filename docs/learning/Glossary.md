@@ -41,7 +41,7 @@
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
 |**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends)
 |**Frustum**|An 8-point [truncated pyramid](https://en.wikipedia.org/wiki/Viewing_frustum) that defines the volume of space visible in a View. The front and back planes must be parallel and their centers must align at right angles.
-|**Gateway**|The mechanism by which the frontend communicates with the backend. Different Gateways are used when the frontend and backend are connected via HTTP vs connected on the same computer via sockets. See [gateways](../../overview/overview/App.md#gateways) for more information.
+|**Gateway**|The mechanism by which the frontend communicates with the backend. Different Gateways are used when the frontend and backend are connected via HTTP vs connected on the same computer via sockets. See [gateways](../../overview/App.md#gateways) for more information.
 |**GeometricElement**|A subclass of Element that can include geometry (in its GeometryStream.) Only GeometricElements are visible in Views.
 |**GeometricModel**|A subclass of Model that can hold GeometricElements.
 |**GeometryPart**|A named GeometryStream that can be shared by many GeometricElements.

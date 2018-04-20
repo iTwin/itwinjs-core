@@ -3,6 +3,7 @@
 The technology used by iModelJs makes it possible to write an app once and then deploy it to run on many platforms without modification.
 
 ## Cross-Platform Technologies
+
 The key technology that makes an app portable is JavaScript. JavaScript engines are available on many operating systems and Web browsers. TypeScript compiles to JavaScript.
 
 [Nodejs](./Glossary.md#Node.js) is an execution environment for agents, services, and servers. Nodejs runs JavaScript programs. Nodejs itself runs on many platforms, including Windows and Linux. Nodejs is also widely supported by cloud infrastructures and deployment mechanisms.
@@ -13,7 +14,7 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 ## Frontend Portability
 
-Since an iModelJs app [frontend](../../overview/overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
+Since an iModelJs app [frontend](../overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
 ## Backend Portability
 
@@ -43,10 +44,10 @@ An app backend must not *never* depend on node-specific packages, including any 
 
 ## Gateway Portability
 
-Since frontends talk to backends via a [gateways](../../overview/overview/App.md#gateways) and gateways are TypeScript classes, and since gateway transport configuration does not affect the frontend or the backend code, frontend-backend communication is inherently portable.
+Since frontends talk to backends via a [gateways](../../overview/App.md#gateways) and gateways are TypeScript classes, and since gateway transport configuration does not affect the frontend or the backend code, frontend-backend communication is inherently portable.
 
 That said, the initialization logic of both frontend and backend must choose the correct gateway configurations, based on the app's configuration.
 
 ## Platform-specific Modules
-A portable interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. These should be used in guarded code.
 
+A portable interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. These should be used in guarded code.

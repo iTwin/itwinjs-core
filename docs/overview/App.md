@@ -1,4 +1,5 @@
 # iModelJs Apps
+
 From the same JavaScript codebase, it is possible to create:
 
 * [Backend Agents and Services](#agents-and-services) that process iModels and respond to events from iModelHub
@@ -11,7 +12,7 @@ From the same JavaScript codebase, it is possible to create:
 
 iModel agents and services are apps that have no interactive user interface. They are generally deployed on servers, often in the cloud using containers (e.g. Docker) and managed using a cloud orchestration framework (e.g. Kubernetes.) Agents and services are always hosted by nodejs. (App backends are not.)
 
-Agents and services are [backend](../../learning/learning/Glossary.md#Backend) code. Their main concern is to access and process the content of iModels. They use [briefcases](../../learning/learning/Glossary.md#Briefcase) to access iModels. Agents and services depend on the `@bentley/imodeljs-backend` package. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
+Agents and services are [backend](../../learning/Glossary.md#Backend) code. Their main concern is to access and process the content of iModels. They use [briefcases](../../learning/Glossary.md#Briefcase) to access iModels. Agents and services depend on the `@bentley/imodeljs-backend` package. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
 
 
 ### iModel Agents
@@ -24,7 +25,7 @@ As an example, consider an iModelJs Agent that receives notifications from iMode
 
 An *iModel Service* is a program that responds to requests from other apps. A service runs on a server and waits for requests. A service may receive requests from [Web Apps](./WebApps) (frontend or backend) or from other services.
 
-A true service is a stand-alone program that is never bundled with the clients that use it. An [app-specific backend](#app-backend) is a special kind of service that is logically part of an app and is often bundled with it. This distinction is important for [portability reasons](../../learning/learning/Portability.md#backend-portability).
+A true service is a stand-alone program that is never bundled with the clients that use it. An [app-specific backend](#app-backend) is a special kind of service that is logically part of an app and is often bundled with it. This distinction is important for [portability reasons](../../learning/Portability.md#backend-portability).
 
 An example of a service is a program that serves out spatial tiles that it extracts from a specified area of an iModel upon request.
 
@@ -41,7 +42,7 @@ The data-access part of an app is called the [backend](https://en.wikipedia.org/
 
 An app can use a pre-existing or general-purpose [service](#imodel-services) as its backend. For example, a family of viewing apps can use a general-purpose service that handles requests for data from a given iModel.
 
-An app may require data-access services that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using gateways and are encouraged. See [backend portability](../../learning/learning/Portability.md#backend-portability).
+An app may require data-access services that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using gateways and are encouraged. See [backend portability](../../learning/Portability.md#backend-portability).
 
 An app can use many services, both general-purpose and app-specific.
 
@@ -118,4 +119,4 @@ Some of these adaptations involve swapping in different resources, such as HTML 
 An app's UI is contained within its frontend. And, the look and feel of the GUI is largely contained within its HTML and CSS resources. Swapping in a different GUI can be a simple as swapping in a different style sheet or HTML page, leaving the supporting JavaScript the same. You can develop and test the various version of the GUI in a single development environment. You can also write the frontend JavaScript to tailor the GUI at run time.
 
 ### Platform-specific Modules
-An interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. Mobile platforms such as iOS and Android, provide JavaScript classes for services that are specific to mobile apps. The Electron desktop platform provides all of the features of nodejs. Platform-specific modules must be used in [guarded code](../../learning/learning/Portability.md).
+An interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. Mobile platforms such as iOS and Android, provide JavaScript classes for services that are specific to mobile apps. The Electron desktop platform provides all of the features of nodejs. Platform-specific modules must be used in [guarded code](../../learning/Portability.md).
