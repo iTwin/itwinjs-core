@@ -229,7 +229,7 @@ export class MockAssetUtil {
           }
         }
         if (iModelName !== "") {
-          const sampleIModelPath = path.join(assetDir, iModelName, `${iModelName}.bim`);
+          const sampleIModelPath = path.join(assetDir, iModelName, briefcase.briefcaseId!.toString(), `${iModelName}.bim`);
           IModelJsFs.copySync(sampleIModelPath, outPath);
           return Promise.resolve();
         }
@@ -256,8 +256,17 @@ export class MockAssetUtil {
           const buff = IModelJsFs.readFileSync(csetPath);
           const jsonObj = JSON.parse(buff.toString());
           let csets = getTypedInstances<ChangeSet>(ChangeSet, jsonObj);
-          if (query && query.getId()) {
+          if (query && query.getQueryOptions().$top) {
+            const top = query.getQueryOptions().$top!.valueOf();
+            csets = csets.slice((csets.length) - top, csets.length);
+          } else if (query && query.getId()) {
             csets = csets.filter((x: ChangeSet) => x.wsgId === query.getId());
+          } else if (query && query.getQueryOptions().$filter && query.getQueryOptions().$filter!.includes("backward")) {
+            const filter = query.getQueryOptions().$filter;
+            const targetCsetId = filter!.substring((filter!.indexOf("\'") + 1), filter!.lastIndexOf("\'"));
+            const targetCset = csets.find((x: ChangeSet) => x.id === targetCsetId);
+            const targetCsetIndex = targetCset!.index!;
+            csets = csets.filter((x: ChangeSet) => x.index! > targetCsetIndex);
           }
           if (csets) {
             for (const cset of csets) {
