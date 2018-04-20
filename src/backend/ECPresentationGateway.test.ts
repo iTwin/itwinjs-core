@@ -19,7 +19,7 @@ describe("ECPresentationGatewayImpl", () => {
 
   it("is registered after including module", () => {
     Gateway.initialize(ECPresentationGateway);
-    const impl = Gateway.getImplementationForGateway(ECPresentationGatewayDefinition);
+    const impl = Gateway.getProxyForGateway(ECPresentationGatewayDefinition);
     assert.isNotNull(impl);
     assert.instanceOf(impl, ECPresentationGateway);
   });

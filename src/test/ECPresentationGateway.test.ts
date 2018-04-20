@@ -27,7 +27,7 @@ describe.skip("ECPresentationManager", () => {
       // rulesetDirectories: [path.resolve(__dirname, "assets/presentation_rules")],
     });
     BackendGatewayConfiguration.initialize([ECPresentationGatewayBackend]);
-    const backendGateway = Gateway.getImplementationForGateway(ECPresentationGatewayDefinition) as ECPresentationGatewayBackend;
+    const backendGateway = Gateway.getProxyForGateway(ECPresentationGatewayDefinition) as ECPresentationGatewayBackend;
     backendGateway.setManager(managerBackend);
   });
 
