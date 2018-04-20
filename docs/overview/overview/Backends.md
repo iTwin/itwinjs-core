@@ -8,7 +8,7 @@ web browser. It is usually loaded from [Node.js](https://nodejs.org), but is som
 
 > The term *backend* may be confusing, because backends can run "anywhere" - on servers, desktops, and even mobile devices. However, the term
 *frontend* specifically refers to a program that runs inside a browser. For purposes of this discussion,
-it may be helpful to think of backends as meaning *not in a browser*. For more on the meaning and purpose of frontends and backends, see https://en.wikipedia.org/wiki/Front_and_back_ends.
+it may be helpful to think of backends as meaning *not in a browser*. For more on the meaning and purpose of these terms, see [this article](https://en.wikipedia.org/wiki/Front_and_back_ends).
 
 An important point to understand about the role of the backend is that it *must* have access to a Briefcase (a ".bim" file) **as a local file**.
 The [IModelDb]($imodeljs-backend.IModelDb) class provides methods for opening, closing, and accessing Briefcases. An instance of IModelDb in memory holds a Briefcase file open.
