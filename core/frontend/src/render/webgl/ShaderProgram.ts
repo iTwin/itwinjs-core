@@ -7,3 +7,7 @@ export const enum CompileStatus {
   Failure,
   Uncompiled,
 }
+
+export class ShaderProgram {
+
+}

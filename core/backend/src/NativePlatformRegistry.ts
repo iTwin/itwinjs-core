@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Portability */
+
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
 import * as path from "path";
-
-/** @module Portability */
 
 // tslint:disable-next-line:no-eval
 const realrequire = eval("require");

@@ -8,7 +8,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
-  SpatialViewDefinitionProps, ViewDefinition2dProps,
+  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -17,6 +17,7 @@ import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
+import { DecorateContext } from "./ViewContext";
 
 export const enum GridOrientationType {
   View = 0,
@@ -106,7 +107,7 @@ export abstract class ViewState extends ElementState {
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
-
+  public isSelectionSetDirty: boolean = false;
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
@@ -116,7 +117,7 @@ export abstract class ViewState extends ElementState {
       this.displayStyle = categorySelector.displayStyle.clone();
     }
   }
-
+  public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   public toJSON(): ViewDefinitionProps {
@@ -140,6 +141,12 @@ export abstract class ViewState extends ElementState {
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
   public abstract getViewedExtents(): AxisAlignedBox3d;
+
+  /** Override this if you want to perform some logic on each iteration of the render loop. */
+  public abstract onRenderFrame(): void;
+
+  /** WIP: should be abstract, but for now leave unimplemented  */
+  public drawDecorations(_context: DecorateContext): void {}
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
@@ -550,7 +557,7 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;         // The camera used for this view.
   public forceMinFrontDist = 0.0;         // minimum distance for front plane
   public static get className() { return "ViewDefinition3d"; }
-
+  public onRenderFrame(): void {}
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
@@ -989,6 +996,7 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  public onRenderFrame(): void {}
   public load(): Promise<void> { return Promise.resolve(); }
   public allow3dManipulations(): boolean { return false; }
   public getViewedExtents() { return new AxisAlignedBox3d(); } // NEEDS_WORK

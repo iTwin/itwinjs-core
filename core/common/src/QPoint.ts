@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
+
 import { Range1d, Range2d, Range3d } from "@bentley/geometry-core";
 import { XY, XYZ, XYAndZ, Point3d, Point2d } from "@bentley/geometry-core";
 import { Point, Range, PointUtil, RangeUtil } from "./Utility";
 import { Cloneable } from "./Utility";
-
-/** @module Views */
 
 // declare constant in module scope to prevent having to write out ScalarQuantizer.rangeScale every time
 const rangeScale = 0xffff;

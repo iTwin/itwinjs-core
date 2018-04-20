@@ -8,10 +8,10 @@
   "repository": {},
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json",
+    "clean": "rimraf lib package-deps.json ../../generated_docs/bentley",
     "pretest": "rush build -t @bentley/bentleyjs-core",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "docs": "node node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson --tsIndexFile=bentleyjs-core.ts"
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js   --source=./src --out=../../generated_docs/bentley --onlyJson --json=../../generated-docs/bentley/json/file.json --tsIndexFile=bentleyjs-core.ts"
   },
   "keywords": [
     "Bentley",
@@ -24,6 +24,7 @@
   "dependencies": {},
   "devDependencies": {
     "rimraf": "^2.6.2",
+    "typedoc": "^0.11.1",
     "typescript": "~2.7.2"
   }
 }

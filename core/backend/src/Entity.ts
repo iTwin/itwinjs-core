@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module Schema */
+
 import { Id64, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { EntityProps, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-
-/** @module Schema */
 
 /** The primitive types of an Entity property. */
 export const enum PrimitiveTypeCode {
@@ -59,7 +59,7 @@ export class Entity implements EntityProps {
   }
 
   /**
-   * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+   * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param _opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(_opcode: DbOpcode): void {

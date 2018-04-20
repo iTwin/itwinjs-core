@@ -4,17 +4,16 @@ In iModelJs terminology, a *backend* refers to a JavaScript program that runs in
 that loads a Briefcase via the `@bentley/imodeljs-native` package.
 
 The imodeljs-native package is written in C++ (hence the term *native*) and can therefore never run inside a
-web browser. It is usually loaded from [Node.js](https://nodejs.org), but is sometimes loaded by other
-JavaScript engines (e.g. on mobile devices.)
+web browser. It is usually loaded from [Node.js](https://nodejs.org), but is sometimes loaded by other JavaScript engines (e.g. on mobile devices.)
 
 > The term *backend* may be confusing, because backends can run "anywhere" - on servers, desktops, and even mobile devices. However, the term
 *frontend* specifically refers to a program that runs inside a browser. For purposes of this discussion,
-it may be helpful to think of backends as meaning *not in a browser*.
+it may be helpful to think of backends as meaning *not in a browser*. For more on the meaning and purpose of these terms, see [this article](https://en.wikipedia.org/wiki/Front_and_back_ends).
 
 An important point to understand about the role of the backend is that it *must* have access to a Briefcase (a ".bim" file) **as a local file**.
 The [IModelDb]($imodeljs-backend.IModelDb) class provides methods for opening, closing, and accessing Briefcases. An instance of IModelDb in memory holds a Briefcase file open.
 
-The imodeljs-backend package also contains classes for connecting to [iModelHub](IModelHub) to check out Briefcases and to synchronize them via ChangeSets.
+The imodeljs-backend package also contains classes for connecting to [iModelHub](./IModelHub) to check out Briefcases and to synchronize them via ChangeSets.
 
 ## Backends have synchronous access to iModels
 
@@ -30,7 +29,7 @@ changes to its iModel are in compliance with company standards. A separate insta
 
 ## iModel Services
 
-An iModelJs backend program that responds to interactive requests from an [Web App](WebApps) is called an `iModel Service`.
+An iModelJs backend program that responds to interactive requests from an [Web App](./WebApps) is called an `iModel Service`.
 Sometimes iModel Services can be written to support more than one frontend client simultaneously.
 The is often the case where frontends only perform read operations on an iModel.
 
@@ -39,7 +38,7 @@ bandwidth and latency can vary widely, so care must be taken to limit number and
 
 ## Backends for Desktop applications
 
-[Desktop applications](DesktopApps) can be created with iModelJs using [Electron](https://electronjs.org/). In this case there are still two processes,
+[Desktop applications](./DesktopApps) can be created with iModelJs using [Electron](https://electronjs.org/). In this case there are still two processes,
 one for the backend and one for the frontend, but they physically reside on the same computer. The backend is still responsible for
 accessing Briefcases, but there will obviously only be one frontend connected to it. The programming paradigm for desktop
 backends is unchanged from Agents and Services, but the connection to the frontend is through *pipes* that have high bandwidth and low latency.

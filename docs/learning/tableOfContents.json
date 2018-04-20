@@ -11,7 +11,11 @@
         "frontend": {
             "contents": [],
             "displayName": "Frontend"
+        },
+        "guidelines": {
+            "contents": [],
+            "displayName": "Guidelines and Tips"
         }
     },
-    "home": "learning\\index"
+    "home": "index"
 }

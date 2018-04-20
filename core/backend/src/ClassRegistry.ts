@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Schemas */
+
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
-
-/** @module Schemas */
 
 /** The mapping between a class name (schema.class) and its constructor function  */
 export class ClassRegistry {

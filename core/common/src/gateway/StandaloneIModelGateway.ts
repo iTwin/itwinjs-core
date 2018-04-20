@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { Gateway } from "../Gateway";
 import { IModel, IModelToken } from "../IModel";
-
-/** @module Gateway */
 
 /**
  * The Gateway for working with standalone iModels.

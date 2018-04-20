@@ -1,6 +1,7 @@
 {
   "name": "@bentley/geometry-core",
   "version": "7.4.5",
+  "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
@@ -22,11 +23,11 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf ./lib ./src/test/output package-deps.json",
+    "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
     "watch": "tsc --watch",
     "pretest": "rush build -t @bentley/geometry-core",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --baseUrl=./node_modules --out=../../generated-docs/geometry --json=../../generated-docs/geometry/json/file.json %TYPEDOC_THEME%",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --out=../../generated-docs/geometry --json=../../generated-docs/geometry/json/file.json %TYPEDOC_THEME%",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
     "cover:docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js"
   },
@@ -38,7 +39,6 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "license": "UNLICENSED",
   "dependencies": {},
   "nyc": {
     "include": [

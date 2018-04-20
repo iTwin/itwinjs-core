@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Geometry */
+
 import { Vector3d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { AxisOrder } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
-
-/** @module Geometry */
 
 export const enum StyleMod {
   Scale = 0x0001,       // Scale present

@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
+
 import { assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-
-/** @module Views */
 
 export class ColorIndexNonUniform {
   public colors: Uint32Array;

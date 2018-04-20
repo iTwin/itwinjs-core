@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module ECSql */
+
 import { Id64Props, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "./IModelError";
-
-/** @module ECSql */
 
 /** Describes the different data types an ECSQL value can be of. */
 export enum ECSqlValueType {

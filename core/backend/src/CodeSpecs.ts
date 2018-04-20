@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Codes */
+
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, CodeSpec } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
-
-/** @module Codes */
 
 /** Manages CodeSpecs within an [[IModelDb]] */
 export class CodeSpecs {
