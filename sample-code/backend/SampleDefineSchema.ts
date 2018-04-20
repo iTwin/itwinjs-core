@@ -12,7 +12,7 @@ import * as module1 from "./TestPartitionElement";
  * Normally, you would define a schema class like this by first
  * generating an ECSchema and then generating a Schema definition
  * like this from it. Note that you do not have to define a Schema
- * in order to work with elements in that schema.
+ * to work with elements in that schema.
  */
 export class TestSchema extends Schema {
 

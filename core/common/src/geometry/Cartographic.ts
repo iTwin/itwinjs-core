@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Angle, Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core";
-
 /** @module Geometry */
+
+import { Angle, Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 

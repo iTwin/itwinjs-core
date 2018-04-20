@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Range1d, Range2d, Range3d, XY, XYZ, Vector3d, Vector2d, Point2d, Point3d } from "@bentley/geometry-core";
-
 /** @module Geometry */
+
+import { Range1d, Range2d, Range3d, XY, XYZ, Vector3d, Vector2d, Point2d, Point3d } from "@bentley/geometry-core";
 
 export type Point = number | XY | XYZ;
 export type Range = Range1d | Range2d | Range3d;

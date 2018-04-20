@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayDefinition } from "../../Gateway";
 import { GatewayConfiguration } from "../core/GatewayConfiguration";
 import { GatewayRequest, GatewayRequestEventHandler, GatewayRequestEvent } from "../core/GatewayRequest";
 import { OpenAPIInfo } from "./OpenAPI";
 import { BentleyCloudGatewayProtocol } from "./BentleyCloudGatewayProtocol";
-
-/** @module Gateway */
 
 /** Initialization parameters for BentleyCloudGatewayConfiguration. */
 export interface BentleyCloudGatewayParams {

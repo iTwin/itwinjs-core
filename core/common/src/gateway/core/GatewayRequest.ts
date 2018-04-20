@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { Gateway } from "../../Gateway";
 import { GatewayOperation } from "./GatewayOperation";
@@ -10,8 +12,6 @@ import { GatewayMarshaling } from "./GatewayMarshaling";
 import { OPERATION } from "./GatewayRegistry";
 import { aggregateLoad } from "./GatewayControl";
 import { IModelToken } from "../../IModel";
-
-/** @module Gateway */
 
 /** Supplies an IModelToken for a gateway request. */
 export type GatewayRequestTokenSupplier_T = (request: GatewayRequest) => IModelToken | undefined;

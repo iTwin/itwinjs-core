@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.76.0",
+  "version": "0.76.1",
   "description": "iModelJs components common to frontend and backend",
   "license": "MIT",
   "main": "lib/common.js",
@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json",
-    "docs": "cd ../.. && npm run docs:common"
+    "clean": "rimraf lib package-deps.json ../../generated-docs/common",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/common --json=../../generated-docs/common/json/file.json --tsIndexFile=./common.ts  %TYPEDOC_THEME%"
   },
   "repository": {},
   "keywords": [
@@ -47,6 +47,7 @@
     "@bentley/geometry-core": "7",
     "@bentley/imodeljs-clients": "^5.1.0",
     "rimraf": "^2.6.2",
+    "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
     "@types/uuid": "^3.4.3"
   },

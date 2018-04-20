@@ -4,12 +4,12 @@ ECSQL by itself is described in detail here: [ECSQL](../learning/ECSQL)
 
 An ECSQL query is executed by calling [IModelConnection.executeQuery]($imodeljs-frontend.IModelConnection.executeQuery).
 
-> For iModels only ECSQL SELECT statements can be executed. Data modification has to be done through
+> For iModels. only ECSQL SELECT statements can be executed. Data modification must be done through
 > the dedicated Element API.
 
 ## ECSQL Parameter Values
 
-If the ECSQL is parametrized (see [ECSQL parameters](../learning/ECSQL#ecsql-parameters)), you must pass the parameter values to
+If the ECSQL is parameterized (see [ECSQL parameters](../learning/ECSQL#ecsql-parameters)), you must pass the parameter values to
 [IModelConnection.executeQuery]($imodeljs-frontend.IModelConnection.executeQuery)
 
 Pass an *array* of values if the parameters are *positional*. Pass an *object of the values keyed on the parameter name* for *named parameters*.

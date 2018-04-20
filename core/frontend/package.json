@@ -1,15 +1,15 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.76.0",
+  "version": "0.76.2",
   "description": "iModelJs frontend components",
   "main": "lib/frontend.js",
   "typings": "lib/frontend",
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json",
+    "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
     "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1",
-    "docs": "cd ../.. && npm run docs:frontend"
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract  --out=../../generated-docs/frontend  --json=../../generated-docs/frontend/json/file.json --tsIndexFile=./frontend.ts  %TYPEDOC_THEME%"
   },
   "repository": {},
   "keywords": [
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "rimraf": "^2.6.2",
+    "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
     "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "7",

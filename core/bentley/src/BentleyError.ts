@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Errors */
+
 import { DbResult } from "./BeSQLite";
 import { LogFunction } from "./Logger";
-
-/** @module Errors */
 
 /** Standard status code.
  * This status code should be rarely used.

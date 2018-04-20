@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { Gateway, GatewayImplementation, GatewayDefinition } from "../../Gateway";
 import { GatewayDirectProtocol } from "./GatewayConfiguration";
 import { GatewayOperation, GatewayOperationPolicy } from "./GatewayOperation";
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-
-/** @module Gateway */
 
 // tslint:disable:ban-types
 

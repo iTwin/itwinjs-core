@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ImageSourceFormat } from "./Image";
-
 /** @module IModels */
+
+import { ImageSourceFormat } from "./Image";
 
 /**
  * Metadata about a thumbnail. Often this is redundant with information in the image itself, but is held

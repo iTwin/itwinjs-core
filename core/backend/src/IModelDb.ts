@@ -7,7 +7,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, ElementLoadProps, CreateIModelProps, FilePropertyProps,
+  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -31,8 +31,8 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file on the local computer.
  *
- * An IModelDb is used by a service or by the "back end" of an app.
- * "Front end" code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
+ * An IModelDb is used by a service or by the backend of an app.
+ * Frontend code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
  *
  * Use [[IModelDb.open]] to obtain and open an IModelDb from iModelHub.
  *
@@ -73,7 +73,7 @@ export class IModelDb extends IModel {
   protected _fontMap?: FontMap;
   public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
-//  public embedFont(prop: FontProps): FontProps { return JSON.parse(this.briefcase!.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
+  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.briefcase!.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
 
   /** Event raised just before a connected IModelDb is opened.<p><em>Example:</em>
    * ``` ts
@@ -546,8 +546,7 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Construct an entity (element or model). This utility method knows how to fetch the required class metadata
-   * if necessary in order to get the entity's class defined as a prerequisite.
+  /** Construct an entity (Element or Model) from an iModel.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
   public constructEntity(props: EntityProps): Entity {
@@ -645,12 +644,12 @@ export class IModelDb extends IModel {
 
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
-  private _loaded = new LRUMap<string, Model>(500);
+  private readonly loaded = new LRUMap<string, Model>(500);
 
   /** @hidden */
   public constructor(private _iModel: IModelDb, max: number = 500) {
-    this._loaded.limit = max;
-    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+    this.loaded.limit = max;
+    this._iModel.onChangesetApplied.addListener(() => this.loaded.clear());
   }
 
   /** Get the Model with the specified identifier.
@@ -659,7 +658,7 @@ export class IModelDbModels {
    */
   public getModel(modelId: Id64): Model {
     // first see if the model is already in the local cache.
-    const loaded = this._loaded.get(modelId.value);
+    const loaded = this.loaded.get(modelId.value);
     if (loaded)
       return loaded;
 
@@ -670,7 +669,7 @@ export class IModelDbModels {
 
     // We have created the model. Cache it before we return it.
     model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(model.id.value, model);
+    this.loaded.set(model.id.value, model);
     return model;
   }
 
@@ -730,7 +729,7 @@ export class IModelDbModels {
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (model.id)
-      this._loaded.delete(model.id.toString());
+      this.loaded.delete(model.id.toString());
   }
 
   /** Delete an existing model.
@@ -746,21 +745,18 @@ export class IModelDbModels {
       throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
 
     // Discard from the cache
-    this._loaded.delete(model.id.value);
+    this.loaded.delete(model.id.value);
   }
 }
 
 /** The collection of elements in an [[IModelDb]]. */
 export class IModelDbElements {
-  private _loaded: LRUMap<string, Element>;
-
-  /** get the map of loaded elements */
-  public get loaded() { return this._loaded; }
+  private readonly loaded: LRUMap<string, Element>;
 
   /** @hidden */
-  public constructor(private _iModel: IModelDb, maxElements: number = 2000) {
-    this._loaded = new LRUMap<string, Element>(maxElements);
-    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+  public constructor(private _iModel: IModelDb, maxElements = 2000) {
+    this.loaded = new LRUMap<string, Element>(maxElements);
+    this._iModel.onChangesetApplied.addListener(() => this.loaded.clear());
   }
 
   /** Private implementation details of getElementProps */
@@ -786,7 +782,7 @@ export class IModelDbElements {
   private _doGetElement(opts: ElementLoadProps): Element {
     // first see if the element is already in the local cache.
     if (opts.id) {
-      const loaded = this._loaded.get(opts.id.toString());
+      const loaded = this.loaded.get(opts.id.toString());
       if (loaded)
         return loaded;
     }
@@ -794,7 +790,7 @@ export class IModelDbElements {
     const el = this._iModel.constructEntity(props) as Element;
     // We have created the element. Cache it before we return it.
     el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(el.id.value, el);
+    this.loaded.set(el.id.value, el);
     return el;
   }
 
@@ -880,7 +876,7 @@ export class IModelDbElements {
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (props.id)
-      this._loaded.delete(props.id.toString());
+      this.loaded.delete(props.id.toString());
   }
 
   /**
@@ -897,7 +893,7 @@ export class IModelDbElements {
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache
-    this._loaded.delete(id.value);
+    this.loaded.delete(id.value);
   }
 
   /** Query for the child elements of the specified element.
