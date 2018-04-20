@@ -405,7 +405,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummaries with invalid input", async () => {
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.Readonly);
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly);
     try {
       assert.exists(iModel);
       await ChangeSummaryManager.extractChangeSummaries(iModel);
@@ -432,7 +432,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Query ChangeSummary content", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite, IModelVersion.latest());
     await ChangeSummaryManager.extractChangeSummaries(iModel);
     assert.exists(iModel);
     ChangeSummaryManager.attachChangeCache(iModel);

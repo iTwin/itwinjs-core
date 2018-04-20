@@ -77,9 +77,8 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 
 ## Other NPM Scripts
 
-1. Build TypeDoc documentation for all packages: `npm run docs`
-2. Build TypeDoc documentation for frontend, backend, or common only: `npm run docs:frontend`, `npm run docs:backend`, `npm run docs:common` from top-level directory or `npm run docs` from package directory
-3. Extract sample code from test directory (run automatically as a *pre* step by the TypeDoc build command above): `npm run extract`
+1. Build TypeDoc documentation for all packages: `rush docs`
+2. Build TypeDoc documentation for a single package: `cd core\backend` and then `npm run docs`
 
 The full list of npm scripts can be found in the root `package.json` file.
 

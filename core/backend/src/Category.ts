@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { CodeSpecNames, Code, ElementProps, Appearance, Rank, AppearanceProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
-
-/** @module BisCore */
 
 /** Parameters to create a SubCategory element */
 export interface SubCategoryProps extends ElementProps {

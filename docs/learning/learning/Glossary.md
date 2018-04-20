@@ -3,9 +3,10 @@
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information in a different orientation and units.
+|**Backend**|The part of an app that is concerned with accessing data in a [briefcase](#Briefcase). See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends)
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS can have relevance outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The base BIS Domain for iModels. All EC Classes stored in an iModel must derive from a BisCore class.
-|**Briefcase**|A file holding a *copy of* an iModel. Briefcases are obtained from iModelHub and are each assigned a unique Id called a BriefcaseId. Briefcase files have a ".bim" (briefcase of iModel) extension. Briefcases are synchronized via changesets.
+|**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](../../learning/backend/IModelDb.md) for more.
 |**Cartographic Coordinates**| A [geographic coordinate system](https://en.wikipedia.org/wiki/Geographic_coordinate_system) based on lat/long/height. If an iModel is geo-located via an EefLocation, Spatial Coordinates may be converted to Cartographic coordinates.
 |**Category**|A property of a GeometricElement that "categorizes" its geometry. That is, every GeometricElement is "in" one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. Note that Categories are not relevant for Elements that are not GeometricElements. Category is a subclass of DefinitionElement.
 |**CategorySelector**|A named group of Categories displayed in a View. Many ViewDefinitions may refer to the same CategorySelector.
@@ -35,11 +36,12 @@
 |**ElementUserLabel**|An optional string that holds a user-assigned *alias* for an Element. ElementUserLabels are **not** enforced to be unique.
 |**Entity Metadata**|The names and types of the ECProperties and ECRelationships of an Entity ECClass.
 |**Entity**|A physical or non-physical object in the real world, defined by an ECClass.
+|**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends)
 |**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature.
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
 |**Frustum**|An 8-point [truncated pyramid](https://en.wikipedia.org/wiki/Viewing_frustum) that defines the volume of space visible in a View. The front and back planes must be parallel and their centers must align at right angles.
-|**Gateway**|The mechanism by which the frontend communicates with the backend. Different Gateways are used when the frontend and backend are connected via HTTP vs connected on the same computer via sockets.
+|**Gateway**|The mechanism by which the frontend communicates with the backend. Different Gateways are used when the frontend and backend are connected via HTTP vs connected on the same computer via sockets. See [gateways](../../overview/overview/App.md#gateways) for more information.
 |**GeometricElement**|A subclass of Element that can include geometry (in its GeometryStream.) Only GeometricElements are visible in Views.
 |**GeometricModel**|A subclass of Model that can hold GeometricElements.
 |**GeometryPart**|A named GeometryStream that can be shared by many GeometricElements.
@@ -61,7 +63,6 @@
 |**ParentModel**|A derived property of Model that is equal to the Model of its ModeledElement.
 |**PhysicalModel**|A subclass of SpatialModel that holds PhysicalElements.
 |**Props**|iModelJs uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. ElementProps, ViewDefinitionProps, etc.
-|**Repository**|A synonym for Briefcase.
 |**RootSubject**|An Element in the iModel that describes (in text) the asset modeled by an iModel. There is always one and only one RootSubject. All information in an iModel will have some relationship to the RootSubject, making it the root of a *table of contents*.
 |**Rush**|A tool for [managing multiple NPM packages](http://rushjs.io/) within a single git repository.
 |**Schema**|See ECSchema

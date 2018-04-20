@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Codes */
+
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
 import { IModel } from "./IModel";
-
-/** @module Codes */
 
 /** Properties that define a Code */
 export interface CodeProps {

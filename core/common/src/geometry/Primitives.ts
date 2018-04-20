@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Geometry */
+
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY,
   Range2d, Range3d, Angle, Transform, RotMatrix, Constant,
 } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
-
-/** @module Geometry */
 
 /**
  * A Range3d that is aligned with the axes of a coordinate space.

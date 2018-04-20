@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayOperation } from "../core/GatewayOperation";
 import { GatewayRequest, GatewayRequestStatus } from "../core/GatewayRequest";
 import { GatewayProtocol, GatewayProtocolEvent } from "../core/GatewayProtocol";
@@ -9,8 +11,6 @@ import { GatewayInvocation } from "../core/GatewayInvocation";
 import { GatewayHttpRequest } from "./GatewayHttpRequest";
 import { OpenAPIInfo, OpenAPIParameter, GatewayOpenAPIDescription } from "./OpenAPI";
 import { GatewayHttpLogging } from "./GatewayHttpLogging";
-
-/** @module Gateway */
 
 /** An http server request object. */
 export interface HttpServerRequest {

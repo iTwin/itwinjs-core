@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Geometry */
+
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, AngleProps, GeometryQuery, XYProps, XYZProps, LowAndHighXYZ,
 } from "@bentley/geometry-core";
@@ -9,8 +11,6 @@ import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
-
-/** @module Geometry */
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
  *  GeometryAppearanceProps always signifies a reset to the subCategory appearance for all values without an override.
@@ -32,26 +32,46 @@ export interface GeometryAppearanceProps {
   geometryClass?: GeometryClass;
 }
 
+/** GeometryStream entry to modify the line style appearance without changing the line style definition.
+ * Applies to the style previously established by a GeometryAppearanceProps or current subCategory appearance.
+ * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
+ */
 export interface StyleModifierProps {
+  /** Optional scale to apply to all length values */
   scale?: number;
+  /** Optional scale to apply to scalable dashes */
   dashScale?: number;
+  /** Optional scale to apply to scalable gaps */
   gapScale?: number;
+  /** Optional start width in meters to apply to dashes */
   startWidth?: number;
+  /** Optional end width in meters to apply to dashes */
   endWidth?: number;
+  /** Optional shift by distance in meters */
   distPhase?: number;
+  /** Optional shift by fraction */
   fractPhase?: number;
+  /** Optional flag to center stroke pattern and stretch ends */
   centerPhase?: boolean;
+  /** Optional flag to enable or disable single segment mode */
   segmentMode?: boolean;
+  /** Optional flag that denotes startWidth and endWidth represent physical widths that should not be affected by scale */
   physicalWidth?: boolean;
+  /** Optional up vector for style (applicable to 3d only) */
   normal?: XYZProps;
+  /** Optional orientation for style (applicable to 3d only) */
   rotation?: YawPitchRollProps;
 }
 
+/** Gradient fraction value to [[ColorDef]] pair */
 export interface GradientKeyColorProps {
+  /** Fraction from 0.0 to 1.0 to denote position along gradient */
   value: number;
+  /** Color value for given fraction */
   color: ColorDef;
 }
 
+/** @hidden Gradient settings specific to thematic mesh display */
 export interface GradientThematicProps {
   mode?: number;
   stepCount?: number;
@@ -60,55 +80,92 @@ export interface GradientThematicProps {
   colorScheme?: number;
 }
 
+/** Multi-color area fill defined by a range of colors that vary by position */
 export interface GradientProps {
+  /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
   mode: Gradient.Mode;
+  /** Gradient flags to enable outline display and invert color fractions */
   flags?: Gradient.Flags;
+  /** Gradient rotation angle */
   angle?: AngleProps;
+  /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1 */
   tint?: number;
+  /** Gradient shift value from 0.0 to 1.0 */
   shift?: number;
-  /** Gradient key value/color pair, 8 maximum */
+  /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
   keys: GradientKeyColorProps[];
-  /** Settings applicable to Gradient.Mode.Thematic */
+  /** @hidden Settings applicable to meshes and Gradient.Mode.Thematic only */
   thematicSettings?: GradientThematicProps;
 }
 
-/** Area fill property. Can either represent a background color fill, a solid fill, or a gradient fill. */
+/** GeometryStream entry for adding a background color fill, a solid color fill, or a gradient fill to a planar region (or mesh).
+ * Only one value among backgroundFill, color, and gradient should be set.
+ */
 export interface AreaFillProps {
+  /** Fill display type, must be set to something other than [[FillDisplay.Never]] in order to display fill */
   display: FillDisplay;
+  /** Optional fill transparency. Allows for different fill and outline transparencies */
   transparency?: number;
+  /** Set fill color to view background color. Use [[BackgroundFill.Solid]] for an opaque fill and [[BackgroundFill.Outline]] to display an outline using the line color */
   backgroundFill?: BackgroundFill;
+  /** Set fill color to a specific color. If the fill color and line color are the same, it's an opaque fill, otherwise it's an outline fill */
   color?: ColorDef;
+  /** Set fill using gradient properties */
   gradient?: GradientProps;
 }
 
+/** Single hatch line definition */
 export interface HatchDefLineProps {
+  /** Angle of hatch line */
   angle?: AngleProps;
+  /** Origin point (relative to placement) the hatch passes through */
   through?: XYProps;
+  /** Offset of successive lines. X offset staggers dashes (ignored for solid lines) and Y offset controls the distance between both solid and dashed lines */
   offset?: XYProps;
-  /** Dash array, max of 20 */
+  /** Array of gap and dash lengths for creating non-solid hatch lines, max of 20. A positive value denotes dash, a negative value a gap */
   dashes?: number[];
 }
 
+/** GeometryStream entry for adding a hatch, cross-hatch, or area pattern to a planar region */
 export interface AreaPatternProps {
+  /** Pattern offset (relative to placement) */
   origin?: XYZProps;
+  /** Pattern orientation (relative to placement) */
   rotation?: YawPitchRollProps;
+  /** Spacing of first set of parallel lines in a hatch pattern, or row spacing between area pattern tiles */
   space1?: number;
+  /** Spacing of second set of parallel lines in a cross-hatch (leave undefined or 0 for a hatch), or column spacing between area pattern tiles */
   space2?: number;
+  /** Angle of first set of parallel lines in a hatch pattern or area pattern tile direction */
   angle1?: AngleProps;
+  /** Angle of second set of parallel lines in a cross-hatch */
   angle2?: AngleProps;
+  /** Scale to apply to area pattern symbol */
   scale?: number;
+  /** Pattern color, leave undefined to inherit color from parent element. For area patterns, does not override explicit colors stored in symbol */
   color?: ColorDef;
+  /** Pattern weight, leave undefined to inherit weight from parent element. For area patterns, does not override explicit weights stored in symbol */
   weight?: number;
+  /** Set to inhibit display of pattern boundary, not applicable when boundary is also filled */
   invisibleBoundary?: boolean;
+  /** Set to allow snapping to pattern geometry */
   snappable?: boolean;
+  /** GeometryPart id to use for tiled area pattern display */
   symbolId?: Id64Props;
+  /** Define an area pattern by supplying hatch line definitions instead of using a GeometryPart */
   defLines?: HatchDefLineProps[];
 }
 
+/** GeometryStream entry to override the material from the subCategory appearance for the geometry that follows.
+ */
 export interface MaterialProps {
+  /** Material id */
   materialId?: Id64Props;
+  /** @hidden */
   origin?: XYZProps;
+  /** @hidden */
   size?: XYZProps;
+  /** @hidden */
   rotation?: YawPitchRollProps;
 }
 

@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// tslint:disable-next-line:no-var-requires
+/** @module Logging */
+
+ // tslint:disable-next-line:no-var-requires
 const bunyan = require("bunyan");
 import { GetMetaDataFunction } from "./BentleyError";
 import { LogFunction, Logger } from "./Logger";
-
-/** @module Logging */
 
 /** Helps to configure the bentleyjs-core Logger to use bunyan.
  * To use bunyan for logging output, the app should depend on the bunyan package.

@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
+
 import { IModelDb } from "./IModelDb";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
 import { GatewayRequest, IModelError } from "@bentley/imodeljs-common";
-
-/** @module iModels */
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 
@@ -133,7 +133,7 @@ export class AutoPush {
   /** The time that the last push finished in unix milliseconds. Returns 0 if no push has yet been done. */
   public get endOfLastPushMillis() { return (this._startOfPushMillis <= this._endOfPushMillis) ? this._endOfPushMillis : 0; }
 
-  /** The length of time in milliseconds that the last push required in order to finish. Returns -1 if no push has yet been done. */
+  /** The length of time in milliseconds that the last push required to finish. Returns -1 if no push has yet been done. */
   public get durationOfLastPushMillis() { return this._endOfPushMillis - this._startOfPushMillis; }
 
   /** Check the current state of this AutoPush. */

@@ -1,20 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module Schemas */
+
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ClassRegistry } from "./ClassRegistry";
 import { IModelDb } from "./IModelDb";
 import { Entity } from "./Entity";
 
-/** @module Schemas */
-
 /** Base class for all schema classes.
  * A Schema represents an ECSchema in TypeScript. It is a collection of [[Entity]]-based classes.
  *
  * <h2>ECSchema</h2>
  *
- * "EC" stands for "Engineering Content".
+ * "EC" stands for "Entity Classification".
  * An "ECSchema" defines an EC data model. You can think of it as a namespace
  * for a set of ECClasses. An "ECClass" defines a class within an EC data model. An ECClass
  * consists of "ECProperties" which define the properties of the class. Relationships among ECClasses are described by
@@ -24,7 +24,7 @@ import { Entity } from "./Entity";
  *
  * <h2>Element Subclasses</h2>
  *
- * Define a subclass of [[Element]] in order to represent a specialization. To define a subclass, you must write an ECClass that subclasses from Element.
+ * Define a subclass of [[Element]] to represent a specialization. To define a subclass, you must write an ECClass that subclasses from Element.
  * The ECClass must be defined in an ECSchema.
  * The same is true of subclassing [[ElementAspect]].
  *
@@ -37,7 +37,7 @@ import { Entity } from "./Entity";
  * access, if there is no pre-registered TypeScript class to represent it.
  *
  * You <em>may</em> write a TypeScript [[Schema]] class to represent an ECSchema and TypeScript [[Element]]-based or [[ElementAspect]]-based classes to represent some or all of its ECClasses.
- * The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods and type-safe constructors for it, in order to
+ * The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods and type-safe constructors for it, to
  * provide and centralize the business logic that applications can use when working with that specific class.
  *
  * <h2>Schema Registration</h2>
@@ -45,7 +45,7 @@ import { Entity } from "./Entity";
  * If you do choose to write a Schema to represent an ECSchema in TypeScript, then apps must register it before using it. That is, and app must call [[Schemas.registerSchema]] for each Schema that it plans to use.
  *
  * Since an ECSchema must be imported into an iModel before apps can work with it, a hand-written Schema must ensure that its underlying ECSchema has been imported into each IModelDb.
- * This means that the supporting ECSchama.xml file must be accessible at run time. In practice, that means that ECSchema.xml files must be delivered as part of a package that defines a
+ * This means that the supporting ECSchema.xml file must be accessible at run time. In practice, that means that ECSchema.xml files must be delivered as part of a package that defines a
  * Schema, and apps must include these assets in their deliverables.
  *
  * <p><em>Example:</em>

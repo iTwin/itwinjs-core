@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
+
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Angle, AngleProps } from "@bentley/geometry-core";
-
-/** @module Views */
 
 /** The type of a Light */
 export const enum LightType {

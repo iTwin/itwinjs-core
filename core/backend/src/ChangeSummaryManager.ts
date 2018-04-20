@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
+
 import { AccessToken, ChangeSet, UserInfo, IModelHubClient, ChangeSetQuery, UserInfoQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
@@ -13,8 +15,6 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./Platform";
-
-/** @module iModels */
 
 /** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
 export enum ChangeOpCode {

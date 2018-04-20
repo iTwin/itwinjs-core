@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Logging */
+
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
-
-/** @module Logging */
 
 /** Defines the *signature* for a log function. */
 export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;

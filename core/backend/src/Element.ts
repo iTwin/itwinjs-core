@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import { Entity, EntityMetaData } from "./Entity";
@@ -12,8 +14,6 @@ import {
   InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
   AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
 } from "@bentley/imodeljs-common";
-
-/** @module BisCore */
 
 /**
  * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
@@ -29,11 +29,11 @@ import {
  *
  * <h2>Element Subclasses</h2>
  *
- * Define a subclass of [[Element]] in order to represent a specialization, such as a specific type of physical thing,
+ * Define a subclass of [[Element]] to represent a specialization, such as a specific type of physical thing,
  * a specific abstract idea, or a specific type of information record.
  * See [[Schema]] for an explanation of how ECClasses are defined and how to represent them in TypeScript.
  * As noted, you do not have to define a TypeScript class for each specialization of Element.
- * You would do that in order to hand-coded methods and type-safe constructors for it.
+ * You would do that to hand-coded methods and type-safe constructors for it.
  * <p><em>Example:</em>
  * ``` ts
  * [[include:Element.subclass]]
@@ -100,7 +100,7 @@ export abstract class Element extends Entity implements ElementProps {
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
   /**
-   * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+   * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode) { this.iModel.concurrencyControl.buildRequestForElement(this, opcode); }
