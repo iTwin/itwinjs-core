@@ -1,0 +1,22 @@
+{
+    "collections": {
+        "bentleyjs-core": {
+            "contents": []
+        },
+        "geometry-core": {
+            "contents": []
+        },
+        "imodeljs-common": {
+            "contents": []
+        },
+        "imodeljs-backend": {
+            "contents": []
+        },
+        "imodeljs-frontend": {
+            "contents": []
+        },
+        "imodeljs-clients": {
+            "contents": []
+        }
+    }
+}
