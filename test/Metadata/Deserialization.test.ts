@@ -223,39 +223,39 @@ describe("Full Schema Deserialization", () => {
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
-      expect(mockVisitor.visitEmptySchema.calledOnce).to.be.true;
-      expect(mockVisitor.visitEmptySchema.calledWithExactly(testSchema)).to.be.true;
+      expect(mockVisitor!.visitEmptySchema!.calledOnce).to.be.true;
+      expect(mockVisitor!.visitEmptySchema!.calledWithExactly(testSchema)).to.be.true;
 
       const testEnum = await testSchema.getItem("TestEnum");
       expect(testEnum).to.exist;
-      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
-      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
-      expect(mockVisitor.visitEnumeration.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+      expect(mockVisitor!.visitEnumeration!.calledOnce).to.be.true;
+      expect(mockVisitor!.visitEnumeration!.calledWithExactly(testEnum)).to.be.true;
+      expect(mockVisitor!.visitEnumeration!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
 
       const testCategory = await testSchema.getItem("TestCategory");
       expect(testCategory).to.exist;
-      expect(mockVisitor.visitPropertyCategory.calledOnce).to.be.true;
-      expect(mockVisitor.visitPropertyCategory.calledWithExactly(testCategory)).to.be.true;
-      expect(mockVisitor.visitPropertyCategory.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+      expect(mockVisitor!.visitPropertyCategory!.calledOnce).to.be.true;
+      expect(mockVisitor!.visitPropertyCategory!.calledWithExactly(testCategory)).to.be.true;
+      expect(mockVisitor!.visitPropertyCategory!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
 
       const testClass = await testSchema.getItem("TestClass");
       expect(testClass).to.exist;
-      expect(mockVisitor.visitClass.calledOnce).to.be.true;
-      expect(mockVisitor.visitClass.calledWithExactly(testClass)).to.be.true;
-      expect(mockVisitor.visitClass.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+      expect(mockVisitor!.visitClass!.calledOnce).to.be.true;
+      expect(mockVisitor!.visitClass!.calledWithExactly(testClass)).to.be.true;
+      expect(mockVisitor!.visitClass!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
 
       const testKoq = await testSchema.getItem("TestKoQ");
       expect(testKoq).to.exist;
-      expect(mockVisitor.visitKindOfQuantity.calledOnce).to.be.true;
-      expect(mockVisitor.visitKindOfQuantity.calledWithExactly(testKoq)).to.be.true;
-      expect(mockVisitor.visitKindOfQuantity.calledAfter(mockVisitor.visitEmptySchema)).to.be.true;
+      expect(mockVisitor!.visitKindOfQuantity!.calledOnce).to.be.true;
+      expect(mockVisitor!.visitKindOfQuantity!.calledWithExactly(testKoq)).to.be.true;
+      expect(mockVisitor!.visitKindOfQuantity!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
 
-      expect(mockVisitor.visitFullSchema.calledOnce).to.be.true;
-      expect(mockVisitor.visitFullSchema.calledWithExactly(testSchema)).to.be.true;
-      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitEnumeration)).to.be.true;
-      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitPropertyCategory)).to.be.true;
-      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitClass)).to.be.true;
-      expect(mockVisitor.visitFullSchema.calledAfter(mockVisitor.visitKindOfQuantity)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledOnce).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledWithExactly(testSchema)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitEnumeration!)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitPropertyCategory!)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitClass!)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitKindOfQuantity!)).to.be.true;
     });
 
     it("should safely handle Mixin-appliesTo-EntityClass-extends-Mixin cycle", async () => {
@@ -290,7 +290,7 @@ describe("Full Schema Deserialization", () => {
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
-      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(mockVisitor!.visitClass!.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
       const testMixin = await testSchema.getItem("AMixin");
@@ -299,11 +299,11 @@ describe("Full Schema Deserialization", () => {
       const testEntity = await testSchema.getItem("BEntityClass");
       expect(testEntity).to.exist;
 
-      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testEntity)).to.be.true;
+      expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[0]).to.equal("Description for AMixin",
         `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before its base class, "AMixin" was fully deserialized.`);
 
-      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testMixin)).to.be.true;
+      expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testMixin)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BEntityClass",
         `SchemaDeserializationVisitor.visitClass was called for "AMixin" before its appliesTo class, "BEntityClass" was fully deserialized.`);
     });
@@ -340,7 +340,7 @@ describe("Full Schema Deserialization", () => {
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
-      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(mockVisitor!.visitClass!.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
       const testEntity = await testSchema.getItem("AEntityClass");
@@ -349,11 +349,11 @@ describe("Full Schema Deserialization", () => {
       const testMixin = await testSchema.getItem("BMixin");
       expect(testMixin).to.exist;
 
-      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testMixin)).to.be.true;
+      expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testMixin)).to.be.true;
       expect(descriptions[0]).to.equal("Description for AEntityClass",
         `SchemaDeserializationVisitor.visitClass was called for "BMixin" before its appliesTo class, "AEntityClass" was fully deserialized.`);
 
-      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testEntity)).to.be.true;
+      expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BMixin",
         `SchemaDeserializationVisitor.visitClass was called for "AEntityClass" before its base class, "BMixin" was fully deserialized.`);
     });
@@ -404,7 +404,7 @@ describe("Full Schema Deserialization", () => {
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
-      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(mockVisitor!.visitClass!.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
       const testEntity = await testSchema.getItem("AEntityClass");
@@ -413,11 +413,11 @@ describe("Full Schema Deserialization", () => {
       const testRelationship = await testSchema.getItem("BRelationshipClass");
       expect(testRelationship).to.exist;
 
-      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testRelationship)).to.be.true;
+      expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testRelationship)).to.be.true;
       expect(descriptions[0]).to.equal("Description for AEntityClass",
         `SchemaDeserializationVisitor.visitClass was called for "BRelationshipClass" before the entity class its constraints use, "AEntityClass" was fully deserialized.`);
 
-      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testEntity)).to.be.true;
+      expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BRelationshipClass",
         `SchemaDeserializationVisitor.visitClass was called for "AEntityClass" before the relationship its NavigationProperty uses, "BRelationshipClass" was fully deserialized.`);
     });
@@ -468,7 +468,7 @@ describe("Full Schema Deserialization", () => {
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
-      expect(mockVisitor.visitClass.calledTwice).to.be.true;
+      expect(mockVisitor!.visitClass!.calledTwice).to.be.true;
       expect(descriptions).to.have.lengthOf(2);
 
       const testRelationship = await testSchema.getItem("ARelationshipClass");
@@ -477,11 +477,11 @@ describe("Full Schema Deserialization", () => {
       const testEntity = await testSchema.getItem("BEntityClass");
       expect(testEntity).to.exist;
 
-      expect(mockVisitor.visitClass.firstCall.calledWithExactly(testEntity)).to.be.true;
+      expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[0]).to.equal("Description for ARelationshipClass",
       `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before the relationship its NavigationProperty uses, "ARelationshipClass" was fully deserialized.`);
 
-      expect(mockVisitor.visitClass.secondCall.calledWithExactly(testRelationship)).to.be.true;
+      expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testRelationship)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BEntityClass",
         `SchemaDeserializationVisitor.visitClass was called for "ARelationshipClass" before the entity class its constraints use, "BEntityClass" was fully deserialized.`);
 

@@ -14,9 +14,9 @@
     "lint": "node ./node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
     "prebuild": "npm run lint & npm run clean",
     "build": "tsc",
-    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
-    "test:watch": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --watch",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --onlyJson --json=lib/docs/json/ec-js/file.json",
+    "test": "betools test-tsnode --testDir=./test/ --tscPaths",
+    "test:watch": "betools test-tsnode --testDir=./test/ --watch",
+    "docs": "betools docs --onlyJson --json=./lib/docs/json/ec-js/file.json",
     "docs:dev": "npm run docs && bmsWatch --source ./lib/docs --destination public --typeDocSource C:/dev/imodeljs/ecobjects-js/source",
     "cover": "nyc node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
     "start": "npm run build && npm run test && npm run docs"
@@ -32,21 +32,21 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bemetalsmith": "^1.18.4",
-    "@bentley/bentleyjs-tools": "^3.1.0",
+    "@bentley/bemetalsmith": "^1.20.14",
+    "@bentley/bentleyjs-tools": "^3.3.1",
     "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^2.2.48",
-    "@types/sinon": "^4.1.4",
+    "@types/sinon": "^4.3.1",
     "chai-as-promised": "^7.1.1",
-    "nyc": "~11.4.1",
+    "nyc": "^11.7.1",
     "rimraf": "^2.6.2",
-    "sinon": "^4.4.2",
+    "sinon": "^4.5.0",
     "ts-node": "^3.3.0",
-    "typescript": "^2.6.1"
+    "typescript": "^2.8.3"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "^7.0.1",
+    "@bentley/bentleyjs-core": "^7.4.0",
     "@types/glob": "^5.0.35"
   },
   "nyc": {

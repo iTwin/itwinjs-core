@@ -28,7 +28,7 @@ export interface IntEnumeration extends Enumeration {
  * A Typescript class representation of an ECEnumeration.
  */
 export default class Enumeration extends SchemaItem {
-  public readonly type: SchemaItemType.Enumeration;
+  public readonly type!: SchemaItemType.Enumeration; // tslint:disable-line
   protected _primitiveType?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
@@ -49,7 +49,7 @@ export default class Enumeration extends SchemaItem {
   public isString(): this is StringEnumeration { return this.primitiveType === PrimitiveType.String; }
 
   /**
-   * Returns an enumerator that matches the value provided.
+   * Gets an enumerator that matches the value provided.
    * @param value The value of the Enumerator to find.
    */
   public getEnumerator(value: string): Enumerator<string> | undefined;

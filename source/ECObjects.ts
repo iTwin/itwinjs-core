@@ -423,7 +423,7 @@ export class ECVersion {
   get minor() { return this._minor; }
 
   /**
-   * Returns a string, in the format 'RR.ww.mm', of this ECVersion.
+   * Creates a string, in the format 'RR.ww.mm', representing this ECVersion.
    * @ note The default is to not pad with zeroes.
    * @param padZeroes If true, the returned string will strictly follow `RR.ww.mm` and add leading zeroes if necessary.
    */
@@ -457,10 +457,9 @@ export class ECVersion {
   }
 
   /**
-   * Compares two schema versions and returns a negative number if this
-   * schema version is less than the given version, a positive number if
-   * greater, and 0 if the version is an exact match.
+   * Compares two schema versions.
    * @param rhs The schema to compare.
+   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equalivalent.
    */
   public compare(rhv: ECVersion): number {
     if (this.read !== rhv.read)
@@ -534,7 +533,8 @@ export class SchemaKey {
   }
 
   /*
-   * Compares two schema names and returns whether or not they match. Comparison is case-sensitive.
+   * Compares two schema names, case-sensitive.
+   * @return True if they match; otherwise, false.
    */
   public compareByName(rhs: SchemaKey | string | undefined): boolean {
     if (undefined === rhs || typeof(rhs) === "string")
@@ -543,10 +543,9 @@ export class SchemaKey {
   }
 
   /**
-   * Compares two schema versions and returns a negative number if this
-   * schema version is less than the given schema, a positive number if
-   * greater, and 0 if the version is an exact match.
+   * Compares two schema versions.
    * @param rhs The schema to compare.
+   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equalivalent.
    */
   public compareByVersion(rhs: SchemaKey): number {
     return this.version.compare(rhs.version);
@@ -594,7 +593,7 @@ export class SchemaKey {
  */
 export class SchemaItemKey {
   private _name: ECName;
-  protected _type: SchemaItemType;
+  protected _type!: SchemaItemType; // tslint:disable-line
   protected _schemaKey: SchemaKey;
   // TODO: Need a checksum
 

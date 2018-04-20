@@ -51,7 +51,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(testKoQ.persistenceUnit);
 
       const persistenceUnit = testKoQ.persistenceUnit;
-      expect(persistenceUnit.format).equal("DefaultReal");
+      expect(persistenceUnit!.format).equal("DefaultReal");
 
       expect(testKoQ.presentationUnits.length).equal(2);
 

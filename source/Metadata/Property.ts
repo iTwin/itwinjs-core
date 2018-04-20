@@ -22,8 +22,8 @@ export abstract class Property {
   protected _class: AnyClass; // TODO: class seems to be unused?
   protected _description?: string;
   protected _label?: string;
-  protected _isReadOnly: boolean;
-  protected _priority: number;
+  protected _isReadOnly: boolean = false;
+  protected _priority: number = 0;
   protected _inherited?: boolean;
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
@@ -258,7 +258,7 @@ export class NavigationProperty extends Property {
 export type Constructor<T> = new(...args: any[]) => T;
 
 export abstract class ArrayProperty extends Property {
-  protected _minOccurs: number;
+  protected _minOccurs: number = 0;
   protected _maxOccurs?: number;
 
   get minOccurs() { return this._minOccurs; }
