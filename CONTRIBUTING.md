@@ -19,3 +19,7 @@ information on using pull requests.
 Please follow the guidelines specified in the
 [ISSUE_TEMPLATE](https://github.com/imodeljs/ISSUE_TEMPLATE.md)
 file.
+
+### Asking Questions
+
+Have a question? Rather than opening an issue, please ask on Stack Overflow using the tag imodeljs.

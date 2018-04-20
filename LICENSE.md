@@ -1,4 +1,4 @@
-MIT License
+# MIT License
 
 Copyright © 2018 Bentley Systems, Inc.
 

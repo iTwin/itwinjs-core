@@ -5,7 +5,7 @@
 !lib/assets/**
 assets/**
 test
+perftest
 !public/**
 !package.json
 !*.md
-

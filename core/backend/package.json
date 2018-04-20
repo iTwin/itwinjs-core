@@ -36,6 +36,10 @@
     "@bentley/imodeljs-clients": "^5.1.0",
     "@bentley/imodeljs-common": "0"
   },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "7",

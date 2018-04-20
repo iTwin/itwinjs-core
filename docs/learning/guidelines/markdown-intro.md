@@ -1,23 +1,23 @@
 # Markdown Introduction
 
-Bentley has standardized on [markdown](http://commonmark.org/) files for programmer guide documentation.
-The goal should be to combine the programmer guide documentation (extracted from markdown source) with reference documentation (extracted from JavaDoc-style source code comments) to produce the final documentation set (typically a static HTML web site).
+We have standardized on [markdown](http://commonmark.org/) files for programmer guide documentation.
+The goal is to combine the programmer guide documentation (extracted from markdown source) with reference documentation (extracted from JavaDoc-style source code comments) to produce the final documentation set as a static HTML web site.
 
 [There](http://assemble.io/docs/Cheatsheet-Markdown.html) are [tons](https://www.cheatography.com/simon-fermor/cheat-sheets/markdown/) of [cheatsheets](https://beegit.com/markdown-cheat-sheet) for markdown, and wide support for the format in source code editors (including VS Code).
 
-> Note: The **Markdown Preview Enhanced** extension for VS Code is pretty useful for reviewing the output generated from the markdown.
->
-> Note: The **Code Spell Checker** extension for VS Code is also useful.
+>**Note**: If you are editing Markdown VS Code, please install the [Markdown Lint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) and the [Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) extensions.
+
+You may also find the [Markdown Preview Enhanced](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced) extension helpful.
 
 Examples of the markdown syntax are below...
 
 ---
 
-# Heading
+## Heading
 
-## Sub-heading
+### Sub-heading
 
-### Another deeper heading
+#### Another deeper heading
 
 Paragraphs are separated
 by a blank line.
@@ -33,21 +33,21 @@ Use 3 hyphens for a horizontal rule:
 
 Bullet list:
 
-  * apples
-  * oranges
-  * pears
-    - sublist
-    - sublist
+* apples
+* oranges
+* pears
+  * subList
+  * subList
 
 Numbered list:
 
   1. apples
-     - sublist
-     - sublist
+     * subList
+     * subList
   2. oranges
   3. pears
 
-> Note:
+> Note: this is an example note.
 
 A [link](https://en.wikipedia.org/wiki/Markdown)
 
@@ -57,7 +57,7 @@ An image: ![logo](logo.png "Bentley Logo")
 
 Use backticks for inline source code: `public static myPublicStaticMethod(x: number): Promise<string>`
 
-Use 3 backticks plus **ts** for source code blocks. This is non-standard but is usually supported.
+Use 3 backticks plus **ts** for source code blocks.
 
 ``` ts
 /** My public static method */
@@ -73,8 +73,8 @@ public static myPublicStaticMethod(x: number): Promise<string> {
 
 Tables are created by adding pipes as dividers between each cell, and by adding a line of dashes (also separated by bars) beneath the header. Note that the pipes do not need to be vertically aligned.
 
-| Option | Description |
-| ------ | ----------- |
-| data   | path to data files that will be passed into templates. |
-| engine | engine to be used for processing templates. |
-| ext    | extension to be used for destination files. |
+Option|Description
+---|---
+data |path to data files that will be passed into templates.
+engine |engine to be used for processing templates.
+ext|extension to be used for destination files.
