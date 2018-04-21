@@ -4,6 +4,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
+import { ShaderSource } from "./ShaderSource";
 
 // Describes the data type of a shader program variable.
 export const enum VariableType {
@@ -212,76 +213,6 @@ export class ShaderVariables {
   public get length(): number { return this._list.length; }
 }
 
-// Describes the optional and required components which can be assembled into complete
-export const enum VertexShaderComponent {
-  // (Optional) Return true to discard this vertex before evaluating feature overrides etc, given the model-space position.
-  // bool checkForEarlyDiscard(vec4 rawPos)
-  CheckForEarlyDiscard,
-  // (Optional) Compute feature overrides like visibility, rgb, transparency, line weight.
-  ComputeFeatureOverrides,
-  // (Optional) Return true if this vertex should be "discarded" (is not visible)
-  // bool checkForDiscard()
-  // If this returns true, gl_Position will be set to 0; presumably related vertices will also do so, resulting in a degenerate triangle.
-  // If this returns true, no further processing will be performed.
-  CheckForDiscard,
-  // (Required) Return this vertex's position in clip space.
-  // vec4 computePosition(vec4 rawPos)
-  ComputePosition,
-  // (Optional) Compute the clip distance to send to the fragment shader.
-  // void calcClipDist(vec4 rawPos)
-  CalcClipDist,
-  // (Optional) Add the element id to the vertex shader.
-  // void computeElementId()
-  AddComputeElementId,
-
-  COUNT,
-}
-
-// Describes the optional and required components which can be assembled into complete
-export const enum FragmentShaderComponent {
-  // (Optional) Return true to immediately discard this fragment.
-  // bool checkForEarlyDiscard()
-  CheckForEarlyDiscard,
-  // (Required) Compute this fragment's base color
-  // vec4 computeBaseColor()
-  ComputeBaseColor,
-  // (Optional) Apply material overrides to base color
-  // vec4 applyMaterialOverrides(vec4 baseColor)
-  ApplyMaterialOverrides,
-  // (Optional) Apply feature overrides to base color
-  // vec4 applyFeatureColor(vec4 baseColor)
-  ApplyFeatureColor,
-  // (Optional) Adjust base color after material and/or feature overrides have been applied.
-  // vec4 finalizeBaseColor(vec4 baseColor)
-  FinalizeBaseColor,
-  // (Optional) Return true if this fragment should be discarded
-  // Do not invoke discard directly in your shader components - instead, return true from this function to generate a discard statement.
-  // bool checkForDiscard(vec4 baseColor)
-  CheckForDiscard,
-  // (Optional) Return true if the alpha value is not suitable for the current render pass
-  // bool discardByAlpha(float alpha)
-  DiscardByAlpha,
-  // (Optional) Apply lighting to base color
-  // vec4 applyLighting(vec4 baseColor)
-  ApplyLighting,
-  // (Optional) Apply monochrome overrides to base color
-  // vec4 applyMonochrome(vec4 baseColor)
-  ApplyMonochrome,
-  // (Optional) Apply white-on-white reversal to base color
-  ReverseWhiteOnWhite,
-  // (Optional) Apply flash hilite to lit base color
-  // vec4 applyFlash(vec4 baseColor)
-  ApplyFlash,
-  // (Required) Assign the final color to gl_FragColor or gl_FragData
-  // void assignFragData(vec4 baseColor)
-  AssignFragData,
-  // (Optional) Discard if outside any clipping planes
-  // void applyClipping()
-  ApplyClipping,
-
-  COUNT,
-}
-
 export class SourceBuilder {
   public source: string = "";
 
@@ -413,3 +344,177 @@ export class ShaderBuilder extends ShaderVariables {
     return src;
   }
 }
+
+// Describes the optional and required components which can be assembled into complete
+export const enum VertexShaderComponent {
+  // (Optional) Return true to discard this vertex before evaluating feature overrides etc, given the model-space position.
+  // bool checkForEarlyDiscard(vec4 rawPos)
+  CheckForEarlyDiscard,
+  // (Optional) Compute feature overrides like visibility, rgb, transparency, line weight.
+  ComputeFeatureOverrides,
+  // (Optional) Return true if this vertex should be "discarded" (is not visible)
+  // bool checkForDiscard()
+  // If this returns true, gl_Position will be set to 0; presumably related vertices will also do so, resulting in a degenerate triangle.
+  // If this returns true, no further processing will be performed.
+  CheckForDiscard,
+  // (Required) Return this vertex's position in clip space.
+  // vec4 computePosition(vec4 rawPos)
+  ComputePosition,
+  // (Optional) Compute the clip distance to send to the fragment shader.
+  // void calcClipDist(vec4 rawPos)
+  CalcClipDist,
+  // (Optional) Add the element id to the vertex shader.
+  // void computeElementId()
+  AddComputeElementId,
+
+  COUNT,
+}
+
+// Assembles the source code for a vertex shader from a set of modular components.
+export class VertexShaderBuilder extends ShaderBuilder {
+  private _computedVarying: string[] = new Array<string>();
+  private _initializers: string[] = new Array<string>();
+
+  private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
+
+  public constructor(positionFromLUT: boolean) {
+    super(VertexShaderComponent.COUNT);
+    this.addPosition(positionFromLUT);
+  }
+
+  public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
+  public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
+
+  public addInitializer(initializer: string): void { this._initializers.push(initializer); }
+  public addComputedVarying(name: string, type: VariableType, computation: string): void {
+    this.addVarying(name, type);
+    this._computedVarying.push(computation);
+  }
+
+  public buildSource(): string {
+    const prelude = this.buildPrelude();
+    const main = new SourceBuilder();
+
+    const computePosition = this.get(VertexShaderComponent.ComputePosition);
+    assert(undefined !== computePosition);
+    if (undefined !== computePosition) {
+      prelude.add(ShaderBuilder.buildFunctionDefinition("vec4 computePosition(vec4 rawPos)", computePosition));
+    }
+
+    // Initialization logic that should occur at start of main() - primarily global variables whose values
+    // are too complex to compute inline or which depend on uniforms and/or other globals.
+    for (const init of this._initializers) {
+      main.addline("{\n" + init + "\n}");
+    }
+
+    main.addline("vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
+
+    const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
+    if (undefined !== checkForEarlyDiscard) {
+      prelude.add(ShaderBuilder.buildFunctionDefinition("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard));
+      main.add(ShaderSource.Vertex.earlyDiscard);
+    }
+
+    const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
+    if (undefined !== computeFeatureOverrides) {
+      prelude.add(ShaderBuilder.buildFunctionDefinition("void computeFeatureOverrides()", computeFeatureOverrides));
+      main.addline("computeFeatureOverrides();");
+    }
+
+    const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
+    if (undefined !== checkForDiscard) {
+      prelude.add(ShaderBuilder.buildFunctionDefinition("bool checkForDiscard()", checkForDiscard));
+      main.add(ShaderSource.Vertex.discard);
+    }
+
+    const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
+    if (undefined !== calcClipDist) {
+      prelude.add(ShaderBuilder.buildFunctionDefinition("void calcClipDist(vec4 rawPos)", calcClipDist));
+      main.addline("calcClipDist(rawPosition);");
+    }
+
+    const compElemId = this.get(VertexShaderComponent.AddComputeElementId);
+    if (undefined !== compElemId) {
+      main.addline("computeElementId();");
+    }
+
+    main.addline("gl_Position = computePosition(rawPosition);");
+
+    for (const comp of this._computedVarying) {
+      main.addline("\n" + comp);
+    }
+
+    prelude.add(ShaderBuilder.buildFunctionDefinition("void main()", main.source));
+    return prelude.source;
+  }
+
+  private addPosition(positionFromLUT: boolean): void {
+    this.addFunction(ShaderSource.Vertex.unquantizePosition);
+
+    // ###TODO: a_pos, u_qScale, u_qOrigin
+
+    if (!positionFromLUT) {
+      this.addFunction(ShaderSource.Vertex.unquantizeVertexPosition);
+      return;
+    }
+
+    this.addGlobal("g_vertexLUTIndex", VariableType.Float);
+    this.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
+    this.addGlobal("g_vertexData2", VariableType.Vec2);
+    this.addGlobal("g_featureIndexCoords", VariableType.Vec2);
+
+    this.addFunction(ShaderSource.decodeUInt32);
+    this.addFunction(ShaderSource.decodeUInt16);
+    this.addFunction(ShaderSource.Vertex.unquantizeVertexPositionFromLUT);
+
+    // ###TODO: u_vertLUT, u_vertParams, LookupTable.AddToBuilder()
+
+    this.addInitializer(ShaderSource.Vertex.initializeVertLUTCoords);
+  }
+}
+
+// Describes the optional and required components which can be assembled into complete
+export const enum FragmentShaderComponent {
+  // (Optional) Return true to immediately discard this fragment.
+  // bool checkForEarlyDiscard()
+  CheckForEarlyDiscard,
+  // (Required) Compute this fragment's base color
+  // vec4 computeBaseColor()
+  ComputeBaseColor,
+  // (Optional) Apply material overrides to base color
+  // vec4 applyMaterialOverrides(vec4 baseColor)
+  ApplyMaterialOverrides,
+  // (Optional) Apply feature overrides to base color
+  // vec4 applyFeatureColor(vec4 baseColor)
+  ApplyFeatureColor,
+  // (Optional) Adjust base color after material and/or feature overrides have been applied.
+  // vec4 finalizeBaseColor(vec4 baseColor)
+  FinalizeBaseColor,
+  // (Optional) Return true if this fragment should be discarded
+  // Do not invoke discard directly in your shader components - instead, return true from this function to generate a discard statement.
+  // bool checkForDiscard(vec4 baseColor)
+  CheckForDiscard,
+  // (Optional) Return true if the alpha value is not suitable for the current render pass
+  // bool discardByAlpha(float alpha)
+  DiscardByAlpha,
+  // (Optional) Apply lighting to base color
+  // vec4 applyLighting(vec4 baseColor)
+  ApplyLighting,
+  // (Optional) Apply monochrome overrides to base color
+  // vec4 applyMonochrome(vec4 baseColor)
+  ApplyMonochrome,
+  // (Optional) Apply white-on-white reversal to base color
+  ReverseWhiteOnWhite,
+  // (Optional) Apply flash hilite to lit base color
+  // vec4 applyFlash(vec4 baseColor)
+  ApplyFlash,
+  // (Required) Assign the final color to gl_FragColor or gl_FragData
+  // void assignFragData(vec4 baseColor)
+  AssignFragData,
+  // (Optional) Discard if outside any clipping planes
+  // void applyClipping()
+  ApplyClipping,
+
+  COUNT,
+}
+
