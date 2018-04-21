@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { VariableType, ShaderVariable } from "@bentley/imodeljs-frontend/lib/rendering";
+import { VariableType, VariableScope, VariablePrecision, ShaderVariable } from "@bentley/imodeljs-frontend/lib/rendering";
 
 describe("Variable declaration tests", () => {
   it("should convert ShaderVariable to glsl declaration", () => {
@@ -15,5 +15,11 @@ describe("Variable declaration tests", () => {
 
     variable = ShaderVariable.createGlobal("x", VariableType.Mat4);
     expect(variable.buildDeclaration()).to.equal("mat4 x;");
+
+    variable = ShaderVariable.create("x", VariableType.Vec2, VariableScope.Varying);
+    expect(variable.buildDeclaration()).to.equal("varying vec2 x;");
+
+    variable = ShaderVariable.create("x", VariableType.Sampler2D, VariableScope.Uniform, undefined, VariablePrecision.Medium);
+    expect(variable.buildDeclaration()).to.equal("uniform mediump sampler2D x;");
   });
 });

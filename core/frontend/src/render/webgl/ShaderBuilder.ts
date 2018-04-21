@@ -116,7 +116,7 @@ export class ShaderVariable {
     return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined);
   }
 
-  public static createGlobal(name: string, type: VariableType, value: string|undefined, isConst: boolean) {
+  public static createGlobal(name: string, type: VariableType, value?: string, isConst: boolean=false) {
     return new ShaderVariable(name, type, VariableScope.Global, VariablePrecision.Default, isConst, undefined, value);
   }
 
