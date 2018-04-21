@@ -222,6 +222,18 @@ export class SourceBuilder {
     this.add(what);
     this.newline();
   }
+
+  public static buildFunctionDefinition(declaration: string, implementation: string): string {
+    return declaration + "\n{\n" + implementation + "\n}\n\n";
+  }
+
+  public addFunction(declaration: string, implementation: string): void {
+    this.add(SourceBuilder.buildFunctionDefinition(declaration, implementation));
+  }
+
+  public addMain(implementation: string): void {
+    this.addFunction("void main()", implementation);
+  }
 }
 
 // Represents a fragment or vertex shader under construction. The shader consists of
@@ -253,7 +265,7 @@ export class ShaderBuilder extends ShaderVariables {
   public addFunction(declarationOrFull: string, implementation?: string): void {
     let def = declarationOrFull;
     if (undefined !== implementation) {
-      def = ShaderBuilder.buildFunctionDefinition(declarationOrFull, implementation);
+      def = SourceBuilder.buildFunctionDefinition(declarationOrFull, implementation);
     }
 
     if (undefined === this.findFunction(def)) {
@@ -279,10 +291,6 @@ export class ShaderBuilder extends ShaderVariables {
     if (-1 === this._extensions.indexOf(extName)) {
       this._extensions.push(extName);
     }
-  }
-
-  protected static buildFunctionDefinition(declaration: string, implementation: string): string {
-    return declaration + "\n{\n" + implementation + "\n}\n\n";
   }
 
   protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false): SourceBuilder {
@@ -398,7 +406,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const computePosition = this.get(VertexShaderComponent.ComputePosition);
     assert(undefined !== computePosition);
     if (undefined !== computePosition) {
-      prelude.add(ShaderBuilder.buildFunctionDefinition("vec4 computePosition(vec4 rawPos)", computePosition));
+      prelude.addFunction("vec4 computePosition(vec4 rawPos)", computePosition);
     }
 
     // Initialization logic that should occur at start of main() - primarily global variables whose values
@@ -411,25 +419,25 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
-      prelude.add(ShaderBuilder.buildFunctionDefinition("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard));
+      prelude.addFunction("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard);
       main.add(ShaderSource.vertex.earlyDiscard);
     }
 
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
     if (undefined !== computeFeatureOverrides) {
-      prelude.add(ShaderBuilder.buildFunctionDefinition("void computeFeatureOverrides()", computeFeatureOverrides));
+      prelude.addFunction("void computeFeatureOverrides()", computeFeatureOverrides);
       main.addline("computeFeatureOverrides();");
     }
 
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
-      prelude.add(ShaderBuilder.buildFunctionDefinition("bool checkForDiscard()", checkForDiscard));
+      prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(ShaderSource.vertex.discard);
     }
 
     const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
     if (undefined !== calcClipDist) {
-      prelude.add(ShaderBuilder.buildFunctionDefinition("void calcClipDist(vec4 rawPos)", calcClipDist));
+      prelude.addFunction("void calcClipDist(vec4 rawPos)", calcClipDist);
       main.addline("calcClipDist(rawPosition);");
     }
 
@@ -444,7 +452,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
       main.addline("\n" + comp);
     }
 
-    prelude.add(ShaderBuilder.buildFunctionDefinition("void main()", main.source));
+    prelude.addMain(main.source);
     return prelude.source;
   }
 
@@ -505,15 +513,125 @@ export const enum FragmentShaderComponent {
   ApplyMonochrome,
   // (Optional) Apply white-on-white reversal to base color
   ReverseWhiteOnWhite,
-  // (Optional) Apply flash hilite to lit base color
-  // vec4 applyFlash(vec4 baseColor)
-  ApplyFlash,
-  // (Required) Assign the final color to gl_FragColor or gl_FragData
-  // void assignFragData(vec4 baseColor)
-  AssignFragData,
   // (Optional) Discard if outside any clipping planes
   // void applyClipping()
   ApplyClipping,
+  // (Optional) Apply flash hilite to lit base color
+  // vec4 applyFlash(vec4 baseColor)
+  ApplyFlash,
+  // (Optional) Apply a debug color
+  // vec4 applyDebugColor(vec4 baseColor)
+  ApplyDebugColor,
+  // (Required) Assign the final color to gl_FragColor or gl_FragData
+  // void assignFragData(vec4 baseColor)
+  AssignFragData,
 
   COUNT,
+}
+
+// Assembles the source code for a fragment shader from a set of modular components.
+export class FragmentShaderBuilder extends ShaderBuilder {
+  public constructor() {
+    super(FragmentShaderComponent.COUNT);
+  }
+
+  public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
+  public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
+
+  public buildSource(): string {
+    const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
+    const prelude = this.buildPrelude(undefined !== applyLighting);
+
+    const computeBaseColor = this.get(FragmentShaderComponent.ComputeBaseColor);
+    assert(undefined !== computeBaseColor);
+    if (undefined !== computeBaseColor) {
+      prelude.addFunction("vec4 computeBaseColor()", computeBaseColor);
+    }
+
+    const main = new SourceBuilder();
+    const checkForEarlyDiscard = this.get(FragmentShaderComponent.CheckForEarlyDiscard);
+    if (undefined !== checkForEarlyDiscard) {
+      prelude.addFunction("bool checkForEarlyDiscard()", checkForEarlyDiscard);
+      main.addline("if (checkForEarlyDiscard()) { discard; return; }");
+    }
+
+    const applyClipping = this.get(FragmentShaderComponent.ApplyClipping);
+    if (undefined !== applyClipping) {
+      prelude.addFunction("void applyClipping()", applyClipping);
+      main.addline("applyClipping();");
+    }
+
+    main.addline("vec4 baseColor = computeBaseColor();");
+
+    const applyMaterialOverrides = this.get(FragmentShaderComponent.ApplyMaterialOverrides);
+    if (undefined !== applyMaterialOverrides) {
+      prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
+      main.addline("baseColor = applyMaterialOverrides(baseColor);");
+    }
+
+    const applyFeatureColor = this.get(FragmentShaderComponent.ApplyFeatureColor);
+    if (undefined !== applyFeatureColor) {
+      prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
+      main.addline("baseColor = applyFeatureColor(baseColor);");
+    }
+
+    const finalize = this.get(FragmentShaderComponent.FinalizeBaseColor);
+    if (undefined !== finalize) {
+      prelude.addFunction("vec4 finalizeBaseColor(vec4 baseColor)", finalize);
+      main.addline("baseColor = finalizeBaseColor(baseColor);");
+    }
+
+    const checkForDiscard = this.get(FragmentShaderComponent.CheckForDiscard);
+    if (undefined !== checkForDiscard) {
+      prelude.addFunction("bool checkForDiscard(vec4 baseColor)", checkForDiscard);
+      main.addline("if (checkForDiscard(baseColor)) { discard; return; }");
+    }
+
+    const discardByAlpha = this.get(FragmentShaderComponent.DiscardByAlpha);
+    if (undefined !== discardByAlpha) {
+      prelude.addFunction("bool discardByAlpha(float alpha)", discardByAlpha);
+      main.addline("if (discardByAlpha(baseColor.a)) { discard; return; }");
+    }
+
+    if (undefined !== applyLighting) {
+      prelude.addFunction("vec4 applyLighting(vec4 baseColor)", applyLighting);
+      main.addline("baseColor = applyLighting(baseColor);");
+    }
+
+    const applyMonochrome = this.get(FragmentShaderComponent.ApplyMonochrome);
+    if (undefined !== applyMonochrome) {
+      prelude.addFunction("vec4 applyMonochrome(vec4 baseColor)", applyMonochrome);
+      main.addline("baseColor = applyMonochrome(baseColor);");
+    }
+
+    const reverseWoW = this.get(FragmentShaderComponent.ReverseWhiteOnWhite);
+    if (undefined !== reverseWoW) {
+      prelude.addFunction("vec4 reverseWhiteOnWhite(vec4 baseColor)", reverseWoW);
+      main.addline("baseColor = reverseWhiteOnWhite(baseColor);");
+    }
+
+    const applyFlash = this.get(FragmentShaderComponent.ApplyFlash);
+    if (undefined !== applyFlash) {
+      prelude.addFunction("vec4 applyFlash(vec4 baseColor)", applyFlash);
+      main.addline("baseColor = applyFlash(baseColor);");
+    }
+
+    const applyDebug = this.get(FragmentShaderComponent.ApplyDebugColor);
+    if (undefined !== applyDebug) {
+      prelude.addFunction("vec4 applyDebugColor(vec4 baseColor)", applyDebug);
+      main.addline("baseColor = applyDebugColor(baseColor);");
+    }
+
+    const assignFragData = this.get(FragmentShaderComponent.AssignFragData);
+    assert(undefined !== assignFragData);
+    if (undefined !== assignFragData) {
+      prelude.addFunction("void assignFragData(vec4 baseColor)", assignFragData);
+      main.addline("assignFragData(baseColor);");
+    }
+
+    prelude.addMain(main.source);
+    return prelude.source;
+  }
+
+  private buildPrelude(isLit: boolean): SourceBuilder { return this.buildPreludeCommon(true, isLit); }
 }
