@@ -116,7 +116,7 @@ export class ShaderVariable {
     return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined);
   }
 
-  public static createGlobal(name: string, type: VariableType, value?: string, isConst: boolean=false) {
+  public static createGlobal(name: string, type: VariableType, value?: string, isConst: boolean = false) {
     return new ShaderVariable(name, type, VariableScope.Global, VariablePrecision.Default, isConst, undefined, value);
   }
 
@@ -153,6 +153,63 @@ export class ShaderVariable {
 
     return parts.join(" ") + ";";
   }
+}
+
+// Represents the set of variables defined and used within a fragment or vertex shader.
+// If the same variable is used in both the fragment and vertex shader (e.g., a varying
+// variable), it should be defined in both ShaderBuilders' ShaderVariables object.
+export class ShaderVariables {
+  private readonly list: ShaderVariable[] = new Array<ShaderVariable>();
+
+  public find(name: string): ShaderVariable | undefined {
+    return this.list.find((v: ShaderVariable) => v.name === name);
+  }
+
+  private add(v: ShaderVariable): void {
+    const found = this.find(v.name);
+    if (undefined !== found) {
+      assert(found.type === v.type);
+      // assume same binding etc...
+    } else {
+      this.list.push(v);
+    }
+  }
+
+  public addUniform(name: string, type: VariableType, binding: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default) {
+    this.add(ShaderVariable.create(name, type, VariableScope.Uniform, binding, precision));
+  }
+
+  public addAttribute(name: string, type: VariableType, binding: AddVariableBinding) {
+    this.add(ShaderVariable.create(name, type, VariableScope.Attribute, binding));
+  }
+
+  public addVarying(name: string, type: VariableType) {
+    this.add(ShaderVariable.create(name, type, VariableScope.Varying));
+  }
+
+  public addGlobal(name: string, type: VariableType, value?: string, isConst: boolean = false) {
+    this.add(ShaderVariable.createGlobal(name, type, value, isConst));
+  }
+
+  public buildDeclarations(): string {
+    let decls = "";
+    for (const v of this.list) {
+      decls += v.buildDeclaration() + "\n";
+    }
+
+    return decls;
+  }
+
+  public addBindings(prog: ShaderProgram, predefined?: ShaderVariables): void {
+    for (const v of this.list) {
+      // Some variables exist in both frag and vert shaders - only add them to the program once.
+      if (v.hasBinding && (undefined === predefined || undefined === predefined.find(v.name))) {
+        v.addBinding(prog);
+      }
+    }
+  }
+
+  public get length(): number { return this.list.length; }
 }
 
 // Describes the optional and required components which can be assembled into complete
