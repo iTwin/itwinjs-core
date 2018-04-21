@@ -412,7 +412,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.add(ShaderBuilder.buildFunctionDefinition("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard));
-      main.add(ShaderSource.Vertex.earlyDiscard);
+      main.add(ShaderSource.vertex.earlyDiscard);
     }
 
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
@@ -424,7 +424,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.add(ShaderBuilder.buildFunctionDefinition("bool checkForDiscard()", checkForDiscard));
-      main.add(ShaderSource.Vertex.discard);
+      main.add(ShaderSource.vertex.discard);
     }
 
     const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
@@ -449,12 +449,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
   }
 
   private addPosition(positionFromLUT: boolean): void {
-    this.addFunction(ShaderSource.Vertex.unquantizePosition);
+    this.addFunction(ShaderSource.vertex.unquantizePosition);
 
     // ###TODO: a_pos, u_qScale, u_qOrigin
 
     if (!positionFromLUT) {
-      this.addFunction(ShaderSource.Vertex.unquantizeVertexPosition);
+      this.addFunction(ShaderSource.vertex.unquantizeVertexPosition);
       return;
     }
 
@@ -465,11 +465,11 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     this.addFunction(ShaderSource.decodeUInt32);
     this.addFunction(ShaderSource.decodeUInt16);
-    this.addFunction(ShaderSource.Vertex.unquantizeVertexPositionFromLUT);
+    this.addFunction(ShaderSource.vertex.unquantizeVertexPositionFromLUT);
 
     // ###TODO: u_vertLUT, u_vertParams, LookupTable.AddToBuilder()
 
-    this.addInitializer(ShaderSource.Vertex.initializeVertLUTCoords);
+    this.addInitializer(ShaderSource.vertex.initializeVertLUTCoords);
   }
 }
 
@@ -517,4 +517,3 @@ export const enum FragmentShaderComponent {
 
   COUNT,
 }
-

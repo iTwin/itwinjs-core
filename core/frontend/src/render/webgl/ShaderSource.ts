@@ -15,7 +15,7 @@ export namespace ShaderSource {
     }`;
 
   // Components specific to vertex shaders.
-  export let Vertex = {
+  export let vertex = {
     unquantizePosition:
       `vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) {
         return vec4(origin + scale * pos, 1.0);
@@ -99,7 +99,7 @@ export namespace ShaderSource {
         q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz; // window coords
         return q;
       }`,
-    metersPerPixel: 
+    metersPerPixel:
      `float metersPerPixel(vec4 posEye) {
         if (kRenderPass_Background == u_renderPass || kRenderPass_ViewOverlay == u_renderPass)
           return 1.0;
@@ -133,4 +133,4 @@ export namespace ShaderSource {
   };
 }
 
-Object.freeze(ShaderSource.Vertex);
+Object.freeze(ShaderSource.vertex);
