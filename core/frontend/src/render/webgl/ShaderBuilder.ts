@@ -159,10 +159,10 @@ export class ShaderVariable {
 // If the same variable is used in both the fragment and vertex shader (e.g., a varying
 // variable), it should be defined in both ShaderBuilders' ShaderVariables object.
 export class ShaderVariables {
-  private readonly list: ShaderVariable[] = new Array<ShaderVariable>();
+  private readonly _list: ShaderVariable[] = new Array<ShaderVariable>();
 
   public find(name: string): ShaderVariable | undefined {
-    return this.list.find((v: ShaderVariable) => v.name === name);
+    return this._list.find((v: ShaderVariable) => v.name === name);
   }
 
   private add(v: ShaderVariable): void {
@@ -171,7 +171,7 @@ export class ShaderVariables {
       assert(found.type === v.type);
       // assume same binding etc...
     } else {
-      this.list.push(v);
+      this._list.push(v);
     }
   }
 
@@ -193,7 +193,7 @@ export class ShaderVariables {
 
   public buildDeclarations(): string {
     let decls = "";
-    for (const v of this.list) {
+    for (const v of this._list) {
       decls += v.buildDeclaration() + "\n";
     }
 
@@ -201,7 +201,7 @@ export class ShaderVariables {
   }
 
   public addBindings(prog: ShaderProgram, predefined?: ShaderVariables): void {
-    for (const v of this.list) {
+    for (const v of this._list) {
       // Some variables exist in both frag and vert shaders - only add them to the program once.
       if (v.hasBinding && (undefined === predefined || undefined === predefined.find(v.name))) {
         v.addBinding(prog);
@@ -209,7 +209,7 @@ export class ShaderVariables {
     }
   }
 
-  public get length(): number { return this.list.length; }
+  public get length(): number { return this._list.length; }
 }
 
 // Describes the optional and required components which can be assembled into complete
@@ -280,4 +280,136 @@ export const enum FragmentShaderComponent {
   ApplyClipping,
 
   COUNT,
+}
+
+export class SourceBuilder {
+  public source: string = "";
+
+  public add(what: string): void { this.source += what; }
+  public newline(): void { this.add("\n"); }
+  public addline(what: string): void {
+    this.add(what);
+    this.newline();
+  }
+}
+
+// Represents a fragment or vertex shader under construction. The shader consists of
+// a set of defined variables, plus a set of code snippets which can be concatenated
+// together to form the shader source.
+export class ShaderBuilder extends ShaderVariables {
+  private readonly _components: string[] = new Array<string>();
+  private readonly _functions: string[] = new Array<string>();
+  private readonly _extensions: string[] = new Array<string>();
+  public headerComment: string = "";
+
+  protected constructor(maxComponents: number) {
+    super(); // dumb but required. superclass has no explicit constructor.
+    this._components.length = maxComponents;
+  }
+
+  protected addComponent(index: number, component: string): void {
+    assert(index < this._components.length );
+
+    // assume if caller is replacing an existing component, they know what they're doing...
+    this._components[index] = component;
+  }
+
+  protected getComponent(index: number): string | undefined {
+    assert(index < this._components.length);
+    return this._components[index];
+  }
+
+  public addFunction(declarationOrFull: string, implementation?: string): void {
+    let def = declarationOrFull;
+    if (undefined !== implementation) {
+      def = ShaderBuilder.buildFunctionDefinition(declarationOrFull, implementation);
+    }
+
+    if (undefined === this.findFunction(def)) {
+      this._functions.push(def);
+    }
+  }
+
+  public replaceFunction(existing: string, replacement: string): boolean {
+    const index = this._functions.indexOf(existing);
+    if (-1 !== index) {
+      this._functions[index] = replacement;
+    }
+
+    assert(-1 !== index);
+    return -1 !== index;
+  }
+
+  public findFunction(func: string): string | undefined {
+    return this._functions.find((f: string | undefined) => f === func);
+  }
+
+  public addExtension(extName: string): void {
+    if (-1 === this._extensions.indexOf(extName)) {
+      this._extensions.push(extName);
+    }
+  }
+
+  protected static buildFunctionDefinition(declaration: string, implementation: string): string {
+    return declaration + "\n{\n" + implementation + "\n}\n\n";
+  }
+
+  protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false): SourceBuilder {
+    const src = new SourceBuilder();
+
+    src.addline("#version 100");
+    src.addline("#define TEXTURE texture2D");
+
+    // Header comment
+    src.newline();
+    src.addline(this.headerComment);
+    src.newline();
+
+    // Extensions
+    let needMultiDrawBuffers = false;
+    for (const ext of this._extensions) {
+      if (ext === "GL_EXT_draw_buffers") {
+        needMultiDrawBuffers = true;
+      }
+
+      src.addline("#extension " + ext + " : enable");
+    }
+
+    // Default precisions
+    src.addline("precision highp float;");
+    src.addline("precision highp int;");
+    src.newline();
+
+    // Variable declarations
+    src.add(this.buildDeclarations());
+
+    if (isFrag) {
+      src.addline("#define FragColor gl_FragColor");
+      if (needMultiDrawBuffers) {
+        src.addline("#define FragColor0 gl_FragData[0]");
+        src.addline("#define FragColor1 gl_FragData[1]");
+        src.addline("#define FragColor2 gl_FragData[2]");
+        src.addline("#define FragColor3 gl_FragData[3]");
+      }
+
+      if (isLit) {
+        // ###TODO: May end up needing to change this to 8 for unrolled lighting loop...see ShaderBuilder.cpp...
+        const maxShaderLights = 64;
+        src.addline("const int kMaxShaderLights = " + maxShaderLights);
+        src.addline("#define LightColor(i) u_lightData[i*3+0].rgb");
+        src.addline("#define LightAtten1(i) u_lightData[i*3+0].a");
+        src.addline("#define LightPos(i) u_lightData[i*3+1].xyz");
+        src.addline("#define cosHTheta(i) u_lightData[i*3+1].w");
+        src.addline("#define LightDir(i) u_lightData[i*3+2].xyz");
+        src.addline("#define cosHPhi(i) u_lightData[i*3+2].w");
+      }
+    }
+
+    // Functions
+    for (const func of this._functions) {
+      src.add(func);
+    }
+
+    return src;
+  }
 }
