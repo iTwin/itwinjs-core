@@ -82,12 +82,6 @@ namespace Convert {
   }
 }
 
-export const enum ShaderType {
-  Fragment = 1 << 0,
-  Vertex = 1 << 1,
-  Both = Fragment | Vertex,
-}
-
 // Function invoked by ShaderVariable::AddBinding() to bind the variable to the compiled program.
 // The implementation should call ShaderProgram::AddShaderUniform or ShaderProgram::AddGraphicUniform/Attribute to register a function
 // which can be used to bind the value of the variable when program is used.
@@ -166,7 +160,7 @@ export class ShaderVariables {
     return this._list.find((v: ShaderVariable) => v.name === name);
   }
 
-  private add(v: ShaderVariable): void {
+  public addVariable(v: ShaderVariable): void {
     const found = this.find(v.name);
     if (undefined !== found) {
       assert(found.type === v.type);
@@ -177,19 +171,19 @@ export class ShaderVariables {
   }
 
   public addUniform(name: string, type: VariableType, binding: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default) {
-    this.add(ShaderVariable.create(name, type, VariableScope.Uniform, binding, precision));
+    this.addVariable(ShaderVariable.create(name, type, VariableScope.Uniform, binding, precision));
   }
 
   public addAttribute(name: string, type: VariableType, binding: AddVariableBinding) {
-    this.add(ShaderVariable.create(name, type, VariableScope.Attribute, binding));
+    this.addVariable(ShaderVariable.create(name, type, VariableScope.Attribute, binding));
   }
 
   public addVarying(name: string, type: VariableType) {
-    this.add(ShaderVariable.create(name, type, VariableScope.Varying));
+    this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying));
   }
 
   public addGlobal(name: string, type: VariableType, value?: string, isConst: boolean = false) {
-    this.add(ShaderVariable.createGlobal(name, type, value, isConst));
+    this.addVariable(ShaderVariable.createGlobal(name, type, value, isConst));
   }
 
   public buildDeclarations(): string {
@@ -634,4 +628,71 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   }
 
   private buildPrelude(isLit: boolean): SourceBuilder { return this.buildPreludeCommon(true, isLit); }
+}
+
+export const enum ShaderType {
+  Fragment = 1 << 0,
+  Vertex = 1 << 1,
+  Both = Fragment | Vertex,
+}
+
+// Assembles vertex and fragment shaders from a set of modular components to produce
+// a compiled ShaderProgram.
+// Be very careful with components which use samplers to ensure that no conflicts exist with texture units used by other components
+// (See TextureUnit enum)
+export class ProgramBuilder {
+  private readonly _vert: VertexShaderBuilder;
+  private readonly _frag: FragmentShaderBuilder;
+
+  public constructor(positionFromLUT: boolean) {
+    this._vert = new VertexShaderBuilder(positionFromLUT);
+    this._frag = new FragmentShaderBuilder();
+  }
+
+  private addVariable(v: ShaderVariable, which: ShaderType) {
+    if (which & ShaderType.Fragment) {
+      this._frag.addVariable(v);
+    }
+
+    if (which & ShaderType.Vertex) {
+      this._vert.addVariable(v);
+    }
+  }
+
+  public addUniform(name: string, type: VariableType, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
+    this.addVariable(ShaderVariable.create(name, type, VariableScope.Uniform, binding), which);
+  }
+  public addAttribute(name: string, type: VariableType, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
+    this.addVariable(ShaderVariable.create(name, type, VariableScope.Attribute, binding), which);
+  }
+  public addVarying(name: string, type: VariableType) {
+    this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying), ShaderType.Both);
+  }
+  public addGlobal(name: string, type: VariableType, which: ShaderType = ShaderType.Both, value?: string, isConst: boolean = false) {
+    this.addVariable(ShaderVariable.createGlobal(name, type, value, isConst), which);
+  }
+
+  public addInlineComputedVarying(name: string, type: VariableType, inlineComputation: string) {
+    this._frag.addVarying(name, type);
+    this._vert.addComputedVarying(name, type, inlineComputation);
+  }
+  public addFunctionComputedVarying(name: string, type: VariableType, funcName: string, funcBody: string) {
+    let funcDecl = Convert.typeToString(type) + " " + funcName + "()";
+    funcDecl = SourceBuilder.buildFunctionDefinition(funcDecl, funcBody);
+
+    const funcCall = funcName + "()";
+    this.addFunctionComputedVaryingWithArgs(name, type, funcCall, funcDecl);
+  }
+  public addFunctionComputedVaryingWithArgs(name: string, type: VariableType, funcCall: string, funcDef: string) {
+    this._vert.addFunction(funcDef);
+    const computation = name + " = " + funcCall + ";\n";
+    this.addInlineComputedVarying(name, type, computation);
+  }
+
+  public buildProgram(): ShaderProgram {
+    const prog = new ShaderProgram(this._vert.buildSource(), this._frag.buildSource(), this._vert.headerComment);
+    this._vert.addBindings(prog);
+    this._frag.addBindings(prog, this._vert);
+    return prog;
+  }
 }
