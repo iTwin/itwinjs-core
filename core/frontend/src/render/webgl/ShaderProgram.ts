@@ -3,12 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
-import {UniformHandle, AttributeHandle } from "./Handle";
+import { UniformHandle, AttributeHandle } from "./Handle";
+import { ShaderProgramParams, DrawParams } from "./DrawCommand";
 
 export type BindProgramUniform = (uniform: UniformHandle, params: ShaderProgramParams) => void;
-
-export class ShaderProgramParams { }
-export class DrawParams extends ShaderProgramParams { }
 
 export class UniformLocation {
   private readonly _name: string;

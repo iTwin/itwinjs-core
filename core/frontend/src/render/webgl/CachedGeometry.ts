@@ -53,3 +53,5 @@ export class PointCloudGeometryCreateParams {
   public pointSize: number;
   public constructor(vertices: QPoint3dList, colors: number[], pointSize: number) { this.vertices = vertices.clone(); this.colors = colors; this.pointSize = pointSize; }
 }
+
+export class CachedGeometry { /* ###TODO */ }
