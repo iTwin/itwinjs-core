@@ -19,7 +19,7 @@
     "docs": "betools docs --onlyJson --json=./lib/docs/json/ec-js/file.json",
     "docs:dev": "npm run docs && bmsWatch --source ./lib/docs --destination public --typeDocSource C:/dev/imodeljs/ecobjects-js/source",
     "cover": "nyc node ./node_modules/@bentley/bentleyjs-tools/scripts/test-tsnode.js --testDir=./test/ --tscPaths",
-    "start": "npm run build && npm run test && npm run docs"
+    "start": "npm run build && npm run test"
   },
   "keywords": [
     "Bentley",
