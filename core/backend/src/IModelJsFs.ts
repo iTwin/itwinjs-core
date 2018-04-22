@@ -55,7 +55,6 @@ export class IModelJsFs {
   /** Read file */
   public static readFileSync(fn: string): string|Buffer { return fs.readFileSync(fn); }
 
-
   /** Test if the current user has permission to write to a file. */
   private static isFileWritable(fn: string): boolean {
     try {
