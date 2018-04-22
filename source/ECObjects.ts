@@ -27,41 +27,7 @@ export const enum SchemaItemType {
 }
 
 /**
- * Tries to parse the given string as one of the 8 schema item types.
- * @param type The schema item type string to parse.
- * @returns A valid SchemaItemType if successfully parsed, or undefined if the provided string is not a valid SchemaItemType.
- */
-export function tryParseSchemaItemType(type: string): SchemaItemType | undefined {
-  if (/^EntityClass$/i.test(type)) return SchemaItemType.EntityClass;
-  if (/^Mixin$/i.test(type)) return SchemaItemType.Mixin;
-  if (/^StructClass$/i.test(type)) return SchemaItemType.StructClass;
-  if (/^CustomAttributeClass$/i.test(type)) return SchemaItemType.CustomAttributeClass;
-  if (/^RelationshipClass$/i.test(type)) return SchemaItemType.RelationshipClass;
-  if (/^Enumeration$/i.test(type)) return SchemaItemType.Enumeration;
-  if (/^KindOfQuantity$/i.test(type)) return SchemaItemType.KindOfQuantity;
-  if (/^PropertyCategory$/i.test(type)) return SchemaItemType.PropertyCategory;
-  return undefined;
-}
-
-/**
- * Converts a valid SchemaItemType to a display string.
- * @param value The SchemaItemType to stringify.
- */
-export function schemaItemTypeToString(value: SchemaItemType): string {
-  switch (value) {
-    case SchemaItemType.EntityClass: return "EntityClass";
-    case SchemaItemType.Mixin: return "Mixin";
-    case SchemaItemType.StructClass: return "StructClass";
-    case SchemaItemType.CustomAttributeClass: return "CustomAttributeClass";
-    case SchemaItemType.RelationshipClass: return "RelationshipClass";
-    case SchemaItemType.Enumeration: return "Enumeration";
-    case SchemaItemType.KindOfQuantity: return "KindOfQuantity";
-    case SchemaItemType.PropertyCategory: return "PropertyCategory";
-  }
-}
-
-/**
- * Enumeration of primitive data types for ECProperties
+ * Primitive data types for ECProperties.
  */
 export const enum PrimitiveType {
   Uninitialized = 0x00,
@@ -78,43 +44,9 @@ export const enum PrimitiveType {
 }
 
 /**
- * Tries to parse the given string as one of the 11 primitive types.
- * @param type The primitive type string to parse.
- * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
- */
-export function tryParsePrimitiveType(type: string): PrimitiveType | undefined {
-  if (/^binary$/i.test(type)) return PrimitiveType.Binary;
-  if (/^bool(ean)?$/i.test(type)) return PrimitiveType.Boolean;
-  if (/^dateTime$/i.test(type)) return PrimitiveType.DateTime;
-  if (/^double$/i.test(type)) return PrimitiveType.Double;
-  if (/^int$/i.test(type)) return PrimitiveType.Integer;
-  if (/^long$/i.test(type)) return PrimitiveType.Long;
-  if (/^point2d$/i.test(type)) return PrimitiveType.Point2d;
-  if (/^point3d$/i.test(type)) return PrimitiveType.Point3d;
-  if (/^string$/i.test(type)) return PrimitiveType.String;
-  if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type)) return PrimitiveType.IGeometry;
-
-  return undefined;
-}
-
-/**
- * Parses the given string into one of the 11 primitive types.
- * @param type The primitive type string to parse.
- * @throws ECObjectsStatus InvalidPrimitiveType if the provided string is not a valid PrimitiveType.
- */
-export function parsePrimitiveType(type: string): PrimitiveType {
-  const primitiveType = tryParsePrimitiveType(type);
-  if (primitiveType === undefined)
-    throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The string '${type}' is not one of the 10 supported primitive types.`);
-
-  return primitiveType;
-}
-
-/**
  * Defines the valid CustomAttribute container types.
- *
- * Matches the C++ enumeration values.
  */
+// Matches the C++ enumeration values.
 export const enum CustomAttributeContainerType {
   Schema = (0x0001 << 0),
   EntityClass = (0x0001 << 1),
@@ -151,26 +83,132 @@ export const enum SchemaMatchType {
 }
 
 /**
+ * Identifer for an ECRelationshipConstraint. Used to determine the side of the relationship the constraint is representing.
+ */
+export const enum RelationshipEnd {
+  Source = 0,
+  Target = 1,
+}
+
+export const enum StrengthType {
+  Referencing,
+  Holding,
+  Embedding,
+}
+
+export const enum StrengthDirection {
+  Forward = 1,
+  Backward = 2,
+}
+
+// Helper methods for going to/from string for the above Enumerations.
+
+/**
  * Parses the provided string into an ECClassModifier if the string is a valid modifier.
  * @param modifier The modifier string to parse.
- * @throws ECObjectsStatus.InvalidModifier if the p
  */
-export function parseClassModifier(modifier: string): ECClassModifier {
-  if (/Abstract/i.test(modifier))
-    return ECClassModifier.Abstract;
-  else if (/None/i.test(modifier))
-    return ECClassModifier.None;
-  else if (/Sealed/i.test(modifier))
-    return ECClassModifier.Sealed;
+export function parseClassModifier(modifier: string): ECClassModifier | undefined {
+  const lowerModifier = modifier.toLowerCase();
+  switch (lowerModifier) {
+    case "abstract": return ECClassModifier.Abstract;
+    case "none": return ECClassModifier.None;
+    case "sealed": return ECClassModifier.Sealed;
+  }
+  return undefined;
+}
 
-  throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${modifier}' is not a valid ECClassModifier.`);
+/**
+ * @return A string representing the provided ECClassModifier. If the modifier is not valid, an empty string is returned.
+ */
+export function classModifierToString(modifier: ECClassModifier): string {
+  switch (modifier) {
+    case ECClassModifier.Abstract: return "Abstract";
+    case ECClassModifier.None: return "None";
+    case ECClassModifier.Sealed: return "Sealed";
+    default: throw new ECObjectsError(ECObjectsStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
+  }
+}
+
+/**
+ * Tries to parse the given string as one of the 8 schema item types.
+ * @param type The schema item type string to parse.
+ * @returns A valid SchemaItemType if successfully parsed. Otherwise, undefined if the provided string is not a valid SchemaItemType.
+ */
+export function parseSchemaItemType(type: string): SchemaItemType | undefined {
+  const lowerType = type.toLowerCase();
+  switch (lowerType) {
+    case "entityclass": return SchemaItemType.EntityClass;
+    case "mixin": return SchemaItemType.Mixin;
+    case "structclass": return SchemaItemType.StructClass;
+    case "customattributeclass": return SchemaItemType.CustomAttributeClass;
+    case "relationshipclass": return SchemaItemType.RelationshipClass;
+    case "enumeration": return SchemaItemType.Enumeration;
+    case "kindofquantity": return SchemaItemType.KindOfQuantity;
+    case "propertycategory": return SchemaItemType.PropertyCategory;
+  }
+  return undefined;
+}
+
+/**
+ * Converts a valid SchemaItemType to a display string.
+ * @param value The SchemaItemType to stringify.
+ * @return A string representing the provided SchemaItemType. If the type is not valid, an empty string is returned.
+ */
+export function schemaItemTypeToString(value: SchemaItemType): string {
+  switch (value) {
+    case SchemaItemType.EntityClass: return "EntityClass";
+    case SchemaItemType.Mixin: return "Mixin";
+    case SchemaItemType.StructClass: return "StructClass";
+    case SchemaItemType.CustomAttributeClass: return "CustomAttributeClass";
+    case SchemaItemType.RelationshipClass: return "RelationshipClass";
+    case SchemaItemType.Enumeration: return "Enumeration";
+    case SchemaItemType.KindOfQuantity: return "KindOfQuantity";
+    case SchemaItemType.PropertyCategory: return "PropertyCategory";
+    default: throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
+  }
+}
+
+/**
+ * Tries to parse the given string as one of the 11 primitive types.
+ * @param type The primitive type string to parse.
+ * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
+ */
+export function parsePrimitiveType(type: string): PrimitiveType | undefined {
+  if (/^binary$/i.test(type)) return PrimitiveType.Binary;
+  if (/^bool(ean)?$/i.test(type)) return PrimitiveType.Boolean;
+  if (/^dateTime$/i.test(type)) return PrimitiveType.DateTime;
+  if (/^double$/i.test(type)) return PrimitiveType.Double;
+  if (/^int$/i.test(type)) return PrimitiveType.Integer;
+  if (/^long$/i.test(type)) return PrimitiveType.Long;
+  if (/^point2d$/i.test(type)) return PrimitiveType.Point2d;
+  if (/^point3d$/i.test(type)) return PrimitiveType.Point3d;
+  if (/^string$/i.test(type)) return PrimitiveType.String;
+  if (/^Bentley\.Geometry\.Common\.IGeometry$/i.test(type)) return PrimitiveType.IGeometry;
+
+  return undefined;
+}
+
+export function primitiveTypeToString(type: PrimitiveType): string {
+  switch (type) {
+    case PrimitiveType.Binary: return "binary";
+    case PrimitiveType.Boolean: return "boolean";
+    case PrimitiveType.DateTime: return "dateTime";
+    case PrimitiveType.Double: return "double";
+    case PrimitiveType.Integer: return "int";
+    case PrimitiveType.IGeometry: return "Bentley.Geometry.Common.IGeometry";
+    case PrimitiveType.Long: return "long";
+    case PrimitiveType.Point2d: return "point2d";
+    case PrimitiveType.Point3d: return "point3d";
+    case PrimitiveType.String: return "string";
+    default: throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
+  }
 }
 
 /**
  * Parses the given string into the appropriate CustomAttributeContainerType if the string is valid.
  * @param type The container type string to parse.
  */
-export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType {
+export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined {
   const typeTokens = type.split(/[|,;]+/);
 
   let containerType = 0;
@@ -180,48 +218,68 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
     if (typeToken.length === 0)
       return;
 
-    if (/^Schema$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.Schema;
-    else if (/^EntityClass$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.EntityClass;
-    else if (/^CustomAttributeClass$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.CustomAttributeClass;
-    else if (/^StructClass$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.StructClass;
-    else if (/^RelationshipClass$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.RelationshipClass;
-    else if (/^AnyClass$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.AnyClass;
-    else if (/^PrimitiveProperty$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.PrimitiveProperty;
-    else if (/^StructProperty$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.StructProperty;
-    else if (/^ArrayProperty$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
-    else if (/^StructArrayProperty$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.StructArrayProperty;
-    else if (/^NavigationProperty$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.NavigationProperty;
-    else if (/^AnyProperty$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.AnyProperty;
-    else if (/^SourceRelationshipConstraint$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.SourceRelationshipConstraint;
-    else if (/^TargetRelationshipConstraint$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.TargetRelationshipConstraint;
-    else if (/^AnyRelationshipConstraint$/i.test(typeToken))
-      containerType = containerType | CustomAttributeContainerType.AnyRelationshipConstraint;
-    else if (/^Any$/i.test(typeToken))
-      containerType = CustomAttributeContainerType.Any;
-    else
-      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${typeToken} is not a valid CustomAttributeContainerType value.`);
+    typeToken = typeToken.toLowerCase();
+    switch (typeToken) {
+      case "schema":
+        containerType = containerType | CustomAttributeContainerType.Schema;
+        break;
+      case "entityclass":
+        containerType = containerType | CustomAttributeContainerType.EntityClass;
+        break;
+      case "customattributeclass":
+        containerType = containerType | CustomAttributeContainerType.CustomAttributeClass;
+        break;
+      case "structclass":
+        containerType = containerType | CustomAttributeContainerType.StructClass;
+        break;
+      case "relationshipclass":
+        containerType = containerType | CustomAttributeContainerType.RelationshipClass;
+        break;
+      case "anyclass":
+        containerType = containerType | CustomAttributeContainerType.AnyClass;
+        break;
+      case "primitiveproperty":
+        containerType = containerType | CustomAttributeContainerType.PrimitiveProperty;
+        break;
+      case "structproperty":
+        containerType = containerType | CustomAttributeContainerType.StructProperty;
+        break;
+      case "arrayproperty":
+        containerType = containerType | CustomAttributeContainerType.PrimitiveArrayProperty;
+        break;
+      case "structarrayproperty":
+        containerType = containerType | CustomAttributeContainerType.StructArrayProperty;
+        break;
+      case "navigationproperty":
+        containerType = containerType | CustomAttributeContainerType.NavigationProperty;
+        break;
+      case "anyproperty":
+        containerType = containerType | CustomAttributeContainerType.AnyProperty;
+        break;
+      case "sourcerelationshipconstraint":
+        containerType = containerType | CustomAttributeContainerType.SourceRelationshipConstraint;
+        break;
+      case "targetrelationshipconstraint":
+        containerType = containerType | CustomAttributeContainerType.TargetRelationshipConstraint;
+        break;
+      case "anyrelationshipconstraint":
+        containerType = containerType | CustomAttributeContainerType.AnyRelationshipConstraint;
+        break;
+      case "any":
+        containerType = containerType | CustomAttributeContainerType.Any;
+        break;
+      default:
+        throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${typeToken} is not a valid CustomAttributeContainerType value.`);
+    }
   });
 
   return containerType as CustomAttributeContainerType;
 }
 
 /**
- *
- * @param type
+ * Creates a string representing a valid CustomAttributeContainerType.
+ * @param value The CustomAttributeContainerType to stringify.
+ * @return A string representing the provided CustomAttributeContainerType. If the type is not valid, an empty string is returned.
  */
 export function containerTypeToString(type: CustomAttributeContainerType): string {
 
@@ -283,25 +341,21 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   return containerType;
 }
 
-/**
- *
- */
-export const enum RelationshipEnd {
-  Source = 0,
-  Target = 1,
+export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
+  const endLower = end.toLowerCase();
+  switch (endLower) {
+    case "source": return RelationshipEnd.Source;
+    case "target": return RelationshipEnd.Target;
+  }
+  return undefined;
 }
 
 export function relationshipEndToString(end: RelationshipEnd): string {
-  if (end === RelationshipEnd.Source)
-    return ECStringConstants.RELATIONSHIP_END_SOURCE;
-  else
-    return ECStringConstants.RELATIONSHIP_END_TARGET;
-}
-
-export const enum StrengthType {
-  Referencing,
-  Holding,
-  Embedding,
+  switch (end) {
+    case RelationshipEnd.Source: return ECStringConstants.RELATIONSHIP_END_SOURCE;
+    case RelationshipEnd.Target: return ECStringConstants.RELATIONSHIP_END_TARGET;
+    default: throw new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
+  }
 }
 
 /**
@@ -309,30 +363,40 @@ export const enum StrengthType {
  * @throws ECObjectsStatus.InvalidStrength if the provided string that is not valid
  * @param strength
  */
-export function parseStrength(strength: string): StrengthType {
-  if (/Referencing/i.test(strength))
-    return StrengthType.Referencing;
-  else if (/Holding/i.test(strength))
-    return StrengthType.Holding;
-  else if (/Embedding/i.test(strength))
-    return StrengthType.Embedding;
-
-  throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `${strength} is not a valid StrengthType`);
+export function parseStrength(strength: string): StrengthType | undefined {
+  const lowerStrength = strength.toLowerCase();
+  switch (lowerStrength) {
+    case "referencing": return StrengthType.Referencing;
+    case "holding": return StrengthType.Holding;
+    case "embedding": return StrengthType.Embedding;
+  }
+  return undefined;
 }
 
-export const enum RelatedInstanceDirection {
-  Forward = 1,
-  Backward = 2,
+export function strengthToString(strength: StrengthType): string {
+  switch (strength) {
+    case StrengthType.Embedding: return "Embedding";
+    case StrengthType.Holding: return "Holding";
+    case StrengthType.Referencing: return "Referencing";
+    default: throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `An invalid Strength has been provided.`);
+  }
 }
 
-export function parseStrengthDirection(direction: string): RelatedInstanceDirection {
+export function parseStrengthDirection(direction: string): StrengthDirection | undefined {
   const lowerDirection = direction.toLowerCase();
-  if (/Forward/i.test(lowerDirection))
-    return RelatedInstanceDirection.Forward;
-  else if (/Backward/i.test(lowerDirection))
-    return RelatedInstanceDirection.Backward;
+  switch (lowerDirection) {
+    case "forward": return StrengthDirection.Forward;
+    case "backward": return StrengthDirection.Backward;
+  }
+  return undefined;
+}
 
-  throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `${direction} is not a valid StrengthDirection.`);
+export function strengthDirectionToString(direction: StrengthDirection): string {
+  switch (direction) {
+    case StrengthDirection.Forward: return "Forward";
+    case StrengthDirection.Backward: return "Backward";
+    default: throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
+  }
 }
 
 /**
@@ -410,7 +474,7 @@ export class ECVersion {
 }
 
 /**
- *
+ * An ECName is an invariant, string based, name is needed for an item in a schema.
  */
 export class ECName {
   private _name: string;
@@ -426,7 +490,7 @@ export class ECName {
 }
 
 /**
- * The SchemaKey object contains
+ * The SchemaKey contains a Schemas name and version.
  */
 export class SchemaKey {
   private _name: ECName;
@@ -526,7 +590,7 @@ export class SchemaKey {
 }
 
 /**
- *
+ * The SchemaItemKey contains an items name, type, and its schema.
  */
 export class SchemaItemKey {
   private _name: ECName;

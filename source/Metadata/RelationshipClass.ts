@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import { ECClassModifier, RelatedInstanceDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
+import { ECClassModifier, StrengthDirection, RelationshipEnd, RelationshipMultiplicity, SchemaItemType, StrengthType,
         parseStrength, parseStrengthDirection } from "../ECObjects";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -22,7 +22,7 @@ export default class RelationshipClass extends ECClass {
   public readonly schema: Schema;
   public readonly type: SchemaItemType.RelationshipClass;
   protected _strength: StrengthType = StrengthType.Referencing;
-  protected _strengthDirection: RelatedInstanceDirection = RelatedInstanceDirection.Forward;
+  protected _strengthDirection: StrengthDirection = StrengthDirection.Forward;
   protected _source: RelationshipConstraint;
   protected _target: RelationshipConstraint;
 
@@ -47,7 +47,7 @@ export default class RelationshipClass extends ECClass {
    * @param relationship
    * @param direction
    */
-  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -60,8 +60,12 @@ export default class RelationshipClass extends ECClass {
     if (!resolvedRelationship)
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
 
-    if (typeof(direction) === "string")
-      direction = parseStrengthDirection(direction);
+    if (typeof(direction) === "string") {
+      const tmpDirection = parseStrengthDirection(direction);
+      if (undefined === tmpDirection)
+        throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      direction = tmpDirection;
+    }
 
     const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
     return this.addProperty(new NavigationProperty(this, name, lazyRelationship, direction));
@@ -77,13 +81,20 @@ export default class RelationshipClass extends ECClass {
     if (undefined !== jsonObj.strength) {
       if (typeof(jsonObj.strength) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this.name} has an invalid 'strength' attribute. It should be of type 'string'.`);
-      this._strength = parseStrength(jsonObj.strength);
+      const strength = parseStrength(jsonObj.strength);
+      if (undefined === strength)
+        throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.name} has an invalid 'strength' attribute. '${jsonObj.strength}' is not a valid StrengthType`);
+      this._strength = strength;
     }
 
     if (undefined !== jsonObj.strengthDirection) {
       if (typeof(jsonObj.strengthDirection) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this.name} has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
-      this._strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
+
+      const strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
+      if (undefined === strengthDirection)
+        throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.name} has an invalid 'strengthDirection' attribute. '${jsonObj.strengthDirection}' is not a valid StrengthDirection`);
+      this._strengthDirection = strengthDirection;
     }
   }
 }

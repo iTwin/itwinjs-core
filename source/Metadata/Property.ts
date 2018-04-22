@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "../Interfaces";
-import { ECName, PrimitiveType, RelatedInstanceDirection, parsePrimitiveType } from "../ECObjects";
+import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
 import ECClass from "./Class";
@@ -241,17 +241,17 @@ export class StructProperty extends Property {
 
 export class NavigationProperty extends Property {
   protected _relationshipClass: LazyLoadedRelationshipClass;
-  protected _direction: RelatedInstanceDirection;
+  protected _direction: StrengthDirection;
 
   get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
 
   get direction() { return this._direction; }
 
-  constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: RelatedInstanceDirection) {
+  constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: StrengthDirection) {
     super(ecClass, name, PropertyType.Navigation);
     this._relationshipClass = relationship;
 
-    this._direction = (direction !== undefined) ? direction : RelatedInstanceDirection.Forward;
+    this._direction = (direction !== undefined) ? direction : StrengthDirection.Forward;
   }
 }
 

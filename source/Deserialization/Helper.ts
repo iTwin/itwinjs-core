@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
-import { SchemaKey, relationshipEndToString, SchemaItemKey, SchemaItemType, tryParsePrimitiveType, tryParseSchemaItemType, ECVersion } from "../ECObjects";
+import { SchemaKey, relationshipEndToString, SchemaItemKey, SchemaItemType, parsePrimitiveType, parseSchemaItemType, ECVersion } from "../ECObjects";
 import SchemaItem from "../Metadata/SchemaItem";
 import Schema, { MutableSchema } from "../Metadata/Schema";
 import EntityClass, { MutableEntityClass } from "../Metadata/EntityClass";
@@ -153,7 +153,7 @@ export default class SchemaReadHelper {
 
     let schemaItem: AnySchemaItem | undefined;
 
-    switch (tryParseSchemaItemType(schemaItemJson.schemaItemType)) {
+    switch (parseSchemaItemType(schemaItemJson.schemaItemType)) {
        case SchemaItemType.EntityClass:
         schemaItem = await (schema as MutableSchema).createEntityClass(itemName);
         await this.loadEntityClass(schemaItem, schemaItemJson);
@@ -373,7 +373,7 @@ export default class SchemaReadHelper {
       if (typeof(propertyJson.typeName) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'typeName' property. It should be of type 'string'.`);
 
-      if (undefined === tryParsePrimitiveType(propertyJson.typeName))
+      if (undefined === parsePrimitiveType(propertyJson.typeName))
         await this.findSchemaItem(propertyJson.typeName);
     };
 

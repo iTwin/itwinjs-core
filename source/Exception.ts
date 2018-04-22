@@ -19,12 +19,14 @@ export const enum ECObjectsStatus {
   InvalidModifier = ECOBJECTS_ERROR_BASE + 10,
   InvalidMultiplicity = ECOBJECTS_ERROR_BASE + 11,
   InvalidPrimitiveType = ECOBJECTS_ERROR_BASE + 12,
-  InvalidStrength = ECOBJECTS_ERROR_BASE + 13,
-  InvalidStrengthDirection = ECOBJECTS_ERROR_BASE + 14,
-  InvalidType = ECOBJECTS_ERROR_BASE + 15,
-  MissingSchemaUrl = ECOBJECTS_ERROR_BASE + 16,
-  UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 17,
-  InvalidSchemaXML = ECOBJECTS_ERROR_BASE + 18,
+  InvalidSchemaItemType = ECOBJECTS_ERROR_BASE + 13,
+  InvalidStrength = ECOBJECTS_ERROR_BASE + 14,
+  InvalidStrengthDirection = ECOBJECTS_ERROR_BASE + 15,
+  InvalidRelationshipEnd = ECOBJECTS_ERROR_BASE + 16,
+  InvalidType = ECOBJECTS_ERROR_BASE + 17,
+  MissingSchemaUrl = ECOBJECTS_ERROR_BASE + 18,
+  UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 19,
+  InvalidSchemaXML = ECOBJECTS_ERROR_BASE + 20,
 }
 
 export class ECObjectsError extends Error {
@@ -47,8 +49,10 @@ export class ECObjectsError extends Error {
       case ECObjectsStatus.InvalidModifier: return this._appendMessage("ECObjectsStatus.InvalidModifier");
       case ECObjectsStatus.InvalidMultiplicity: return this._appendMessage("ECObjectsStatus.InvalidMultiplicity");
       case ECObjectsStatus.InvalidPrimitiveType: return this._appendMessage("ECObjectsStatus.InvalidPrimitiveType");
+      case ECObjectsStatus.InvalidSchemaItemType: return this._appendMessage("ECObjectsStatus.InvalidSchemaItemType");
       case ECObjectsStatus.InvalidStrength: return this._appendMessage("ECObjectsStatus.InvalidStrength");
       case ECObjectsStatus.InvalidStrengthDirection: return this._appendMessage("ECObjectsStatus.InvalidStrengthDirection");
+      case ECObjectsStatus.InvalidRelationshipEnd: return this._appendMessage("ECObjectsStatus.InvalidRelationshipEnd");
       case ECObjectsStatus.InvalidType: return this._appendMessage("ECObjectsStatus.InvalidType");
       case ECObjectsStatus.MissingSchemaUrl: return this._appendMessage("ECObjectsStatus.MissingSchemaUrl");
       case ECObjectsStatus.UnableToLocateSchema: return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");

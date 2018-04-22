@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaItemKey, SchemaItemType, tryParseSchemaItemType, schemaItemTypeToString } from "../ECObjects";
+import { SchemaItemKey, SchemaItemType, parseSchemaItemType, schemaItemTypeToString } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -40,7 +40,7 @@ export default abstract class SchemaItem {
     if (typeof(jsonObj.schemaItemType) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
 
-    if (tryParseSchemaItemType(jsonObj.schemaItemType) !== this.type)
+    if (parseSchemaItemType(jsonObj.schemaItemType) !== this.type)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.type)}", not "${jsonObj.schemaItemType}".`);
 
     if (undefined !== jsonObj.name) {

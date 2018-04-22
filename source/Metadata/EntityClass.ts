@@ -6,7 +6,7 @@ import ECClass from "./Class";
 import Mixin from "./Mixin";
 import RelationshipClass from "./RelationshipClass";
 import { LazyLoadedMixin } from "../Interfaces";
-import { ECClassModifier, RelatedInstanceDirection, SchemaItemType, parseStrengthDirection } from "../ECObjects";
+import { ECClassModifier, StrengthDirection, SchemaItemType, parseStrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty, AnyProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
@@ -65,7 +65,7 @@ export default class EntityClass extends ECClass {
    * @param relationship
    * @param direction
    */
-  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): Promise<NavigationProperty> {
+  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     if (await this.getProperty(name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
@@ -78,8 +78,12 @@ export default class EntityClass extends ECClass {
     if (!resolvedRelationship)
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
 
-    if (typeof(direction) === "string")
-      direction = parseStrengthDirection(direction);
+    if (typeof(direction) === "string") {
+      const tmpDirection = parseStrengthDirection(direction);
+      if (undefined === tmpDirection)
+        throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      direction = tmpDirection;
+    }
 
     const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
     return this.addProperty(new NavigationProperty(this, name, lazyRelationship, direction));
@@ -115,5 +119,5 @@ export default class EntityClass extends ECClass {
  */
 export abstract class MutableEntityClass extends EntityClass {
   public abstract addMixin(mixin: Mixin): any;
-  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | RelatedInstanceDirection): Promise<NavigationProperty>;
+  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
 }

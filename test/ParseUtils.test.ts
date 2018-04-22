@@ -3,39 +3,41 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ECClassModifier, CustomAttributeContainerType, parsePrimitiveType, parseClassModifier,
-         PrimitiveType, tryParsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
-         RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, RelatedInstanceDirection,
-         parseStrengthDirection, SchemaItemType, schemaItemTypeToString, tryParseSchemaItemType } from "../source/ECObjects";
+import { ECClassModifier, CustomAttributeContainerType, parseClassModifier,
+         PrimitiveType, parsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
+         RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, StrengthDirection,
+         parseStrengthDirection, SchemaItemType, schemaItemTypeToString, parseSchemaItemType, classModifierToString, strengthToString,
+         strengthDirectionToString, parseRelationshipEnd, primitiveTypeToString } from "../source/ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../source/Exception";
 
 describe("Parsing/ToString Functions", () => {
   it("parsePrimitiveType", () => {
-    expect(parsePrimitiveType("binary")).equal(PrimitiveType.Binary);
-    expect(parsePrimitiveType("bool")).equal(PrimitiveType.Boolean);
-    expect(parsePrimitiveType("boolean")).equal(PrimitiveType.Boolean);
-    expect(parsePrimitiveType("dateTime")).equal(PrimitiveType.DateTime);
-    expect(parsePrimitiveType("double")).equal(PrimitiveType.Double);
-    expect(parsePrimitiveType("Bentley.Geometry.Common.IGeometry")).equal(PrimitiveType.IGeometry);
-    expect(parsePrimitiveType("int")).equal(PrimitiveType.Integer);
-    expect(parsePrimitiveType("long")).equal(PrimitiveType.Long);
-    expect(parsePrimitiveType("point2d")).equal(PrimitiveType.Point2d);
-    expect(parsePrimitiveType("point3d")).equal(PrimitiveType.Point3d);
-    expect(parsePrimitiveType("string")).equal(PrimitiveType.String);
-    expect(() => parsePrimitiveType("invalid type")).to.throw(ECObjectsError, "The string 'invalid type' is not one of the 10 supported primitive types.");
+    expect(parsePrimitiveType("BInaRy")).equal(PrimitiveType.Binary);
+    expect(parsePrimitiveType("boOL")).equal(PrimitiveType.Boolean);
+    expect(parsePrimitiveType("boOLean")).equal(PrimitiveType.Boolean);
+    expect(parsePrimitiveType("DaTEtime")).equal(PrimitiveType.DateTime);
+    expect(parsePrimitiveType("DouBlE")).equal(PrimitiveType.Double);
+    expect(parsePrimitiveType("beNTlEY.gEoMeTrY.CoMmoN.igeOMeTRY")).equal(PrimitiveType.IGeometry);
+    expect(parsePrimitiveType("INt")).equal(PrimitiveType.Integer);
+    expect(parsePrimitiveType("loNG")).equal(PrimitiveType.Long);
+    expect(parsePrimitiveType("PoInt2d")).equal(PrimitiveType.Point2d);
+    expect(parsePrimitiveType("POinT3d")).equal(PrimitiveType.Point3d);
+    expect(parsePrimitiveType("STrINg")).equal(PrimitiveType.String);
+    expect(parsePrimitiveType("invalid type")).to.be.undefined;
+  });
 
-    expect(tryParsePrimitiveType("BInaRy")).equal(PrimitiveType.Binary);
-    expect(tryParsePrimitiveType("BoOL")).equal(PrimitiveType.Boolean);
-    expect(tryParsePrimitiveType("boolean")).equal(PrimitiveType.Boolean);
-    expect(tryParsePrimitiveType("DaTEtime")).equal(PrimitiveType.DateTime);
-    expect(tryParsePrimitiveType("DouBlE")).equal(PrimitiveType.Double);
-    expect(tryParsePrimitiveType("beNTlEY.gEoMeTrY.CoMmoN.igeOMeTRY")).equal(PrimitiveType.IGeometry);
-    expect(tryParsePrimitiveType("INt")).equal(PrimitiveType.Integer);
-    expect(tryParsePrimitiveType("loNG")).equal(PrimitiveType.Long);
-    expect(tryParsePrimitiveType("PoInt2d")).equal(PrimitiveType.Point2d);
-    expect(tryParsePrimitiveType("POinT3d")).equal(PrimitiveType.Point3d);
-    expect(tryParsePrimitiveType("STrINg")).equal(PrimitiveType.String);
-    expect(tryParsePrimitiveType("inVAlId")).equal(undefined);
+  it("primitiveTypeToString", () => {
+    expect(primitiveTypeToString(PrimitiveType.Binary)).to.equal("binary");
+    expect(primitiveTypeToString(PrimitiveType.Boolean)).to.equal("boolean");
+    expect(primitiveTypeToString(PrimitiveType.DateTime)).to.equal("dateTime");
+    expect(primitiveTypeToString(PrimitiveType.Double)).to.equal("double");
+    expect(primitiveTypeToString(PrimitiveType.IGeometry)).to.equal("Bentley.Geometry.Common.IGeometry");
+    expect(primitiveTypeToString(PrimitiveType.Integer)).to.equal("int");
+    expect(primitiveTypeToString(PrimitiveType.Long)).to.equal("long");
+    expect(primitiveTypeToString(PrimitiveType.Point2d)).to.equal("point2d");
+    expect(primitiveTypeToString(PrimitiveType.Point3d)).to.equal("point3d");
+    expect(primitiveTypeToString(PrimitiveType.String)).to.equal("string");
+    expect(() => primitiveTypeToString(PrimitiveType.Uninitialized)).to.throw(ECObjectsError, "An invalid PrimitiveType has been provided.");
   });
 
   it("parseClassModifier", () => {
@@ -46,7 +48,14 @@ describe("Parsing/ToString Functions", () => {
     expect(parseClassModifier("aBSTraCT")).to.equal(ECClassModifier.Abstract);
     expect(parseClassModifier("sEALEd")).to.equal(ECClassModifier.Sealed);
     expect(parseClassModifier("NoNE")).to.equal(ECClassModifier.None);
-    expect(() => parseClassModifier("invalid modifier")).to.throw(ECObjectsError, "The string 'invalid modifier' is not a valid ECClassModifier.");
+    expect(parseClassModifier("invalid modifier")).to.be.undefined;
+  });
+
+  it("classModiferToString", () => {
+    expect(classModifierToString(ECClassModifier.Abstract)).to.equal("Abstract");
+    expect(classModifierToString(ECClassModifier.Sealed)).to.equal("Sealed");
+    expect(classModifierToString(ECClassModifier.None)).to.equal("None");
+    expect(() => classModifierToString(5 as ECClassModifier)).to.throw(ECObjectsError, "An invalid ECClassModifier has been provided.");
   });
 
   it("parseCustomAttributeContainerType", () => {
@@ -100,34 +109,54 @@ describe("Parsing/ToString Functions", () => {
     expect(containerTypeToString(combo)).to.equal("Schema,AnyClass,StructProperty,TargetRelationshipConstraint");
   });
 
+  it("parseRelationshipEnd", () => {
+    expect(parseRelationshipEnd("SoUrCE")).to.equal(RelationshipEnd.Source);
+    expect(parseRelationshipEnd("TarGeT")).to.equal(RelationshipEnd.Target);
+    expect(parseRelationshipEnd("inVAlId")).to.be.undefined;
+  });
+
   it("relationshipEndToString", () => {
     expect(relationshipEndToString(RelationshipEnd.Source)).to.equal("Source");
     expect(relationshipEndToString(RelationshipEnd.Target)).to.equal("Target");
+    expect(() => relationshipEndToString(5 as RelationshipEnd)).to.throw(ECObjectsError, "An invalid RelationshipEnd has been provided.");
   });
 
   it("parseStrength", () => {
     expect(parseStrength("ReFEReNcInG")).to.equal(StrengthType.Referencing);
     expect(parseStrength("HOLdIng")).to.equal(StrengthType.Holding);
     expect(parseStrength("EMBedDiNG")).to.equal(StrengthType.Embedding);
-    expect(() => parseStrength("inVAlId")).to.throw(ECObjectsError, "inVAlId is not a valid StrengthType");
+    expect(parseStrength("inVAlId")).to.be.undefined;
+  });
+
+  it("strengthToString", () => {
+    expect(strengthToString(StrengthType.Embedding)).to.equal("Embedding");
+    expect(strengthToString(StrengthType.Referencing)).to.equal("Referencing");
+    expect(strengthToString(StrengthType.Holding)).to.equal("Holding");
+    expect(() => strengthToString(5 as StrengthType)).to.throw(ECObjectsError, "An invalid Strength has been provided.");
   });
 
   it("parseStrengthDirection", () => {
-    expect(parseStrengthDirection("forward")).to.equal(RelatedInstanceDirection.Forward);
-    expect(parseStrengthDirection("BACKWARD")).to.equal(RelatedInstanceDirection.Backward);
-    expect(() => parseStrengthDirection("invalid")).to.throw(ECObjectsError, "invalid is not a valid StrengthDirection.");
+    expect(parseStrengthDirection("forward")).to.equal(StrengthDirection.Forward);
+    expect(parseStrengthDirection("BACKWARD")).to.equal(StrengthDirection.Backward);
+    expect(parseStrengthDirection("invalid")).to.be.undefined;
   });
 
-  it("tryParseSchemaItemType", () => {
-    expect(tryParseSchemaItemType("eNtItyCLaSs")).to.equal(SchemaItemType.EntityClass);
-    expect(tryParseSchemaItemType("mIXIn")).to.equal(SchemaItemType.Mixin);
-    expect(tryParseSchemaItemType("sTRuCTcLaSS")).to.equal(SchemaItemType.StructClass);
-    expect(tryParseSchemaItemType("cuSTomATTRIbuTEClaSs")).to.equal(SchemaItemType.CustomAttributeClass);
-    expect(tryParseSchemaItemType("rELAtIONsHiPClaSs")).to.equal(SchemaItemType.RelationshipClass);
-    expect(tryParseSchemaItemType("enUmERAtiON")).to.equal(SchemaItemType.Enumeration);
-    expect(tryParseSchemaItemType("KiNDofQuaNTiTy")).to.equal(SchemaItemType.KindOfQuantity);
-    expect(tryParseSchemaItemType("prOpeRtYcAteGoRy")).to.equal(SchemaItemType.PropertyCategory);
-    expect(tryParseSchemaItemType("inVAlId")).to.not.exist;
+  it("strengthDirectionToString", () => {
+    expect(strengthDirectionToString(StrengthDirection.Backward)).to.equal("Backward");
+    expect(strengthDirectionToString(StrengthDirection.Forward)).to.equal("Forward");
+    expect(() => strengthDirectionToString(5 as StrengthDirection)).to.throw(ECObjectsError, "An invalid StrengthDirection has been provided.");
+  });
+
+  it("parseSchemaItemType", () => {
+    expect(parseSchemaItemType("eNtItyCLaSs")).to.equal(SchemaItemType.EntityClass);
+    expect(parseSchemaItemType("mIXIn")).to.equal(SchemaItemType.Mixin);
+    expect(parseSchemaItemType("sTRuCTcLaSS")).to.equal(SchemaItemType.StructClass);
+    expect(parseSchemaItemType("cuSTomATTRIbuTEClaSs")).to.equal(SchemaItemType.CustomAttributeClass);
+    expect(parseSchemaItemType("rELAtIONsHiPClaSs")).to.equal(SchemaItemType.RelationshipClass);
+    expect(parseSchemaItemType("enUmERAtiON")).to.equal(SchemaItemType.Enumeration);
+    expect(parseSchemaItemType("KiNDofQuaNTiTy")).to.equal(SchemaItemType.KindOfQuantity);
+    expect(parseSchemaItemType("prOpeRtYcAteGoRy")).to.equal(SchemaItemType.PropertyCategory);
+    expect(parseSchemaItemType("inVAlId")).to.be.undefined;
   });
 
   it("schemaItemTypeToString", () => {
@@ -139,6 +168,7 @@ describe("Parsing/ToString Functions", () => {
     expect(schemaItemTypeToString(SchemaItemType.Enumeration)).to.equal("Enumeration");
     expect(schemaItemTypeToString(SchemaItemType.KindOfQuantity)).to.equal("KindOfQuantity");
     expect(schemaItemTypeToString(SchemaItemType.PropertyCategory)).to.equal("PropertyCategory");
+    expect(() => schemaItemTypeToString(50 as SchemaItemType)).to.throw(ECObjectsError, "An invalid SchemaItemType has been provided.");
   });
 });
 
@@ -156,8 +186,10 @@ describe("ECObjectsError ", () => {
     expect(new ECObjectsError(ECObjectsStatus.InvalidModifier, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidModifier: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidMultiplicity, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidMultiplicity: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidPrimitiveType: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidSchemaItemType: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidStrength, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrength: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrengthDirection: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidRelationshipEnd: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidType: msg");
     expect(new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "msg").toDebugString()).to.equal("ECObjectsStatus.MissingSchemaUrl: msg");
     expect(new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.UnableToLocateSchema: msg");
