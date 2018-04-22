@@ -26,7 +26,7 @@ describe("Handles", () => {
     /** Test constructors */
     let a: Handle = new Handle();
     assert.exists(a, "constructor test 1 failed");
-    assert.isFalse(a.isValid(), "constructor test 2 failed");
+    assert.isFalse(a.isValid, "constructor test 2 failed");
     assert.isTrue(a.value === Handle.INVALID_VALUE, "constructor test 3 failed");
     a = new Handle(50);
     assert.exists(a, "constructor test 4 failed");
@@ -37,17 +37,9 @@ describe("Handles", () => {
 
     /** Test isValid function */
     a = new Handle();
-    assert.isFalse(a.isValid(), "isValid test 1 failed");
+    assert.isFalse(a.isValid, "isValid test 1 failed");
     a.value = 25;
-    assert.isTrue(a.isValid(), "isValid test 2 failed");
-
-    /** Test rawInit function */
-    a = new Handle();
-    a.value = 30;
-    assert.isTrue(a.isValid(), "rawInit test 1 failed");
-    a.rawInit();
-    assert.isFalse(a.isValid(), "rawInit test 2 failed");
-    assert.isTrue(a.value === Handle.INVALID_VALUE, "rawInit test 3 failed");
+    assert.isTrue(a.isValid, "isValid test 2 failed");
   });
 
   it("should create and use BufferHandles for GL resources", () => {
@@ -63,7 +55,7 @@ describe("Handles", () => {
     /** Test constructors */
     let a: BufferHandle = new BufferHandle();
     assert.exists(a, "constructor test 1 failed");
-    assert.isFalse(a.isValid(), "constructor test 2 failed");
+    assert.isFalse(a.isValid, "constructor test 2 failed");
     assert.isTrue(a.value === Handle.INVALID_VALUE, "constructor test 3 failed");
     let tempBuf: WebGLBuffer | null = gl.createBuffer();
     a.value = tempBuf;
@@ -75,23 +67,23 @@ describe("Handles", () => {
     /** Test init function */
     a = new BufferHandle();
     a.init(gl);
-    assert.isTrue(a.isValid(), "init test 1 failed");
+    assert.isTrue(a.isValid, "init test 1 failed");
     tempBuf = a.value;
     assert.isTrue(a.value === tempBuf, "init test 2 failed");
     a.init(gl);
-    assert.isTrue(a.isValid(), "init test 3 failed");
+    assert.isTrue(a.isValid, "init test 3 failed");
     assert.isTrue(a.value !== tempBuf, "init test 4 failed");
 
     /** Test invalidate function */
     a = new BufferHandle();
     a.invalidate(gl);
-    assert.isFalse(a.isValid(), "invalidate test 1 failed");
+    assert.isFalse(a.isValid, "invalidate test 1 failed");
     tempBuf = gl.createBuffer();
     a.value = tempBuf;
     assert.isTrue(a.value === tempBuf, "invalidate test 2 failed");
-    assert.isTrue(a.isValid(), "invalidate test 3 failed");
+    assert.isTrue(a.isValid, "invalidate test 3 failed");
     a.invalidate(gl);
-    assert.isFalse(a.isValid(), "invalidate test 4 failed");
+    assert.isFalse(a.isValid, "invalidate test 4 failed");
     assert.isTrue(a.value !== tempBuf, "invalidate test 5 failed");
 
     /** Test bind function */
@@ -115,18 +107,18 @@ describe("Handles", () => {
     gl.bufferData(gl.ARRAY_BUFFER, 1024, gl.STATIC_DRAW);
     assert.isTrue(gl.getBufferParameter(gl.ARRAY_BUFFER, GL.Buffer.BufferSize) === 1024, "verifySize test 1 failed");
     a.verifySize(gl, GL.Buffer.ArrayBuffer, 1024);
-    assert.isTrue(a.isValid(), "verifySize test 2 failed");
+    assert.isTrue(a.isValid, "verifySize test 2 failed");
     a.verifySize(gl, GL.Buffer.ArrayBuffer, 1023);
-    assert.isFalse(a.isValid(), "verifySize test 3 failed");
+    assert.isFalse(a.isValid, "verifySize test 3 failed");
     tempBuf = gl.createBuffer();
     a.value = tempBuf;
     gl.bindBuffer(gl.ARRAY_BUFFER, a.value);
     gl.bufferData(gl.ARRAY_BUFFER, 512, gl.STATIC_DRAW);
     assert.isTrue(gl.getBufferParameter(gl.ARRAY_BUFFER, GL.Buffer.BufferSize) === 512, "verifySize test 4 failed");
     a.verifySize(gl, GL.Buffer.ArrayBuffer, 512);
-    assert.isTrue(a.isValid(), "verifySize test 5 failed");
+    assert.isTrue(a.isValid, "verifySize test 5 failed");
     a.verifySize(gl, GL.Buffer.ArrayBuffer, 513);
-    assert.isFalse(a.isValid(), "verifySize test 6 failed");
+    assert.isFalse(a.isValid, "verifySize test 6 failed");
 
     /** Test static bind function */
     tempBuf = gl.createBuffer();
@@ -168,7 +160,7 @@ describe("Handles", () => {
     /** Test constructors */
     let a: QBufferHandle2d = new QBufferHandle2d();
     assert.exists(a, "constructor test 1 failed");
-    assert.isFalse(a.isValid(), "constructor test 2 failed");
+    assert.isFalse(a.isValid, "constructor test 2 failed");
     assert.isTrue(a.value === Handle.INVALID_VALUE, "constructor test 3 failed");
     const tempParams: [number, number, number, number] = [0, 1, 2, 3];
     a.value = tempParams;
@@ -186,7 +178,7 @@ describe("Handles", () => {
     }
     a = new QBufferHandle2d(params);
     assert.exists(a, "constructor test 7 failed");
-    assert.isFalse(a.isValid(), "constructor test 8 failed");
+    assert.isFalse(a.isValid, "constructor test 8 failed");
     assert.isTrue(a.params[0] === 5, "constructor test 9 failed");
     assert.isTrue(a.params[1] === 0, "constructor test 10 failed" + a.params[1]);
     assert.isTrue(a.params[2] === 1 / scalexy.x, "constructor test 11 failed " + 1 / scalexy.x + " " + a.params[2]);
@@ -198,7 +190,7 @@ describe("Handles", () => {
     }
     a = new QBufferHandle2d(params);
     assert.exists(a, "constructor test 7 failed");
-    assert.isFalse(a.isValid(), "constructor test 8 failed");
+    assert.isFalse(a.isValid, "constructor test 8 failed");
     assert.isTrue(a.params[0] === 1, "constructor test 9 failed");
     assert.isTrue(a.params[1] === 0.876, "constructor test 10 failed" + a.params[1]);
     assert.isTrue(a.params[2] === 0, "constructor test 11 failed " + 1 / scalexy.x + " " + a.params[2] + " " + 1 / scalexy.y);
@@ -209,7 +201,7 @@ describe("Handles", () => {
     /** Test constructors */
     let a: QBufferHandle3d = new QBufferHandle3d();
     assert.exists(a, "constructor test 1 failed");
-    assert.isFalse(a.isValid(), "constructor test 2 failed");
+    assert.isFalse(a.isValid, "constructor test 2 failed");
     assert.isTrue(a.value === Handle.INVALID_VALUE, "constructor test 3 failed");
     const tempOrigin: Point3d = new Point3d(0, 3, 5);
     const tempScale: Point3d = new Point3d(1, 2, 4);
@@ -237,7 +229,7 @@ describe("Handles", () => {
     }
     a = new QBufferHandle3d(params);
     assert.exists(a, "constructor test 13 failed");
-    assert.isFalse(a.isValid(), "constructor test 14 failed");
+    assert.isFalse(a.isValid, "constructor test 14 failed");
     assert.isTrue(a.origin.x === 0, "constructor test 15 failed");
     assert.isTrue(a.origin.y === 1.78, "constructor test 16 failed");
     assert.isTrue(a.origin.z === 55, "constructor test 17 failed");
@@ -251,7 +243,7 @@ describe("Handles", () => {
     }
     a = new QBufferHandle3d(params);
     assert.exists(a, "constructor test 21 failed");
-    assert.isFalse(a.isValid(), "constructor test 22 failed");
+    assert.isFalse(a.isValid, "constructor test 22 failed");
     assert.isTrue(a.origin.x === 20, "constructor test 23 failed");
     assert.isTrue(a.origin.y === 1.78, "constructor test 24 failed");
     assert.isTrue(a.origin.z === 55, "constructor test 25 failed");
@@ -264,7 +256,7 @@ describe("Handles", () => {
     /** Test constructors */
     let a: AttributeHandle = new AttributeHandle();
     assert.exists(a, "constructor test 1 failed");
-    assert.isFalse(a.isValid(), "constructor test 2 failed");
+    assert.isFalse(a.isValid, "constructor test 2 failed");
     assert.isTrue(a.value === Handle.INVALID_VALUE, "constructor test 3 failed");
     a = new AttributeHandle(50);
     assert.exists(a, "constructor test 4 failed");
@@ -284,31 +276,31 @@ describe("Handles", () => {
 
     /** Test init function */
     a = new AttributeHandle(50);
-    assert.isTrue(a.isValid(), "init test 1 failed");
+    assert.isTrue(a.isValid, "init test 1 failed");
     assert.isTrue(a.value === 50, "init test 2 failed");
     let tempProg = gl.createProgram();
     if (tempProg) {
       a.init(gl, tempProg, "testAttrib", true);
     }
     assert.isFalse(a.value === 50, "init test 3 failed");
-    assert.isTrue(a.isValid(), "init test 4 failed");
+    assert.isTrue(a.isValid, "init test 4 failed");
     assert.isFalse(a.value === -1, "init test 5 failed\nvalue = " + a.value);
     const tempProg2 = gl.createProgram();
     if (tempProg2) {
       b.init(gl, tempProg2, "testAttrib", true);
     }
-    assert.isTrue(b.isValid(), "init test 6 failed");
+    assert.isTrue(b.isValid, "init test 6 failed");
     assert.isFalse(b.value === -1, "init test 7 failed\nvalue = " + b.value);
 
     /** Test invalidate function */
     a = new AttributeHandle();
-    assert.isFalse(a.isValid(), "invalidate test 1 failed");
+    assert.isFalse(a.isValid, "invalidate test 1 failed");
     a.invalidate();
-    assert.isFalse(a.isValid(), "invalidate test 2 failed");
+    assert.isFalse(a.isValid, "invalidate test 2 failed");
     a = new AttributeHandle(50);
-    assert.isTrue(a.isValid(), "invalidate test 3 failed");
+    assert.isTrue(a.isValid, "invalidate test 3 failed");
     a.invalidate();
-    assert.isFalse(a.isValid(), "invalidate test 4 failed");
+    assert.isFalse(a.isValid, "invalidate test 4 failed");
 
     /** Test setVertexAttribPointer function */
     let vbo = gl.createBuffer();
@@ -405,7 +397,7 @@ describe("Handles", () => {
     /** Test constructors */
     let a: UniformHandle = new UniformHandle();
     assert.exists(a, "constructor test 1 failed");
-    assert.isFalse(a.isValid(), "constructor test 2 failed");
+    assert.isFalse(a.isValid, "constructor test 2 failed");
     assert.isTrue(a.value === Handle.INVALID_VALUE, "constructor test 3 failed");
     a = new UniformHandle(50);
     assert.exists(a, "constructor test 4 failed");
@@ -425,31 +417,31 @@ describe("Handles", () => {
 
     /** Test init function */
     a = new UniformHandle(50);
-    assert.isTrue(a.isValid(), "init test 1 failed");
+    assert.isTrue(a.isValid, "init test 1 failed");
     assert.isTrue(a.value === 50, "init test 2 failed");
     const tempProg = gl.createProgram();
     if (tempProg) {
       a.init(gl, tempProg, "testAttrib", true);
     }
     assert.isFalse(a.value === 50, "init test 3 failed");
-    assert.isTrue(a.isValid(), "init test 4 failed");
+    assert.isTrue(a.isValid, "init test 4 failed");
     assert.isFalse(a.value === -1, "init test 5 failed\nvalue = " + a.value);
     const tempProg2 = gl.createProgram();
     if (tempProg2) {
       b.init(gl, tempProg2, "testAttrib", true);
     }
-    assert.isTrue(b.isValid(), "init test 6 failed");
+    assert.isTrue(b.isValid, "init test 6 failed");
     assert.isFalse(b.value === -1, "init test 7 failed\nvalue = " + b.value);
 
     /** Test invalidate function */
     a = new UniformHandle();
-    assert.isFalse(a.isValid(), "invalidate test 1 failed");
+    assert.isFalse(a.isValid, "invalidate test 1 failed");
     a.invalidate();
-    assert.isFalse(a.isValid(), "invalidate test 2 failed");
+    assert.isFalse(a.isValid, "invalidate test 2 failed");
     a = new UniformHandle(50);
-    assert.isTrue(a.isValid(), "invalidate test 3 failed");
+    assert.isTrue(a.isValid, "invalidate test 3 failed");
     a.invalidate();
-    assert.isFalse(a.isValid(), "invalidate test 4 failed");
+    assert.isFalse(a.isValid, "invalidate test 4 failed");
 
     /** Still need to test setMatrix function (for both Matrix3 and Matrix4 data) */
     /** Not sure if there's a viable way to test for what uniformMatrix[234]fv() has been set */

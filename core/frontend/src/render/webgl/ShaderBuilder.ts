@@ -689,8 +689,8 @@ export class ProgramBuilder {
     this.addInlineComputedVarying(name, type, computation);
   }
 
-  public buildProgram(): ShaderProgram {
-    const prog = new ShaderProgram(this._vert.buildSource(), this._frag.buildSource(), this._vert.headerComment);
+  public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
+    const prog = new ShaderProgram(this._vert.buildSource(), this._frag.buildSource(), this._vert.headerComment, gl);
     this._vert.addBindings(prog);
     this._frag.addBindings(prog, this._vert);
     return prog;

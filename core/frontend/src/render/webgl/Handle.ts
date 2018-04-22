@@ -34,8 +34,7 @@ export class Handle {
     }
   }
 
-  public isValid(): boolean { return Handle.INVALID_VALUE !== this.value; }
-  public rawInit(): void { this.value = Handle.INVALID_VALUE; } // for member of union...
+  public get isValid(): boolean { return Handle.INVALID_VALUE !== this.value; }
 }
 
 /** A handle to buffer, such as a vertex or index buffer. */
@@ -69,7 +68,7 @@ export class BufferHandle extends Handle {
 
   public invalidate(gl: WebGLRenderingContext): void {
     // assert(GarbageCollector::IsRenderThread());
-    if (this.isValid()) {
+    if (this.isValid) {
       gl.deleteBuffer(this.value);
       this.value = Handle.INVALID_VALUE;
 
@@ -78,7 +77,7 @@ export class BufferHandle extends Handle {
       //   bytesUsed = 0;
       // #endif
     }
-    assert(!this.isValid());
+    assert(!this.isValid);
   }
 
   public bind(gl: WebGLRenderingContext, target: number): void {
@@ -86,7 +85,7 @@ export class BufferHandle extends Handle {
   }
 
   public verifySize(gl: WebGLRenderingContext, target: number, expectedSize: number): void {
-    if (!this.isValid()) {
+    if (!this.isValid) {
       return;
     }
 
@@ -194,8 +193,8 @@ export class AttributeHandle extends Handle {
   public init(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean): boolean {
     this.invalidate();
     this.value = gl.getAttribLocation(program, name);
-    assert(!required || this.isValid());
-    return this.isValid();
+    assert(!required || this.isValid);
+    return this.isValid;
   }
 
   public invalidate(): void {
@@ -242,8 +241,8 @@ export class UniformHandle extends Handle {
   public init(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean): boolean {
     this.invalidate();
     this.value = gl.getUniformLocation(program, name);
-    assert(!required || this.isValid());
-    return this.isValid();
+    assert(!required || this.isValid);
+    return this.isValid;
   }
 
   public invalidate(): void {
