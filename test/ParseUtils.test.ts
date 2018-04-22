@@ -12,17 +12,17 @@ import { ECObjectsError, ECObjectsStatus } from "../source/Exception";
 
 describe("Parsing/ToString Functions", () => {
   it("parsePrimitiveType", () => {
-    expect(parsePrimitiveType("binary")).equal(PrimitiveType.Binary);
-    expect(parsePrimitiveType("bool")).equal(PrimitiveType.Boolean);
-    expect(parsePrimitiveType("boolean")).equal(PrimitiveType.Boolean);
-    expect(parsePrimitiveType("dateTime")).equal(PrimitiveType.DateTime);
-    expect(parsePrimitiveType("double")).equal(PrimitiveType.Double);
-    expect(parsePrimitiveType("Bentley.Geometry.Common.IGeometry")).equal(PrimitiveType.IGeometry);
-    expect(parsePrimitiveType("int")).equal(PrimitiveType.Integer);
-    expect(parsePrimitiveType("long")).equal(PrimitiveType.Long);
-    expect(parsePrimitiveType("point2d")).equal(PrimitiveType.Point2d);
-    expect(parsePrimitiveType("point3d")).equal(PrimitiveType.Point3d);
-    expect(parsePrimitiveType("string")).equal(PrimitiveType.String);
+    expect(parsePrimitiveType("BInaRy")).equal(PrimitiveType.Binary);
+    expect(parsePrimitiveType("boOL")).equal(PrimitiveType.Boolean);
+    expect(parsePrimitiveType("boOLean")).equal(PrimitiveType.Boolean);
+    expect(parsePrimitiveType("DaTEtime")).equal(PrimitiveType.DateTime);
+    expect(parsePrimitiveType("DouBlE")).equal(PrimitiveType.Double);
+    expect(parsePrimitiveType("beNTlEY.gEoMeTrY.CoMmoN.igeOMeTRY")).equal(PrimitiveType.IGeometry);
+    expect(parsePrimitiveType("INt")).equal(PrimitiveType.Integer);
+    expect(parsePrimitiveType("loNG")).equal(PrimitiveType.Long);
+    expect(parsePrimitiveType("PoInt2d")).equal(PrimitiveType.Point2d);
+    expect(parsePrimitiveType("POinT3d")).equal(PrimitiveType.Point3d);
+    expect(parsePrimitiveType("STrINg")).equal(PrimitiveType.String);
     expect(parsePrimitiveType("invalid type")).to.be.undefined;
   });
 
