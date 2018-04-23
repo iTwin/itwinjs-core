@@ -115,7 +115,7 @@ export class RenderContext extends ViewContext {
 
 export class DecorateContext extends RenderContext {
   private readonly decorations = new Decorations();
-  constructor(vp: Viewport) { super(vp); }
+  constructor(vp: Viewport, decorations?: Decorations) { super(vp); if (!!decorations) this.decorations = decorations; }
   public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
   public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
   public drawHit(hit: HitDetail): void {
