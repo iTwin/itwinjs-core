@@ -13,6 +13,10 @@ import * as addonTypes from "./AddonResponses";
 
 describe("ECPresentationManager", () => {
 
+  beforeEach(() => {
+    IModelHost.shutdown();
+  });
+
   it("uses default native library implementation if not overridden", () => {
     IModelHost.startup();
     const manager = new ECPresentationManager();

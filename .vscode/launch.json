@@ -23,71 +23,77 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tests: Backend",
+      "name": "Tests: Common",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "cwd": "${workspaceFolder}/src/backend",
-      "env": {
-        "TS_NODE_CACHE_DIRECTORY": "${workspaceRoot}/ts-node"
-      },
+      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "cwd": "${workspaceFolder}/src/common",
       "args": [
-        "--opts",
-        "../../mocha.opts",
-        "--timeout",
-        "0",
-        "${workspaceFolder}/src/backend/**/*.test.ts"
+        "--noTimeouts"
       ],
       "runtimeArgs": [
-        "--inspect-brk"
+        "--inspect",
+        "--nolazy"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Backend",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "cwd": "${workspaceFolder}/src/backend",
+      "args": [
+        "--noTimeouts"
       ],
-      "outFiles": ["${workspaceRoot}/ts-node/**"],
-      "port": 9229
+      "runtimeArgs": [
+        "--inspect",
+        "--nolazy"
+      ]
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Frontend",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/scripts/run-tests.js",
       "cwd": "${workspaceFolder}/src/frontend",
-      "env": {
-        "TS_NODE_CACHE_DIRECTORY": "${workspaceRoot}/ts-node"
-      },
       "args": [
-        "--opts",
-         "../../mocha.opts",
-        "--timeout",
-         "0",
-        "${workspaceFolder}/src/frontend/**/*.test.ts"
+        "--noTimeouts"
       ],
       "runtimeArgs": [
-        "--inspect-brk"
+        "--inspect",
+        "--nolazy"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: Controls",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "cwd": "${workspaceFolder}/src/controls",
+      "args": [
+        "--noTimeouts"
       ],
-      "outFiles": ["${workspaceRoot}/ts-node/**"],
-      "port": 9229
+      "runtimeArgs": [
+        "--inspect",
+        "--nolazy"
+      ]
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Tests: Integration",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "cwd": "${workspaceFolder}/src/test",
-      "env": {
-        "TS_NODE_CACHE_DIRECTORY": "${workspaceRoot}/ts-node"
-      },
+      "program": "${workspaceFolder}/scripts/run-tests.js",
+      "cwd": "${workspaceFolder}/src/tests",
       "args": [
-        "--opts",
-        "../../mocha.opts",
-        "--timeout",
-        "0",
-        "${workspaceFolder}/src/test/**/SelectionManagerImpl.test.ts"
+        "--noTimeouts"
       ],
       "runtimeArgs": [
-        "--inspect-brk"
-      ],
-      "outFiles": ["${workspaceRoot}/ts-node/**"],
-      "port": 9229
+        "--inspect",
+        "--nolazy"
+      ]
     },
     {
       "type": "node",

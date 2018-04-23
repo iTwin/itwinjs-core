@@ -9,13 +9,12 @@
   },
   "private": true,
   "scripts": {
-    "build": "echo disabled",
-    "clean": "echo disabled",
-    "cover": "nyc npm run test:cover",
+    "build": "",
+    "clean": "",
+    "cover": "nyc node ../../scripts/run-tests.js --coverage",
     "lint": "tslint -p ./tsconfig.json",
-    "require": "node ../../scripts/require-dependency-modules.js --base ./ @bentley/ecpresentation-common @bentley/ecpresentation-backend @bentley/ecpresentation-frontend @bentley/ecpresentation-controls",
-    "test": "mocha --opts ../../mocha.opts  ./**.test.ts",
-    "test:cover": "npm run require && mocha --recursive ./**.test.ts"
+    "test": "node ../../scripts/run-tests.js",
+    "watch": "npm run test -- --watch"
   },
   "dependencies": {},
   "devDependencies": {
@@ -32,9 +31,15 @@
     "@bentley/imodeljs-e_1_6_11-win32-x64": "^15.3.1",
     "@bentley/imodeljs-n_8-win32-x64": "^15.3.1",
     "@types/chai": "^4.0.10",
+    "@types/chai-spies": "0.0.0",
+    "@types/faker": "^4.1.0",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
-    "mocha": "^4.0.1",
+    "chai-spies": "1.0.0",
+    "chokidar": "^2.0.0",
+    "faker": "^4.1.0",
+    "mocha-junit-reporter": "^1.0.0",
+    "mocha-multi-reporters": "^1.1.7",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.0",
@@ -46,8 +51,8 @@
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",
-    "report-dir": "../coverage/integration",
-    "temp-directory": "../coverage/integration/.nyc_output",
+    "report-dir": "../out/reports/coverage/integration",
+    "temp-directory": "../out/reports/coverage/integration/.nyc_output",
     "cwd": "../",
     "include": [
       "common/lib/**/*.js",

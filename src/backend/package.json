@@ -19,12 +19,11 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib package-deps.json",
-    "cover": "nyc npm run test:cover",
+    "cover": "nyc node ../../scripts/run-tests.js --coverage",
     "lint": "tslint -p ./tsconfig.json",
     "prepublishOnly": "npm run build",
-    "require": "node ../../scripts/require-lib-modules.js --base ./",
-    "test": "mocha --opts ../../mocha.opts **/*.test.ts",
-    "test:cover": "npm run require && mocha --recursive **/*.test.ts"
+    "test": "node ../../scripts/run-tests.js",
+    "watch": "npm run test -- --watch"
   },
   "dependencies": {
     "@bentley/ecpresentation-common": "~0.0.5"
@@ -48,7 +47,10 @@
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
     "chai-spies": "1.0.0",
+    "chokidar": "^2.0.0",
     "faker": "^4.1.0",
+    "mocha-junit-reporter": "^1.0.0",
+    "mocha-multi-reporters": "^1.1.7",
     "node-replace": "~0.3.3",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",
@@ -61,7 +63,7 @@
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",
-    "temp-directory": "../../coverage/backend/.nyc_output",
-    "report-dir": "../../coverage/backend"
+    "temp-directory": "../../out/reports/coverage/backend/.nyc_output",
+    "report-dir": "../../out/reports/coverage/backend"
   }
 }

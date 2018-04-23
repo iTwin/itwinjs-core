@@ -29,15 +29,17 @@
     "lint": "echo use 'rush lint'",
     "start": "cd src/sample && npm start",
     "test": "echo use 'rush test'",
+    "test:merge": "node scripts/merge-test-reports.js --reportsDir out/reports/tests",
     "cover": "echo use 'rush cover'",
-    "cover:merge": "node scripts/merge-coverage-reports.js --coverageDir ./coverage"
+    "cover:merge": "node scripts/merge-coverage-reports.js --coverageDir out/reports/coverage"
   },
   "dependencies": {},
   "devDependencies": {
     "@bentley/bentleyjs-tools": "^2.2.0",
-    "istanbul-lib-report":"^1.1.3",
-    "istanbul-reports":"^1.3.0",
-    "istanbul-lib-coverage":"^1.2.0",
+    "istanbul-lib-report": "^1.1.3",
+    "istanbul-reports": "^1.3.0",
+    "istanbul-lib-coverage": "^1.2.0",
+    "junit-report-merger": "^0.0.6",
     "tslint-consistent-codestyle": "^1.11.0",
     "typescript": "^2.6.2",
     "yargs": "^11.0.0"

@@ -7,11 +7,8 @@
 /src/sample/node_modules
 /src/test/node_modules
 
-# testing
-/coverage
-/ts-node
-
 # production
+/out
 /lib
 /src/common/lib
 /src/backend/lib
