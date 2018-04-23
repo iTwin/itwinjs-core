@@ -4,22 +4,22 @@
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags,
          FeatureTable,
-         Graphic,
+         RenderGraphic,
          IModel,
          GraphicBranch } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 
-export abstract class GLESGraphic extends Graphic {
+export abstract class Graphic extends RenderGraphic {
   constructor(public readonly iModel: IModel) { super(iModel); }
   // public abstract addCommands(commands: RenderCommands): void;
-  // public abstract addHiliteCommands(commands: DrawCommands, batch: GLESBatch): void;
+  // public abstract addHiliteCommands(commands: DrawCommands, batch: Batch): void;
   // public abstract setUniformFeatureIndices(uint32_t): void;
   // public abstract toPrimitive(): Primitive;
   // public abstract setIsPixelMode(): void;
 }
 
-export class GLESBatch extends GLESGraphic {
-  public get graphic(): GLESGraphic { return this._graphic; }
+export class Batch extends Graphic {
+  public get graphic(): Graphic { return this._graphic; }
   public get featureTable(): FeatureTable { return this._features; }
   // public get overrides(): FeatureOverrides[] { return this._overrides; }
   // public get pickTable(): PickTable { return this._pickTable; }
@@ -33,10 +33,10 @@ export class GLESBatch extends GLESGraphic {
   //   this._overrides.erase(target);
   // }
   // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: GLESBatch): void { assert(false); }
+  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
 }
 
-export class GLESBranch extends GLESGraphic {
+export class Branch extends Graphic {
   public get localToWorldTransform(): Transform { return this._localToWorldTransform; }
   // public clipPlanes: ClipPlane;
   constructor(iModel: IModelConnection,
@@ -45,15 +45,15 @@ export class GLESBranch extends GLESGraphic {
               _clips?: ClipVector,
               _viewflags?: ViewFlags) { super(iModel); }
   // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: GLESBatch): void { assert(false); }
+  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
   // public push(shader: ShaderProgramExecutor): void {}
   // public pop(shader: ShaderProgramExecutor): void {}
   // public setUniformFeatureIndices(uint32_t)
 }
 
-export class GLESList extends GLESGraphic {
-  constructor(public graphics: Graphic[], iModel: IModelConnection) { super(iModel); }
+export class GraphicsList extends Graphic {
+  constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); }
   // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: GLESBatch): void { assert(false); }
+  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
   // public setUniformFeatureIndices(uint32_t)
 }

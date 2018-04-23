@@ -174,12 +174,12 @@ export class TriMeshArgs {
 /**
  * A renderer-specific object that can be placed into a display list.
  */
-export abstract class Graphic {
+export abstract class RenderGraphic {
   constructor(public readonly iModel: IModel) { }
 }
 
 /**
- * The "cooked" material and symbology for a Render::Graphic. This determines the appearance
+ * The "cooked" material and symbology for a RenderGraphic. This determines the appearance
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
  */
 export class GraphicParams {
@@ -245,25 +245,25 @@ export const enum RenderMode {
 }
 
 export class GraphicList {
-  public list: Graphic[] = [];
+  public list: RenderGraphic[] = [];
   public isEmpty(): boolean { return this.list.length === 0; }
   public clear() { this.list.length = 0; }
-  public add(graphic: Graphic) { this.list.push(graphic); }
+  public add(graphic: RenderGraphic) { this.list.push(graphic); }
   public getCount(): number { return this.list.length; }
-  public at(index: number): Graphic | undefined { return this.list[index]; }
+  public at(index: number): RenderGraphic | undefined { return this.list[index]; }
   public get length(): number { return this.list.length; }
-  constructor(...graphics: Graphic[]) { graphics.forEach(this.add.bind(this)); }
+  constructor(...graphics: RenderGraphic[]) { graphics.forEach(this.add.bind(this)); }
 }
 
 export class DecorationList extends GraphicList {
 }
 
 /**
- * A set of GraphicLists of various types of Graphics that are "decorated" into the Render::Target,
+ * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the RenderTarget,
  * in addition to the Scene.
  */
 export class Decorations {
-  public viewBackground?: Graphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
   public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
   public worldOverlay?: DecorationList; // drawn in overlay mode, world units
@@ -271,11 +271,11 @@ export class Decorations {
 }
 
 export class GraphicBranch {
-  public get entries(): Graphic[] { return this._entries; }
-  constructor(private _entries: Graphic[] = [],
+  public get entries(): RenderGraphic[] { return this._entries; }
+  constructor(private _entries: RenderGraphic[] = [],
               private _viewFlagOverrides: ViewFlag.Overrides = new ViewFlag.Overrides()) {}
-  public add(graphic: Graphic): void { this._entries.push(graphic); }
-  public addRange(graphics: Graphic[]): void { graphics.forEach(this.add); }
+  public add(graphic: RenderGraphic): void { this._entries.push(graphic); }
+  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
   public setViewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides = ovr; }
   public getViewFlags(flags: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags); }
   public clear() { this._entries = []; }
@@ -969,7 +969,7 @@ export class GeometryParams {
   /**  Get whether background color solid fill should display an outline using the line color or not */
   public isBackgroundFillOutlined(): boolean { return BackgroundFill.Outline === this.backgroundFill; }
 
-  /**  Get gradient fill information. Valid when FillDisplay::Never != GetFillDisplay() and not nullptr. */
+  /**  Get gradient fill information. Valid when FillDisplay.Never != GetFillDisplay() and not nullptr. */
   public getGradient() { return this.gradient; }
 
   /**  Get the area pattern params. */
@@ -1039,7 +1039,7 @@ export namespace Hilite {
 }
 
 /**
- * Describes a "feature" within a batched Graphic. A batched Graphic can
+ * Describes a "feature" within a batched RenderGraphic. A batched RenderGraphic can
  * contain multiple features. Each feature is associated with a unique combination of
  * attributes (element ID, subcategory, geometry class). This allows geometry to be
  * more efficiently batched on the GPU, while enabling features to be re-symbolized
@@ -1059,11 +1059,11 @@ export class Feature {
 }
 
 /**
- * Defines a look-up table for Features within a batched Graphic. Consecutive 32-bit
- * indices are assigned to each unique Feature. Primitives within the Graphic can
+ * Defines a look-up table for Features within a batched RenderGraphic. Consecutive 32-bit
+ * indices are assigned to each unique Feature. Primitives within the RenderGraphic can
  * use per-vertex indices to specify the distribution of Features within the primitive.
- * A FeatureTable can be shared amongst multiple primitives within a single Graphic, and
- * amongst multiple sub-Graphics of a Graphic.
+ * A FeatureTable can be shared amongst multiple primitives within a single RenderGraphic, and
+ * amongst multiple sub-graphics of a RenderGraphic.
  */
 export class FeatureTable {
   public get size(): number { return this.map.size; }

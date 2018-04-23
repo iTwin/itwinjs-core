@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { Graphic, /*TriMeshArgs, IndexedPolylineArgs,*/ OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges } from "@bentley/imodeljs-common";
+import { RenderGraphic, /*TriMeshArgs, IndexedPolylineArgs,*/ OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges } from "@bentley/imodeljs-common";
 import { DisplayParams } from "./DisplayParams";
 // import { IModelConnection } from "../IModelConnection";
 import { ColorMap } from "./ColorMap";
@@ -40,7 +40,7 @@ export class Mesh {
     this.verts = new QPoint3dList(range);
   }
 
-  public getGraphics(/*args: MeshGraphicArgs /*, system: System, iModel: IModelConnection*/ ): Graphic | undefined {
+  public getGraphics(/*args: MeshGraphicArgs /*, system: System, iModel: IModelConnection*/ ): RenderGraphic | undefined {
     const graphic = undefined;
     // if (this.triangles.count() !== 0) {
     //   // if (args.meshArgs.Init(this)) { graphic = system.createTriMesh(args.meshArgs, iModel); }

@@ -9,7 +9,7 @@ import { AntiAliasPref,
          Hilite,
          HiddenLine,
          ColorDef,
-         Graphic,
+         RenderGraphic,
          Decorations,
          GraphicBranch } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
@@ -53,8 +53,8 @@ export class RenderPlan {
 }
 
 /**
- * A RenderTarget holds the current scene, the current set of dynamic Graphics, and the current decorators.
- * When frames are composed, all of those Graphics are rendered, as appropriate.
+ * A RenderTarget holds the current scene, the current set of dynamic RenderGraphics, and the current decorators.
+ * When frames are composed, all of those RenderGraphics are rendered, as appropriate.
  * A RenderTarget holds a reference to a Render::Device, and a Render::System
  * Every DgnViewport holds a reference to a RenderTarget.
  */
@@ -71,12 +71,12 @@ export abstract class RenderTarget {
 }
 
 /**
- * A RenderSystem is the renderer-specific factory for creating Render::Graphics, Render::Textures, and Render::Materials.
+ * A RenderSystem is the renderer-specific factory for creating RenderGraphics, Render::Textures, and Render::Materials.
  * @note The methods of this class may be called from any thread.
  */
 export interface RenderSystem {
   createTarget(tileSizeModifier: number): RenderTarget;
   createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
-  createBranch(branch: GraphicBranch, iModel: IModelConnection, transform: Transform, clips: ClipVector): Graphic;
-  createGraphicList(primitives: Graphic[], iModel: IModelConnection): Graphic;
+  createBranch(branch: GraphicBranch, iModel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic;
+  createGraphicList(primitives: RenderGraphic[], iModel: IModelConnection): RenderGraphic;
 }
