@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { Capabilities, ViewportQuad, TexturedViewportQuad } from "@bentley/imodeljs-frontend/lib/rendering";
+import { assert, expect } from "chai";
+import { Capabilities, RenderType, DepthType, ViewportQuad, TexturedViewportQuad } from "@bentley/imodeljs-frontend/lib/rendering";
 
 function getCanvas(): HTMLCanvasElement | undefined {
   let canvas = document.getElementById("canvas") as HTMLCanvasElement | undefined;
@@ -14,19 +14,28 @@ function getCanvas(): HTMLCanvasElement | undefined {
 }
 
 describe("System WebGL Capabilities", () => {
-  it("capabilities should all default to false", () => {
-
-    // Test default capabilities
+  it("capabilities should all default to 0 or false", () => {
+    // Test default capabilities.  Change if WebGL2 support added (not all will default to 0 or false).
     const cap: Capabilities = new Capabilities();
-    assert.isTrue(cap.maxTextureSize === 0, "elementIndexUint should initialize to 0");
-    assert.isFalse(cap.nonPowerOf2Textures, "nonPowerOf2Textures should initialize to false");
-    assert.isFalse(cap.drawBuffers, "drawBuffers should initialize to false");
-    assert.isFalse(cap.elementIndexUint, "elementIndexUint should initialize to false");
-    assert.isFalse(cap.textureFloat, "textureFloat should initialize to false");
-    assert.isFalse(cap.renderToFloat, "renderToFloat should initialize to false");
-    assert.isFalse(cap.depthStencilTexture, "depthStencilTexture should initialize to false");
-    assert.isFalse(cap.shaderTextureLOD, "shaderTextureLOD should initialize to false");
+    expect(cap.maxRenderType).to.equal(RenderType.TextureUnsignedByte);
+    expect(cap.maxDepthType).to.equal(DepthType.RenderBufferUnsignedShort16);
+    expect(cap.maxTextureSize).to.equal(0);
+    expect(cap.maxColorAttachments).to.equal(0);
+    expect(cap.maxDrawBuffers).to.equal(0);
+    expect(cap.maxFragTextureUnits).to.equal(0);
+    expect(cap.maxVertTextureUnits).to.equal(0);
+    expect(cap.maxVertAttribs).to.equal(0);
+    expect(cap.maxVertUniformVectors).to.equal(0);
+    expect(cap.maxVaryingVectors).to.equal(0);
+    expect(cap.maxFragUniformVectors).to.equal(0);
+    expect(cap.supportsNonPowerOf2Textures).to.be.false;
+    expect(cap.supportsDrawBuffers).to.be.false;
+    expect(cap.supports32BitElementIndex).to.be.false;
+    expect(cap.supportsTextureFloat).to.be.false;
+    expect(cap.supportsTextureHalfFloat).to.be.false;
+    expect(cap.supportsShaderTextureLOD).to.be.false;
   });
+
   it("capabilities should be able to be initialized", () => {
     const canvas = getCanvas();
     if (!canvas)
@@ -34,7 +43,7 @@ describe("System WebGL Capabilities", () => {
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
     const isInitialized: boolean = cap.init(canvas);
-    assert.isTrue(isInitialized, "capabilities did not initialize properly");
+    expect(isInitialized).to.be.true;
   });
 
   it("capabilities should be able to be read", () => {
@@ -44,8 +53,9 @@ describe("System WebGL Capabilities", () => {
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
     assert.isTrue(cap.init(canvas), "capabilities did not initialize properly");
-    assert.isTrue(0 !== cap.maxTextureSize, "cap.maxTextureSize");
-    assert.isTrue(cap.drawBuffers, "cap.drawBuffers");
+    expect(cap.maxTextureSize).to.not.equal(0);
+    expect(cap.supportsDrawBuffers).to.be.true; // drawBuffers currently needed (remove when no longer a requirement)
+    expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers")).to.not.be.undefined;
   });
 });
 
