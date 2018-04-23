@@ -16,7 +16,7 @@ import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./Platform";
 
-/** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
+/** Equivalent of the ECEnumeration OpCode in the `ECDbChange` ECSchema */
 export enum ChangeOpCode {
   Insert = 1,
   Update = 2,
@@ -24,9 +24,9 @@ export enum ChangeOpCode {
 }
 
 /** The enum represents the values for the ChangedValueState argument of the ECSQL function
- *  Changes.
+ *  **Changes**.
  * The enum can be used when programmatically binding values to the ChangedValueState argument
- * in an ECSQL using the Changes ECSQL function.
+ * in an ECSQL using the **Changes** ECSQL function.
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -35,11 +35,19 @@ export enum ChangedValueState {
   BeforeDelete = 4,
 }
 
+/** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
+ *
+ *  See also [ChangeSummaryManager.queryChangeSummary]($imodeljs-backend.ChangeSummaryManager.queryChangeSummary)
+ */
 export interface ChangeSummary {
   id: Id64;
   changeSet: { wsgId: string, parentWsgId: string, pushDate: string, author: string };
 }
 
+/** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
+ *
+ *  See also [ChangeSummaryManager.queryInstanceChange]($imodeljs-backend.ChangeSummaryManager.queryInstanceChange)
+ */
 export interface InstanceChange {
   id: Id64;
   summaryId: Id64;
@@ -49,7 +57,7 @@ export interface InstanceChange {
   changedProperties: { before: any, after: any };
 }
 
-/** Options for [[ChangeSummaryManager.extractChangeSummaries]]. */
+/** Options for [ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend.ChangeSummaryManager.extractChangeSummaries). */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start changeset to the current changeset as of which the iModel
    *  was opened. If undefined, the extraction starts at the first changeset of the iModel.
@@ -79,7 +87,7 @@ export class ChangeSummaryManager {
   /** Attaches the Changes cache file to the specified iModel if it hasn't been attached yet.
    * A new Changes cache file will be created for the iModel if it hasn't existed before.
    * @param iModel iModel to attach the Changes cache file to
-   * @throws [[IModelError]]
+   * @throws [IModelError]($imodeljs-common.IModelError)
    */
   public static attachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -103,7 +111,7 @@ export class ChangeSummaryManager {
 
   /** Detaches the ECChanges cache file from the specified iModel.
    * @param iModel iModel to detach the ECChanges cache file to
-   * @throws [[IModelError]] in case of errors, e.g. if no ECChanges cache was attached before.
+   * @throws [IModelError]($imodeljs-common.IModelError) in case of errors, e.g. if no ECChanges cache was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -119,11 +127,11 @@ export class ChangeSummaryManager {
    * Change summaries are extracted from the specified startChangeSetId up through the change set the iModel was opened with.
    * If startChangeSetId is undefined, the first changeset will be used.
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel, and it must be opened
-   * with [[OpenMode.ReadWrite]].
+   * with [OpenMode.ReadWrite]($bentleyjs-core.OpenMode.ReadWrite).
    * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
    * the iModel is moved back to the original changeset.
    * @param options Extraction options
-   * @throws [[IModelError]] if the iModel is standalone,r was not opened in readwrite mode.
+   * @throws [IModelError]($imodeljs-common.IModelError) if the iModel is standalone,r was not opened in readwrite mode.
    */
   public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
     // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)
@@ -332,9 +340,9 @@ export class ChangeSummaryManager {
 
   /** Queries the ChangeSummary for the specified change summary id
    * @param iModel iModel
-   * @param changeSummaryId ECInstanceId of the ChangeSummary (see ECDbChange.ChangeSummary ECClass)
+   * @param changeSummaryId ECInstanceId of the ChangeSummary (see `ECDbChange.ChangeSummary` ECClass)
    * @returns Returns the requested ChangeSummary object
-   * @throws [[IModelError]] If change summary does not exist for the specified id, or if the
+   * @throws [IModelError]($imodeljs-common.IModelError) If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
@@ -354,9 +362,9 @@ export class ChangeSummaryManager {
 
   /** Queries the InstanceChange for the specified instance change id
    * @param iModel iModel
-   * @param instanceChangeId ECInstanceId of the InstanceChange (see ECDbChange.InstanceChange ECClass)
+   * @param instanceChangeId ECInstanceId of the InstanceChange (see `ECDbChange.InstanceChange` ECClass)
    * @returns Returns the requested InstanceChange object
-   * @throws [[IModelError]] if instance change does not exist for the specified id, or if the
+   * @throws [IModelError]($imodeljs-common.IModelError) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {

@@ -341,7 +341,7 @@ export class ViewFlags {
   public noGeometryMap: boolean = false;        // ignore geometry maps
   public hLineMaterialColors: boolean = false;  // use material colors for hidden lines
   public edgeMask: number = 0;                  // 0=none, 1=generate mask, 2=use mask
-
+  public clone(): ViewFlags { return ViewFlags.createFrom(this); }
   public static createFrom(other?: ViewFlags): ViewFlags {
     const val = new ViewFlags();
     if (other) {

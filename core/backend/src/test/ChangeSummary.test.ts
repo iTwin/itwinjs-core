@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
+import { OpenMode, DbResult, Id64, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, Project, IModelQuery, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
@@ -99,8 +99,8 @@ describe("ChangeSummary", () => {
       }
 
       // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, TestConfig.iModelName);
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, "NoVersionsTest");
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
@@ -430,11 +430,13 @@ describe("ChangeSummary", () => {
 
     const changeSummaries = new Array<ChangeSummary>();
     iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
+      const perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
         const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, new Id64(row.id));
         changeSummaries.push(csum);
       }
+      perfLogger.dispose();
     });
 
     for (const changeSummary of changeSummaries) {
@@ -445,12 +447,14 @@ describe("ChangeSummary", () => {
       const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>() };
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
+        const perfLogger = new PerfLogger("ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary " + changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const row = stmt.getRow();
 
           const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
           content.instanceChanges.push(instanceChange);
         }
+        perfLogger.dispose();
       });
 
       IModelJsFs.writeFileSync(filePath, JSON.stringify(content));

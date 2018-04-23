@@ -152,8 +152,8 @@ describe("BriefcaseManager", () => {
       }
 
       // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, TestConfig.iModelName);
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, "NoVersionsTest");
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
@@ -163,11 +163,10 @@ describe("BriefcaseManager", () => {
   afterEach(async () => {
     if (!offline) {
       // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
-      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, TestConfig.iModelName);
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, "NoVersionsTest");
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, "NodeJsTestProject", "TestModel");
     }
-
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {

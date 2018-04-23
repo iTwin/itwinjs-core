@@ -192,26 +192,22 @@ export class HubTestUtils {
     return iModelId;
   }
 
-  private static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
-    const promises = new Array<Promise<void>>();
-    const briefcases = await HubTestUtils.hubClient!.Briefcases().get(accessToken, iModelId);
-    briefcases.forEach((briefcase: HubBriefcase) => {
-      promises.push(HubTestUtils.hubClient!.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
-    });
-    await Promise.all(promises);
-  }
-
-  /** Deletes all acquired briefcases for specified iModel and User, *if* the maximum limit of briefcases that can be acquired
-   * has been reached.
+  /**
+   * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async deleteBriefcasesIfAcquireLimitReached(accessToken: AccessToken, projectName: string, iModelName: string): Promise<void> {
+  public static async purgeAcquiredBriefcases(accessToken: AccessToken, projectName: string, iModelName: string, acquireThreshold: number = 16 ): Promise<void> {
     const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubTestUtils.queryIModelIdByName(accessToken, projectId, iModelName);
 
     const briefcases: HubBriefcase[] = await HubTestUtils.hubClient!.Briefcases().get(accessToken, iModelId);
-    if (briefcases.length > 16) {
-      console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
-      await HubTestUtils.deleteAllBriefcases(accessToken, iModelId);
+    if (briefcases.length > acquireThreshold) {
+      console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`); // tslint:disable-line
+
+      const promises = new Array<Promise<void>>();
+      briefcases.forEach((briefcase: HubBriefcase) => {
+        promises.push(HubTestUtils.hubClient!.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
+      });
+      await Promise.all(promises);
     }
   }
 
