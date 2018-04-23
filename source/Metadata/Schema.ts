@@ -25,7 +25,7 @@ const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecsche
 export default class Schema implements CustomAttributeContainerProps {
   private _context?: SchemaContext;
   protected _schemaKey?: SchemaKey;
-  protected _alias: string;
+  protected _alias?: string;
   protected _label?: string;
   protected _description?: string;
   protected _customAttributes?: CustomAttributeSet;
@@ -377,7 +377,7 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 }
 
-/** @internal
+/** @hidden
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  * We cannot put this into Helper.ts and make it non-export, because we are importing Helper.ts from this file, and the circular import
  * would prevent this class from extending Schema.

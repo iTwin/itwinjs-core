@@ -70,8 +70,8 @@ describe("SchemaItemKey", () => {
 
     it("should return false if types do not match", () => {
       expect(new SchemaItemKey("Name", typeA, schemaKeyA).matches(new SchemaItemKey("Name", typeB, schemaKeyA))).to.be.false;
-      expect(new SchemaItemKey("Name", typeA, schemaKeyA).matches(new SchemaItemKey("Name", undefined, schemaKeyA))).to.be.false;
-      expect(new SchemaItemKey("Name", undefined, schemaKeyA).matches(new SchemaItemKey("Name", typeA, schemaKeyA))).to.be.false;
+      expect(() => (new SchemaItemKey("Name", typeA, schemaKeyA).matches(new SchemaItemKey("Name", undefined, schemaKeyA)))).to.throw(ECObjectsError, "The SchemaItemKey Name does not have a SchemaItemType.");
+      expect(() => (new SchemaItemKey("Name", undefined, schemaKeyA).matches(new SchemaItemKey("Name", typeA, schemaKeyA)))).to.throw(ECObjectsError, "The SchemaItemKey Name does not have a SchemaItemType.");
     });
 
     it("should return false if types do not match", () => {

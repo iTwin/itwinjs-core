@@ -14,8 +14,12 @@ import Schema from "./Schema";
  * A Typescript class representation of a Mixin.
  */
 export default class Mixin extends ECClass {
-  public readonly type: SchemaItemType.Mixin;
-  public appliesTo: LazyLoadedEntityClass;
+  public readonly type!: SchemaItemType.Mixin; // tslint:disable-line
+  protected _appliesTo?: LazyLoadedEntityClass;
+
+  get appliesTo(): LazyLoadedEntityClass | undefined {
+    return this._appliesTo;
+  }
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaItemType.Mixin, ECClassModifier.Abstract);
@@ -34,6 +38,6 @@ export default class Mixin extends ECClass {
     if (!tmpClass)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
 
-    this.appliesTo = new DelayedPromiseWithProps(tmpClass.key, async () => tmpClass);
+    this._appliesTo = new DelayedPromiseWithProps(tmpClass.key, async () => tmpClass);
   }
 }

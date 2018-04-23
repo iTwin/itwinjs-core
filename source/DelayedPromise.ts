@@ -37,7 +37,7 @@ export class DelayedPromise<T> implements Promise<T> {
 
   /**
    * Explicitly starts the asynchronous operation behind this DelayedPromise (if it hasn't started already).
-   * @returns A Promise for the completion of the asynchronous operation behind this DelayedPromise.
+   * @return A Promise for the completion of the asynchronous operation behind this DelayedPromise.
    */
   public start: () => Promise<T>;
 
@@ -45,7 +45,7 @@ export class DelayedPromise<T> implements Promise<T> {
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
    * @param onrejected The callback to execute when the Promise is rejected.
-   * @returns A Promise for the completion of which ever callback is executed.
+   * @return A Promise for the completion of which ever callback is executed.
    */
   public then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
     return this.start().then(onfulfilled, onrejected);
@@ -54,7 +54,7 @@ export class DelayedPromise<T> implements Promise<T> {
   /**
    * Attaches a callback for only the rejection of the Promise.
    * @param onrejected The callback to execute when the Promise is rejected.
-   * @returns A Promise for the completion of the callback.
+   * @return A Promise for the completion of the callback.
    */
   public catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
     return this.start().catch(onrejected);

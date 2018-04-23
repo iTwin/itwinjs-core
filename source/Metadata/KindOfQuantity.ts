@@ -9,18 +9,18 @@ import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export class FormatUnitSet {
-  public unit: string;
-  public format: string;
+  public unit?: string;
+  public format?: string;
 }
 
 /**
  * A Typescript class representation of a KindOfQuantity.
  */
 export default class KindOfQuantity extends SchemaItem {
-  public readonly type: SchemaItemType.KindOfQuantity;
-  protected _precision: number;
+  public readonly type!: SchemaItemType.KindOfQuantity; // tslint:disable-line
+  protected _precision: number = 1.0;
   protected _presentationUnits: FormatUnitSet[];
-  protected _persistenceUnit: FormatUnitSet;
+  protected _persistenceUnit?: FormatUnitSet;
 
   get precision() { return this._precision; }
 

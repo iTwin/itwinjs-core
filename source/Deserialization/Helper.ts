@@ -21,19 +21,14 @@ export default class SchemaReadHelper {
   private _context: SchemaContext;
   private _visitor?: SchemaDeserializationVisitor;
 
-  // This is a cache of the schema we are loading. It also exists within the _context but in order
-  // to not have to go back to the context every time if we don't have to this cache has been added.
-  private _schema: Schema;
+  // This is a cache of the schema we are loading. The schema also exists within the _context but in order
+  // to not have to go back to the context every time we use this cache.
+  private _schema?: Schema;
 
   private _itemToRead: any; // This will be the json object of the Schema or SchemaItem to deserialize. Not sure if this is the best option.. Going to leave it for now.
 
   constructor(context?: SchemaContext, visitor?: SchemaDeserializationVisitor) {
-    if (context)
-      this._context = context;
-
-    if (!this._context)
-      this._context = new SchemaContext();
-
+    this._context = (undefined !== context) ? context : new SchemaContext();
     this._visitor = visitor;
   }
 
@@ -105,28 +100,28 @@ export default class SchemaReadHelper {
    */
   private async loadSchemaReferences(referencesJson: any) {
     if (!Array.isArray(referencesJson))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
 
     const promises = referencesJson.map(async (ref) => {
       if (typeof(ref) !== "object")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
 
       if (undefined === ref.name)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'name' property.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'name' property.`);
 
       if (typeof(ref.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
 
       if (undefined === ref.version)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'version' property.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'version' property.`);
 
       if (typeof(ref.version) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
 
       const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
       const refSchema = await this._context.getSchema(schemaKey);
       if (!refSchema)
-        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema.schemaKey.name}`);
+        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
       await (this._schema as MutableSchema).addReference(refSchema);
     });
@@ -143,7 +138,7 @@ export default class SchemaReadHelper {
   private async loadSchemaItem(schema: Schema, schemaItemJson: any, name?: string): Promise<SchemaItem | undefined> {
     const itemName = (undefined === name) ? schemaItemJson.name : name;
     if (!itemName)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaItem in ${this._schema.schemaKey.name} has an invalid name.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaItem in ${this._schema!.schemaKey.name} has an invalid name.`);
 
     if (undefined === schemaItemJson.schemaItemType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${itemName} is missing the required schemaItemType property.`);
@@ -197,14 +192,14 @@ export default class SchemaReadHelper {
    * not exist within the schema the SchemaContext will be searched.
    * @param fullName The full name of the SchemaItem to search for.
    * @param skipVisitor Used to break Mixin -appliesTo-> Entity -extends-> Mixin cycle.
-   * @returns The SchemaItem if it had to be loaded, otherwise undefined.
+   * @return The SchemaItem if it had to be loaded, otherwise undefined.
    */
   private async findSchemaItem(fullName: string, skipVisitor = false): Promise<SchemaItem | undefined> {
     const [schemaName, itemName] = SchemaItem.parseFullName(fullName);
     const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
 
-    if (isInThisSchema && undefined === await this._schema.getItem(itemName, false)) {
-      const schemaItem = await this.loadSchemaItem(this._schema, this._itemToRead.items[itemName], itemName);
+    if (isInThisSchema && undefined === await this._schema!.getItem(itemName, false)) {
+      const schemaItem = await this.loadSchemaItem(this._schema!, this._itemToRead.items[itemName], itemName);
       if (!skipVisitor && schemaItem && this._visitor) {
         await schemaItem.accept(this._visitor);
       }

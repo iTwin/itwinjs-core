@@ -16,7 +16,7 @@ import Schema from "./Schema";
  * A Typescript class representation of an ECEntityClass.
  */
 export default class EntityClass extends ECClass {
-  public readonly type: SchemaItemType.EntityClass;
+  public readonly type!: SchemaItemType.EntityClass; // tslint:disable-line
   protected _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
@@ -114,7 +114,7 @@ export default class EntityClass extends ECClass {
   }
 }
 
-/** @internal
+/** @hidden
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  */
 export abstract class MutableEntityClass extends EntityClass {

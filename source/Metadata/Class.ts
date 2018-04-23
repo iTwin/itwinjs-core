@@ -47,7 +47,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
   /**
    * Convenience method for adding an already loaded ECProperty used by create*Property methods.
    * @param prop The property to add.
-   * @returns The property that was added.
+   * @return The property that was added.
    */
   protected addProperty<T extends Property>(prop: T): T {
     if (!this._properties)
@@ -247,14 +247,14 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
  * A Typescript class representation of an ECStructClass.
  */
 export class StructClass extends ECClass {
-  public readonly type: SchemaItemType.StructClass;
+  public readonly type!: SchemaItemType.StructClass; // tslint:disable-line
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, SchemaItemType.StructClass, modifier);
   }
 }
 
-/** @internal
+/** @hidden
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  */
 export abstract class MutableClass extends ECClass {

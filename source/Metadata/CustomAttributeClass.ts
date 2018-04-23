@@ -11,8 +11,14 @@ import Schema from "./Schema";
  * A Typescript class representation of an ECCustomAttributeClass.
  */
 export default class CustomAttributeClass extends ECClass {
-  public readonly type: SchemaItemType.CustomAttributeClass;
-  public containerType: CustomAttributeContainerType;
+  public readonly type!: SchemaItemType.CustomAttributeClass; // tslint:disable-line
+  protected _containerType?: CustomAttributeContainerType;
+
+  get containerType(): CustomAttributeContainerType {
+    if (undefined === this._containerType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
+    return this._containerType;
+  }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, SchemaItemType.CustomAttributeClass, modifier);
@@ -30,6 +36,6 @@ export default class CustomAttributeClass extends ECClass {
     const containerType = parseCustomAttributeContainerType(jsonObj.appliesTo);
     if (undefined === containerType)
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${containerType} is not a valid CustomAttributeContainerType.`);
-    this.containerType = containerType;
+    this._containerType = containerType;
   }
 }
