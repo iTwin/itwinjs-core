@@ -17,7 +17,7 @@ Anyone familiar with SQL should intuitively understand ECSQL.
 The **key difference between ECSQL and SQL** is that ECSQL targets the *logical* schema, and not the
 underlying database’s *persistence* schema.
 
-![ECSQL versus SQL](ecsql_vs_sql.png "ECSQL versus SQL")
+![ECSQL versus SQL](./ecsql_vs_sql.png "ECSQL versus SQL")
 
 ## ECSQL in detail
 

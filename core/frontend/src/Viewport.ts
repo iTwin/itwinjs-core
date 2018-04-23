@@ -18,6 +18,7 @@ import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Target } from "./render/System";
+import { ViewFlags } from "@bentley/imodeljs-common";
 
 /** viewport synchronization flags */
 export class SyncFlags {
@@ -243,6 +244,7 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
+  public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public get target(): Target { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }

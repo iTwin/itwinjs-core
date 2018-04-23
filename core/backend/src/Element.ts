@@ -8,7 +8,7 @@ import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
-  Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
+  BisCodeSpec, Code, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
   InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
@@ -446,7 +446,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
    * See the example in [[InformationPartitionElement]].
    */
   public static createCode(scopeElement: Element, codeValue: string): Code {
-    const codeSpec = scopeElement.iModel.codeSpecs.getByName(CodeSpecNames.InformationPartitionElement());
+    const codeSpec = scopeElement.iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
     return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
   }
 
@@ -583,7 +583,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
    * @return A LineStyle Code
    */
   public static createCode(iModel: IModelDb, scopeModelId: Id64, codeValue: string): Code {
-    return new Code({ spec: iModel.codeSpecs.getByName(CodeSpecNames.LineStyle()).id, scope: scopeModelId.value, value: codeValue });
+    return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId.value, value: codeValue });
   }
 }
 
