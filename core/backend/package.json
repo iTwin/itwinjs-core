@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.76.1",
+  "version": "0.76.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -10,14 +10,14 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets",
-    "clean": "rimraf lib package-deps.json ../../generated-docs/backend",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/backend --json=../../generated-docs/backend/json/file.json --tsIndexFile=./backend.ts %TYPEDOC_THEME%",
+    "clean": "rimraf lib package-deps.json",
+    "docs": "cd ../.. && npm run docs:backend",
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend && cpx ./src/test/logging.config.json ./lib/test",
+    "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "perftest": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\" --timeout=999999999",
+    "perftest": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {},
@@ -36,10 +36,6 @@
     "@bentley/imodeljs-clients": "^5.1.0",
     "@bentley/imodeljs-common": "0"
   },
-  "//devDependencies": [
-    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
-    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
-  ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "7",
@@ -52,7 +48,6 @@
     "source-map-support": "^0.5.0",
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
-    "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
     "webpack": "^3.10.0"
   },
