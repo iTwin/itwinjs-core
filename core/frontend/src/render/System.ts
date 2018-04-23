@@ -20,34 +20,35 @@ import { IModelConnection } from "../IModelConnection";
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
  */
 export class RenderPlan {
-  constructor(public is3d: boolean,
-              public viewFlags: ViewFlags,
-              public frustum: Frustum,
-              public fraction: number,
-              public bgColor: ColorDef,
-              public monoColor: ColorDef,
-              public hiliteSettings: Hilite.Settings,
-              public aaLines: AntiAliasPref,
-              public aaText: AntiAliasPref,
-              public activeVolume: ClipVector,
-              public hline?: HiddenLine.Params,
-              public lights?: SceneLights,
-              ) {}
-  public static fromViewport(vp: Viewport): RenderPlan {
+  public readonly is3d: boolean;
+  public readonly viewFlags: ViewFlags;
+  public readonly frustum: Frustum;
+  public readonly fraction: number;
+  public readonly bgColor: ColorDef;
+  public readonly monoColor: ColorDef;
+  public readonly hiliteSettings: Hilite.Settings;
+  public readonly aaLines: AntiAliasPref;
+  public readonly aaText: AntiAliasPref;
+  public readonly activeVolume: ClipVector;
+  public readonly hline?: HiddenLine.Params;
+  public readonly lights?: SceneLights;
+
+  public constructor(vp: Viewport) {
     const view = vp.view;
     const style = view.displayStyle;
-    return new RenderPlan(view.is3d(),
-                    style.viewFlags,
-                    vp.getFrustum()!,
-                    vp.frustFraction,
-                    view.backgroundColor,
-                    style.getMonochromeColor(),
-                    vp.hilite,
-                    vp.wantAntiAliasLines,
-                    vp.wantAntiAliasText,
-                    view.getViewClip(),
-                    style.is3d() ? style.getHiddenLineParams() : undefined,
-                    undefined); // view.is3d() ? view.getLights() : undefined
+
+    this.is3d = view.is3d();
+    this.viewFlags = style.viewFlags;
+    this.frustum = vp.getFrustum()!;
+    this.fraction = vp.frustFraction;
+    this.bgColor = view.backgroundColor;
+    this.monoColor = style.getMonochromeColor();
+    this.hiliteSettings = vp.hilite;
+    this.aaLines = vp.wantAntiAliasLines;
+    this.aaText = vp.wantAntiAliasText;
+    this.activeVolume = view.getViewClip();
+    this.hline = style.is3d() ? style.getHiddenLineParams() : undefined;
+    this.lights = undefined; // view.is3d() ? view.getLights() : undefined
   }
 }
 
