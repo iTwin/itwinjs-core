@@ -109,9 +109,9 @@ export abstract class QParamsBase {
 }
 
 export class QParams<T extends Point, K extends Range> extends QParamsBase {
-  public get origin(): Point { return super.origin as T; }
-  public get scale(): Point { return super.scale as T; }
-  public get range(): Range { return super.range as K; }
+  public get origin(): T { return super.origin as T; }
+  public get scale(): T { return super.scale as T; }
+  public get range(): K { return super.range as K; }
   constructor(range: K) { super(range); }
 }
 

@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+/** Snippets of glsl code used to assemble ShaderBuilders */
 export namespace ShaderSource {
   export let decodeUInt16 =
     `float decodeUInt16(vec2 v) {
@@ -14,20 +15,20 @@ export namespace ShaderSource {
       return dot(v, vec3(1.0)); // v.x+v.y+v.z => v.x | v.y | v.z
     }`;
 
-  // Components specific to vertex shaders.
-  export let vertex = {
-    unquantizePosition:
+  /** Components specific to vertex shaders. */
+  export namespace Vertex {
+    export let unquantizePosition =
       `vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) {
         return vec4(origin + scale * pos, 1.0);
-      }`,
-    unquantizeVertexPosition:
+      }`;
+    export let unquantizeVertexPosition =
       `vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) {
         return unquantizePosition(pos, origin, scale);
-      }`,
-    initializeVertLUTCoords:
+      }`;
+    export let initializeVertLUTCoords =
       `g_vertexLUTIndex = decodeUInt32(a_pos);
-       g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);`,
-    unquantizeVertexPositionFromLUT:
+       g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);`;
+    export let unquantizeVertexPositionFromLUT =
       `vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
         // Need to read 2 rgba values to obtain 6 16-bit integers for position
         vec2 tc = g_vertexBaseCoords;
@@ -40,35 +41,34 @@ export namespace ShaderSource {
         vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
 
         // Might as well decode the color index since we already read it...may not end up being used.
-        // (NOTE: If this is a textured mesh, the normal is stored where the color index would otherwise be...)
+    export let     // (NOTE = If this is a textured mesh, the normal is stored where the color index would otherwise be...)
         g_vertexData2 = enc2.zw;
 
         return unquantizePosition(qpos, origin, scale);
-      }`,
-    unquantize3d:
-      `vec3 unquantize3d(vec3 qpos, vec3 origin, vec3 scale) { return origin + scale * qpos; }`,
-    unquantize2d:
+      }`;
+    export let unquantize3d =
+      `vec3 unquantize3d(vec3 qpos, vec3 origin, vec3 scale) { return origin + scale * qpos; }`;
+    export let unquantize2d =
      `// params.xy = origin. params.zw = scale.
-     vec2 unquantize2d(vec2 qpos, vec4 params) { return params.xy + params.zw * qpos; }`,
-    computeTexCoord:
-      `return isSurfaceBitSet(kSurfaceBit_HasTexture) ? unquantize2d(a_texCoord, u_qTexCoordParams) : vec2(0.0);`,
-    earlyDiscard:
+     vec2 unquantize2d(vec2 qpos, vec4 params) { return params.xy + params.zw * qpos; }`;
+    export let computeTexCoord = `return isSurfaceBitSet(kSurfaceBit_HasTexture) ? unquantize2d(a_texCoord, u_qTexCoordParams)  = vec2(0.0);`;
+    export let earlyDiscard =
       `if (checkForEarlyDiscard(rawPosition)) {
         // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
         // Also place it outside NDC range (for GL_POINTS)
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
         return;
-      }`,
-    discard:
+      }`;
+    export let discard =
       `if (checkForDiscard()) {
         // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
         // Also place it outside NDC range (for GL_POINTS)
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
         return;
-      }`,
-    computeLineWeight: `float ComputeLineWeight() { return u_lineWeight; }`,
-    computeLineCode: `float ComputeLineCode() { return u_lineCode; }`,
-    modelToWindowCoordinates:
+      }`;
+    export let computeLineWeight = `float ComputeLineWeight() { return u_lineWeight; }`;
+    export let computeLineCode = `float ComputeLineCode() { return u_lineCode; }`;
+    export let modelToWindowCoordinates =
       `vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
         if (kRenderPass_ViewOverlay == u_renderPass || kRenderPass_Background == u_renderPass) {
           vec4 q = u_mvp * position;
@@ -98,8 +98,8 @@ export namespace ShaderSource {
         q.xyz /= q.w; // normalized device coords
         q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz; // window coords
         return q;
-      }`,
-    metersPerPixel:
+      }`;
+    export let metersPerPixel =
      `float metersPerPixel(vec4 posEye) {
         if (kRenderPass_Background == u_renderPass || kRenderPass_ViewOverlay == u_renderPass)
           return 1.0;
@@ -129,8 +129,6 @@ export namespace ShaderSource {
         }
 
         return max(pixelWidth, pixelHeight);
-     }`,
-  };
+     }`;
+  }
 }
-
-Object.freeze(ShaderSource.vertex);
