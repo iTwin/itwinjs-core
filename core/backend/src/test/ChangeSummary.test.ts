@@ -41,7 +41,7 @@ describe("ChangeSummary", () => {
 
     if (offline) {
       console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
-      cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/testCache/iModels/"));
+      cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/iModels/"));
       IModelHost.configuration!.briefcaseCacheDir = cacheDir;
 
       MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);

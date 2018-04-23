@@ -290,7 +290,7 @@ export class BriefcaseManager {
     const startTime = new Date().getTime();
 
     // Reset the hubclient in case the configuration has changed
-    if (!BriefcaseManager.hubClient)
+    if (!BriefcaseManager.hubClient || (BriefcaseManager.hubClient as any).deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig)
       BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
 
     if (!accessToken)

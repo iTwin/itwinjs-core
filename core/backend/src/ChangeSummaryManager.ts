@@ -154,7 +154,7 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    if (!ChangeSummaryManager.hubClient)
+    if (!ChangeSummaryManager.hubClient ||  (ChangeSummaryManager.hubClient as any)!.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig)
       ChangeSummaryManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
 
     const accessToken: AccessToken = IModelDb.getAccessToken(iModelId);
