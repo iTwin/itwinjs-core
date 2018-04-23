@@ -144,8 +144,7 @@ describe("BriefcaseManager", () => {
         iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
         iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-        const changeSetsPath = path.join(cacheDir, iModelInfo.id, "csets");
-        iModelInfo.changeSets = await HubTestUtils.downloadChangeSets(accessToken, changeSetsPath, iModelInfo.id);
+        iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
         iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
         iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
@@ -162,10 +161,12 @@ describe("BriefcaseManager", () => {
   });
 
   afterEach(async () => {
-    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
-    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
+    if (!offline) {
+      // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
+      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
+    }
 
   });
 
@@ -521,8 +522,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
-    const iModelNoVerId = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, "NoVersionsTest");
-    const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
+    const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly);
     assert.exists(iModelNoVer);
   });
 
