@@ -46,16 +46,14 @@ export class IModelJsFs {
   /** Write to a file. */
   public static writeFileSync(fn: string, str: string, wflag: string = "w"): void { fs.writeFileSync(fn, str, { flag: wflag }); }
 
-  /** Reads a file into a buffer */
-  public static readFileSync(fn: string, opts?: any): Buffer {
-    return fs.readFileSync(fn, opts);
-  }
-
   /** Make a copy of a file */
   public static copySync(fn: string, fnout: string, opts?: any): void { fs.copySync(fn, fnout, opts); }
 
   /** Get the file and directory names in the specified directory. Excludes "." and "..". */
   public static readdirSync(fn: string): string[] { return fs.readdirSync(fn); }
+
+  /** Read file */
+  public static readFileSync(fn: string): string|Buffer { return fs.readFileSync(fn); }
 
   /** Test if the current user has permission to write to a file. */
   private static isFileWritable(fn: string): boolean {

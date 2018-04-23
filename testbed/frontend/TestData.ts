@@ -20,8 +20,8 @@ export class TestData {
 
   public static async load() {
     TestData.accessToken = await TestData.getTestUserAccessToken();
-    TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "NodeJsTestProject");
-    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "TestModel");
+    TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
+    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ConnectionReadTest");
   }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {

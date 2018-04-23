@@ -30,20 +30,27 @@ export namespace GL {
     DefaultDst = Zero,
   }
 
-  export enum Buffer {
-    ArrayBuffer = WebGLRenderingContext.ARRAY_BUFFER,
-    ElementArrayBuffer = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
-    // WebGL 2 has more buffer options
-    ArrayBufferBinding = WebGLRenderingContext.ARRAY_BUFFER_BINDING,
-    ElementArrayBufferBinding = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER_BINDING,
-    BufferSize = WebGLRenderingContext.BUFFER_SIZE,
-    BufferUsage = WebGLRenderingContext.BUFFER_USAGE,
-  }
+  export namespace Buffer {
+    export enum Target {
+      ArrayBuffer = WebGLRenderingContext.ARRAY_BUFFER,
+      ElementArrayBuffer = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
+    }
 
-  export enum BufferUsage {
-    DynamicDraw = WebGLRenderingContext.DYNAMIC_DRAW,
-    StaticDraw = WebGLRenderingContext.STATIC_DRAW,
-    StreamDraw = WebGLRenderingContext.STREAM_DRAW,
+    export enum Binding {
+      ArrayBuffer = WebGLRenderingContext.ARRAY_BUFFER_BINDING,
+      ElementArrayBuffer = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER_BINDING,
+    }
+
+    export enum Parameter {
+      Size = WebGLRenderingContext.BUFFER_SIZE,
+      Usage = WebGLRenderingContext.BUFFER_USAGE,
+    }
+
+    export enum Usage {
+      DynamicDraw = WebGLRenderingContext.DYNAMIC_DRAW,
+      StaticDraw = WebGLRenderingContext.STATIC_DRAW,
+      StreamDraw = WebGLRenderingContext.STREAM_DRAW,
+    }
   }
 
   /* Stenciling commented out for now since it is not used */

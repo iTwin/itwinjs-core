@@ -6,7 +6,7 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 ## Names
 
 1. Use PascalCase for type names.
-2. Do not use `I` as a prefix for interface names.
+2. Do **not** use `I` as a prefix for interface names.
 3. Use PascalCase for enum values.
 4. Use camelCase for function names.
 5. Use camelCase for property names and local variables.
@@ -28,9 +28,10 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 
 ## Do not use `null`
 
-* Use `undefined`. **Do not** use `null`, anywhere, ever.
+* Use `undefined`. **Do not** use `null` anywhere.
 
 ## `===` and `!==` Operators
+
 * Use `===` and `!==` operators whenever possible.
 * The `==` and `!=` operators do type coercion, which is both inefficient and can lead to unexpected behavior.
 
@@ -45,8 +46,10 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 3. Use brackets `[]` instead of `new Array()`.
 
 ## Preserve vertical screen space
+
 Programmer monitors are almost always wider than they are tall. It is common for widths to be at least 120 columns but heights to be less than 100. Therefore to make the greatest use of screen real estate, it is desireable to preserve vertical screen space wherever possible.
-1. Some codebases advocate breaking lines at 80 columns. THIS IS SILLY and wasteful. Don't break lines before 120 columns.
+
+1. Some codebases advocate breaking lines at 80 columns. This is silly and wasteful. Don't break lines before 120 columns.
 1. Don't use blank lines unnecessarily. For example the first line of a function *not* should be a blank line.
 1. There should never be more than one blank line in a row.
 1. **Don't use** clever/pretty multi-line comment blocks to separate sections of code. One line suffices, if you absolutely feel the need to include them. Usually they aren't necessary. Your well written, accurate and complete documentation and logical source organization is all the help anyone needs to understand your code.
@@ -63,13 +66,14 @@ Programmer monitors are almost always wider than they are tall. It is common for
   // Correct (1 line vs 3) !!!
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 ```
+
 ## Style
 
 1. Use arrow functions over anonymous function expressions.
 1. Open curly braces always go on the same line as whatever necessitates them.
 1. **Never** use `var`. Instead use `const` where possible and otherwise use `let`.
-1. Use a single declaration per variable statement <br />(i.e. use `let x = 1; let y = 2;` over `let x = 1, y = 2;`).
-1. Parenthesized constructs should have no surrounding whitespace. <br />A single space follows commas, colons, semicolons, and operators in those constructs. For example:
+1. Use a single declaration per variable statement (i.e. use `let x = 1; let y = 2;` over `let x = 1, y = 2;`).
+1. Parenthesized constructs should have no surrounding whitespace. A single space follows commas, colons, semicolons, and operators in those constructs. For example:
    1. `for (let i = 0, n = str.length; i < 10; ++i) { }`
    2. `if (x < 10) { }`
    3. `public calculate(x: number, y: string): void { . . . }`
@@ -87,6 +91,7 @@ return "Hello World!"; // good
 ```
 
 Certain schools of programming advice hold that every method should have only one return statement. This could not be more misguided. *Always* return as soon as you know there's *no reason to proceed*.
+
 ``` ts
 // bad!!
 public getFirstUser(): Person | undefined {
@@ -140,7 +145,9 @@ public getOwner(name: string): Person {
   return new Person(name);
 }
 ```
+
 for methods that are one line and for which the return type is obvious, it is not necessary to include the return type:
+
 ``` ts
 // fine, return type is obvious
 public getCorner() { return new Point3d(this.x, this.y); }
@@ -158,7 +165,7 @@ const iModel: IModel[] = await iModelHub.getIModels(projectId);
 
 ## Getters and Setters
 
-- A common pattern is to have a `private` member that is read/write privately within the class, but read-only to the public API. This can be a good use for a getter. For example:
+A common pattern is to have a `private` member that is read/write privately within the class, but read-only to the public API. This can be a good use for a getter. For example:
 
 ``` ts
 class Person {
@@ -175,7 +182,7 @@ class Person {
 }
 ```
 
-- Another valid use of getters and setters is when you want to give the appearance of having a public member but you don't actually store the data that way. For example:
+Another valid use of getters and setters is when you want to give the appearance of having a public member but you don't actually store the data that way. For example:
 
 ``` ts
 class PersonName {
@@ -188,8 +195,10 @@ class PersonName {
   }
 }
 ```
-- It is also good to use getters and setters if data validation is required (which isn't possible in the case of a direct assignment to a public member).
-- There are cases where getters and setters would be overkill. For example:
+
+It is also good to use getters and setters if data validation is required (which isn't possible in the case of a direct assignment to a public member).
+
+There are cases where getters and setters would be overkill. For example:
 
 ``` ts
 // This is fine!
@@ -197,8 +206,10 @@ class Corner {
   constructor(public x: number, public y: number, public z: number) { }
 }
 ```
+
 ## use "?:" syntax vs. " | undefined"
-When declaring member variables or function arguments, use the TypeScript "?:" syntax vs. adding " | undefined" for variables that can be undefined. For exampe
+
+When declaring member variables or function arguments, use the TypeScript "?:" syntax vs. adding " | undefined" for variables that can be undefined. For example
 
 ```ts
 class Role {
@@ -206,6 +217,7 @@ class Role {
   public description: string | undefined; // Wrong !!
 }
 ```
+
 ```ts
 class Role {
   public name: string;
@@ -214,7 +226,9 @@ class Role {
 ```
 
 ## Don't repeat type names unnecessarily
+
 TypeScript is all about adding types to JavaScript. However, the compiler automatically infers type by context, and it is therefore not necessary to decorate every member or variable declaration with its type, if it is obvious. That only adds clutter and obscures the real code. For example,
+
 ```ts
   let width: number = 7.3; // useless type declaration
   public isReady: boolean = false; // useless type declaration
@@ -225,6 +239,7 @@ TypeScript is all about adding types to JavaScript. However, the compiler automa
   public readonly origin = new Point3d(); // correct
   const upVector: Vector3d = rMatrix.getRow(1); // fine, helps readability. Not strictly necessary.
 ```
+
 However, as stated above, it is a good idea to always include the return type of a function if it is more than one line, to make sure no return path has an unexpected type.
 
 ## Error Handling

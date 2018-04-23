@@ -2,7 +2,7 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/public/**
 test
-!public/**
 !package.json
 !*.md

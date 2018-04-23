@@ -1,51 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
-import { QPoint3dList, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
-import { BufferHandle } from "./Handle";
-import { GL } from "./GL";
 
-export class FeatureIndices {
-  public type: FeatureIndexType;
-  public uniform: number;
-  public nonUniform: BufferHandle | undefined;
-
-  public constructor(gl: WebGLRenderingContext, src: FeatureIndex, numVerts?: number) {
-    this.type = src.type;
-    switch (this.type) {
-      case FeatureIndexType.kUniform:
-        this.uniform = src.featureID;
-        this.nonUniform = undefined;
-        break;
-      case FeatureIndexType.kNonUniform:
-        this.uniform = 0;
-        this.nonUniform = new BufferHandle();
-        this.nonUniform.init(gl);
-
-        assert(undefined !== src.featureIDs);
-        assert(undefined !== numVerts);
-        if (undefined !== src.featureIDs && undefined !== numVerts) {
-          assert(src.featureIDs.length >= numVerts);
-          // WebGL doesn't support integers as vertex attributes. Use float.
-          const ab = new ArrayBuffer(numVerts * 4);
-          const featureIDs: Float32Array = new Float32Array(ab);
-          for (let i = 0; i < src.featureIDs.length; ++i) {
-            featureIDs[i] = src.featureIDs[i];
-          }
-          this.nonUniform.bindData(gl, GL.Buffer.ArrayBuffer, numVerts * 4, GL.BufferUsage.StaticDraw, featureIDs);
-        }
-        break;
-      default:
-        this.uniform = 0;
-        this.nonUniform = undefined;
-        break;
-    }
-  }
-
-  public isEmpty(): boolean { return FeatureIndexType.kEmpty === this.type; }
-  public isUniform(): boolean { return FeatureIndexType.kUniform === this.type; }
-}
+import { QPoint3dList } from "@bentley/imodeljs-common";
+import { AttributeHandle } from "./Handle";
+import { Target } from "./Target";
+import { ShaderProgramParams } from "./DrawCommand";
+import { TechniqueId } from "./TechniqueId";
+import { RenderPass, RenderOrder } from "./RenderFlags";
 
 export class PointCloudGeometryCreateParams {
   public readonly vertices = new QPoint3dList();
@@ -53,3 +15,31 @@ export class PointCloudGeometryCreateParams {
   public pointSize: number;
   public constructor(vertices: QPoint3dList, colors: number[], pointSize: number) { this.vertices = vertices.clone(); this.colors = colors; this.pointSize = pointSize; }
 }
+
+export abstract class CachedGeometry {
+  //// public static BufferHandle generateBuffer(gl: WebGLRenderingContext, glTarget: number, glSize: number, glData: any) {
+  //// }
+
+  protected abstract wantWoWReversal(target: Target): boolean;
+  protected abstract getLineWeight(params: ShaderProgramParams): number;
+  protected abstract getLineCode(params: ShaderProgramParams): number;
+
+  public abstract getTechniqueId(target: Target): TechniqueId;
+  public abstract getRenderPass(target: Target): RenderPass;
+  public abstract getRenderOrder(): RenderOrder;
+  public abstract bindVertexArray(gl: WebGLRenderingContext, handle: AttributeHandle): void;
+  //// public abstract get vertexParams(): QParams3d;
+
+  public toIndexedGeometry(): IndexedGeometry | undefined { return undefined; }
+  public toViewportQuad(): ViewportQuadGeometry | undefined { return undefined; }
+}
+
+export abstract class IndexedGeometry extends CachedGeometry { /* ###TODO */ }
+export abstract class ViewportQuadGeometry extends IndexedGeometry { /* ###TODO */ }
+//// export abstract class IndexedGeometry extends CachedGeometry {
+////   private readonly _vertexBuffer: QBufferHandle3d;
+////   private readonly _indexBuffer: BufferHandle;
+////   private readonly _indicesCount: number;
+////
+////   protected constructor(
+//// }

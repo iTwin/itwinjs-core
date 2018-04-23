@@ -3,10 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
-import {
-  AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient,
-  ConnectClient, Project, IModelHubClient, IModelQuery, Briefcase, DeploymentEnv, AzureFileHandler,
-} from "@bentley/imodeljs-clients";
+import {AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient} from "@bentley/imodeljs-clients";
 import { Appearance, Code, CreateIModelProps, ElementProps, Gateway, GeometricElementProps, IModel, IModelReadGateway } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
@@ -91,95 +88,16 @@ export class TestUsers {
 
 export class IModelTestUtils {
 
-  private static _connectClient: ConnectClient | undefined;
-  public static get connectClient(): ConnectClient {
-    if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ConnectClient(IModelTestUtils.iModelHubDeployConfig);
-    return IModelTestUtils._connectClient!;
-  }
-
-  private static _hubClient: IModelHubClient | undefined;
-  public static get hubClient(): IModelHubClient {
-    if (!IModelTestUtils._hubClient)
-    IModelTestUtils._hubClient = new IModelHubClient(IModelTestUtils.iModelHubDeployConfig, new AzureFileHandler());
-    return IModelTestUtils._hubClient!;
-  }
-
-  private static _iModelHubDeployConfig: DeploymentEnv = "QA";
-  public static set iModelHubDeployConfig(deployConfig: DeploymentEnv) {
-    if (IModelHost.configuration) {
-      throw new Error("Cannot change the deployment configuration after the backend has started up. Set the configuration earlier, or call iModelEngine.shutdown().");
-    }
-    IModelTestUtils._iModelHubDeployConfig = deployConfig;
-    IModelTestUtils._connectClient = undefined;
-    IModelTestUtils._hubClient = undefined;
-  }
-  public static get iModelHubDeployConfig(): DeploymentEnv {
-    return IModelTestUtils._iModelHubDeployConfig;
-  }
-
-  public static setIModelHubDeployConfig(deployConfig: DeploymentEnv) {
-    if (IModelHost.configuration) {
-      throw new Error("Cannot change the deployment configuration after the backend has started up. Set the configuration earlier, or call iModelEngine.shutdown().");
-    }
-
-    const config = new IModelHostConfiguration();
-    config.iModelHubDeployConfig = deployConfig;
-    IModelTestUtils._connectClient = new ConnectClient(deployConfig);
-    IModelTestUtils._hubClient = new IModelHubClient(deployConfig, new AzureFileHandler());
-  }
-
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)
     userCredentials = TestUsers.regular;
-    const env = IModelTestUtils._iModelHubDeployConfig;
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(env)).getToken(userCredentials.email, userCredentials.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient(env)).getToken(authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
     assert(accessToken);
 
     return accessToken;
-  }
-
-  public static async getTestProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
-    const project: Project = await IModelTestUtils.connectClient.getProject(accessToken, {
-      $select: "*",
-      $filter: "Name+eq+'" + projectName + "'",
-    });
-    assert(project && project.wsgId);
-    return project.wsgId;
-  }
-
-  public static async getTestIModelId(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
-    const iModels = await IModelTestUtils.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
-    assert(iModels.length > 0);
-    assert(iModels[0].wsgId);
-
-    return iModels[0].wsgId;
-  }
-
-  private static async deleteAllBriefcases(accessToken: AccessToken, iModelId: string) {
-    const promises = new Array<Promise<void>>();
-    const briefcases = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
-    briefcases.forEach((briefcase: Briefcase) => {
-      promises.push(IModelTestUtils.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
-    });
-    await Promise.all(promises);
-  }
-
-  /** Deletes all acquired briefcases for specified iModel and User, *if* the maximum limit of briefcases that can be acquired
-   * has been reached.
-   */
-  public static async deleteBriefcasesIfAcquireLimitReached(accessToken: AccessToken, projectName: string, iModelName: string): Promise<void> {
-    const projectId: string = await IModelTestUtils.getTestProjectId(accessToken, projectName);
-    const iModelId: string = await IModelTestUtils.getTestIModelId(accessToken, projectId, iModelName);
-
-    const briefcases: Briefcase[] = await IModelTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
-    if (briefcases.length > 16) {
-      console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Deleting all briefcases.`); // tslint:disable-line
-      await IModelTestUtils.deleteAllBriefcases(accessToken, iModelId);
-    }
   }
 
   private static getStat(name: string) {
@@ -331,8 +249,9 @@ export class IModelTestUtils {
   }
 
   public static startBackend() {
-    IModelTestUtils.iModelHubDeployConfig = IModelTestUtils._iModelHubDeployConfig;
-    IModelHost.startup(new IModelHostConfiguration());
+    const config = new IModelHostConfiguration();
+    config.iModelHubDeployConfig = "QA";
+    IModelHost.startup(config);
   }
 }
 
