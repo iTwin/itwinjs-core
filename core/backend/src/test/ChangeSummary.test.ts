@@ -24,8 +24,8 @@ describe("ChangeSummary", () => {
     testIModelId = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, TestConfig.iModelName);
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+    await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, "NoVersionsTest");
 
     const changesPath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
     if (IModelJsFs.existsSync(changesPath))

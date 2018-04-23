@@ -1,6 +1,10 @@
 # Portability
 
-The technology used by iModelJs makes it possible to write an app once and then deploy it to run on many platforms without modification.
+This article describes the technologies and best practices that make iModelJs apps portable. An well-written iModelJs app will run on many platforms without modification.
+
+In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../../overview/overview/App.md#making-interactive-apps-fit-the-platform).
+
+This degree of portability and configurability is possible because of the technologies used by iModelJs apps and the iModelJs app architecture.
 
 ## Cross-Platform Technologies
 
@@ -8,7 +12,7 @@ The key technology that makes an app portable is JavaScript. JavaScript engines 
 
 [Nodejs](./Glossary.md#Node.js) is an execution environment for agents, services, and servers. Nodejs runs JavaScript programs. Nodejs itself runs on many platforms, including Windows and Linux. Nodejs is also widely supported by cloud infrastructures and deployment mechanisms.
 
-Web UI technology, including HTML and CSS, makes it possible to write a cross-platform user interface that looks and behaves the same everywhere, in every configuration. Web UI technology is supported by Web browsers and Web view renderers on many platforms.
+Web UI technology, including HTML and CSS, makes it possible to write a cross-platform user interface that looks and behaves the same everywhere, in every configuration. Web UI technology is supported by Web browsers and Web view renderers on many platforms. Web UI technology also simplifies the task of reconfiguring or even swapping out an app's GUI.
 
 [Electron](./Glossary.md#Electron) combines a Web view client and a nodejs-based server into a single desktop product, without requiring any modification of the code or the UI. Electron runs on many desktop platforms.
 
@@ -16,15 +20,31 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 Since an iModelJs app [frontend](../overview/overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
+The frontend's main script must check the app's configuration to decide what gateway configuration to use for its app-specific backend(s):
+* Mobile app - [in-process gateway configuration](../../overview/overview/App.md#in-process-gateway-configuration).
+* Desktop app - [desktop gateway configuration](../../overview/overview/App.md#desktop-gateway-configuration).
+* Web app - [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration).
+
+The frontend will always use the [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration) for gateways to services.
+
 ## Backend Portability
 
-Services and agents always run in nodejs. And, they always use server technology.
+### Services and Agents
+Services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use the [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
 
-App-specific backends do not always run in nodejs and do not always user server technology. This section describes how to make them portable and adaptable to multiple app configurations.
+### App Backends
+App-specific backends do not always run in nodejs, and they do not always run on a server. This section describes how to make an app-specific backend portable and adaptable to multiple app configurations.
 
-A few lines of an app-specific backend's main entry point must be different, depending on whether it is configured as a mobile app or not. For the mobile case, a special gateway request processor should be imported and initialized. For the non-mobile case, normal Web server packages should be imported and initialized.
+An app-specific backend's main script must check the app's configuration to decide how it should initialize and run:
+* Mobile app - the backend should run the in-process gateway request processor and use the [in-process gateway configuration](../../overview/overview/App.md#in-process-gateway-configuration).
+* Desktop app - the backend should run a Web server and use the [desktop gateway configuration](../../overview/overview/App.md#desktop-gateway-configuration).
+* Web app - the backend should run a Web server and use the [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration).
+
+*TBD: Sample Code*
 
 A backend can use node builtins, but only in guarded code.
+
+*TBD: Sample Code*
 
 A backend can use the following portable imodeljs-backend classes to avoid unnecessary node dependencies:
 
