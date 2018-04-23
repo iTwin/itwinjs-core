@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
+import { RenderTarget, RenderSystem } from "../System";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -129,4 +130,17 @@ export class GLESClips {
   public isValid(): boolean { return this.getClipCount() > 0; }
 }
 
-export class Target { /* ###TODO */ }
+export class Target extends RenderTarget {
+  public readonly gl: WebGLRenderingContext;
+
+  protected constructor(system: RenderSystem, gl: WebGLRenderingContext) {
+    super(system);
+    this.gl = gl;
+  }
+}
+
+export class OnScreenTarget extends Target {
+  public constructor(system: RenderSystem, gl: WebGLRenderingContext) {
+    super(system, gl);
+  }
+}

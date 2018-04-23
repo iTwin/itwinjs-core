@@ -28,6 +28,7 @@ export class ShaderProgramParams {
 
   public get isViewCoords() { return RenderPass.ViewOverlay === this.renderPass || RenderPass.Background === this.renderPass; }
   public get isOverlayPass() { return RenderPass.WorldOverlay === this.renderPass || RenderPass.ViewOverlay === this.renderPass; }
+  public get gl() { return this.target.gl; }
 }
 
 export class DrawParams extends ShaderProgramParams {

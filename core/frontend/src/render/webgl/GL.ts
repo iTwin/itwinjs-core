@@ -174,5 +174,18 @@ export namespace GL {
     UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
 //    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
     UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
-    }
+  }
+
+  export enum ShaderType {
+    Fragment = WebGLRenderingContext.FRAGMENT_SHADER,
+    Vertex = WebGLRenderingContext.VERTEX_SHADER,
+  }
+
+  export enum ShaderParameter {
+    CompileStatus = WebGLRenderingContext.COMPILE_STATUS,
+  }
+
+  export enum ProgramParameter {
+    LinkStatus = WebGLRenderingContext.LINK_STATUS,
+  }
 }
