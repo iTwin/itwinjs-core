@@ -6,7 +6,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
 import { ShaderSource } from "./ShaderSource";
 
-// Describes the data type of a shader program variable.
+/** Describes the data type of a shader program variable. */
 export const enum VariableType {
   Boolean, // bool
   Int, // int
@@ -23,7 +23,7 @@ export const enum VariableType {
   COUNT,
 }
 
-// Describes the qualifier associated with a shader program variable.
+/** Describes the qualifier associated with a shader program variable. */
 export const enum VariableScope {
   Global, // no qualifier
   Varying, // varying
@@ -33,7 +33,7 @@ export const enum VariableScope {
   COUNT,
 }
 
-// Describes the declared or undeclared precision of a shader program variable.
+/** Describes the declared or undeclared precision of a shader program variable. */
 export const enum VariablePrecision {
   Default, // undeclared precision - variable uses the explicit or implicit precision default for its type
   Low, // lowp
@@ -82,12 +82,14 @@ namespace Convert {
   }
 }
 
-// Function invoked by ShaderVariable::AddBinding() to bind the variable to the compiled program.
-// The implementation should call ShaderProgram::AddShaderUniform or ShaderProgram::AddGraphicUniform/Attribute to register a function
-// which can be used to bind the value of the variable when program is used.
+/**
+ * Function invoked by ShaderVariable::AddBinding() to bind the variable to the compiled program.
+ * The implementation should call ShaderProgram::AddShaderUniform or ShaderProgram::AddGraphicUniform/Attribute to register a function
+ * which can be used to bind the value of the variable when program is used.
+ */
 export type AddVariableBinding = (prog: ShaderProgram) => void;
 
-// Represents a variable within a fragment or vertex shader
+/** Represents a variable within a fragment or vertex shader. */
 export class ShaderVariable {
   private readonly _addBinding?: AddVariableBinding;
   public readonly name: string;
@@ -125,6 +127,7 @@ export class ShaderVariable {
   public get scopeName(): string { return Convert.scopeToString(this.scope); }
   public get precisionName(): string { return Convert.precisionToString(this.precision); }
 
+  /** Constructs the single-line declaration of this variable */
   public buildDeclaration(): string {
     const parts = new Array<string>();
     if (this.isConst)
@@ -150,16 +153,17 @@ export class ShaderVariable {
   }
 }
 
-// Represents the set of variables defined and used within a fragment or vertex shader.
-// If the same variable is used in both the fragment and vertex shader (e.g., a varying
-// variable), it should be defined in both ShaderBuilders' ShaderVariables object.
+/**
+ * Represents the set of variables defined and used within a fragment or vertex shader.
+ * If the same variable is used in both the fragment and vertex shader (e.g., a varying variable), it should be defined in both ShaderBuilders' ShaderVariables object.
+ */
 export class ShaderVariables {
   private readonly _list: ShaderVariable[] = new Array<ShaderVariable>();
 
-  public find(name: string): ShaderVariable | undefined {
-    return this._list.find((v: ShaderVariable) => v.name === name);
-  }
+  /** Find an existing variable with the specified name */
+  public find(name: string): ShaderVariable | undefined { return this._list.find((v: ShaderVariable) => v.name === name); }
 
+  /** Add a new variable, if a variable with the same name does not already exist. */
   public addVariable(v: ShaderVariable): void {
     const found = this.find(v.name);
     if (undefined !== found) {
@@ -186,6 +190,7 @@ export class ShaderVariables {
     this.addVariable(ShaderVariable.createGlobal(name, type, value, isConst));
   }
 
+  /** Constructs the lines of glsl code declaring all of the variables. */
   public buildDeclarations(): string {
     let decls = "";
     for (const v of this._list) {
@@ -195,6 +200,10 @@ export class ShaderVariables {
     return decls;
   }
 
+  /**
+   * For every uniform and attribute variable not contained in the optional 'predefined' list, invokes the associated binding function
+   * to add the corresponding Uniform or Attribute object to the ShaderProgram.
+   */
   public addBindings(prog: ShaderProgram, predefined?: ShaderVariables): void {
     for (const v of this._list) {
       // Some variables exist in both frag and vert shaders - only add them to the program once.
@@ -207,32 +216,43 @@ export class ShaderVariables {
   public get length(): number { return this._list.length; }
 }
 
+/** Convenience API for assembling glsl source code. */
 export class SourceBuilder {
   public source: string = "";
 
+  /* Append the specified string to the glsl source */
   public add(what: string): void { this.source += what; }
-  public newline(): void { this.add("\n"); }
-  public addline(what: string): void {
-    this.add(what);
-    this.newline();
-  }
 
+  /* Append a new-line to the glsl source */
+  public newline(): void { this.add("\n"); }
+
+  /* Append the specified string to the glsl source, followed by a new-line */
+  public addline(what: string): void { this.add(what); this.newline(); }
+
+  /**
+   * Construct a function definition given the function signature and body. For example:
+   *  buildFunctionDefintion("float average(float a, float b)", "return (a + b) / 2.0;");
+   * will produce:
+   *  "float average(float a, float b)
+   *     {
+   *     return (a + b) / 2.0;
+   *     }"
+   */
   public static buildFunctionDefinition(declaration: string, implementation: string): string {
     return declaration + "\n{\n" + implementation + "\n}\n\n";
   }
 
-  public addFunction(declaration: string, implementation: string): void {
-    this.add(SourceBuilder.buildFunctionDefinition(declaration, implementation));
-  }
+  /** Constructs a function definition as described by buildFunctionDefinition() and appends it to the glsl source. */
+  public addFunction(declaration: string, implementation: string): void { this.add(SourceBuilder.buildFunctionDefinition(declaration, implementation)); }
 
-  public addMain(implementation: string): void {
-    this.addFunction("void main()", implementation);
-  }
+  /** Constructs the definition of the main() function using the supplied function body and appends it to the glsl source. */
+  public addMain(implementation: string): void { this.addFunction("void main()", implementation); }
 }
 
-// Represents a fragment or vertex shader under construction. The shader consists of
-// a set of defined variables, plus a set of code snippets which can be concatenated
-// together to form the shader source.
+/*
+ * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
+ * plus a set of code snippets which can be concatenated together to form the shader source.
+ */
 export class ShaderBuilder extends ShaderVariables {
   private readonly _components: string[] = new Array<string>();
   private readonly _functions: string[] = new Array<string>();
@@ -372,7 +392,7 @@ export const enum VertexShaderComponent {
   COUNT,
 }
 
-// Assembles the source code for a vertex shader from a set of modular components.
+/** Assembles the source code for a vertex shader from a set of modular components. */
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
   private _initializers: string[] = new Array<string>();
@@ -414,7 +434,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard);
-      main.add(ShaderSource.vertex.earlyDiscard);
+      main.add(ShaderSource.Vertex.earlyDiscard);
     }
 
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
@@ -426,7 +446,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
-      main.add(ShaderSource.vertex.discard);
+      main.add(ShaderSource.Vertex.discard);
     }
 
     const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
@@ -451,12 +471,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
   }
 
   private addPosition(positionFromLUT: boolean): void {
-    this.addFunction(ShaderSource.vertex.unquantizePosition);
+    this.addFunction(ShaderSource.Vertex.unquantizePosition);
 
     // ###TODO: a_pos, u_qScale, u_qOrigin
 
     if (!positionFromLUT) {
-      this.addFunction(ShaderSource.vertex.unquantizeVertexPosition);
+      this.addFunction(ShaderSource.Vertex.unquantizeVertexPosition);
       return;
     }
 
@@ -467,11 +487,11 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     this.addFunction(ShaderSource.decodeUInt32);
     this.addFunction(ShaderSource.decodeUInt16);
-    this.addFunction(ShaderSource.vertex.unquantizeVertexPositionFromLUT);
+    this.addFunction(ShaderSource.Vertex.unquantizeVertexPositionFromLUT);
 
     // ###TODO: u_vertLUT, u_vertParams, LookupTable.AddToBuilder()
 
-    this.addInitializer(ShaderSource.vertex.initializeVertLUTCoords);
+    this.addInitializer(ShaderSource.Vertex.initializeVertLUTCoords);
   }
 }
 
@@ -523,7 +543,7 @@ export const enum FragmentShaderComponent {
   COUNT,
 }
 
-// Assembles the source code for a fragment shader from a set of modular components.
+/** Assembles the source code for a fragment shader from a set of modular components. */
 export class FragmentShaderBuilder extends ShaderBuilder {
   public constructor() {
     super(FragmentShaderComponent.COUNT);
@@ -636,10 +656,10 @@ export const enum ShaderType {
   Both = Fragment | Vertex,
 }
 
-// Assembles vertex and fragment shaders from a set of modular components to produce
-// a compiled ShaderProgram.
-// Be very careful with components which use samplers to ensure that no conflicts exist with texture units used by other components
-// (See TextureUnit enum)
+/**
+ * Assembles vertex and fragment shaders from a set of modular components to produce a compiled ShaderProgram.
+ * Be very careful with components which use samplers to ensure that no conflicts exist with texture units used by other components (see TextureUnit enum).
+ */
 export class ProgramBuilder {
   private readonly _vert: VertexShaderBuilder;
   private readonly _frag: FragmentShaderBuilder;
@@ -689,6 +709,7 @@ export class ProgramBuilder {
     this.addInlineComputedVarying(name, type, computation);
   }
 
+  /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
     const prog = new ShaderProgram(this._vert.buildSource(), this._frag.buildSource(), this._vert.headerComment, gl);
     this._vert.addBindings(prog);

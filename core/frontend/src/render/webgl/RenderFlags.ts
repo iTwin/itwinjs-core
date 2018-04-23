@@ -36,11 +36,10 @@ export const enum TextureUnit {
     Six = 6,
     Seven = 7, // Last one available for GLES2
 
-    NonUniformColor = Zero,
+    ClipMask = Zero,
     FeatureSymbology = One,
-    MeshTexture = Two,
+    SurfaceTexture = Two,
     LineCode = Two,
-    Point = Two,
     ElementId = Three,
 
     PickElementId0 = Four,
@@ -48,10 +47,11 @@ export const enum TextureUnit {
     PickDepthAndOrder = Six,
 
     // WIP - Image lighting (won't work if device limited to 8 textures).
-    IBLDiffuse = 8,
+    DiffuseMap = 8,
     IBLSpecular = 9,
     BRDFLUT = 10,
     EnvironmentMap = 11,
+    AnimationLUT = 12,
 }
 
 /**
