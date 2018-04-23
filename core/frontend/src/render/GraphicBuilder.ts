@@ -19,8 +19,7 @@ import { Transform,
          Angle,
          Box,
          StrokeOptions } from "@bentley/geometry-core";
-import { GeometryStreamEntryId,
-         PatternParams,
+import { PatternParams,
          ColorDef,
          Graphic,
          GraphicParams,
@@ -28,7 +27,7 @@ import { GeometryStreamEntryId,
          GeometryParams,
          LinePixels,
          TextString,
-         LineStyleSymb } from "@bentley/imodeljs-common";
+         LineStyleInfo} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 
 /**
@@ -139,7 +138,6 @@ export class GraphicBuilderCreateParams {
 
 /** Exposes methods for constructing a Graphic from geometric primitives. */
 export abstract class GraphicBuilder {
-  protected _streamId?: GeometryStreamEntryId;
   protected _isOpen: boolean = false;
 
   public currClip?: ClipVector;
@@ -148,8 +146,6 @@ export abstract class GraphicBuilder {
    * Get/Set the current GeometryStreamEntryId, which identifies the graphics that are currently being drawn.
    * Separated from _streamId to allow child classes to override the logic involved in setting the streamId
    */
-  public get geomStreamEntryId(): GeometryStreamEntryId { return this._streamId!; }
-  public set geomStreamEntryId(id: GeometryStreamEntryId) { this._streamId = id; }
   public get isOpen(): boolean { return this._isOpen; }
   public get iModel(): IModelConnection { return this.createParams.iModel!; }
   public get localToWorldTransform(): Transform { return this.createParams.placement; }
@@ -160,7 +156,7 @@ export abstract class GraphicBuilder {
   constructor(public readonly createParams: GraphicBuilderCreateParams) {}
 
   /** IFacetOptions => StrokeOptions */
-  public wantStrokeLineStyle(_symb: LineStyleSymb, _facetOptions: StrokeOptions): boolean { return true; } // tslint:disable-line
+  public wantStrokeLineStyle(_symb: LineStyleInfo, _facetOptions: StrokeOptions): boolean { return true; } // tslint:disable-line
 
   public wantStrokePattern(_pattern: PatternParams): boolean { return true; }
 

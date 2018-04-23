@@ -232,20 +232,32 @@ export class GeometryStreamBuilder {
   }
 
   /** Change GeometryParams for subsequent geometry.
-   *  It is not valid to change the sub-category when defining a GeometryPart. GeometryParts inherit the symbology of their instance for anything not explicitly overridden.
+   *  It is not valid to change the sub-category when defining a GeometryPart. A GeometryPart inherits the symbology of their instance for anything not explicitly overridden.
    */
   public appendGeometryParamsChange(geomParams: GeometryParams): boolean {
     const appearance: GeometryAppearanceProps = {
       subCategory: geomParams.subCategoryId,
-      color: geomParams.appearanceOverrides.color ? geomParams.getLineColor() : undefined,
-      weight: geomParams.appearanceOverrides.weight ? geomParams.getWeight() : undefined,
-      style: geomParams.appearanceOverrides.style ? (geomParams.getLineStyle() ? geomParams.getLineStyle()!.styleId : new Id64()) : undefined,
-      transparency: geomParams.getTransparency(),
-      displayPriority: geomParams.getDisplayPriority(),
-      geometryClass: geomParams.getGeometryClass(),
+      color: geomParams.lineColor,
+      weight: geomParams.weight,
+      style: geomParams.styleInfo ? geomParams.styleInfo!.styleId : undefined,
+      transparency: geomParams.elmTransparency,
+      displayPriority: geomParams.elmPriority,
+      geometryClass: geomParams.geometryClass,
     };
-    // NOTE: Will need to check worldToLocal when support added for patterns and linestyles...
     this.geometryStream.push({ appearance });
+
+    if (geomParams.materialId)
+      this.geometryStream.push({ material: { materialId: geomParams.materialId } });
+
+    // NEEDSWORK: Will also need to check worldToLocal (for patterns too!)...
+    // if (geomParams.styleInfo) {
+    //   const styleMod: StyleModifierProps = {
+    //     scale: 1.0,
+    //   };
+
+    //   this.geometryStream.push({ styleMod });
+    // }
+
     return true;
   }
 
@@ -310,64 +322,3 @@ export class GeometryStreamBuilder {
     return true;
   }
 }
-
-/** Class for identifying a geometric primitive in a GeometryStream */
-export class GeometryStreamEntryId {
-  private _partId: Id64;      // Valid when index refers to a part
-  private _index: number;     // Index into top-level GeometryStream
-  private _partIndex: number; // Index into part GeometryStream
-
-  public constructor() {
-    this._partId = new Id64();
-    this._index = 0;
-    this._partIndex = 0;
-  }
-
-  public get index() { return this._index; }
-  public get partIndex() { return this._partIndex; }
-  public get geometryPartId() { return this._partId; }
-  public isValid() { return this._index !== 0; }
-  public increment() { if (this._partId.isValid()) this.incrementPartIndex(); else this.incrementIndex(); }
-  public incrementIndex() { if (65535 === this._index) return; this._index++; } // More than 65535 geometric entries in a single GeometryStream is questionable...
-  public incrementPartIndex() { if (65535 === this._partIndex) return; this._partIndex++; }
-  public setGeometryPartId(partId: Id64) { this._partId = partId; }
-  public setIndex(index: number) { this._index = index; }
-  public setPartIndex(partIndex: number) { this._index = partIndex; }
-  public setActive(enable: boolean) {
-    if (this._partId.isValid()) {
-      if (!enable) this._partId = new Id64();
-      return;
-    }
-    this._partId = new Id64();
-    this._index = 0;
-    this._partIndex = 0;
-  }
-  public setActiveGeometryPart(partId: Id64) {
-    this._partId = new Id64(partId);
-  }
-
-  public clone(): GeometryStreamEntryId {
-    const retVal = new GeometryStreamEntryId();
-    retVal._partId = new Id64(this._partId);
-    retVal._index = this._index;
-    retVal._partIndex = this._partIndex;
-    return retVal;
-  }
-}
-
-// class CurrentState {
-//   public geomParams?: GeometryParams;
-//   public sourceToWorld: Transform;
-//   public geomToSource: Transform;
-//   public geomToWorld: Transform;
-//   public geometry?: GeometricPrimitive;
-//   public geomStreamEntryId?: GeometryStreamEntryId;
-//   public localRange: Range3d;
-
-//   public constructor() {
-//     this.sourceToWorld = Transform.createIdentity();
-//     this.geomToSource = Transform.createIdentity();
-//     this.geomToWorld = Transform.createIdentity();
-//     this.localRange = Range3d.createNull();
-//   }
-// }
