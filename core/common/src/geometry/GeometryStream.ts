@@ -78,6 +78,8 @@ export interface GradientThematicProps {
   margin?: number;
   marginColor?: ColorDef;
   colorScheme?: number;
+  rangeLow?: number;
+  rangeHigh?: number;
 }
 
 /** Multi-color area fill defined by a range of colors that vary by position */
