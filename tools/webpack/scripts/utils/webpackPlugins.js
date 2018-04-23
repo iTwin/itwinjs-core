@@ -110,7 +110,7 @@ class CopyNativeAddonsPlugin {
 class CopyAssetsPlugin {
   apply(compiler) {
     compiler.hooks.environment.tap("CopyAssetsPlugin", () => {
-      const backendAssets = path.resolve(paths.appBentleyNodeModules, "imodeljs-backend", "assets");
+      const backendAssets = path.resolve(paths.appBentleyNodeModules, "imodeljs-backend", "lib", "assets");
       if (fs.existsSync(backendAssets))
         fs.copySync(backendAssets, path.resolve(paths.appLib, "assets"));
 
