@@ -6,14 +6,32 @@ import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform } from "@bentley/geometry-core";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
-import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imodeljs-common";
+import { DecorationList, GraphicList, Decorations, Graphic, ViewFlags } from "@bentley/imodeljs-common";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { PrimitiveBuilder } from "./render/primitives/Geometry";
 import { Target, System } from "./render/System";
 
 export class ViewContext {
-  constructor(public viewport?: Viewport) { }
+  private _viewFlags?: ViewFlags;
+  private _viewport?: Viewport;
+
+  public get viewFlags(): ViewFlags { return this._viewFlags!; }
+  public get viewport(): Viewport { return this._viewport!; }
+
+  constructor(vp?: Viewport) { if (!!vp) this.attachViewport(vp); }
+
+  public attachViewport(vp: Viewport): void {
+    this._viewport = vp;
+    this._viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+  }
+
+  public getPixelSizeAndPoint(inPoint?: Point3d): number {
+    const vp = this.viewport;
+    const viewPt = !!inPoint ? vp.worldToView(inPoint) : vp.npcToView(new Point3d(0.5, 0.5, 0.5));
+    const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
+    return vp.viewToWorld(viewPt).distance(vp.viewToWorld(viewPt2));
+  }
 }
 
 export class NullContext extends ViewContext {
@@ -88,7 +106,7 @@ export class SnapContext extends ViewContext {
 
 export class RenderContext extends ViewContext {
   public get target(): Target { return this.viewport.target; }
-  constructor(public viewport: Viewport) { super(viewport); }
+  constructor(vp: Viewport) { super(vp); }
   public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined {
     return this._createGraphic(GraphicBuilderCreateParams.create(_type, this.viewport, _tf));
   }
@@ -97,7 +115,7 @@ export class RenderContext extends ViewContext {
 
 export class DecorateContext extends RenderContext {
   private readonly decorations = new Decorations();
-
+  constructor(vp: Viewport) { super(vp); }
   public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
   public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
   public drawHit(hit: HitDetail): void {
