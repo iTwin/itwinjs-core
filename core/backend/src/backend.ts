@@ -55,8 +55,8 @@ export * from "./IModelDb"; // must be last
  * For more information [[?]]
  */
 /**
- * @docs-group-description ECSql
- * Classes for working with ECSql. The key classes are:
+ * @docs-group-description ECSQL
+ * Classes for working with ECSQL. The key classes are:
  * * #ECSqlStatement
  * * #ECSqlValue
  * For more information [[?]]

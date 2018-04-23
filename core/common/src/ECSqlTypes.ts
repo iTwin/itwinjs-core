@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module ECSql */
+/** @module ECSQL */
 
 import { Id64Props, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "./IModelError";

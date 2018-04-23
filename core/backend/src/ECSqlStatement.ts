@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module ECSql */
+/** @module ECSQL */
 
 import { DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common";
@@ -10,12 +10,14 @@ import { ECDb } from "./ECDb";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlValueIterator, NativeECDb, NativeDgnDb } from "@bentley/imodeljs-native-platform-api";
 
-/** The result of an **ECSQL INSERT** statement as returned from [[ECSqlStatement.stepForInsert]].
- * <em>note:</em> Insert statements can be used with ECDb only, not with IModelDb.
+/** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($imodeljs-backend.ECSqlStatement.stepForInsert).
+ *
+ * > Insert statements can be used with ECDb only, not with IModelDb.
  *
  * If the step was successful, the ECSqlInsertResult contains
- * [[DbResult.BE_SQLITE_DONE]] and the ECInstanceId of the newly created instance.
- * In case of failure it contains the [[DbResult]] error code.
+ * [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE)
+ * and the ECInstanceId of the newly created instance.
+ * In case of failure it contains the [DbResult]($bentleyjs-core.DbResult) error code.
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) { }
@@ -23,23 +25,25 @@ export class ECSqlInsertResult {
 
 /** An ECSQL Statement.
  *
- * A statement must be prepared before it can be executed, and it must be <em>released</em> when no longer needed. See [[IModelDb.withPreparedStatement]] or
- * [[ECDb.withPreparedStatement]] for a convenient and reliable way to prepare, execute, and then release a statement.
+ * A statement must be prepared before it can be executed, and it must be released when no longer needed.
+ * See [IModelDb.withPreparedStatement]($imodeljs-backend.IModelDb.withPreparedStatement) or
+ * [ECDb.withPreparedStatement]($imodeljs-backend.ECDb.withPreparedStatement) for a convenient and
+ * reliable way to prepare, execute, and then release a statement.
  *
- * A statement may contain parameters that must be filled in before use by calling [[ECSqlStatement.bindValues]]
- * or the other **bindXXX** methods.
+ * A statement may contain parameters that must be filled in before use by the **bind** methods.
  *
- * Once prepared (and parameters are bound, if any), the statement is executed by calling [[ECSqlStatement.step]].
- * In case of an **ECSQL SELECT** statement, the current row can be retrieved by [[ECSqlStatement.getRow]] as a whole,
- * or by [[ECSqlStatement.getValue]] when individual values are needed.
+ * Once prepared (and parameters are bound, if any), the statement is executed by calling [ECSqlStatement.step]($imodeljs-backend.ECSqlStatement.step).
+ * In case of an **ECSQL SELECT** statement, the current row can be retrieved with [ECSqlStatement.getRow]($imodeljs-backend.ECSqlStatement.getRow) as
+ * a whole, or with [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue) when individual values are needed.
  * Alternatively, query results of an **ECSQL SELECT** statement can be stepped through by using
- * standard iteration syntax, such as "for of".
+ * standard iteration syntax, such as `for of`.
  *
- * <em>note:</em> Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
- * statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
- * The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
+ * > Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
+ * > statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
+ * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  *
- * <em>Example:</em>
+ * #### Example:
+ *
  * ```ts
  * [[include:ECSqlStatement.Examples]]
  * ```
@@ -61,7 +65,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
-   * @throws [[IModelError]] if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
+   * @throws [IModelError]($imodeljs-common.IModelError) if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
   public prepare(db: NativeDgnDb | NativeECDb, ecsql: string): void {
@@ -83,7 +87,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement.
-   * <em>note:</em> Do not call this method directly on a statement that is being managed by a statement cache.
+   *
+   * > Do not call this method directly on a statement that is being managed by a statement cache.
    */
   public dispose(): void {
     if (this.isShared())
@@ -186,21 +191,11 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Bind values to all parameters in the statement.
    * @param values The values to bind to the parameters.
-   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name for named parameters.
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
-   *
-   * Supported types:
-   *  * boolean
-   *  * number for integral or double parameters
-   *  * string for string parameters,
-   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
-   *  * [[Id64]] for id parameters
-   *  * [[Guid]] for guid parameters
-   *  * [[NavigationBindingValue]] for navigation property parameters
-   *  * [[XAndY]] for Point2d parameters
-   *  * [[XYAndZ]] for Point3d parameters
-   *  * Objects of primitives, objects or arrays of any of the above types when binding structs
-   *  * Arrays of primitives or objects of any of the above when binding arrays
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModelJs types to be used for the different ECSQL parameter types.
    */
   public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
@@ -228,7 +223,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private getBinder(param: string | number): NativeECSqlBinder { return this._stmt!.getBinder(param); }
 
   /** Clear any bindings that were previously set on this statement.
-   * @throws [[IModelError]] in case of errors
+   * @throws [IModelError]($imodeljs-common.IModelError) in case of errors
    */
   public clearBindings(): void {
     const stat: DbResult = this._stmt!.clearBindings();
@@ -238,18 +233,21 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Step this statement to the next row.
    * @returns For **ECSQL SELECT** statements the method returns
-   *  * [[DbResult.BE_SQLITE_ROW]] if the statement now points successfully to the next row.
-   *  * [[DbResult.BE_SQLITE_DONE]] if the statement has no more rows.
+   *  * [DbResult.BE_SQLITE_ROW]($bentleyjs-core.DbResult.BE_SQLITE_ROW) if the statement now points successfully to the next row.
+   *  * [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE) if the statement has no more rows.
    *  * Error status in case of errors.
    *  For **ECSQL INSERT, UPDATE, DELETE** statements the method returns
-   *  * [[DbResult.BE_SQLITE_DONE]] if the statement has been executed successfully. <em>note:</em>: Insert statements can be used with ECDb only, not with IModelDb.
+   *  * [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE) if the statement has been executed successfully.
    *  * Error status in case of errors.
+   *  >  Insert statements can be used with ECDb only, not with IModelDb.
    */
   public step(): DbResult { return this._stmt!.step(); }
 
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
-   * <em>note:</em>: Insert statements can be used with ECDb only, not with IModelDb.
    * created instance.
+   *
+   * > Insert statements can be used with ECDb only, not with IModelDb.
+   *
    * @returns Returns the generated ECInstanceId in case of success and the status of the step
    * call. In case of error, the respective error code is returned.
    */
@@ -267,41 +265,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
    *
-   * ### Property names
-   * If the ECSQL select clause item
-   *  * is an [ECSQL system property]([[ECSqlSystemProperty]]), the property name is as described here: [[ECJsonNames.toJsName]]
-   *  * has a column alias, the alias, with the first character lowered, becomes the property name.
-   *  * has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
-   *
-   * ### Property value types
-   * The resulting types of the returned property values are these:
-   *
-   * | ECSQL type | Extended Type | JavaScript Type |
-   * | ---------- | ------------- | --------------- |
-   * | Boolean    | -             | boolean         |
-   * | Blob       | -             | ArrayBuffer     |
-   * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
-   * | ClassId system properties | - | Fully qualified class name |
-   * | Double     | -             | number          |
-   * | DateTime   | -             | ISO8601 string  |
-   * | Id system properties | -   | Hexadecimal string |
-   * | Integer    | -             | number          |
-   * | Int64      | -             | number          |
-   * | Int64      | Id            | Hexadecimal string |
-   * | Point2d    | -             | [[XAndY]]      |
-   * | Point3d    | -             | [[XYAndZ]]     |
-   * | String     | -             | string         |
-   * | Navigation | n/a           | [[NavigationValue]] |
-   * | Struct     | n/a           | JS object with properties of the types in this table |
-   * | Array      | n/a           | array of the types in this table |
-   *
-   * ### Examples
-   * | ECSQL | Row |
-   * | ----- | --- |
-   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"274e25dc-8407-11e7-bb31-be2e44b06b34",userLabel:"My element"}` |
-   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:"0x132", classId:"0x332"}` |
-   * | SELECT count(*) FROM bis.Element | `{"count(*)": 31241}` |
-   * | SELECT count(*) cnt FROM bis.Element | `{cnt: 31241}` |
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
    */
   public getRow(): any {
     const colCount: number = this.getColumnCount();
@@ -318,7 +282,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return row;
   }
 
-  /** Calls step when called as an iterator. */
+  /** Calls step when called as an iterator.
+   *  Each iteration returns an [ECSQL row format]($docs/learning/ECSQLRowFormat)
+   */
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
       return {
@@ -344,7 +310,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
 /** Represents the value of a specific ECSQL column in the current
  * row of the result set of an ECSQL SELECT statement.
- * See [[ECSqlStatement]], [[ECSqlStatement.getValue]]
+ *
+ * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
  */
 export class ECSqlValue {
   private _val: NativeECSqlValue;
@@ -354,32 +321,7 @@ export class ECSqlValue {
   /** Get information about the ECSQL SELECT result's column this value refers to. */
   public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
 
-  /** Get the value of this ECSQL value
-   *
-   * ### Property value type
-   * The resulting type of the returned value is:
-   *
-   * | ECSQL type | Extended Type | JavaScript Type |
-   * | ---------- | ------------- | --------------- |
-   * | Boolean    | -             | boolean         |
-   * | Blob       | -             | ArrayBuffer     |
-   * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
-   * | ClassId system properties | - | Fully qualified class name |
-   * | Double     | -             | number          |
-   * | DateTime   | -             | ISO8601 string  |
-   * | Id system properties | -   | Hexadecimal string |
-   * | Integer    | -             | number          |
-   * | Int64      | -             | number          |
-   * | Int64      | Id            | Hexadecimal string |
-   * | Point2d    | -             | [[XAndY]]      |
-   * | Point3d    | -             | [[XYAndZ]]     |
-   * | String     | -             | string         |
-   * | Navigation | n/a           | [[NavigationValue]] |
-   * | Struct     | n/a           | JS object with properties of the types in this table |
-   * | Array      | n/a           | array of the types in this table |
-   *
-   * See also [[ECSqlStatement.getRow]]
-   */
+  /** Get the value of this ECSQL value */
   public get value(): any { return ECSqlValueHelper.getValue(this); }
 
   /** Indicates whether the value is NULL or not. */
@@ -395,7 +337,7 @@ export class ECSqlValue {
   /** Get the value as a IGeometry value (as ECJSON IGeometry) */
   public getGeometry(): any { return JSON.parse(this._val.getGeometry()); }
   /** Get the value as a GUID (formatted as GUID string).
-   *  See [[Guid]]
+   *  See [Guid]($bentleyjs-core.Guid)
    */
   public getGuid(): string { return this._val.getGuid(); }
   /** Get the value as a Id (formatted as hexadecimal string). */
@@ -406,11 +348,11 @@ export class ECSqlValue {
   public getInteger(): number { return this._val.getInt64(); }
   /** Get the value as a string value */
   public getString(): string { return this._val.getString(); }
-  /** Get the value as [[XAndY]] */
+  /** Get the value as [XAndY]($geometry-core.XAndY) */
   public getXAndY(): XAndY { return this._val.getPoint2d(); }
-  /** Get the value as [[XYAndZ]] */
+  /** Get the value as [XYAndZ]($geometry-core.XYAndZ) */
   public getXYAndZ(): XYAndZ { return this._val.getPoint3d(); }
-  /** Get the value as [[NavigationValue]] */
+  /** Get the value as [NavigationValue]($imodeljs-common.NavigationValue) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }
 
   /** Get an iterator for iterating the struct members of this struct value. */
@@ -428,7 +370,8 @@ export class ECSqlValue {
 
 /** The ECSqlValueIterator is used to iterate the members of a struct ECSqlValue or
  *  the elements of an array ECSqlValue.
- *  See [[ECSqlValue.getStructIterator]] or [[ECSqlValue.getArrayIterator]]
+ *  See [ECSqlValue.getStructIterator]($imodeljs-backend.ECSqlValue.getStructIterator) or
+ *  [ECSqlValue.getArrayIterator]($imodeljs-backend.ECSqlValue.getArrayIterator).
  */
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: NativeECSqlValueIterator;
@@ -449,7 +392,8 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 
 /** Represents the value of a specific ECSQL column in the current
  * row of the result set of an ECSQL SELECT statement.
- * See [[ECSqlStatement]], [[ECSqlStatement.getValue]]
+ *
+ * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.
@@ -495,18 +439,7 @@ class ECSqlBindingHelper {
 
   /** Binds the specified value to the specified binder
    * @param binder Parameter Binder to bind to
-   * @param val Value to be bound. Must be of one of these types:
-   *  * boolean
-   *  * number for integral or double parameters
-   *  * string for string parameters,
-   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
-   *  * [[Id64]] for id parameters
-   *  * [[Guid]] for guid parameters
-   *  * [[NavigationBindingValue]] for navigation property parameters
-   *  * [[XAndY]] for Point2d parameters
-   *  * [[XYAndZ]] for Point3d parameters
-   * Objects of primitives, objects or arrays of any of the above types when binding structs
-   * Arrays of primitives or objects of any of the above when binding arrays
+   * @param val Value to be bound. (See [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes))
    * @throws IModelError in case of errors
    */
   public static bindValue(binder: NativeECSqlBinder, val: any): void {
@@ -536,7 +469,7 @@ class ECSqlBindingHelper {
    * @param binder Parameter Binder to bind to
    * @param val Primitive value to be bound. Must be of one of these types:
    *  null | undefined, boolean, number, string, DateTime, Blob, Id64, XY, XYZ, NavigationValue
-   * @throws [[IModelError]] in case of errors
+   * @throws IModelError in case of errors
    */
   public static bindPrimitive(binder: NativeECSqlBinder, val: any): void {
     const stat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
@@ -550,7 +483,7 @@ class ECSqlBindingHelper {
   /** Binds the specified object to the specified struct binder
    * @param binder Struct parameter binder to bind to
    * @param val Value to be bound. Must be an Object with members of the supported types
-   * @throws [[IModelError]] in case of errors
+   * @throws IModelError in case of errors
    */
   public static bindStruct(binder: NativeECSqlBinder, val: object): void {
     if (val === null || val === undefined) {
@@ -571,7 +504,7 @@ class ECSqlBindingHelper {
   /** Binds the specified array to the specified array binder
    * @param binder Array parameter binder to bind to
    * @param val Value to be bound. Must be an Array with elements of the supported types
-   * @throws [[IModelError]] in case of errors
+   * @throws IModelError in case of errors
    */
   public static bindArray(binder: NativeECSqlBinder, val: any[]): void {
     if (val === null || val === undefined) {

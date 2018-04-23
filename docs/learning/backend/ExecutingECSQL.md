@@ -9,8 +9,14 @@ Executing an ECSQL statement typically consists of these steps:
 1. Execute the ECSQL and iterate the query results (for ECSQL SELECT statements).
 1. Reset the statement and clear its parameter bindings, if the statement should be executed again.
 
-> For iModels only ECSQL SELECT statements can be executed. Data modification has to be done through
-> the dedicated Element API.
+> For iModels only ECSQL SELECT statements can be executed. Data modification must be done through the API.
+> For [ECDb files]($imodeljs-backend.ECDb) ECSQL INSERT, UPDATE and DELETE statements can be executed as well.
+
+There are two ways to execute an ECSQL statement:
+
+- [IModelDb.executeQuery]($imodeljs-backend.IModelDb.executeQuery) is the high-level API which does all the above steps
+in a single call.
+- [ECSqlStatement]($imodeljs-backend.ECSqlStatement) is the low-level API in case you need more flexibility, e.g. when iterating over the query results
 
 ## IModelDb.executeQuery
 
@@ -70,7 +76,7 @@ To bind values to all parameters in the ECSQL with a single call, the method [EC
 
 Pass an *array* of values if the parameters are *positional*. Pass an *object of the values keyed on the parameter name* for *named parameters*.
 
-The section ["iModelJs Types used in ECSQL Parameter Bindings"](../learning/ECSQLParameterTypes) describes the iModelJs types to be used for the different ECSQL parameter types.
+The section "[iModelJs Types used in ECSQL Parameter Bindings](../learning/ECSQLParameterTypes)" describes the iModelJs types to be used for the different ECSQL parameter types.
 
 > The values in either the array or object must match the respective types of the parameter.
 

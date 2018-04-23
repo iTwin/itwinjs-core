@@ -308,17 +308,16 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Execute a query against this IModelDb. This is just a convenience method that calls [[withPreparedStatement]], [[ECSqlStatement.bindValues]], [[ECSqlStatement.step]],
-   * and [[ECSqlStatement.getRow]].
-   * @param ecsql The ECSQL statement to execute
+  /** Execute a query against this IModelDb.
+   * @param ecsql The ECSQL SELECT statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
-   * for named parameters.
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
-   * See [[ECSqlStatement.bindValues]] for details.
+   * See [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes) for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
-   * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
-   * @throws [[IModelError]] If the statement is invalid
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($imodeljs-common.IModelError) If the statement is invalid
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
