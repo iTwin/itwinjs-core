@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Id64, OpenMode } from "@bentley/bentleyjs-core";
 import { XYAndZ } from "@bentley/geometry-core";
-import { CodeSpec, CodeSpecNames, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestGateway } from "../common/TestGateway";
 import {
@@ -56,7 +56,7 @@ describe("IModelConnection", () => {
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.size);
 
-    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getByName(CodeSpecNames.SpatialCategory());
+    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getByName(BisCodeSpec.spatialCategory);
     assert.exists(codeSpecByName);
     const codeSpecById: CodeSpec = await iModel.codeSpecs.getById(codeSpecByName.id);
     assert.exists(codeSpecById);

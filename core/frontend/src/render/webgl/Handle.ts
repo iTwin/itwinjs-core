@@ -6,7 +6,7 @@ import { GL } from "./GL";
 import { QParams } from "@bentley/imodeljs-common";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { Range2d, Range3d } from "@bentley/geometry-core";
-import { Matrix3, Matrix4 } from "../Matrix";
+import { Matrix3, Matrix4 } from "./Matrix";
 import { GLDisposable } from "./GLDisposable";
 
 /**

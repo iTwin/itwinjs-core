@@ -34,8 +34,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
-import { System } from "../System";
-import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "../DisplayParams";
+import { RenderSystem } from "../System";
+import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 
 export abstract class Geometry {
@@ -108,7 +108,7 @@ export class GeometryAccumulator {
   public checkGlyphBoxes: boolean = false;
   public tileRange: Range3d;
 
-  public constructor(iModel: IModelConnection, system: System, surfacesOnly: boolean = false, transform?: Transform, tileRange?: Range3d) {
+  public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform?: Transform, tileRange?: Range3d) {
     this.surfacesOnly = surfacesOnly;
     this.displayParamsCache = new DisplayParamsCache(iModel, system);
     if (transform && tileRange) {
@@ -186,7 +186,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
 
-  public constructor(system: System, params: GraphicBuilderCreateParams, elemId: Id64 = new Id64(), accumulatorTf: Transform = Transform.createIdentity()) {
+  public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, elemId: Id64 = new Id64(), accumulatorTf: Transform = Transform.createIdentity()) {
     super(params);
     if (params.iModel) {
       this.accum = new GeometryAccumulator(params.iModel, system);
@@ -330,7 +330,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public getLinearDisplayParams(): DisplayParams | undefined { return this.getDisplayParams(DisplayParamsType.Linear, false); }
   public get textDisplayParams(): DisplayParams | undefined { return this.getDisplayParams(DisplayParamsType.Text, false); }
 
-  public get system(): System | undefined { return this.accum ? this.accum.displayParamsCache.system : undefined; }
+  public get system(): RenderSystem | undefined { return this.accum ? this.accum.displayParamsCache.system : undefined; }
 
   public add(geom: Geometry): void { if (this.accum) this.accum.addGeometryWithGeom(geom); }
 
@@ -345,7 +345,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: Graphic[] = [];
-  constructor(public system: System, public params: GraphicBuilderCreateParams, public elemId: Id64 = new Id64()) { super(system, params, elemId); }
+  constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams, public elemId: Id64 = new Id64()) { super(system, params, elemId); }
   public addSubGraphic(gf: Graphic, subToGf: Transform, _gfParams: GraphicParams, clips?: ClipVector): void {
     // ###TODO_ELEMENT_TILE: Overriding GraphicParams?
     // ###TODO_ELEMENT_TILE: Clip...
