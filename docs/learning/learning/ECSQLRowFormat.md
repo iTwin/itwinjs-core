@@ -6,7 +6,7 @@ A row returned from an [ECSQL](./ECSQL) SELECT query is formatted as JavaScript 
 
 If the ECSQL select clause item
 
-- is an [ECSQL system property](@imodeljs-common.ECSqlSystemProperty), the property name is as described here: [ECJsonNames.toJsName](@imodeljs-common.ECJsonNames.toJsName)
+- is an [ECSQL system property]($imodeljs-common.ECSqlSystemProperty), the property name is as described here: [ECJsonNames.toJsName]($imodeljs-common.ECJsonNames.toJsName)
 - has a column alias, the alias, with the first character lowered, becomes the property name.
 - has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
 
@@ -18,7 +18,7 @@ ECSQL type | Extended Type | JavaScript Typ
 ---------- | ------------- | ---------------
 Boolean    | -             | boolean
 Blob       | -             | ArrayBuffer
-Blob       | BeGuid        | GUID string (see [Guid]($bentleyjs-common.Guid))
+Blob       | BeGuid        | GUID string (see [Guid]($bentleyjs-core.Guid))
 ClassId system properties | - | fully qualified class name
 Double     | -             | number
 DateTime   | -             | ISO8601 string
