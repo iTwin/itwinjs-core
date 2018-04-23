@@ -8,8 +8,8 @@ Boolean       | boolean
 Blob          | ArrayBuffer, SharedArrayBuffer, Base64 string
 DateTime      | [ECSqlTypedString]($imodeljs-common.ECSqlTypedString) with an ISO 8601 date time string
 Double        | number
-GUID          | [Guid]($bentleyjs-common.Guid)
-Id            | [Id64]($bentleyjs-common.Id64)
+GUID          | [Guid]($bentleyjs-core.Guid)
+Id            | [Id64]($bentleyjs-core.Id64)
 Navigation Value | [NavigationBindingValue]($imodeljs-common.NavigationBindingValue)
 Point2d       | [XAndY]($geometry-core.XAndY)
 Point3d       | [XAndY]($geometry-core.XYAndZ)
