@@ -35,7 +35,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
 import { RenderSystem } from "../System";
-import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "../DisplayParams";
+import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 
 export abstract class Geometry {

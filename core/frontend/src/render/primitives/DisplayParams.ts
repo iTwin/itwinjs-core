@@ -4,8 +4,8 @@
 
 import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { GraphicParams, GeometryParams, ColorDef, GeometryClass, LinePixels, FillDisplay, FillFlags } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
-import { RenderSystem } from "./System";
+import { IModelConnection } from "../../IModelConnection";
+import { RenderSystem } from "../System";
 
 export const enum DisplayParamsType {
   Mesh,
