@@ -16,7 +16,7 @@ import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./Platform";
 
-/** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
+/** Equivalent of the ECEnumeration OpCode in the `ECDbChange` ECSchema */
 export enum ChangeOpCode {
   Insert = 1,
   Update = 2,
@@ -35,11 +35,19 @@ export enum ChangedValueState {
   BeforeDelete = 4,
 }
 
+/** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
+ *
+ *  See also [ChangeSummaryManager.queryChangeSummary]($imodeljs-backend.ChangeSummaryManager.queryChangeSummary)
+ */
 export interface ChangeSummary {
   id: Id64;
   changeSet: { wsgId: string, parentWsgId: string, pushDate: string, author: string };
 }
 
+/** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
+ *
+ *  See also [ChangeSummaryManager.queryInstanceChange]($imodeljs-backend.ChangeSummaryManager.queryInstanceChange)
+ */
 export interface InstanceChange {
   id: Id64;
   summaryId: Id64;

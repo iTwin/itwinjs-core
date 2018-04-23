@@ -47,6 +47,8 @@ export class ECSqlInsertResult {
  * ```ts
  * [[include:ECSqlStatement.Examples]]
  * ```
+ *
+ * See [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) for more on ECSQL.
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: NativeECSqlStatement | undefined;

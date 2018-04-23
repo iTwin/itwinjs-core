@@ -122,65 +122,18 @@ export class IModelConnection extends IModel {
 
   /**
    * Execute a query against the iModel.
-   *
-   * ## Row Format
-   * The returned rows are formatted as JavaScript objects where every SELECT clause item becomes a property in the JavaScript object.
-   *
-   * ### Property names
-   * If the ECSQL select clause item
-   *  * is an [ECSQL system property]([[ECSqlSystemProperty]]), the property name is as described here: [[ECJsonNames.toJsName]]
-   *  * has a column alias, the alias, with the first character lowered, becomes the property name.
-   *  * has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
-   *
-   * ### Property value types
-   * The resulting types of the returned property values are these:
-   *
-   * | ECSQL type | Extended Type | JavaScript Type |
-   * | ---------- | ------------- | --------------- |
-   * | Boolean    | -             | boolean         |
-   * | Blob       | -             | Base64 string   |
-   * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
-   * | Double     | -             | number          |
-   * | DateTime   | -             | ISO8601 string  |
-   * | Id system properties | -   | Hexadecimal string |
-   * | Integer    | -             | number          |
-   * | Int64      | -             | number          |
-   * | Int64      | Id            | Hexadecimal string |
-   * | Point2d    | -             | [[XAndY]]      |
-   * | Point3d    | -             | [[XYAndZ]]     |
-   * | String     | -             | string         |
-   * | Navigation | n/a           | [[NavigationValue]] |
-   * | Struct     | n/a           | JS object with properties of the types in this table |
-   * | Array      | n/a           | array of the types in this table |
-   *
-   * ### Examples
-   * | ECSQL | Row |
-   * | ----- | --- |
-   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"274e25dc-8407-11e7-bb31-be2e44b06b34",userLabel:"My element"}` |
-   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:"0x132", classId:"0x332"}` |
-   * | SELECT count(*) FROM bis.Element | `{"count(*)": 31241}` |
-   * | SELECT count(*) cnt FROM bis.Element | `{cnt: 31241}` |
-   *
+   * The result of the query is returned as an array of JavaScript objects where every array element represents an
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
-   * for named parameters.
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModelJs types to be used for the different ECSQL parameter types.
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
-   *
-   * Supported types:
-   *  * boolean
-   *  * number for integral or double parameters
-   *  * string for string parameters,
-   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
-   *  * [[Id64]] for id parameters
-   *  * [[Guid]] for guid parameters
-   *  * [[NavigationBindingValue]] for navigation property parameters
-   *  * [[XAndY]] for Point2d parameters
-   *  * [[XYAndZ]] for Point3d parameters
-   *  * Objects of primitives, objects or arrays of any of the above types when binding structs
-   *  * Arrays of primitives or objects of any of the above when binding arrays
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
    * @throws [[IModelError]] if the ECSQL is invalid
+   * See [Executing ECSQL]($docs/learning/frontend/ExecutingECSQL) for more on ECSQL.
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));

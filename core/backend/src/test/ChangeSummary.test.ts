@@ -8,7 +8,7 @@ import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
 import { IModelJsFs, IModelHost, IModelDb, BriefcaseManager } from "../backend";
-import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
+import { IModelTestUtils } from "./IModelTestUtils";
 import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestConfig } from "./TestConfig";
@@ -344,7 +344,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it.only("Query ChangeSummary content", async () => {
+  it("Query ChangeSummary content", async () => {
     // accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1);
     // const iModel: IModelDb = await IModelDb.open(accessToken, "d46de192-6cad-4086-b968-71b517edc215", "a237be2f-7a59-4f40-a0bd-14bf9c0634f1", OpenMode.ReadWrite, IModelVersion.latest());
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());

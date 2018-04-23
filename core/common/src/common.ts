@@ -62,7 +62,7 @@ export * from "./gateway/StandaloneIModelGateway";
 /**
  * @docs-group-description ECSQL
  * Classes for working with ECSQL.
- * For more information [[?]]
+ * For more information: [ECSQL]($docs/learning/learning/ECSQL)
  */
 /**
  * @docs-group-description Errors
