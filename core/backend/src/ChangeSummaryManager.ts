@@ -72,6 +72,7 @@ export interface ChangeSummaryExtractOptions {
 /** Class to extract change summaries for a briefcase. */
 export class ChangeSummaryManager {
   private static hubClient?: IModelHubClient;
+  private static deploymentEnv: string;
 
   /** Determines whether the Changes cache file is attached to the specified iModel or not
    * @param iModel iModel to check whether a Changes cache file is attached
@@ -154,8 +155,10 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    if (!ChangeSummaryManager.hubClient ||  (ChangeSummaryManager.hubClient as any)!.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig)
+    if (!ChangeSummaryManager.hubClient ||  this.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig) {
+      this.deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
       ChangeSummaryManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
+    }
 
     const accessToken: AccessToken = IModelDb.getAccessToken(iModelId);
     const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(ChangeSummaryManager.hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
