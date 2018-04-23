@@ -7,6 +7,7 @@ In addition, a well-written interactive app can be configured to run as a Web ab
 This degree of portability and configurability is possible because of the technologies used by iModelJs apps and the iModelJs app architecture.
 
 ## Cross-Platform Technologies
+
 The key technology that makes an app portable is JavaScript. JavaScript engines are available on many operating systems and Web browsers. TypeScript compiles to JavaScript.
 
 [Nodejs](./Glossary.md#Node.js) is an execution environment for agents, services, and servers. Nodejs runs JavaScript programs. Nodejs itself runs on many platforms, including Windows and Linux. Nodejs is also widely supported by cloud infrastructures and deployment mechanisms.
@@ -17,7 +18,7 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 ## Frontend Portability
 
-Since an iModelJs app [frontend](../../overview/overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
+Since an iModelJs app [frontend](../overview/overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
 The frontend's main script must check the app's configuration to decide what gateway configuration to use for its app-specific backend(s):
 * Mobile app - [in-process gateway configuration](../../overview/overview/App.md#in-process-gateway-configuration).
@@ -68,5 +69,5 @@ Since frontends talk to backends via a [gateways](../../overview/overview/App.md
 That said, the initialization logic of both frontend and backend must choose the correct gateway configurations, based on the app's configuration.
 
 ## Platform-specific Modules
-A portable interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. These should be used in guarded code.
 
+A portable interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. These should be used in guarded code.

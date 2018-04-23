@@ -2,219 +2,133 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+/** Snippets of glsl code used to assemble ShaderBuilders */
 export namespace ShaderSource {
-  export const enum FeatureSymbologyOptions {
-    None = 0,
-    Weight = 1 << 0,
-    LineCode = 1 << 1,
-    HasOverrides = 1 << 2,
-    Color = 1 << 3,
+  export let decodeUInt16 =
+    `float decodeUInt16(vec2 v) {
+      v = v * vec2(1.0, 256.0); // v.y <<= 8
+      return dot(v, vec2(1.0)); // v.x+v.y => v.x | v.y
+    }`;
+  export let decodeUInt32 =
+    `float decodeUInt32(vec3 v) {
+      v = v * vec3(1.0, 256.0, 256.0*256.0); // v.y <<= 8; v.z <<= 16
+      return dot(v, vec3(1.0)); // v.x+v.y+v.z => v.x | v.y | v.z
+    }`;
 
-    // Normal feature shaders
-    Surface = HasOverrides | Color,
-    Linear = HasOverrides | Color | Weight | LineCode,
-    Point = HasOverrides | Color | Weight,
-  }
-  export class FeatureSymbologyUniform {
-    public static GetFirstFeatureRgba(): string {
-      return "return u_featureOverrides1;";
-    }
-    public static GetSecondFeatureRgba(): string {
-      return "return u_featureOverrides2;";
-    }
-    public static ComputeElementId(): string {
-      return `SHADER_SOURCE(
-          v_element_id0 = u_element_id0;
-          v_element_id1 = u_element_id1;
-          )SHADER_SOURCE`;
-      }
-  }
+  /** Components specific to vertex shaders. */
+  export namespace Vertex {
+    export let unquantizePosition =
+      `vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) {
+        return vec4(origin + scale * pos, 1.0);
+      }`;
+    export let unquantizeVertexPosition =
+      `vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) {
+        return unquantizePosition(pos, origin, scale);
+      }`;
+    export let initializeVertLUTCoords =
+      `g_vertexLUTIndex = decodeUInt32(a_pos);
+       g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);`;
+    export let unquantizeVertexPositionFromLUT =
+      `vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
+        // Need to read 2 rgba values to obtain 6 16-bit integers for position
+        vec2 tc = g_vertexBaseCoords;
+        vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+        tc.x += g_vert_stepX;
+        vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+        tc.x += g_vert_stepX;
+        g_featureIndexCoords = tc;
 
-  export class FeatureSymbologyNonUniformSingle {
-    public static GetFeatureIndex(): string {
-      return "return u_featureIndex;";
-    }
-  }
-  export class FeatureSymbologyNonUniformMultiple {
-    public static GetFeatureIndex(): string {
-      return "return a_featureIndex;";
-    }
-  }
-  export class FeatureSymbologyNonUniform {
-    public static CheckVertexDiscard(): string {
-      return `SHADER_SOURCE(
-        if (feature_invisible)
-          return true;
+        vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
 
-        // Do not render opaque during translucent pass, or vice-versa
-        if (v_feature_alpha_flashed.y > 0.0)
-          {
-          bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
-          bool isTranslucentPass = !isOpaquePass && (kRenderPass_Translucent == u_renderPass);
-          return (isOpaquePass && v_feature_alpha_flashed.x < 1.0) || (isTranslucentPass && v_feature_alpha_flashed.x == 1.0);
+        // Might as well decode the color index since we already read it...may not end up being used.
+    export let     // (NOTE = If this is a textured mesh, the normal is stored where the color index would otherwise be...)
+        g_vertexData2 = enc2.zw;
+
+        return unquantizePosition(qpos, origin, scale);
+      }`;
+    export let unquantize3d =
+      `vec3 unquantize3d(vec3 qpos, vec3 origin, vec3 scale) { return origin + scale * qpos; }`;
+    export let unquantize2d =
+     `// params.xy = origin. params.zw = scale.
+     vec2 unquantize2d(vec2 qpos, vec4 params) { return params.xy + params.zw * qpos; }`;
+    export let computeTexCoord = `return isSurfaceBitSet(kSurfaceBit_HasTexture) ? unquantize2d(a_texCoord, u_qTexCoordParams)  = vec2(0.0);`;
+    export let earlyDiscard =
+      `if (checkForEarlyDiscard(rawPosition)) {
+        // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
+        // Also place it outside NDC range (for GL_POINTS)
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+        return;
+      }`;
+    export let discard =
+      `if (checkForDiscard()) {
+        // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
+        // Also place it outside NDC range (for GL_POINTS)
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+        return;
+      }`;
+    export let computeLineWeight = `float ComputeLineWeight() { return u_lineWeight; }`;
+    export let computeLineCode = `float ComputeLineCode() { return u_lineCode; }`;
+    export let modelToWindowCoordinates =
+      `vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
+        if (kRenderPass_ViewOverlay == u_renderPass || kRenderPass_Background == u_renderPass) {
+          vec4 q = u_mvp * position;
+          q.xyz /= q.w;
+          q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz;
+          return q;
+        }
+
+        // Negative values are in front of the camera (visible).
+        float s_maxZ = -u_frustum.x; // use -near (front) plane for segment drop test since u_frustum's near & far are pos.
+        vec4  q = u_mv * position; // eye coordinates.
+        vec4  n = u_mv * next;
+
+        if (q.z > s_maxZ) {
+          if (n.z > s_maxZ) {
+            return vec4(0.0, 0.0,  1.0, 0.0);   // Entire segment behind eye.
           }
 
-        return false;
-        )SHADER_SOURCE`;
-    }
-    public static CheckFragmentDiscard(): string {
-      return `SHADER_SOURCE(
-        if (alpha < 0.99) // ###TODO? Seeing some values very slightly less than 1.0 for opaque stuff...
-          return (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass); // don't render translucent during opaque pass
-        else
-          return kRenderPass_Translucent == u_renderPass; // don't render opaque during translucent pass
-        )SHADER_SOURCE`;
-    }
-    public static GetFirstFeatureRgba(): string {
-      return `SHADER_SOURCE(
-        feature_texCoord = computeFeatureTextureCoords();
-        return TEXTURE(u_featureLUT, feature_texCoord);
-        )SHADER_SOURCE`;
-    }
-    public static GetSecondFeatureRgba(): string {
-      return `SHADER_SOURCE(
-        vec2 coord = feature_texCoord;
-        coord.x += u_featureStep.x;
-        return TEXTURE(u_featureLUT, coord);
-        )SHADER_SOURCE`;
-    }
+          float t = (s_maxZ - q.z) / (n.z - q.z);
 
-    public static ComputeFeatureTextureCoords(): string {
-      return `SHADER_SOURCE(
-        return computeLUTCoords(getFeatureIndex(), u_featureStep, u_featureWidth, 2.0);
-        )SHADER_SOURCE`;
-    }
-    public static ComputeTextureCoords(): string {
-      return `SHADER_SOURCE(
-        return computeLUTCoords(getFeatureIndex(), u_elementIdStep, u_elementIdWidth, 2.0);
-        )SHADER_SOURCE`;
-    }
-    public static ComputeElementId(): string {
-      return `SHADER_SOURCE(
-        vec2 texc = computeElementIdTextureCoords();
-        v_element_id0 = TEXTURE(u_elementIdLUT, texc);
-        texc.x += u_elementIdStep.x;
-        v_element_id1 = TEXTURE(u_elementIdLUT, texc);
-        )SHADER_SOURCE`;
-    }
-  }
-  export class CompositeHilight {
-    public static IsEdgePixel(): string {
-      return `SHADER_SOURCE(
-        bool isEdgePixel(float xOffset, float yOffset)
-          {
-          vec2 t = windowCoordsToTexCoords(gl_FragCoord.xy + vec2(xOffset, yOffset));
-          vec4 texel = TEXTURE(u_hilite, t);
-          return 0.0 != texel.r;
-          }
-        )SHADER_SOURCE`;
-    }
-    public static IsOutlined(): string {
-      return `SHADER_SOURCE(
-        bool isOutlined()
-          {
-          float width = u_hilite_settings.z;
-          if (0.0 == width)
-            return false;
+          q.x += t * (n.x - q.x);
+          q.y += t * (n.y - q.y);
+          q.z = s_maxZ;                       // q.z + (s_maxZ - q.z) * (s_maxZ - q.z) / n.z - q.z
+        }
 
-          // 1-pixel-wide outline requires max 9 samples. 2-pixel-wide requires max 25 samples.
-          if (isEdgePixel(0.0, 1.0) || isEdgePixel(1.0, 0.0) || isEdgePixel(1.0, 1.0)
-            || isEdgePixel(0.0, -1.0) || isEdgePixel(-1.0, 0.0) || isEdgePixel(-1.0, -1.0)
-            || isEdgePixel(1.0, -1.0) || isEdgePixel(-1.0, 1.0))
-            return true;
+        q = u_proj * q;
+        q.xyz /= q.w; // normalized device coords
+        q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz; // window coords
+        return q;
+      }`;
+    export let metersPerPixel =
+     `float metersPerPixel(vec4 posEye) {
+        if (kRenderPass_Background == u_renderPass || kRenderPass_ViewOverlay == u_renderPass)
+          return 1.0;
 
-          if (1.0 == width)
-            return false;
+        float width = u_viewport.z;
+        float height = u_viewport.w;
+        float pixelWidth;
+        float pixelHeight;
 
-          return isEdgePixel(-2.0, -2.0) || isEdgePixel(-1.0, -2.0) || isEdgePixel(0.0, -2.0) || isEdgePixel(1.0, -2.0) || isEdgePixel(2.0, -2.0)
-            || isEdgePixel(-2.0, -1.0) || isEdgePixel(2.0, -1.0)
-            || isEdgePixel(-2.0, 0.0) || isEdgePixel(2.0, 0.0)
-            || isEdgePixel(-2.0, 1.0) || isEdgePixel(2.0, 1.0)
-            || isEdgePixel(-2.0, 2.0) || isEdgePixel(-1.0, 2.0) || isEdgePixel(0.0, 2.0) || isEdgePixel(1.0, 2.0) || isEdgePixel(2.0, 2.0);
-          }
-        )SHADER_SOURCE`;
-    }
-    public static IsInHiliteRegion(): string {
-      return `SHADER_SOURCE(
-        bool isInHiliteRegion()
-          {
-          return 0.0 != TEXTURE(u_hilite, v_texCoord).r;
-          }
-        )SHADER_SOURCE`;
-    }
+        float top = u_frustumPlanes.x;
+        float bottom = u_frustumPlanes.y;
+        float left = u_frustumPlanes.z;
+        float right = u_frustumPlanes.w;
 
-    public static ComputeColor(): string {
-      return `SHADER_SOURCE(
-        vec4 computeColor() { return TEXTURE(u_opaque, v_texCoord); }
-        )SHADER_SOURCE`;
-    }
-    public static ComputeBaseColor(): string {
-      return `SHADER_SOURCE(
-        bool isHilite = isInHiliteRegion();
-        if (isHilite || !isOutlined())
-          {
-          float ratio = isHilite ? u_hilite_settings.y : 0.0;
-          vec4 baseColor = computeColor();
-          baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, ratio);
-          return baseColor;
-          }
-        else
-          {
-          return vec4(u_hilite_color.rgb, 1.0);
-          }
-        )SHADER_SOURCE`;
-    }
-}
-  export class CompositeTranslucent {
-    public static ComputeColor(): string {
-// #if defined(WIP_FIX_ADDITIVE_TRANSPARENCY)
-//       return `SHADER_SOURCE(
-//         vec4 computeColor()
-//           {
-//           vec4 opaque = TEXTURE(u_opaque, v_texCoord);
-//           vec4 accum = TEXTURE(u_accumulation, v_texCoord);
-//           vec4 reveal = TEXTURE(u_revealage, v_texCoord);
-//           float r = reveal.r;
-//           float count = reveal.g;
-//           float opaqueAlpha = accum.a;
-//           if (opaqueAlpha < 1.0 && count > 1.0)
-//             {
-//             opaqueAlpha = 1.0 - (reveal.b / count);
-//             }
-//           vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), 0.0);
-//           return ((1.0 - opaqueAlpha) * transparent) + (opaqueAlpha * opaque);
-//           //return vec4(count/8.0, opaqueAlpha, accum.a, 1.0);
-//           }
-//         )SHADER_SOURCE`;
-// #else
-      return `SHADER_SOURCE(
-        vec4 computeColor()
-          {
-          vec4 opaque = TEXTURE(u_opaque, v_texCoord);
-          vec4 accum = TEXTURE(u_accumulation, v_texCoord);
-          float r = TEXTURE(u_revealage, v_texCoord).r;
+        if (kFrustumType_Perspective == u_frustum.z) {
+          float distanceToPixel = -posEye.z;
+          float inverseNear = 1.0 / u_frustum.x;
+          float tanTheta = top * inverseNear;
+          pixelHeight = 2.0 * distanceToPixel * tanTheta / height;
+          tanTheta = right * inverseNear;
+          pixelWidth = 2.0 * distanceToPixel * tanTheta / width;
+        } else {
+          float frustumWidth = right - left;
+          float frustumHeight = top - bottom;
+          pixelWidth = frustumWidth / width;
+          pixelHeight = frustumHeight / height;
+        }
 
-          vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
-          return vec4(1.0 - transparent.a) * transparent + transparent.a * opaque;
-          }
-        )SHADER_SOURCE`;
-// #endif
-    }
-    public static ComputeAltColor(): string {
-      return `SHADER_SOURCE(
-        vec4 computeColor()
-          {
-          vec4 opaque = TEXTURE(u_opaque, v_texCoord);
-          vec4 accum = TEXTURE(u_accumulation, v_texCoord);
-          vec3 transparent = accum.rgb * accum.a + opaque.rgb * (1.0 - accum.a);
-          return vec4 (transparent, accum.a);
-          }
-        )SHADER_SOURCE`;
-    }
-    public static ComputeBaseColor(): string {
-      return `SHADER_SOURCE(
-        return computeColor();
-        )SHADER_SOURCE`;
-    }
+        return max(pixelWidth, pixelHeight);
+     }`;
   }
 }

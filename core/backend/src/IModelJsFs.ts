@@ -52,6 +52,9 @@ export class IModelJsFs {
   /** Get the file and directory names in the specified directory. Excludes "." and "..". */
   public static readdirSync(fn: string): string[] { return fs.readdirSync(fn); }
 
+  /** Read file */
+  public static readFileSync(fn: string): string|Buffer { return fs.readFileSync(fn); }
+
   /** Test if the current user has permission to write to a file. */
   private static isFileWritable(fn: string): boolean {
     try {

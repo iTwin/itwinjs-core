@@ -6,9 +6,10 @@ import { expect, assert } from "chai";
 import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet, IModel as HubIModel, MultiCode, CodeState, ContainsSchemaChanges, IModelQuery } from "@bentley/imodeljs-clients";
 import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
+import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, IModelHostConfiguration, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
 import { ConcurrencyControl } from "../ConcurrencyControl";
 import { IModelTestUtils, TestUsers } from "./IModelTestUtils";
+import { HubTestUtils } from "./HubTestUtils";
 import { IModelJsFs } from "../IModelJsFs";
 import { ChangeSetToken } from "../BriefcaseManager";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
@@ -106,10 +107,10 @@ describe("BriefcaseManager", () => {
     console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     startTime = new Date().getTime();
 
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, TestConfig.iModelName);
+    testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    testIModelId = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, TestConfig.iModelName);
 
-    testChangeSets = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
+    testChangeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, testIModelId);
     testChangeSets.shift(); // The first change set is a schema change that was not named
     expect(testChangeSets.length).greaterThan(2);
 
@@ -118,9 +119,9 @@ describe("BriefcaseManager", () => {
     iModelLocalReadWritePath = path.join(cacheDir, testIModelId, "readWrite");
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
-    await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
+    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+    await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "NodeJsTestProject", "TestModel");
 
     console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
   });
@@ -475,30 +476,38 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
-    const iModelNoVerId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, "NoVersionsTest");
+    const iModelNoVerId = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, "NoVersionsTest");
     const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, iModelNoVerId, OpenMode.Readonly);
     assert.exists(iModelNoVer);
   });
 
   it.skip("should open briefcase of an iModel in both DEV and QA", async () => {
     // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
-    IModelTestUtils.setIModelHubDeployConfig("DEV");
+    const config = new IModelHostConfiguration();
+
+    IModelHost.shutdown();
+    config.iModelHubDeployConfig = "DEV";
+    IModelHost.startup(config);
+
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
-    const devProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    const devProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
     assert(devProjectId);
-    const devIModelId = await IModelTestUtils.getTestIModelId(accessToken, devProjectId, TestConfig.iModelName);
+    const devIModelId = await HubTestUtils.queryIModelIdByName(accessToken, devProjectId, TestConfig.iModelName);
     assert(devIModelId);
-    const devChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, devIModelId);
+    const devChangeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
     const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(devIModel);
 
-    IModelTestUtils.setIModelHubDeployConfig("QA");
-    const qaProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+    IModelHost.shutdown();
+    config.iModelHubDeployConfig = "QA";
+    IModelHost.startup(config);
+
+    const qaProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
     assert(qaProjectId);
-    const qaIModelId = await IModelTestUtils.getTestIModelId(accessToken, qaProjectId, TestConfig.iModelName);
+    const qaIModelId = await HubTestUtils.queryIModelIdByName(accessToken, qaProjectId, TestConfig.iModelName);
     assert(qaIModelId);
-    const qaChangeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, qaIModelId);
+    const qaChangeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);
     const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(qaIModel);
@@ -554,9 +563,9 @@ describe("BriefcaseManager", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels: HubIModel[] = await IModelTestUtils.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelTestUtils.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await HubTestUtils.hubClient!.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
@@ -568,7 +577,7 @@ describe("BriefcaseManager", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await IModelTestUtils.hubClient.Codes().get(accessToken, rwIModelId!);
+    const initialCodes = await HubTestUtils.hubClient!.Codes().get(accessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -603,7 +612,7 @@ describe("BriefcaseManager", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await IModelTestUtils.hubClient.Codes().get(accessToken, rwIModelId!);
+    const codes = await HubTestUtils.hubClient!.Codes().get(accessToken, rwIModelId!);
     timer.end();
     expect(codes.length > initialCodes.length);
   });
@@ -612,9 +621,9 @@ describe("BriefcaseManager", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
-    const iModels: HubIModel[] = await IModelTestUtils.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await IModelTestUtils.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await HubTestUtils.hubClient!.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
