@@ -1,6 +1,7 @@
 {
   "name": "@bentley/geometry-core",
   "version": "7.4.5",
+  "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
@@ -38,7 +39,6 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "license": "UNLICENSED",
   "dependencies": {},
   "nyc": {
     "include": [

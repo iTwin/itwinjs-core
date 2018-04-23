@@ -36,7 +36,7 @@ Understanding the design and concepts in the iModelJs library requires a basic u
 * [IModelHub](./IModelHub) - the cloud-based hub for coordinating access to iModels
 * [iModel Bridges](./IModelBridges) - the services that connect iModels with external data sources
 * it is also helpful to understand the concepts in [BIS](./BisCore), the Base Infrastructure Schema
-* The [Programmer Documentation](../../learning/learning/index) explains the API in more detail.
+* The [Programmer Documentation](../../learning/index) explains the API in more detail.
 
 ## JavaScript vs. TypeScript
 

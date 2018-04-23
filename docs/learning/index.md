@@ -2,9 +2,9 @@
 
 Table of Contents:
 
-* [Frontend](../frontend/index)
-* [Backend](../backend/index)
-* [Common](../common/index)
+* [Frontend](./frontend/index)
+* [Backend](./backend/index)
+* [Common](./common/index)
 * [ECSQL](./ECSQL)
 * [Frequently asked Questions](./faq)
 

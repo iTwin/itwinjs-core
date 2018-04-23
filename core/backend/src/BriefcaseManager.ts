@@ -16,7 +16,6 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
-import * as fs from "fs";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
@@ -285,8 +284,6 @@ export class BriefcaseManager {
 
     if (!IModelHost.configuration)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
-
-    // TODO: call BriefcaseManager.deleteAllBriefcasesIfNewInstance here?
 
     IModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
 
@@ -623,7 +620,7 @@ export class BriefcaseManager {
   }
 
   /** Get change sets */
-  private static async getChangeSets(accessToken: AccessToken, iModelId: string, includeDownloadLink?: boolean, toChangeSetId?: string, fromChangeSetId?: string): Promise<ChangeSet[]> {
+  private static async getChangeSets(accessToken: AccessToken, iModelId: string, includeDownloadLink: boolean, toChangeSetId: string, fromChangeSetId: string): Promise<ChangeSet[]> {
     if (toChangeSetId === "" /* first version */ || fromChangeSetId === toChangeSetId)
       return new Array<ChangeSet>();
 
@@ -633,8 +630,6 @@ export class BriefcaseManager {
     if (includeDownloadLink)
       query.selectDownloadUrl();
     const allChangeSets: ChangeSet[] = await BriefcaseManager.hubClient!.ChangeSets().get(accessToken, iModelId, query);
-    if (!toChangeSetId)
-      return allChangeSets;
 
     const changeSets = new Array<ChangeSet>();
     for (const changeSet of allChangeSets) {
@@ -647,13 +642,12 @@ export class BriefcaseManager {
   }
 
   /** Downloads Change Sets in the specified range */
-  private static async downloadChangeSets(accessToken: AccessToken, iModelId: string, toChangeSetId?: string, fromChangeSetId?: string): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, iModelId: string, toChangeSetId: string, fromChangeSetId: string): Promise<ChangeSet[]> {
     const changeSets = await BriefcaseManager.getChangeSets(accessToken, iModelId, true /*includeDownloadLink*/, toChangeSetId, fromChangeSetId);
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
     const changeSetsToDownload = new Array<ChangeSet>();
-    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
     for (const changeSet of changeSets) {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
       if (!IModelJsFs.existsSync(changeSetPathname))
@@ -853,7 +847,8 @@ export class BriefcaseManager {
     }
 
     const reverse: boolean = (targetChangeSetIndex < currentChangeSetIndex);
-    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, briefcase.iModelId, reverse ? currentChangeSetId : targetChangeSetId, reverse ? targetChangeSetId : currentChangeSetId);
+    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(briefcase.iModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, changeSetsPath, briefcase.iModelId, reverse ? currentChangeSetId : targetChangeSetId, reverse ? targetChangeSetId : currentChangeSetId);
     assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
     if (reverse)
       changeSets.reverse();
@@ -1082,11 +1077,4 @@ export class BriefcaseManager {
     return Promise.all(promises);
   }
 
-  /** @hidden */
-  public static async deleteAllBriefcasesIfNewInstance(accessToken: AccessToken, iModelId: string) {
-    if (fs.existsSync(IModelHost.configuration!.briefcaseCacheDir))
-      return;
-    await BriefcaseManager.initCache(accessToken); // set up hubClient
-    return BriefcaseManager.deleteAllBriefcases(accessToken, iModelId);
-  }
 }

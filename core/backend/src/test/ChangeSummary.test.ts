@@ -4,13 +4,13 @@
 import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken, ConnectClient, IModelHubClient, Project, IModelQuery } from "@bentley/imodeljs-clients";
+import { AccessToken, ConnectClient, IModelHubClient, Project, IModelQuery, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ChangeSet } from "@bentley/imodeljs-clients";
+import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
 import { IModelHost } from "../IModelHost";
@@ -38,21 +38,19 @@ describe("ChangeSummary", () => {
 
   before(async () => {
     startTime = new Date().getTime();
+
     if (offline) {
       console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
-
       cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/testCache/iModels/"));
       IModelHost.configuration!.briefcaseCacheDir = cacheDir;
 
       MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
       MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
 
-      (BriefcaseManager as any).hubClient = iModelHubClientMock.object;
-      (ChangeSummaryManager as any).hubClient = iModelHubClientMock.object;
-      (IModelTestUtils as any).hubClient = iModelHubClientMock.object;
+      (BriefcaseManager as any).hubClient =  iModelHubClientMock.object;
 
       // Get test projectId from the mocked connection client
-      const project: Project = await connectClientMock.object.getProject(accessToken, {
+      const project: Project = await connectClientMock.object.getProject(accessToken as any, {
         $select: "*",
         $filter: "Name+eq+'NodeJstestproject'",
       });
@@ -61,7 +59,7 @@ describe("ChangeSummary", () => {
 
       // Get test iModelIds from the mocked iModelHub client
       for (const iModelInfo of testIModels) {
-        const iModels = await iModelHubClientMock.object.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelInfo.name));
+        const iModels = await iModelHubClientMock.object.IModels().get(accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
         assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
         assert(iModels[0].wsgId, `No IModelId returned for ${iModelInfo.name} iModel`);
         iModelInfo.id = iModels[0].wsgId;
@@ -69,7 +67,7 @@ describe("ChangeSummary", () => {
         iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
         // getChangeSets
-        iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken, iModelInfo.id);
+        iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken as any, iModelInfo.id);
         iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
         expect(iModelInfo.changeSets);
 
@@ -82,35 +80,31 @@ describe("ChangeSummary", () => {
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
       cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-
-      console.log("    Started monitoring briefcase manager performance..."); // tslint:disable-line:no-console
-
       accessToken = await IModelTestUtils.getTestUserAccessToken();
       console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
       startTime = new Date().getTime();
 
-      testProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
+      testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
 
       for (const iModelInfo of testIModels) {
-        iModelInfo.id = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, iModelInfo.name);
+        iModelInfo.id = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
         iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
         iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-        iModelInfo.changeSets = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, iModelInfo.id);
+        iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
         iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
+
+        iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+        iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
       }
+
+      // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
+      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
+      await HubTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
 
-    for (const iModelInfo of testIModels) {
-      // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-      if (!IModelJsFs.existsSync(cacheDir)) {
-        await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, "iModelJsTest", iModelInfo.name);
-      }
-      const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModelInfo.id);
-      if (IModelJsFs.existsSync(changesPath))
-        IModelJsFs.unlinkSync(changesPath);
-    }
   });
 
   it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
@@ -280,7 +274,7 @@ describe("ChangeSummary", () => {
   });
 
   it.skip("Extract ChangeSummary for single changeset", async () => {
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModels[0].id);
+    const changeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, testIModels[0].id);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -329,7 +323,7 @@ describe("ChangeSummary", () => {
     if (IModelJsFs.existsSync(changesFilePath))
       IModelJsFs.removeSync(changesFilePath);
 
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModels[0].id);
+    const changeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, testIModels[0].id);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;

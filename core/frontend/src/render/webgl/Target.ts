@@ -128,3 +128,5 @@ export class GLESClips {
   public getClipCount(): number { return this.clipCount; }
   public isValid(): boolean { return this.getClipCount() > 0; }
 }
+
+export class Target { /* ###TODO */ }

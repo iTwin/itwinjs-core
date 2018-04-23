@@ -8,7 +8,7 @@ Follow the standard [TypeScript Coding Guidelines](./typescript-coding-guideline
 
 * method names in TypeScript always start with lower case letter. In C++ there is often the opposite convention, so every method name may change.
 * remove "`m_`" prefix on member variables. TypeScript requires the `this.` prefix so there is no ambiguity with local variables names. For private member variables use the "`_`" prefix convention.
-* remove prefixes from class names that don't add clarity. In particular "Dgn" should not be propagated.
+* remove prefixes from class names that don't add clarity. For example, `Dgn` should not be propagated.
 * exported names only need to be unique within a file. Remember that every export is implicitly qualified by the file name. If they are ambiguous in the context of another file's imports, they can be "renamed" unambiguously.
 
 ## Private and Protected members
@@ -48,9 +48,9 @@ TypeScript does not support:
 * destructors
 * overloaded constructors
 
-You can only have one constructor, though often in JavaScript constructors test their argument types at runtime to allow more than one calling permutation. This happens every time the constructor is called, so be aware of performance implications.
+You can only have one constructor, though often in JavaScript constructors test their argument types at runtime to allow more than one calling permutation. This happens every time the constructor is called, so be aware of performance implications. TypeScript attempts to simulate the idea of multiple constructors, but since it compiles to JavaScript, that's not really possible. It is best to avoid using multiple constructors in TypeScript.
 
-If there is any cleanup work in the C++ destructor, other than freeing memory, you need to create a `destroy`-like method on the TypeScript side and explicitly call it where appropriate.
+If there is any cleanup work in the C++ destructor, other than freeing memory, you need to create a `destroy`-like method on the TypeScript side and explicitly call it where appropriate. This is very unfamiliar to a Javascript programmer, since there is no way to actually delete an object in JavaScript
 
 ## enums
 
