@@ -1,32 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import { GL, BufferHandle } from "@bentley/imodeljs-frontend/lib/rendering";
-
-// ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
-const haveWebGL = false;
-
-function getWebGLContext(): WebGLRenderingContext | null {
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert.isNotNull(canvas);
-
-  if (null === canvas) {
-    return null;
-  }
-
-  document.body.appendChild(canvas);
-  return canvas.getContext("webgl");
-}
+import { getWebGLContext } from "./WebGLTestContext";
 
 describe("Handles", () => {
   it("should create and use BufferHandles for GL resources", () => {
-    /** Get webGLContext */
     const gl = getWebGLContext();
-    if (haveWebGL) {
-      assert.isNotNull(gl, "WebGLContext is null");
-    }
-    if (null === gl) {
+    if (null == gl) {
       return;
     }
 
