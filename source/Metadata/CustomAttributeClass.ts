@@ -14,7 +14,11 @@ export default class CustomAttributeClass extends ECClass {
   public readonly type!: SchemaItemType.CustomAttributeClass; // tslint:disable-line
   protected _containerType?: CustomAttributeContainerType;
 
-  get containerType() { return this._containerType; }
+  get containerType(): CustomAttributeContainerType {
+    if (undefined === this._containerType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
+    return this._containerType;
+  }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, SchemaItemType.CustomAttributeClass, modifier);
