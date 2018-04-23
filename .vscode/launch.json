@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Run Backend Tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend/src/test",
+      "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test",
@@ -24,7 +24,7 @@
       "request": "launch",
       "name": "Run Backend Tests (Offline)",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend/src/test",
+      "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test",

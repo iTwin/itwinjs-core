@@ -33,7 +33,7 @@ describe("ChangeSummary", () => {
     new TestIModelInfo("ReadWriteTest"),
     new TestIModelInfo("NoVersionsTest"),
   ];
-  const assetDir = "../test/assets/_mocks_";
+  const assetDir = "./src/test/assets/_mocks_";
   let cacheDir: string;
 
   before(async () => {

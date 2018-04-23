@@ -5,6 +5,7 @@ import { assert } from "chai";
 import { ViewFlags, RenderMode, ColorDef, Light, LightProps, Spot, LightType, SpotProps } from "@bentley/imodeljs-common";
 
 describe("Render", () => {
+
   it("ViewFlags", () => {
     const flags = new ViewFlags();
     assert(flags.acsTriad === false);
