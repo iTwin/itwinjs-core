@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Target } from "./System";
+import { RenderTarget } from "./System";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { Decorations } from "@bentley/imodeljs-common";
 
@@ -47,7 +47,7 @@ export class Priority {
 export abstract class Task {
   constructor(public priority: Priority,
     public operation: Operation,
-    public target: Target,
+    public target: RenderTarget,
     public outcome: Outcome = Outcome.Waiting,
     public elapsedTime: number = 0) { }
 
@@ -71,20 +71,20 @@ export abstract class Task {
 
   /**
    * Determine whether this Task can replace a pending entry in the Queue.
-   * @param other a pending task for the same Render::Target
+   * @param other a pending task for the same RenderTarget
    * @return true if this Task should replace the other pending task.
    */
   public replaces(other: Task): boolean { return this.operation === other.operation; }
 }
 
 export abstract class SceneTask extends Task {
-  constructor(priority: Priority, operation: Operation, target: Target, outcome?: Outcome, elapsedTime?: number) { super(priority, operation, target, outcome, elapsedTime); }
+  constructor(priority: Priority, operation: Operation, target: RenderTarget, outcome?: Outcome, elapsedTime?: number) { super(priority, operation, target, outcome, elapsedTime); }
   public definesScene(): boolean { return true; }
   public replaces(other: Task): boolean { return super.replaces(other) || !other.definesScene(); }
   public onQueued(): void { }
 }
 
 export class ChangeDecorationsTask extends SceneTask {
-  constructor(priority: Priority, target: Target, public decorations: Decorations = new Decorations()) { super(priority, Operation.ChangeDecorations, target); }
+  constructor(priority: Priority, target: RenderTarget, public decorations: Decorations = new Decorations()) { super(priority, Operation.ChangeDecorations, target); }
   public process(_timer: StopWatch): Outcome { this.target.changeDecorations(this.decorations); return Outcome.Finished; }
 }

@@ -5,7 +5,7 @@
 import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { GraphicParams, GeometryParams, ColorDef, GeometryClass, LinePixels, FillDisplay, FillFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { System } from "./System";
+import { RenderSystem } from "./System";
 
 export const enum DisplayParamsType {
   Mesh,
@@ -192,7 +192,7 @@ export class DisplayParams {
 
 export class DisplayParamsCache {
   public set: DisplayParams[] = [];
-  public constructor(public iModel: IModelConnection, public system: System) { }
+  public constructor(public iModel: IModelConnection, public system: RenderSystem) { }
 
   public getForMesh(gf: GraphicParams, geom: GeometryParams, filled: boolean): DisplayParams { return this.get(DisplayParamsType.Mesh, gf, geom, filled); }
   public getForLinear(gf: GraphicParams, geom: GeometryParams): DisplayParams { return this.get(DisplayParamsType.Linear, gf, geom, false); }

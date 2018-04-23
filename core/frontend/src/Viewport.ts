@@ -17,7 +17,7 @@ import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { Target } from "./render/System";
+import { RenderTarget } from "./render/System";
 
 /** viewport synchronization flags */
 export class SyncFlags {
@@ -243,7 +243,7 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
-  public get target(): Target { return this._target!; }
+  public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
@@ -251,7 +251,7 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState, private _target?: Target) { this.setCursor(); this.saveViewUndo(); }
+  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState, private _target?: RenderTarget) { this.setCursor(); this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }

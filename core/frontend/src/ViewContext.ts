@@ -10,7 +10,7 @@ import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imod
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { PrimitiveBuilder } from "./render/primitives/Geometry";
-import { Target, System } from "./render/System";
+import { RenderTarget, RenderSystem } from "./render/System";
 
 export class ViewContext {
   constructor(public viewport?: Viewport) { }
@@ -87,7 +87,7 @@ export class SnapContext extends ViewContext {
 }
 
 export class RenderContext extends ViewContext {
-  public get target(): Target { return this.viewport.target; }
+  public get target(): RenderTarget { return this.viewport.target; }
   constructor(public viewport: Viewport) { super(viewport); }
   public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined {
     return this._createGraphic(GraphicBuilderCreateParams.create(_type, this.viewport, _tf));
@@ -194,6 +194,6 @@ export class DecorateContext extends RenderContext {
 }
 
 export class PrimitiveBuilderContext extends ViewContext {
-  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: System) { super(viewport); }
+  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: RenderSystem) { super(viewport); }
   public static fromPrimitiveBuilder(builder: PrimitiveBuilder): PrimitiveBuilderContext { return new PrimitiveBuilderContext(builder.viewport, builder.iModel, builder.system); }
 }
