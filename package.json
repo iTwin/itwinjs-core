@@ -22,6 +22,8 @@
     "rush:install": "node ./common/rush.js install",
     "rush:build": "node ./common/rush.js rebuild -v",
     "rush:lint": "node ./common/rush.js lint",
+    "rush:cover": "node ./common/rush.js cover",
+    "rush:test": "node ./common/rush.js test",
     "build": "echo use 'rush rebuild'",
     "clean": "rimraf coverage ts-node",
     "lint": "echo use 'rush lint'",
