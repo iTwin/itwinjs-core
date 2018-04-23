@@ -29,10 +29,10 @@ export class WebGLTestContext {
     }
 
     this.gl = gl;
-    assert(null != this.gl);
+    assert(null !== this.gl);
   }
 
-  public get isValid() { return null != this.gl; }
+  public get isValid() { return null !== this.gl; }
 }
 
 export function getWebGLContext(): WebGLRenderingContext | null {
