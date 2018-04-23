@@ -55,16 +55,16 @@ export * from "./IModelDb"; // must be last
  * For more information [[?]]
  */
 /**
- * @docs-group-description ECSql
- * Classes for working with ECSql. The key classes are:
+ * @docs-group-description ECSQL
+ * Classes for working with ECSQL. The key classes are:
  * * #ECSqlStatement
  * * #ECSqlValue
- * For more information [[?]]
+ * For more information: [Executing ECSQL]($docs/learning/backend/ExecutingECSQL)
  */
 /**
  * @docs-group-description FontsAndSymbology
  * Classes for working with fonts, colors, and other symbology.
- * For more information [[?]]
+ * For more information: [[?]]
  */
 /**
  * @docs-group-description Gateway

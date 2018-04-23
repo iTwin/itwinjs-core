@@ -3,15 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Capabilities, RenderType, DepthType, ViewportQuad, TexturedViewportQuad } from "@bentley/imodeljs-frontend/lib/rendering";
-
-function getCanvas(): HTMLCanvasElement | undefined {
-  let canvas = document.getElementById("canvas") as HTMLCanvasElement | undefined;
-  if (null === canvas)
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-
-  const gl = canvas!.getContext("webgl");
-  return gl ? canvas : undefined;
-}
+import { WebGLTestContext } from "./WebGLTestContext";
 
 describe("System WebGL Capabilities", () => {
   it("capabilities should all default to 0 or false", () => {
@@ -37,9 +29,11 @@ describe("System WebGL Capabilities", () => {
   });
 
   it("capabilities should be able to be initialized", () => {
-    const canvas = getCanvas();
-    if (!canvas)
-      return; // test is running on a machine with no graphics
+    const context = new WebGLTestContext();
+    const canvas = context.canvas;
+    if (null === canvas) {
+      return;
+    }
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
     const isInitialized: boolean = cap.init(canvas);
@@ -47,9 +41,11 @@ describe("System WebGL Capabilities", () => {
   });
 
   it("capabilities should be able to be read", () => {
-    const canvas = getCanvas();
-    if (!canvas)
+    const context = new WebGLTestContext();
+    const canvas = context.canvas;
+    if (null === canvas) {
       return;
+    }
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
     assert.isTrue(cap.init(canvas), "capabilities did not initialize properly");

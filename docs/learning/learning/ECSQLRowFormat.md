@@ -1,4 +1,4 @@
-# Format of a row returned from an [ECSQL](ECSQL) SELECT query
+# Format of a row returned from an [ECSQL](./ECSQL) SELECT query
 
 A row returned from an [ECSQL](./ECSQL) SELECT query is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
 

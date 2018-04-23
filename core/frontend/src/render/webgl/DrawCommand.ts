@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Matrix4 } from "../Matrix";
+import { Matrix4 } from "./Matrix";
 import { Target } from "./Target";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform } from "@bentley/geometry-core";

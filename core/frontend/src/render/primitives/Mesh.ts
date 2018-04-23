@@ -4,7 +4,7 @@
 
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { Graphic, /*TriMeshArgs, IndexedPolylineArgs,*/ OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges } from "@bentley/imodeljs-common";
-import { DisplayParams } from "../DisplayParams";
+import { DisplayParams } from "./DisplayParams";
 // import { IModelConnection } from "../IModelConnection";
 import { ColorMap } from "./ColorMap";
 // import { System } from "./System";
