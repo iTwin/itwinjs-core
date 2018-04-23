@@ -13,6 +13,20 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import * as path from "path";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
+/** Class for simple test timing */
+export class Timer {
+  private label: string;
+  constructor(label: string) {
+    // tslint:disable-next-line:no-console
+    console.time(this.label = "\t" + label);
+  }
+
+  public end() {
+    // tslint:disable-next-line:no-console
+    console.timeEnd(this.label);
+  }
+}
+
 Logger.initializeToConsole();
 if (process.env.imodeljs_test_logging_config === undefined) {
   // tslint:disable-next-line:no-console

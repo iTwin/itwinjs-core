@@ -14,77 +14,69 @@ import { AntiAliasPref,
          GraphicBranch } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
-import { GLESBranch, GLESList } from "./Graphic";
-import { PrimitiveBuilder } from "./primitives/Geometry";
 import { IModelConnection } from "../IModelConnection";
 
 /**
- * A Render::Plan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
+ * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
  */
-export class Plan {
-  constructor(public is3d: boolean,
-              public viewFlags: ViewFlags,
-              public frustum: Frustum,
-              public fraction: number,
-              public bgColor: ColorDef,
-              public monoColor: ColorDef,
-              public hiliteSettings: Hilite.Settings,
-              public aaLines: AntiAliasPref,
-              public aaText: AntiAliasPref,
-              public activeVolume: ClipVector,
-              public hline?: HiddenLine.Params,
-              public lights?: SceneLights,
-              ) {}
-  public static fromViewport(vp: Viewport): Plan {
+export class RenderPlan {
+  public readonly is3d: boolean;
+  public readonly viewFlags: ViewFlags;
+  public readonly frustum: Frustum;
+  public readonly fraction: number;
+  public readonly bgColor: ColorDef;
+  public readonly monoColor: ColorDef;
+  public readonly hiliteSettings: Hilite.Settings;
+  public readonly aaLines: AntiAliasPref;
+  public readonly aaText: AntiAliasPref;
+  public readonly activeVolume: ClipVector;
+  public readonly hline?: HiddenLine.Params;
+  public readonly lights?: SceneLights;
+
+  public constructor(vp: Viewport) {
     const view = vp.view;
     const style = view.displayStyle;
-    return new Plan(view.is3d(),
-                    style.viewFlags,
-                    vp.getFrustum()!,
-                    vp.frustFraction,
-                    view.backgroundColor,
-                    style.getMonochromeColor(),
-                    vp.hilite,
-                    vp.wantAntiAliasLines,
-                    vp.wantAntiAliasText,
-                    view.getViewClip(),
-                    style.is3d() ? style.getHiddenLineParams() : undefined,
-                    undefined); // view.is3d() ? view.getLights() : undefined
+
+    this.is3d = view.is3d();
+    this.viewFlags = style.viewFlags;
+    this.frustum = vp.getFrustum()!;
+    this.fraction = vp.frustFraction;
+    this.bgColor = view.backgroundColor;
+    this.monoColor = style.getMonochromeColor();
+    this.hiliteSettings = vp.hilite;
+    this.aaLines = vp.wantAntiAliasLines;
+    this.aaText = vp.wantAntiAliasText;
+    this.activeVolume = view.getViewClip();
+    this.hline = style.is3d() ? style.getHiddenLineParams() : undefined;
+    this.lights = undefined; // view.is3d() ? view.getLights() : undefined
   }
 }
 
 /**
- * A Render::Target holds the current scene, the current set of dynamic Graphics, and the current decorators.
+ * A RenderTarget holds the current scene, the current set of dynamic Graphics, and the current decorators.
  * When frames are composed, all of those Graphics are rendered, as appropriate.
- * A Render::Target holds a reference to a Render::Device, and a Render::System
- * Every DgnViewport holds a reference to a Render::Target.
+ * A RenderTarget holds a reference to a Render::Device, and a Render::System
+ * Every DgnViewport holds a reference to a RenderTarget.
  */
-export abstract class Target {
-  constructor(public system: System,
-              public decorations: Decorations = new Decorations()) {}
-  public createGraphic(params: GraphicBuilderCreateParams) { return this.system.createGraphic(params); }
-  public changeDecorations(decorations: Decorations): void { this.decorations = decorations; }
-}
+export abstract class RenderTarget {
+  public readonly system: RenderSystem;
+  public decorations = new Decorations();
 
-export class OnScreenTarget extends Target {
-  constructor(public system: System, public tileSizeModifier: number = 1.0) { super(system); }
+  protected constructor(system: RenderSystem) {
+    this.system = system;
+  }
+
+  public createGraphic(params: GraphicBuilderCreateParams) { return this.system.createGraphic(params); }
+  public changeDecorations(decorations: Decorations) { this.decorations = decorations; }
 }
 
 /**
- * A Render::System is the renderer-specific factory for creating Render::Graphics, Render::Textures, and Render::Materials.
+ * A RenderSystem is the renderer-specific factory for creating Render::Graphics, Render::Textures, and Render::Materials.
  * @note The methods of this class may be called from any thread.
  */
-export abstract class System {
-  public nowPainting?: Target;
-  public abstract createTarget(tileSizeModifier: number): Target;
-  public abstract createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
-  public abstract createBranch(branch: GraphicBranch, iModel: IModelConnection, transform: Transform, clips: ClipVector): Graphic;
-  public abstract createGraphicList(primitives: Graphic[], iModel: IModelConnection): Graphic;
-}
-
-export class RenderSystem extends System {
-  public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
-  public createTarget(tileSizeModifier: number): Target { return new OnScreenTarget(this, tileSizeModifier); }
-  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): Graphic { return new GLESBranch(imodel, branch, transform, clips); }
-  public createGraphicList(graphics: Graphic[], iModel: IModelConnection): Graphic { return new GLESList(graphics, iModel); }
+export interface RenderSystem {
+  createTarget(tileSizeModifier: number): RenderTarget;
+  createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
+  createBranch(branch: GraphicBranch, iModel: IModelConnection, transform: Transform, clips: ClipVector): Graphic;
+  createGraphicList(primitives: Graphic[], iModel: IModelConnection): Graphic;
 }
