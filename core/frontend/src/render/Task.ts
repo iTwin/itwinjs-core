@@ -71,7 +71,7 @@ export abstract class Task {
 
   /**
    * Determine whether this Task can replace a pending entry in the Queue.
-   * @param other a pending task for the same RenderTarget
+   * @param other a pending task for the same Render::Target
    * @return true if this Task should replace the other pending task.
    */
   public replaces(other: Task): boolean { return this.operation === other.operation; }
@@ -87,4 +87,50 @@ export abstract class SceneTask extends Task {
 export class ChangeDecorationsTask extends SceneTask {
   constructor(priority: Priority, target: RenderTarget, public decorations: Decorations = new Decorations()) { super(priority, Operation.ChangeDecorations, target); }
   public process(_timer: StopWatch): Outcome { this.target.changeDecorations(this.decorations); return Outcome.Finished; }
+}
+
+/**
+ * The Render::Queue is accessed through DgnViewport::RenderQueue(). It holds an array of Render::Tasks waiting
+ * to to be processed on the render thread. Render::Tasks may be added to the Render::Queue only
+ * on the main (work) thread, and may only be processed on the Render thread.
+ */
+export class RenderQueue {
+  private _tasks: Task[] = [];
+
+  public get tasks(): Task[] { return this._tasks; }
+
+  constructor(tasks?: Task[]) { if (!!tasks) this._tasks = tasks; }
+
+  /**
+   * Add a Render::Task to the render queue. The Task will replace any existing pending entries in the Queue
+   * for the same Render::Target for which task._CanReplace(existing) returns true.
+   * task The Render::Task to add to the queue.
+   * [WIP]
+   */
+  public addTask(task: Task): void {
+    this._tasks = this._tasks
+                    .map((t: Task) => {
+                      if (t.operation === Operation.Idle || (task.target === t.target && task.replaces(t)))  t.outcome = Outcome.Abandoned;
+                      return t;
+                    })
+                    .filter((t: Task) => t.outcome !== Outcome.Abandoned);
+    this._tasks.push(task);
+    this._tasks.sort((a: Task, b: Task) => a.priority.value - b.priority.value);
+  }
+
+  /**
+   * Wait for all Tasks in the Queue to be processed.
+   * @note This method may only be called from the main thread and will wait indefinitely for the existing render tasks to complete
+   * [WIP]
+   */
+  public waitForIdle(): void {}
+
+  /**
+   * Add a task to the Queue and wait for it (and all previously queued Tasks) to complete.
+   * task The Render::Task to add to the queue.
+   * @note This method may only be called from the main thread and will wait indefinitely for the existing render tasks to complete
+   * [WIP]
+   */
+  public addAndWait(task: Task): void { this.addTask(task); this.waitForIdle(); }
+
 }

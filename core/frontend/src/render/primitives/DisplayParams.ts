@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64 } from "@bentley/bentleyjs-core";
-import { GraphicParams, GeometryParams, ColorDef, GeometryClass, LinePixels, FillDisplay, FillFlags } from "@bentley/imodeljs-common";
+import { GraphicParams, GeometryParams, ColorDef, GeometryClass, LinePixels, FillDisplay, FillFlags, BackgroundFill } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderSystem } from "../System";
 
@@ -72,17 +72,17 @@ export class DisplayParams {
     // TFS#786614: BRep with multiple face attachments - params may no longer be resolved.
     // Doesn't matter - we will create GeometryParams for each of the face attachments - only need the
     // class, category, and sub-category here.
-    if (geom && geom.isResolved()) {
+    if (geom) {
       catId = geom.categoryId;
       subCatId = geom.subCategoryId;
-      geomClass = geom.getGeometryClass();
-      if (geom.getPatternParams()) { fillFlags |= FillFlags.Behind; }
+      geomClass = geom.geometryClass ? geom.geometryClass : GeometryClass.Primary;
+      if (geom.pattern) { fillFlags |= FillFlags.Behind; }
       if (filled) {
-        if (FillDisplay.Always === geom.getFillDisplay()) {
+        if (FillDisplay.Always === geom.fillDisplay) {
           fillFlags |= FillFlags.Always;
           fillFlags &= ~FillFlags.ByView;
         }
-        if (geom.isFillColorFromViewBackground()) { fillFlags |= FillFlags.Background; }
+        if (geom.backgroundFill !== undefined && geom.backgroundFill !== BackgroundFill.None) { fillFlags |= FillFlags.Background; }
       }
     }
       // const grad = gf.gradient;
@@ -97,7 +97,7 @@ export class DisplayParams {
     if (geom) {
       catId = geom.categoryId;
       subCatId = geom.subCategoryId;
-      geomClass = geom.getGeometryClass();
+      geomClass = geom.geometryClass ? geom.geometryClass : GeometryClass.Primary;
     }
     return DisplayParams.createText(gf.lineColor, catId, subCatId, geomClass);
   }
@@ -108,7 +108,7 @@ export class DisplayParams {
     if (geom) {
       catId = geom.categoryId;
       subCatId = geom.subCategoryId;
-      geomClass = geom.getGeometryClass();
+      geomClass = geom.geometryClass ? geom.geometryClass : GeometryClass.Primary;
     }
     return DisplayParams.createLinear(gf.lineColor, gf.rasterWidth, gf.linePixels, catId, subCatId, geomClass);
   }
