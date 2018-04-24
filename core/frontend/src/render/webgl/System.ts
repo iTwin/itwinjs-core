@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { PointUtil, QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "@bentley/imodeljs-common";
-import { XY, XYZ } from "@bentley/geometry-core";
+import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "@bentley/imodeljs-common";
+import { Point2d, Point3d } from "@bentley/geometry-core";
 
 export const enum ContextState {
   Uninitialized,
@@ -151,11 +151,18 @@ export class Capabilities {
 }
 
 export class ViewportQuad {
-  public readonly vertices = new QPoint3dList();
+  public readonly vertices = new QPoint3dList(QParams3d.fromNormalizedRange());
   public readonly indices = new Uint32Array(6);
   constructor() {
-    const vertices = PointUtil.fromNumberArrays([-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0]) as XYZ[];
-    this.vertices.assign(vertices, QParams3d.fromNormalizedRange());
+    const pt = new Point3d(-1, -1, 0);
+    this.vertices.add(pt);
+    pt.x = 1;
+    this.vertices.add(pt);
+    pt.y = 1;
+    this.vertices.add(pt);
+    pt.x = -1;
+    this.vertices.add(pt);
+
     this.indices[0] = 0;
     this.indices[1] = 1;
     this.indices[2] = 2;
@@ -166,10 +173,17 @@ export class ViewportQuad {
 }
 
 export class TexturedViewportQuad extends ViewportQuad {
-  public readonly textureUV = new QPoint2dList();
+  public readonly textureUV = new QPoint2dList(QParams2d.fromZeroToOne());
   constructor() {
     super();
-    const textureUVPts = PointUtil.fromNumberArrays([0, 0], [1, 0], [1, 1], [0, 1]) as XY[];
-    this.textureUV.assign(textureUVPts, QParams2d.fromDefaultRange());
+
+    const pt = new Point2d(0, 0);
+    this.textureUV.add(pt);
+    pt.x = 1;
+    this.textureUV.add(pt);
+    pt.y = 1;
+    this.textureUV.add(pt);
+    pt.x = 0;
+    this.textureUV.add(pt);
   }
 }

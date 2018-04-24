@@ -95,7 +95,7 @@ export class GeometryList {
     });
     return range;
   }
-  public computeQuantizationParams(): QParams3d { return new QParams3d(this.computeRange()); }
+  public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }
 }
 
 export class GeometryAccumulator {
