@@ -3,9 +3,11 @@ const path = require("path");
 const yargs = require("yargs").argv;
 const chokidar = require("chokidar");
 const Mocha = require("mocha");
+const tldrReporter = require('mocha-tldr-reporter');
 
 const repeat = (yargs.repeat ? yargs.repeat : 1);
 const timeoutsEnabled = !(yargs.noTimeouts || false);
+const testsName = path.basename(path.resolve("./"));
 
 let extensionsRegistered = false;
 const registerExtensions = () => {
@@ -62,18 +64,20 @@ const runOnce = () => {
   let mocha = new Mocha({
     ui: "bdd",
   });
+  if (!yargs.coverage)
+    registerExtensions();
   if (yargs.coverage) {
     requireLibModules("./");
-    mocha = mocha.reporter("progress").ignoreLeaks(true);
+    mocha = mocha.reporter(tldrReporter).ignoreLeaks(true);
   } else if (yargs.watch) {
-    registerExtensions();
     mocha = mocha.reporter("min").ignoreLeaks(false);
+  } else if (repeat > 1) {
+    mocha = mocha.reporter("spec").ignoreLeaks(false);
   } else {
-    registerExtensions();
     const reporterOptions = {
       reporterEnabled: "mocha-junit-reporter, spec",
       mochaJunitReporterReporterOptions: {
-        mochaFile: "../../out/reports/tests/results.[hash].xml",
+        mochaFile: `../../out/reports/tests/results.${testsName}.xml`,
       },
     };
     mocha = mocha.reporter("mocha-multi-reporters", reporterOptions).ignoreLeaks(false).useColors(true).fullTrace();
