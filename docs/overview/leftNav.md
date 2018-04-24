@@ -16,6 +16,6 @@
 
 ## [iModel Bridges](./IModelBridges)
 
-## [BIS Overview](./BisCore)
+## [BIS Introduction](../bis/intro/introduction)
 
 ## [iModelJs Packages](./index.md#imodeljs-organization)
