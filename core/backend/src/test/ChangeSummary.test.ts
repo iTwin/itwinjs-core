@@ -19,7 +19,7 @@ import { KnownLocations } from "../Platform";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "./MockAssetUtil";
 import * as TypeMoq from "typemoq";
 
-describe("ChangeSummary", () => {
+describe.skip("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "true";
   let accessToken: AccessToken = new MockAccessToken();

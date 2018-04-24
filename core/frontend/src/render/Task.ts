@@ -6,7 +6,7 @@ import { StopWatch } from "@bentley/bentleyjs-core";
 import { Decorations } from "@bentley/imodeljs-common";
 
 /** The rendering operation a task performs. */
-export const enum Operation {
+export const enum TaskOperation {
   ChangeDecorations,
   ChangeDynamics,
   ChangeRenderPlan,
@@ -28,7 +28,7 @@ export const enum Operation {
 }
 
 /** The outcome of the processing of a Task. */
-export const enum Outcome {
+export const enum TaskOutcome {
   Waiting,   // in queue, pending
   Abandoned, // replaced while pending
   Started,   // currently processing
@@ -36,23 +36,32 @@ export const enum Outcome {
   Finished,  // successfully finished processing
 }
 
-export class Priority {
-  constructor(public value: number) { }
-  public increment(): void { this.value++; }
-  public static highest(): Priority { return new Priority(0); }
-  public static lowest(): Priority { return new Priority(0xffff); } // Reserved for the 'idle' task
+export class TaskPriority {
+  public value: number;
+  constructor(value: number = 0) {
+    this.value = value;
+  }
+  /** until we can overload operators for structs in ts, for now increment value and return this object */
+  public increment(): TaskPriority { this.value++; return this; }
+  public static highest(): TaskPriority { return new TaskPriority(0); }
+  public static lowest(): TaskPriority { return new TaskPriority(0xffff); } // Reserved for the 'idle' task
 }
 
 /** A rendering task to be performed on the render thread. */
 export abstract class Task {
-  constructor(public priority: Priority,
-    public operation: Operation,
-    public target: RenderTarget,
-    public outcome: Outcome = Outcome.Waiting,
-    public elapsedTime: number = 0) { }
+  public readonly target: RenderTarget;
+  public readonly operation: TaskOperation;
+  public readonly priority: TaskPriority;
+  public outcome: TaskOutcome = TaskOutcome.Waiting;
+  public elapsedTime: number = 0;
+  constructor(target: RenderTarget, operation: TaskOperation, priority: TaskPriority) {
+    this.target = target;
+    this.operation = operation;
+    this.priority = priority;
+  }
 
   public perform(timer: StopWatch) {
-    this.outcome = Outcome.Started;
+    this.outcome = TaskOutcome.Started;
     timer.start();
     this.outcome = this.process(timer);
   }
@@ -61,13 +70,13 @@ export abstract class Task {
    * Perform the rendering task.
    * @return the Outcome of the processing of the Task.
    */
-  public abstract process(timer: StopWatch): Outcome;
+  public abstract process(timer: StopWatch): TaskOutcome;
 
   /** return true if this task changes the scene. */
   public abstract definesScene(): boolean;
 
   /** called when this task is entered into the render queue */
-  public abstract onQueued(): void;
+  public onQueued(): void { }
 
   /**
    * Determine whether this Task can replace a pending entry in the Queue.
@@ -77,16 +86,26 @@ export abstract class Task {
   public replaces(other: Task): boolean { return this.operation === other.operation; }
 }
 
+/** Base class for all tasks that change the scene */
 export abstract class SceneTask extends Task {
-  constructor(priority: Priority, operation: Operation, target: RenderTarget, outcome?: Outcome, elapsedTime?: number) { super(priority, operation, target, outcome, elapsedTime); }
+  constructor(target: RenderTarget, operation: TaskOperation, priority: TaskPriority) { super(target, operation, priority); }
   public definesScene(): boolean { return true; }
   public replaces(other: Task): boolean { return super.replaces(other) || !other.definesScene(); }
-  public onQueued(): void { }
+}
+
+/** Base class for tasks that don't change the scene */
+export abstract class NonSceneTask extends Task {
+  constructor(target: RenderTarget, operation: TaskOperation, priority: TaskPriority) { super(target, operation, priority); }
+  public definesScene(): boolean { return false; }
 }
 
 export class ChangeDecorationsTask extends SceneTask {
-  constructor(priority: Priority, target: RenderTarget, public decorations: Decorations = new Decorations()) { super(priority, Operation.ChangeDecorations, target); }
-  public process(_timer: StopWatch): Outcome { this.target.changeDecorations(this.decorations); return Outcome.Finished; }
+  public readonly decorations: Decorations;
+  constructor(target: RenderTarget, priority: TaskPriority, decorations: Decorations = new Decorations()) {
+    super(target, TaskOperation.ChangeDecorations, priority);
+    this.decorations = decorations;
+  }
+  public process(_timer: StopWatch): TaskOutcome { this.target.changeDecorations(this.decorations); return TaskOutcome.Finished; }
 }
 
 /**
@@ -95,11 +114,11 @@ export class ChangeDecorationsTask extends SceneTask {
  * on the main (work) thread, and may only be processed on the Render thread.
  */
 export class RenderQueue {
-  private _tasks: Task[] = [];
+  private _tasks: Task[];
 
   public get tasks(): Task[] { return this._tasks; }
 
-  constructor(tasks?: Task[]) { if (!!tasks) this._tasks = tasks; }
+  constructor(tasks: Task[] = []) { this._tasks = tasks; }
 
   /**
    * Add a Render::Task to the render queue. The Task will replace any existing pending entries in the Queue
@@ -110,10 +129,10 @@ export class RenderQueue {
   public addTask(task: Task): void {
     this._tasks = this._tasks
                     .map((t: Task) => {
-                      if (t.operation === Operation.Idle || (task.target === t.target && task.replaces(t)))  t.outcome = Outcome.Abandoned;
+                      if (t.operation === TaskOperation.Idle || (task.target === t.target && task.replaces(t)))  t.outcome = TaskOutcome.Abandoned;
                       return t;
                     })
-                    .filter((t: Task) => t.outcome !== Outcome.Abandoned);
+                    .filter((t: Task) => t.outcome !== TaskOutcome.Abandoned);
     this._tasks.push(task);
     this._tasks.sort((a: Task, b: Task) => a.priority.value - b.priority.value);
   }
@@ -132,5 +151,4 @@ export class RenderQueue {
    * [WIP]
    */
   public addAndWait(task: Task): void { this.addTask(task); this.waitForIdle(); }
-
 }

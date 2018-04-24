@@ -3,9 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
-import { QParams } from "@bentley/imodeljs-common";
-import { Point2d, Point3d } from "@bentley/geometry-core";
-import { Range2d, Range3d } from "@bentley/geometry-core";
+import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { GLDisposable } from "./GLDisposable";
 
@@ -60,7 +58,7 @@ export class BufferHandle implements GLDisposable {
   }
 
   /** Creates a BufferHandle and binds its data */
-  public static create(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
+  public static createBuffer(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
     const handle = new BufferHandle(gl);
     if (!handle.isValid) {
       return undefined;
@@ -68,6 +66,10 @@ export class BufferHandle implements GLDisposable {
 
     handle!.bindData(gl, target, data, usage);
     return handle;
+  }
+  /** Creates a BufferHandle and binds its data */
+  public static createArrayBuffer(gl: WebGLRenderingContext, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw) {
+    return BufferHandle.createBuffer(gl, GL.Buffer.Target.ArrayBuffer, data, usage);
   }
 
   public isBound(gl: WebGLRenderingContext, binding: GL.Buffer.Binding) { return gl.getParameter(binding) === this._glBuffer; }
@@ -86,7 +88,7 @@ export class QBufferHandle2d extends BufferHandle {
 
   private setScale(index: number, value: number) { this.params[index] = 0 !== value ? 1.0 / value : value; }
 
-  public constructor(gl: WebGLRenderingContext, params: QParams<Point2d, Range2d>) {
+  public constructor(gl: WebGLRenderingContext, params: QParams2d) {
     super(gl);
     this.params[0] = params.origin.x;
     this.params[1] = params.origin.y;
@@ -104,7 +106,7 @@ export class QBufferHandle3d extends BufferHandle {
 
   private setScale(index: number, value: number) { this.scale[index] = 0 !== value ? 1.0 / value : value; }
 
-  public constructor(gl: WebGLRenderingContext, params: QParams<Point3d, Range3d>) {
+  public constructor(gl: WebGLRenderingContext, params: QParams3d) {
     super(gl);
     this.origin[0] = params.origin.x;
     this.origin[1] = params.origin.y;
@@ -112,6 +114,16 @@ export class QBufferHandle3d extends BufferHandle {
     this.setScale(0, params.scale.x);
     this.setScale(1, params.scale.y);
     this.setScale(2, params.scale.z);
+  }
+
+  public static create(gl: WebGLRenderingContext, params: QParams3d, data: Float32Array): QBufferHandle3d | undefined {
+    const handle = new QBufferHandle3d(gl, params);
+    if (!handle.isValid) {
+      return undefined;
+    }
+
+    handle.bindData(gl, GL.Buffer.Target.ArrayBuffer, data);
+    return handle;
   }
 }
 
@@ -138,7 +150,7 @@ export class AttributeHandle {
   public enableVertexAttribArray(gl: WebGLRenderingContext): void { gl.enableVertexAttribArray(this._glId); }
   public disableVertexAttribArray(gl: WebGLRenderingContext): void { gl.disableVertexAttribArray(this._glId); }
 
-  public enableArray(gl: WebGLRenderingContext, buffer: BufferHandle, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
+  public enableArray(gl: WebGLRenderingContext, buffer: BufferHandle, size: number, type: GL.DataType, normalized: boolean, stride: number, offset: number): void {
     buffer.bind(gl, GL.Buffer.Target.ArrayBuffer);
     this.setVertexAttribPointer(gl, size, type, normalized, stride, offset);
     this.enableVertexAttribArray(gl);

@@ -12,12 +12,12 @@ import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlV
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($imodeljs-backend.ECSqlStatement.stepForInsert).
  *
- * > Insert statements can be used with ECDb only, not with IModelDb.
- *
  * If the step was successful, the ECSqlInsertResult contains
  * [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE)
  * and the ECInstanceId of the newly created instance.
  * In case of failure it contains the [DbResult]($bentleyjs-core.DbResult) error code.
+ *
+ * > Insert statements can be used with ECDb only, not with IModelDb.
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) { }
@@ -312,7 +312,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
 }
 
-/** Represents the value of a specific ECSQL column in the current row of the result set of an ECSQL SELECT statement.
+/** Value of a column in a row of an ECSQL query result.
  *
  * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
  */
@@ -321,7 +321,7 @@ export class ECSqlValue {
 
   public constructor(val: NativeECSqlValue) { this._val = val; }
 
-  /** Get information about the ECSQL SELECT result's column this value refers to. */
+  /** Get information about the query result's column this value refers to. */
   public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
 
   /** Get the value of this ECSQL value */
@@ -393,7 +393,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   public [Symbol.iterator](): IterableIterator<ECSqlValue> { return this; }
 }
 
-/** Information about an ECSQL column of an ECSQL query result.
+/** Information about an ECSQL column in an ECSQL query result.
  *
  * See [ECSqlValue.columnInfo]($imodeljs-backend.ECSqlValue.columnInfo),
  * [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue),
@@ -773,21 +773,34 @@ class ECSqlTypeHelper {
 
   public static isNavigationBindingValue(val: any): val is NavigationBindingValue { return val.id !== undefined && (ECSqlTypeHelper.isIdString(val.id) || typeof (val.id) === "string" || val.id instanceof Id64); }
 }
+
+/** A cached ECSqlStatement.
+ *  See [ECSqlStatementCache]($imodeljs-backend.ECSqlStatementCache) for details.
+ */
 export class CachedECSqlStatement {
   public statement: ECSqlStatement;
   public useCount: number;
 
+  /** @hidden - used by statement cache */
   public constructor(stmt: ECSqlStatement) {
     this.statement = stmt;
     this.useCount = 1;
   }
 }
 
+/** A cache for ECSqlStatements.
+ *
+ * Preparing [ECSqlStatements]($imodeljs-backend.ECSqlStatement) can be costly. This class provides a way to
+ * save previously prepared ECSqlStatements for reuse.
+ *
+ * > Both [IModelDbs]($imodeljs-backend.IModelDb) and [ECDbs]($imodeljs-backend.ECDb) have a built-in ECSqlStatementCache.
+ * > So normally you do not have to maintain your own cache.
+ */
 export class ECSqlStatementCache {
   private readonly statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
   public readonly maxCount: number;
 
-  constructor(maxCount: number = 20) {
+  public constructor(maxCount: number = 20) {
     this.maxCount = maxCount;
   }
 
