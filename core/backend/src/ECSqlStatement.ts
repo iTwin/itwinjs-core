@@ -23,7 +23,7 @@ export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) { }
 }
 
-/** An ECSQL Statement.
+/** Executes ECSQL statements.
  *
  * A statement must be prepared before it can be executed, and it must be released when no longer needed.
  * See [IModelDb.withPreparedStatement]($imodeljs-backend.IModelDb.withPreparedStatement) or
@@ -310,8 +310,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
 }
 
-/** Represents the value of a specific ECSQL column in the current
- * row of the result set of an ECSQL SELECT statement.
+/** Represents the value of a specific ECSQL column in the current row of the result set of an ECSQL SELECT statement.
  *
  * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
  */
@@ -370,8 +369,8 @@ export class ECSqlValue {
   public getArray(): any[] { return ECSqlValueHelper.getArray(this); }
 }
 
-/** The ECSqlValueIterator is used to iterate the members of a struct ECSqlValue or
- *  the elements of an array ECSqlValue.
+/** Iterator over members of a struct [ECSqlValue]($imodeljs-backend.ECSqlValue) or the elements of an array [ECSqlValue]($imodeljs-backend.ECSqlValue).
+ *
  *  See [ECSqlValue.getStructIterator]($imodeljs-backend.ECSqlValue.getStructIterator) or
  *  [ECSqlValue.getArrayIterator]($imodeljs-backend.ECSqlValue.getArrayIterator).
  */
@@ -392,8 +391,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   public [Symbol.iterator](): IterableIterator<ECSqlValue> { return this; }
 }
 
-/** Represents the value of a specific ECSQL column in the current
- * row of the result set of an ECSQL SELECT statement.
+/** Information about an ECSQL column of an ECSQL query result.
  *
  * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
  */
