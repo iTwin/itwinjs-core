@@ -196,6 +196,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
+   *
    * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
    */
@@ -234,7 +235,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Step this statement to the next row.
-   * @returns For **ECSQL SELECT** statements the method returns
+   *
+   *  For **ECSQL SELECT** statements the method returns
    *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core.DbResult.BE_SQLITE_ROW) if the statement now points successfully to the next row.
    *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE) if the statement has no more rows.
    *  - Error status in case of errors.
@@ -287,6 +289,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Calls step when called as an iterator.
+   *
    *  Each iteration returns an [ECSQL row format]($docs/learning/ECSQLRowFormat)
    */
   public next(): IteratorResult<any> {

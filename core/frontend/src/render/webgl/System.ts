@@ -45,7 +45,7 @@ export class Capabilities {
   private _maxVaryingVectors: number = 0;
   private _maxFragUniformVectors: number = 0;
 
-  private _extensionMap: {[key: string]: object | undefined} = {}; // Use this map to store actual extension objects retrieved from GL.
+  private _extensionMap: {[key: string]: any} = {}; // Use this map to store actual extension objects retrieved from GL.
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
@@ -60,15 +60,18 @@ export class Capabilities {
   public get maxFragUniformVectors(): number { return this._maxFragUniformVectors; }
 
   /** These getters check for existence of extension objects to determine availability of features.  In WebGL2, could just return true for some. */
-  public get supportsNonPowerOf2Textures(): boolean { return this.queryExtensionObject("OES_texture_npot") != null; }
-  public get supportsDrawBuffers(): boolean { return this.queryExtensionObject("WEBGL_draw_buffers") != null; }
-  public get supports32BitElementIndex(): boolean { return this.queryExtensionObject("OES_element_index_uint") != null; }
-  public get supportsTextureFloat(): boolean { return this.queryExtensionObject("OES_texture_float") != null; }
-  public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject("OES_texture_half_float") != null; }
-  public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject("EXT_shader_texture_lod") != null; }
+  public get supportsNonPowerOf2Textures(): boolean { return false; }
+  public get supportsDrawBuffers(): boolean { return this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !== undefined; }
+  public get supports32BitElementIndex(): boolean { return this.queryExtensionObject<OES_element_index_uint>("OES_element_index_uint") !== undefined; }
+  public get supportsTextureFloat(): boolean { return this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
+  public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
+  public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
 
-  /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extenisons. */
-  public queryExtensionObject<T>(ext: string): T | undefined { return this._extensionMap[ext] as T | undefined; }
+  /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
+  public queryExtensionObject<T>(ext: string): T | undefined {
+    const extObj: any = this._extensionMap[ext];
+    return (null !== extObj) ? extObj as T : undefined;
+  }
 
   /** Initializes the capabilities based on a GL context. Must be called first. */
   public init(gl: WebGLRenderingContext): boolean {
@@ -83,11 +86,12 @@ export class Capabilities {
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
       for (const ext of extensions) {
-        if (ext === "OES_texture_npot" || ext === "WEBGL_draw_buffers" || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
+        if (ext === "WEBGL_draw_buffers" || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
             ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
             ext === "EXT_shader_texture_lod") {
           const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
-          this._extensionMap[ext] = (null != extObj) ? extObj : undefined;
+          if (null !== extObj)
+            this._extensionMap[ext] = extObj;
         }
       }
     }

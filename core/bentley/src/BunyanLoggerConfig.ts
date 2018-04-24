@@ -17,7 +17,6 @@ import { LogFunction, Logger } from "./Logger";
  * You can then pipe the output through the bunyan command-line program to format and filter it.
  *
  * See [[SeqLoggerConfig]] to log to a seq server using bunyan.
- * ```
  */
 export class BunyanLoggerConfig {
   // Generate metadata for a bunyan record. If nothing else, it must contain the message category.
