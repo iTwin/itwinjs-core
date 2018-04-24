@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Gateway, IModelReadGateway } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { IModelDb, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 
@@ -102,7 +102,28 @@ export class IModelTestUtils {
     assert.exists(iModel);
     return iModel!;
   }
+
+  // __PUBLISH_EXTRACT_START__ IModelHost.startup
+  public static startupIModelHost() {
+    // The host configuration.
+    // The defaults will work for most backends.
+    // Here is an example of how the briefcasesCacheDir property of the host configuration
+    // could be set from an environment variable, which could be set by a cloud deployment mechanism.
+    let briefcaseCacheDir = process.env.MY_SERVICE_BRIEFCASES_DIR;
+    if (briefcaseCacheDir === undefined) {
+      const tempDir = process.env.MY_SERVICE_TMP_DIR || KnownLocations.tmpdir;
+      briefcaseCacheDir = path.join(tempDir, "iModelJs_cache");
+    }
+
+    const imHostConfig = new IModelHostConfiguration();
+    imHostConfig.briefcaseCacheDir = briefcaseCacheDir;
+
+    // Start up IModelHost, supplying the configuration.
+    IModelHost.startup(imHostConfig);
+  }
+  // __PUBLISH_EXTRACT_END__
+
 }
 
 // Start the backend
-IModelHost.startup(new IModelHostConfiguration());
+IModelTestUtils.startupIModelHost();

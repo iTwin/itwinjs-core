@@ -1,0 +1,9 @@
+{
+  "collections": {
+    "tutorials": {
+      "contents": [],
+      "displayName": "Tutorials"
+    }
+  },
+  "home": "tutorials\\tutorial1.md"
+}

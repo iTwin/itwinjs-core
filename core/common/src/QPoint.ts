@@ -264,6 +264,18 @@ export class QPointList<Q extends QPointBase, P extends Point, R extends Range, 
 export class QPoint3dList extends QPointList<QPoint3d, XYZ, Range3d, QParams3d> implements Cloneable<QPoint3dList> {
   constructor(params?: Range3d | QParams3d, pts: QPoint3d[] = []) { super(params, pts); }
   public clone(): QPoint3dList { return new QPoint3dList(this._valid ? this.params.clone() : undefined, this.pts.map((qpt) => qpt.clone())); }
+  public toTypedArray(): Float32Array {
+    const array = new Float32Array(this.length * 3);
+    const pts = this.pts;
+    for (let i = 0; i < pts.length; i++) {
+      const pt = pts[i];
+      array[i * 3] = pt.x;
+      array[i * 3 + 1] = pt.y;
+      array[i * 3 + 2] = pt.z;
+    }
+
+    return array;
+  }
 }
 export class QPoint2dList extends QPointList<QPoint2d, XY, Range2d, QParams2d> implements Cloneable<QPoint2dList> {
   constructor(params?: Range2d | QParams2d, pts: QPoint2d[] = []) { super(params, pts); }

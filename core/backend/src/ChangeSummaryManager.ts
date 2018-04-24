@@ -198,7 +198,7 @@ export class ChangeSummaryManager {
         const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
         if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
-          throw new IModelError(stat.error.status);
+          throw new IModelError(stat.error.status, stat.error.message);
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
         const changeSummaryId = new Id64(stat.result!);

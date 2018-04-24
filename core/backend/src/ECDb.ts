@@ -38,7 +38,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the operation failed.
    */
   public createDb(pathName: string): void {
-    const status = this.nativeDb.createDb(pathName);
+    const status: DbResult = this.nativeDb.createDb(pathName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to created ECDb");
   }
@@ -49,7 +49,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the operation failed.
    */
   public openDb(pathName: string, openMode: OpenMode = OpenMode.Readonly): void {
-    const status = this.nativeDb.openDb(pathName, openMode);
+    const status: DbResult = this.nativeDb.openDb(pathName, openMode);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
@@ -79,7 +79,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the database is not open or if the operation failed.
    */
   public abandonChanges(): void {
-    const status = this.nativeDb.abandonChanges();
+    const status: DbResult = this.nativeDb.abandonChanges();
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to abandon changes");
   }
@@ -91,14 +91,17 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the database is not open or if the operation failed.
    */
   public importSchema(pathName: string): void {
-    const status = this.nativeDb.importSchema(pathName);
+    const status: DbResult = this.nativeDb.importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
       Logger.logError(loggingCategory, "Failed to import schema from '" + pathName + "'.");
       throw new IModelError(status, "Failed to import schema from '" + pathName + "'.");
     }
   }
 
-  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
+  /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
+   *
+   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
+   * the already prepared statement from the cache will be reused.
    * @param ecsql The ECSQL statement to execute
    * @param cb The callback to invoke on the prepared statement
    * @returns Returns the value returned by cb

@@ -2,15 +2,15 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { QPoint3dList } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
-import { AttributeHandle, BufferHandle, BufferData } from "./Handle";
+import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { RenderPass, RenderOrder } from "./RenderFlags";
-import { GL } from "./GL";
 import { LineCode } from "./EdgeOverrides";
+import { GL } from "./GL";
 
 export class PointCloudGeometryCreateParams {
   public readonly vertices = new QPoint3dList();
@@ -19,14 +19,8 @@ export class PointCloudGeometryCreateParams {
   public constructor(vertices: QPoint3dList, colors: number[], pointSize: number) { this.vertices = vertices.clone(); this.colors = colors; this.pointSize = pointSize; }
 }
 
+// Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
-  protected static generateBuffer(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: BufferData): BufferHandle | undefined {
-    return BufferHandle.create(gl, target, data);
-  }
-  protected static generateArrayBuffer(gl: WebGLRenderingContext, data: BufferData): BufferHandle | undefined {
-    return CachedGeometry.generateBuffer(gl, GL.Buffer.Target.ArrayBuffer, data);
-  }
-
   // Returns true if white portions of this geometry should render as black on white background
   protected abstract _wantWoWReversal(target: Target): boolean;
   // Returns the edge/line weight used to render this geometry
@@ -50,7 +44,7 @@ export abstract class CachedGeometry {
   // Binds this geometry's vertex data to the vertex attribute.
   public abstract bindVertexArray(gl: WebGLRenderingContext, handle: AttributeHandle): void;
   // Draws this geometry
-  public abstract draw(): void;
+  public abstract draw(gl: WebGLRenderingContext): void;
 
   // Intended to be overridden by specific subclasses
   public get material(): MaterialData | undefined { return undefined; }
@@ -96,7 +90,55 @@ export abstract class CachedGeometry {
   public toComposite(): CompositeGeometry | undefined { return undefined; }
 }
 
-export abstract class IndexedGeometry extends CachedGeometry { /* ###TODO */ }
+// Parameters used to construct an IndexedGeometry
+export class IndexedGeometryParams {
+  public readonly positions: QBufferHandle3d;
+  public readonly indices: BufferHandle;
+  public readonly numIndices: number;
+
+  protected constructor(positions: QBufferHandle3d, indices: BufferHandle, numIndices: number) {
+    this.positions = positions;
+    this.indices = indices;
+    this.numIndices = numIndices;
+  }
+
+  public static create(gl: WebGLRenderingContext, positions: Float32Array, qparams: QParams3d, indices: Uint32Array) {
+    const posBuf = QBufferHandle3d.create(gl, qparams, positions);
+    const indBuf = BufferHandle.createBuffer(gl, GL.Buffer.Target.ElementArrayBuffer, indices);
+    if (undefined === posBuf || undefined === indBuf) {
+      assert(false);
+      return undefined;
+    }
+
+    assert(posBuf.isValid && indBuf.isValid);
+    return new IndexedGeometryParams(posBuf, indBuf, indices.length);
+  }
+  public static createFromList(gl: WebGLRenderingContext, positions: QPoint3dList, indices: Uint32Array) {
+    return IndexedGeometryParams.create(gl, positions.toTypedArray(), positions.params, indices);
+  }
+}
+
+// A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
+export abstract class IndexedGeometry extends CachedGeometry {
+  protected readonly params: IndexedGeometryParams;
+
+  protected constructor(params: IndexedGeometryParams) {
+    super();
+    this.params = params;
+  }
+
+  public bindVertexArray(gl: WebGLRenderingContext, attr: AttributeHandle): void {
+    attr.enableArray(gl, this.params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
+  }
+  public draw(gl: WebGLRenderingContext): void {
+    this.params.indices.bind(gl, GL.Buffer.Target.ElementArrayBuffer);
+    gl.drawElements(GL.PrimitiveType.Triangles, this.params.numIndices, GL.DataType.UnsignedInt, 0);
+  }
+
+  public get qOrigin() { return this.params.positions.origin; }
+  public get qScale() { return this.params.positions.scale; }
+}
+
 export abstract class ViewportQuadGeometry extends IndexedGeometry { /* ###TODO */ }
 export abstract class TexturedViewportQuadGeometry extends ViewportQuadGeometry { /* ###TODO */ }
 export abstract class CompositeGeometry extends TexturedViewportQuadGeometry { /* ###TODO */ }
