@@ -98,7 +98,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
   /** Establish this tool as the active PrimitiveTool.
    *  @return SUCCESS if this tool is now the active PrimitiveTool.
-   *  @see Tool.onInstall, Tool.onPostInstall
+   *  @see InteractiveTool.onInstall
+   *  @see InteractiveTool.onPostInstall
    */
   public run(): boolean {
     const toolAdmin = IModelApp.toolAdmin;
