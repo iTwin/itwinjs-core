@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { RequestOptions } from "./../Request";
+import { RequestOptions } from "../Request";
 import { Config } from "../Config";
-import { DefaultRequestOptionsProvider } from "../index";
+import { DefaultRequestOptionsProvider } from "../Client";
 
 export class EventBaseHandler {
   /** Gets service bus parser depending on the environment. */

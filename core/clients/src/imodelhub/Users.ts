@@ -26,7 +26,6 @@ export class UserInfo extends WsgInstance {
 /**
  * Query object for getting UserInfos. You can use this to modify the query.
  * @see UserInfoHandler.get()
- * @class UserInfoQuery
  */
 export class UserInfoQuery extends InstanceIdQuery {
 }

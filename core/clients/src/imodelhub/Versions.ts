@@ -32,7 +32,6 @@ export class Version extends WsgInstance {
 /**
  * Query object for getting Versions. You can use this to modify the query.
  * @see VersionHandler.get()
- * @class VersionQuery
  */
 export class VersionQuery extends InstanceIdQuery {
   /**
