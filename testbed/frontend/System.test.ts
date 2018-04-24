@@ -48,10 +48,12 @@ describe("System WebGL Capabilities", () => {
     }
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
-    assert.isTrue(cap.init(gl), "capabilities did not initialize properly");
+    expect(cap.init(gl)).to.be.true;
     expect(cap.maxTextureSize).to.not.equal(0);
     expect(cap.supportsDrawBuffers).to.be.true; // drawBuffers currently needed (remove when no longer a requirement)
     expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers")).to.not.be.undefined;
+    expect(cap.queryExtensionObject<OES_texture_float>("Fake extension")).to.be.undefined; // test fake extension
+    expect(cap.queryExtensionObject<OES_texture_float>("WEBGL_draw_buffers")).to.be.undefined; // test extension mismatch
   });
 });
 
