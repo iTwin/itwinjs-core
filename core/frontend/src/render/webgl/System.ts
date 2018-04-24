@@ -142,7 +142,7 @@ export class Capabilities {
 
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
   private get hasRequiredTextureUnits(): boolean {
-    return this.maxFragTextureUnits > 5 && this.maxVertTextureUnits > 6;
+    return this.maxFragTextureUnits > 4 && this.maxVertTextureUnits > 5;
   }
 }
 
