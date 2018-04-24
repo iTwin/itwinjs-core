@@ -53,7 +53,11 @@ export * from "./Time";
  * A backend typically initializes and configures logging in its startup logic.
  *
  * Configuration can be based on the configuration parameters of the backend, which may be set by the deployment mechanism.
- * For example, a service might read configuration data from a .json file that is deployed with the service.
+ * <p><em>Example</em>
+ * ``` ts
+ * [[include:Logging.serviceLoggingExample]]
+ * ```
+ * An example of the logging portion of a configuration a .json file that is deployed with a service might be:
  * ``` JSON
  * {
  *   "loggerConfig": {
@@ -70,26 +74,12 @@ export * from "./Time";
  *          {"category": "UnitsNative", "logLevel": "None"},
  *          {"category": "BeSQLite", "logLevel": "None"}
  *      ]
- *  },
+ *    },
+ *    "seq": {
+ *      "hostURL": "${MY-SERVICE-SEQ-URL}",
+ *      "port": "${MY-SERVICE-SEQ-PORT}"
+ *    },
  * }
- * ```
- * Note that the values of some of the configuration
- * property values can be defined by placeholders denoted by `${some-macro-name}`. These placeholders
- * are to be replaced by [[EnvMacroSubst.replaceInProperties]] with the values of environment
- * values of the same names. These environment variables would typically be set by the deployment
- * mechanism from deployment parameters.
- *
- * The service would read the configuration like this:
- * ``` ts
- * [[include:Service.readConfig]]
- * ```
- *
- * The logging configuration is then applied by calling [[Logger.configureLevels]].
- *
- * Finally, handlers and destination are set up. For example, here is how an app would set up to log
- * to seq:
- * ``` ts
- * [[include:Service.logToBunyan]]
  * ```
  */
 /**
