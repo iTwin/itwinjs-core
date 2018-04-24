@@ -1,0 +1,17 @@
+{
+  "collections": {
+    "intro": {
+      "contents": [],
+      "displayName": "Introduction to BIS"
+    },
+    "naming-guidelines": {
+      "contents": [],
+      "displayName": "BIS Naming Guidelines"
+    }
+  },
+  "home": "intro\\introduction",
+  "collectionOrder": [
+    "intro",
+    "naming-guidelines"
+  ]
+}

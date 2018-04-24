@@ -34,23 +34,40 @@ export interface LoggerLevelsConfig {
   categoryLevels?: LoggerCategoryAndLevel[];
 }
 
-/** Class for configuring logging messages generated from this framework.
- * # Log Streams
+/** Logger allows packages and apps to report potentially useful information about operations, and it allows apps and users to control
+ * how or if the logged information is displayed or collected.
+ * ## Logging messages
+ * To log a message, call [[logError]], [[logWarning]], [[logInfo]], or [[logTrace]], depending on the *level* or importance of the message.
+ * Apps and users can filter log messages by level. See [[LogLevel]].
+ *
+ * Each of these methods takes the category of the message as its first argument. The category of a message is a string that
+ * associates the message with other messages arising from the same source. Apps and users can filter log messages by category.
+ * In many cases, logging messages from a service will go to a file or service that aggregates logging output from many services.
+ * It is important to use descriptive and unique category names.
+ *
+ * ### Parent and Child Categories
+ * If a category name has a "." in it, then the part to the left is interpreted as the parent category and the part to the right as the child.
+ * If you pass a parent category to [[setLevel]], then the specified level filter will be applied to all children of that level.
+ * If you call [[setLevel]] on a specific child category, then the level you specify will apply to that child, while the parent's level will apply to all other children.
+ * Children can be nested.
+ *
+ * ## Log Streams
  * The app controls how to handle log messages by supplying to [[Logger.initialize]] the functions that handle messages for each log level. These functions are called "streams".
  * See the convenience method [[Logger.initializeToConsole]] for a simple way to direct
  * logging output to the console.
  * See [[BunyanLoggerConfig]] for an example of how to direct logging to the Bunyan logging system.
  * See [[SeqLoggerConfig]] for an example of how to direct logging to the seq logging server.
- * # Filtering messages by level
+ * ## Filtering messages by level
  * The simplest way to turn off logging at some log level is for the app simply not to supply a stream for that level.
  * Or, the app can supply a stream that does its own internal filtering.
  * Another way is for the app to call [[Logger.setLevel]] and set minimum levels by category.
- * # Working with categories.
+ * ## Working with categories.
  * You supply a category name for each message that you log. The category name appears in the log output.
  * You also supply a [[LogLevel]] for each message that you log.
  * Logging messages can be filtered out by category and by level.
  * There are two filtering strategies.
- * ## 1. Turn all categories on by default. Then turn off the ones you don't want.
+ * ### 1. Opt out.
+ * In this strategy, you start by turning all categories on by default and then turn off the ones you don't want.
  * ```
  * Logger.initializeToConsole();
  * Logger.setLevelDefault(LogLevel.Error);
@@ -58,16 +75,13 @@ export interface LoggerLevelsConfig {
  * ```
  * This approach is mainly useful when you are just trying to find out what is happening, for example, to debug a problem when you don't have much data.
  * This can produce a lot of logging output.
- * ## 2. Leave most categories off by default. Then turn on the ones you do want.
+ * ### 2. Opt in
+ * In this strategy, you leave most categories off by default and then turn on the ones you do want.
  * ```
  * Logger.initializeToConsole();
  * Logger.setLevel("MyCategory", LogLevel.Info);
  * ```
  * This approach is useful when you want to monitor the activity in a small number of known modules, where you already know the names of the categories that they use.
- * ## Parent and Child Categories
- * If a category name has a "." in it, then the part to the left is interpreted as the parent category and the part to the right as the child.
- * If you pass a parent category to [[setLevel]], then the specified level filter will be applied to all children of that level.
- * If you call [[setLevel]] on a specific child category, then the level you specify will apply to  that child, while the parent's level will apply to all other children.
  */
 export class Logger {
   private static _logError: LogFunction | undefined;
@@ -122,7 +136,7 @@ export class Logger {
     return LogLevel.None;
   }
 
-  /** Set levels */
+  /** Set the log level for multiple categories at once. Also see [[validateProps]] */
   public static configureLevels(cfg: LoggerLevelsConfig) {
     Logger.validateProps(cfg);
     if (cfg.defaultLevel !== undefined) {

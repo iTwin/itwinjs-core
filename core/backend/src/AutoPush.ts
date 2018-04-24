@@ -67,7 +67,7 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * A service or agent would normally get its [[AutoPushParams]] parameters from data provided
  * at deployment time. For example, a service might read configuration data from a .json file
  * that is deployed with the service.
- * ``` JSON
+ * ``` json
  * {
  *    "autoPush": {
  *      "pushIntervalSecondsMin": ${MYSERVICE-AUTOPUSH-INTERVAL-MIN},

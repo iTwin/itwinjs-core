@@ -66,7 +66,7 @@ For models and elements, there are two locking policy options: pessimistic and o
 
  To set up an iModel to use the pessimistic concurrency control policy, specify the ConcurrencyControl.PessimisticPolicy, as follows:
 
- ``` typescript-no-lines
+ ``` typescript
      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
  ```
 
@@ -98,7 +98,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
  To set up an iModel to use optimistic concurrency control, specify the ConcurrencyControl.OptimisticPolicy, as follows:
 
-``` typescript-no-lines
+``` typescript
      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 ```
 
