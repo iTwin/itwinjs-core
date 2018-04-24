@@ -90,7 +90,7 @@ export class MockAssetUtil {
     MockAssetUtil.setupConnectClientMock(connectClientMock, stringParams.assetDir);
     MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, stringParams.assetDir);
 
-    (BriefcaseManager as any).hubClient =  iModelHubClientMock.object;
+    (BriefcaseManager as any).hubClient = iModelHubClientMock.object;
     (BriefcaseManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
 
     // Get test projectId from the mocked connection client

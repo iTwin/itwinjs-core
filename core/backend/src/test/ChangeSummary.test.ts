@@ -44,6 +44,8 @@ describe.skip("ChangeSummary", () => {
       await MockAssetUtil.offlineFixtureSetup(accessToken, iModelHubClientMock, connectClientMock, testIModels, stringParams);
       testProjectId = stringParams.testProjectId;
       cacheDir = stringParams.cacheDir;
+      (ChangeSummaryManager as any).hubClient = iModelHubClientMock.object;
+      (ChangeSummaryManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
