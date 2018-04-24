@@ -9,6 +9,8 @@ import { Range2d, Range3d } from "@bentley/geometry-core";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { GLDisposable } from "./GLDisposable";
 
+export type BufferData = ArrayBufferView | ArrayBuffer;
+
 /**
  * A handle to a WebGLBuffer, such as a vertex or index buffer.
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
@@ -51,10 +53,21 @@ export class BufferHandle implements GLDisposable {
   public static unbind(gl: WebGLRenderingContext, target: GL.Buffer.Target): void { gl.bindBuffer(target, null); }
 
   /** Binds this buffer to the specified target and sets the buffer's data store. */
-  public bindData(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: ArrayBufferView | ArrayBuffer, usage: GL.Buffer.Usage = GL.Buffer.Usage.DynamicDraw): void {
+  public bindData(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
     this.bind(gl, target);
     gl.bufferData(target, data, usage);
     BufferHandle.unbind(gl, target);
+  }
+
+  /** Creates a BufferHandle and binds its data */
+  public static create(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
+    const handle = new BufferHandle(gl);
+    if (!handle.isValid) {
+      return undefined;
+    }
+
+    handle!.bindData(gl, target, data, usage);
+    return handle;
   }
 
   public isBound(gl: WebGLRenderingContext, binding: GL.Buffer.Binding) { return gl.getParameter(binding) === this._glBuffer; }

@@ -23,6 +23,8 @@ export namespace LineCode {
       default: return 0;
     }
   }
+
+  export const solid = 0;
 }
 
 export class EdgeOverrides {

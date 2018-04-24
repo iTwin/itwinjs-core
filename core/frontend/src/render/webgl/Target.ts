@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
 import { RenderTarget, RenderSystem } from "../System";
+import { ViewFlags } from "@bentley/imodeljs-common";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -132,11 +133,14 @@ export class GLESClips {
 
 export class Target extends RenderTarget {
   public readonly gl: WebGLRenderingContext;
+  private readonly _tempViewFlags = new ViewFlags(); // ###TODO BranchStack...
 
   protected constructor(system: RenderSystem, gl: WebGLRenderingContext) {
     super(system);
     this.gl = gl;
   }
+
+  public get currentViewFlags() { return this._tempViewFlags; } // ###TODO BranchStack...
 }
 
 export class OnScreenTarget extends Target {
