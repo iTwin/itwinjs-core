@@ -8,9 +8,8 @@
 
 import * as fs from "fs-extra";
 
-/** Information about a file. See [[IModelJsFs.lstatSync]]
- * TODO: define File Mode Constants: S_IWUSR, et al.
- */
+/* TODO: define File Mode Constants: S_IWUSR, et al. */
+/** Information about a file. See [[IModelJsFs.lstatSync]] */
 export class IModelJsFsStats {
   constructor(
     public size: number,

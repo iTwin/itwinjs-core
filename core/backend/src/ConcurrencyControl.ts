@@ -406,7 +406,8 @@ export namespace ConcurrencyControl {
     private constructor() { }
   }
 
-  /** How to handle a conflict. Keep this consistent with DgnPlatform/RepositoryManager.h. */
+  /* Keep this consistent with DgnPlatform/RepositoryManager.h. */
+  /** How to handle a conflict. */
   export const enum OnConflict {
     /** Reject the incoming change */
     RejectIncomingChange = 0,
@@ -420,18 +421,18 @@ export namespace ConcurrencyControl {
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
    */
   export class ConflictResolutionPolicy {
-    /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
+    /** What to do with the incoming change in the case where the same element was updated locally and also would be updated by the incoming change. */
     public updateVsUpdate: OnConflict;
-    /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
+    /** What to do with the incoming change in the case where an element was updated locally and would be deleted by the incoming change. */
     public updateVsDelete: OnConflict;
-    /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
+    /** What to do with the incoming change in the case where an element was deleted locally and would be updated by the incoming change. */
     public deleteVsUpdate: OnConflict;
 
     /**
      * Construct a ConflictResolutionPolicy.
-     * @param updateVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
-     * @param updateVsDelete - the default is ConcurrencyControl.OnConflict.AcceptIncomingChange
-     * @param deleteVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
+     * @param updateVsUpdate What to do with the incoming change in the case where the same element was updated locally and also would be updated by the incoming change
+     * @param updateVsDelete What to do with the incoming change in the case where an element was updated locally and would be deleted by the incoming change
+     * @param deleteVsUpdate What to do with the incoming change in the case where an element was deleted locally and would be updated by the incoming change
      */
     constructor(updateVsUpdate?: OnConflict, updateVsDelete?: OnConflict, deleteVsUpdate?: OnConflict) {
       this.updateVsUpdate = updateVsUpdate ? updateVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;

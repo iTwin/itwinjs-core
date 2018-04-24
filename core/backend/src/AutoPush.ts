@@ -56,7 +56,12 @@ export enum AutoPushEventType {
 /** The signature of an AutoPush event handler. */
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
-/** Automatically push local changes to a specified IModel. */
+/** Automatically push local changes to a specified IModel.
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:IModelDb.onOpened]]
+ * ```
+ */
 export class AutoPush {
   private _iModel: IModelDb;
   private _autoSchedule: boolean;

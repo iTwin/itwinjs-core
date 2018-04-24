@@ -51,7 +51,7 @@ function configureIModel() {
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
     // Starting AutoPush is an example of something you might do in an onOpen event handler.
-    new AutoPush(iModel, readConfig()); // AutoPush registers itself with IModelDb. That allows it to keep itself alive while the DB is open and release itself when the DB closes.
+    new AutoPush(iModel, readConfig()); // AutoPush registers itself with IModelDb. That keeps it alive while the DB is open and releases it when the DB closes.
   });
 // __PUBLISH_EXTRACT_END__
 }

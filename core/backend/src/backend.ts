@@ -27,6 +27,8 @@ export * from "./ViewDefinition";
 export * from "./BisCore";
 export * from "./IModelDb"; // must be last
 
+/** @module iModels */
+
 /** @docs-package-description
  * The imodeljs-backend package contains class for working with iModels and the BisCore schema that should be used by backend code only.
  */

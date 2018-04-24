@@ -4,6 +4,8 @@
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 
+/** @module iModels */
+
 /** @hidden */
 export class ElementPropertyFormatter {
 
