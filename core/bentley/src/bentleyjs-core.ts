@@ -40,13 +40,17 @@ export * from "./Time";
 /**
  * @docs-group-description Logging
  * Logging allows packages and apps to report potentially useful information about operations, and it allows apps and users to control
- * how or if the logged information is displayed or collected. Apps can configure logging at run time to filter out unwanted logging messages,
- * in order to produce only the information that is needed. Apps also direct logging output to desired outlets, such as files and log servers.
+ * how or if the logged information is displayed or collected.
  *
- * Logging is typically used by services, agents, and app backends, where there is no user interface. Logging allows the backend operations
- * to be monitored from outside of the process.
+ * Packages and apps use the [[Logger]] and [[LogLevel]] classes to report logging messages. [[BentleyError]] is also integrated with logging.
  *
- * A backend typically initializes and configures logging in its startup logic.
+ * Apps can configure logging at run time to filter out unwanted logging messages, in order to produce only the information that is needed.
+ * [[Logger.setLevel]] and [[Logger.configureLevels]] are used for this configuration.
+ * Apps also direct logging output to desired outlets, such as files and log servers.
+ * [[Logger.initialize]], [[BunyanLoggerConfig]], and [[SeqLoggerConfig]] are used to direct logging output.
+ *
+ * Logging is typically used by backend code, such as services, agents, and app backends, where there is no user interface. Logging allows the backend operations
+ * to be monitored from outside of the process. A backend typically initializes and configures logging in its startup logic.
  *
  * Configuration can be based on the configuration parameters of the backend, which may be set by the deployment mechanism.
  * <p><em>Example:</em>
