@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { RenderGraphic, /*TriMeshArgs, IndexedPolylineArgs,*/ OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges } from "@bentley/imodeljs-common";
+import { RenderGraphic, /*TriMeshArgs, IndexedPolylineArgs,*/ OctEncodedNormalList, QParams3d, QPoint3dList, MeshPolyline, MeshEdges } from "@bentley/imodeljs-common";
 import { DisplayParams } from "./DisplayParams";
 // import { IModelConnection } from "../IModelConnection";
 import { ColorMap } from "./ColorMap";
@@ -28,8 +28,8 @@ export type PolylineList = MeshPolyline[];
 export class Mesh {
   public triangles: TriangleList = new TriangleList();
   public polylines: PolylineList = [];
-  public verts: QPoint3dList;
-  public normals: OctEncodedNormalList = new OctEncodedNormalList();
+  public readonly verts: QPoint3dList;
+  public readonly normals = new OctEncodedNormalList();
   public uvParams: Point2d[] = [];
   public colorMap: ColorMap = new ColorMap();
   public colors: number[] = [];
@@ -37,7 +37,7 @@ export class Mesh {
   // public auxChannel: PolyfaceAuxChannel;
 
   public constructor(public displayParams: DisplayParams, public features: MeshFeatures, public type: MeshPrimitiveType, range: Range3d, public is2d: boolean, public isPlanar: boolean) {
-    this.verts = new QPoint3dList(range);
+    this.verts = new QPoint3dList(QParams3d.fromRange(range));
   }
 
   public getGraphics(/*args: MeshGraphicArgs /*, system: System, iModel: IModelConnection*/ ): RenderGraphic | undefined {
