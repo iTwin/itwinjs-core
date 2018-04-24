@@ -59,8 +59,9 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECSQL
  * Classes for working with ECSQL. The key classes are:
- * * #ECSqlStatement
- * * #ECSqlValue
+ * * [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
+ * * [ECSqlValue]($imodeljs-backend.ECSqlValue)
+ *
  * For more information: [Executing ECSQL]($docs/learning/backend/ExecutingECSQL)
  */
 /**
