@@ -38,7 +38,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the operation failed.
    */
   public createDb(pathName: string): void {
-    const status = this.nativeDb.createDb(pathName);
+    const status: DbResult = this.nativeDb.createDb(pathName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to created ECDb");
   }
@@ -49,7 +49,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the operation failed.
    */
   public openDb(pathName: string, openMode: OpenMode = OpenMode.Readonly): void {
-    const status = this.nativeDb.openDb(pathName, openMode);
+    const status: DbResult = this.nativeDb.openDb(pathName, openMode);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
@@ -79,7 +79,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the database is not open or if the operation failed.
    */
   public abandonChanges(): void {
-    const status = this.nativeDb.abandonChanges();
+    const status: DbResult = this.nativeDb.abandonChanges();
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to abandon changes");
   }
@@ -91,7 +91,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($imodeljs-common.IModelError) if the database is not open or if the operation failed.
    */
   public importSchema(pathName: string): void {
-    const status = this.nativeDb.importSchema(pathName);
+    const status: DbResult = this.nativeDb.importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
       Logger.logError(loggingCategory, "Failed to import schema from '" + pathName + "'.");
       throw new IModelError(status, "Failed to import schema from '" + pathName + "'.");
