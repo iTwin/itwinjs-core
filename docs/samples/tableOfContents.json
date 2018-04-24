@@ -1,9 +1,9 @@
 {
   "collections": {
-    "tutorials": {
+    "samples": {
       "contents": [],
-      "displayName": "Tutorials"
+      "displayName": "Samples"
     }
   },
-  "home": "tutorials\\tutorial1.md"
+  "home": "samples\\sample1.md"
 }

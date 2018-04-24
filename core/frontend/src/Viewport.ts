@@ -19,7 +19,7 @@ import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, Npc
 import { IModelApp } from "./IModelApp";
 import { RenderTarget } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
-import { ChangeDecorationsTask, TaskPriority, RenderQueue } from "./render/Task";
+import { ChangeDecorationsTask, TaskPriority } from "./render/Task";
 import { Decorations, ViewFlags } from "@bentley/imodeljs-common";
 
 /** viewport synchronization flags */
@@ -246,7 +246,6 @@ export class Viewport {
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   public readonly sync: SyncFlags = new SyncFlags();
-  public readonly renderQueue: RenderQueue = new RenderQueue();
 
   /**
    * Determine whether this Viewport is currently active. Viewports become "active" after they have
@@ -1352,7 +1351,7 @@ export class Viewport {
   public renderFrame(priority: TaskPriority, plan: UpdatePlan): boolean {
     const sync = this.sync;
     const view = this.view;
-    const renderQueue = this.renderQueue;
+    const renderQueue = IModelApp.renderQueue;
     const target = this.target;
     if (!this.isActive)
       return true;

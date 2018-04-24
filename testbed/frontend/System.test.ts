@@ -32,6 +32,8 @@ describe("System WebGL Capabilities", () => {
     const context = new WebGLTestContext();
     const gl: WebGLRenderingContext | undefined = context.gl;
     if (undefined === gl) {
+      // do not enable below assert until we know GL can succeed on PRG
+      // assert.isOk(false, "Could not initialize GL");
       return;
     }
     // Test initializing of capabilities
@@ -44,14 +46,17 @@ describe("System WebGL Capabilities", () => {
     const context = new WebGLTestContext();
     const gl: WebGLRenderingContext | undefined = context.gl;
     if (undefined === gl) {
+      // do not enable below assert until we know GL can succeed on PRG
+      // assert.isOk(false, "Could not initialize GL");
       return;
     }
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
-    assert.isTrue(cap.init(gl), "capabilities did not initialize properly");
+    expect(cap.init(gl)).to.be.true;
     expect(cap.maxTextureSize).to.not.equal(0);
     expect(cap.supportsDrawBuffers).to.be.true; // drawBuffers currently needed (remove when no longer a requirement)
     expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers")).to.not.be.undefined;
+    expect(cap.queryExtensionObject<OES_texture_float>("Fake extension")).to.be.undefined; // test fake extension
   });
 });
 

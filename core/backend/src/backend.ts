@@ -35,7 +35,7 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description App
  * Classes for defining an app.
- * For more information [[?]]
+ * For more information [[../../../../overview/overview/app]]
  */
 /**
  * @docs-group-description BisCore
