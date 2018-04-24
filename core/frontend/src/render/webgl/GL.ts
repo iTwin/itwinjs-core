@@ -90,6 +90,7 @@ export namespace GL {
     Short = WebGLRenderingContext.SHORT,
     UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
     UnsignedShort = WebGLRenderingContext.UNSIGNED_SHORT,
+    UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
     Float = WebGLRenderingContext.FLOAT,
     // WebGL 2 has more data types
     // HalfFloat = WebGLRenderingContext.HALF_FLOAT,
@@ -187,5 +188,11 @@ export namespace GL {
 
   export enum ProgramParameter {
     LinkStatus = WebGLRenderingContext.LINK_STATUS,
+  }
+
+  export enum PrimitiveType {
+    Points = WebGLRenderingContext.POINTS,
+    Lines = WebGLRenderingContext.LINES,
+    Triangles = WebGLRenderingContext.TRIANGLES,
   }
 }
