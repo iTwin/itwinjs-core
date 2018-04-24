@@ -40,8 +40,6 @@ export * from "./Time";
 /**
  * @docs-group-description Logging
  * Classes for logging. The key classes are:
- * * #Logger
- * * #LogLevel
  *
  * Logging allows packages and apps to report potentially useful information about operations, and it allows apps and users to control
  * how or if the logged information is displayed or collected. Apps can configure logging at run time to filter out unwanted logging messages,
