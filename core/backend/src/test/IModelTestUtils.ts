@@ -10,6 +10,9 @@ import {
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestIModelInfo } from "./MockAssetUtil";
+import { HubTestUtils } from "./HubTestUtils";
+import { TestConfig } from "./TestConfig";
 import * as path from "path";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
@@ -101,6 +104,29 @@ export class TestUsers {
 }
 
 export class IModelTestUtils {
+
+  public static async integratedFixtureSetup(accessToken: AccessToken, testIModels: TestIModelInfo[], stringParams: any) {
+    accessToken = await IModelTestUtils.getTestUserAccessToken();
+
+    stringParams.testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, stringParams.TestConfig.projectName);
+
+    for (const iModelInfo of testIModels) {
+      iModelInfo.id = await HubTestUtils.queryIModelIdByName(accessToken, stringParams.testProjectId, iModelInfo.name);
+      iModelInfo.localReadonlyPath = path.join(stringParams.cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(stringParams.cacheDir, iModelInfo.id, "readWrite");
+
+      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
+      iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
+
+      iModelInfo.localReadonlyPath = path.join(stringParams.cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(stringParams.cacheDir, iModelInfo.id, "readWrite");
+    }
+
+    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
+    await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, "NoVersionsTest");
+    await HubTestUtils.purgeAcquiredBriefcases(accessToken, "NodeJsTestProject", "TestModel");
+  }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)

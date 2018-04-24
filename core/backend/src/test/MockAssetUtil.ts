@@ -2,13 +2,14 @@ import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
-import { IModelHost } from "../backend";
+import { BriefcaseManager, IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel, Briefcase, SeedFile, SeedFileInitState,
   UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
   ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
 } from "@bentley/imodeljs-clients";
+import { KnownLocations } from "../Platform";
 
 /** Parse a single typed instance from a JSON string using ECJsonTypeMap */
 const getTypedInstance = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T => {
@@ -76,6 +77,49 @@ export class MockAssetUtil {
     for (const iModelInfo of testIModelInfos) {
       assert(iModelInfo.name === this.iModelMap.get(iModelInfo.id), `Bad information for ${iModelInfo.name} iModel`);
     }
+  }
+
+  public static async offlineFixtureSetup(accessToken: AccessToken,
+                                          iModelHubClientMock: TypeMoq.IMock<IModelHubClient>,
+                                          connectClientMock: TypeMoq.IMock<ConnectClient>,
+                                          testIModels: TestIModelInfo[], stringParams: any) {
+
+    stringParams.cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/iModels/"));
+    IModelHost.configuration!.briefcaseCacheDir = stringParams.cacheDir;
+
+    MockAssetUtil.setupConnectClientMock(connectClientMock, stringParams.assetDir);
+    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, stringParams.assetDir);
+
+    (BriefcaseManager as any).hubClient =  iModelHubClientMock.object;
+    (BriefcaseManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
+
+    // Get test projectId from the mocked connection client
+    const project: Project = await connectClientMock.object.getProject(accessToken as any, {
+      $select: "*",
+      $filter: "Name+eq+'NodeJstestproject'",
+    });
+    assert(project && project.wsgId, "No projectId returned from connectionClient mock");
+    stringParams.testProjectId = project.wsgId;
+
+    // Get test iModelIds from the mocked iModelHub client
+    for (const iModelInfo of testIModels) {
+      const iModels = await iModelHubClientMock.object.IModels().get(accessToken as any, stringParams.testProjectId, new IModelQuery().byName(iModelInfo.name));
+      assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
+      assert(iModels[0].wsgId, `No IModelId returned for ${iModelInfo.name} iModel`);
+      iModelInfo.id = iModels[0].wsgId;
+      iModelInfo.localReadonlyPath = path.join(stringParams.cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(stringParams.cacheDir, iModelInfo.id, "readWrite");
+
+      // getChangeSets
+      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken as any, iModelInfo.id);
+      iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
+      assert.exists(iModelInfo.changeSets);
+
+      // downloadChangeSets
+      const csetDir = path.join(stringParams.cacheDir, iModelInfo.id, "csets");
+      await iModelHubClientMock.object.ChangeSets().download(iModelInfo.changeSets, csetDir);
+    }
+    MockAssetUtil.verifyIModelInfo(testIModels);
   }
 
   /** Setup functions for the ConnectClient mock */
