@@ -13,7 +13,7 @@ import {
   ShaderProgram,
   ProgramBuilder,
   VertexShaderComponent,
-  FragmentShaderComponent
+  FragmentShaderComponent,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 
 describe("Variable declaration tests", () => {

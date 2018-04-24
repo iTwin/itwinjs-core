@@ -8,7 +8,7 @@ import { getWebGLContext } from "./WebGLTestContext";
 describe("Handles", () => {
   it("should create and use BufferHandles for GL resources", () => {
     const gl = getWebGLContext();
-    if (undefined == gl) {
+    if (undefined === gl) {
       return;
     }
 
