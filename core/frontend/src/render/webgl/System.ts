@@ -71,10 +71,7 @@ export class Capabilities {
   public queryExtensionObject<T>(ext: string): T | undefined { return this._extensionMap[ext] as T | undefined; }
 
   /** Initializes the capabilities based on a GL context. Must be called first. */
-  public init(canvas: HTMLCanvasElement): boolean {
-    const gl = canvas.getContext("webgl"); // ###TODO: this should be passed in, not created here!
-    if (!gl) return false;
-
+  public init(gl: WebGLRenderingContext): boolean {
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
@@ -110,7 +107,8 @@ export class Capabilities {
     // Determine the maximum depth attachment type.
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
 
-    return this.supportsDrawBuffers && this.supports32BitElementIndex; // Return based on currently-required features.  Could change in future.
+    // Return based on currently-required features.  This must change if the amount used is increased or decreased.
+    return this.hasRequiredFeatures && this.hasRequiredDrawTargets && this.hasRequiredTextureUnits;
   }
 
   /** Determines if a particular texture type is color-renderable on the host system. */
@@ -130,6 +128,21 @@ export class Capabilities {
     gl.getError(); // clear any errors
 
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
+  }
+
+  /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
+  private get hasRequiredFeatures(): boolean {
+    return this.supportsDrawBuffers && this.supports32BitElementIndex;
+  }
+
+  /** Determines if the required number of draw targets are supported (could change). */
+  private get hasRequiredDrawTargets(): boolean {
+    return this.maxColorAttachments > 3 && this.maxDrawBuffers > 3;
+  }
+
+  /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
+  private get hasRequiredTextureUnits(): boolean {
+    return this.maxFragTextureUnits > 5 && this.maxVertTextureUnits > 6;
   }
 }
 

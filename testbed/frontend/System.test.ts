@@ -30,25 +30,25 @@ describe("System WebGL Capabilities", () => {
 
   it("capabilities should be able to be initialized", () => {
     const context = new WebGLTestContext();
-    const canvas = context.canvas;
-    if (undefined === canvas) {
+    const gl: WebGLRenderingContext | undefined = context.gl;
+    if (undefined === gl) {
       return;
     }
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
-    const isInitialized: boolean = cap.init(canvas);
+    const isInitialized: boolean = cap.init(gl);
     expect(isInitialized).to.be.true;
   });
 
   it("capabilities should be able to be read", () => {
     const context = new WebGLTestContext();
-    const canvas = context.canvas;
-    if (undefined === canvas) {
+    const gl: WebGLRenderingContext | undefined = context.gl;
+    if (undefined === gl) {
       return;
     }
     // Test initializing of capabilities
     const cap: Capabilities = new Capabilities();
-    assert.isTrue(cap.init(canvas), "capabilities did not initialize properly");
+    assert.isTrue(cap.init(gl), "capabilities did not initialize properly");
     expect(cap.maxTextureSize).to.not.equal(0);
     expect(cap.supportsDrawBuffers).to.be.true; // drawBuffers currently needed (remove when no longer a requirement)
     expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers")).to.not.be.undefined;
