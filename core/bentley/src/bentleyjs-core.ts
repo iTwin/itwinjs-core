@@ -39,8 +39,6 @@ export * from "./Time";
  */
 /**
  * @docs-group-description Logging
- * Classes for logging. The key classes are:
- *
  * Logging allows packages and apps to report potentially useful information about operations, and it allows apps and users to control
  * how or if the logged information is displayed or collected. Apps can configure logging at run time to filter out unwanted logging messages,
  * in order to produce only the information that is needed. Apps also direct logging output to desired outlets, such as files and log servers.
@@ -51,12 +49,12 @@ export * from "./Time";
  * A backend typically initializes and configures logging in its startup logic.
  *
  * Configuration can be based on the configuration parameters of the backend, which may be set by the deployment mechanism.
- * <p><em>Example</em>
+ * <p><em>Example:</em>
  * ``` ts
  * [[include:Logging.serviceLoggingExample]]
  * ```
  * An example of the logging portion of a configuration a .json file that is deployed with a service might be:
- * ``` JSON
+ * ``` json
  * {
  *   "loggerConfig": {
  *      "defaultLevel": "${MY-SERVICE-DEFAULT-LOG-LEVEL}",
