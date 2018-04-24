@@ -80,7 +80,7 @@ describe("BriefcaseManager", () => {
 
   const assetDir = "./src/test/assets/_mocks_";
   let cacheDir: string = "";
-  const accessToken: AccessToken = new MockAccessToken();
+  let accessToken: AccessToken = new MockAccessToken();
   let startTime = new Date().getTime();
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
   const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
@@ -108,10 +108,11 @@ describe("BriefcaseManager", () => {
       startTime = new Date().getTime();
 
       cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-      const stringParams = { testProjectId, assetDir, cacheDir };
-      await IModelTestUtils.integratedFixtureSetup(accessToken, testIModels, stringParams);
-      testProjectId = stringParams.testProjectId;
-      cacheDir = stringParams.cacheDir;
+      const params = { accessToken, testProjectId, assetDir, cacheDir };
+      await IModelTestUtils.integratedFixtureSetup(testIModels, params);
+      accessToken = params.accessToken;
+      testProjectId = params.testProjectId;
+      cacheDir = params.cacheDir;
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }

@@ -105,27 +105,27 @@ export class TestUsers {
 
 export class IModelTestUtils {
 
-  public static async integratedFixtureSetup(accessToken: AccessToken, testIModels: TestIModelInfo[], stringParams: any) {
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
+  public static async integratedFixtureSetup(testIModels: TestIModelInfo[], params: any) {
+    params.accessToken = await IModelTestUtils.getTestUserAccessToken();
 
-    stringParams.testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, stringParams.TestConfig.projectName);
+    params.testProjectId = await HubTestUtils.queryProjectIdByName(params.accessToken, TestConfig.projectName);
 
     for (const iModelInfo of testIModels) {
-      iModelInfo.id = await HubTestUtils.queryIModelIdByName(accessToken, stringParams.testProjectId, iModelInfo.name);
-      iModelInfo.localReadonlyPath = path.join(stringParams.cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(stringParams.cacheDir, iModelInfo.id, "readWrite");
+      iModelInfo.id = await HubTestUtils.queryIModelIdByName(params.accessToken, params.testProjectId, iModelInfo.name);
+      iModelInfo.localReadonlyPath = path.join(params.cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(params.cacheDir, iModelInfo.id, "readWrite");
 
-      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
+      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(params.accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
-      iModelInfo.localReadonlyPath = path.join(stringParams.cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(stringParams.cacheDir, iModelInfo.id, "readWrite");
+      iModelInfo.localReadonlyPath = path.join(params.cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(params.cacheDir, iModelInfo.id, "readWrite");
     }
 
     // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, TestConfig.iModelName);
-    await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, "NoVersionsTest");
-    await HubTestUtils.purgeAcquiredBriefcases(accessToken, "NodeJsTestProject", "TestModel");
+    await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, TestConfig.projectName, TestConfig.iModelName);
+    await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, TestConfig.projectName, "NoVersionsTest");
+    await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, "NodeJsTestProject", "TestModel");
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
