@@ -420,7 +420,14 @@ describe("ChangeSummary", () => {
   });
 
   it.skip("Query ChangeSummary content", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite, IModelVersion.latest());
+    // accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1);
+    // let perfLogger = new PerfLogger("IModelDb.open");
+    // const iModel: IModelDb = await IModelDb.open(accessToken, "d46de192-6cad-4086-b968-71b517edc215", "a237be2f-7a59-4f40-a0bd-14bf9c0634f1", OpenMode.ReadWrite, IModelVersion.latest());
+    // perfLogger.dispose();
+
+    let perfLogger = new PerfLogger("IModelDb.open");
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite, IModelVersion.latest());
+    perfLogger.dispose();
     await ChangeSummaryManager.extractChangeSummaries(iModel);
     assert.exists(iModel);
     ChangeSummaryManager.attachChangeCache(iModel);
@@ -432,7 +439,7 @@ describe("ChangeSummary", () => {
 
     const changeSummaries = new Array<ChangeSummary>();
     iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
-      const perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
+      perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
         const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, new Id64(row.id));
@@ -449,7 +456,7 @@ describe("ChangeSummary", () => {
       const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>() };
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
-        const perfLogger = new PerfLogger("ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary " + changeSummary.id);
+        perfLogger = new PerfLogger("ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary " + changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const row = stmt.getRow();
 

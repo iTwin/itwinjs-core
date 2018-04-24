@@ -23,7 +23,7 @@ export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64) { }
 }
 
-/** An ECSQL Statement.
+/** Executes ECSQL statements.
  *
  * A statement must be prepared before it can be executed, and it must be released when no longer needed.
  * See [IModelDb.withPreparedStatement]($imodeljs-backend.IModelDb.withPreparedStatement) or
@@ -235,12 +235,14 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Step this statement to the next row.
    * @returns For **ECSQL SELECT** statements the method returns
-   *  * [DbResult.BE_SQLITE_ROW]($bentleyjs-core.DbResult.BE_SQLITE_ROW) if the statement now points successfully to the next row.
-   *  * [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE) if the statement has no more rows.
-   *  * Error status in case of errors.
+   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core.DbResult.BE_SQLITE_ROW) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE) if the statement has no more rows.
+   *  - Error status in case of errors.
+   *
    *  For **ECSQL INSERT, UPDATE, DELETE** statements the method returns
-   *  * [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE) if the statement has been executed successfully.
-   *  * Error status in case of errors.
+   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE) if the statement has been executed successfully.
+   *  - Error status in case of errors.
+   *
    *  >  Insert statements can be used with ECDb only, not with IModelDb.
    */
   public step(): DbResult { return this._stmt!.step(); }
@@ -310,8 +312,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
 }
 
-/** Represents the value of a specific ECSQL column in the current
- * row of the result set of an ECSQL SELECT statement.
+/** Represents the value of a specific ECSQL column in the current row of the result set of an ECSQL SELECT statement.
  *
  * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
  */
@@ -366,12 +367,12 @@ export class ECSqlValue {
   /** Get an iterator for iterating the array elements of this array value. */
   public getArrayIterator(): ECSqlValueIterator { return new ECSqlValueIterator(this._val.getArrayIterator()); }
 
-  /** Get this array value as JS array */
+  /** Get this array value as JavaScript array */
   public getArray(): any[] { return ECSqlValueHelper.getArray(this); }
 }
 
-/** The ECSqlValueIterator is used to iterate the members of a struct ECSqlValue or
- *  the elements of an array ECSqlValue.
+/** Iterator over members of a struct [ECSqlValue]($imodeljs-backend.ECSqlValue) or the elements of an array [ECSqlValue]($imodeljs-backend.ECSqlValue).
+ *
  *  See [ECSqlValue.getStructIterator]($imodeljs-backend.ECSqlValue.getStructIterator) or
  *  [ECSqlValue.getArrayIterator]($imodeljs-backend.ECSqlValue.getArrayIterator).
  */
@@ -392,10 +393,11 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   public [Symbol.iterator](): IterableIterator<ECSqlValue> { return this; }
 }
 
-/** Represents the value of a specific ECSQL column in the current
- * row of the result set of an ECSQL SELECT statement.
+/** Information about an ECSQL column of an ECSQL query result.
  *
- * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
+ * See [ECSqlValue.columnInfo]($imodeljs-backend.ECSqlValue.columnInfo),
+ * [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue),
+ * [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.
@@ -403,14 +405,14 @@ export interface ECSqlColumnInfo {
   getType(): ECSqlValueType;
 
   /** Gets the name of the property backing the column.
-   * <em>note:</em> If this column is backed by a generated property, i.e. it represents ECSQL expression,
-   * the access string consists of the name of the generated property.
+   * > If this column is backed by a generated property, i.e. it represents ECSQL expression,
+   * > the access string consists of the name of the generated property.
    */
   getPropertyName(): string;
 
   /** Gets the full access string to the corresponding ECSqlValue starting from the root class.
-   * <em>note:</em> If this column is backed by a generated property, i.e. it represents ECSQL expression,
-   * the access string consists of the ECSQL expression.
+   * > If this column is backed by a generated property, i.e. it represents ECSQL expression,
+   * > the access string consists of the ECSQL expression.
    */
   getAccessString(): string;
 
@@ -423,8 +425,8 @@ export interface ECSqlColumnInfo {
   isGeneratedProperty(): boolean;
 
   /** Gets the table space in which this root class is persisted.
-   * <em>note:</em> for classes in the primary file the table space is MAIN. For classes in attached
-   * files, the table space is the name by which the file was attached. For generated properties the table space is empty.
+   * > For classes in the primary file the table space is MAIN. For classes in attached
+   * > files, the table space is the name by which the file was attached. For generated properties the table space is empty.
    */
   getRootClassTableSpace(): string;
 
@@ -432,7 +434,7 @@ export interface ECSqlColumnInfo {
   getRootClassName(): string;
 
   /** Gets the class alias of the root class to which the column refers to.
-   * @returns Returns the alias of root class the column refers to or an empty string if no class alias was specified in the select clause.
+   * > Returns an empty string if no class alias was specified in the select clause.
    */
   getRootClassAlias(): string;
 }
