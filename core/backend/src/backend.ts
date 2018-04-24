@@ -35,7 +35,7 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description App
  * Classes for defining an app.
- * For more information [[?]]
+ * For more information, see the [App Overview](../../../../overview/overview/App).
  */
 /**
  * @docs-group-description BisCore
@@ -44,55 +44,56 @@ export * from "./IModelDb"; // must be last
  * * #Model
  * * #Element
  * * #Category
- * For more information [[?]]
+ * For more information [label-TBD](../../../../overview/overview/App)
  */
  /**
   * @docs-group-description Codes
   * Classes for working with Codes.
-  * For more information [[?]]
+  * For more information [label-TBD](../../../../overview/overview/App)
   */
 /**
  * @docs-group-description ECDb
  * Classes for working with ECDb.
- * For more information [[?]]
+ * For more information [label-TBD](../../../../overview/overview/App)
  */
 /**
  * @docs-group-description ECSQL
  * Classes for working with ECSQL. The key classes are:
- * * #ECSqlStatement
- * * #ECSqlValue
+ * * [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
+ * * [ECSqlValue]($imodeljs-backend.ECSqlValue)
+ *
  * For more information: [Executing ECSQL]($docs/learning/backend/ExecutingECSQL)
  */
 /**
  * @docs-group-description FontsAndSymbology
  * Classes for working with fonts, colors, and other symbology.
- * For more information: [[?]]
+ * For more information: [label-TBD](../../../../overview/overview/App)
  */
 /**
  * @docs-group-description Gateway
  * Classes for working with Gateways.
- * For more information on the role of gateways in an app [[?]]
+ * For more information on the role of gateways in an app [label-TBD](../../../../overview/overview/App)
  */
 /**
  * @docs-group-description iModels
  * Classes for working with iModels. The key classes are:
  * * #IModelDb
  * * #ConcurrencyControl
- * For more information [[?]]
+ * For more information [label-TBD](../../../../overview/overview/App)
  */
 /**
  * @docs-group-description Portability
  * Classes to help write portable apps and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps.
- * For more information [[?]]
+ * For more information [label-TBD](../../../../overview/overview/App)
  */
 /**
  * @docs-group-description Schemas
  * Classes for working with ECSchemas.
- * For more information [[?]]
+ * For more information [label-TBD](../../../../overview/overview/App)
  */
 /**
  * @docs-group-description Views
  * Classes for working with views of models and elements. The key classes are:
  * * #ViewDefinition
- * For more information [[?]]
+ * For more information [label-TBD](../../../../overview/overview/App)
  */

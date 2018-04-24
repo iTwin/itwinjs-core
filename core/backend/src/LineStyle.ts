@@ -220,7 +220,7 @@ export namespace LineStyleDefinition {
 
   export type Symbols = SymbolProps[];
 
-  /** Stroke point component defintion [[ComponentType.PointStroke]].
+  /** Stroke point component definition [[ComponentType.StrokePoint]].
    * A stroke point component identifies the locations of point symbol components relative to a base stroke pattern component.
    */
   export interface StrokePointProps {

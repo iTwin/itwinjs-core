@@ -1,0 +1,9 @@
+{
+  "collections": {
+    "samples": {
+      "contents": [],
+      "displayName": "Samples"
+    }
+  },
+  "home": "samples\\index"
+}

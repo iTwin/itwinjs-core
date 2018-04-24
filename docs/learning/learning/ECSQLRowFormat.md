@@ -6,7 +6,7 @@ A row returned from an [ECSQL](./ECSQL) SELECT query is formatted as JavaScript 
 
 If the ECSQL select clause item
 
-- is an [ECSQL system property]($imodeljs-common.ECSqlSystemProperty), the property name is as described here: [ECJsonNames.toJsName]($imodeljs-common.ECJsonNames.toJsName)
+- is an [ECSQL system property]($imodeljs-common.ECSqlSystemProperty), the property name is as described here: [ECJsNames.toJsName]($imodeljs-common.ECJsNames.toJsName)
 - has a column alias, the alias, with the first character lowered, becomes the property name.
 - has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
 
