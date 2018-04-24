@@ -120,12 +120,10 @@ export class IModelTestUtils {
 
       iModelInfo.localReadonlyPath = path.join(params.cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(params.cacheDir, iModelInfo.id, "readWrite");
-    }
 
-    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, TestConfig.projectName, TestConfig.iModelName);
-    await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, TestConfig.projectName, "NoVersionsTest");
-    await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, "NodeJsTestProject", "TestModel");
+      // Purge briefcases that are close to reaching the acquire limit
+      await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, TestConfig.projectName, iModelInfo.name);
+    }
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
