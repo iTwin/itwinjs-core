@@ -120,6 +120,8 @@ export class RenderQueue {
 
   constructor(tasks: Task[] = []) { this._tasks = tasks; }
 
+  public onInitialized(): void {}
+
   /**
    * Add a Render::Task to the render queue. The Task will replace any existing pending entries in the Queue
    * for the same Render::Target for which task._CanReplace(existing) returns true.
