@@ -29,6 +29,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@bentley/imodeljs-clients",
+      "projectFolder": "core/clients",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@bentley/imodeljs-frontend",
       "projectFolder": "core/frontend",
       "shouldPublish": true
