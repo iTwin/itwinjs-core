@@ -19,7 +19,7 @@ import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, Npc
 import { IModelApp } from "./IModelApp";
 import { RenderTarget } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
-import { ChangeDecorationsTask, Priority, RenderQueue } from "./render/Task";
+import { ChangeDecorationsTask, TaskPriority, RenderQueue } from "./render/Task";
 import { Decorations, ViewFlags } from "@bentley/imodeljs-common";
 
 /** viewport synchronization flags */
@@ -1349,7 +1349,7 @@ export class Viewport {
   }
 
   /** [WIP] */
-  public renderFrame(priority: Priority, plan: UpdatePlan): boolean {
+  public renderFrame(priority: TaskPriority, plan: UpdatePlan): boolean {
     const sync = this.sync;
     const view = this.view;
     const renderQueue = this.renderQueue;
@@ -1402,7 +1402,7 @@ export class Viewport {
     }
 
     if (!sync.isValidDecorations) {
-      const task = new ChangeDecorationsTask(priority, target);
+      const task = new ChangeDecorationsTask(target, priority);
       this.prepareDecorations(plan, task.decorations);
       renderQueue.addTask(task);
       isRedrawNeeded = true;
