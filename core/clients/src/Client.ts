@@ -114,7 +114,7 @@ export abstract class Client {
         return Promise.resolve(this.url); // TODO: On the server this really needs a lifetime!!
       })
       .catch((error: string): Promise<string> => {
-        console.log(`WARNING: Could not determine URL for ${searchKey} service. Error = ${error}`);
+        console.log(`WARNING: Could not determine URL for ${searchKey} service. Error = ${error}`); // tslint:disable-line:no-console
         return Promise.resolve(this.getDefaultUrl().replace(/\/$/, "")); // strip trailing "/" for consistency
       });
   }
