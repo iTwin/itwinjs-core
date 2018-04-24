@@ -1,0 +1,9 @@
+{
+  "collections": {
+    "getting-started": {
+      "contents": [],
+      "displayName": "Getting Started"
+    }
+  },
+    "home": "getting-started\\index"
+}
