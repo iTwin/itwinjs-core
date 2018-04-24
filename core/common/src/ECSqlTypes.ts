@@ -106,8 +106,9 @@ export enum ECSqlSystemProperty {
 export class ECJsNames {
   /** Formats the specified ECProperty name according to the iModelJs formatting rules.
    *
-   * ### Formatting rules:
-   *  * System properties:
+   * #### Rules
+   *
+   * - System properties:
    *    - [ECSqlSystemProperty.ECInstanceId]($imodeljs-common.ECSqlSystemProperty.ECInstanceId): id
    *    - [ECSqlSystemProperty.ECClassId]($imodeljs-common.ECSqlSystemProperty.ECClassId): className
    *    - [ECSqlSystemProperty.SourceECInstanceId]($imodeljs-common.ECSqlSystemProperty.SourceECInstanceId): sourceId
@@ -119,7 +120,7 @@ export class ECJsNames {
    *    - [ECSqlSystemProperty.PointX]($imodeljs-common.ECSqlSystemProperty.PointX): x
    *    - [ECSqlSystemProperty.PointY]($imodeljs-common.ECSqlSystemProperty.PointY): y
    *    - [ECSqlSystemProperty.PointZ]($imodeljs-common.ECSqlSystemProperty.PointZ): z
-   *  * Ordinary properties: first character is lowered.
+   *  - Ordinary properties: first character is lowered.
    *
    * @param ecProperty Either the property name as defined in the ECSchema for regular ECProperties.
    *         Or an [ECSqlSystemProperty]($imodeljs-common.ECSqlSystemProperty) value for ECSQL system properties
