@@ -31,7 +31,7 @@ describe("System WebGL Capabilities", () => {
   it("capabilities should be able to be initialized", () => {
     const context = new WebGLTestContext();
     const canvas = context.canvas;
-    if (null === canvas) {
+    if (undefined === canvas) {
       return;
     }
     // Test initializing of capabilities
@@ -43,7 +43,7 @@ describe("System WebGL Capabilities", () => {
   it("capabilities should be able to be read", () => {
     const context = new WebGLTestContext();
     const canvas = context.canvas;
-    if (null === canvas) {
+    if (undefined === canvas) {
       return;
     }
     // Test initializing of capabilities

@@ -673,21 +673,21 @@ export const enum ShaderType {
  * Be very careful with components which use samplers to ensure that no conflicts exist with texture units used by other components (see TextureUnit enum).
  */
 export class ProgramBuilder {
-  private readonly _vert: VertexShaderBuilder;
-  private readonly _frag: FragmentShaderBuilder;
+  public readonly vert: VertexShaderBuilder;
+  public readonly frag: FragmentShaderBuilder;
 
   public constructor(positionFromLUT: boolean) {
-    this._vert = new VertexShaderBuilder(positionFromLUT);
-    this._frag = new FragmentShaderBuilder();
+    this.vert = new VertexShaderBuilder(positionFromLUT);
+    this.frag = new FragmentShaderBuilder();
   }
 
   private addVariable(v: ShaderVariable, which: ShaderType) {
     if (which & ShaderType.Fragment) {
-      this._frag.addVariable(v);
+      this.frag.addVariable(v);
     }
 
     if (which & ShaderType.Vertex) {
-      this._vert.addVariable(v);
+      this.vert.addVariable(v);
     }
   }
 
@@ -705,8 +705,8 @@ export class ProgramBuilder {
   }
 
   public addInlineComputedVarying(name: string, type: VariableType, inlineComputation: string) {
-    this._frag.addVarying(name, type);
-    this._vert.addComputedVarying(name, type, inlineComputation);
+    this.frag.addVarying(name, type);
+    this.vert.addComputedVarying(name, type, inlineComputation);
   }
   public addFunctionComputedVarying(name: string, type: VariableType, funcName: string, funcBody: string) {
     let funcDecl = Convert.typeToString(type) + " " + funcName + "()";
@@ -716,16 +716,16 @@ export class ProgramBuilder {
     this.addFunctionComputedVaryingWithArgs(name, type, funcCall, funcDecl);
   }
   public addFunctionComputedVaryingWithArgs(name: string, type: VariableType, funcCall: string, funcDef: string) {
-    this._vert.addFunction(funcDef);
+    this.vert.addFunction(funcDef);
     const computation = name + " = " + funcCall + ";\n";
     this.addInlineComputedVarying(name, type, computation);
   }
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
-    const prog = new ShaderProgram(this._vert.buildSource(), this._frag.buildSource(), this._vert.headerComment, gl);
-    this._vert.addBindings(prog);
-    this._frag.addBindings(prog, this._vert);
+    const prog = new ShaderProgram(this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment, gl);
+    this.vert.addBindings(prog);
+    this.frag.addBindings(prog, this.vert);
     return prog;
   }
 }

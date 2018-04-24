@@ -3,7 +3,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { VariableType, VariableScope, VariablePrecision, ShaderVariable, ShaderVariables, ShaderProgram } from "@bentley/imodeljs-frontend/lib/rendering";
+import { getWebGLContext } from "./WebGLTestContext";
+import {
+  VariableType,
+  VariableScope,
+  VariablePrecision,
+  ShaderVariable,
+  ShaderVariables,
+  ShaderProgram,
+  ProgramBuilder,
+  VertexShaderComponent,
+  FragmentShaderComponent
+} from "@bentley/imodeljs-frontend/lib/rendering";
 
 describe("Variable declaration tests", () => {
   it("should convert ShaderVariable to glsl declaration", () => {
@@ -64,4 +75,28 @@ describe("ShaderVariables tests", () => {
     assert.isFalse(undefined === found);
     expect(found!.name).to.equal("x");
   });
+});
+
+describe("Test shader compilation", () => {
+  it("should build and compile a simple shader program", () => {
+    const builder = new ProgramBuilder(false);
+    builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
+    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
+    builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
+
+    const gl = getWebGLContext();
+    if (undefined === gl) {
+      return;
+    }
+
+    const prog = builder.buildProgram(gl);
+    expect(prog.isValid).to.equal(true);
+    expect(prog.isUncompiled).to.equal(true);
+    expect(prog.compile(gl)).to.equal(true);
+    expect(prog.isUncompiled).to.equal(false);
+
+    prog.dispose(gl);
+    expect(prog.isValid).to.equal(false);
+    expect(prog.isUncompiled).to.equal(true);
+    });
 });

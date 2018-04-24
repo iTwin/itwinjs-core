@@ -243,7 +243,7 @@ describe("RenderState API", () => {
 describe("RenderState.apply()", () => {
   it("should apply state", () => {
     const gl = getWebGLContext();
-    if (null === gl) {
+    if (undefined === gl) {
       return;
     }
 
