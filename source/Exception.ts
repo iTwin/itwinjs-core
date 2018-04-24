@@ -3,6 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
+import { BentleyError } from "@bentley/bentleyjs-core/lib/BentleyError";
 
 export const enum ECObjectsStatus {
   ECOBJECTS_ERROR_BASE = 0x10000,
@@ -29,9 +30,9 @@ export const enum ECObjectsStatus {
   InvalidSchemaXML = ECOBJECTS_ERROR_BASE + 20,
 }
 
-export class ECObjectsError extends Error {
+export class ECObjectsError extends BentleyError {
   public constructor(public readonly errorNumber: number | ECObjectsStatus, message?: string) {
-    super(message);
+    super(errorNumber, message);
     assert(errorNumber as number !== ECObjectsStatus.Success as number);
   }
 
