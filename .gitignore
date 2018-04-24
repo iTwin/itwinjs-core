@@ -8,6 +8,7 @@ lib
 /core/backend/src/test/output
 /sample-code/out
 /generated-docs
+/generated_docs
 
 # rush-specific
 /common/temp

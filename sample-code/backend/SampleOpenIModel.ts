@@ -21,6 +21,22 @@ async function getUserAccessToken(userCredentials: UserCredentials, env: Deploym
 }
 // __PUBLISH_EXTRACT_END__
 
+// __PUBLISH_EXTRACT_START__ Logging.logToBunyan
+import { Logger, LoggerLevelsConfig } from "@bentley/bentleyjs-core";
+import { BunyanLoggerConfig } from "@bentley/bentleyjs-core/lib/BunyanLoggerConfig";
+import { SeqLoggerConfig, SeqConfig } from "@bentley/bentleyjs-core/lib/SeqLoggerConfig";
+
+export function initializeLogging(seqConfig: SeqConfig): void {
+  BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(seqConfig, "MyService"));
+}
+// __PUBLISH_EXTRACT_END__
+
+export function configureLevels(cfg: LoggerLevelsConfig): void {
+// __PUBLISH_EXTRACT_START__ Logging.configureLevels
+  Logger.configureLevels(cfg);
+// __PUBLISH_EXTRACT_END__
+}
+
 // __PUBLISH_EXTRACT_START__ IModelDb.open
 async function openModel(projectid: string, imodelid: string, accessToken: AccessToken) {
   const imodel: IModelDb = await IModelDb.open(accessToken, projectid, imodelid, OpenMode.Readonly);
