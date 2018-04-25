@@ -13,7 +13,7 @@ import { HubTestUtils } from "./HubTestUtils";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { TestConfig } from "./TestConfig";
 import { KnownLocations } from "../Platform";
-import { AccessToken, CodeState, ChangeSet, ConnectClient, ContainsSchemaChanges, IModel as HubIModel, IModelHubClient, IModelQuery, MultiCode, Project } from "@bentley/imodeljs-clients";
+import { AccessToken, CodeState, ChangeSet, ConnectClient, ContainsSchemaChanges, IModel as HubIModel, Code as HubCode, IModelHubClient, IModelQuery, MultiCode, Project } from "@bentley/imodeljs-clients";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -605,42 +605,31 @@ describe("BriefcaseManager", () => {
   });
 
   it.skip("should push changes with codes", async () => {
+    const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await HubTestUtils.hubClient!.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await HubTestUtils.hubClient!.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await HubTestUtils.hubClient!.Codes().get(accessToken, rwIModelId!);
+    const initialCodes = await HubTestUtils.hubClient!.Codes().get(adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
-    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, Code.createEmpty(), true);
-
-    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert();
-
-    // Insert a few elements
-    const elements: Element[] = [
-      IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId),
-      IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId),
-    ];
-
-    for (const el of elements)
-      rwIModel.elements.insertElement(el);
+    const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
@@ -649,7 +638,63 @@ describe("BriefcaseManager", () => {
 
     // Push the changes to the hub
     const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(accessToken);
+    await rwIModel.pushChanges(adminAccessToken);
+    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    assert(!!postPushChangeSetId);
+    expect(prePushChangeSetId !== postPushChangeSetId);
+
+    timer.end();
+
+    timer = new Timer("querying codes");
+    const codes = await HubTestUtils.hubClient!.Codes().get(adminAccessToken, rwIModelId!);
+    timer.end();
+    expect(codes.length > initialCodes.length);
+  });
+
+  it.skip("should push changes with code conflicts", async () => {
+    const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
+    let timer = new Timer("delete iModels");
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "CodesPushTest";
+    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    for (const iModelTemp of iModels) {
+      await HubTestUtils.hubClient!.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
+    }
+    timer.end();
+
+    // Create a new iModel on the Hub (by uploading a seed file)
+    timer = new Timer("create iModel");
+    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = rwIModel.iModelToken.iModelId;
+    assert.isNotEmpty(rwIModelId);
+    timer.end();
+
+    const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
+    const otherBriefcase = await HubTestUtils.hubClient!.Briefcases().create(adminAccessToken, rwIModelId!);
+    const hubCode = new HubCode();
+    hubCode.value = code.value;
+    hubCode.codeSpecId = code.spec.toString();
+    hubCode.codeScope = code.scope;
+    hubCode.briefcaseId = otherBriefcase.briefcaseId;
+    hubCode.state = CodeState.Reserved;
+    await HubTestUtils.hubClient!.Codes().update(adminAccessToken, rwIModelId!, [hubCode]);
+
+    timer = new Timer("querying codes");
+    const initialCodes = await HubTestUtils.hubClient!.Codes().get(adminAccessToken, rwIModelId!);
+    timer.end();
+
+    timer = new Timer("make local changes");
+    let newModelId: Id64;
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, code, true);
+
+    rwIModel.saveChanges("inserted generic objects");
+    timer.end();
+
+    timer = new Timer("push changes");
+
+    // Push the changes to the hub
+    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    await rwIModel.pushChanges(adminAccessToken);
     const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
@@ -659,7 +704,8 @@ describe("BriefcaseManager", () => {
     timer = new Timer("querying codes");
     const codes = await HubTestUtils.hubClient!.Codes().get(accessToken, rwIModelId!);
     timer.end();
-    expect(codes.length > initialCodes.length);
+    expect(codes.length === initialCodes.length);
+    expect(codes[0].state === CodeState.Reserved);
   });
 
   it.skip("should write to briefcase with optimistic concurrency", async () => {

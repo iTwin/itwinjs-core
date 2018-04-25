@@ -7,6 +7,14 @@ import { Range2d, Range3d } from "@bentley/geometry-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 
+/**
+ * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
+ * This is a lossy compression technique.
+ * Given a floating point range [min, max], a floating point value `x` within that range is quantized by subtracting
+ * `min`, scaling the result according to `max`, and truncating the result to an integer.
+ * Therefore min quantizes to 0, max to 0xffff, (min+max)/2 to 0x7fff, and so on.
+ * These routines are chiefly used internally by classes like QPoint2d and QPoint3d.
+ */
 namespace Quantization {
   const rangeScale = 0xffff;
 
@@ -18,6 +26,7 @@ namespace Quantization {
   export function isQuantized(qpos: number) { return isInRange(qpos) && qpos === Math.floor(qpos); }
 }
 
+/** Parameters used for quantization of 2d points. */
 export class QParams2d {
   public readonly origin = new Point2d();
   public readonly scale = new Point2d();
@@ -38,6 +47,7 @@ export class QParams2d {
     return result;
   }
 
+  /** Initialize these parameters to support quantization of values within the specified range. */
   public setFromRange(range: Range2d) {
     if (!range.isNull()) {
       this.setFrom(range.low.x, range.low.y, Quantization.computeScale(range.high.x - range.low.x), Quantization.computeScale(range.high.y - range.low.y));
@@ -45,15 +55,21 @@ export class QParams2d {
       this.origin.x = this.origin.y = this.scale.x = this.scale.y = 0;
     }
   }
+  /** Creates parameters to support quantization of values within the specified range. */
   public static fromRange(range: Range2d, out?: QParams2d) {
     const params = undefined !== out ? out : new QParams2d();
     params.setFromRange(range);
     return params;
   }
+
+  /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
   public static fromNormalizedRange() { return QParams2d.fromRange(Range2d.createArray([Point2d.create(-1, -1), Point2d.create(1, 1)])); }
+
+  /** Creates parameters supporting quantization of values within the range [0.0, 1.0]. */
   public static fromZeroToOne() { return QParams2d.fromRange(Range2d.createArray([Point2d.create(0, 0), Point2d.create(1, 1)])); }
 }
 
+/** Represents a quantized 2d point as an (x, y) pair in the integer range [0, 0xffff]. */
 export class QPoint2d {
   private _x: number = 0;
   private _y: number = 0;
@@ -65,10 +81,12 @@ export class QPoint2d {
 
   private constructor() { }
 
+  /** Initialize this point by quantizing the supplied Point2d using the specified params */
   public init(pos: Point2d, params: QParams2d) {
     this.x = Quantization.quantize(pos.x, params.origin.x, params.scale.x);
     this.y = Quantization.quantize(pos.y, params.origin.y, params.scale.y);
   }
+  /** Creates a quantized point from the supplied Point2d using the specified params */
   public static create(pos: Point2d, params: QParams2d) {
     const qpt = new QPoint2d();
     qpt.init(pos, params);
@@ -85,16 +103,27 @@ export class QPoint2d {
     return result;
   }
 
+  /**
+   * Sets the x and y components directly.
+   * @param x Must be an integer in the range [0, 0xffff]
+   * @param y Must be an integer in the range [0, 0xffff]
+   */
   public setFromScalars(x: number, y: number) {
     this.x = x;
     this.y = y;
   }
+  /**
+   * Creates a QPoint2d directly from x and y components.
+   * @param x Must be an integer in the range [0, 0xffff]
+   * @param y Must be an integer in the range [0, 0xffff]
+   */
   public static fromScalars(x: number, y: number) {
     const pt = new QPoint2d();
     pt.setFromScalars(x, y);
     return pt;
   }
 
+  /** Returns a Point2d unquantized according to the supplied params. */
   public unquantize(params: QParams2d, out?: Point2d): Point2d {
     const pt: Point2d = undefined !== out ? out : new Point2d();
     pt.x = Quantization.unquantize(this.x, params.origin.x, params.scale.x);
@@ -103,6 +132,7 @@ export class QPoint2d {
   }
 }
 
+/** A list of 2d points all quantized to the same range. */
 export class QPoint2dList {
   public readonly params: QParams2d;
   private readonly _list = new Array<QPoint2d>();
@@ -111,14 +141,20 @@ export class QPoint2dList {
     this.params = params.clone();
   }
 
+  /** Clears out the contents of the list */
   public clear() { this._list.length = 0; }
+  /** Clears out the contents of the list and changes the quantization parameters. */
   public reset(params: QParams2d) { this.clear(); this.params.copyFrom(params); }
 
+  /** Quantizes the supplied Point2d to this list's range and appends it to the list. */
   public add(pt: Point2d) { this._list.push(QPoint2d.create(pt, this.params)); }
+  /** Adds a previously-quantized point to this list. */
   public push(qpt: QPoint2d) { this._list.push(qpt.clone()); }
 
+  /** Returns the number of points in the list. */
   public get length() { return this._list.length; }
 
+  /** Returns the unquantized value of the point at the specified index in the list. */
   public unquantize(index: number, out?: Point2d): Point2d {
     assert(index < this.length);
     if (index < this.length) {
@@ -128,6 +164,7 @@ export class QPoint2dList {
     }
   }
 
+  /** Changes the quantization parameters and requantizes all points in the list to the new range. */
   public requantize(params: QParams2d) {
     for (let i = 0; i < this.length; i++) {
       const pt = this.unquantize(i);
@@ -137,6 +174,7 @@ export class QPoint2dList {
     this.params.copyFrom(params);
   }
 
+  /** Extracts the current contents of the list as a Uint16Array. */
   public toTypedArray(): Uint16Array {
     const array = new Uint16Array(this.length * 2);
     const pts = this._list;
@@ -150,6 +188,7 @@ export class QPoint2dList {
   }
 }
 
+/** Parameters used for quantization of 3d points. */
 export class QParams3d {
   public readonly origin = new Point3d();
   public readonly scale = new Point3d();
@@ -172,6 +211,7 @@ export class QParams3d {
     return result;
   }
 
+  /** Initialize these parameters to support quantization of values within the specified range. */
   public setFromRange(range: Range3d) {
     if (!range.isNull()) {
       this.setFrom(range.low.x, range.low.y, range.low.z,
@@ -181,15 +221,21 @@ export class QParams3d {
       this.scale.x = this.scale.y = this.scale.z = 0;
     }
   }
+  /** Creates parameters to support quantization of values within the specified range. */
   public static fromRange(range: Range3d, out?: QParams3d) {
     const params = undefined !== out ? out : new QParams3d();
     params.setFromRange(range);
     return params;
   }
+
+  /** Creates parameters supporting quantization of values within the range [-1.0, 1.0]. */
   public static fromNormalizedRange() { return QParams3d.fromRange(Range3d.createArray([Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)])); }
+
+  /** Creates parameters supporting quantization of values within the range [0.0, 1.0]. */
   public static fromZeroToOne() { return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)])); }
 }
 
+/** Represents a quantized 3d point as an (x, y, z) tripliet in the integer range [0, 0xffff]. */
 export class QPoint3d {
   private _x: number = 0;
   private _y: number = 0;
@@ -204,11 +250,13 @@ export class QPoint3d {
 
   private constructor() { }
 
+  /** Initialize this point by quantizing the supplied Point3d using the specified params */
   public init(pos: Point3d, params: QParams3d) {
     this.x = Quantization.quantize(pos.x, params.origin.x, params.scale.x);
     this.y = Quantization.quantize(pos.y, params.origin.y, params.scale.y);
     this.z = Quantization.quantize(pos.z, params.origin.z, params.scale.z);
   }
+  /** Creates a quantized point from the supplied Point3d using the specified params */
   public static create(pos: Point3d, params: QParams3d) {
     const qpt = new QPoint3d();
     qpt.init(pos, params);
@@ -226,17 +274,30 @@ export class QPoint3d {
     return result;
   }
 
+  /**
+   * Sets the x, y, and z components directly.
+   * @param x Must be an integer in the range [0, 0xffff]
+   * @param y Must be an integer in the range [0, 0xffff]
+   * @param z Must be an integer in the range [0, 0xffff]
+   */
   public setFromScalars(x: number, y: number, z: number) {
     this.x = x;
     this.y = y;
     this.z = z;
   }
+  /**
+   * Creates a QPoint3d directly from x, y, and z components.
+   * @param x Must be an integer in the range [0, 0xffff]
+   * @param y Must be an integer in the range [0, 0xffff]
+   * @param z Must be an integer in the range [0, 0xffff]
+   */
   public static fromScalars(x: number, y: number, z: number) {
     const pt = new QPoint3d();
     pt.setFromScalars(x, y, z);
     return pt;
   }
 
+  /** Returns a Point3d unquantized according to the supplied params. */
   public unquantize(params: QParams3d, out?: Point3d): Point3d {
     const pt: Point3d = undefined !== out ? out : new Point3d();
     pt.x = Quantization.unquantize(this.x, params.origin.x, params.scale.x);
@@ -246,6 +307,7 @@ export class QPoint3d {
   }
 }
 
+/** A list of 3d points all quantized to the same range. */
 export class QPoint3dList {
   public readonly params: QParams3d;
   private readonly _list = new Array<QPoint3d>();
@@ -254,14 +316,20 @@ export class QPoint3dList {
     this.params = params.clone();
   }
 
+  /** Clears out the contents of the list */
   public clear() { this._list.length = 0; }
+  /** Clears out the contents of the list and changes the quantization parameters. */
   public reset(params: QParams3d) { this.clear(); this.params.copyFrom(params); }
 
+  /** Quantizes the supplied Point3d to this list's range and appends it to the list. */
   public add(pt: Point3d) { this._list.push(QPoint3d.create(pt, this.params)); }
+  /** Adds a previously-quantized point to this list. */
   public push(qpt: QPoint3d) { this._list.push(qpt.clone()); }
 
+  /** Returns the number of points in the list. */
   public get length() { return this._list.length; }
 
+  /** Returns the unquantized value of the point at the specified index in the list. */
   public unquantize(index: number, out?: Point3d): Point3d {
     assert(index < this.length);
     if (index < this.length) {
@@ -271,6 +339,7 @@ export class QPoint3dList {
     }
   }
 
+  /** Changes the quantization parameters and requantizes all points in the list to the new range. */
   public requantize(params: QParams3d) {
     for (let i = 0; i < this.length; i++) {
       const pt = this.unquantize(i);
@@ -280,6 +349,7 @@ export class QPoint3dList {
     this.params.copyFrom(params);
   }
 
+  /** Extracts the current contents of the list as a Uint16Array. */
   public toTypedArray(): Uint16Array {
     const array = new Uint16Array(this.length * 3);
     const pts = this._list;

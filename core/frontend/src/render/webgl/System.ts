@@ -1,8 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { QPoint3dList, QPoint2dList, QParams3d, QParams2d } from "@bentley/imodeljs-common";
-import { Point2d, Point3d } from "@bentley/geometry-core";
+import { QPoint3dList, QPoint2dList, QParams3d, QParams2d, RenderGraphic, GraphicBranch } from "@bentley/imodeljs-common";
+import { Point2d, Point3d, ClipVector, Transform } from "@bentley/geometry-core";
+import { RenderSystem, RenderTarget } from "../System";
+import { OnScreenTarget } from "./Target";
+import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
+import { PrimitiveBuilder } from "../primitives/Geometry";
+import { GraphicsList, Branch } from "./Graphic";
+import { IModelConnection } from "../../IModelConnection";
 
 export const enum ContextState {
   Uninitialized,
@@ -186,4 +192,12 @@ export class TexturedViewportQuad extends ViewportQuad {
     pt.x = 0;
     this.textureUV.add(pt);
   }
+}
+
+export class System extends RenderSystem {
+  public onInitialized(): void {}
+  public createTarget(gl: WebGLRenderingContext, tileSizeModifier: number): RenderTarget { return new OnScreenTarget(this, gl, tileSizeModifier); }
+  public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
+  public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
+  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 }

@@ -1,9 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RenderTarget } from "./System";
+import { RenderTarget, RenderSystem } from "./System";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { Decorations } from "@bentley/imodeljs-common";
+import { ViewState } from "../ViewState";
+import { HilitedSet } from "../SelectionSet";
+import { FeatureSymbology } from "./FeatureSymbology";
 
 /** The rendering operation a task performs. */
 export const enum TaskOperation {
@@ -41,21 +44,29 @@ export class TaskPriority {
   constructor(value: number = 0) {
     this.value = value;
   }
+
   /** until we can overload operators for structs in ts, for now increment value and return this object */
   public increment(): TaskPriority { this.value++; return this; }
+
   public static highest(): TaskPriority { return new TaskPriority(0); }
   public static lowest(): TaskPriority { return new TaskPriority(0xffff); } // Reserved for the 'idle' task
 }
 
 /** A rendering task to be performed on the render thread. */
 export abstract class Task {
-  public readonly target: RenderTarget;
+  private _target?: RenderTarget;
+
   public readonly operation: TaskOperation;
   public readonly priority: TaskPriority;
+
   public outcome: TaskOutcome = TaskOutcome.Waiting;
   public elapsedTime: number = 0;
-  constructor(target: RenderTarget, operation: TaskOperation, priority: TaskPriority) {
-    this.target = target;
+
+  public get target(): RenderTarget { return this._target!; }
+  public get definesScene(): boolean { return !!this._target; }
+
+  constructor(operation: TaskOperation, priority: TaskPriority, target?: RenderTarget) {
+    this._target = target;
     this.operation = operation;
     this.priority = priority;
   }
@@ -66,15 +77,6 @@ export abstract class Task {
     this.outcome = this.process(timer);
   }
 
-  /**
-   * Perform the rendering task.
-   * @return the Outcome of the processing of the Task.
-   */
-  public abstract process(timer: StopWatch): TaskOutcome;
-
-  /** return true if this task changes the scene. */
-  public abstract definesScene(): boolean;
-
   /** called when this task is entered into the render queue */
   public onQueued(): void { }
 
@@ -84,28 +86,92 @@ export abstract class Task {
    * @return true if this Task should replace the other pending task.
    */
   public replaces(other: Task): boolean { return this.operation === other.operation; }
+
+  /**
+   * Perform the rendering task.
+   * @return the Outcome of the processing of the Task.
+   */
+  public abstract process(timer: StopWatch): TaskOutcome;
+
+  /**
+   * Get the name of this task. For debugging only
+   * using abstract method instead of getter to enforce inherited classes to defined their name explicitly
+   */
+  public abstract getName(): string;
 }
 
-/** Base class for all tasks that change the scene */
+/**
+ * Base class for all tasks that change the scene
+ * instead of overriding an abstract method called definesScene, since the RenderTarget is undefined for NonSceneTasks,
+ * we can instead use the nullable state of the RenderTarget to implicitly determine if the scene is defined
+ */
 export abstract class SceneTask extends Task {
-  constructor(target: RenderTarget, operation: TaskOperation, priority: TaskPriority) { super(target, operation, priority); }
-  public definesScene(): boolean { return true; }
-  public replaces(other: Task): boolean { return super.replaces(other) || !other.definesScene(); }
+  constructor(target: RenderTarget, operation: TaskOperation, priority: TaskPriority) { super(operation, priority, target); }
+
+  public replaces(other: Task): boolean { return super.replaces(other) || !other.definesScene; }
 }
 
-/** Base class for tasks that don't change the scene */
+/**
+ * Base class for tasks that don't change the scene
+ * instead of overriding an abstract method called definesScene, since the RenderTarget is undefined for NonSceneTasks,
+ * we can instead use the nullable state of the RenderTarget to implicitly determine if the scene is defined
+ */
 export abstract class NonSceneTask extends Task {
-  constructor(target: RenderTarget, operation: TaskOperation, priority: TaskPriority) { super(target, operation, priority); }
-  public definesScene(): boolean { return false; }
+  constructor(operation: TaskOperation, priority: TaskPriority) { super(operation, priority, undefined); }
 }
 
 export class ChangeDecorationsTask extends SceneTask {
   public readonly decorations: Decorations;
+
   constructor(target: RenderTarget, priority: TaskPriority, decorations: Decorations = new Decorations()) {
     super(target, TaskOperation.ChangeDecorations, priority);
     this.decorations = decorations;
   }
+
+  public getName(): string { return "Change decorations"; }
+
   public process(_timer: StopWatch): TaskOutcome { this.target.changeDecorations(this.decorations); return TaskOutcome.Finished; }
+}
+
+export class IdleTask extends NonSceneTask {
+  public readonly system: RenderSystem;
+
+  constructor(system: RenderSystem) {
+    super(TaskOperation.Idle, TaskPriority.lowest());
+    this.system = system;
+  }
+
+  public getName(): string { return "IdleRender"; }
+
+  public process(_timer: StopWatch): TaskOutcome { this.system.idle(); return TaskOutcome.Finished; }
+}
+
+export class SetHiliteTask extends SceneTask {
+  public readonly view: ViewState;
+  public readonly hilited: HilitedSet;
+
+  constructor(target: RenderTarget, priority: TaskPriority, view: ViewState) {
+    super(target, TaskOperation.SetHiliteSet, priority);
+    this.view = view;
+    this.hilited = view.iModel.hilited;
+  }
+
+  public getName(): string { return "Set Hilite"; }
+
+  public process(_timer: StopWatch): TaskOutcome { this.target.setHiliteSet(this.hilited); return TaskOutcome.Finished; }
+}
+
+export class OverrideFeatureSymbologyTask extends SceneTask {
+  public readonly overrides: FeatureSymbology.Overrides;
+
+  constructor(target: RenderTarget, priority: TaskPriority, view: ViewState) {
+    super(target, TaskOperation.OverrideFeatureSymbology, priority);
+    this.overrides = new FeatureSymbology.Overrides(view);
+  }
+
+  public getName(): string { return "Override Feature Symbology"; }
+
+  public process(_timer: StopWatch): TaskOutcome { this.target.overrideFeatureSymbology(this.overrides); return TaskOutcome.Finished; }
 }
 
 /**
@@ -115,8 +181,14 @@ export class ChangeDecorationsTask extends SceneTask {
  */
 export class RenderQueue {
   private _tasks: Task[];
-
+  private _currTask?: Task;
   public get tasks(): Task[] { return this._tasks; }
+
+  /**
+   * @return true if the render queue is empty and no pending tasks are active.
+   * @note This method may only be called from the main thread
+   */
+  public get isIdle(): boolean { return this._tasks.length === 0 && !this._currTask; }
 
   constructor(tasks: Task[] = []) { this._tasks = tasks; }
 

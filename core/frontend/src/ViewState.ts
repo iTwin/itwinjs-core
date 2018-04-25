@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector,
@@ -99,15 +99,24 @@ export class MarginPercent {
   }
 }
 
+export class SpecialElements {
+  public always: Id64Set = new Set<string>();
+  public never: Id64Set = new Set<string>();
+  public get isEmpty(): boolean { return this.always.size === 0 && this.never.size === 0; }
+}
+
 /**
  * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
+  protected _special?: SpecialElements;
+  protected _noQuery: boolean = false;
+  protected _featureOverridesDirty: boolean = false;
+  protected _selectionSetDirty: boolean = false;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
-  public isSelectionSetDirty: boolean = false;
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
@@ -136,6 +145,24 @@ export abstract class ViewState extends ElementState {
 
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
+  /** Get the set of special elements for this ViewState. */
+  public get specialElements(): SpecialElements { return this._special!; }
+
+  /** Get the list of elements that are never drawn */
+  public get neverDrawn(): Id64Set { return this.specialElements.never; }
+
+  /** Get the list of elements that are always drawn */
+  public get alwaysDrawn(): Id64Set { return this.specialElements.always; }
+
+  /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
+  public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
+
+  public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
+
+  public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
+
+  public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
+  public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;

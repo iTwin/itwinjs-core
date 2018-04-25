@@ -19,9 +19,6 @@ import { HitDetail } from "../HitDetail";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
-import { AccuSnap } from "../AccuSnap";
-import { AccuDraw } from "../AccuDraw";
-import { TentativePoint } from "../TentativePoint";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -380,9 +377,6 @@ export class ToolAdmin {
   private modifierKeyWentDown = false;
   private modifierKey = BeModifierKey.None;
   private touchBridgeMode = false; // Flag indicating that touch events are being converted into mouse events for this tool
-  public readonly accuSnap = new AccuSnap();
-  public readonly accuDraw = new AccuDraw();
-  public readonly tentativePoint = new TentativePoint();
   /** Apply operation such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
   /** If Grid Lock is on, project data points to grid. */
