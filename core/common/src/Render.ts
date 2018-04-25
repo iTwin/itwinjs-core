@@ -12,7 +12,7 @@ import { Point3d, Point2d, XYAndZ, Transform, Angle, Vector3d } from "@bentley/g
 import { PatternParams } from "./geometry/AreaPattern";
 import { LineStyleInfo } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
-import { QPoint3d, QParams3d } from "./QPoint";
+import { QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
 import { ColorIndex, FeatureIndex } from "./FeatureIndex";
 
@@ -28,28 +28,28 @@ export enum FillFlags {
 }
 
 /* An individual polyline which indexes into a shared set of vertices */
-export class PolylineData { // should vertIndex be a number[] instead ???
-  public constructor(public vertIndex = 0, public numIndices = 0, public startDistance = 0, public rangeCenter = new Point3d()) { }
+export class PolylineData {
+  public constructor(public vertIndices: number[] = [], public numIndices = 0, public startDistance = 0, public rangeCenter = new Point3d()) { }
 
   public isValid(): boolean { return 0 < this.numIndices; }
-  public reset(): void { this.numIndices = 0; this.vertIndex = 0; this.startDistance = 0; }
-  // public init(polyline: MeshPolyline) {
-  //   this.numIndices = polyline.getIndices().length;
-  //   this.vertIndex = 0 < this.numIndices ? polyline.getIndices().data() : 0;
-  //   this.startDistance = polyline.getStartDistance();
-  //   this.rangeCenter = polyline.getRangeCenter();
-  //   return this.isValid();
-  // }
+  public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
+  public init(polyline: MeshPolyline) {
+    this.numIndices = polyline.indices.length;
+    this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
+    this.startDistance = polyline.startDistance;
+    this.rangeCenter = polyline.rangeCenter;
+    return this.isValid();
+  }
 }
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
 export class IndexedPolylineArgs {
-  // public colors = new ColorIndex(); //////////// must be moved to common!!!!!!!!!!
-  // public features = new FeatureIndex();
+  public colors = new ColorIndex();
+  public features = new FeatureIndex();
   public width = 0;
   public linePixels = LinePixels.Solid;
   public disjoint = false;
-  public constructor(public points?: QPoint3d, public numPoints = 0, public lines = new PolylineData(), public numLines = 0, public pointParams?: QParams3d,
+  public constructor(public points: Uint16Array = new Uint16Array(), public numPoints = 0, public lines: PolylineData[] = [], public numLines = 0, public pointParams?: QParams3d,
                      public is2d = false, public isPlanar = false) { }
 }
 
@@ -86,7 +86,7 @@ export class MeshEdge {
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
-  public polylines: MeshEdge[] = [];
+  public polylines: MeshPolyline[] = [];
   public silhouetteNormals = new OctEncodedNormal(0);
   public constructor() { }
 }
@@ -150,11 +150,11 @@ export class TriMeshArgsEdges {
 export class TriMeshArgs {
   public edges = new TriMeshArgsEdges();
   public numIndices = 0;
-  public vertIndex = 0; // should vertIndex be a number[] instead ???
+  public vertIndex: number[] = [];
   public numPoints = 0;
-  public points?: QPoint3d;
-  public normals?: OctEncodedNormal;
-  public textureUv = new Point2d();
+  public points?: Uint16Array;
+  public normals: OctEncodedNormal[] = [];
+  public textureUv: Point2d[] = [];
   public texture?: Texture;
   public colors = new ColorIndex();
   public features = new FeatureIndex();

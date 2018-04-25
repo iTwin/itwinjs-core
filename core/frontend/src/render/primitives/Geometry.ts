@@ -127,7 +127,7 @@ export class GeometryAccumulator {
 
   public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector) {
     if (this.surfacesOnly && !curves.isAnyRegionType()) { return true; } // ignore...
-    const isCurved: boolean = false; // containsNonLinearPrimitive() function doesn't exist?? // curves.containsNonLinearPrimitive();
+    const isCurved: boolean = curves.hasNonLinearPrimitives();
     return this.addGeometry(curves, isCurved, displayParams, transform, disjoint, clip);
   }
   public addGeometry(geom: GeometryQuery, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
