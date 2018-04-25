@@ -80,7 +80,7 @@ export class ChangeSummaryManager {
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
     if (!iModel || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
 
     return iModel.nativeDb.isChangeCacheAttached();
   }
@@ -92,7 +92,7 @@ export class ChangeSummaryManager {
    */
   public static attachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
 
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       return;
@@ -116,7 +116,7 @@ export class ChangeSummaryManager {
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
 
     iModel.clearStatementCache();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
@@ -169,8 +169,10 @@ export class ChangeSummaryManager {
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Changes file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
     perfLogger.dispose();
-    if (!changesFile || !changesFile.nativeDb)
-      throw new IModelError(IModelStatus.BadArg);
+    if (!changesFile || !changesFile.nativeDb) {
+      assert(false, "Should not happen as an exception should have been thrown in that case");
+      throw new IModelError(IModelStatus.BadArg, "Failed to create ECChanges file.");
+    }
 
     try {
       const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
@@ -194,6 +196,9 @@ export class ChangeSummaryManager {
         }
 
         const changeSetFilePath: string = path.join(changeSetsFolder, currentChangeSetInfo.fileName!);
+        if (!IModelJsFs.existsSync(changeSetFilePath))
+          throw new IModelError(IModelStatus.FileNotFound, "Failed to extract change summary: Changeset file '" + changeSetFilePath + "' does not exist.");
+
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
         const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
@@ -275,7 +280,7 @@ export class ChangeSummaryManager {
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
-      throw new IModelError(IModelStatus.BadArg);
+      throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel but be open.");
 
     const changesFile = new ECDb();
     const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
@@ -298,12 +303,12 @@ export class ChangeSummaryManager {
 
   private static createChangesFile(iModel: IModelDb, changesFile: ECDb, changesFilePath: string): void {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
-      throw new IModelError(IModelStatus.BadArg);
+      throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel but be open.");
 
     assert(iModel.nativeDb);
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changesFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat);
+      throw new IModelError(stat, "Failed to create ECChanges file at '" + changesFilePath + "'.");
 
     // Extended information like changeset ids, push dates are persisted in the IModelChange ECSchema
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
@@ -350,13 +355,13 @@ export class ChangeSummaryManager {
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Change cache must be attached to iModel.");
+      throw new IModelError(IModelStatus.BadArg, "ECChange cache must be attached to iModel.");
 
     return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
     (stmt: ECSqlStatement) => {
       stmt.bindId(1, changeSummaryId);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
+        throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
 
       const row = stmt.getRow();
       return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author } };
@@ -372,7 +377,7 @@ export class ChangeSummaryManager {
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Change cache must be attached to iModel.");
+      throw new IModelError(IModelStatus.BadArg, "ECChange cache must be attached to iModel.");
 
     // query instance changes
     const instanceChange: InstanceChange = iModel.withPreparedStatement(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
@@ -380,7 +385,7 @@ export class ChangeSummaryManager {
           JOIN main.meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE ic.ECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, instanceChangeId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, `No InstanceChange found for id ${instanceChangeId.value}.`);
+          throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId.value}.`);
 
         const row = stmt.getRow();
         const changedInstanceId = new Id64(row.changedInstanceId);
@@ -444,7 +449,7 @@ export class ChangeSummaryManager {
       stmt.bindId(1, instanceChange.summaryId);
       stmt.bindId(2, instanceChange.changedInstance.id);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `No property value changes found for InstanceChange ${instanceChange.id.value}.`);
+        throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChange.id.value}.`);
 
       return stmt.getRow();
     });
