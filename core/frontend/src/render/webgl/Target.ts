@@ -7,6 +7,7 @@ import { RenderTarget, RenderSystem } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
+import { Techniques } from "./Technique";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -142,12 +143,18 @@ export class Target extends RenderTarget {
   protected _hiliteUpdateTime?: BeTimePoint;
   public readonly tileSizeModifier: number;
   public readonly gl: WebGLRenderingContext;
+  private readonly _techniques?: Techniques; // ###TODO this moves to System...
+
   public get hilite(): HilitedSet { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
+  public get techniques(): Techniques { return this._techniques!; }
+
   protected constructor(system: RenderSystem, gl: WebGLRenderingContext, tileSizeModifier: number = RenderTarget.defaultTileSizeModifier()) {
     super(system);
     this.gl = gl;
     this.tileSizeModifier = tileSizeModifier;
+
+    this._techniques = Techniques.create(gl);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
