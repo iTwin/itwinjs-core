@@ -78,7 +78,7 @@ export class Techniques {
     }
 
     const tech = new SingularTechnique(prog);
-    for (let i =0; i < TechniqueId.NumBuiltIn; i++) {
+    for (let i = 0; i < TechniqueId.NumBuiltIn; i++) {
       this._list.push(tech);
     }
 
