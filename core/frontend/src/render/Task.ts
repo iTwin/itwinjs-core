@@ -121,12 +121,9 @@ export abstract class NonSceneTask extends Task {
 }
 
 export class ChangeDecorationsTask extends SceneTask {
-  public readonly decorations: Decorations;
+  public readonly decorations: Decorations = new Decorations();
 
-  constructor(target: RenderTarget, priority: TaskPriority, decorations: Decorations = new Decorations()) {
-    super(target, TaskOperation.ChangeDecorations, priority);
-    this.decorations = decorations;
-  }
+  constructor(target: RenderTarget, priority: TaskPriority) { super(target, TaskOperation.ChangeDecorations, priority); }
 
   public getName(): string { return "Change decorations"; }
 
