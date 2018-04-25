@@ -294,7 +294,7 @@ export class ShaderProgramExecutor implements IDisposable {
   }
 
   private changeProgram(program?: ShaderProgram): boolean {
-    if (this._program === program){
+    if (this._program === program) {
       return true;
     } else if (undefined !== this._program) {
       this._program.endUse(this._params.gl);
