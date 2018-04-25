@@ -12,13 +12,6 @@ import { RenderPass, RenderOrder } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 
-export class PointCloudGeometryCreateParams {
-  public readonly vertices = new QPoint3dList();
-  public colors: number[] = [];
-  public pointSize: number;
-  public constructor(vertices: QPoint3dList, colors: number[], pointSize: number) { this.vertices = vertices.clone(); this.colors = colors; this.pointSize = pointSize; }
-}
-
 // Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
   // Returns true if white portions of this geometry should render as black on white background
@@ -102,7 +95,7 @@ export class IndexedGeometryParams {
     this.numIndices = numIndices;
   }
 
-  public static create(gl: WebGLRenderingContext, positions: Float32Array, qparams: QParams3d, indices: Uint32Array) {
+  public static create(gl: WebGLRenderingContext, positions: Uint16Array, qparams: QParams3d, indices: Uint32Array) {
     const posBuf = QBufferHandle3d.create(gl, qparams, positions);
     const indBuf = BufferHandle.createBuffer(gl, GL.Buffer.Target.ElementArrayBuffer, indices);
     if (undefined === posBuf || undefined === indBuf) {

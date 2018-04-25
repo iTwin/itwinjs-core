@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.77.2",
+  "version": "0.77.3",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -34,7 +34,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "7",
-    "@bentley/imodeljs-clients": "^5.3.2",
+    "@bentley/imodeljs-clients": "5",
     "@bentley/imodeljs-common": "0"
   },
   "//devDependencies": [
@@ -44,7 +44,7 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "7",
     "@bentley/geometry-core": "7",
-    "@bentley/imodeljs-clients": "^5.3.2",
+    "@bentley/imodeljs-clients": "5",
     "@bentley/imodeljs-common": "0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",
@@ -55,7 +55,8 @@
     "tsconfig-paths": "^2.7.2",
     "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "asn1": "0.2.3"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-backend",

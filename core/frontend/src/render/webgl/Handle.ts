@@ -116,7 +116,7 @@ export class QBufferHandle3d extends BufferHandle {
     this.setScale(2, params.scale.z);
   }
 
-  public static create(gl: WebGLRenderingContext, params: QParams3d, data: Float32Array): QBufferHandle3d | undefined {
+  public static create(gl: WebGLRenderingContext, params: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(gl, params);
     if (!handle.isValid) {
       return undefined;

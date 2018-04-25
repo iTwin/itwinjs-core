@@ -102,18 +102,18 @@ export class TileOptions {
 }
 
 export class UpdatePlan {
+  public priority?: number;
+  private _subRect?: Range3d;
+  public quitTime: BeTimePoint = BeTimePoint.now();
+  public tileOptions: TileOptions = new TileOptions();
+  public abortFlags: AbortFlags = new AbortFlags();
+  public frustumScale: number = 1;
+  public wantDecorators: boolean = true;
+  public wantWait: boolean = false;
   public get hasSubRect(): boolean { return !!this._subRect; }
   public get subRect(): Range3d { return this._subRect!; }
   public set subRect(rect: Range3d) { this._subRect = rect; }
   public get hasQuitTime(): boolean { return this.quitTime.isValid(); }
   public get isTimedOut(): boolean { return this.hasQuitTime && this.quitTime.isInPast(); }
-  constructor(public priority: number,
-              private _subRect?: Range3d,
-              public quitTime: BeTimePoint = BeTimePoint.now(),
-              public tileOptions: TileOptions = new TileOptions(),
-              public abortFlags: AbortFlags = new AbortFlags(),
-              public frustumScale: number = 1,
-              public wantDecorators: boolean = true,
-              public wantWait: boolean = false) {}
   public clearAbortFlags(): void { this.abortFlags.stopEvents = StopEvents.fromStopMask(StopMask.None); }
 }

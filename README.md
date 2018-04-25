@@ -32,6 +32,8 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Controls the package dependencies for the source code in common to both the backend and frontend
 * `core/backend/package.json`
   * Controls the version number and package dependencies for **@bentley/imodeljs-backend**
+* `core/clients/package.json`
+  * Controls the version number and package dependencies for **@bentley/imodeljs-clients**
 * `core/frontend/package.json`
   * Controls the version number and package dependencies for **@bentley/imodeljs-frontend**
 * `testbed/package.json`

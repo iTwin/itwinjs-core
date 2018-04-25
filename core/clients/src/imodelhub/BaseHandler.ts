@@ -1,0 +1,152 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+import { UrlDescriptor, DeploymentEnv } from "../Client";
+import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
+import { RequestOptions, RequestQueryOptions } from "../Request";
+import { WsgInstance } from "../ECJsonTypeMap";
+import { IModelHubResponseError } from "./Errors";
+import { AuthorizationToken, AccessToken } from "../Token";
+import { ImsDelegationSecureTokenClient } from "../ImsClients";
+
+/**
+ * Provides default options for iModel Hub requests.
+ */
+class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
+  public constructor() {
+    super();
+    this.defaultOptions.errorCallback = IModelHubResponseError.parse;
+  }
+}
+
+/**
+ * This class acts as the WsgClient for other iModel Hub Handlers.
+ */
+export class IModelHubBaseHandler extends WsgClient {
+  private static _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
+  public static readonly searchKey: string = "iModelHubApi";
+
+  private static readonly defaultUrlDescriptor: UrlDescriptor = {
+    DEV: "https://dev-imodelhubapi.bentley.com",
+    QA: "https://qa-imodelhubapi.bentley.com",
+    PROD: "https://imodelhubapi.bentley.com",
+    PERF: "https://perf-imodelhubapi.bentley.com",
+  };
+
+  /**
+   * Creates an instance of IModelHubBaseHandler.
+   * @param deploymentEnv Deployment environment.
+   */
+  public constructor(public deploymentEnv: DeploymentEnv) {
+    super(deploymentEnv, "v2.5", "https://connect-wsg20.bentley.com");
+  }
+
+  /**
+   * Augments request options with defaults returned by the DefaultIModelHubRequestOptionsProvider.
+   * Note that the options passed in by clients override any defaults where necessary.
+   * @param options Options the caller wants to eaugment with the defaults.
+   * @returns Promise resolves after the defaults are setup.
+   */
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    if (!IModelHubBaseHandler._defaultIModelHubOptionsProvider)
+      IModelHubBaseHandler._defaultIModelHubOptionsProvider = new DefaultIModelHubRequestOptionsProvider();
+
+    return IModelHubBaseHandler._defaultIModelHubOptionsProvider.assignOptions(options);
+  }
+
+  /**
+   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
+   * @returns Search key for the URL.
+   */
+  protected getUrlSearchKey(): string {
+    return IModelHubBaseHandler.searchKey;
+  }
+
+  /**
+   * Gets the default URL for the service.
+   * @returns Default URL for the service.
+   */
+  protected getDefaultUrl(): string {
+    return IModelHubBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
+  }
+
+  /**
+   * Gets the URL of the service.
+   * Attempts to discover and cache the URL from the URL Discovery Service. If not
+   * found uses the default URL provided by client implementations. Note that for consistency
+   * sake, the URL is stripped of any trailing "/"
+   * @returns URL for the service
+   */
+  public getUrl(): Promise<string> {
+    return super.getUrl();
+  }
+
+  /**
+   * Gets the (delegation) access token to acess the service
+   * @param authorizationToken Authorization token.
+   * @returns Resolves to the (delegation) access token.
+   */
+  public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
+    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
+    return imsClient.getToken(authorizationToken, this.relyingPartyUri);
+  }
+
+  /**
+   * Used by clients to send delete requests without body.
+   * @param token Delegation token
+   * @param relativeUrlPath Relative path to the REST resource.
+   * @returns Promise resolves after successfully deleting REST resource at the specified path.
+   */
+  public delete(token: AccessToken, relativeUrlPath: string): Promise<void> {
+    return super.delete(token, relativeUrlPath);
+  }
+
+  /**
+   * Used by clients to delete strongly typed instances through the standard WSG REST API
+   * @param token Delegation token
+   * @param relativeUrlPath Relative path to the REST resource.
+   * @param instance Instance to be deleted.
+   * @returns Promise resolves after successfully deleting instance.
+   */
+  public deleteInstance<T extends WsgInstance>(token: AccessToken, relativeUrlPath: string, instance?: T): Promise<void> {
+    return super.deleteInstance<T>(token, relativeUrlPath, instance);
+  }
+
+  /**
+   * Used by clients to post strongly typed instances through standard WSG REST API
+   * @param typedConstructor Used by clients to post a strongly typed instance through the REST API that's expected to return a standard response.
+   * @param token Delegation token
+   * @param relativeUrlPath Relative path to the REST resource.
+   * @param instance Strongly typed instance to be posted.
+   * @param requestOptions WSG options for the request.
+   * @returns The posted instance that's returned back from the server.
+   */
+  public postInstance<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+    return super.postInstance<T>(typedConstructor, token, relativeUrlPath, instance, requestOptions);
+  }
+
+  /**
+   * Used by clients to post multiple strongly typed instances through standard WSG REST API
+   * @param typedConstructor Used by clients to post a strongly typed instances through the REST API that's expected to return a standard response.
+   * @param token Delegation token
+   * @param relativeUrlPath Relative path to the REST resource.
+   * @param instances Strongly typed instances to be posted.
+   * @param requestOptions WSG options for the request.
+   * @returns The posted instances that's returned back from the server.
+   */
+  public postInstances<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
+    return super.postInstances(typedConstructor, token, relativeUrlPath, instances, requestOptions);
+  }
+
+  /**
+   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
+   * @param typedConstructor Constructor function for the type
+   * @param token Delegation token
+   * @param relativeUrlPath Relative path to the REST resource.
+   * @param queryOptions Query options.
+   * @returns Array of strongly typed instances.
+   */
+  public getInstances<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
+    return super.getInstances(typedConstructor, token, relativeUrlPath, queryOptions);
+  }
+}
