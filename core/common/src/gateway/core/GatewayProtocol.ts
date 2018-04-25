@@ -130,7 +130,7 @@ export abstract class GatewayProtocol {
     };
   }
 
-  /** @hidden @internal */
+  /** Constructs a protocol. */
   public constructor(configuration: GatewayConfiguration) {
     this.configuration = configuration;
     this.events.addListener ((type, object) => GatewayProtocol.events.raiseEvent(type, object));
