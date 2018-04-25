@@ -459,6 +459,18 @@ export class IModelDb extends IModel {
     this.initializeIModelDb();
   }
 
+  /** Set iModel as Master copy.
+   * @param guid Optionally provide db guid. If its not provided the method would generate one.
+   */
+  public setAsMaster(guid?: Guid): void {
+    if (guid === undefined)
+      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
+        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
+
+    if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
+      throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
+  }
+
   /**
    * Abandon pending changes to this iModel
    */
@@ -760,7 +772,7 @@ export class IModelDbElements {
   /** Private implementation details of getElementProps */
   private _getElementProps(opts: ElementLoadProps): ElementProps {
     const json = this.getElementJson(JSON.stringify(opts));
-    const props = JSON.parse(json) as ElementProps;
+    const props = json as ElementProps;
     props.iModel = this._iModel;
     return props;
   }
@@ -770,7 +782,7 @@ export class IModelDbElements {
    * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
    * @return a json string with the properties of the element.
    */
-  public getElementJson(elementIdArg: string): string {
+  public getElementJson(elementIdArg: string): any {
     const { error, result } = this._iModel.briefcase!.nativeDb.getElement(elementIdArg);
     if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
     return result!;
