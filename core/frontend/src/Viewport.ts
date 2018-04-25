@@ -19,7 +19,7 @@ import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, Npc
 import { IModelApp } from "./IModelApp";
 import { RenderTarget } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
-import { ChangeDecorationsTask, TaskPriority } from "./render/Task";
+import { ChangeDecorationsTask, TaskPriority, SetHiliteTask, OverrideFeatureSymbologyTask } from "./render/Task";
 import { Decorations, ViewFlags } from "@bentley/imodeljs-common";
 
 /** viewport synchronization flags */
@@ -1353,6 +1353,7 @@ export class Viewport {
     const view = this.view;
     const renderQueue = IModelApp.renderQueue;
     const target = this.target;
+
     if (!this.isActive)
       return true;
 
@@ -1368,18 +1369,18 @@ export class Viewport {
     sync.invalidateRedrawPending();  // || m_animator.IsValid(); If animator is active it will have changed frustum thereby invalidating render plan...
 
     if (view.isSelectionSetDirty) {
-      // const task = new SetHiliteTask(priority, target);
-      // renderQueue.addTask(task);
-      view.isSelectionSetDirty = false;
+      const task = new SetHiliteTask(target, priority, view);
+      renderQueue.addTask(task);
+      view.setSelectionSetDirty(false);
       isRedrawNeeded = true;
     }
 
-    // if (view.areFeatureOverridesDirty) {
-    //   const task = new OverrideFeatureSymbologyTask(priority, target);
-    //   renderQueue.addTask(task);
-    //   view.areFeatureOverridesDirty = false
-    //   isRedrawNeeded = true;
-    // }
+    if (view.areFeatureOverridesDirty) {
+      const task = new OverrideFeatureSymbologyTask(target, priority, view);
+      renderQueue.addTask(task);
+      view.setFeatureOverridesDirty(false);
+      isRedrawNeeded = true;
+    }
 
     if (!sync.isValidController)
       this.setupFromView();
@@ -1430,12 +1431,12 @@ export class Viewport {
   }
 
   /** [WIP] */
-  public prepareDecorations(_plan: UpdatePlan, _decorations: Decorations): void {
+  public prepareDecorations(plan: UpdatePlan, decorations: Decorations): void {
     this.sync.setValidDecorations();
-    // if (plan.wantDecorators) {
-    //   const context = new DecorateContext(this, decorations);
-    //   IModelApp.viewManager.callDecorators(context);
-    // }
+    if (plan.wantDecorators) {
+      const context = new DecorateContext(this, decorations);
+      IModelApp.viewManager.callDecorators(context);
+    }
   }
 
   /** [WIP] */
@@ -1445,4 +1446,6 @@ export class Viewport {
     // if (context.viewFlags.showAcsTriad())
     //   this.getAuxCoordSystem()
   }
+
+  public requestScene(_plan: UpdatePlan): void { }
 }

@@ -16,6 +16,8 @@ import { AntiAliasPref,
 import { Viewport } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
+import { HilitedSet } from "../SelectionSet";
+import { FeatureSymbology } from "./FeatureSymbology";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
@@ -69,7 +71,8 @@ export abstract class RenderTarget {
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.system.createGraphic(params); }
   public changeDecorations(decorations: Decorations) { this.decorations = decorations; }
-
+  public abstract setHiliteSet(hilited: HilitedSet): void;
+  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
   /**
    * #TODO: update with logic to determine the device type running application
    */

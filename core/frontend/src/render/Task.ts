@@ -4,6 +4,9 @@
 import { RenderTarget, RenderSystem } from "./System";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { Decorations } from "@bentley/imodeljs-common";
+import { ViewState } from "../ViewState";
+import { HilitedSet } from "../SelectionSet";
+import { FeatureSymbology } from "./FeatureSymbology";
 
 /** The rendering operation a task performs. */
 export const enum TaskOperation {
@@ -141,6 +144,34 @@ export class IdleTask extends NonSceneTask {
   public getName(): string { return "IdleRender"; }
 
   public process(_timer: StopWatch): TaskOutcome { this.system.idle(); return TaskOutcome.Finished; }
+}
+
+export class SetHiliteTask extends SceneTask {
+  public readonly view: ViewState;
+  public readonly hilited: HilitedSet;
+
+  constructor(target: RenderTarget, priority: TaskPriority, view: ViewState) {
+    super(target, TaskOperation.SetHiliteSet, priority);
+    this.view = view;
+    this.hilited = view.iModel.hilited;
+  }
+
+  public getName(): string { return "Set Hilite"; }
+
+  public process(_timer: StopWatch): TaskOutcome { this.target.setHiliteSet(this.hilited); return TaskOutcome.Finished; }
+}
+
+export class OverrideFeatureSymbologyTask extends SceneTask {
+  public readonly overrides: FeatureSymbology.Overrides;
+
+  constructor(target: RenderTarget, priority: TaskPriority, view: ViewState) {
+    super(target, TaskOperation.OverrideFeatureSymbology, priority);
+    this.overrides = new FeatureSymbology.Overrides(view);
+  }
+
+  public getName(): string { return "Override Feature Symbology"; }
+
+  public process(_timer: StopWatch): TaskOutcome { this.target.overrideFeatureSymbology(this.overrides); return TaskOutcome.Finished; }
 }
 
 /**
