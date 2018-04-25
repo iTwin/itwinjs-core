@@ -1,63 +1,60 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as assert from "assert";
 import * as ec from "../EC";
 import { ValuesDictionary } from "../Utils";
-import { Field } from "./Fields";
-import Property, { PropertyAccessor } from "./Property";
-import { NestedContent } from "./Content";
 
-export interface PropertyValueKeys {
-  field: Readonly<Field>;
-  property: Readonly<Property>;
-  keys: Array<Readonly<ec.InstanceKey>>;
-}
-
-export interface FieldPropertyValueKeys {
-  [fieldName: string]: Array<Readonly<PropertyValueKeys>>;
+/** A struct that represents a single content record. */
+export interface ItemJSON {
+  primaryKeys: ec.InstanceKey[];
+  label: string;
+  imageId: string;
+  classInfo?: ec.ClassInfo;
+  values: ValuesDictionary<any>;
+  displayValues: ValuesDictionary<string | undefined>;
+  mergedFieldNames: string[];
 }
 
 /** A struct that represents a single content record. */
-export default interface Item {
-  primaryKeys: Array<Readonly<ec.InstanceKey>>;
-  label: string;
-  imageId: string;
-  classInfo?: Readonly<ec.ClassInfo>;
-  values: Readonly<ValuesDictionary<any>>;
-  displayValues: Readonly<ValuesDictionary<string | undefined>>;
-  mergedFieldNames: string[];
-  fieldPropertyValueKeys: Readonly<FieldPropertyValueKeys>;
-}
+export default class Item {
+  public readonly primaryKeys: Array<Readonly<ec.InstanceKey>>;
+  public readonly label: string;
+  public readonly imageId: string;
+  public readonly classInfo?: Readonly<ec.ClassInfo>;
+  public readonly values: Readonly<ValuesDictionary<any>>;
+  public readonly displayValues: Readonly<ValuesDictionary<string | undefined>>;
+  public readonly mergedFieldNames: string[];
 
-/** Is value of field with the specified name merged in this record. */
-export const isFieldMerged = (item: Item, fieldName: string): boolean => {
-  return -1 !== item.mergedFieldNames.indexOf(fieldName);
-};
-
-/** Get the ECInstanceKeys of instances whose values are contained in the field
- * with the specified name.
- */
-export const getFieldPropertyValueKeys = (item: Item, fieldName: string): PropertyValueKeys[] => {
-  if (item.fieldPropertyValueKeys.hasOwnProperty(fieldName))
-    return item.fieldPropertyValueKeys[fieldName];
-  return [];
-};
-
-/** Get keys of nested instances accessible using supplied accessor. */
-export const getNestedInstanceKeys = (item: Item, accessor: PropertyAccessor[]): ec.InstanceKey[] => {
-  assert(accessor.length >= 2, "For nested fields the accessor length is expected to be at least 2");
-  let values: any = item.values;
-  for (let i = 0; i < accessor.length && values; ++i) {
-    values = values[accessor[i].propertyName];
-    if (undefined !== accessor[i].arrayIndex)
-      values = values[accessor[i].arrayIndex!];
-    else if (Array.isArray(values))
-      values = values[0];
-    const nestedValues: NestedContent = values;
-    values = nestedValues.Values;
-    if (i === accessor.length - 2)
-      return nestedValues.PrimaryKeys;
+  public constructor(primaryKeys: ec.InstanceKey[], label: string, imageId: string, classInfo: ec.ClassInfo | undefined,
+    values: ValuesDictionary<any>, displayValues: ValuesDictionary<string | undefined>, mergedFieldNames: string[]) {
+    this.primaryKeys = primaryKeys;
+    this.label = label;
+    this.imageId = imageId;
+    this.classInfo = classInfo;
+    this.values = values;
+    this.displayValues = displayValues;
+    this.mergedFieldNames = mergedFieldNames;
   }
-  return [];
-};
+
+  /** Is value of field with the specified name merged in this record. */
+  public isFieldMerged(fieldName: string): boolean {
+    return -1 !== this.mergedFieldNames.indexOf(fieldName);
+  }
+
+  /*public toJSON(): ItemJSON {
+    return Object.assign({}, this);
+  }*/
+
+  public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
+    if (!json)
+      return undefined;
+    if (typeof json === "string")
+      return JSON.parse(json, Item.reviver);
+    const descriptor = Object.create(Item.prototype);
+    return Object.assign(descriptor, json);
+  }
+
+  public static reviver(key: string, value: any): any {
+    return key === "" ? Item.fromJSON(value) : value;
+  }
+}

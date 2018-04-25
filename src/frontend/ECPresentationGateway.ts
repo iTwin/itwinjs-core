@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken, Gateway } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
-import { ChangedECInstanceInfo, ECInstanceChangeResult } from "@bentley/ecpresentation-common";
-import { Node, NodeKey, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
+import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
 
@@ -30,14 +29,6 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
     return this.forward.apply(this, arguments);
   }
 
-  public async getNodePaths(_token: Readonly<IModelToken>, _paths: ReadonlyArray<Readonly<NodeKeyPath>>, _markedIndex: number, _options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
-    return this.forward.apply(this, arguments);
-  }
-
-  public async getFilteredNodesPaths(_token: Readonly<IModelToken>, _filterText: string, _options: object): Promise<ReadonlyArray<Readonly<NodePathElement>>> {
-    return this.forward.apply(this, arguments);
-  }
-
   public async getContentDescriptor(_token: Readonly<IModelToken>, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined, _options: object): Promise<Readonly<Descriptor>> {
     return await this.forward.apply(this, arguments);
   }
@@ -48,13 +39,5 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
 
   public async getContent(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<Readonly<Content>> {
     return await this.forward.apply(this, arguments);
-  }
-
-  public async getDistinctValues(_token: Readonly<IModelToken>, _displayType: string, _fieldName: string, _maximumValueCount: number, _options: object): Promise<ReadonlyArray<string>> {
-    return this.forward.apply(this, arguments);
-  }
-
-  public async saveValueChange(_token: Readonly<IModelToken>, _instancesInfo: ReadonlyArray<Readonly<ChangedECInstanceInfo>>, _propertyAccessor: string, _value: any, _options: object): Promise<ReadonlyArray<Readonly<ECInstanceChangeResult>>> {
-    return this.forward.apply(this, arguments);
   }
 }

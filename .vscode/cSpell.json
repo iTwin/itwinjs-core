@@ -37,6 +37,7 @@
         "performant",
         "propertypane",
         "recurse",
+        "readonly",
         "roundtrip",
         "ruleset",
         "rulesets",

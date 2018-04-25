@@ -33,6 +33,7 @@ export const createRandomRelationshipPath = (length: number = 2): ec.Relationshi
       targetClassInfo: createRandomECClassInfo(),
       relationshipInfo: createRandomECClassInfo(),
       isForwardRelationship: faker.random.boolean(),
+      isPolymorphicRelationship: faker.random.boolean(),
     });
   }
   return path;

@@ -6,7 +6,6 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyRecord, isValueEmpty, isArrayValue, isStructValue } from "../common/ContentBuilder";
 import { KeySet, CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item } from "@bentley/ecpresentation-common";
-import { isNestedContentField } from "@bentley/ecpresentation-common/lib/content/Fields";
 
 let favoritesCategory: CategoryDescription | undefined;
 function getFavoritesCategory(): CategoryDescription {
@@ -167,7 +166,7 @@ class PropertyDataBuilder {
       // create/add records for each field
       for (const field of fields.fields[category.name]) {
         const record = this.createRecord(field);
-        if (isNestedContentField(field))
+        if (field.isNestedContentField())
           handleNestedContentRecord(field, record);
         else
           addRecord(field, record);
@@ -223,7 +222,8 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   }
 
   protected invalidateCache(props: CacheInvalidationProps): void {
-    this.getData.cache.clear();
+    if (this.getData)
+      this.getData.cache.clear();
     super.invalidateCache(props);
   }
 

@@ -7,7 +7,6 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
-import { isPrimitiveDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
 import { InstanceKey, KeySet, PageOptions } from "@bentley/ecpresentation-common";
 
 // note: I expect the below types to be defined somewhere outside ecpresentation repository
@@ -239,13 +238,14 @@ export default class GridDataProvider extends ContentDataProvider {
       this._filterExpression = undefined;
       this._sortColumnKey = undefined;
       this._sortDirection = SortDirection.Ascending;
-      this.getColumns.cache.clear();
+      if (this.getColumns)
+        this.getColumns.cache.clear();
     }
 
-    if (props.size)
+    if (props.size && this.getRowsCount)
       this.getRowsCount.cache.clear();
 
-    if (props.content)
+    if (props.content && this.getRow)
       this.getRow.cache.clear();
 
     if ((props.size || props.content) && this._pages)
@@ -307,8 +307,8 @@ export default class GridDataProvider extends ContentDataProvider {
         label: field.label,
         description: propertyDescription,
         sortable: true,
-        editable: !field.isReadOnly,
-        filterable: isPrimitiveDescription(field.description),
+        editable: !field.isReadonly,
+        filterable: (field.type.valueFormat === content.PropertyValueFormat.Primitive),
       };
       cols.push(columnDescription);
     }

@@ -17,7 +17,6 @@ export default abstract class ContentDataProvider {
   private _rulesetId: string;
   private _displayType: string;
   private _descriptor: Readonly<content.Descriptor> | undefined;
-  private _configuredDescriptor: Readonly<content.Descriptor> | undefined;
   private _contentSetSize: number | undefined;
   private _content: Readonly<content.Content> | undefined;
   private _imodelToken: Readonly<IModelToken>;
@@ -45,10 +44,8 @@ export default abstract class ContentDataProvider {
    * selection changes.
    */
   protected invalidateCache(props: CacheInvalidationProps): void {
-    if (props.descriptor) {
+    if (props.descriptor)
       this._descriptor = undefined;
-      this._configuredDescriptor = undefined;
-    }
     if (props.size)
       this._contentSetSize = undefined;
     if (props.content)
@@ -69,14 +66,11 @@ export default abstract class ContentDataProvider {
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
   protected async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
-    if (!this._configuredDescriptor) {
-      if (!this._descriptor) {
-        this._descriptor = await ECPresentation.presentation.getContentDescriptor(this.imodelToken, this._displayType, keys,
-          selectionInfo, this.createRequestOptions());
-      }
-      this._configuredDescriptor = this.configureContentDescriptor(this._descriptor);
+    if (!this._descriptor) {
+      this._descriptor = await ECPresentation.presentation.getContentDescriptor(this.imodelToken, this._displayType, keys,
+        selectionInfo, this.createRequestOptions());
     }
-    return this._configuredDescriptor;
+    return this.configureContentDescriptor(this._descriptor);
   }
 
   /** Called to configure the content descriptor. This is the place where concrete

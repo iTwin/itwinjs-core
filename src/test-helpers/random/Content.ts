@@ -15,7 +15,7 @@ const createRandomSelectClassInfo = (): c.SelectClassInfo => {
   } as c.SelectClassInfo;
 };
 
-const createRandomCategory = (): c.CategoryDescription => {
+export const createRandomCategory = (): c.CategoryDescription => {
   return {
     name: faker.random.word(),
     label: faker.random.words(),
@@ -38,25 +38,36 @@ const createRandomEditorDescription = (): c.EditorDescription => {
   } as c.EditorDescription;
 };
 
-export const createRandomField = (): c.Field => {
+const createRandomFieldJson = () => {
   return {
     category: createRandomCategory(),
     name: faker.random.word(),
     label: faker.random.words(),
-    description: createRandomTypeDescription(),
-    isReadOnly: faker.random.boolean(),
+    type: createRandomTypeDescription(),
+    isReadonly: faker.random.boolean(),
     priority: faker.random.number(),
     editor: nullable(createRandomEditorDescription),
-  } as c.Field;
+  };
 };
 
-export const createRandomDescriptor = (displayType?: string): c.Descriptor => {
+export const createRandomField = (): c.Field => {
+  return c.Field.fromJSON(createRandomFieldJson())!;
+};
+
+const createRandomDescriptorJson = (displayType?: string) => {
   const selectClasses = [createRandomSelectClassInfo(), createRandomSelectClassInfo()];
-  const fields = [createRandomField(), createRandomField(), createRandomField()];
+  const fields = [createRandomFieldJson(), createRandomFieldJson(), createRandomFieldJson()];
   return {
+    connectionId: faker.random.uuid(),
+    inputKeysHash: faker.random.uuid(),
+    contentOptions: faker.random.objectElement(),
     displayType: displayType || faker.lorem.words(),
     selectClasses,
     fields,
     contentFlags: 0,
-  } as c.Descriptor;
+  };
+};
+
+export const createRandomDescriptor = (displayType?: string): c.Descriptor => {
+  return c.Descriptor.fromJSON(createRandomDescriptorJson(displayType))!;
 };

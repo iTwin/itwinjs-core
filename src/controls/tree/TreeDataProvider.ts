@@ -122,14 +122,14 @@ export default class TreeDataProvider {
       id: [...node.key.pathFromRoot].reverse().join("/"),
       label: node.label,
       description: node.description || "",
-      hasChildren: node.hasChildren,
+      hasChildren: node.hasChildren || false,
       labelForeColor: StyleHelper.getForeColor(node),
       labelBackColor: StyleHelper.getBackColor(node),
       labelBold: StyleHelper.isBold(node),
       labelItalic: StyleHelper.isItalic(node),
-      displayCheckBox: node.isCheckboxVisible,
+      displayCheckBox: node.isCheckboxVisible || false,
       checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
-      isCheckBoxEnabled: node.isCheckboxEnabled,
+      isCheckBoxEnabled: node.isCheckboxEnabled || false,
       extendedData: {key: node.key},
     };
     return item;

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PresentationRuleSet RuleSetId="SimpleContent" VersionMajor="1" VersionMinor="0" SupportedSchemas="Generic,BisCore" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ContentRule>
+    <SelectedNodeInstances />
+  </ContentRule>
+</PresentationRuleSet>

@@ -1,15 +1,41 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClassId, InstanceId } from "../EC";
+import { InstanceKey } from "../EC";
 
-export interface NodeKey {
+export enum DefaultNodeTypes {
+  ECInstanceNode = "ECInstanceNode",
+  ECClassGroupingNode = "ECClassGroupingNode",
+  ECPropertyGroupingNode = "ECPropertyGroupingNode",
+  DisplayLabelGroupingNode = "DisplayLabelGroupingNode",
+}
+
+export type NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
+export type NodeKeyPath = NodeKey[];
+
+export interface BaseNodeKey {
   type: string;
   pathFromRoot: string[];
 }
-export interface ECInstanceNodeKey extends NodeKey {
-  classId: ClassId;
-  instanceId: InstanceId;
+
+export interface ECInstanceNodeKey extends BaseNodeKey {
+  type: DefaultNodeTypes.ECInstanceNode;
+  instanceKey: InstanceKey;
 }
 
-export type NodeKeyPath = NodeKey[];
+export interface ECClassGroupingNodeKey extends BaseNodeKey {
+  type: DefaultNodeTypes.ECClassGroupingNode;
+  className: string;
+}
+
+export interface ECPropertyGroupingNodeKey extends BaseNodeKey {
+  type: DefaultNodeTypes.ECPropertyGroupingNode;
+  className: string;
+  propertyName: string;
+  groupingValue: any;
+}
+
+export interface LabelGroupingNodeKey extends BaseNodeKey {
+  type: DefaultNodeTypes.DisplayLabelGroupingNode;
+  label: string;
+}

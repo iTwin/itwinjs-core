@@ -7,11 +7,11 @@ import * as path from "path";
 import * as url from "url";
 
 // Initialize my application gateway configuration for the backend
-import { IModelGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common";
-import { ECPresentationGatewayDefinition as ECPresentationGateway } from "@bentley/ecpresentation-common";
+import { StandaloneIModelGateway, IModelReadGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common";
+import { ECPresentationGateway } from "@bentley/ecpresentation-frontend";
 import SampleGateway from "../SampleGateway";
 BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } },
-  [IModelGateway, ECPresentationGateway, SampleGateway]);
+  [StandaloneIModelGateway, IModelReadGateway, ECPresentationGateway, SampleGateway]);
 
 const isDevBuild = (process.env.NODE_ENV === "development");
 let winRef: any;

@@ -8,7 +8,7 @@ import GatewayConfiguration from "../test-helpers/TestGatewayConfiguration";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ECPresentation as ECPresentationBackend, ECPresentation } from "@bentley/ecpresentation-backend";
 // frontend includes
-import { IModelGateway } from "@bentley/imodeljs-common"; // doesn't really belong to "common"
+import { StandaloneIModelGateway, IModelReadGateway } from "@bentley/imodeljs-common"; // doesn't really belong to "common"
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ECPresentation as ECPresentationFrontend, ECPresentationGateway } from "@bentley/ecpresentation-frontend";
 
@@ -24,7 +24,7 @@ export const initialize = () => {
   // init backend
   IModelHost.startup();
   ECPresentationBackend.initialize({
-    rulesetDirectories: [path.resolve(__dirname, "../assets/rulesets/")],
+    rulesetDirectories: [path.resolve(__dirname, "assets/rulesets/")],
   });
 
   // init frontend
@@ -32,7 +32,7 @@ export const initialize = () => {
   ECPresentationFrontend.initialize();
 
   // set up gateways
-  GatewayConfiguration.initialize([IModelGateway, ECPresentationGateway]);
+  GatewayConfiguration.initialize([StandaloneIModelGateway, IModelReadGateway, ECPresentationGateway]);
 
   isInitialized = true;
 };

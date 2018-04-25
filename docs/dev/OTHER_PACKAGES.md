@@ -38,7 +38,7 @@ cd common/temp
 npm link {OutRoot}/Winx64/packages/imodeljs-native-platform-api
 npm link {OutRoot}/Winx64/packages/imodeljs-native-platform-electron
 npm link {OutRoot}/Winx64/packages/imodeljs-native-platform-node
-npm link {OutRoot}/Winx64/packages/imodeljs-n_8_9-win32-x64
+npm link {OutRoot}/Winx64/packages/imodeljs-n_8-win32-x64
 npm link {OutRoot}/Winx64/packages/imodeljs-e_1_6_11-win32-x64
 cd ../../
 ```

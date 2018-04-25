@@ -5,12 +5,12 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { Gateway, IModelToken } from "@bentley/imodeljs-common";
-import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
-import { Node, NodeKeyPath, NodePathElement } from "@bentley/ecpresentation-common";
-import { SelectionInfo, Content } from "@bentley/ecpresentation-common";
-import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
+import { ECPresentationGatewayDefinition } from "../common";
+import { Node } from "../common";
+import { SelectionInfo, Content } from "../common";
+import { PageOptions, KeySet } from "../common";
 import { createRandomECInstanceKey } from "../test-helpers/random/EC";
-import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement } from "../test-helpers/random/Hierarchy";
+import { createRandomECInstanceNodeKey, createRandomECInstanceNode } from "../test-helpers/random/Hierarchy";
 import { createRandomDescriptor } from "../test-helpers/random/Content";
 import { initializeGateway } from "../test-helpers/GatewayHelper";
 import ECPresentationManager from "./ECPresentationManager";
@@ -42,11 +42,10 @@ describe("ECPresentationGatewayImpl", () => {
     const testData = {
       imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.ReadWrite, "user id"),
       pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
-      nodePathElements: [createRandomNodePathElement(3), createRandomNodePathElement(1)] as NodePathElement[],
       displayType: "sample display type",
       inputKeys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
       selectionInfo: {} as SelectionInfo,
-      descriptor: createRandomDescriptor(),
+      descriptor: createRandomDescriptor() as any, // wip: why Descriptor doesn't work?,
       extendedOptions: { rulesetId: "aaa", someOtherOption: 789 },
     };
     const gateway = new ECPresentationGateway();
@@ -98,32 +97,6 @@ describe("ECPresentationGatewayImpl", () => {
       expect(actualResult).to.eq(result);
     });
 
-    it("calls manager's getNodePaths", async () => {
-      const paths: NodeKeyPath[] = [
-        [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()],
-        [createRandomECInstanceNodeKey()],
-      ];
-      const markedIndex = 555;
-      const result: NodePathElement[] = [createRandomNodePathElement(3), createRandomNodePathElement(1), createRandomNodePathElement(2)];
-      mock.setup((x) => x.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions))
-        .returns(() => Promise.resolve(result))
-        .verifiable();
-      const actualResult = await gateway.getNodePaths(testData.imodelToken, paths, markedIndex, testData.extendedOptions);
-      mock.verifyAll();
-      expect(actualResult).to.deep.eq(result);
-    });
-
-    it("calls manager's getFilteredNodesPaths", async () => {
-      const filterText = "test filter";
-      const result: NodePathElement[] = [createRandomNodePathElement(1), createRandomNodePathElement(2)];
-      mock.setup((x) => x.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions))
-        .returns(() => Promise.resolve(result))
-        .verifiable();
-      const actualResult = await gateway.getFilteredNodesPaths(testData.imodelToken, filterText, testData.extendedOptions);
-      mock.verifyAll();
-      expect(actualResult).to.deep.eq(result);
-    });
-
     it("calls manager's getContentDescriptor", async () => {
       const result = testData.descriptor;
       mock.setup((x) => x.getContentDescriptor(testData.imodelToken, testData.displayType, testData.inputKeys, testData.selectionInfo, testData.extendedOptions))
@@ -147,27 +120,15 @@ describe("ECPresentationGatewayImpl", () => {
     });
 
     it("calls manager's getContent", async () => {
-      const result = {
+      const result = Content.fromJSON({
         descriptor: testData.descriptor,
-      } as Content;
+        contentSet: [],
+      }) as any; // wip: why is casting to any required?
       mock.setup((x) => x.getContent(testData.imodelToken, testData.descriptor, testData.inputKeys, testData.pageOptions, testData.extendedOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await gateway.getContent(testData.imodelToken, testData.descriptor,
         testData.inputKeys, testData.pageOptions, testData.extendedOptions);
-      expect(actualResult).to.deep.eq(result);
-    });
-
-    it("calls manager's getDistinctValues", async () => {
-      const fieldName = "test field name";
-      const maxValueCount = 789;
-      const result = ["one", "two", "three"];
-      mock.setup((x) => x.getDistinctValues(testData.imodelToken, testData.displayType, fieldName, maxValueCount, testData.extendedOptions))
-        .returns(() => Promise.resolve(result))
-        .verifiable();
-      const actualResult = await gateway.getDistinctValues(testData.imodelToken, testData.displayType,
-        fieldName, maxValueCount, testData.extendedOptions);
-      mock.verifyAll();
       expect(actualResult).to.deep.eq(result);
     });
 

@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import * as path from "path";
 import * as faker from "faker";
+import { mapSourcePosition } from "source-map-support";
 
 // tslint:disable-next-line:no-var-requires
 const chaiJestSnapshot = require("chai-jest-snapshot");
@@ -27,11 +27,17 @@ beforeEach(function() {
   faker.seed(seed);
 
   // set up snapshot name
-  const testFilePath = path.parse((currentTest as any).file);
-  const fixedDir = testFilePath.dir.split("\\").join("/");
-  const dir = fixedDir.split("lib/").join("");
-  const fileName = testFilePath.name + ".ts.snap";
-  const snapPath = path.resolve(dir, fileName);
+  const testFilePath: string = (currentTest as any).file;
+  const sourceFilePath = getSourceFilePath(testFilePath);
+  const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
 });
+
+const getSourceFilePath = (executedFilePath: string): string => {
+  return mapSourcePosition({
+    source: executedFilePath,
+    line: 3,
+    column: 1,
+  }).source;
+};

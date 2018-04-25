@@ -126,7 +126,7 @@ export default class KeySet {
         this._instanceKeys.set(value.className, new Set());
       this._instanceKeys.get(value.className)!.add(value.id.value);
     } else if (this.isEntityProps(value)) {
-      this.add({ className: value.classFullName, id: value.id! } as InstanceKey);
+      this.add({ className: value.classFullName, id: new Id64(value.id) } as InstanceKey);
     } else {
       assert(false);
     }

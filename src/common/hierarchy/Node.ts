@@ -11,11 +11,11 @@ export default interface Node {
   foreColor?: string;
   backColor?: string;
   fontStyle?: string;
-  hasChildren: boolean;
-  isSelectable: boolean;
-  isEditable: boolean;
-  isChecked: boolean;
-  isExpanded: boolean;
-  isCheckboxVisible: boolean;
-  isCheckboxEnabled: boolean;
+  hasChildren?: boolean;
+  isSelectable?: boolean;
+  isEditable?: boolean;
+  isChecked?: boolean;
+  isExpanded?: boolean;
+  isCheckboxVisible?: boolean;
+  isCheckboxEnabled?: boolean;
 }

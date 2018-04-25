@@ -9,8 +9,7 @@ export default abstract class SampleGateway extends Gateway {
   public static version = "1.0.0";
 
   /** The types that can be marshaled by the gateway. */
-  public static types = () => [
-  ]
+  public static types = () => [];
 
   public abstract getSampleImodels(): Promise<string[]>;
 }

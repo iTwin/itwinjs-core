@@ -18,7 +18,7 @@ describe("ECPresentation", () => {
       ECPresentation.initialize();
       initializeGateway(ECPresentationGateway);
       expect(ECPresentation.manager).to.be.instanceof(ECPresentationManager);
-      expect(Gateway.getImplementationForGateway(ECPresentationGatewayDefinition)).to.be.instanceof(ECPresentationGateway);
+      expect(Gateway.getProxyForGateway(ECPresentationGatewayDefinition)).to.be.instanceof(ECPresentationGateway);
     });
 
   });

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as ec from "../EC";
-import { Field, resetParentship as resetFieldParentship, rebuildParentship as rebuildFieldParentship } from "./Fields";
+import { Field, FieldJSON } from "./Fields";
 
 /** Data structure that describes an ECClass in ContentDescriptor. In addition to the class
  * itself the structure holds its relationship path to the primary ECClass and paths
@@ -46,15 +46,16 @@ export interface SelectionInfo {
   level?: number;
 }
 
-/** Describes the content: fields, sorting, filtering, format. Users may change
- * @ref Descriptor to control what content they get and how they get it.
- */
-export default interface Descriptor {
+export interface DescriptorJSON {
+  connectionId: string;
+  inputKeysHash: string;
+  contentOptions: any;
+  selectionInfo?: SelectionInfo;
   displayType: string;
-  selectClasses: Array<Readonly<SelectClassInfo>>;
-  fields: Array<Readonly<Field>>;
-  sortingField?: Readonly<Field>;
-  sortDirection: SortDirection;
+  selectClasses: SelectClassInfo[];
+  fields: FieldJSON[];
+  sortingFieldName?: string;
+  sortDirection?: SortDirection;
   contentFlags: number;
   filterExpression?: string;
 }
@@ -63,32 +64,72 @@ export default interface Descriptor {
 export interface DescriptorOverrides {
   displayType: string;
   hiddenFieldNames: string[];
-  sortingFieldName?: string;
-  sortDirection: SortDirection;
   contentFlags: number;
+  sortingFieldName?: string;
+  sortDirection?: SortDirection;
   filterExpression?: string;
 }
 
-/** @hidden */
-export const createDescriptorOverrides = (descriptor: Descriptor): DescriptorOverrides => {
-  return {
-    displayType: descriptor.displayType,
-    hiddenFieldNames: [],
-    sortingFieldName: descriptor.sortingField ? descriptor.sortingField.name : undefined,
-    sortDirection: descriptor.sortDirection,
-    contentFlags: descriptor.contentFlags,
-    filterExpression: descriptor.filterExpression,
-  };
-};
+/** Describes the content: fields, sorting, filtering, format. Users may change
+ * @ref Descriptor to control what content they get and how they get it.
+ */
+export default class Descriptor {
+  public readonly connectionId: string = "";
+  public readonly inputKeysHash: string = "";
+  public readonly contentOptions: any;
+  public readonly selectionInfo?: SelectionInfo;
+  public readonly displayType: string = "";
+  public readonly selectClasses: SelectClassInfo[] = [];
+  public readonly fields: Field[] = [];
+  public contentFlags: number = 0;
+  public sortingField?: Field;
+  public sortDirection?: SortDirection;
+  public filterExpression?: string;
 
-/** @hidden */
-export const resetParentship = (descriptor: Descriptor): void => {
-  for (const field of descriptor.fields)
-    resetFieldParentship(field);
-};
+  private constructor() {}
 
-/** @hidden */
-export const rebuildParentship = (descriptor: Descriptor): void => {
-  for (const field of descriptor.fields)
-    rebuildFieldParentship(field);
-};
+  /*public toJSON(): DescriptorJSON {
+    return Object.assign({}, this, {
+      fields: this.fields.map((field: Field) => field.toJSON()),
+    });
+  }*/
+
+  public static fromJSON(json: DescriptorJSON | string | undefined): Descriptor | undefined {
+    if (!json)
+      return undefined;
+    if (typeof json === "string")
+      return JSON.parse(json, Descriptor.reviver);
+    const descriptor = Object.create(Descriptor.prototype);
+    return Object.assign(descriptor, json, {
+      fields: json.fields.map((fieldJson: FieldJSON) => Field.fromJSON(fieldJson)),
+    });
+  }
+
+  public static reviver(key: string, value: any): any {
+    return key === "" ? Descriptor.fromJSON(value) : value;
+  }
+
+  /** @hidden */
+  public createDescriptorOverrides(): DescriptorOverrides {
+    return {
+      displayType: this.displayType,
+      hiddenFieldNames: [],
+      sortingFieldName: this.sortingField ? this.sortingField.name : undefined,
+      sortDirection: this.sortDirection,
+      contentFlags: this.contentFlags,
+      filterExpression: this.filterExpression,
+    };
+  }
+
+  /** @hidden */
+  public resetParentship(): void {
+    for (const field of this.fields)
+      field.resetParentship();
+  }
+
+  /** @hidden */
+  public rebuildParentship(): void {
+    for (const field of this.fields)
+      field.rebuildParentship();
+  }
+}

@@ -82,6 +82,7 @@ const runOnce = () => {
     };
     mocha = mocha.reporter("mocha-multi-reporters", reporterOptions).ignoreLeaks(false).useColors(true).fullTrace();
   }
+  mocha.timeout(10000);
   mocha.enableTimeouts(timeoutsEnabled);
   getTestFiles().forEach((file) => {
     mocha.addFile(file);

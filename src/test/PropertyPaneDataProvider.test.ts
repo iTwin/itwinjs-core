@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import { initialize, terminate } from "./IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { ModelProps, ElementProps } from "@bentley/imodeljs-common";
+import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import { PropertyPaneDataProvider } from "@bentley/ecpresentation-controls";
@@ -22,21 +22,16 @@ interface MeaningfulInstances {
   repositoryModel: ModelProps;
   functionalModel: ModelProps;
   physicalModel: ModelProps;
-  functionalElement: ElementProps;
-  physicalElement: ElementProps;
 }
 const createMeaningfulInstances = async (imodel: IModelConnection): Promise<MeaningfulInstances> => {
   return {
     repositoryModel: (await imodel.models.queryProps({ from: "bis.RepositoryModel" }))[0],
     functionalModel: (await imodel.models.queryProps({ from: "func.FunctionalModel" }))[0],
     physicalModel: (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0],
-    functionalElement: (await imodel.elements.queryProps({ from: "func.FunctionalElement" }))[0],
-    physicalElement: (await imodel.elements.queryProps({ from: "bis.PhysicalElement" }))[0],
   };
 };
 
-// wip: all fail because of serialization format mismatch between js and native
-describe.skip("PropertyPaneDataProvider", async () => {
+describe("PropertyPaneDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
@@ -46,14 +41,14 @@ describe.skip("PropertyPaneDataProvider", async () => {
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new PropertyPaneDataProvider(imodel.iModelToken, "Simple");
+    provider = new PropertyPaneDataProvider(imodel.iModelToken, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();
   });
 
   it("creates property data", async () => {
-    provider.keys = new KeySet([instances.functionalElement]);
+    provider.keys = new KeySet([instances.functionalModel]);
     const properties = await provider.getData();
     expect(properties).to.matchSnapshot();
   });

@@ -56,6 +56,9 @@ export interface RelatedClassInfo {
 
   /** Should the relationship be followed in a forward direction to access the related class. */
   isForwardRelationship: boolean;
+
+  /** Is the relationship handled polymorphically */
+  isPolymorphicRelationship: boolean;
 }
 
 /** A structure that describes a related class path. */

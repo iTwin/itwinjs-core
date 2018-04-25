@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import { initialize, terminate } from "./IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { ModelProps, ElementProps } from "@bentley/imodeljs-common";
+import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import { GridDataProvider, SortDirection } from "@bentley/ecpresentation-controls";
@@ -22,21 +22,16 @@ interface MeaningfulInstances {
   repositoryModel: ModelProps;
   functionalModel: ModelProps;
   physicalModel: ModelProps;
-  functionalElement: ElementProps;
-  physicalElement: ElementProps;
 }
 const createMeaningfulInstances = async (imodel: IModelConnection): Promise<MeaningfulInstances> => {
   return {
     repositoryModel: (await imodel.models.queryProps({ from: "bis.RepositoryModel" }))[0],
     functionalModel: (await imodel.models.queryProps({ from: "func.FunctionalModel" }))[0],
     physicalModel: (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0],
-    functionalElement: (await imodel.elements.queryProps({ from: "func.FunctionalElement" }))[0],
-    physicalElement: (await imodel.elements.queryProps({ from: "bis.PhysicalElement" }))[0],
   };
 };
 
-// wip: all fail because of serialization format mismatch between js and native
-describe.skip("GridDataProvider", async () => {
+describe("GridDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
@@ -46,7 +41,7 @@ describe.skip("GridDataProvider", async () => {
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new GridDataProvider(imodel.iModelToken, "Simple");
+    provider = new GridDataProvider(imodel.iModelToken, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();
@@ -55,13 +50,13 @@ describe.skip("GridDataProvider", async () => {
   describe("getColumns", () => {
 
     it("returns columns for a single instance", async () => {
-      provider.keys = new KeySet([instances.functionalElement]);
+      provider.keys = new KeySet([instances.functionalModel]);
       const columns = await provider.getColumns();
       expect(columns).to.matchSnapshot();
     });
 
     it("returns columns for multiple instances", async () => {
-      provider.keys = new KeySet([instances.functionalElement, instances.physicalElement]);
+      provider.keys = new KeySet([instances.functionalModel, instances.physicalModel]);
       const columns = await provider.getColumns();
       expect(columns).to.matchSnapshot();
     });
@@ -71,15 +66,16 @@ describe.skip("GridDataProvider", async () => {
   describe("getRowsCount", () => {
 
     it("returns total number of instances when less than page size", async () => {
-      provider.keys = new KeySet([instances.functionalElement, instances.physicalElement]);
+      provider.keys = new KeySet([instances.functionalModel, instances.physicalModel]);
       const count = await provider.getRowsCount();
       expect(count).to.eq(2);
     });
 
     it("returns total number of instances when more than page size", async () => {
-      provider.keys = new KeySet([instances.functionalModel]);
+      const keys = await imodel.elements.queryProps({ from: "functional.FunctionalElement", limit: 99 });
+      provider.keys = new KeySet(keys);
       const count = await provider.getRowsCount();
-      expect(count).to.eq(1200);
+      expect(count).to.eq(99);
     });
 
   });
@@ -87,13 +83,13 @@ describe.skip("GridDataProvider", async () => {
   describe("getRow", () => {
 
     it("returns first row", async () => {
-      provider.keys = new KeySet([instances.functionalElement]);
+      provider.keys = new KeySet([instances.functionalModel]);
       const row = await provider.getRow(0);
       expect(row).to.matchSnapshot();
     });
 
     it("returns undefined when requesting row with invalid index", async () => {
-      provider.keys = new KeySet([instances.functionalElement]);
+      provider.keys = new KeySet([instances.functionalModel]);
       const row = await provider.getRow(1);
       expect(row).to.be.undefined;
     });
@@ -103,14 +99,14 @@ describe.skip("GridDataProvider", async () => {
   describe("getLoadedRow", () => {
 
     it("returns undefined when row not loaded", async () => {
-      provider.keys = new KeySet([instances.functionalElement]);
+      provider.keys = new KeySet([instances.functionalModel]);
       const row = provider.getLoadedRow(0);
       expect(row).to.be.undefined;
     });
 
     it("returns a row when it's loaded", async () => {
-      provider.keys = new KeySet([instances.functionalElement]);
-      await provider.getRow(1);
+      provider.keys = new KeySet([instances.functionalModel]);
+      await provider.getRow(0);
       const row = provider.getLoadedRow(0);
       expect(row).to.not.be.undefined;
     });
@@ -144,8 +140,8 @@ describe.skip("GridDataProvider", async () => {
   describe("[set] imodelToken", () => {
 
     it("invalidates content after imodelToken changes", async () => {
-      provider.keys = new KeySet([instances.functionalElement]);
-      await provider.getRow(1);
+      provider.keys = new KeySet([instances.functionalModel]);
+      await provider.getRow(0);
       let row = provider.getLoadedRow(0);
       expect(row).to.not.be.undefined;
       provider.imodelToken = { ...imodel.iModelToken };

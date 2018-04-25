@@ -1,6 +1,0 @@
---require source-map-support/register
---check-leaks
---watch-extensions ts
---colors
--u tdd
---recursive

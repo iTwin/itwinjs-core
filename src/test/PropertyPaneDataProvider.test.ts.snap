@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PropertyPaneDataProvider creates property data 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Miscellaneous",
+      "name": "Miscellaneous",
+    },
+  ],
+  "description": "Functional Model",
+  "label": "Functional Model-0-H",
+  "records": Object {
+    "Miscellaneous": Array [
+      Object {
+        "description": "Functional Model-0-H",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Label",
+          "editor": undefined,
+          "name": "DisplayLabel",
+          "typename": "string",
+        },
+        "unit": "",
+        "value": Object {
+          "displayValue": "Functional Model-0-H",
+          "value": "Functional Model-0-H",
+          "valueFormat": "Primitive",
+        },
+      },
+      Object {
+        "description": "Functional-Tag",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "editor": undefined,
+          "name": "FunctionalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "unit": "",
+        "value": Object {
+          "displayValue": "Functional-Tag",
+          "value": 17,
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+  },
+}
+`;

@@ -86,7 +86,7 @@
       "name": "Tests: Integration",
       "protocol": "inspector",
       "program": "${workspaceFolder}/scripts/run-tests.js",
-      "cwd": "${workspaceFolder}/src/tests",
+      "cwd": "${workspaceFolder}/src/test",
       "args": [
         "--noTimeouts"
       ],
