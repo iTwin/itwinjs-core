@@ -2,9 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
-import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
+import { Point3d, Point2d } from "@bentley/geometry-core";
+import { AttributeHandle, BufferHandle, QBufferHandle3d, QBufferHandle2d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
@@ -15,11 +16,11 @@ import { GL } from "./GL";
 // Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
   // Returns true if white portions of this geometry should render as black on white background
-  protected abstract _wantWoWReversal(target: Target): boolean;
+  protected _wantWoWReversal(_target: Target): boolean { return false; }
   // Returns the edge/line weight used to render this geometry
-  protected abstract _getLineWeight(params: ShaderProgramParams): number;
+  protected _getLineWeight(_params: ShaderProgramParams): number { return 0; }
   // Returns the edge/line pattern used to render this geometry
-  protected abstract _getLineCode(params: ShaderProgramParams): number;
+  protected _getLineCode(_params: ShaderProgramParams): number { return LineCode.solid; }
 
   // Returns the ID of the Technique used to render this geometry
   public abstract getTechniqueId(target: Target): TechniqueId;
@@ -28,7 +29,7 @@ export abstract class CachedGeometry {
   // Returns the 'order' of this geometry, which determines how z-fighting is resolved.
   public abstract get renderOrder(): RenderOrder;
   // Returns true if this is a lit surface
-  public abstract get isLitSurface(): boolean;
+  public get isLitSurface(): boolean { return false; }
 
   // Returns the origin of this geometry's quantization parameters.
   public abstract get qOrigin(): Float32Array;
@@ -43,7 +44,7 @@ export abstract class CachedGeometry {
   public get material(): MaterialData | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public set uniformFeatureIndices(value: number) { assert(undefined !== value); } // silence 'unused variable' warning...
-  public abstract get featuresInfo(): FeaturesInfo | undefined;
+  public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
 
   public get isEdge(): boolean {
     switch (this.renderOrder) {
@@ -113,27 +114,112 @@ export class IndexedGeometryParams {
 
 // A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
 export abstract class IndexedGeometry extends CachedGeometry {
-  protected readonly params: IndexedGeometryParams;
+  protected readonly _params: IndexedGeometryParams;
 
   protected constructor(params: IndexedGeometryParams) {
     super();
-    this.params = params;
+    this._params = params;
   }
 
   public bindVertexArray(gl: WebGLRenderingContext, attr: AttributeHandle): void {
-    attr.enableArray(gl, this.params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
+    attr.enableArray(gl, this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
   }
   public draw(gl: WebGLRenderingContext): void {
-    this.params.indices.bind(gl, GL.Buffer.Target.ElementArrayBuffer);
-    gl.drawElements(GL.PrimitiveType.Triangles, this.params.numIndices, GL.DataType.UnsignedInt, 0);
+    this._params.indices.bind(gl, GL.Buffer.Target.ElementArrayBuffer);
+    gl.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, GL.DataType.UnsignedInt, 0);
   }
 
-  public get qOrigin() { return this.params.positions.origin; }
-  public get qScale() { return this.params.positions.scale; }
+  public get qOrigin() { return this._params.positions.origin; }
+  public get qScale() { return this._params.positions.scale; }
 }
 
-export abstract class ViewportQuadGeometry extends IndexedGeometry { /* ###TODO */ }
-export abstract class TexturedViewportQuadGeometry extends ViewportQuadGeometry { /* ###TODO */ }
+// A quad with its corners mapped to the dimensions as the viewport, used for special rendering techniques.
+class ViewportQuad {
+  public readonly vertices: Uint16Array;
+  public readonly vertexParams: QParams3d;
+  public readonly indices = new Uint32Array(6);
+  public readonly textureUV: Uint16Array;
+  public readonly textureParams: QParams2d;
+
+  public constructor() {
+    const pt = new Point3d(-1, -1, 0);
+    const vertices = new QPoint3dList(QParams3d.fromNormalizedRange());
+    vertices.add(pt);
+    pt.x = 1;
+    vertices.add(pt);
+    pt.y = 1;
+    vertices.add(pt);
+    pt.x = -1;
+    vertices.add(pt);
+
+    this.vertices = vertices.toTypedArray();
+    this.vertexParams = vertices.params;
+
+    this.indices[0] = 0;
+    this.indices[1] = 1;
+    this.indices[2] = 2;
+    this.indices[3] = 0;
+    this.indices[4] = 2;
+    this.indices[5] = 3;
+
+    const uv = new Point2d(0, 0);
+    const textureUV = new QPoint2dList(QParams2d.fromZeroToOne());
+    textureUV.add(uv);
+    uv.x = 1;
+    textureUV.add(uv);
+    uv.y = 1;
+    textureUV.add(uv);
+    uv.x = 0;
+    textureUV.add(uv);
+
+    this.textureUV = textureUV.toTypedArray();
+    this.textureParams = textureUV.params;
+  }
+
+  public createParams(gl: WebGLRenderingContext) {
+    return IndexedGeometryParams.create(gl, this.vertices, this.vertexParams, this.indices);
+  }
+}
+
+const _viewportQuad = new ViewportQuad();
+
+// Geometry used for view-space rendering techniques.
+export class ViewportQuadGeometry extends IndexedGeometry {
+  protected _techniqueId: TechniqueId;
+
+  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId) {
+    super(params);
+    this._techniqueId = techniqueId;
+  }
+  public static create(gl: WebGLRenderingContext, techniqueId: TechniqueId) {
+    const params = _viewportQuad.createParams(gl);
+    return undefined !== params ? new ViewportQuadGeometry(params, techniqueId) : undefined;
+  }
+
+  public getTechniqueId(_target: Target) { return this._techniqueId; }
+  public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
+  public get renderOrder() { return RenderOrder.Surface; }
+  public toViewportQuad() { return this; }
+}
+
+// Geometry used for view-space rendering techniques which involve sampling one or more textures.
+export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
+  public readonly uvParams: QBufferHandle2d;
+  // ###TODO list of textures...
+
+  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId, uvParams: QBufferHandle2d) {
+    super(params, techniqueId);
+    this.uvParams = uvParams;
+  }
+  public static create(gl: WebGLRenderingContext, techniqueId: TechniqueId) {
+    const params = _viewportQuad.createParams(gl);
+    const uvBuf = QBufferHandle2d.create(gl, _viewportQuad.textureParams, _viewportQuad.textureUV);
+    return undefined !== params && undefined !== uvBuf ? new TexturedViewportQuadGeometry(params, techniqueId, uvBuf) : undefined;
+  }
+
+  public toTexturedViewportQuad() { return this; }
+}
+
 export abstract class CompositeGeometry extends TexturedViewportQuadGeometry { /* ###TODO */ }
 export abstract class EdgeGeometry { /* ###TODO */ }
 export abstract class PointStringGeometry { /* ###TODO */ }

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Capabilities, RenderType, DepthType, ViewportQuad, TexturedViewportQuad } from "@bentley/imodeljs-frontend/lib/rendering";
+import { expect } from "chai";
+import { Capabilities, RenderType, DepthType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { WebGLTestContext } from "./WebGLTestContext";
 
 describe("System WebGL Capabilities", () => {
@@ -57,29 +57,5 @@ describe("System WebGL Capabilities", () => {
     expect(cap.supportsDrawBuffers).to.be.true; // drawBuffers currently needed (remove when no longer a requirement)
     expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers")).to.not.be.undefined;
     expect(cap.queryExtensionObject<OES_texture_float>("Fake extension")).to.be.undefined; // test fake extension
-  });
-});
-
-describe("ViewportQuad Tests", () => {
-  it("ViewportQuad works as expected", () => {
-    const vpquad = new ViewportQuad();
-    assert.isTrue(vpquad.indices[0] === 0, "index 0 correct");
-    assert.isTrue(vpquad.indices[1] === 1, "index 1 correct");
-    assert.isTrue(vpquad.indices[2] === 2, "index 2 correct");
-    assert.isTrue(vpquad.indices[3] === 0, "index 0 correct");
-    assert.isTrue(vpquad.indices[4] === 2, "index 2 correct");
-    assert.isTrue(vpquad.indices[5] === 3, "index 3 correct");
-    assert.isTrue(vpquad.vertices.length === 4, "vertices initialized correctly");
-  });
-  it("TexturedViewportQuad works as expected", () => {
-    const tvpquad = new TexturedViewportQuad();
-    assert.isTrue(tvpquad.indices[0] === 0, "index 0 correct");
-    assert.isTrue(tvpquad.indices[1] === 1, "index 1 correct");
-    assert.isTrue(tvpquad.indices[2] === 2, "index 2 correct");
-    assert.isTrue(tvpquad.indices[3] === 0, "index 0 correct");
-    assert.isTrue(tvpquad.indices[4] === 2, "index 2 correct");
-    assert.isTrue(tvpquad.indices[5] === 3, "index 3 correct");
-    assert.isTrue(tvpquad.vertices.length === 4, "vertices initialized correctly");
-    assert.isTrue(tvpquad.textureUV.length === 4, "textureUV initialized correctly");
   });
 });
