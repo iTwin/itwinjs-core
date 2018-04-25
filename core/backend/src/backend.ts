@@ -40,10 +40,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description BisCore
  * Classes for working with the major classes in the BisCore schema. The key classes are:
- * * #BisCore
- * * #Model
- * * #Element
- * * #Category
+ * * [BisCore]($imodeljs-backend/BisCore)
+ * * [Model]($imodeljs-backend/Model)
+ * * [Element]($imodeljs-backend/Element)
+ * * [Category]($imodeljs-backend/Category)
  * For more information, see [BIS Overview]($docs/overview/overview/BIS.md)
  */
  /**
@@ -74,8 +74,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description iModels
  * Classes for working with iModels. The key classes are:
- * * #IModelDb
- * * #ConcurrencyControl
+ * * [IModelDb]($imodeljs-backend.IModelDb)
+ * * [ConcurrencyControl]($imodeljs-backend.ConcurrencyControl)
  * For more information, see [iModel Overview]($docs/overview/overview/IModels.md)
  */
 /**
@@ -91,5 +91,5 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Views
  * Classes for working with views of models and elements. The key classes are:
- * * #ViewDefinition
+ * * [ViewDefinition]($imodeljs-backend.ViewDefinition)
  */

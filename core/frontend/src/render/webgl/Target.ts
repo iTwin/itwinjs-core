@@ -2,8 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
+import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
+import { HilitedSet } from "../../SelectionSet";
+import { FeatureSymbology } from "../FeatureSymbology";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -132,14 +135,29 @@ export class GLESClips {
 }
 
 export class Target extends RenderTarget {
+  private readonly _tempViewFlags = new ViewFlags(); // ###TODO BranchStack...
+  protected _overrides?: FeatureSymbology.Overrides;
+  protected _overridesUpdateTime?: BeTimePoint;
+  protected _hilite?: HilitedSet;
+  protected _hiliteUpdateTime?: BeTimePoint;
   public readonly tileSizeModifier: number;
   public readonly gl: WebGLRenderingContext;
-  private readonly _tempViewFlags = new ViewFlags(); // ###TODO BranchStack...
-
+  public get hilite(): HilitedSet { return this._hilite!; }
+  public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
   protected constructor(system: RenderSystem, gl: WebGLRenderingContext, tileSizeModifier: number = RenderTarget.defaultTileSizeModifier()) {
     super(system);
     this.gl = gl;
     this.tileSizeModifier = tileSizeModifier;
+  }
+
+  public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
+    this._overrides = ovr;
+    this._overridesUpdateTime = BeTimePoint.now();
+  }
+
+  public setHiliteSet(hilite: HilitedSet): void {
+    this._hilite = hilite;
+    this._hiliteUpdateTime = BeTimePoint.now();
   }
 
   public get currentViewFlags() { return this._tempViewFlags; } // ###TODO BranchStack...

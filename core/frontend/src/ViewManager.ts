@@ -180,5 +180,6 @@ export class ViewManager {
     IModelApp.accuDraw.display(context);
     IModelApp.toolAdmin.decorate(context);
     context.viewport.callDecorators(context);
+    // decorators.callAllHandlers(new DecoratorCaller(context));
   }
 }

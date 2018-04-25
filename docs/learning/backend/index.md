@@ -1,6 +1,6 @@
 # The Backend Library
 
-The Backend refers to the layers of the iModelJs library that runs on a computer with a copy of an iModel. The backend always runs in-process (i.e. in the same address space) with the native layers.
+The Backend refers to the layers of the iModelJs library that run on a computer with a copy of an iModel. The backend always runs in-process (i.e. in the same address space) with the native layers.
 
 The backend:
 
