@@ -10,6 +10,9 @@ import {
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestIModelInfo } from "./MockAssetUtil";
+import { HubTestUtils } from "./HubTestUtils";
+import { TestConfig } from "./TestConfig";
 import * as path from "path";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
@@ -101,6 +104,29 @@ export class TestUsers {
 }
 
 export class IModelTestUtils {
+
+  public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
+    const accessToken = await IModelTestUtils.getTestUserAccessToken();
+    const testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
+
+    for (const iModelInfo of testIModels) {
+      iModelInfo.id = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
+      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
+
+      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
+      iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
+
+      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
+
+      // Purge briefcases that are close to reaching the acquire limit
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, iModelInfo.name);
+    }
+
+    return [accessToken, testProjectId, cacheDir];
+  }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)

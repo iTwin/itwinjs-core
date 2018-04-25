@@ -1,5 +1,6 @@
-# Appendix C BIS Domain Design Fundamentals
+# Appendix - BIS Domain Design Fundamentals
 
+<!--
 ## Introduction
 
 ## Begin with the end in mind
@@ -14,8 +15,6 @@
 
 ## Planning Ahead for Interop
 
-## What is X in BIO and BIS?
-
 Physical Elements
 
 Spatial Location Elements
@@ -26,8 +25,7 @@ Information
 
 ## Modeling Roles
 
-BIS doesn’t have to following BIO exactly
-
 Choosing the right option
 
 ## Example with Code?
+-->

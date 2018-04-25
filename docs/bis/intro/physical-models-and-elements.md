@@ -11,6 +11,7 @@ A PhysicalElement can be the result of a project; be materials consumed by an ac
 TODO: *AB> Suggest practical/simple explanation before theoretical/complex one*
 
 ## PhysicalElements
+
 **Spatial.** All things physical have mass [energy] and exist within a contiguous spatial boundary [form] and is, of course, at a specific location. With SpatialElement already a fundamental concept in BIS, it is natural to have it as the base class for PhysicalElement. In essence; a PhysicalElement brings matter to a SpatialElement.
 
 TODO: *AB> Guaranteed to be contiguous?*
@@ -47,7 +48,7 @@ TODO: what is the relation between portion and ElementEncapsulatesChildElements
 TODO: what about aggregation BIS also supports elaboration and modification assemblies?
 TODO: not clear which one deals with “road surface example”
 
-**Instance vs Type.** It’s easy to miss, but important to remember that PhysicalElements are instance; not types. (I.e. not types of real world entities; they are real world entities). The PhysicalElement doesn’t have to exist yet, but when it does, there can be only one. Therefore, what’s identified by a PhysicalElement is the single physical entity as it exists - actually or potentially - in the real world. 
+**Instance vs Type.** It’s easy to miss, but important to remember that PhysicalElements are instance; not types. (I.e. not types of real world entities; they are real world entities). The PhysicalElement doesn’t have to exist yet, but when it does, there can be only one. Therefore, what’s identified by a PhysicalElement is the single physical entity as it exists - actually or potentially - in the real world.
 
 Of course, there is the undeniable need for types of physical entities. E.g. an entry in a masonry catalog may contain the type "Red Face Brick C216-16 SW”. In BIS these are called PhysicalTypes. PhysicalTypes falls under InformationContentElements. They are optional as far as the PhysicalElement is concerned. A PhysicalElement may reference [zero or one] such a type definition via the PhysicalElementIsOfType relationship. PhysicalTypes have their own properties and relationships. PhysicalElements with the PhysicalElementIsOfType relationship can gain a lot of common properties and behavior from their shared type definition.
 
@@ -59,9 +60,7 @@ TODO: *AB> Materials never have form. PhysicalTypes always have form and may hav
 
 **Past, Present, Future.** PhysicalElements may refer to potential real-world entities - ones that don’t exist yet. They may also refer to physical entities that existed at some point in the past. Whether future, present or past the only thing that’s important is that when it exists (or existed) in the real world there will be (or was) only one.
 
-TODO: *AB> Shaun suggested using the bio definition.*
-
-**Change.** Real world physical entities change; so PhysicalElements must change with them. There may me many known “versions” but only one of those represent the real world entity. The others represent the historic or future version. If version is used to indicate variation, then we are dealing with PhysicalType rather than PhysicalElement. 
+**Change.** Real world physical entities change; so PhysicalElements must change with them. There may me many known “versions” but only one of those represent the real world entity. The others represent the historic or future version. If version is used to indicate variation, then we are dealing with PhysicalType rather than PhysicalElement.
 
 TODO: this needs more description, perhaps move it to a common section.
 
@@ -73,7 +72,7 @@ TODO: *AB> This seems like too much of a presentation for a simple concept. Perh
 
 **Physical Layer.** The notion of a PhysicalElement is a core concept and therefor exists, along with related key concepts such as PhysicalType and FunctionalElement, in the BisCore layer. Detail physical aspects as well as specific physical entities, such as pumps, valves, pipes and the like are modeled in the Physical [Schema Domain] Layer.
 
-TODO: *AB> Probably best to leave in the Schemas and Domains chapter* 
+TODO: *AB> Probably best to leave in the Schemas and Domains chapter*
 
 TODO: relationship to Activities (and Plans)
 
@@ -82,7 +81,8 @@ TODO:*AB> Seems like a topic for a different chapter. The chapter on the "backbo
 See: [Element Fundamentals](element-fundamentals)
 
 ## PhysicalModels
-PhysicalModels model physical entities [PhysicalElement ] as they exist – actually or potentially – in the real world. A PhysicalEntity can be an abstraction of a more elaborate physical entity. BIS provides aggregation, elaboration and modification relationship with child element to support such abstractions. 
+
+PhysicalModels model physical entities [PhysicalElement ] as they exist – actually or potentially – in the real world. A PhysicalEntity can be an abstraction of a more elaborate physical entity. BIS provides aggregation, elaboration and modification relationship with child element to support such abstractions.
 
 TODO:*AB> PhysicalModel contain PhysicalElement, and can also break down PhysicalElements. PhysicalModel can also contain SpatialLocationElements, InformationElements*
 
@@ -90,7 +90,7 @@ TODO: *AB> There is no formal PhysicalEntity concept in BIS. Not clear to me wha
 
 See: [Model Hierarchy](model-hierarchy) and [Model Fundamentals](model-fundamentals).
 
-TODO: I don’t know of much more to say since more is already covered by the information hierarchy 
+TODO: I don’t know of much more to say since more is already covered by the information hierarchy
 
 ## Example
 
