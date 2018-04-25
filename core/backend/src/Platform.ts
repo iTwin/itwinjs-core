@@ -29,6 +29,25 @@ export class Platform {
     }
   }
 
+  /** Query if this is the Electron environment. */
+  public static getElectron(): any {
+    return ((typeof (process) !== "undefined") && ("electron" in process.versions)) ? require("electron") : undefined;
+  }
+
+  /** Query if this is a desktop configuration */
+  public static isDesktop(): boolean {
+    return Platform.getElectron() !== undefined;
+  }
+
+  /** Query if this is a mobile configuration */
+  public static isMobile(): boolean {
+    return Platform.imodeljsMobile() !== undefined;
+  }
+
+  /** Query if this is running in a Web browser or embedded Web view */
+  public static isWebView(): boolean {
+    return !Platform.isDesktop() && !Platform.isMobile();
+  }
 }
 
 /** Well known directories that may be used by the app. Also see [[Platform]] */

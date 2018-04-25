@@ -40,7 +40,8 @@ export * from "./Time";
 /**
  * @docs-group-description Logging
  * Logging allows packages and apps to report potentially useful information about operations, and it allows apps and users to control
- * how or if the logged information is displayed or collected.
+ * how or if the logged information is displayed or collected. Logging information is primarily used to diagnose problems after the fact.
+ * Logging may also be used to monitor on overally application health.
  *
  * Packages and apps use the [Logger]($bentleyjs-core.Logger) and [LogLevel]($bentleyjs-core.LogLevel) classes to report logging messages. [BentleyError]($bentleyjs-core.BentleyError) is also integrated with logging.
  *
@@ -49,15 +50,15 @@ export * from "./Time";
  * Apps also direct logging output to desired outlets, such as files and log servers.
  * [Logger.initialize]($bentleyjs-core.Logger.initialize), [BunyanLoggerConfig]($bentleyjs-core.BunyanLoggerConfig), and [SeqLoggerConfig]($bentleyjs-core.SeqLoggerConfig) are used to direct logging output.
  *
- * Logging is typically used by backend code, such as services, agents, and app backends, where there is no user interface. Logging allows the backend operations
- * to be monitored from outside of the process. A backend typically initializes and configures logging in its startup logic.
+ * Logging is typically used by services and agents, which have no user interface. Logging allows the service operations
+ * to be monitored from outside of the process. A service typically initializes and configures logging in its startup logic.
  *
- * Configuration can be based on the configuration parameters of the backend, which may be set by the deployment mechanism.
+ * Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism.
  * <p><em>Example:</em>
  * ``` ts
  * [[include:Logging.serviceLoggingExample]($bentleyjs-core.
  * ```
- * An example of the logging portion of a configuration a .json file that is deployed with a service might be:
+ * An example of the logging portion of a configuration .json file that is deployed with a service might be:
  * ``` json
  * {
  *   "loggerConfig": {

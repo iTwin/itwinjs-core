@@ -30,7 +30,7 @@ export * from "./IModelDb"; // must be last
 /** @module iModels */
 
 /** @docs-package-description
- * The imodeljs-backend package contains class for working with iModels and the BisCore schema that should be used by backend code only.
+ * The imodeljs-backend package contains classes that backend code can use to work with directly with iModel content using briefcases.
  */
 /**
  * @docs-group-description App
