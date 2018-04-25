@@ -4,36 +4,13 @@
 
 import { assert } from "chai";
 import { GL, RenderState } from "@bentley/imodeljs-frontend/lib/rendering";
-
-// ###TODO: canvas.getContext() returns null on PRG...GPU should not be required
-const haveWebGL = false;
-
-function getWebGLContext(): WebGLRenderingContext | null {
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert.isNotNull(canvas);
-
-  if (null === canvas) {
-    return null;
-  }
-
-  document.body.appendChild(canvas);
-  return canvas.getContext("webgl");
-}
+import { getWebGLContext } from "./WebGLTestContext";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
   const z = x - y;
   return z >= -tol && z <= tol;
 }
-
-describe("WebGL context tests", () => {
-  it("should obtain valid WebGL context", () => {
-    const gl = getWebGLContext();
-    if (haveWebGL) {
-      assert.isNotNull(gl);
-    }
-  });
-});
 
 describe("RenderState API", () => {
   it("should compare as expected", () => {
@@ -266,11 +243,7 @@ describe("RenderState API", () => {
 describe("RenderState.apply()", () => {
   it("should apply state", () => {
     const gl = getWebGLContext();
-    if (haveWebGL) {
-      assert.isNotNull(gl);
-    }
-
-    if (null === gl) {
+    if (undefined === gl) {
       return;
     }
 

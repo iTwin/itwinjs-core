@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Geometry */
+
 import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps, Transform, Vector3d } from "@bentley/geometry-core";
 
 /** Properties for a TextString class */

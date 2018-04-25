@@ -1,23 +1,24 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.74.1",
+  "version": "0.77.5",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=8.9.0 <9.0"
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets",
-    "clean": "rimraf lib package-deps.json",
-    "docs": "cd ../.. && npm run docs:backend",
-    "copy:assets": "cpx ./assets/**/* ./lib/assets",
+    "clean": "rimraf lib package-deps.json ../../generated-docs/backend",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/backend --json=../../generated-docs/backend/json/file.json --tsIndexFile=./backend.ts %TYPEDOC_THEME%",
+    "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "pretest": "npm run copy:test-assets && rush build",
+    "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend && cpx ./src/test/logging.config.json ./lib/test",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "perftest": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\"",
+    "test-offline": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline",
+    "perftest": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {},
@@ -32,14 +33,18 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "7",
-    "@bentley/geometry-core": "^7.3.1",
-    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/geometry-core": "7",
+    "@bentley/imodeljs-clients": "5",
     "@bentley/imodeljs-common": "0"
   },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "7",
-    "@bentley/geometry-core": "^7.3.1",
-    "@bentley/imodeljs-clients": "^5.0.5",
+    "@bentley/geometry-core": "7",
+    "@bentley/imodeljs-clients": "5",
     "@bentley/imodeljs-common": "0",
     "cpx": "^1.5.0",
     "mocha": "^3.5.3",
@@ -48,8 +53,10 @@
     "source-map-support": "^0.5.0",
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
+    "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "asn1": "0.2.3"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-backend",
@@ -79,6 +86,8 @@
       "./src/**/*.ts"
     ],
     "exclude": [
+      "./src/gateway-impl/*",
+      "./src/perftest/*",
       "./src/test/*",
       "**/*.d.ts"
     ],

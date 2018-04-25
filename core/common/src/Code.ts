@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Codes */
+
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
 import { IModel } from "./IModel";
 
@@ -30,40 +32,42 @@ export class Code implements CodeProps {
   public equals(other: Code): boolean { return this.spec.equals(other.spec) && this.scope === other.scope && this.value === other.value; }
 }
 
-/** Names of built-in CodeSpecs. The best practice is to include the domain name as part of the CodeSpec name to ensure global uniqueness */
-export class CodeSpecNames {
-  private static BIS_CODESPEC(name: string): string { return "bis:" + name; }
-  public static NullCodeSpec() { return CodeSpecNames.BIS_CODESPEC("NullCodeSpec"); }
-  public static AnnotationFrameStyle() { return CodeSpecNames.BIS_CODESPEC("AnnotationFrameStyle"); }
-  public static AnnotationLeaderStyle() { return CodeSpecNames.BIS_CODESPEC("AnnotationLeaderStyle"); }
-  public static AnnotationTextStyle() { return CodeSpecNames.BIS_CODESPEC("AnnotationTextStyle"); }
-  public static AuxCoordSystem2d() { return CodeSpecNames.BIS_CODESPEC("AuxCoordSystem2d"); }
-  public static AuxCoordSystem3d() { return CodeSpecNames.BIS_CODESPEC("AuxCoordSystem3d"); }
-  public static AuxCoordSystemSpatial() { return CodeSpecNames.BIS_CODESPEC("AuxCoordSystemSpatial"); }
-  public static CategorySelector() { return CodeSpecNames.BIS_CODESPEC("CategorySelector"); }
-  public static ColorBook() { return CodeSpecNames.BIS_CODESPEC("ColorBook"); }
-  public static DisplayStyle() { return CodeSpecNames.BIS_CODESPEC("DisplayStyle"); }
-  public static Drawing() { return CodeSpecNames.BIS_CODESPEC("Drawing"); }
-  public static DrawingCategory() { return CodeSpecNames.BIS_CODESPEC("DrawingCategory"); }
-  public static GeometryPart() { return CodeSpecNames.BIS_CODESPEC("GeometryPart"); }
-  public static GraphicalType2d() { return CodeSpecNames.BIS_CODESPEC("GraphicalType2d"); }
-  public static TemplateRecipe2d() { return CodeSpecNames.BIS_CODESPEC("TemplateRecipe2d"); }
-  public static LineStyle() { return CodeSpecNames.BIS_CODESPEC("LineStyle"); }
-  public static LinkElement() { return CodeSpecNames.BIS_CODESPEC("LinkElement"); }
-  public static ModelSelector() { return CodeSpecNames.BIS_CODESPEC("ModelSelector"); }
-  public static PhysicalMaterial() { return CodeSpecNames.BIS_CODESPEC("PhysicalMaterial"); }
-  public static PhysicalType() { return CodeSpecNames.BIS_CODESPEC("PhysicalType"); }
-  public static InformationPartitionElement() { return CodeSpecNames.BIS_CODESPEC("InformationPartitionElement"); }
-  public static RenderMaterial() { return CodeSpecNames.BIS_CODESPEC("RenderMaterial"); }
-  public static Sheet() { return CodeSpecNames.BIS_CODESPEC("Sheet"); }
-  public static SpatialCategory() { return CodeSpecNames.BIS_CODESPEC("SpatialCategory"); }
-  public static SpatialLocationType() { return CodeSpecNames.BIS_CODESPEC("SpatialLocationType"); }
-  public static SubCategory() { return CodeSpecNames.BIS_CODESPEC("SubCategory"); }
-  public static Subject() { return CodeSpecNames.BIS_CODESPEC("Subject"); }
-  public static TemplateRecipe3d() { return CodeSpecNames.BIS_CODESPEC("TemplateRecipe3d"); }
-  public static TextAnnotationSeed() { return CodeSpecNames.BIS_CODESPEC("TextAnnotationSeed"); }
-  public static Texture() { return CodeSpecNames.BIS_CODESPEC("Texture"); }
-  public static ViewDefinition() { return CodeSpecNames.BIS_CODESPEC("ViewDefinition"); }
+/**
+ * Names of the BIS CodeSpecs. These names match those specified by the native C++ library.
+ * The best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness
+ */
+export const enum BisCodeSpec {
+  nullCodeSpec = "bis:NullCodeSpec",
+  annotationFrameStyle = "bis:AnnotationFrameStyle",
+  annotationLeaderStyle = "bis:AnnotationLeaderStyle",
+  annotationTextStyle = "bis:AnnotationTextStyle",
+  auxCoordSystem2d = "bis:AuxCoordSystem2d",
+  auxCoordSystem3d = "bis:AuxCoordSystem3d",
+  auxCoordSystemSpatial = "bis:AuxCoordSystemSpatial",
+  categorySelector = "bis:CategorySelector",
+  colorBook = "bis:ColorBook",
+  displayStyle = "bis:DisplayStyle",
+  drawing = "bis:Drawing",
+  drawingCategory = "bis:DrawingCategory",
+  geometryPart = "bis:GeometryPart",
+  graphicalType2d = "bis:GraphicalType2d",
+  lineStyle = "bis:LineStyle",
+  linkElement = "bis:LinkElement",
+  modelSelector = "bis:ModelSelector",
+  physicalMaterial = "bis:PhysicalMaterial",
+  physicalType = "bis:PhysicalType",
+  informationPartitionElement = "bis:InformationPartitionElement",
+  renderMaterial = "bis:RenderMaterial",
+  sheet = "bis:Sheet",
+  spatialCategory = "bis:SpatialCategory",
+  spatialLocationType = "bis:SpatialLocationType",
+  subCategory = "bis:SubCategory",
+  subject = "bis:Subject",
+  templateRecipe2d = "bis:TemplateRecipe2d",
+  templateRecipe3d = "bis:TemplateRecipe3d",
+  textAnnotationSeed = "bis:TextAnnotationSeed",
+  texture = "bis:Texture",
+  viewDefinition = "bis:ViewDefinition",
 }
 
 /** The scope of the Code. */

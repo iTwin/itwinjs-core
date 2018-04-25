@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
-  SpatialViewDefinitionProps, ViewDefinition2dProps,
+  SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -17,6 +17,7 @@ import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
+import { DecorateContext } from "./ViewContext";
 
 export const enum GridOrientationType {
   View = 0,
@@ -98,14 +99,26 @@ export class MarginPercent {
   }
 }
 
+export class SpecialElements {
+  public always: Id64Set = new Set<string>();
+  public never: Id64Set = new Set<string>();
+  public get isEmpty(): boolean { return this.always.size === 0 && this.never.size === 0; }
+}
+
 /**
  * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
+  protected _noQuery: boolean = false;
+  protected _featureOverridesDirty: boolean = false;
+  protected _selectionSetDirty: boolean = false;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
+
+  /** Get the set of special elements for this ViewState. */
+  public readonly specialElements: SpecialElements = new SpecialElements();
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
@@ -116,7 +129,7 @@ export abstract class ViewState extends ElementState {
       this.displayStyle = categorySelector.displayStyle.clone();
     }
   }
-
+  public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   public toJSON(): ViewDefinitionProps {
@@ -135,11 +148,32 @@ export abstract class ViewState extends ElementState {
 
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
+  /** Get the list of elements that are never drawn */
+  public get neverDrawn(): Id64Set { return this.specialElements.never; }
+
+  /** Get the list of elements that are always drawn */
+  public get alwaysDrawn(): Id64Set { return this.specialElements.always; }
+
+  /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
+  public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
+
+  public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
+
+  public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
+
+  public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
+  public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
   public abstract getViewedExtents(): AxisAlignedBox3d;
+
+  /** Override this if you want to perform some logic on each iteration of the render loop. */
+  public abstract onRenderFrame(): void;
+
+  /** WIP: should be abstract, but for now leave unimplemented  */
+  public drawDecorations(_context: DecorateContext): void {}
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
@@ -550,7 +584,7 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;         // The camera used for this view.
   public forceMinFrontDist = 0.0;         // minimum distance for front plane
   public static get className() { return "ViewDefinition3d"; }
-
+  public onRenderFrame(): void {}
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
@@ -989,6 +1023,7 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  public onRenderFrame(): void {}
   public load(): Promise<void> { return Promise.resolve(); }
   public allow3dManipulations(): boolean { return false; }
   public getViewedExtents() { return new AxisAlignedBox3d(); } // NEEDS_WORK

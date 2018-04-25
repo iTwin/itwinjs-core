@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module IModelDb */
+/** @module iModels */
 import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, ElementLoadProps, CreateIModelProps, FilePropertyProps,
+  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -21,6 +21,8 @@ import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 
+/** @module iModels */
+
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 
@@ -29,8 +31,8 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
 /** Represents a physical copy (briefcase) of an iModel that can be accessed as a file on the local computer.
  *
- * An IModelDb is used by a service or by the "back end" of an app.
- * "Front end" code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
+ * An IModelDb is used by a service or by the backend of an app.
+ * Frontend code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
  *
  * Use [[IModelDb.open]] to obtain and open an IModelDb from iModelHub.
  *
@@ -71,6 +73,7 @@ export class IModelDb extends IModel {
   protected _fontMap?: FontMap;
   public readFontJson(): string { return this.briefcase!.nativeDb.readFontMap(); }
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
+  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.briefcase!.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
 
   /** Event raised just before a connected IModelDb is opened.<p><em>Example:</em>
    * ``` ts
@@ -268,10 +271,10 @@ export class IModelDb extends IModel {
     return new IModelError(IModelStatus.NotOpen, "IModelDb not open" + this.name, Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
   }
 
-  /** Get a prepared ECSql statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSql statement to prepare
+  /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
+   * @param ecsql The ECSQL statement to prepare
    * @returns the prepared statement
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSql syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
     const cachedStatement = this.statementCache.find(ecsql);
@@ -287,8 +290,11 @@ export class IModelDb extends IModel {
   }
   private releasePreparedStatement(stmt: ECSqlStatement): void { this.statementCache.release(stmt); }
 
-  /** Use a prepared statement. This function takes care of preparing the statement and then releasing it.
-   * @param ecsql The ECSql statement to execute
+  /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
+   *
+   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
+   * the already prepared statement from the cache will be reused.
+   * @param ecsql The ECSQL statement to execute
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
    */
@@ -305,17 +311,19 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Execute a query against this IModelDb. This is just a convenience method that calls [[withPreparedStatement]], [[ECSqlStatement.bindValues]], [[ECSqlStatement.step]],
-   * and [[ECSqlStatement.getRow]].
-   * @param ecsql The ECSql statement to execute
+  /** Execute a query against this IModelDb.
+   * The result of the query is returned as an array of JavaScript objects where every array element represents an
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   * @param ecsql The ECSQL SELECT statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
-   * for named parameters.
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
-   * See [[ECSqlStatement.bindValues]] for details.
+   * See "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
-   * See [[ECSqlStatement.getRow]] for details about the format of the returned rows.
-   * @throws [[IModelError]] If the statement is invalid
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($imodeljs-common.IModelError) If the statement is invalid
+   * See [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) for more on ECSQL.
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -395,6 +403,9 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string) {
+    if (this.openMode === OpenMode.Readonly)
+      throw new IModelError(IModelStatus.ReadOnly, "", Logger.logError);
+
     if (!this.briefcase)
       throw this._newNotOpenError();
 
@@ -540,8 +551,8 @@ export class IModelDb extends IModel {
     return idHexStr!;
   }
 
-  /** Prepare an ECSql statement.
-   * @param sql The ECSql statement to prepare
+  /** Prepare an ECSQL statement.
+   * @param sql The ECSQL statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
@@ -552,8 +563,7 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Construct an entity (element or model). This utility method knows how to fetch the required class metadata
-   * if necessary in order to get the entity's class defined as a prerequisite.
+  /** Construct an entity (Element or Model) from an iModel.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
   public constructEntity(props: EntityProps): Entity {
@@ -651,12 +661,12 @@ export class IModelDb extends IModel {
 
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
-  private _loaded = new LRUMap<string, Model>(500);
+  private readonly loaded = new LRUMap<string, Model>(500);
 
   /** @hidden */
   public constructor(private _iModel: IModelDb, max: number = 500) {
-    this._loaded.limit = max;
-    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+    this.loaded.limit = max;
+    this._iModel.onChangesetApplied.addListener(() => this.loaded.clear());
   }
 
   /** Get the Model with the specified identifier.
@@ -665,7 +675,7 @@ export class IModelDbModels {
    */
   public getModel(modelId: Id64): Model {
     // first see if the model is already in the local cache.
-    const loaded = this._loaded.get(modelId.value);
+    const loaded = this.loaded.get(modelId.value);
     if (loaded)
       return loaded;
 
@@ -676,7 +686,7 @@ export class IModelDbModels {
 
     // We have created the model. Cache it before we return it.
     model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(model.id.value, model);
+    this.loaded.set(model.id.value, model);
     return model;
   }
 
@@ -736,7 +746,7 @@ export class IModelDbModels {
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (model.id)
-      this._loaded.delete(model.id.toString());
+      this.loaded.delete(model.id.toString());
   }
 
   /** Delete an existing model.
@@ -752,21 +762,18 @@ export class IModelDbModels {
       throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
 
     // Discard from the cache
-    this._loaded.delete(model.id.value);
+    this.loaded.delete(model.id.value);
   }
 }
 
 /** The collection of elements in an [[IModelDb]]. */
 export class IModelDbElements {
-  private _loaded: LRUMap<string, Element>;
-
-  /** get the map of loaded elements */
-  public get loaded() { return this._loaded; }
+  private readonly loaded: LRUMap<string, Element>;
 
   /** @hidden */
-  public constructor(private _iModel: IModelDb, maxElements: number = 2000) {
-    this._loaded = new LRUMap<string, Element>(maxElements);
-    this._iModel.onChangesetApplied.addListener(() => this._loaded.clear());
+  public constructor(private _iModel: IModelDb, maxElements = 2000) {
+    this.loaded = new LRUMap<string, Element>(maxElements);
+    this._iModel.onChangesetApplied.addListener(() => this.loaded.clear());
   }
 
   /** Private implementation details of getElementProps */
@@ -792,7 +799,7 @@ export class IModelDbElements {
   private _doGetElement(opts: ElementLoadProps): Element {
     // first see if the element is already in the local cache.
     if (opts.id) {
-      const loaded = this._loaded.get(opts.id.toString());
+      const loaded = this.loaded.get(opts.id.toString());
       if (loaded)
         return loaded;
     }
@@ -800,7 +807,7 @@ export class IModelDbElements {
     const el = this._iModel.constructEntity(props) as Element;
     // We have created the element. Cache it before we return it.
     el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this._loaded.set(el.id.value, el);
+    this.loaded.set(el.id.value, el);
     return el;
   }
 
@@ -886,7 +893,7 @@ export class IModelDbElements {
 
     // Discard from the cache, to make sure that the next fetch see the updated version.
     if (props.id)
-      this._loaded.delete(props.id.toString());
+      this.loaded.delete(props.id.toString());
   }
 
   /**
@@ -903,7 +910,7 @@ export class IModelDbElements {
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
     // Discard from the cache
-    this._loaded.delete(id.value);
+    this.loaded.delete(id.value);
   }
 
   /** Query for the child elements of the specified element.

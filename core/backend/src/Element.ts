@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
-  Code, CodeSpecNames, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
+  BisCodeSpec, Code, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
   InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
@@ -27,11 +29,11 @@ import {
  *
  * <h2>Element Subclasses</h2>
  *
- * Define a subclass of [[Element]] in order to represent a specialization, such as a specific type of physical thing,
+ * Define a subclass of [[Element]] to represent a specialization, such as a specific type of physical thing,
  * a specific abstract idea, or a specific type of information record.
  * See [[Schema]] for an explanation of how ECClasses are defined and how to represent them in TypeScript.
  * As noted, you do not have to define a TypeScript class for each specialization of Element.
- * You would do that in order to hand-coded methods and type-safe constructors for it.
+ * You would do that to hand-coded methods and type-safe constructors for it.
  * <p><em>Example:</em>
  * ``` ts
  * [[include:Element.subclass]]
@@ -98,7 +100,7 @@ export abstract class Element extends Entity implements ElementProps {
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
   /**
-   * Add a request for locks, code reservations, and anything else that would be needed in order to carry out the specified operation.
+   * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode) { this.iModel.concurrencyControl.buildRequestForElement(this, opcode); }
@@ -444,7 +446,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
    * See the example in [[InformationPartitionElement]].
    */
   public static createCode(scopeElement: Element, codeValue: string): Code {
-    const codeSpec = scopeElement.iModel.codeSpecs.getByName(CodeSpecNames.InformationPartitionElement());
+    const codeSpec = scopeElement.iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
     return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
   }
 
@@ -581,7 +583,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
    * @return A LineStyle Code
    */
   public static createCode(iModel: IModelDb, scopeModelId: Id64, codeValue: string): Code {
-    return new Code({ spec: iModel.codeSpecs.getByName(CodeSpecNames.LineStyle()).id, scope: scopeModelId.value, value: codeValue });
+    return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId.value, value: codeValue });
   }
 }
 

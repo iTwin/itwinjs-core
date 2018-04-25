@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayRequest } from "../core/GatewayRequest";
 import { GatewayProtocolEvent, SerializedGatewayRequest } from "../core/GatewayProtocol";
 import { GatewayInvocation } from "../core/GatewayInvocation";
@@ -44,18 +46,18 @@ export class GatewayHttpLogging {
   }
 
   public static logRequest(message: string, object: GatewayHttpRequest | SerializedGatewayRequest): void {
-    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path, operation: object.operation.name, gateway: GatewayHttpLogging.getGatewayName(object.operation.gateway) }));
+    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path, operation: object.operation.name, gateway: GatewayHttpLogging.getGatewayName(object.operation.gateway), activityId: object.id }));
   }
 
   private static logResponse(message: string, object: GatewayHttpRequest | SerializedGatewayRequest, status: number): void {
-    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path, operation: object.operation.name, gateway: GatewayHttpLogging.getGatewayName(object.operation.gateway), status }));
+    Logger.logTrace(loggingCategory, message, () => ({ method: object.method, path: object.path, operation: object.operation.name, gateway: GatewayHttpLogging.getGatewayName(object.operation.gateway), status, activityId: object.id }));
   }
 
   private static logErrorFrontend(message: string, request: GatewayHttpRequest): void {
-    Logger.logInfo(loggingCategory, message, () => ({ method: request.method, path: request.path }));
+    Logger.logInfo(loggingCategory, message, () => ({ method: request.method, path: request.path, activityId: request.id }));
   }
 
   private static logErrorBackend(message: string, invocation: GatewayInvocation): void {
-    Logger.logInfo(loggingCategory, message, () => ({ method: invocation.request.method, path: invocation.request.path, status: invocation.status, error: invocation.result }));
+    Logger.logInfo(loggingCategory, message, () => ({ method: invocation.request.method, path: invocation.request.path, status: invocation.status, error: invocation.result, activityId: invocation.request.id }));
   }
 }

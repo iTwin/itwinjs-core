@@ -3,12 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { BeCursor } from "./tools/Tool";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { assert, BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { Point3d } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { UpdatePlan } from "./render/UpdatePlan";
+import { TaskPriority, IdleTask } from "./render/Task";
+import { DecorateContext } from "./ViewContext";
 
 /** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
@@ -16,7 +19,12 @@ export class ViewManager {
   public inDynamicsMode = false;
   public cursor?: BeCursor;
   private _selectedView?: Viewport;
-  public onInitialized() { }
+  private _newTilesReady: boolean = false;
+  private _skipSceneCreation: boolean = false;
+  private _doContinuousRendering: boolean = false;
+  private _wantIdle: boolean = false;
+
+  public onInitialized(): void { }
 
   /** Called after the selected view changes.
    * @param old Previously selected viewport.
@@ -132,4 +140,46 @@ export class ViewManager {
     //   vp -> GetViewControllerR().SetSelectionSetDirty();
   }
 
+  public invalidateViewportScenes(): void { this.viewports.forEach((vp: Viewport) => vp.sync.invalidateScene()); }
+
+  public validateViewportScenes(): void { this.viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
+
+  public renderLoop(): void {
+    if (this._skipSceneCreation)
+      this.validateViewportScenes();
+    else if (this._newTilesReady || this._doContinuousRendering)
+      this.invalidateViewportScenes();
+
+    this._newTilesReady = false;
+
+    const cursorVp = IModelApp.toolAdmin.getCursorView();
+    const plan = new UpdatePlan();
+    const priority = new TaskPriority(1);
+
+    if (undefined === cursorVp || cursorVp.renderFrame(priority, plan))
+      for (const vp of this.viewports)
+        if (vp !== cursorVp && !vp.renderFrame(priority.increment(), plan))
+          break;
+
+    // const tileGenerationSeconds = 5.0;
+    // requests.requestMissing(BeDuration.fromSeconds(tileGenerationSeconds));
+
+    this.processIdle();
+  }
+
+  public processIdle(): void {
+    if (this._wantIdle && IModelApp.renderQueue.isIdle) {
+      assert(this.viewports.length === 0);
+      IModelApp.renderQueue.addTask(new IdleTask(IModelApp.renderSystem));
+    }
+  }
+
+  public callDecorators(context: DecorateContext) {
+    IModelApp.accuSnap.decorateViewport(context);
+    IModelApp.tentativePoint.displayTP(context);
+    IModelApp.accuDraw.display(context);
+    IModelApp.toolAdmin.decorate(context);
+    context.viewport.callDecorators(context);
+    // decorators.callAllHandlers(new DecoratorCaller(context));
+  }
 }

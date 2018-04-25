@@ -19,23 +19,22 @@ import { Transform,
          Angle,
          Box,
          StrokeOptions } from "@bentley/geometry-core";
-import { GeometryStreamEntryId,
-         PatternParams,
+import { PatternParams,
          ColorDef,
-         Graphic,
+         RenderGraphic,
          GraphicParams,
          AsThickenedLine,
          GeometryParams,
          LinePixels,
          TextString,
-         LineStyleSymb } from "@bentley/imodeljs-common";
+         LineStyleInfo} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 
 /**
- * Describes the type of a Graphic. Used when creating a GraphicBuilder to specify the purpose of the Graphic.
- * For Graphics like overlays and view background for which depth testing is disabled:
+ * Describes the type of a RenderGraphic. Used when creating a GraphicBuilder to specify the purpose of the RenderGraphic.
+ * For RenderGraphics like overlays and view background for which depth testing is disabled:
  *  - The individual geometric primitives are rendered in the order in which they were defined in the GraphicBuilder; and
- *  - The individual Graphics within the DecorationList are rendered in the order in which they appear in the list.
+ *  - The individual RenderGraphics within the DecorationList are rendered in the order in which they appear in the list.
  */
 export const enum GraphicType {
   /** Renders behind all other graphics. Coordinates: view. RenderMode: smooth. Lighting: none. Z-testing: disabled. */
@@ -114,7 +113,7 @@ export class GraphicBuilderCreateParams {
   }
 
   /**
-   * Create params for a WorldDecoration-type Graphic
+   * Create params for a WorldDecoration-type RenderGraphic
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
   public static worldDecoration(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
@@ -122,7 +121,7 @@ export class GraphicBuilderCreateParams {
   }
 
   /**
-   * Create params for a WorldOverlay-type Graphic
+   * Create params for a WorldOverlay-type RenderGraphic
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
   public static worldOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
@@ -130,16 +129,15 @@ export class GraphicBuilderCreateParams {
   }
 
   /**
-   * Create params for a ViewOverlay-type Graphic
+   * Create params for a ViewOverlay-type RenderGraphic
    */
   public static viewOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
     return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp);
   }
 }
 
-/** Exposes methods for constructing a Graphic from geometric primitives. */
+/** Exposes methods for constructing a RenderGraphic from geometric primitives. */
 export abstract class GraphicBuilder {
-  protected _streamId?: GeometryStreamEntryId;
   protected _isOpen: boolean = false;
 
   public currClip?: ClipVector;
@@ -148,8 +146,6 @@ export abstract class GraphicBuilder {
    * Get/Set the current GeometryStreamEntryId, which identifies the graphics that are currently being drawn.
    * Separated from _streamId to allow child classes to override the logic involved in setting the streamId
    */
-  public get geomStreamEntryId(): GeometryStreamEntryId { return this._streamId!; }
-  public set geomStreamEntryId(id: GeometryStreamEntryId) { this._streamId = id; }
   public get isOpen(): boolean { return this._isOpen; }
   public get iModel(): IModelConnection { return this.createParams.iModel!; }
   public get localToWorldTransform(): Transform { return this.createParams.placement; }
@@ -160,17 +156,17 @@ export abstract class GraphicBuilder {
   constructor(public readonly createParams: GraphicBuilderCreateParams) {}
 
   /** IFacetOptions => StrokeOptions */
-  public wantStrokeLineStyle(_symb: LineStyleSymb, _facetOptions: StrokeOptions): boolean { return true; } // tslint:disable-line
+  public wantStrokeLineStyle(_symb: LineStyleInfo, _facetOptions: StrokeOptions): boolean { return true; } // tslint:disable-line
 
   public wantStrokePattern(_pattern: PatternParams): boolean { return true; }
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
-  public abstract _finish(): Graphic | undefined;
-  public finish(): Graphic | undefined { return this.isOpen ? this._finish() : undefined; }
+  public abstract _finish(): RenderGraphic | undefined;
+  public finish(): RenderGraphic | undefined { return this.isOpen ? this._finish() : undefined; }
 
   /**
-   * Set a GraphicParams to be the "active" GraphicParams for this Graphic.
-   * @param graphicParams The new active GraphicParams. All geometry drawn via calls to this Graphic will use them
+   * Set a GraphicParams to be the "active" GraphicParams for this RenderGraphic.
+   * @param graphicParams The new active GraphicParams. All geometry drawn via calls to this RenderGraphic will use them
    * @param geomParams The source GeometryParams if graphicParams was created by cooking geomParams, nullptr otherwise.
    */
   public abstract activateGraphicParams(graphicParams: GraphicParams, geomParams?: GeometryParams): void;
@@ -350,7 +346,7 @@ export abstract class GraphicBuilder {
     this.addLineString2d(tmpPts, zDepth);
   }
 
-  public abstract addSubGraphic(graphic: Graphic, trans: Transform, params: GraphicParams, clip?: ClipVector): void;
+  public abstract addSubGraphic(graphic: RenderGraphic, trans: Transform, params: GraphicParams, clip?: ClipVector): void;
 
   public abstract createSubGraphic(trans: Transform, clip?: ClipVector): GraphicBuilder;
 

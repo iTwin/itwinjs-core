@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Gateway } from "../../Gateway";

@@ -1,0 +1,27 @@
+[
+{"sphere":
+ {"center":[0,0,0],
+  "radius":1
+ }
+},
+{"sphere":
+ {"center":[1,2,3],
+  "radius":3
+ }
+},
+{"sphere":
+ {"center":[1,2,3],
+  "capped":true,
+  "radius":2,
+  "latitudeStartEnd":[-45,80]
+ }
+},
+{"sphere":
+ {"center":[1,2,3],
+  "zxVectors":[[0,1,0],
+  [0,0,1]],
+  "capped":true,
+  "radius":4,
+  "latitudeStartEnd":[-45,45]
+ }
+}]

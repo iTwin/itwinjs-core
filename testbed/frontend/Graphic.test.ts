@@ -5,11 +5,11 @@ import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core";
 import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Graphic, GraphicList, IModel, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { RenderGraphic, GraphicList, IModel, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
 
-export class FakeGraphic extends Graphic {
+export class FakeGraphic extends RenderGraphic {
   constructor(iModel: IModel) { super(iModel); }
 }
 
@@ -19,7 +19,7 @@ function withinTol(x: number, y: number): boolean {
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
-describe("Graphic", () => {
+describe("RenderGraphic", () => {
   let iModel: IModelConnection;
 
   before(async () => {
@@ -30,7 +30,7 @@ describe("Graphic", () => {
     if (iModel) await iModel.closeStandalone();
   });
 
-  it("Graphic works as expected", () => {
+  it("RenderGraphic works as expected", () => {
     const g = new FakeGraphic(iModel);
     assert.isTrue(g.iModel instanceof IModelConnection, "can access IModelConnection");
   });
@@ -42,7 +42,7 @@ describe("Graphic", () => {
     const g4 = new FakeGraphic(iModel);
     const glist = new GraphicList(g1, g2, g3, g4);
     assert.isTrue(glist.length === 4, "graphics loaded into array");
-    assert.isTrue(glist.at(0) instanceof Graphic, "graphics can be accessed by index");
+    assert.isTrue(glist.at(0) instanceof RenderGraphic, "graphics can be accessed by index");
   });
 
   it("IndexedPrimitiveParamsFeatures works as expected", () => {

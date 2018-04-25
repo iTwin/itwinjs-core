@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { ModelProps, GeometricModel2dProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
@@ -59,7 +61,7 @@ export class Model extends Entity implements ModelProps {
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
   /**
-   * Add a request for the locks that would be needed in order to carry out the specified operation.
+   * Add a request for the locks that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForModel(this, opcode); }

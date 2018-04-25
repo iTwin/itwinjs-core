@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { CodeSpecNames, Code, ElementProps, Appearance, Rank, AppearanceProps } from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, ElementProps, Appearance, Rank, AppearanceProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
@@ -91,7 +93,7 @@ export class DrawingCategory extends Category {
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
-  public static getCodeSpecName(): string { return CodeSpecNames.DrawingCategory(); }
+  public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
 
   /** Create a Code for a DrawingCategory given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param imodel  The IModel
@@ -114,7 +116,7 @@ export class SpatialCategory extends Category {
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
-  public static getCodeSpecName(): string { return CodeSpecNames.SpatialCategory(); }
+  public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
   public static queryCategoryIdByName(scopeModel: DefinitionModel, categoryName: string): Id64 | undefined {

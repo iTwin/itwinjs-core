@@ -23,7 +23,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Backend Performance Test",
+      "name": "Run Backend Tests (Offline)",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [

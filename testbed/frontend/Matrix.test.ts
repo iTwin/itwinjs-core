@@ -2,18 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { expect, assert } from "chai";
 import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Vector3d, Point3d, RotMatrix, Transform, Matrix4d } from "@bentley/geometry-core";
 
 describe("Matrix3", () => {
   it("constructor works as expected", () => {
     // ensure correct conversion from 64 bit number to 32 bit number
-    const mat = new Matrix3(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
+    const mat = Matrix3.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
     mat.data.forEach((v) => assert.isTrue(v === 9007199254740992));
   });
   it("toRotMatrix works as expected", () => {
-    const mat = new Matrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    const mat = Matrix3.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const rotMat = mat.toRotMatrix();
     assert.isTrue(rotMat instanceof RotMatrix, "is an instance of RotMatrix");
     assert.isTrue(mat.data[0] === rotMat.coffs[0], "(0,0) is equivalent");
@@ -41,28 +41,28 @@ describe("Matrix3", () => {
     assert.isTrue(mat.data[8] === rotMat.coffs[8], "(2,2) is equivalent");
   });
   it("transpose works as expected", () => {
-    const mat = new Matrix3(1, 2, 3, 4, 5, 6, 7, 8, 9);
-    const transposedMat = Matrix3.transpose(mat);
-    assert.isTrue(mat.data[0] === transposedMat.data[0], "(0,0) --> (0,0)");
-    assert.isTrue(mat.data[3] === transposedMat.data[1], "(0,1) --> (1,0)");
-    assert.isTrue(mat.data[6] === transposedMat.data[2], "(0,2) --> (2,0)");
-    assert.isTrue(mat.data[1] === transposedMat.data[3], "(1,0) --> (0,1)");
-    assert.isTrue(mat.data[4] === transposedMat.data[4], "(1,1) --> (1,1)");
-    assert.isTrue(mat.data[7] === transposedMat.data[5], "(1,2) --> (2,1)");
-    assert.isTrue(mat.data[2] === transposedMat.data[6], "(2,0) --> (0,2)");
-    assert.isTrue(mat.data[5] === transposedMat.data[7], "(2,1) --> (1,2)");
-    assert.isTrue(mat.data[8] === transposedMat.data[8], "(2,2) --> (2,2)");
+    const mat = Matrix3.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    const transposedMat = Matrix3.fromTranspose(mat);
+    expect(mat.data[0]).to.equal(transposedMat.data[0]);
+    expect(mat.data[3]).to.equal(transposedMat.data[1]);
+    expect(mat.data[6]).to.equal(transposedMat.data[2]);
+    expect(mat.data[1]).to.equal(transposedMat.data[3]);
+    expect(mat.data[4]).to.equal(transposedMat.data[4]);
+    expect(mat.data[7]).to.equal(transposedMat.data[5]);
+    expect(mat.data[2]).to.equal(transposedMat.data[6]);
+    expect(mat.data[5]).to.equal(transposedMat.data[7]);
+    expect(mat.data[8]).to.equal(transposedMat.data[8]);
   });
 });
 
 describe("Matrix4", () => {
   it("constructor works as expected", () => {
     // ensure correct conversion from 64 bit number to 32 bit number
-    const mat = new Matrix4(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
+    const mat = Matrix4.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
     mat.data.forEach((v) => assert.isTrue(v === 9007199254740992));
   });
   it("identity works as expected", () => {
-    const mat = Matrix4.identity();
+    const mat = Matrix4.fromIdentity();
     assert.isTrue(mat.data[0] === 1, "(0,0) --> 1");
     assert.isTrue(mat.data[4] === 0, "(0,1) --> 0");
     assert.isTrue(mat.data[8] === 0, "(0,2) --> 0");
@@ -81,7 +81,7 @@ describe("Matrix4", () => {
     assert.isTrue(mat.data[15] === 1, "(3,3) --> 1");
   });
   it("getRotation works as expected", () => {
-    const mat4 = new Matrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+    const mat4 = Matrix4.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat3 = mat4.getRotation();
     assert.isTrue(mat3.data[0] === mat4.data[0], "(0,0) is equivalent");
     assert.isTrue(mat3.data[3] === mat4.data[4], "(0,1) is equivalent");
@@ -97,7 +97,7 @@ describe("Matrix4", () => {
     const origin = new Vector3d(10, 11, 12);
     const rotMat = RotMatrix.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const tran = Transform.createOriginAndMatrix(origin, rotMat);
-    const mat4 = Matrix4.identity();
+    const mat4 = Matrix4.fromIdentity();
     mat4.initFromTransform(tran);
     assert.isTrue(mat4.data[0] === 1, "(0,0) --> 1");
     assert.isTrue(mat4.data[4] === 2, "(0,1) --> 2");
@@ -117,10 +117,10 @@ describe("Matrix4", () => {
     assert.isTrue(mat4.data[15] === 1, "(3,3) --> 1");
   });
   it("toTransform works as expected", () => {
-    const invalidMat = new Matrix4(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    const invalidMat = Matrix4.fromValues(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
     // throws error when (3,0) !== 0 && (3,1) !== 0 && (3,2) !== 0 && (3,3) !== 1
     assert.throw(invalidMat.toTransform.bind(invalidMat));
-    const validMat = new Matrix4(1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, 0, 0, 0, 1);
+    const validMat = Matrix4.fromValues(1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, 0, 0, 0, 1);
     const tran = validMat.toTransform();
     const mat = tran.matrix;
     const origin = tran.origin;
@@ -158,7 +158,7 @@ describe("Matrix4", () => {
     assert.isTrue(mat4.data[15] === mat4d.atIJ(3, 3), "(3,3) is equivalent");
   });
   it("toMatrix4d works as expected", () => {
-    const mat4 = new Matrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+    const mat4 = Matrix4.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat4d = mat4.toMatrix4d();
     assert.isTrue(mat4.data[0] === mat4d.atIJ(0, 0), "(0,0) is equivalent");
     assert.isTrue(mat4.data[4] === mat4d.atIJ(0, 1), "(0,1) is equivalent");

@@ -1,0 +1,57 @@
+[
+{"transitionSpiral":
+ {"origin":[0,0,0],
+  "type":"clothoid",
+  "startRadius":0,
+  "endRadius":1000,
+  "startBearing":0,
+  "endBearing":2.8647889756541165
+ }
+},
+{"transitionSpiral":
+ {"origin":[0,0,0],
+  "type":"clothoid",
+  "startRadius":0,
+  "endRadius":1000,
+  "startBearing":0,
+  "curveLength":100
+ }
+},
+{"transitionSpiral":
+ {"origin":[0,0,0],
+  "type":"clothoid",
+  "startRadius":0,
+  "endRadius":1000,
+  "endBearing":2.8647889756541165,
+  "curveLength":100
+ }
+},
+{"transitionSpiral":
+ {"origin":[0,0,0],
+  "type":"clothoid",
+  "startRadius":0,
+  "startBearing":0,
+  "endBearing":2.8647889756541165,
+  "curveLength":100
+ }
+},
+{"transitionSpiral":
+ {"origin":[0,0,0],
+  "type":"clothoid",
+  "endRadius":1000,
+  "startBearing":0,
+  "endBearing":2.8647889756541165,
+  "curveLength":100
+ }
+},
+{"transitionSpiral":
+ {"origin":[1,2,0],
+  "type":"clothoid",
+  "xyVectors":[[0.9659258262890683,0.25881904510252074,0],
+  [-0.25881904510252074,0.9659258262890683,0]],
+  "startRadius":0,
+  "endRadius":1000,
+  "startBearing":0,
+  "endBearing":2.8647889756541165
+ }
+}]

@@ -2,11 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // this is the nodejs-specific implementation of the IModelJsFs pseudo-interface.
-// On mobile platforms, this file is not included, and the platform implements and projects IModelJsFs.
+// On mobile platforms, this file is not included. Instead, the iModelJs host app implements IModelJsFs in native code and projects it into JavaScript.
+
+/** @module Portability */
 
 import * as fs from "fs-extra";
 
-/** Information about a file */
+/* TODO: define File Mode Constants: S_IWUSR, et al. */
+/** Information about a file. See [[IModelJsFs.lstatSync]] */
 export class IModelJsFsStats {
   constructor(
     public size: number,
@@ -21,7 +24,7 @@ export class IModelJsFsStats {
   ) { }
 }
 
-/** File system operations */
+/** File system operations that are defined on all platforms. See also [[Platform]] and [[KnownLocations]] */
 export class IModelJsFs {
 
   /** Does file or directory exist? */
@@ -48,6 +51,19 @@ export class IModelJsFs {
   /** Get the file and directory names in the specified directory. Excludes "." and "..". */
   public static readdirSync(fn: string): string[] { return fs.readdirSync(fn); }
 
+  /** Read file */
+  public static readFileSync(fn: string): string|Buffer { return fs.readFileSync(fn); }
+
+  /** Test if the current user has permission to write to a file. */
+  private static isFileWritable(fn: string): boolean {
+    try {
+      fs.accessSync(fn, fs.constants.W_OK);
+      return true;
+    } catch (_err) {
+      return false;
+    }
+  }
+
   /** Get information about a file. */
   public static lstatSync(fn: string): IModelJsFsStats | undefined {
     const stats = fs.lstatSync(fn);
@@ -63,7 +79,7 @@ export class IModelJsFs {
       stats.isFile(),
       stats.isSocket(),
       stats.isSymbolicLink(),
-      false);
+      !IModelJsFs.isFileWritable(fn));
   }
 
 }

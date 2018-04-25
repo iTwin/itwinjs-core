@@ -1,0 +1,22 @@
+[
+{"arc":
+ {"center":[0,0,0],
+  "vectorX":[3,0,0],
+  "vectorY":[0,3,0],
+  "sweepStartEnd":[0,90]
+ }
+},
+{"arc":
+ {"center":[0,0,0],
+  "vectorX":[3,0,0],
+  "vectorY":[0,3,0],
+  "sweepStartEnd":[-40,270]
+ }
+},
+{"arc":
+ {"center":[0,0,0],
+  "vectorX":[3,0.30000000000000004,0],
+  "vectorY":[-0.09,0.8999999999999999,0],
+  "sweepStartEnd":[-40,270]
+ }
+}]

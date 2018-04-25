@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Geometry */
 
 import { Point2d, Point3d, YawPitchRollAngles, RotMatrix, Transform, Geometry } from "@bentley/geometry-core";
 import { ColorDef } from "../ColorDef";

@@ -57,4 +57,6 @@ export class TechniqueFlags {
     techniqueFlags.clipVolume = withClipVolume === WithClipVolume.Yes;
     return techniqueFlags;
   }
+
+  public static readonly defaults = new TechniqueFlags();
 }

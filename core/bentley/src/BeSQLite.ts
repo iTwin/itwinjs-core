@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BeSQLite */
 
 // Keep this consistent with BeSQLite.h Db::OpenMode
 export const enum OpenMode {
@@ -112,4 +113,19 @@ export const enum DbResult {
   BE_SQLITE_CONSTRAINT_TRIGGER = (BE_SQLITE_CONSTRAINT_BASE | (7 << 8)),
   BE_SQLITE_CONSTRAINT_UNIQUE = (BE_SQLITE_CONSTRAINT_BASE | (8 << 8)),
   BE_SQLITE_CONSTRAINT_VTAB = (BE_SQLITE_CONSTRAINT_BASE | (9 << 8)),
+}
+
+/**
+ * Options to process change sets
+ * This should be kept consistent with RevisionProcessOption defined in DgnDomain.h
+ */
+export const enum ChangeSetProcessOption {
+  /** ChangeSet won't be used for upgrade */
+  None = 0,
+  /** ChangeSet will be merged into the Db */
+  Merge,
+  /** ChangeSet that was previously merged will be reversed from the Db */
+  Reverse,
+  /** ChangeSet that was previously reversed will be reinstated into the Db */
+  Reinstate,
 }

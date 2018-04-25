@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -56,7 +58,7 @@ export class GatewayInvocation {
       const parameters = GatewayMarshaling.deserialize(this.operation, protocol, request.parameters);
       const impl = GatewayRegistry.instance.getImplementationForGateway(this.operation.gateway);
       const op = this.lookupOperationFunction(impl);
-      this.result = op.call(impl, ...parameters, this);
+      this.result = op.call(impl, ...parameters);
     } catch (error) {
       this._threw = true;
       this.result = Promise.reject(error);

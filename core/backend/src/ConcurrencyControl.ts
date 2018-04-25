@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
+
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
@@ -15,32 +17,6 @@ import { IModelDb } from "./IModelDb";
 
 /**
  * ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
- *
- * An app makes changes to an iModel using a local [[IModelDb]]. Each IModelDb has a [[IModelDb.concurrencyControl]] that
- * enforces its concurrency control policy. When making changes, an app must follow the rules of the concurrency control policy that is set for the IModelDb.
- * The two available concurrency control policies are:
- * * [[ConcurrencyControl.PessimisticPolicy]]
- * * [[ConcurrencyControl.OptimisticPolicy]].
- * Use [[setPolicy]] to set a policy.
- *
- * There are two ways of acquiring locks and/or codes: before making local changes or after. Either approach can be used with either concurrency policy.
- *
- * <em>Acquiring locks and/or codes before making local changes:</em>
- *
- * Call [[Model.buildConcurrencyControlRequest]] and [[Element.buildConcurrencyControlRequest]] to discover what locks and codes are needed before making local changes.
- * Call these methods for all of the changes that you plan to make. It is important for performance reasons to batch up requests to iModelHub.
- * Then call [[ConcurrencyControl.request]] to request the locks and codes that the planned local operations will require.
- * If the request fails, do not make the planned local changes.
- * If the request succeeds, go ahead and make the planned local changes and then call [[IModelDb.saveChanges]].
- * This approach is the safest way to avoid conflicting with changes made by other users. It requires that the app must plan ahead before making local changes.
- *
- * <em>Acquiring locks and/or codes after making local changes:</em>
- *
- * Insert or update models and elements.
- * Then call [[ConcurrencyControl.request]] to request the locks and codes that those local operations require.
- * Call [[IModelDb.saveChanges]] if the request suceeds. Call [[IModelDb.cancelChanges]] if the request fails.
- * This approach is simpler to use, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict.
- * Use this approach only if you know that your changes are isolated such that conflicts are unlikely.
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
@@ -430,7 +406,8 @@ export namespace ConcurrencyControl {
     private constructor() { }
   }
 
-  /** How to handle a conflict. Keep this consistent with DgnPlatform/RepositoryManager.h. */
+  /* Keep this consistent with DgnPlatform/RepositoryManager.h. */
+  /** How to handle a conflict. */
   export const enum OnConflict {
     /** Reject the incoming change */
     RejectIncomingChange = 0,
@@ -444,18 +421,18 @@ export namespace ConcurrencyControl {
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
    */
   export class ConflictResolutionPolicy {
-    /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
+    /** What to do with the incoming change in the case where the same element was updated locally and also would be updated by the incoming change. */
     public updateVsUpdate: OnConflict;
-    /** What to do with the incoming change in the case where an entity was updated locally and would be deleted by the incoming change. */
+    /** What to do with the incoming change in the case where an element was updated locally and would be deleted by the incoming change. */
     public updateVsDelete: OnConflict;
-    /** What to do with the incoming change in the case where an entity was deleted locally and would be updated by the incoming change. */
+    /** What to do with the incoming change in the case where an element was deleted locally and would be updated by the incoming change. */
     public deleteVsUpdate: OnConflict;
 
     /**
      * Construct a ConflictResolutionPolicy.
-     * @param updateVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
-     * @param updateVsDelete - the default is ConcurrencyControl.OnConflict.AcceptIncomingChange
-     * @param deleteVsUpdate - the default is ConcurrencyControl.OnConflict.RejectIncomingChange
+     * @param updateVsUpdate What to do with the incoming change in the case where the same element was updated locally and also would be updated by the incoming change
+     * @param updateVsDelete What to do with the incoming change in the case where an element was updated locally and would be deleted by the incoming change
+     * @param deleteVsUpdate What to do with the incoming change in the case where an element was deleted locally and would be updated by the incoming change
      */
     constructor(updateVsUpdate?: OnConflict, updateVsDelete?: OnConflict, deleteVsUpdate?: OnConflict) {
       this.updateVsUpdate = updateVsUpdate ? updateVsUpdate! : ConcurrencyControl.OnConflict.RejectIncomingChange;
@@ -464,22 +441,13 @@ export namespace ConcurrencyControl {
     }
   }
 
-  /** Specifies an optimistic concurrency policy.
-   * Optimistic concurrency allows the app to modify elements and models without acquiring locks.
-   * This creates the possibility that other apps may have uploaded changeSets to iModelHub that overlap with local changes.
-   * In that case, overlapping changes are merged when changeSets are downloaded from iModelHub.
-   * A ConflictResolutionPolicy is then applied in cases where an overlapping change conflict with a local change.
-   *
-   * Codes must still be reserved before pushing changes.
-   */
+  /** Specifies an optimistic concurrency policy. */
   export class OptimisticPolicy {
     public conflictResolution: ConflictResolutionPolicy;
     constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy! : new ConflictResolutionPolicy(); }
   }
 
-  /** Specifies a pessimistic concurrency policy.
-   * Pessimistic concurrency means that models and elements must be locked and codes must be reserved before local changes can be pushed to iModelHub.
-   */
+  /** Specifies a pessimistic concurrency policy. */
   export class PessimisticPolicy {
   }
 

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Utils */
+
 // @todo Needs to be commented out in a production environment.
 /**
  * Assert by throwing a programmer error

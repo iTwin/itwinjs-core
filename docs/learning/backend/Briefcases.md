@@ -1,8 +1,7 @@
 # Briefcases of iModels
 
-## Briefcase Id
+## BriefcaseId
 
 ## Scope for newly created Elements
 
 ## ChangeSet Id
-

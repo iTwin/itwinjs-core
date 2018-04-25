@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
+
 import { IModelDb } from "./IModelDb";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
@@ -54,7 +56,37 @@ export enum AutoPushEventType {
 /** The signature of an AutoPush event handler. */
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
-/** Automatically push local changes to a specified IModel. */
+/** Use AutoPush to automatically push local changes to a specified IModel. To do this,
+ * create an AutoPush object, specifying the IModelDb that should be monitored.
+ * The instance registers itself to react to events and timers. Often, backend will start
+ * auto-pushing when an IModelDb is opened for read-write.
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:IModelDb.onOpened]]
+ * ```
+ * A service or agent would normally get its [[AutoPushParams]] parameters from data provided
+ * at deployment time. For example, a service might read configuration data from a .json file
+ * that is deployed with the service.
+ * ``` json
+ * {
+ *    "autoPush": {
+ *      "pushIntervalSecondsMin": ${MYSERVICE-AUTOPUSH-INTERVAL-MIN},
+ *      "pushIntervalSecondsMax": ${MYSERVICE-AUTOPUSH-INTERVAL-MAX},
+ *      "autoSchedule": true
+ *    },
+ * }
+ * ```
+ * Note that the values of some of the configuration
+ * property values are defined by placeholders denoted by `${some-macro-name}`. These placeholders
+ * are to be replaced by EnvMacroSubst.replaceInProperties with the values of environment
+ * values of the same names. These environment variables would typically be set by the deployment
+ * mechanism from deployment parameters.
+ *
+ * The service would read the configuration like this:
+ * ``` ts
+ * [[include:Service.readConfig]]
+ * ```
+ */
 export class AutoPush {
   private _iModel: IModelDb;
   private _autoSchedule: boolean;
@@ -131,7 +163,7 @@ export class AutoPush {
   /** The time that the last push finished in unix milliseconds. Returns 0 if no push has yet been done. */
   public get endOfLastPushMillis() { return (this._startOfPushMillis <= this._endOfPushMillis) ? this._endOfPushMillis : 0; }
 
-  /** The length of time in milliseconds that the last push required in order to finish. Returns -1 if no push has yet been done. */
+  /** The length of time in milliseconds that the last push required to finish. Returns -1 if no push has yet been done. */
   public get durationOfLastPushMillis() { return this._endOfPushMillis - this._startOfPushMillis; }
 
   /** Check the current state of this AutoPush. */

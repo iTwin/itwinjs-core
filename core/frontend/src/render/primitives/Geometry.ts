@@ -22,7 +22,7 @@ import { Transform,
          BSplineSurface3d,
          SolidPrimitive,
          Polyface } from "@bentley/geometry-core";
-import { Graphic,
+import { RenderGraphic,
          GraphicParams,
          GeometryParams,
          AsThickenedLine,
@@ -34,8 +34,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
-import { System } from "../System";
-import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "../DisplayParams";
+import { RenderSystem } from "../System";
+import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 
 export abstract class Geometry {
@@ -95,7 +95,7 @@ export class GeometryList {
     });
     return range;
   }
-  public computeQuantizationParams(): QParams3d { return new QParams3d(this.computeRange()); }
+  public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }
 }
 
 export class GeometryAccumulator {
@@ -108,7 +108,7 @@ export class GeometryAccumulator {
   public checkGlyphBoxes: boolean = false;
   public tileRange: Range3d;
 
-  public constructor(iModel: IModelConnection, system: System, surfacesOnly: boolean = false, transform?: Transform, tileRange?: Range3d) {
+  public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform?: Transform, tileRange?: Range3d) {
     this.surfacesOnly = surfacesOnly;
     this.displayParamsCache = new DisplayParamsCache(iModel, system);
     if (transform && tileRange) {
@@ -127,7 +127,7 @@ export class GeometryAccumulator {
 
   public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector) {
     if (this.surfacesOnly && !curves.isAnyRegionType()) { return true; } // ignore...
-    const isCurved: boolean = false; // containsNonLinearPrimitive() function doesn't exist?? // curves.containsNonLinearPrimitive();
+    const isCurved: boolean = curves.hasNonLinearPrimitives();
     return this.addGeometry(curves, isCurved, displayParams, transform, disjoint, clip);
   }
   public addGeometry(geom: GeometryQuery, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
@@ -162,7 +162,7 @@ export class GeometryAccumulator {
     this.surfacesOnly = surfacesOnly;
   }
 
-  public saveToGraphicList(_graphics: Graphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void {} //tslint:disable-line
+  public saveToGraphicList(_graphics: RenderGraphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void {} //tslint:disable-line
 }
 
 export abstract class GeometryListBuilder extends GraphicBuilder {
@@ -172,7 +172,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public geometryParamsValid: boolean = false;
   // private _isOpen: boolean = false;
 
-  public abstract finishGraphic(accum: GeometryAccumulator): Graphic; // Invoked by _Finish() to obtain the finished Graphic.
+  public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
 
   private static isDisjointCurvePrimitive(prim: AnyCurve | GeometryQuery): boolean {
     if (prim instanceof PointString3d) {
@@ -186,7 +186,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
 
-  public constructor(system: System, params: GraphicBuilderCreateParams, elemId: Id64 = new Id64(), accumulatorTf: Transform = Transform.createIdentity()) {
+  public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, elemId: Id64 = new Id64(), accumulatorTf: Transform = Transform.createIdentity()) {
     super(params);
     if (params.iModel) {
       this.accum = new GeometryAccumulator(params.iModel, system);
@@ -195,13 +195,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
 
-  public _finish(): Graphic | undefined {
+  public _finish(): RenderGraphic | undefined {
     if (!this.isOpen || !this.accum) {
       assert(false);
       return undefined;
     }
     const graphic = this.finishGraphic(this.accum);
-    // assert(graphic.isValid()); // isValid function doesn't actually exist yet in Graphic class.
     this._isOpen = false;
     if (this.accum) { this.accum.clear(); }
     return graphic;
@@ -330,7 +329,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public getLinearDisplayParams(): DisplayParams | undefined { return this.getDisplayParams(DisplayParamsType.Linear, false); }
   public get textDisplayParams(): DisplayParams | undefined { return this.getDisplayParams(DisplayParamsType.Text, false); }
 
-  public get system(): System | undefined { return this.accum ? this.accum.displayParamsCache.system : undefined; }
+  public get system(): RenderSystem | undefined { return this.accum ? this.accum.displayParamsCache.system : undefined; }
 
   public add(geom: Geometry): void { if (this.accum) this.accum.addGeometryWithGeom(geom); }
 
@@ -344,9 +343,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 }
 
 export class PrimitiveBuilder extends GeometryListBuilder {
-  public primitives: Graphic[] = [];
-  constructor(public system: System, public params: GraphicBuilderCreateParams, public elemId: Id64 = new Id64()) { super(system, params, elemId); }
-  public addSubGraphic(gf: Graphic, subToGf: Transform, _gfParams: GraphicParams, clips?: ClipVector): void {
+  public primitives: RenderGraphic[] = [];
+  constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams, public elemId: Id64 = new Id64()) { super(system, params, elemId); }
+  public addSubGraphic(gf: RenderGraphic, subToGf: Transform, _gfParams: GraphicParams, clips?: ClipVector): void {
     // ###TODO_ELEMENT_TILE: Overriding GraphicParams?
     // ###TODO_ELEMENT_TILE: Clip...
     if (!clips || !subToGf.isIdentity()) {
@@ -362,7 +361,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
     return this.system.createGraphic(params);
   }
 
-  public finishGraphic(accum: GeometryAccumulator): Graphic {
+  public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
     if (!accum.isEmpty) {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
       // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
@@ -372,7 +371,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       const tolerance = this.computeTolerance(accum);
       accum.saveToGraphicList(this.primitives, options, tolerance, context);
     }
-    return (this.primitives.length !== 1) ? this.system.createGraphicList(this.primitives, this.iModel) : this.primitives.pop() as Graphic;
+    return (this.primitives.length !== 1) ? this.system.createGraphicList(this.primitives, this.iModel) : this.primitives.pop() as RenderGraphic;
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {

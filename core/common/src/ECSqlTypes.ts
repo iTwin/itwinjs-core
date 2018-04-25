@@ -1,10 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module ECSQL */
+
 import { Id64Props, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "./IModelError";
 
-/** Describes the different data types an ECSQL value can be of. */
+/** Describes the different data types an ECSQL value can be of.
+ *
+ * See also [ECSQL]($docs/learning/learning/ECSQL).
+ */
 export enum ECSqlValueType {
   // do not change the values of the enum as it must match its counterpart in the addon
   Blob = 1,
@@ -28,6 +33,8 @@ export enum ECSqlValueType {
 /** An ECSQL Navigation value.
  *
  * It is returned from ECSQL SELECT statements for navigation properties.
+ *
+ * See also [ECSQL]($docs/learning/learning/ECSQL).
  */
 export interface NavigationValue {
   /** ECInstanceId of the related instance */
@@ -38,28 +45,32 @@ export interface NavigationValue {
 
 /** An ECSqlTypedString is used to decorate a string value with type information.
  *  This is necessary, when binding parameters to an ECSQL statement so that
- *  [[ECSqlStatement]] can figure out the right EC type from the string value.
+ *  iModelJs can figure out the right EC type from the string value.
+ *
+ *  See also [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes).
  */
 export interface ECSqlTypedString {
   type: ECSqlStringType;
   value: string;
 }
 
-/** Type of an [[ECSqlTypedString]] */
+/** Type of an [ECSqlTypedString]($imodeljs-common.ECSqlTypedString) */
 export enum ECSqlStringType {
   /** The string represents a BLOB value, formatted as Base64 string. */
   Blob,
   /** The string represents a DateTime value, formatted as ISO8601 string. */
   DateTime,
-  /** The string represents a GUID value, formatted as GUID string (see [[Guid]]). */
+  /** The string represents a GUID value, formatted as GUID string (see [Guid]($bentleyjs-core.Guid)). */
   Guid,
-  /** The string represents an Id value, formatted as hexadecimal string (see [[Id64]]). */
+  /** The string represents an Id value, formatted as hexadecimal string (see [Id64]($bentleyjs-core.Id64)). */
   Id,
   /** The string is not specifically typed. */
   String,
 }
 
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
+ *
+ * See also [ECSQL]($docs/learning/learning/ECSQL).
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */
@@ -73,7 +84,10 @@ export interface NavigationBindingValue {
   relClassTableSpace?: string;
 }
 
-/** Defines the ECSQL system properties. */
+/** Defines the ECSQL system properties.
+ *
+ * See also [ECSQL]($docs/learning/learning/ECSQL).
+ */
 export enum ECSqlSystemProperty {
   ECInstanceId,
   ECClassId,
@@ -88,27 +102,28 @@ export enum ECSqlSystemProperty {
   PointZ,
 }
 
-/** Utility to format ECProperties according to the iModelJs formatting rules. */
+/** Utility to format ECProperty names according to the iModelJs formatting rules. */
 export class ECJsNames {
-  /** Formats the specified ECProperty according to the iModelJs formatting rules.
+  /** Formats the specified ECProperty name according to the iModelJs formatting rules.
    *
-   * ### Formatting rules:
-   *  * System properties:
-   *    - [[ECSqlSystemProperty.ECInstanceId]]: id
-   *    - [[ECSqlSystemProperty.ECClassId]]: className
-   *    - [[ECSqlSystemProperty.SourceECInstanceId]]: sourceId
-   *    - [[ECSqlSystemProperty.SourceECClassId]]: sourceClassName
-   *    - [[ECSqlSystemProperty.TargetECInstanceId]]: targetId
-   *    - [[ECSqlSystemProperty.TargetECClassId]]: targetClassName
-   *    - [[ECSqlSystemProperty.NavigationId]]: id
-   *    - [[ECSqlSystemProperty.NavigationRelClassId]]: relClassName
-   *    - [[ECSqlSystemProperty.PointX]]: x
-   *    - [[ECSqlSystemProperty.PointY]]: y
-   *    - [[ECSqlSystemProperty.PointZ]]: z
-   *  * Ordinary properties: first character is lowered.
+   * #### Rules
+   *
+   * - System properties:
+   *    - [ECSqlSystemProperty.ECInstanceId]($imodeljs-common.ECSqlSystemProperty.ECInstanceId): id
+   *    - [ECSqlSystemProperty.ECClassId]($imodeljs-common.ECSqlSystemProperty.ECClassId): className
+   *    - [ECSqlSystemProperty.SourceECInstanceId]($imodeljs-common.ECSqlSystemProperty.SourceECInstanceId): sourceId
+   *    - [ECSqlSystemProperty.SourceECClassId]($imodeljs-common.ECSqlSystemProperty.SourceECClassId): sourceClassName
+   *    - [ECSqlSystemProperty.TargetECInstanceId]($imodeljs-common.ECSqlSystemProperty.TargetECInstanceId): targetId
+   *    - [ECSqlSystemProperty.TargetECClassId]($imodeljs-common.ECSqlSystemProperty.TargetECClassId): targetClassName
+   *    - [ECSqlSystemProperty.NavigationId]($imodeljs-common.ECSqlSystemProperty.NavigationId): id
+   *    - [ECSqlSystemProperty.NavigationRelClassId]($imodeljs-common.ECSqlSystemProperty.NavigationRelClassId): relClassName
+   *    - [ECSqlSystemProperty.PointX]($imodeljs-common.ECSqlSystemProperty.PointX): x
+   *    - [ECSqlSystemProperty.PointY]($imodeljs-common.ECSqlSystemProperty.PointY): y
+   *    - [ECSqlSystemProperty.PointZ]($imodeljs-common.ECSqlSystemProperty.PointZ): z
+   *  - Ordinary properties: first character is lowered.
    *
    * @param ecProperty Either the property name as defined in the ECSchema for regular ECProperties.
-   *         Or an [[ECSqlSystemProperty]] value for ECSQL system properties
+   *         Or an [ECSqlSystemProperty]($imodeljs-common.ECSqlSystemProperty) value for ECSQL system properties
    */
   public static toJsName(ecProperty: ECSqlSystemProperty | string): string {
     if (typeof (ecProperty) === "string")

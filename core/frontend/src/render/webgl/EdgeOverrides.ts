@@ -6,14 +6,9 @@ import { FloatPreMulRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";
 
 // Describes one of the pre-defined line patterns.
-// See Render::LinePixels.
-export class LineCode {
-  public value: number;
-  public static count = 10;
-  constructor(pixels: LinePixels = LinePixels.Solid) {
-    this.value = LineCode.valueFromLinePixels(pixels);
-  }
-  public static valueFromLinePixels(pixels: LinePixels): number {
+// See Render.LinePixels.
+export namespace LineCode {
+  export function valueFromLinePixels(pixels: LinePixels): number {
     switch (pixels) {
       case LinePixels.Code0: return 0;
       case LinePixels.Code1: return 1;
@@ -28,11 +23,13 @@ export class LineCode {
       default: return 0;
     }
   }
+
+  export const solid = 0;
 }
 
 export class EdgeOverrides {
   public readonly color = new FloatPreMulRgba();
-  public readonly lineCode = new LineCode();
+  public lineCode = 0;
   public weight = 0;
   public flags: OvrFlags = OvrFlags.None;
   public anyOverridden(): boolean { return this.flags !== OvrFlags.None; }
@@ -49,9 +46,9 @@ export class EdgeOverrides {
     }
     if (style.pattern !== LinePixels.Invalid) {
       this.flags |= OvrFlags.LineCode;
-      this.lineCode.value = style.pattern;
+      this.lineCode = LineCode.valueFromLinePixels(style.pattern);
     } else {
-      this.lineCode.value = 0;
+      this.lineCode = 0;
     }
     if (forceOpaque)
       this.flags |= OvrFlags.Alpha;

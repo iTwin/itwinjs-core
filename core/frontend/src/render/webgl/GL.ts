@@ -30,20 +30,27 @@ export namespace GL {
     DefaultDst = Zero,
   }
 
-  export enum Buffer {
-    ArrayBuffer = WebGLRenderingContext.ARRAY_BUFFER,
-    ElementArrayBuffer = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
-    // WebGL 2 has more buffer options
-    ArrayBufferBinding = WebGLRenderingContext.ARRAY_BUFFER_BINDING,
-    ElementArrayBufferBinding = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER_BINDING,
-    BufferSize = WebGLRenderingContext.BUFFER_SIZE,
-    BufferUsage = WebGLRenderingContext.BUFFER_USAGE,
-  }
+  export namespace Buffer {
+    export enum Target {
+      ArrayBuffer = WebGLRenderingContext.ARRAY_BUFFER,
+      ElementArrayBuffer = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
+    }
 
-  export enum BufferUsage {
-    DynamicDraw = WebGLRenderingContext.DYNAMIC_DRAW,
-    StaticDraw = WebGLRenderingContext.STATIC_DRAW,
-    StreamDraw = WebGLRenderingContext.STREAM_DRAW,
+    export enum Binding {
+      ArrayBuffer = WebGLRenderingContext.ARRAY_BUFFER_BINDING,
+      ElementArrayBuffer = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER_BINDING,
+    }
+
+    export enum Parameter {
+      Size = WebGLRenderingContext.BUFFER_SIZE,
+      Usage = WebGLRenderingContext.BUFFER_USAGE,
+    }
+
+    export enum Usage {
+      DynamicDraw = WebGLRenderingContext.DYNAMIC_DRAW,
+      StaticDraw = WebGLRenderingContext.STATIC_DRAW,
+      StreamDraw = WebGLRenderingContext.STREAM_DRAW,
+    }
   }
 
   /* Stenciling commented out for now since it is not used */
@@ -83,6 +90,7 @@ export namespace GL {
     Short = WebGLRenderingContext.SHORT,
     UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
     UnsignedShort = WebGLRenderingContext.UNSIGNED_SHORT,
+    UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
     Float = WebGLRenderingContext.FLOAT,
     // WebGL 2 has more data types
     // HalfFloat = WebGLRenderingContext.HALF_FLOAT,
@@ -167,5 +175,24 @@ export namespace GL {
     UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
 //    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
     UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
-    }
+  }
+
+  export enum ShaderType {
+    Fragment = WebGLRenderingContext.FRAGMENT_SHADER,
+    Vertex = WebGLRenderingContext.VERTEX_SHADER,
+  }
+
+  export enum ShaderParameter {
+    CompileStatus = WebGLRenderingContext.COMPILE_STATUS,
+  }
+
+  export enum ProgramParameter {
+    LinkStatus = WebGLRenderingContext.LINK_STATUS,
+  }
+
+  export enum PrimitiveType {
+    Points = WebGLRenderingContext.POINTS,
+    Lines = WebGLRenderingContext.LINES,
+    Triangles = WebGLRenderingContext.TRIANGLES,
+  }
 }

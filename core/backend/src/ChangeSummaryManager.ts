@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
+
 import { AccessToken, ChangeSet, UserInfo, IModelHubClient, ChangeSetQuery, UserInfoQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
@@ -12,9 +14,9 @@ import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-comm
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
-import { KnownLocations } from "./KnownLocations";
+import { KnownLocations } from "./Platform";
 
-/** Equivalent of the ECEnumeration OpCode in the ECDbChange ECSchema */
+/** Equivalent of the ECEnumeration OpCode in the `ECDbChange` ECSchema */
 export enum ChangeOpCode {
   Insert = 1,
   Update = 2,
@@ -22,9 +24,9 @@ export enum ChangeOpCode {
 }
 
 /** The enum represents the values for the ChangedValueState argument of the ECSQL function
- *  Changes.
+ *  **Changes**.
  * The enum can be used when programmatically binding values to the ChangedValueState argument
- * in an ECSQL using the Changes ECSQL function.
+ * in an ECSQL using the **Changes** ECSQL function.
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -33,11 +35,19 @@ export enum ChangedValueState {
   BeforeDelete = 4,
 }
 
+/** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
+ *
+ *  See also [ChangeSummaryManager.queryChangeSummary]($imodeljs-backend.ChangeSummaryManager.queryChangeSummary)
+ */
 export interface ChangeSummary {
   id: Id64;
   changeSet: { wsgId: string, parentWsgId: string, pushDate: string, author: string };
 }
 
+/** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
+ *
+ *  See also [ChangeSummaryManager.queryInstanceChange]($imodeljs-backend.ChangeSummaryManager.queryInstanceChange)
+ */
 export interface InstanceChange {
   id: Id64;
   summaryId: Id64;
@@ -47,7 +57,7 @@ export interface InstanceChange {
   changedProperties: { before: any, after: any };
 }
 
-/** Options for [[ChangeSummaryManager.extractChangeSummaries]]. */
+/** Options for [ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend.ChangeSummaryManager.extractChangeSummaries). */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start changeset to the current changeset as of which the iModel
    *  was opened. If undefined, the extraction starts at the first changeset of the iModel.
@@ -61,13 +71,16 @@ export interface ChangeSummaryExtractOptions {
 
 /** Class to extract change summaries for a briefcase. */
 export class ChangeSummaryManager {
+  private static hubClient?: IModelHubClient;
+  private static deploymentEnv: string;
+
   /** Determines whether the Changes cache file is attached to the specified iModel or not
    * @param iModel iModel to check whether a Changes cache file is attached
    * @returns Returns true if the Changes cache file is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
     if (!iModel || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
 
     return iModel.nativeDb.isChangeCacheAttached();
   }
@@ -75,11 +88,11 @@ export class ChangeSummaryManager {
   /** Attaches the Changes cache file to the specified iModel if it hasn't been attached yet.
    * A new Changes cache file will be created for the iModel if it hasn't existed before.
    * @param iModel iModel to attach the Changes cache file to
-   * @throws [[IModelError]]
+   * @throws [IModelError]($imodeljs-common.IModelError)
    */
   public static attachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
 
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       return;
@@ -99,11 +112,11 @@ export class ChangeSummaryManager {
 
   /** Detaches the ECChanges cache file from the specified iModel.
    * @param iModel iModel to detach the ECChanges cache file to
-   * @throws [[IModelError]] in case of errors, e.g. if no ECChanges cache was attached before.
+   * @throws [IModelError]($imodeljs-common.IModelError) in case of errors, e.g. if no ECChanges cache was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
 
     iModel.clearStatementCache();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
@@ -115,11 +128,11 @@ export class ChangeSummaryManager {
    * Change summaries are extracted from the specified startChangeSetId up through the change set the iModel was opened with.
    * If startChangeSetId is undefined, the first changeset will be used.
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel, and it must be opened
-   * with [[OpenMode.ReadWrite]].
+   * with [OpenMode.ReadWrite]($bentleyjs-core.OpenMode.ReadWrite).
    * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
    * the iModel is moved back to the original changeset.
    * @param options Extraction options
-   * @throws [[IModelError]] if the iModel is standalone,r was not opened in readwrite mode.
+   * @throws [IModelError]($imodeljs-common.IModelError) if the iModel is standalone,r was not opened in readwrite mode.
    */
   public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
     // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)
@@ -127,7 +140,7 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open in readwrite mode and must not be a standalone iModel.");
 
     const iModelId: string = iModel.briefcase.iModelId;
-    const endChangeSetId: string = iModel.briefcase.changeSetId;
+    const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
     assert(endChangeSetId.length !== 0);
 
     let startChangeSetId: string | undefined;
@@ -142,10 +155,13 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
-    const hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
+    if (!ChangeSummaryManager.hubClient ||  this.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig) {
+      this.deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
+      ChangeSummaryManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
+    }
 
     const accessToken: AccessToken = IModelDb.getAccessToken(iModelId);
-    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
+    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(ChangeSummaryManager.hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
     assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
     perfLogger.dispose();
@@ -153,8 +169,10 @@ export class ChangeSummaryManager {
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Changes file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
     perfLogger.dispose();
-    if (!changesFile || !changesFile.nativeDb)
-      throw new IModelError(IModelStatus.BadArg);
+    if (!changesFile || !changesFile.nativeDb) {
+      assert(false, "Should not happen as an exception should have been thrown in that case");
+      throw new IModelError(IModelStatus.BadArg, "Failed to create ECChanges file.");
+    }
 
     try {
       const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
@@ -178,11 +196,14 @@ export class ChangeSummaryManager {
         }
 
         const changeSetFilePath: string = path.join(changeSetsFolder, currentChangeSetInfo.fileName!);
+        if (!IModelJsFs.existsSync(changeSetFilePath))
+          throw new IModelError(IModelStatus.FileNotFound, "Failed to extract change summary: Changeset file '" + changeSetFilePath + "' does not exist.");
+
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
         const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
         if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
-          throw new IModelError(stat.error.status);
+          throw new IModelError(stat.error.status, stat.error.message);
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
         const changeSummaryId = new Id64(stat.result!);
@@ -192,7 +213,7 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (!foundUserEmail) {
-            const userInfo: UserInfo = (await hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(userId)))[0];
+            const userInfo: UserInfo = (await ChangeSummaryManager.hubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(userId)))[0];
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
             userInfoCache.set(userId, userEmail !== undefined ? userEmail : "");
@@ -259,7 +280,7 @@ export class ChangeSummaryManager {
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
-      throw new IModelError(IModelStatus.BadArg);
+      throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel but be open.");
 
     const changesFile = new ECDb();
     const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModel.briefcase.iModelId);
@@ -282,12 +303,12 @@ export class ChangeSummaryManager {
 
   private static createChangesFile(iModel: IModelDb, changesFile: ECDb, changesFilePath: string): void {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
-      throw new IModelError(IModelStatus.BadArg);
+      throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel but be open.");
 
     assert(iModel.nativeDb);
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changesFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat);
+      throw new IModelError(stat, "Failed to create ECChanges file at '" + changesFilePath + "'.");
 
     // Extended information like changeset ids, push dates are persisted in the IModelChange ECSchema
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
@@ -327,20 +348,20 @@ export class ChangeSummaryManager {
 
   /** Queries the ChangeSummary for the specified change summary id
    * @param iModel iModel
-   * @param changeSummaryId ECInstanceId of the ChangeSummary (see ECDbChange.ChangeSummary ECClass)
+   * @param changeSummaryId ECInstanceId of the ChangeSummary (see `ECDbChange.ChangeSummary` ECClass)
    * @returns Returns the requested ChangeSummary object
-   * @throws [[IModelError]] If change summary does not exist for the specified id, or if the
+   * @throws [IModelError]($imodeljs-common.IModelError) If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Change cache must be attached to iModel.");
+      throw new IModelError(IModelStatus.BadArg, "ECChange cache must be attached to iModel.");
 
     return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
     (stmt: ECSqlStatement) => {
       stmt.bindId(1, changeSummaryId);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
+        throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
 
       const row = stmt.getRow();
       return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author } };
@@ -349,14 +370,14 @@ export class ChangeSummaryManager {
 
   /** Queries the InstanceChange for the specified instance change id
    * @param iModel iModel
-   * @param instanceChangeId ECInstanceId of the InstanceChange (see ECDbChange.InstanceChange ECClass)
+   * @param instanceChangeId ECInstanceId of the InstanceChange (see `ECDbChange.InstanceChange` ECClass)
    * @returns Returns the requested InstanceChange object
-   * @throws [[IModelError]] if instance change does not exist for the specified id, or if the
+   * @throws [IModelError]($imodeljs-common.IModelError) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Change cache must be attached to iModel.");
+      throw new IModelError(IModelStatus.BadArg, "ECChange cache must be attached to iModel.");
 
     // query instance changes
     const instanceChange: InstanceChange = iModel.withPreparedStatement(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
@@ -364,7 +385,7 @@ export class ChangeSummaryManager {
           JOIN main.meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE ic.ECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, instanceChangeId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, `No InstanceChange found for id ${instanceChangeId.value}.`);
+          throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId.value}.`);
 
         const row = stmt.getRow();
         const changedInstanceId = new Id64(row.changedInstanceId);
@@ -428,7 +449,7 @@ export class ChangeSummaryManager {
       stmt.bindId(1, instanceChange.summaryId);
       stmt.bindId(2, instanceChange.changedInstance.id);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `No property value changes found for InstanceChange ${instanceChange.id.value}.`);
+        throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChange.id.value}.`);
 
       return stmt.getRow();
     });

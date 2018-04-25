@@ -7,8 +7,8 @@ import { ConnectClient, Project, IModelHubClient, IModelQuery } from "@bentley/i
 
 export class TestData {
   public static user = {
-    email: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
+    email: "Regular.IModelJsTestUser@mailinator.com",
+    password: "Regular@iMJs",
   };
 
   public static connectClient = new ConnectClient("QA");
@@ -20,8 +20,8 @@ export class TestData {
 
   public static async load() {
     TestData.accessToken = await TestData.getTestUserAccessToken();
-    TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "NodeJsTestProject");
-    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "TestModel");
+    TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
+    TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ConnectionReadTest");
   }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {

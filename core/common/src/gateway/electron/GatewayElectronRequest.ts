@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayRequest } from "../core/GatewayRequest";
 import { GatewayProtocolEvent, GatewayRequestFulfillment } from "../core/GatewayProtocol";
 import { GatewayElectronProtocol, CHANNEL, interop } from "./GatewayElectronProtocol";

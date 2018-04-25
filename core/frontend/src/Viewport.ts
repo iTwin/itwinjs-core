@@ -6,7 +6,7 @@ import {
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, StopWatch } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -17,7 +17,44 @@ import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { Target } from "./render/System";
+import { RenderTarget } from "./render/System";
+import { UpdatePlan } from "./render/UpdatePlan";
+import { ChangeDecorationsTask, TaskPriority, SetHiliteTask, OverrideFeatureSymbologyTask } from "./render/Task";
+import { Decorations, ViewFlags } from "@bentley/imodeljs-common";
+
+/** viewport synchronization flags */
+export class SyncFlags {
+  public get isValidDecorations(): boolean { return this.decorations; }
+  public get isValidScene(): boolean { return this.scene; }
+  public get isValidController(): boolean { return this.controller; }
+  public get isValidRenderPlan(): boolean { return this.renderPlan; }
+  public get isValidRotatePoint(): boolean { return this.rotatePoint; }
+  public get isFirstDrawComplete(): boolean { return this.firstDrawComplete; }
+  public get isRedrawPending(): boolean { return this.redrawPending; }
+  constructor(private decorations: boolean = false,
+              private scene: boolean = false,
+              private renderPlan: boolean = false,
+              private controller: boolean = false,
+              private rotatePoint: boolean = false,
+              private firstDrawComplete: boolean = false,
+              private redrawPending: boolean = false) {}
+  public invalidateDecorations(): void { this.decorations = false; }
+  public invalidateScene(): void { this.scene = false; this.invalidateDecorations(); }
+  public invalidateRenderPlan(): void { this.renderPlan = false; this.invalidateScene(); }
+  public invalidateController(): void { this.controller = false; this.invalidateRenderPlan(); this.invalidateFirstDrawComplete(); }
+  public invalidateRotatePoint(): void { this.rotatePoint = false; }
+  public invalidateFirstDrawComplete(): void { this.firstDrawComplete = false; }
+  public invalidateRedrawPending(): void { this.redrawPending = false; }
+  public setValidDecorations(): void { this.decorations = true; }
+  public setFirstDrawComplete(): void { this.firstDrawComplete = true; }
+  public setValidScene(): void { this.scene = true; }
+  public setValidController(): void { this.controller = true; }
+  public setValidRenderPlan(): void { this.renderPlan = true; }
+  public setValidRotatePoint(): void { this.rotatePoint = true; }
+  public setRedrawPending(): void { this.redrawPending = true; }
+  /** enables setting instance as readonly so reference is preserved when resetting */
+  public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.firstDrawComplete = other.firstDrawComplete; this.redrawPending = other.redrawPending; }
+}
 
 /** A rectangle in view coordinates. */
 export class ViewRect {
@@ -208,8 +245,16 @@ export class Viewport {
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
   private _evController?: EventController;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
+  public readonly sync: SyncFlags = new SyncFlags();
 
-  public get target(): Target { return this._target!; }
+  /**
+   * Determine whether this Viewport is currently active. Viewports become "active" after they have
+   * been initialized and connected to an Render::Target.
+   */
+  public get isActive(): boolean { return !!this._view && !!this._target; }
+
+  public get viewFlags(): ViewFlags { return this.view.viewFlags; }
+  public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
@@ -217,7 +262,7 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState, private _target?: Target) { this.setCursor(); this.saveViewUndo(); }
+  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState, private _target?: RenderTarget) { this.setCursor(); this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
@@ -1301,4 +1346,106 @@ export class Viewport {
     const invert = ((bgColor.r + bgColor.g + bgColor.b) > (255 * 3) / 2);
     return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
   }
+
+  /** [WIP] */
+  public renderFrame(priority: TaskPriority, plan: UpdatePlan): boolean {
+    const sync = this.sync;
+    const view = this.view;
+    const renderQueue = IModelApp.renderQueue;
+    const target = this.target;
+
+    if (!this.isActive)
+      return true;
+
+    const timer = new StopWatch();
+    timer.start();
+
+    this.animate();
+
+    // Allow ViewState instance to change any state which might affect logic below...
+    view.onRenderFrame();
+
+    let isRedrawNeeded = sync.isRedrawPending;
+    sync.invalidateRedrawPending();  // || m_animator.IsValid(); If animator is active it will have changed frustum thereby invalidating render plan...
+
+    if (view.isSelectionSetDirty) {
+      const task = new SetHiliteTask(target, priority, view);
+      renderQueue.addTask(task);
+      view.setSelectionSetDirty(false);
+      isRedrawNeeded = true;
+    }
+
+    if (view.areFeatureOverridesDirty) {
+      const task = new OverrideFeatureSymbologyTask(target, priority, view);
+      renderQueue.addTask(task);
+      view.setFeatureOverridesDirty(false);
+      isRedrawNeeded = true;
+    }
+
+    if (!sync.isValidController)
+      this.setupFromView();
+
+    if (!sync.isValidScene) {
+      // view.requestScene(this, plan, requests);
+      // const scene = view.useReadyScene();
+      // const task = new ChangeSceneTask(priority, target, scene, view.activeVolume);
+      // renderQueue.addTask(task);
+      isRedrawNeeded = true;
+      sync.setValidScene();
+      // IModelApp.viewManager.notifyRenderSceneQueued(this);
+    }
+
+    if (!sync.isValidRenderPlan) {
+      // this.changeRenderPlan(priority);
+      sync.setValidRenderPlan();
+      isRedrawNeeded = true;
+    }
+
+    if (!sync.isValidDecorations) {
+      const task = new ChangeDecorationsTask(target, priority);
+      this.prepareDecorations(plan, task.decorations);
+      renderQueue.addTask(task);
+      isRedrawNeeded = true;
+    }
+
+    // if (this.processFlash()) {
+    //   const task = new SetFlashTask(priority, target);
+    //   renderQueue.addTask(task);
+    //   isRedrawNeeded = true;
+    // }
+
+    if (!isRedrawNeeded)
+      return true;
+
+    // if (renderQueue.hasActiveOrPending(Operation.RenderFrame, target)) {
+    //   sync.setRedrawPending();
+    //   return true;
+    // }
+
+    timer.stop();
+
+    // const task = new RenderFrameTask(priority, target, timer.elapsedSeconds);
+    // renderQueue.addTask(task);
+
+    return true;
+  }
+
+  /** [WIP] */
+  public prepareDecorations(plan: UpdatePlan, decorations: Decorations): void {
+    this.sync.setValidDecorations();
+    if (plan.wantDecorators) {
+      const context = new DecorateContext(this, decorations);
+      IModelApp.viewManager.callDecorators(context);
+    }
+  }
+
+  /** [WIP] */
+  public callDecorators(context: DecorateContext): void {
+    this.view.drawDecorations(context);
+    // this.view.drawGrid(context);
+    // if (context.viewFlags.showAcsTriad())
+    //   this.getAuxCoordSystem()
+  }
+
+  public requestScene(_plan: UpdatePlan): void { }
 }

@@ -23,8 +23,6 @@ import * as fs from "fs";
 
 describe("PerformanceElementsTests", () => {
   let seedIModel: IModelDb;
-  let newModelId: Id64;
-  let spatialCategoryId1: Id64;
   const opSizes: any[] = [1000, 2000, 3000];
   const dbSizes: any[] = [10000, 100000, 1000000];
   const classNames: any[] = ["PerfElement", "PerfElementSub1", "PerfElementSub2", "PerfElementSub3"];
@@ -78,15 +76,15 @@ describe("PerformanceElementsTests", () => {
       elementProps.baseDouble = values.baseDouble;
       return elementProps;
   }
-  function createElems(className: string, count: number, iModelName: IModelDb, modId: Id64, catId: Id64): any[] {
-    const elementColl: Element[] = [];
-    for (let m = 0; m < count; ++m) {
-      const elementProps = createElemProps(className, iModelName, modId, catId);
-      const geomElement = seedIModel.elements.createElement(elementProps);
-      elementColl.push(geomElement);
-    }
-    return elementColl;
-  }
+  // function createElems(className: string, count: number, iModelName: IModelDb, modId: Id64, catId: Id64): any[] {
+  //   const elementColl: Element[] = [];
+  //   for (let m = 0; m < count; ++m) {
+  //     const elementProps = createElemProps(className, iModelName, modId, catId);
+  //     const geomElement = iModelName.elements.createElement(elementProps);
+  //     elementColl.push(geomElement);
+  //   }
+  //   return elementColl;
+  // }
   function verifyProps(testElement: Element): boolean {
     let passed: boolean = false;
     switch (testElement.classFullName) {
@@ -150,13 +148,6 @@ describe("PerformanceElementsTests", () => {
           const id = seedIModel.elements.insertElement(geomElement);
           assert.isTrue(id.isValid(), "insert worked");
         }
-        seedIModel.saveChanges();
-        seedIModel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
-          assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-          const row = stmt.getRow();
-          assert.equal(row.count, dbSize);
-        });
-        IModelTestUtils.closeIModel(seedIModel);
       }
     }
     if (!IModelJsFs.existsSync(csvPath))
@@ -170,18 +161,30 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Insert_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const elementColl = createElems(className, opCount, perfimodel, newModelId, spatialCategoryId1);
-          const startTime = new Date().getTime();
-          for (let j = 0; j < opCount; ++j) {
-            const id = perfimodel.elements.insertElement(elementColl[j]);
+          const dictionary: DictionaryModel = perfimodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+          const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
+          let newModelId: Id64;
+          [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(perfimodel, Code.createEmpty(), true);
+          assert.isFalse(undefined === defaultCategoryId);
+          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+          if (undefined === spatialCategoryId) {
+            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+          }
+          let totalTime = 0.0;
+          for (let m = 0; m < opCount; ++m) {
+            const elementProps = createElemProps(className, perfimodel, newModelId, spatialCategoryId);
+            const geomElement = perfimodel.elements.createElement(elementProps);
+            const startTime = new Date().getTime();
+            const id = perfimodel.elements.insertElement(geomElement);
             assert.isTrue(id.isValid(), "insert worked");
-            }
-          const endTime = new Date().getTime();
-          const elapsedTime = (endTime - startTime) / 1000.0;
+            const endTime = new Date().getTime();
+            const elapsedTime = (endTime - startTime) / 1000.0;
+            totalTime = totalTime + elapsedTime;
+          }
           const recordTime = new Date().toISOString();
-          fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsInsert," + elapsedTime + "," + opCount +
+          fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsInsert," + totalTime + "," + opCount +
                             ",\"Element API Insert   \'" + className + "\' [Initial count: " + dbSize + "]\",Insert," + dbSize + "\n");
-          perfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
+          perfimodel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
             assert.equal(row.count, dbSize + opCount);
@@ -216,7 +219,7 @@ describe("PerformanceElementsTests", () => {
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsDelete," + elapsedTime + "," + opCount +
                         ",\"Element API Delete   \'" + className + "\' [Initial count: " + dbSize + "]\",Delete," + dbSize + "\n");
-          perfimodel.withPreparedStatement("select count(*) as [count] from PerfTestDomain:PerfElement", (stmt: ECSqlStatement) => {
+          perfimodel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
             assert.equal(row.count, dbSize - opCount);

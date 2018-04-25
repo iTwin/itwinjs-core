@@ -92,13 +92,14 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public onReinitialize(): void { this.onRestartTool(); }
 
-  /** Called on data button down event in order to lock the tool to it's current target model. */
+  /** Called on data button down event to lock the tool to it's current target model. */
   public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }
   public getCursor(): BeCursor { return BeCursor.Arrow; }
 
   /** Establish this tool as the active PrimitiveTool.
    *  @return SUCCESS if this tool is now the active PrimitiveTool.
-   *  @see Tool.onInstall, Tool.onPostInstall
+   *  @see InteractiveTool.onInstall
+   *  @see InteractiveTool.onPostInstall
    */
   public run(): boolean {
     const toolAdmin = IModelApp.toolAdmin;

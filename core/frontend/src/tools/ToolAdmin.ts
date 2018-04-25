@@ -377,7 +377,6 @@ export class ToolAdmin {
   private modifierKeyWentDown = false;
   private modifierKey = BeModifierKey.None;
   private touchBridgeMode = false; // Flag indicating that touch events are being converted into mouse events for this tool
-
   /** Apply operation such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
   /** If Grid Lock is on, project data points to grid. */

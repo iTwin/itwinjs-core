@@ -6,14 +6,32 @@ import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform } from "@bentley/geometry-core";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
-import { DecorationList, GraphicList, Decorations, Graphic } from "@bentley/imodeljs-common";
+import { DecorationList, GraphicList, Decorations, RenderGraphic, ViewFlags } from "@bentley/imodeljs-common";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { PrimitiveBuilder } from "./render/primitives/Geometry";
-import { Target, System } from "./render/System";
+import { RenderTarget, RenderSystem } from "./render/System";
 
 export class ViewContext {
-  constructor(public viewport?: Viewport) { }
+  private _viewFlags?: ViewFlags;
+  private _viewport?: Viewport;
+
+  public get viewFlags(): ViewFlags { return this._viewFlags!; }
+  public get viewport(): Viewport { return this._viewport!; }
+
+  constructor(vp?: Viewport) { if (!!vp) this.attachViewport(vp); }
+
+  public attachViewport(vp: Viewport): void {
+    this._viewport = vp;
+    this._viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+  }
+
+  public getPixelSizeAtPoint(inPoint?: Point3d): number {
+    const vp = this.viewport;
+    const viewPt = !!inPoint ? vp.worldToView(inPoint) : vp.npcToView(new Point3d(0.5, 0.5, 0.5));
+    const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
+    return vp.viewToWorld(viewPt).distance(vp.viewToWorld(viewPt2));
+  }
 }
 
 export class NullContext extends ViewContext {
@@ -87,8 +105,8 @@ export class SnapContext extends ViewContext {
 }
 
 export class RenderContext extends ViewContext {
-  public get target(): Target { return this.viewport.target; }
-  constructor(public viewport: Viewport) { super(viewport); }
+  public get target(): RenderTarget { return this.viewport.target; }
+  constructor(vp: Viewport) { super(vp); }
   public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined {
     return this._createGraphic(GraphicBuilderCreateParams.create(_type, this.viewport, _tf));
   }
@@ -96,15 +114,18 @@ export class RenderContext extends ViewContext {
 }
 
 export class DecorateContext extends RenderContext {
-  private readonly decorations = new Decorations();
-
+  private readonly decorations: Decorations;
+  constructor(vp: Viewport, decorations: Decorations = new Decorations()) {
+    super(vp);
+    this.decorations = decorations;
+  }
   public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
   public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
   public drawHit(hit: HitDetail): void {
     const sheetVp = hit.sheetViewport;
     return (sheetVp && hit.viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
   }
-  public addNormal(graphic: Graphic) {
+  public addNormal(graphic: RenderGraphic) {
     // if (nullptr != viewlet) {
     //   viewlet -> Add(graphic);
     //   return;
@@ -117,21 +138,21 @@ export class DecorateContext extends RenderContext {
   }
 
   /** Display world coordinate graphic with smooth shading, default lighting, and z testing enabled. */
-  public addWorldDecoration(graphic: Graphic, _ovr?: any) {
+  public addWorldDecoration(graphic: RenderGraphic, _ovr?: any) {
     if (!this.decorations.world)
       this.decorations.world = new DecorationList();
     this.decorations.world.add(graphic); // , ovrParams);
   }
 
   /** Display world coordinate graphic with smooth shading, default lighting, and z testing disabled. */
-  public addWorldOverlay(graphic: Graphic, _ovr?: any) {
+  public addWorldOverlay(graphic: RenderGraphic, _ovr?: any) {
     if (!this.decorations.worldOverlay)
       this.decorations.worldOverlay = new DecorationList();
     this.decorations.worldOverlay.add(graphic); // , ovrParams);
   }
 
   /** Display view coordinate graphic with smooth shading, default lighting, and z testing disabled. */
-  public addViewOverlay(graphic: Graphic, _ovr?: any) {
+  public addViewOverlay(graphic: RenderGraphic, _ovr?: any) {
     if (!this.decorations.viewOverlay)
       this.decorations.viewOverlay = new DecorationList();
     this.decorations.viewOverlay.add(graphic); // , ovrParams);
@@ -146,7 +167,7 @@ export class DecorateContext extends RenderContext {
   public drawStandardGrid(_gridOrigin: Point3d, _rMatrix: RotMatrix, _spacing: Point2d, _gridsPerRef: number, _isoGrid = false, _fixedRepetitions?: Point2d) { }
 
   /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */
-  public setViewBackground(graphic: Graphic) { this.decorations.viewBackground = graphic; }
+  public setViewBackground(graphic: RenderGraphic) { this.decorations.viewBackground = graphic; }
 
   public createViewBackground(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewBackground)!; }
   public createWorldDecoration(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldDecoration)!; }
@@ -194,6 +215,6 @@ export class DecorateContext extends RenderContext {
 }
 
 export class PrimitiveBuilderContext extends ViewContext {
-  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: System) { super(viewport); }
+  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: RenderSystem) { super(viewport); }
   public static fromPrimitiveBuilder(builder: PrimitiveBuilder): PrimitiveBuilderContext { return new PrimitiveBuilderContext(builder.viewport, builder.iModel, builder.system); }
 }

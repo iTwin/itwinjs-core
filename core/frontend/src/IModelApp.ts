@@ -12,6 +12,8 @@ import { I18N, I18NOptions } from "./Localization";
 import { ToolRegistry } from "./tools/Tool";
 import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-common";
 import { NotificationManager } from "./NotificationManager";
+import { RenderQueue } from "./render/Task";
+import { System } from "./render/webgl/System";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -28,6 +30,8 @@ import * as idleTool from "./tools/IdleTool";
  */
 export class IModelApp {
   protected static _initialized = false;
+  public static renderSystem: System;
+  public static renderQueue: RenderQueue;
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
   public static toolAdmin: ToolAdmin;
@@ -75,6 +79,8 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
+    if (!IModelApp.renderSystem) IModelApp.renderSystem = new System();
+    if (!IModelApp.renderQueue) IModelApp.renderQueue = new RenderQueue();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
     if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
@@ -83,6 +89,8 @@ export class IModelApp {
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
+    IModelApp.renderSystem.onInitialized();
+    IModelApp.renderQueue.onInitialized();
     IModelApp.viewManager.onInitialized();
     IModelApp.toolAdmin.onInitialized();
     IModelApp.accuDraw.onInitialized();

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
 import { Gateway, GatewayDefinition } from "../../Gateway";
 import { GatewayProtocol, GatewayRequestFulfillment, GatewayProtocolEvent } from "./GatewayProtocol";
 import { GatewayRequest } from "./GatewayRequest";
@@ -55,7 +56,7 @@ export abstract class GatewayConfiguration {
 }
 
 // A default configuration that can be used for basic testing within a library.
-class GatewayDefaultConfiguration extends GatewayConfiguration {
+export class GatewayDefaultConfiguration extends GatewayConfiguration {
   public gateways = () => [];
   public protocol: GatewayProtocol = new GatewayDirectProtocol(this);
   public applicationAuthorizationKey = "Authorization";

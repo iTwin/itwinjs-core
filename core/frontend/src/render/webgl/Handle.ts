@@ -3,282 +3,196 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
-import { Logger } from "@bentley/bentleyjs-core";
-import { QParams } from "@bentley/imodeljs-common";
-import { Point2d, Point3d } from "@bentley/geometry-core";
-import { Range2d, Range3d } from "@bentley/geometry-core";
-import { Matrix3, Matrix4 } from "../Matrix";
-import { XY, XYZ } from "@bentley/geometry-core";
+import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
+import { Matrix3, Matrix4 } from "./Matrix";
+import { GLDisposable } from "./GLDisposable";
 
-/** A handle to some GL resource.
- * This class should be a NonCopyableClass.
+export type BufferData = ArrayBufferView | ArrayBuffer;
+
+/**
+ * A handle to a WebGLBuffer, such as a vertex or index buffer.
+ * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  */
-export class Handle {
-  public static readonly INVALID_VALUE: number = -1;
-  public value: WebGLBuffer | WebGLUniformLocation | number | null = Handle.INVALID_VALUE;
+export class BufferHandle implements GLDisposable {
+  private _glBuffer: WebGLBuffer | undefined;
 
-  public constructor(val?: Handle | number) {
-    if (!val) {
-      return;
+  /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */
+  public constructor(gl: WebGLRenderingContext) {
+    const glBuffer = gl.createBuffer();
+
+    // gl.createBuffer() returns WebGLBuffer | null...
+    if (null !== glBuffer) {
+      this._glBuffer = glBuffer;
+    } else {
+      this._glBuffer = undefined;
     }
 
-    if (val instanceof Handle) {
-      this.value = val.value;
-      val.value = Handle.INVALID_VALUE;
-      return;
-    }
-
-    if (typeof val === "number") {
-      this.value = val;
-      return;
-    }
+    assert(this.isValid);
   }
 
-  public isValid(): boolean { return Handle.INVALID_VALUE !== this.value; }
-  public rawInit(): void { this.value = Handle.INVALID_VALUE; } // for member of union...
-}
+  public get isValid() { return undefined !== this._glBuffer; }
 
-/** A handle to buffer, such as a vertex or index buffer. */
-export class BufferHandle extends Handle {
-  // #if defined(TRACK_MEMORY_USAGE)
-  // bytes_Used: number = 0;
-  // #endif
-
-  public constructor(val?: BufferHandle) {
-    super(val);
-    // #if defined(TRACK_MEMORY_USAGE)
-    //     bytesUsed = val.bytesUsed;
-    //     val.bytesUsed = 0;
-    // #endif
-  }
-
-  private setBufferData(gl: WebGLRenderingContext, target: number, sizeOrArrayBuf: number | ArrayBufferView | ArrayBuffer, usage: number) {
-    gl.bufferData(target, sizeOrArrayBuf as any, usage);
-
-    // #if defined(TRACK_MEMORY_USAGE)
-    //     assert(0 == GetBytesUsed());
-    //     bytesUsed = size;
-    //     System::OnBufferAllocated(*this);
-    // #endif
-  }
-
-  public init(gl: WebGLRenderingContext): void {
-    this.invalidate(gl);
-    this.value = gl.createBuffer();
-  }
-
-  public invalidate(gl: WebGLRenderingContext): void {
-    // assert(GarbageCollector::IsRenderThread());
-    if (this.isValid()) {
-      gl.deleteBuffer(this.value);
-      this.value = Handle.INVALID_VALUE;
-
-      // #if defined(TRACK_MEMORY_USAGE)
-      //   System::OnBufferFreed(*this);
-      //   bytesUsed = 0;
-      // #endif
-    }
-    assert(!this.isValid());
-  }
-
-  public bind(gl: WebGLRenderingContext, target: number): void {
-    gl.bindBuffer(target, this.value);
-  }
-
-  public verifySize(gl: WebGLRenderingContext, target: number, expectedSize: number): void {
-    if (!this.isValid()) {
-      return;
-    }
-
-    let size: number = 0;
-    size = gl.getBufferParameter(target, GL.Buffer.BufferSize);
-    if (size !== expectedSize) {
-      this.invalidate(gl);
-      Logger.logError("Handle", "Cannot generate buffer of size " + expectedSize);
+  /** Frees the WebGL buffer */
+  public dispose(gl: WebGLRenderingContext): void {
+    if (undefined !== this._glBuffer && null !== this._glBuffer) {
+      gl.deleteBuffer(this._glBuffer);
+      this._glBuffer = undefined;
     }
   }
 
-  public static bind(gl: WebGLRenderingContext, target: number, buffer: WebGLBuffer | null): void {
-    gl.bindBuffer(target, buffer);
-  }
-
-  public static unBind(gl: WebGLRenderingContext, target: number): void {
-    gl.bindBuffer(target, null);
-  }
-
-  public bindData(gl: WebGLRenderingContext, target: number, size: number, usage: number, data?: ArrayBufferView | ArrayBuffer) {
-    if (!data) {
-      this.setBufferData(gl, target, size, usage);
-      this.verifySize(gl, target, size);
-      return;
+  /** Binds this buffer to the specified target */
+  public bind(gl: WebGLRenderingContext, target: GL.Buffer.Target): void {
+    if (undefined !== this._glBuffer) {
+      gl.bindBuffer(target, this._glBuffer);
     }
+  }
+
+  /** Sets the specified target to be bound to no buffer */
+  public static unbind(gl: WebGLRenderingContext, target: GL.Buffer.Target): void { gl.bindBuffer(target, null); }
+
+  /** Binds this buffer to the specified target and sets the buffer's data store. */
+  public bindData(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
     this.bind(gl, target);
-    this.setBufferData(gl, target, data, usage);
-    this.verifySize(gl, target, size);
-    BufferHandle.unBind(gl, target);
+    gl.bufferData(target, data, usage);
+    BufferHandle.unbind(gl, target);
   }
+
+  /** Creates a BufferHandle and binds its data */
+  public static createBuffer(gl: WebGLRenderingContext, target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
+    const handle = new BufferHandle(gl);
+    if (!handle.isValid) {
+      return undefined;
+    }
+
+    handle!.bindData(gl, target, data, usage);
+    return handle;
+  }
+  /** Creates a BufferHandle and binds its data */
+  public static createArrayBuffer(gl: WebGLRenderingContext, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw) {
+    return BufferHandle.createBuffer(gl, GL.Buffer.Target.ArrayBuffer, data, usage);
+  }
+
+  public isBound(gl: WebGLRenderingContext, binding: GL.Buffer.Binding) { return gl.getParameter(binding) === this._glBuffer; }
 }
 
+/** A handle to a WebGLBuffer intended to hold quantized 2d points */
 export class QBufferHandle2d extends BufferHandle {
-  public params: [number, number, number, number] = [0, 0, 0, 0];
+  /**
+   * The quantization parameters, in a format appropriate for submittal to the GPU.
+   * params[0] = origin.x
+   * params[1] = origin.y
+   * params[2] = scale.x
+   * params[3] = scale.y
+   */
+  public readonly params = new Float32Array(4);
 
-  public constructor(val?: QBufferHandle2d | QParams<Point2d, Range2d>) {
-    super();
-    if (val instanceof QBufferHandle2d) {
-      this.value = val.value;
-      val.value = Handle.INVALID_VALUE;
-      this.params = val.params;
-    } else if (val instanceof QParams) {
-      const origin = val.origin;
-      const scale = val.scale;
-      if (origin instanceof XY) {
-        this.params[0] = origin.x;
-        this.params[1] = origin.y;
-      }
-      if (scale instanceof XY) {
-        this.params[2] = scale.x;
-        this.params[3] = scale.y;
-      }
-      if (0 !== this.params[2]) {
-        this.params[2] = 1.0 / this.params[2];
-      }
-      if (0 !== this.params[3]) {
-        this.params[3] = 1.0 / this.params[3];
-      }
+  private setScale(index: number, value: number) { this.params[index] = 0 !== value ? 1.0 / value : value; }
+
+  public constructor(gl: WebGLRenderingContext, params: QParams2d) {
+    super(gl);
+    this.params[0] = params.origin.x;
+    this.params[1] = params.origin.y;
+    this.setScale(2, params.scale.x);
+    this.setScale(3, params.scale.y);
+  }
+
+  public static create(gl: WebGLRenderingContext, params: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
+    const handle = new QBufferHandle2d(gl, params);
+    if (!handle.isValid) {
+      return undefined;
     }
+
+    handle.bindData(gl, GL.Buffer.Target.ArrayBuffer, data);
+    return handle;
   }
 }
 
+/* A handle to a WebGLBuffer intended to hold quantized 3d points */
 export class QBufferHandle3d extends BufferHandle {
-  public origin: Point3d = new Point3d();
-  public scale: Point3d = new Point3d();
+  /** The quantization origin in x, y, and z */
+  public readonly origin = new Float32Array(3);
+  /** The quantization scale in x, y, and z */
+  public readonly scale = new Float32Array(3);
 
-  public constructor(val?: QBufferHandle3d | QParams<Point3d, Range3d>) {
-    super();
-    if (val instanceof QBufferHandle3d) {
-      this.value = val.value;
-      val.value = Handle.INVALID_VALUE;
-      this.origin = val.origin;
-      this.scale = val.scale;
-    } else if (val instanceof QParams) {
-      const origin = val.origin;
-      const scale = val.scale;
-      if (origin instanceof XYZ) {
-        this.origin.x = origin.x;
-        this.origin.y = origin.y;
-        this.origin.z = origin.z;
-      }
-      if (scale instanceof XYZ) {
-        this.scale.x = scale.x;
-        this.scale.y = scale.y;
-        this.scale.z = scale.z;
-      }
-      if (0 !== this.scale.x) {
-        this.scale.x = 1.0 / this.scale.x;
-      }
-      if (0 !== this.scale.y) {
-        this.scale.y = 1.0 / this.scale.y;
-      }
-      if (0 !== this.scale.z) {
-        this.scale.z = 1.0 / this.scale.z;
-      }
+  private setScale(index: number, value: number) { this.scale[index] = 0 !== value ? 1.0 / value : value; }
+
+  public constructor(gl: WebGLRenderingContext, params: QParams3d) {
+    super(gl);
+    this.origin[0] = params.origin.x;
+    this.origin[1] = params.origin.y;
+    this.origin[2] = params.origin.z;
+    this.setScale(0, params.scale.x);
+    this.setScale(1, params.scale.y);
+    this.setScale(2, params.scale.z);
+  }
+
+  public static create(gl: WebGLRenderingContext, params: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
+    const handle = new QBufferHandle3d(gl, params);
+    if (!handle.isValid) {
+      return undefined;
     }
+
+    handle.bindData(gl, GL.Buffer.Target.ArrayBuffer, data);
+    return handle;
   }
 }
 
-export class AttributeHandle extends Handle {
-  public constructor(val?: AttributeHandle | number) {
-    super(val);
-  }
+/** A handle to the location of an attribute within a shader program */
+export class AttributeHandle {
+  private readonly _glId: number;
 
-  public init(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean): boolean {
-    this.invalidate();
-    this.value = gl.getAttribLocation(program, name);
-    assert(!required || this.isValid());
-    return this.isValid();
-  }
+  private constructor(glId: number) { this._glId = glId; }
 
-  public invalidate(): void {
-    this.value = Handle.INVALID_VALUE;
+  public static create(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean = false): AttributeHandle | undefined {
+    const glId = gl.getAttribLocation(program, name);
+    if (-1 === glId) {
+      assert(!required);
+      return undefined;
+    }
+
+    return new AttributeHandle(glId);
   }
 
   public setVertexAttribPointer(gl: WebGLRenderingContext, size: number, type: number, normalized: boolean, stride: number, offset: number) {
-    gl.vertexAttribPointer(Number(this.value), size, type, normalized, stride, offset);
+    gl.vertexAttribPointer(this._glId, size, type, normalized, stride, offset);
   }
 
-  public enableVertexAttribArray(gl: WebGLRenderingContext): void {
-    gl.enableVertexAttribArray(Number(this.value));
-  }
+  public enableVertexAttribArray(gl: WebGLRenderingContext): void { gl.enableVertexAttribArray(this._glId); }
+  public disableVertexAttribArray(gl: WebGLRenderingContext): void { gl.disableVertexAttribArray(this._glId); }
 
-  public disableVertexAttribArray(gl: WebGLRenderingContext): void {
-    gl.disableVertexAttribArray(Number(this.value));
-  }
-
-  public enableArray(gl: WebGLRenderingContext, buffer: BufferHandle, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
-    buffer.bind(gl, GL.Buffer.ArrayBuffer);
+  public enableArray(gl: WebGLRenderingContext, buffer: BufferHandle, size: number, type: GL.DataType, normalized: boolean, stride: number, offset: number): void {
+    buffer.bind(gl, GL.Buffer.Target.ArrayBuffer);
     this.setVertexAttribPointer(gl, size, type, normalized, stride, offset);
     this.enableVertexAttribArray(gl);
-    BufferHandle.unBind(gl, GL.Buffer.ArrayBuffer);
+    BufferHandle.unbind(gl, GL.Buffer.Target.ArrayBuffer);
   }
 }
 
-export class UniformHandle extends Handle {
-  public constructor(val?: UniformHandle | number) {
-    super(val);
-  }
+/** A handle to the location of a uniform within a shader program */
+export class UniformHandle {
+  private readonly _location: WebGLUniformLocation;
 
-  private setUniformMatrix4fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array | number[]): void {
-    if (this.value instanceof WebGLUniformLocation) {
-      gl.uniformMatrix4fv(this.value, transpose, data);
+  private constructor(location: WebGLUniformLocation) { this._location = location; }
+
+  public static create(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean = true): UniformHandle | undefined {
+    const location = gl.getUniformLocation(program, name);
+    if (null === location) {
+      assert(!required);
+      return undefined;
     }
+
+    return new UniformHandle(location);
   }
 
-  private setUniformMatrix3fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array | number[]): void {
-    if (this.value instanceof WebGLUniformLocation) {
-      gl.uniformMatrix3fv(this.value, transpose, data);
-    }
-  }
+  private setUniformMatrix4fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array): void { gl.uniformMatrix4fv(this._location, transpose, data); }
+  private setUniformMatrix3fv(gl: WebGLRenderingContext, transpose: boolean, data: Float32Array): void { gl.uniformMatrix3fv(this._location, transpose, data); }
 
-  public init(gl: WebGLRenderingContext, program: WebGLProgram, name: string, required: boolean): boolean {
-    this.invalidate();
-    this.value = gl.getUniformLocation(program, name);
-    assert(!required || this.isValid());
-    return this.isValid();
-  }
-
-  public invalidate(): void {
-    this.value = Handle.INVALID_VALUE;
-  }
-
-  public setMatrix(gl: WebGLRenderingContext, mat: Matrix4 | Matrix3): void {
-    if (mat instanceof Matrix4) {
-      this.setUniformMatrix4fv(gl, false, mat.data);
-    } else if (mat instanceof Matrix3) {
-      this.setUniformMatrix3fv(gl, false, mat.data);
-    }
-  }
-
-  public setUniform1fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform1fv(Number(this.value), data);
-  }
-
-  public setUniform2fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform2fv(Number(this.value), data);
-  }
-
-  public setUniform3fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform3fv(Number(this.value), data);
-  }
-
-  public setUniform4fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void {
-    gl.uniform4fv(Number(this.value), data);
-  }
-
-  public setUniform1i(gl: WebGLRenderingContext, data: number): void {
-    gl.uniform1i(this.value, data);
-  }
-
-  public setUniform1f(gl: WebGLRenderingContext, data: number): void {
-    gl.uniform1f(this.value, data);
-  }
+  public setMatrix3(gl: WebGLRenderingContext, mat: Matrix3) { this.setUniformMatrix3fv(gl, false, mat.data); }
+  public setMatrix4(gl: WebGLRenderingContext, mat: Matrix4) { this.setUniformMatrix4fv(gl, false, mat.data); }
+  public setUniform1fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void { gl.uniform1fv(this._location, data); }
+  public setUniform2fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void { gl.uniform2fv(this._location, data); }
+  public setUniform3fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void { gl.uniform3fv(this._location, data); }
+  public setUniform4fv(gl: WebGLRenderingContext, data: Float32Array | number[]): void { gl.uniform4fv(this._location, data); }
+  public setUniform1i(gl: WebGLRenderingContext, data: number): void { gl.uniform1i(this._location, data); }
+  public setUniform1f(gl: WebGLRenderingContext, data: number): void { gl.uniform1f(this._location, data); }
 }

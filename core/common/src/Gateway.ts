@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { GatewayRegistry } from "./gateway/core/GatewayRegistry";
 import { GatewayConfiguration, GatewayConfigurationSupplier } from "./gateway/core/GatewayConfiguration";
 
@@ -26,6 +28,11 @@ export abstract class Gateway {
   /** Registers the gateway implementation class for the backend. */
   public static registerImplementation<TDefinition extends Gateway, TImplementation extends TDefinition>(definition: GatewayDefinition<TDefinition>, implementation: GatewayImplementation<TImplementation>): void {
     GatewayRegistry.instance.registerImplementation(definition, implementation);
+  }
+
+  /** Supply the instance of the gateway implementation class for the backend (optional). */
+  public static supplyImplementationInstance<TDefinition extends Gateway, TImplementation extends TDefinition>(definition: GatewayDefinition<TDefinition>, instance: TImplementation): void {
+    GatewayRegistry.instance.setImplementationInstance(definition, instance);
   }
 
   /** The configuration for the gateway. */

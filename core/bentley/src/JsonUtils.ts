@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Utils */
 
 export class JsonUtils {
   public static asBool(json: any, defaultVal: boolean = false): boolean { return (json == null) ? defaultVal : !!json; }

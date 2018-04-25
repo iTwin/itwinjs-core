@@ -3,38 +3,72 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
+import { OpenMode, DbResult, Id64, PerfLogger } from "@bentley/bentleyjs-core";
+import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
-import { IModelJsFs, IModelHost, IModelDb, BriefcaseManager } from "../backend";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { IModelDb } from "../IModelDb";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { TestConfig } from "./TestConfig";
+import { IModelJsFs } from "../IModelJsFs";
+import { IModelHost } from "../IModelHost";
+import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "./MockAssetUtil";
+import * as TypeMoq from "typemoq";
+
+function setupTest(iModelId: string): void {
+  const cacheFilePath: string = BriefcaseManager.getChangeSummaryPathname(iModelId);
+  if (IModelJsFs.existsSync(cacheFilePath))
+    IModelJsFs.removeSync(cacheFilePath);
+}
 
 describe.skip("ChangeSummary", () => {
-  let accessToken: AccessToken;
+  const index = process.argv.indexOf("--offline");
+  const offline: boolean = process.argv[index + 1] === "true";
+  let accessToken: AccessToken = new MockAccessToken();
   let testProjectId: string;
-  let testIModelId: string;
+  let startTime = new Date().getTime();
+
+  const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
+  const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
+  const testIModels: TestIModelInfo[] = [
+    new TestIModelInfo("ReadOnlyTest"),
+    new TestIModelInfo("ReadWriteTest"),
+    new TestIModelInfo("NoVersionsTest"),
+  ];
+  const assetDir = "./src/test/assets/_mocks_";
+  let cacheDir: string;
 
   before(async () => {
-    accessToken = await IModelTestUtils.getTestUserAccessToken();
-    testProjectId = await IModelTestUtils.getTestProjectId(accessToken, TestConfig.projectName);
-    testIModelId = await IModelTestUtils.getTestIModelId(accessToken, testProjectId, TestConfig.iModelName);
+    startTime = new Date().getTime();
 
-    // Delete briefcases if the cache has been cleared, *and* we cannot acquire any more briefcases
-    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-    if (!IModelJsFs.existsSync(cacheDir)) {
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, TestConfig.iModelName);
-      await IModelTestUtils.deleteBriefcasesIfAcquireLimitReached(accessToken, TestConfig.projectName, "NoVersionsTest");
+    if (offline) {
+      console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
+      startTime = new Date().getTime();
+
+      testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
+      (ChangeSummaryManager as any).hubClient = iModelHubClientMock.object;
+      (ChangeSummaryManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
+      HubTestUtils.hubClient = iModelHubClientMock.object;
+
+      console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+    } else {
+      accessToken = await IModelTestUtils.getTestUserAccessToken();
+      console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
+      startTime = new Date().getTime();
+
+      [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
+
+      console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
 
-    const changesPath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
-    if (IModelJsFs.existsSync(changesPath))
-      IModelJsFs.unlinkSync(changesPath);
   });
 
   it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     try {
       assert.exists(iModel);
@@ -59,9 +93,7 @@ describe.skip("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-      const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
-      expect(IModelJsFs.existsSync(expectedCachePath));
+      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
 
       ChangeSummaryManager.detachChangeCache(iModel);
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -84,6 +116,9 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to readonly briefcase", async () => {
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
@@ -106,9 +141,7 @@ describe.skip("ChangeSummary", () => {
         assert.equal(row.csumcount, 0);
       });
 
-      const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-      const expectedCachePath: string = path.join(cacheDir, testIModelId, testIModelId.concat(".bim.ecchanges"));
-      expect(IModelJsFs.existsSync(expectedCachePath));
+      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
 
       ChangeSummaryManager.detachChangeCache(iModel);
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -131,6 +164,9 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("ECSqlStatementCache after detaching Change Cache", async () => {
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel);
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
@@ -156,6 +192,9 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     await iModel.close(accessToken);
     assert.exists(iModel);
@@ -165,6 +204,9 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummaries", async () => {
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     assert.exists(iModel);
     try {
@@ -203,23 +245,22 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummary for single changeset", async () => {
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
+    const changeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
 
-    const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
-    if (IModelJsFs.existsSync(changesFilePath))
-      IModelJsFs.removeSync(changesFilePath);
-
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(changesetId));
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     try {
       assert.exists(iModel);
+      await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(changesetId));
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(iModel, { currentChangeSetOnly: true });
-      assert.isTrue(IModelJsFs.existsSync(changesFilePath));
-
+      await ChangeSummaryManager.extractChangeSummaries(iModel, {currentChangeSetOnly: true});
+      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -247,22 +288,22 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Subsequent ChangeSummary extractions", async () => {
-    const changesFilePath: string = BriefcaseManager.getChangeSummaryPathname(testIModelId);
-    if (IModelJsFs.existsSync(changesFilePath))
-      IModelJsFs.removeSync(changesFilePath);
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await IModelTestUtils.hubClient.ChangeSets().get(accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
 
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(firstChangesetId));
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
     try {
       assert.exists(iModel);
+      await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(firstChangesetId));
 
       // now extract change summary for that one changeset
-      await ChangeSummaryManager.extractChangeSummaries(iModel, { currentChangeSetOnly: true });
-      assert.isTrue(IModelJsFs.existsSync(changesFilePath));
+      await ChangeSummaryManager.extractChangeSummaries(iModel, {currentChangeSetOnly: true});
+      assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeSummaryPathname(testIModelId)));
 
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -289,11 +330,11 @@ describe.skip("ChangeSummary", () => {
       // now do second extraction for last changeset
       const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
       await iModel.close(accessToken);
-      iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(lastChangesetId));
+      iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(lastChangesetId));
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
-      await ChangeSummaryManager.extractChangeSummaries(iModel, { currentChangeSetOnly: true });
+      await ChangeSummaryManager.extractChangeSummaries(iModel, {currentChangeSetOnly: true});
 
       // WIP
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -318,6 +359,9 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Extract ChangeSummaries with invalid input", async () => {
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
     let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
     try {
       assert.exists(iModel);
@@ -345,7 +389,15 @@ describe.skip("ChangeSummary", () => {
   });
 
   it("Query ChangeSummary content", async () => {
+    // accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1);
+    // testProjectId = "d46de192-6cad-4086-b968-71b517edc215";
+    // const testIModelId: string = "a237be2f-7a59-4f40-a0bd-14bf9c0634f1";
+    const testIModelId: string = testIModels[0].id;
+    setupTest(testIModelId);
+
+    let perfLogger = new PerfLogger("IModelDb.open");
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    perfLogger.dispose();
     await ChangeSummaryManager.extractChangeSummaries(iModel);
     assert.exists(iModel);
     ChangeSummaryManager.attachChangeCache(iModel);
@@ -357,27 +409,31 @@ describe.skip("ChangeSummary", () => {
 
     const changeSummaries = new Array<ChangeSummary>();
     iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
+      perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
         const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, new Id64(row.id));
         changeSummaries.push(csum);
       }
+      perfLogger.dispose();
     });
 
     for (const changeSummary of changeSummaries) {
-      const filePath = path.join(outDir, "imodelid_" + testIModelId + "_changesummaryid_" + changeSummary.id.value + ".changesummary.json");
+      const filePath = path.join(outDir, "imodelid_" + testIModels[1].id + "_changesummaryid_" + changeSummary.id.value + ".changesummary.json");
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
 
       const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>() };
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
+        perfLogger = new PerfLogger("ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary " + changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const row = stmt.getRow();
 
           const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
           content.instanceChanges.push(instanceChange);
         }
+        perfLogger.dispose();
       });
 
       IModelJsFs.writeFileSync(filePath, JSON.stringify(content));

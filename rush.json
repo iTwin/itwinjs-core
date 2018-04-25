@@ -1,5 +1,5 @@
 {
-  "rushVersion": "4.2.5",
+  "rushVersion": "4.3.2",
   "npmVersion": "5.5.1",
   "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
   "projects": [
@@ -14,6 +14,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@bentley/geometry-core",
+      "projectFolder": "core/geometry",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@bentley/imodeljs-common",
       "projectFolder": "core/common",
       "shouldPublish": true
@@ -21,6 +26,11 @@
     {
       "packageName": "@bentley/imodeljs-backend",
       "projectFolder": "core/backend",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@bentley/imodeljs-clients",
+      "projectFolder": "core/clients",
       "shouldPublish": true
     },
     {

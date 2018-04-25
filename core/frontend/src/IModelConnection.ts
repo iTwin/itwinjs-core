@@ -5,8 +5,10 @@ import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeE
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
-  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, IModelGateway, FontMap,
+  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
+  IModelReadGateway, IModelWriteGateway, StandaloneIModelGateway,
 } from "@bentley/imodeljs-common";
+import { IModelUnitTestGateway } from "@bentley/imodeljs-common/lib/gateway/IModelUnitTestGateway"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -15,7 +17,7 @@ import { ModelSelectorState } from "./ModelSelectorState";
 import { ModelState, SpatialModelState, SectionDrawingModelState, DrawingModelState, SheetModelState } from "./ModelState";
 import { IModelApp } from "./IModelApp";
 
-const loggingCategory = "imodeljs-backend.IModelConnection";
+const loggingCategory = "imodeljs-frontend.IModelConnection";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
@@ -41,7 +43,7 @@ export class IModelConnection extends IModel {
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    */
   public async loadFontMap(): Promise<FontMap> {
-    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelGateway.getProxy().readFontJson(this.iModelToken))));
+    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadGateway.getProxy().readFontJson(this.iModelToken))));
   }
 
   private constructor(iModel: IModel) {
@@ -74,9 +76,9 @@ export class IModelConnection extends IModel {
     const iModelToken = new IModelToken(undefined, undefined, contextId, iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId);
     let openResponse: IModel;
     if (openMode === OpenMode.ReadWrite)
-      openResponse = await IModelGateway.getProxy().openForWrite(accessToken, iModelToken);
+      openResponse = await IModelWriteGateway.getProxy().openForWrite(accessToken, iModelToken);
     else
-      openResponse = await IModelGateway.getProxy().openForRead(accessToken, iModelToken);
+      openResponse = await IModelReadGateway.getProxy().openForRead(accessToken, iModelToken);
 
     Logger.logTrace(loggingCategory, "IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
@@ -90,7 +92,7 @@ export class IModelConnection extends IModel {
       return;
     IModelConnection.onClose.raiseEvent(this);
     try {
-      await IModelGateway.getProxy().close(accessToken, this.iModelToken);
+      await IModelReadGateway.getProxy().close(accessToken, this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused
     }
@@ -101,7 +103,7 @@ export class IModelConnection extends IModel {
    * This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
-    const openResponse: IModel = await IModelGateway.getProxy().openStandalone(fileName, openMode);
+    const openResponse: IModel = await StandaloneIModelGateway.getProxy().openStandalone(fileName, openMode);
     Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
     return new IModelConnection(openResponse);
   }
@@ -112,7 +114,7 @@ export class IModelConnection extends IModel {
       return;
     IModelConnection.onClose.raiseEvent(this);
     try {
-      await IModelGateway.getProxy().closeStandalone(this.iModelToken);
+      await StandaloneIModelGateway.getProxy().closeStandalone(this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused
     }
@@ -120,91 +122,49 @@ export class IModelConnection extends IModel {
 
   /**
    * Execute a query against the iModel.
-   *
-   * ## Row Format
-   * The returned rows are formatted as JavaScript objects where every SELECT clause item becomes a property in the JavaScript object.
-   *
-   * ### Property names
-   * If the ECSQL select clause item
-   *  * is an [ECSQL system property]([[ECSqlSystemProperty]]), the property name is as described here: [[ECJsonNames.toJsName]]
-   *  * has a column alias, the alias, with the first character lowered, becomes the property name.
-   *  * has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
-   *
-   * ### Property value types
-   * The resulting types of the returned property values are these:
-   *
-   * | ECSQL type | Extended Type | JavaScript Type |
-   * | ---------- | ------------- | --------------- |
-   * | Boolean    | -             | boolean         |
-   * | Blob       | -             | Base64 string   |
-   * | Blob       | BeGuid        | GUID string (see [[Guid]]) |
-   * | Double     | -             | number          |
-   * | DateTime   | -             | ISO8601 string  |
-   * | Id system properties | -   | Hexadecimal string |
-   * | Integer    | -             | number          |
-   * | Int64      | -             | number          |
-   * | Int64      | Id            | Hexadecimal string |
-   * | Point2d    | -             | [[XAndY]]      |
-   * | Point3d    | -             | [[XYAndZ]]     |
-   * | String     | -             | string         |
-   * | Navigation | n/a           | [[NavigationValue]] |
-   * | Struct     | n/a           | JS object with properties of the types in this table |
-   * | Array      | n/a           | array of the types in this table |
-   *
-   * ### Examples
-   * | ECSQL | Row |
-   * | ----- | --- |
-   * | SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"274e25dc-8407-11e7-bb31-be2e44b06b34",userLabel:"My element"}` |
-   * | SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id | `{schemaId:"0x132", classId:"0x332"}` |
-   * | SELECT count(*) FROM bis.Element | `{"count(*)": 31241}` |
-   * | SELECT count(*) cnt FROM bis.Element | `{cnt: 31241}` |
-   *
+   * The result of the query is returned as an array of JavaScript objects where every array element represents an
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an array if the parameters are positional. Pass an object of the values keyed on the parameter name
-   * for named parameters.
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iModelJs types to be used for the different ECSQL parameter types.
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
-   *
-   * Supported types:
-   *  * boolean
-   *  * number for integral or double parameters
-   *  * string for string parameters,
-   *  * [[ECSqlTypedString]] for date time, blob, id, or guid parameters
-   *  * [[Id64]] for id parameters
-   *  * [[Guid]] for guid parameters
-   *  * [[NavigationBindingValue]] for navigation property parameters
-   *  * [[XAndY]] for Point2d parameters
-   *  * [[XYAndZ]] for Point3d parameters
-   *  * Objects of primitives, objects or arrays of any of the above types when binding structs
-   *  * Arrays of primitives or objects of any of the above when binding arrays
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
    * @throws [[IModelError]] if the ECSQL is invalid
+   * See [Executing ECSQL]($docs/learning/frontend/ExecutingECSQL) for more on ECSQL.
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
-    return await IModelGateway.getProxy().executeQuery(this.iModelToken, ecsql, bindings);
+    return await IModelReadGateway.getProxy().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
   /** query for a set of ids that satisfy the supplied query params  */
-  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelGateway.getProxy().queryEntityIds(this.iModelToken, params); }
+  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadGateway.getProxy().queryEntityIds(this.iModelToken, params); }
 
   /**
    * Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
+   * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
-    await IModelGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
+    if (OpenMode.ReadWrite !== this.iModelToken.openMode)
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
+    await IModelWriteGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
   }
 
   /**
    * Commit pending changes to this iModel
    * @param description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes.
+   * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
-    return await IModelGateway.getProxy().saveChanges(this.iModelToken, description);
+    if (OpenMode.ReadWrite !== this.iModelToken.openMode)
+      return Promise.reject(new IModelError(IModelStatus.ReadOnly));
+    return await IModelWriteGateway.getProxy().saveChanges(this.iModelToken, description);
   }
 
   /**
@@ -213,7 +173,7 @@ export class IModelConnection extends IModel {
    * @param params A JSON string containing all parameters the test requires
    * @hidden
    */
-  public async executeTest(testName: string, params: any): Promise<any> { return IModelGateway.getProxy().executeTest(this.iModelToken, testName, params); }
+  public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestGateway.getProxy().executeTest(this.iModelToken, testName, params); }
 }
 
 /** The collection of models for an [[IModelConnection]]. */
@@ -228,7 +188,7 @@ export class IModelConnectionModels {
 
   /** Get a batch of [[ModelProps]] given a list of model ids. */
   public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-    return IModelConnection.toPropsArray(await IModelGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
+    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
   }
 
   public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
@@ -288,7 +248,7 @@ export class IModelConnectionModels {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsTemplate=FALSE ";
     }
-    return IModelConnection.toPropsArray(await IModelGateway.getProxy().queryModelProps(this._iModel.iModelToken, params));
+    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryModelProps(this._iModel.iModelToken, params));
   }
 }
 
@@ -305,17 +265,17 @@ export class IModelConnectionElements {
 
   /** Get a batch of [[ElementProps]] given one or more element ids. */
   public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-    return IModelConnection.toPropsArray(await IModelGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg)));
+    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg)));
   }
 
   /** get a bach of [[ElementProps]] that satisfy a query */
   public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-    return IModelConnection.toPropsArray(await IModelGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
+    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
   }
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
   public async formatElements(elementIds: Id64Arg): Promise<any[]> {
-    return await IModelGateway.getProxy().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
+    return await IModelReadGateway.getProxy().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
   }
 }
 
@@ -332,7 +292,7 @@ export class IModelConnectionCodeSpecs {
       return;
 
     this._loaded = [];
-    const codeSpecArray: any[] = await IModelGateway.getProxy().getAllCodeSpecs(this._iModel.iModelToken);
+    const codeSpecArray: any[] = await IModelReadGateway.getProxy().getAllCodeSpecs(this._iModel.iModelToken);
     for (const codeSpec of codeSpecArray) {
       this._loaded.push(new CodeSpec(this._iModel, new Id64(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
     }
@@ -387,12 +347,12 @@ export class IModelConnectionViews {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsPrivate=FALSE ";
     }
-    return IModelConnection.toPropsArray(await IModelGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
+    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
   }
 
   /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
   public async load(viewDefinitionId: Id64Props): Promise<ViewState> {
-    const viewStateData: any = await IModelGateway.getProxy().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
+    const viewStateData: any = await IModelReadGateway.getProxy().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
     const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
     switch (viewStateData.viewDefinitionProps.classFullName) {

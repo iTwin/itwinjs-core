@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Gateway */
+
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { GatewayRequest, GatewayRequestStatus } from "./GatewayRequest";
 import { GatewayInvocation } from "./GatewayInvocation";
@@ -128,7 +130,7 @@ export abstract class GatewayProtocol {
     };
   }
 
-  /** @hidden @internal */
+  /** Constructs a protocol. */
   public constructor(configuration: GatewayConfiguration) {
     this.configuration = configuration;
     this.events.addListener ((type, object) => GatewayProtocol.events.raiseEvent(type, object));

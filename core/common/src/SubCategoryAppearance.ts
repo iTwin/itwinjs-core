@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 

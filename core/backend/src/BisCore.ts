@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
+
 import { Schema, Schemas } from "./Schema";
 import { ClassRegistry } from "./ClassRegistry";
 

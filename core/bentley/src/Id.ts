@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Ids */
+
 export type Id64Props = Id64 | string;
 export type GuidProps = Guid | string;
 export type Id64Set = Set<string>;
