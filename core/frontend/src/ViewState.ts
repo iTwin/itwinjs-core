@@ -110,13 +110,16 @@ export class SpecialElements {
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
-  protected _special?: SpecialElements;
   protected _noQuery: boolean = false;
   protected _featureOverridesDirty: boolean = false;
   protected _selectionSetDirty: boolean = false;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
+
+  /** Get the set of special elements for this ViewState. */
+  public readonly specialElements: SpecialElements = new SpecialElements();
+
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
@@ -144,9 +147,6 @@ export abstract class ViewState extends ElementState {
   public get name(): string { return this.code.getValue(); }
 
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
-
-  /** Get the set of special elements for this ViewState. */
-  public get specialElements(): SpecialElements { return this._special!; }
 
   /** Get the list of elements that are never drawn */
   public get neverDrawn(): Id64Set { return this.specialElements.never; }
