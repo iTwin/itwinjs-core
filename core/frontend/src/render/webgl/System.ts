@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { QPoint3dList, QPoint2dList, QParams3d, QParams2d, RenderGraphic, GraphicBranch } from "@bentley/imodeljs-common";
-import { Point2d, Point3d, ClipVector, Transform } from "@bentley/geometry-core";
+import { RenderGraphic, GraphicBranch } from "@bentley/imodeljs-common";
+import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
@@ -153,44 +153,6 @@ export class Capabilities {
   /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
   private get hasRequiredTextureUnits(): boolean {
     return this.maxFragTextureUnits > 4 && this.maxVertTextureUnits > 5;
-  }
-}
-
-export class ViewportQuad {
-  public readonly vertices = new QPoint3dList(QParams3d.fromNormalizedRange());
-  public readonly indices = new Uint32Array(6);
-  constructor() {
-    const pt = new Point3d(-1, -1, 0);
-    this.vertices.add(pt);
-    pt.x = 1;
-    this.vertices.add(pt);
-    pt.y = 1;
-    this.vertices.add(pt);
-    pt.x = -1;
-    this.vertices.add(pt);
-
-    this.indices[0] = 0;
-    this.indices[1] = 1;
-    this.indices[2] = 2;
-    this.indices[3] = 0;
-    this.indices[4] = 2;
-    this.indices[5] = 3;
-  }
-}
-
-export class TexturedViewportQuad extends ViewportQuad {
-  public readonly textureUV = new QPoint2dList(QParams2d.fromZeroToOne());
-  constructor() {
-    super();
-
-    const pt = new Point2d(0, 0);
-    this.textureUV.add(pt);
-    pt.x = 1;
-    this.textureUV.add(pt);
-    pt.y = 1;
-    this.textureUV.add(pt);
-    pt.x = 0;
-    this.textureUV.add(pt);
   }
 }
 

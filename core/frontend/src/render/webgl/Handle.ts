@@ -95,6 +95,16 @@ export class QBufferHandle2d extends BufferHandle {
     this.setScale(2, params.scale.x);
     this.setScale(3, params.scale.y);
   }
+
+  public static create(gl: WebGLRenderingContext, params: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
+    const handle = new QBufferHandle2d(gl, params);
+    if (!handle.isValid) {
+      return undefined;
+    }
+
+    handle.bindData(gl, GL.Buffer.Target.ArrayBuffer, data);
+    return handle;
+  }
 }
 
 /* A handle to a WebGLBuffer intended to hold quantized 3d points */

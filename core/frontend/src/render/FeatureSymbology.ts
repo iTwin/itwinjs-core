@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { LinePixels, ColorDef, Cloneable } from "@bentley/imodeljs-common";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
+import { ViewState } from "../ViewState";
+import { IModelConnection } from "../IModelConnection";
 
 export namespace FeatureSymbology {
   export class AppearanceFlags {
@@ -114,6 +116,33 @@ export namespace FeatureSymbology {
 
     public setDefaultOverrides(appearance: Appearance, replaceExisting: boolean = true): void {
       if (replaceExisting || !appearance.overridesSymbology) this.defaultOverrides = appearance.clone();
+    }
+
+    /** #TODO */
+    public async updateFromIModel(_iModel: IModelConnection): Promise<void> {
+      // Features are defined by subcategory, which only implies category...
+      // A subcategory is visible if it belongs to a viewed category and its appearance's visibility flag is set
+      // const ecsql = `SELECT ECInstanceId FROM BisCore.SubCategory WHERE InVirtualSet(?, Parent.Id)`;
+      // const stmt = await iModel.executeQuery(ecsql);
+      return Promise.resolve();
+    }
+
+    public async initFromView(view: ViewState): Promise<void> {
+      this.alwaysDrawn = view.alwaysDrawn;
+      this.neverDrawn = view.neverDrawn;
+      this.alwaysDrawnExclusive = view.isAlwaysDrawnExclusive;
+
+      const vf = view.viewFlags;
+      this.constructions = vf.constructions;
+      this.dimensions = vf.dimensions;
+      this.patterns = vf.patterns;
+      this.lineWeights = vf.showWeights();
+
+      await this.updateFromIModel(view.iModel);
+    }
+
+    constructor(view?: ViewState) {
+      if (!!view) this.initFromView(view);
     }
   }
 }

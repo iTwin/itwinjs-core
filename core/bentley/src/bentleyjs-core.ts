@@ -21,13 +21,13 @@ export * from "./Time";
 /**
  * @docs-group-description BeSQLite
  * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb.
- * For more information on iModels: [[?]]
+ * For more information on iModels, see [Executing ECSQL]($docs/learning/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Errors
  * Classes for working with errors. The key classes are:
- * * #BentleyError
- * * #IModelStatus
+ * * [BentleyError]($bentleyjs-core.BentleyError)
+ * * [IModelStatus]($bentleyjs-core.IModelStatus)
  */
 /**
  * @docs-group-description Events
@@ -42,12 +42,12 @@ export * from "./Time";
  * Logging allows packages and apps to report potentially useful information about operations, and it allows apps and users to control
  * how or if the logged information is displayed or collected.
  *
- * Packages and apps use the [[Logger]] and [[LogLevel]] classes to report logging messages. [[BentleyError]] is also integrated with logging.
+ * Packages and apps use the [Logger]($bentleyjs-core.Logger) and [LogLevel]($bentleyjs-core.LogLevel) classes to report logging messages. [BentleyError]($bentleyjs-core.BentleyError) is also integrated with logging.
  *
  * Apps can configure logging at run time to filter out unwanted logging messages, in order to produce only the information that is needed.
- * [[Logger.setLevel]] and [[Logger.configureLevels]] are used for this configuration.
+ * [Logger.setLevel]($bentleyjs-core.Logger.setLevel) and [Logger.configureLevels]($bentleyjs-core.Logger.configureLevels) are used for this configuration.
  * Apps also direct logging output to desired outlets, such as files and log servers.
- * [[Logger.initialize]], [[BunyanLoggerConfig]], and [[SeqLoggerConfig]] are used to direct logging output.
+ * [Logger.initialize]($bentleyjs-core.Logger.initialize), [BunyanLoggerConfig]($bentleyjs-core.BunyanLoggerConfig), and [SeqLoggerConfig]($bentleyjs-core.SeqLoggerConfig) are used to direct logging output.
  *
  * Logging is typically used by backend code, such as services, agents, and app backends, where there is no user interface. Logging allows the backend operations
  * to be monitored from outside of the process. A backend typically initializes and configures logging in its startup logic.
@@ -55,7 +55,7 @@ export * from "./Time";
  * Configuration can be based on the configuration parameters of the backend, which may be set by the deployment mechanism.
  * <p><em>Example:</em>
  * ``` ts
- * [[include:Logging.serviceLoggingExample]]
+ * [[include:Logging.serviceLoggingExample]($bentleyjs-core.
  * ```
  * An example of the logging portion of a configuration a .json file that is deployed with a service might be:
  * ``` json
