@@ -8,8 +8,11 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
 import * as path from "path";
 
-// tslint:disable-next-line:no-eval
-const realrequire = eval("require");
+let realrequire: any;
+try {
+  // tslint:disable-next-line:no-eval
+  realrequire = eval("require");
+} catch (e) { }
 
 /** Class that holds the singleton platform instance that was loaded by the app for this iModelJs session. It is up to the app to load the platform. */
 export class NativePlatformRegistry {
