@@ -230,7 +230,7 @@ export class ShaderProgram implements GLDisposable {
   public endUse(gl: WebGLRenderingContext) {
     assert(this._inUse);
     this._inUse = false;
-    gl.useProgram(0);
+    gl.useProgram(null);
   }
 
   public draw(params: DrawParams): void {
@@ -262,13 +262,14 @@ export class ShaderProgram implements GLDisposable {
 
 // Context in which ShaderPrograms are executed. Avoids switching shaders unnecessarily.
 // Ensures shader programs are compiled before use and un-bound when scope is disposed.
+// This class must *only* be used inside a using() function!
 export class ShaderProgramExecutor implements IDisposable {
   private _program?: ShaderProgram;
   private _params: ShaderProgramParams;
 
   public constructor(target: Target, pass: RenderPass, program?: ShaderProgram) {
-    this._program = program;
     this._params = new ShaderProgramParams(target, pass);
+    this.changeProgram(program);
   }
 
   public dispose() { this.changeProgram(undefined); }
@@ -293,7 +294,7 @@ export class ShaderProgramExecutor implements IDisposable {
   }
 
   private changeProgram(program?: ShaderProgram): boolean {
-    if (this._program === program) {
+    if (this._program === program){
       return true;
     } else if (undefined !== this._program) {
       this._program.endUse(this._params.gl);

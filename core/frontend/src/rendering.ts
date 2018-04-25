@@ -24,6 +24,7 @@ export * from "./render/webgl/ShaderProgram";
 export * from "./render/webgl/ShaderSource";
 export * from "./render/webgl/System";
 export * from "./render/webgl/Target";
+export * from "./render/webgl/Technique";
 export * from "./render/webgl/TechniqueFlags";
 export * from "./render/webgl/TechniqueId";
 export * from "./render/webgl/Texture";

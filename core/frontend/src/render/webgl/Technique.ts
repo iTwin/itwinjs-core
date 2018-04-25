@@ -47,7 +47,7 @@ export class Techniques {
 
     this._dynamicTechniqueIds.push(name);
     this._list.push(technique);
-    return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length;
+    return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length - 1;
   }
 
   // ###TODO: public draw(target: Target, commands: DrawCommands, pass: RenderPass): void { }
