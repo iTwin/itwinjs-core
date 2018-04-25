@@ -36,6 +36,21 @@ export interface LoggerLevelsConfig {
 
 /** Logger allows packages and apps to report potentially useful information about operations, and it allows apps and users to control
  * how or if the logged information is displayed or collected.
+ * ## Logging messages
+ * To log a message, call [[logError]], [[logWarning]], [[logInfo]], or [[logTrace]], depending on the *level* or importance of the message.
+ * Apps and users can filter log messages by level. See [[LogLevel]].
+ *
+ * Each of these methods takes the category of the message as its first argument. The category of a message is a string that
+ * associates the message with other messages arising from the same source. Apps and users can filter log messages by category.
+ * In many cases, logging messages from a service will go to a file or service that aggregates logging output from many services.
+ * It is important to use descriptive and unique category names.
+ *
+ * ### Parent and Child Categories
+ * If a category name has a "." in it, then the part to the left is interpreted as the parent category and the part to the right as the child.
+ * If you pass a parent category to [[setLevel]], then the specified level filter will be applied to all children of that level.
+ * If you call [[setLevel]] on a specific child category, then the level you specify will apply to that child, while the parent's level will apply to all other children.
+ * Children can be nested.
+ *
  * ## Log Streams
  * The app controls how to handle log messages by supplying to [[Logger.initialize]] the functions that handle messages for each log level. These functions are called "streams".
  * See the convenience method [[Logger.initializeToConsole]] for a simple way to direct
@@ -67,11 +82,6 @@ export interface LoggerLevelsConfig {
  * Logger.setLevel("MyCategory", LogLevel.Info);
  * ```
  * This approach is useful when you want to monitor the activity in a small number of known modules, where you already know the names of the categories that they use.
- * ### Parent and Child Categories
- * If a category name has a "." in it, then the part to the left is interpreted as the parent category and the part to the right as the child.
- * If you pass a parent category to [[setLevel]], then the specified level filter will be applied to all children of that level.
- * If you call [[setLevel]] on a specific child category, then the level you specify will apply to that child, while the parent's level will apply to all other children.
- * Children can be nested.
  */
 export class Logger {
   private static _logError: LogFunction | undefined;

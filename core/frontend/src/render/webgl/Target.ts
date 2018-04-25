@@ -132,19 +132,21 @@ export class GLESClips {
 }
 
 export class Target extends RenderTarget {
+  public readonly tileSizeModifier: number;
   public readonly gl: WebGLRenderingContext;
   private readonly _tempViewFlags = new ViewFlags(); // ###TODO BranchStack...
 
-  protected constructor(system: RenderSystem, gl: WebGLRenderingContext) {
+  protected constructor(system: RenderSystem, gl: WebGLRenderingContext, tileSizeModifier: number = RenderTarget.defaultTileSizeModifier()) {
     super(system);
     this.gl = gl;
+    this.tileSizeModifier = tileSizeModifier;
   }
 
   public get currentViewFlags() { return this._tempViewFlags; } // ###TODO BranchStack...
 }
 
 export class OnScreenTarget extends Target {
-  public constructor(system: RenderSystem, gl: WebGLRenderingContext) {
-    super(system, gl);
+  public constructor(system: RenderSystem, gl: WebGLRenderingContext, tileSizeModifier?: number) {
+    super(system, gl, tileSizeModifier);
   }
 }
