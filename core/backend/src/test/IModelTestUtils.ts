@@ -105,25 +105,27 @@ export class TestUsers {
 
 export class IModelTestUtils {
 
-  public static async integratedFixtureSetup(testIModels: TestIModelInfo[], params: any) {
-    params.accessToken = await IModelTestUtils.getTestUserAccessToken();
-
-    params.testProjectId = await HubTestUtils.queryProjectIdByName(params.accessToken, TestConfig.projectName);
+  public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
+    const accessToken = await IModelTestUtils.getTestUserAccessToken();
+    const testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
 
     for (const iModelInfo of testIModels) {
-      iModelInfo.id = await HubTestUtils.queryIModelIdByName(params.accessToken, params.testProjectId, iModelInfo.name);
-      iModelInfo.localReadonlyPath = path.join(params.cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(params.cacheDir, iModelInfo.id, "readWrite");
+      iModelInfo.id = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
+      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(params.accessToken, iModelInfo.id);
+      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
-      iModelInfo.localReadonlyPath = path.join(params.cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(params.cacheDir, iModelInfo.id, "readWrite");
+      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // Purge briefcases that are close to reaching the acquire limit
-      await HubTestUtils.purgeAcquiredBriefcases(params.accessToken, TestConfig.projectName, iModelInfo.name);
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, iModelInfo.name);
     }
+
+    return [accessToken, testProjectId, cacheDir];
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {

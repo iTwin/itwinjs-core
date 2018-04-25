@@ -96,23 +96,16 @@ describe("BriefcaseManager", () => {
 
     if (offline) {
       console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
+      startTime = new Date().getTime();
 
-      const stringParams = { testProjectId, assetDir, cacheDir };
-      await MockAssetUtil.offlineFixtureSetup(accessToken, iModelHubClientMock, connectClientMock, testIModels, stringParams);
-      testProjectId = stringParams.testProjectId;
-      cacheDir = stringParams.cacheDir;
+      testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
       console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
       startTime = new Date().getTime();
 
-      cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-      const params = { accessToken, testProjectId, assetDir, cacheDir };
-      await IModelTestUtils.integratedFixtureSetup(testIModels, params);
-      accessToken = params.accessToken;
-      testProjectId = params.testProjectId;
-      cacheDir = params.cacheDir;
+      [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }

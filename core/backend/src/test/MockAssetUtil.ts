@@ -79,16 +79,17 @@ export class MockAssetUtil {
     }
   }
 
-  public static async offlineFixtureSetup(accessToken: AccessToken,
+  public static async setupOfflineFixture(accessToken: AccessToken,
                                           iModelHubClientMock: TypeMoq.IMock<IModelHubClient>,
                                           connectClientMock: TypeMoq.IMock<ConnectClient>,
-                                          testIModels: TestIModelInfo[], stringParams: any) {
+                                          assetDir: string, cacheDir: string,
+                                          testIModels: TestIModelInfo[]): Promise<string> {
 
-    stringParams.cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/iModels/"));
-    IModelHost.configuration!.briefcaseCacheDir = stringParams.cacheDir;
+    cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/iModels/"));
+    IModelHost.configuration!.briefcaseCacheDir = cacheDir;
 
-    MockAssetUtil.setupConnectClientMock(connectClientMock, stringParams.assetDir);
-    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, stringParams.assetDir);
+    MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
+    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
 
     (BriefcaseManager as any).hubClient = iModelHubClientMock.object;
     (BriefcaseManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
@@ -99,16 +100,16 @@ export class MockAssetUtil {
       $filter: "Name+eq+'NodeJstestproject'",
     });
     assert(project && project.wsgId, "No projectId returned from connectionClient mock");
-    stringParams.testProjectId = project.wsgId;
+    const testProjectId = project.wsgId.toString();
 
     // Get test iModelIds from the mocked iModelHub client
     for (const iModelInfo of testIModels) {
-      const iModels = await iModelHubClientMock.object.IModels().get(accessToken as any, stringParams.testProjectId, new IModelQuery().byName(iModelInfo.name));
+      const iModels = await iModelHubClientMock.object.IModels().get(accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
       assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
       assert(iModels[0].wsgId, `No IModelId returned for ${iModelInfo.name} iModel`);
       iModelInfo.id = iModels[0].wsgId;
-      iModelInfo.localReadonlyPath = path.join(stringParams.cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(stringParams.cacheDir, iModelInfo.id, "readWrite");
+      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // getChangeSets
       iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(accessToken as any, iModelInfo.id);
@@ -116,10 +117,11 @@ export class MockAssetUtil {
       assert.exists(iModelInfo.changeSets);
 
       // downloadChangeSets
-      const csetDir = path.join(stringParams.cacheDir, iModelInfo.id, "csets");
+      const csetDir = path.join(cacheDir, iModelInfo.id, "csets");
       await iModelHubClientMock.object.ChangeSets().download(iModelInfo.changeSets, csetDir);
     }
     MockAssetUtil.verifyIModelInfo(testIModels);
+    return testProjectId;
   }
 
   /** Setup functions for the ConnectClient mock */
