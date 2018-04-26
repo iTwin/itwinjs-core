@@ -4,7 +4,7 @@
 
 import { expect, assert } from "chai";
 import { Transform } from "@bentley/geometry-core";
-import { getWebGLContext } from "./WebGLTestContext";
+import { WebGLTestContext } from "./WebGLTestContext";
 import {
   ProgramBuilder,
   VertexShaderComponent,
@@ -24,35 +24,47 @@ function createPurpleQuadTechnique(target: Target): TechniqueId {
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
   builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
 
-  const prog = builder.buildProgram(target.gl);
+  const prog = builder.buildProgram(target.context);
   const technique = new SingularTechnique(prog);
   return target.techniques.addDynamicTechnique(technique, "PurpleQuad");
 }
 
+function createTarget(): Target | undefined {
+  const canvas = WebGLTestContext.createCanvas();
+  assert(undefined !== canvas);
+
+  const system = System.create(canvas);
+  assert(undefined !== system);
+
+  return system!.createTarget() as Target;
+}
+
 describe("Technique tests", () => {
   it("should produce a simple dynamic rendering technique", () => {
-    const gl = getWebGLContext();
-    if (undefined === gl) {
+    if (!WebGLTestContext.isEnabled) {
       return;
     }
 
-    const system = new System();
-    const target = system.createTarget(gl, 0) as Target;
-    const techId = createPurpleQuadTechnique(target);
+    const target = createTarget();
+    assert(undefined !== target);
+
+    const techId = createPurpleQuadTechnique(target!);
     expect(techId).to.equal(TechniqueId.NumBuiltIn);
   });
 
   it("should render a purple quad", () => {
-    const gl = getWebGLContext();
-    if (undefined === gl) {
+    if (!WebGLTestContext.isEnabled) {
       return;
     }
 
-    const system = new System();
-    const target = system.createTarget(gl, 0) as Target;
-    const techId = createPurpleQuadTechnique(target);
+    const target = createTarget();
+    assert(undefined !== target);
+    if (undefined === target) {
+      return;
+    }
 
-    const geom = ViewportQuadGeometry.create(gl, techId);
+    const techId = createPurpleQuadTechnique(target);
+    const geom = ViewportQuadGeometry.create(target.context, techId);
     assert.isDefined(geom);
 
     const drawParams = new DrawParams(target, geom!, Transform.createIdentity(), RenderPass.OpaqueGeneral);

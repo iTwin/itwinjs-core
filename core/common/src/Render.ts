@@ -8,13 +8,13 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, Point2d, XYAndZ, Transform, Angle, Vector3d } from "@bentley/geometry-core";
-import { PatternParams } from "./geometry/AreaPattern";
-import { LineStyleInfo } from "./geometry/LineStyle";
+import { Point3d, Point2d, XYAndZ, Transform, Angle, AngleProps, Vector3d } from "@bentley/geometry-core";
+import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 import { QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
 import { ColorIndex, FeatureIndex } from "./FeatureIndex";
+import { AreaPattern } from "./geometry/AreaPattern";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
@@ -25,6 +25,66 @@ export enum FillFlags {
   Behind     = 1 << 2,          // Always rendered behind other geometry belonging to the same element. e.g., text background.
   Blanking   = Behind | Always, // Use element fill color, always rendered behind other geometry belonging to the same element.
   Background = 1 << 3,          // Use background color specified by view
+}
+
+export enum PolylineTypeFlags {
+  Normal  = 0,      // Just an ordinary polyline
+  Edge    = 1 << 0, // A polyline used to define the edges of a planar region.
+  Outline = 1 << 1, // Like Edge, but the edges are only displayed in wireframe mode when surface fill is undisplayed.
+}
+
+/** Flags describing a polyline. A polyline may represent a continuous line string, or a set of discrete points. */
+export class PolylineFlags {
+  public isDisjoint: boolean;
+  public isPlanar: boolean;
+  public is2d: boolean;
+  public type: PolylineTypeFlags;
+
+  public constructor(is2d = false, isPlanar = false, isDisjoint = false, type = PolylineTypeFlags.Normal) {
+    this.isDisjoint = isDisjoint;
+    this.isPlanar = isPlanar;
+    this.is2d = is2d;
+    this.type = type;
+  }
+
+  /** Create a PolylineFlags from a serialized numberic representation. */
+  public static unpack(value: number): PolylineFlags {
+    const isDisjoint = 0 !== (value & 1);
+    const isPlanar = 0 !== (value & 2);
+    const is2d = 0 !== (value & 4);
+    const type: PolylineTypeFlags = (value >> 3);
+    assert(type === PolylineTypeFlags.Normal || type === PolylineTypeFlags.Edge || type === PolylineTypeFlags.Outline);
+
+    return new PolylineFlags(is2d, isPlanar, isDisjoint, type);
+  }
+
+  public initDefaults() {
+    this.isDisjoint = this.isPlanar = this.is2d = false;
+    this.type = PolylineTypeFlags.Normal;
+  }
+
+  public get isOutlineEdge(): boolean { return PolylineTypeFlags.Outline === this.type; }
+  public get isNormalEdge(): boolean { return PolylineTypeFlags.Edge === this.type; }
+  public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }
+  public setIsNormalEdge(): void { this.type = PolylineTypeFlags.Edge; }
+  public setIsOutlineEdge(): void {this.type = PolylineTypeFlags.Outline; }
+
+  /** Convert these flags to a numeric representation for serialization. */
+  public pack(): number {
+    let val: number = 0;
+    if (this.isDisjoint)
+      val += 1;
+    if (this.isPlanar)
+      val += 1 << 1;
+    if (this.is2d)
+      val += 1 << 2;
+    val += (this.type as number) << 3;
+    return val;
+  }
+
+  public equals(other: PolylineFlags) {
+    return this.type === other.type && this.is2d === other.is2d && this.isPlanar === other.isPlanar && this.isDisjoint === other.isDisjoint;
+  }
 }
 
 /* An individual polyline which indexes into a shared set of vertices */
@@ -48,9 +108,11 @@ export class IndexedPolylineArgs {
   public features = new FeatureIndex();
   public width = 0;
   public linePixels = LinePixels.Solid;
-  public disjoint = false;
+  public flags: PolylineFlags;
   public constructor(public points: Uint16Array = new Uint16Array(), public numPoints = 0, public lines: PolylineData[] = [], public numLines = 0, public pointParams?: QParams3d,
-                     public is2d = false, public isPlanar = false) { }
+                     is2d = false, isPlanar = false) {
+    this.flags = new PolylineFlags(is2d, isPlanar);
+  }
 }
 
 export class MeshPolyline {
@@ -636,6 +698,7 @@ export namespace HiddenLine {
     }
   }
 }
+
 export namespace Gradient {
   export const enum Flags {
     None = 0,
@@ -653,28 +716,87 @@ export namespace Gradient {
     Thematic = 6,
   }
 
-  export class Symb {
+  /** @hidden Gradient settings specific to thematic mesh display */
+  export interface ThematicProps {
+    mode?: number;
+    stepCount?: number;
+    margin?: number;
+    marginColor?: ColorDef;
+    colorScheme?: number;
+    rangeLow?: number;
+    rangeHigh?: number;
+  }
+
+  /** Gradient fraction value to [[ColorDef]] pair */
+  export interface KeyColorProps {
+    /** Fraction from 0.0 to 1.0 to denote position along gradient */
+    value: number;
+    /** Color value for given fraction */
+    color: ColorDef;
+  }
+
+  export class KeyColor implements KeyColorProps {
+    public value: number;
+    public color: ColorDef;
+    public constructor(json: KeyColorProps) {
+      this.value = json.value;
+      this.color = json.color;
+    }
+  }
+
+  /** Multi-color area fill defined by a range of colors that vary by position */
+  export interface SymbProps {
+    /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
+    mode: Mode;
+    /** Gradient flags to enable outline display and invert color fractions */
+    flags?: Flags;
+    /** Gradient rotation angle */
+    angle?: AngleProps;
+    /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1 */
+    tint?: number;
+    /** Gradient shift value from 0.0 to 1.0 */
+    shift?: number;
+    /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
+    keys: KeyColorProps[];
+    /** @hidden Settings applicable to meshes and Gradient.Mode.Thematic only */
+    thematicSettings?: ThematicProps;
+  }
+
+  export class Symb implements SymbProps {
     public mode = Mode.None;
-    public flags = Flags.None;
-    public nKeys = 0;
-    public angle = 0.0;
-    public tint = 0.0;
-    public shift = 0.0;
-    public readonly colors: ColorDef[] = [];
-    public readonly values: number[] = [];
+    public flags?: Flags;
+    public angle?: Angle;
+    public tint?: number;
+    public shift?: number;
+    public keys: KeyColor[] = [];
+
+    /** create a GradientSymb from a json object. */
+    public static fromJSON(json?: SymbProps) {
+      const result = new Symb();
+      if (!json)
+        return result;
+      result.mode = json.mode;
+      result.flags = json.flags;
+      result.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
+      result.tint = json.tint;
+      result.shift = json.shift;
+      json.keys.forEach((key) => result.keys.push(key));
+      return result;
+    }
+
+    /** Add properties to an object for serializing to JSON */
+    public toJSON(): SymbProps {
+      return this.toJSON() as SymbProps;
+    }
 
     public clone(): Symb {
       const retVal = new Symb();
       retVal.mode = this.mode;
       retVal.flags = this.flags;
-      retVal.nKeys = this.nKeys;
       retVal.angle = this.angle;
       retVal.tint = this.tint;
       retVal.shift = this.shift;
-      for (let i = 0; i < this.nKeys; ++i) {
-        retVal.colors.push(this.colors[i]);
-        retVal.values.push(this.values[i]);
-      }
+      this.keys.forEach((key) => retVal.keys.push(key));
       return retVal;
     }
 
@@ -685,18 +807,18 @@ export namespace Gradient {
         return false;
       if (this.flags !== other.flags)
         return false;
-      if (this.nKeys !== other.nKeys)
-        return false;
-      if (this.angle !== other.angle)
-        return false;
       if (this.tint !== other.tint)
         return false;
       if (this.shift !== other.shift)
         return false;
-      for (let i = 0; i < this.nKeys; ++i) {
-        if (other.values[i] !== this.values[i])
+      if ((this.angle === undefined) !== (other.angle === undefined))
+        return false;
+      if (this.angle && !this.angle.isAlmostEqualNoPeriodShift(other.angle!))
+        return false;
+      for (let i = 0; i < this.keys.length; ++i) {
+        if (this.keys[i].value !== other.keys[i].value)
           return false;
-        if (!other.colors[i].equals(this.colors[i]))
+        if (!this.keys[i].color.equals(other.keys[i].color))
           return false;
       }
       return true;
@@ -749,9 +871,9 @@ export class GeometryParams {
   public elmTransparency?: number; // transparency, 1.0 == completely transparent
   public fillTransparency?: number;  // fill transparency, 1.0 == completely transparent
   public geometryClass?: GeometryClass; // geometry class, default GeometryClass.Primary
-  public styleInfo?: LineStyleInfo; // line style id plus modifiers.
+  public styleInfo?: LineStyle.Info; // line style id plus modifiers.
   public gradient?: Gradient.Symb; // gradient fill settings.
-  public pattern?: PatternParams; // area pattern settings.
+  public pattern?: AreaPattern.Params; // area pattern settings.
 
   constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid()) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
 
@@ -877,8 +999,8 @@ export class GeometryParams {
   public applyTransform(transform: Transform) {
     if (this.pattern)
       this.pattern.applyTransform(transform);
-    if (this.styleInfo)
-      this.styleInfo.styleParams.applyTransform(transform);
+    if (this.styleInfo && this.styleInfo.styleMod)
+      this.styleInfo.styleMod.applyTransform(transform);
   }
 }
 

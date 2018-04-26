@@ -3,203 +3,288 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
-import { Point2d, Point3d, YawPitchRollAngles, RotMatrix, Transform, Geometry } from "@bentley/geometry-core";
+import { Point2d, Point3d, YawPitchRollAngles, RotMatrix, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
 import { ColorDef } from "../ColorDef";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 
-export class DwgHatchDefLine {
-  public angle = 0;
-  public readonly through = new Point2d();
-  public readonly offset = new Point2d();
-  public readonly dashes: number[] = [];
-}
-
-/** Defines a hatch, cross hatch, or area pattern. */
-export class PatternParams {
-  private readonly _origin = new Point3d();                // Pattern origin (offset from to element's placement)
-  private readonly _rMatrix = RotMatrix.createIdentity();             // Pattern coordinate system (relative to element's placement)
-  private _space1 = 0;                 // Primary (row) spacing
-  private _space2 = 0;                 // Secondary (column) spacing
-  private _angle1 = 0;                 // Angle of first hatch or pattern
-  private _angle2 = 0;                 // Angle of second hatch
-  private _scale = 0;                  // Pattern scale
-  private _invisibleBoundary?: boolean;     // Whether pattern boundary should not display (ignored when also filled)...
-  private _snappable?: boolean;             // Whether pattern geometry can be snapped to
-  private _useColor?: boolean;              // WWhether to use pattern color instead of inheriting current color
-  private _useWeight?: boolean;             // Whether to use pattern weight instead of inheriting current weight
-  private _color?: ColorDef;                // The pattern / hatch color
-  private _weight?: number;                 // The pattern / hatch weight
-  private _symbolId?: Id64;                 // The id of the GeometryPart to use for an area pattern
-  private readonly _hatchLines: DwgHatchDefLine[] = [];  // The DWG style hatch definition
-
-  public get dwgHatchDef() { return this._hatchLines; }
-  public get origin() { return this._origin; }
-  public get orientation() { return this._rMatrix; }
-  public get symbolId() { return this._symbolId; }
-  public get primarySpacing() { return this._space1; }
-  public get secondarySpacing() { return this._space2; }
-  public get primaryAngle() { return this._angle1; }
-  public get secondaryAngle() { return this._angle2; }
-  public get scale() { return this._scale; }
-  public get useColor() { return this._useColor; }
-  public get color() { return this._color; }
-  public get useWeight() { return this._useWeight; }
-  public get weight() { return this._weight; }
-  public get invisibleBoundary() { return this._invisibleBoundary; }
-  public get snappable() { return this._snappable; }
-
-  public setOrigin(origin: Point3d) { this._origin.setFrom(origin); }
-  public setOrientation(rMatrix: RotMatrix) { this._rMatrix.setFrom(rMatrix); }
-  public setPrimarySpacing(space1: number) { this._space1 = space1; }
-  public setSecondarySpacing(space2: number) { this._space2 = space2; }
-  public setPrimaryAngle(angle1: number) { this._angle1 = angle1; }
-  public setSecondaryAngle(angle2: number) { this._angle2 = angle2; }
-  public setScale(scale: number) { this._scale = scale; }
-  public setColor(color: ColorDef) { this._color = color; this._useColor = true; }
-  public setWeight(weight: number) { this._weight = weight; this._useWeight = true; }
-  public setInvisibleBoundary(invisibleBoundary: boolean) { this._invisibleBoundary = invisibleBoundary; }
-  public setSnappable(snappable: boolean) { this._snappable = snappable; }
-  public setSymbolId(symbolId: Id64) { this._symbolId = symbolId; }
-  public setDwgHatchDef(hatchLines: DwgHatchDefLine[]) { this._hatchLines.length = 0; hatchLines.forEach((line) => this._hatchLines.push(line)); }
-
-  public static createDefaults(): PatternParams {
-    const retVal = new PatternParams();
-    retVal._space1 = retVal._space2 = retVal._angle1 = retVal._angle2 = 0;
-    retVal._scale = 1.0;
-    retVal._useColor = retVal._useWeight = retVal._invisibleBoundary = retVal._snappable = false;
-    retVal._weight = 0;
-    return retVal;
+export namespace AreaPattern {
+  /** Single hatch line definition */
+  export interface HatchDefLineProps {
+    /** Angle of hatch line */
+    angle?: AngleProps;
+    /** Origin point (relative to placement) the hatch passes through */
+    through?: XYProps;
+    /** Offset of successive lines. X offset staggers dashes (ignored for solid lines) and Y offset controls the distance between both solid and dashed lines */
+    offset?: XYProps;
+    /** Array of gap and dash lengths for creating non-solid hatch lines, max of 20. A positive value denotes dash, a negative value a gap */
+    dashes?: number[];
   }
 
-  public clone(): PatternParams {
-    const retVal = new PatternParams();
-    retVal._origin.setFrom(this._origin);
-    retVal._rMatrix.setFrom(this._rMatrix);
-    retVal._space1 = this._space1;
-    retVal._space2 = this._space2;
-    retVal._angle1 = this._angle1;
-    retVal._angle2 = this._angle2;
-    retVal._scale = this._scale;
-    retVal._invisibleBoundary = this._invisibleBoundary;
-    retVal._snappable = this._snappable;
-    retVal._useColor = this._useColor;
-    retVal._useWeight = this._useWeight;
-    retVal._weight = this._weight;
-    retVal._symbolId = this._symbolId;
-    this._hatchLines.forEach((line) => retVal._hatchLines.push(line));
-    return retVal;
-  }
+  export class HatchDefLine implements HatchDefLineProps {
+    public angle?: Angle;
+    public through?: Point2d;
+    public offset?: Point2d;
+    public dashes?: number[];
 
-  public isEqualTo(other: PatternParams): boolean {
-    if (this === other)
-      return true;    // Same pointer
-
-    if (!this._origin.isAlmostEqual(other._origin, 1.0e-10))
-      return false;
-    if (!this._rMatrix.isAlmostEqual(other._rMatrix, 1.0e-10))
-      return false;
-    if (!Geometry.isSameCoordinate(this._space1, other._space1, 1.0e-10))
-      return false;
-    if (!Geometry.isSameCoordinate(this._space2, other._space2, 1.0e-10))
-      return false;
-    if (!Geometry.isSameCoordinate(this._angle1, other._angle1, 1.0e-10))
-      return false;
-    if (!Geometry.isSameCoordinate(this._angle2, other._angle2, 1.0e-10))
-      return false;
-    if (!Geometry.isSameCoordinate(this._scale, other._scale, 1.0e-10))
-      return false;
-    if (this._invisibleBoundary !== other._invisibleBoundary)
-      return false;
-    if (this._snappable !== other._snappable)
-      return false;
-    if (this._useColor !== other._useColor)
-      return false;
-    else if (this._useColor && !this._color!.equals(other._color!))
-      return false;
-    if (this._useWeight !== other._useWeight)
-      return false;
-    else if (this._useWeight && !this._color!.equals(other._color!))
-      return false;
-    if ((this._symbolId === undefined) !== (other._symbolId === undefined))
-      return false;
-    else if (this._symbolId && !this._symbolId.equals(other._symbolId!))
-      return false;
-    if (this._hatchLines.length !== other._hatchLines.length)
-      return false;
-
-    for (let i = 0; i < this._hatchLines.length; i++) {
-      const otherLine = other._hatchLines[i];
-      const thisLine = this._hatchLines[i];
-
-      if (thisLine.dashes.length !== otherLine.dashes.length)
-        return false;
-      if (!Geometry.isSameCoordinate(otherLine.angle, thisLine.angle, 1.0e-10))
-        return false;
-      if (!otherLine.through.isAlmostEqual(thisLine.through, 1.0e-10))
-        return false;
-      if (!otherLine.offset.isAlmostEqual(thisLine.offset, 1.0e-10))
-        return false;
-      for (let dash = 0; dash < thisLine.dashes.length; ++dash) {
-        if (!Geometry.isSameCoordinate(thisLine.dashes[dash], otherLine.dashes[dash], 1.0e-10))
-          return false;
+    public constructor(json: HatchDefLineProps) {
+      this.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
+      this.through = json.through ? Point2d.fromJSON(json.through) : undefined;
+      this.offset = json.offset ? Point2d.fromJSON(json.offset) : undefined;
+      if (json.dashes) {
+        const dashes: number[] = [];
+        json.dashes.forEach((dash) => dashes.push(dash));
+        this.dashes = dashes;
       }
     }
-    return true;
   }
 
-  public static transformPatternSpace(oldSpace: number, patRot: RotMatrix, angle: number, transform: Transform): number {
-    let tmpRot: RotMatrix;
-    if (0.0 !== angle) {
-      const yprTriple = YawPitchRollAngles.createDegrees(angle, 0.0, 0.0);
-      const angRot = yprTriple.toRotMatrix();
-      tmpRot = patRot.multiplyMatrixMatrix(angRot);
-    } else {
-      tmpRot = patRot;
+  /** GeometryStream entry for adding a hatch, cross-hatch, or area pattern to a planar region */
+  export interface ParamsProps {
+    /** Pattern offset (relative to placement) */
+    origin?: XYZProps;
+    /** Pattern orientation (relative to placement) */
+    rotation?: YawPitchRollProps;
+    /** Spacing of first set of parallel lines in a hatch pattern, or row spacing between area pattern tiles */
+    space1?: number;
+    /** Spacing of second set of parallel lines in a cross-hatch (leave undefined or 0 for a hatch), or column spacing between area pattern tiles */
+    space2?: number;
+    /** Angle of first set of parallel lines in a hatch pattern or area pattern tile direction */
+    angle1?: AngleProps;
+    /** Angle of second set of parallel lines in a cross-hatch */
+    angle2?: AngleProps;
+    /** Scale to apply to area pattern symbol */
+    scale?: number;
+    /** Pattern color, leave undefined to inherit color from parent element. For area patterns, does not override explicit colors stored in symbol */
+    color?: ColorDef;
+    /** Pattern weight, leave undefined to inherit weight from parent element. For area patterns, does not override explicit weights stored in symbol */
+    weight?: number;
+    /** Set to inhibit display of pattern boundary, not applicable when boundary is also filled */
+    invisibleBoundary?: boolean;
+    /** Set to allow snapping to pattern geometry */
+    snappable?: boolean;
+    /** GeometryPart id to use for tiled area pattern display */
+    symbolId?: Id64Props;
+    /** Define an area pattern by supplying hatch line definitions instead of using a GeometryPart */
+    defLines?: HatchDefLineProps[];
+  }
+
+  /** Defines a hatch, cross hatch, or area pattern. */
+  export class Params implements ParamsProps {
+    public origin?: Point3d;
+    public rotation?: YawPitchRollAngles;
+    public space1?: number;
+    public space2?: number;
+    public angle1?: Angle;
+    public angle2?: Angle;
+    public scale?: number;
+    public color?: ColorDef;
+    public weight?: number;
+    public invisibleBoundary?: boolean;
+    public snappable?: boolean;
+    public symbolId?: Id64;
+    public defLines?: HatchDefLine[];
+
+    /** create an AreaPattern.Params from a json object. */
+    public static fromJSON(json?: ParamsProps) {
+      const result = new Params();
+      if (!json)
+        return result;
+      result.origin = json.origin ? Point3d.fromJSON(json.origin) : undefined;
+      result.rotation = json.rotation ? YawPitchRollAngles.fromJSON(json.rotation) : undefined;
+      result.space1 = json.space1;
+      result.space2 = json.space2;
+      result.angle1 = json.angle1 ? Angle.fromJSON(json.angle1) : undefined;
+      result.angle2 = json.angle2 ? Angle.fromJSON(json.angle2) : undefined;
+      result.scale = json.scale;
+      result.color = json.color;
+      result.weight = json.weight;
+      result.invisibleBoundary = json.invisibleBoundary;
+      result.snappable = json.snappable;
+      result.symbolId = json.symbolId ? new Id64(json.symbolId) : undefined;
+      if (!json.defLines)
+        return result;
+      const defLines: HatchDefLine[] = [];
+      json.defLines.forEach((defLine) => defLines.push(new HatchDefLine(defLine)));
+      result.defLines = defLines;
+      return result;
     }
 
-    const yDir = tmpRot.getColumn(1);
-    yDir.scale(oldSpace, yDir);
-    transform.multiplyVector(yDir, yDir);
-    return yDir.magnitude();
-  }
+    /** Add properties to an object for serializing to JSON */
+    public toJSON(): ParamsProps {
+      return this.toJSON() as ParamsProps;
+    }
 
-  public static getTransformPatternScale(transform: Transform): number {
-    const xDir = transform.matrix.getColumn(0);
-    const mag = xDir.magnitude();
-    return (mag > 1.0e-10) ? mag : 1.0;
-  }
+    public clone(): Params {
+      const retVal = new Params();
+      retVal.origin = this.origin ? Point3d.createFrom(this.origin) : undefined;
+      retVal.rotation = this.rotation ? this.rotation.clone() : undefined;
+      retVal.space1 = this.space1;
+      retVal.space2 = this.space2;
+      retVal.angle1 = this.angle1;
+      retVal.angle2 = this.angle2;
+      retVal.scale = this.scale;
+      retVal.color = this.color;
+      retVal.weight = this.weight;
+      retVal.invisibleBoundary = this.invisibleBoundary;
+      retVal.snappable = this.snappable;
+      retVal.symbolId = this.symbolId;
+      if (this.defLines) {
+        const defLines: HatchDefLine[] = [];
+        this.defLines.forEach((defLine) => defLines.push(new HatchDefLine(defLine)));
+        retVal.defLines = defLines;
+      }
+      return retVal;
+    }
 
-  public applyTransform(transform: Transform) {
-    if (this._symbolId !== undefined) {
-      this._space1 = PatternParams.transformPatternSpace(this._space1, this._rMatrix, this._angle1, transform);
-      this._space2 = PatternParams.transformPatternSpace(this._space2, this._rMatrix, this._angle2, transform);
-      this._scale *= PatternParams.getTransformPatternScale(transform);
-    } else if (0 !== this._hatchLines.length) {
-      const scale = PatternParams.getTransformPatternScale(transform);
-      if (!Geometry.isSameCoordinate(1.0, scale, 1.0e-10)) {
-        this._scale *= scale;
+    public isEqualTo(other: Params): boolean {
+      if (this === other)
+        return true;    // Same pointer
 
-        for (const line of this._hatchLines) {
-          line.through.x *= scale;
-          line.through.y *= scale;
-          line.offset.x *= scale;
-          line.offset.y *= scale;
-          for (let iDash = 0; iDash < line.dashes.length; iDash++)
-            line.dashes[iDash] *= scale;
+      if (this.scale !== other.scale ||
+          this.space1 !== other.space1 ||
+          this.space2 !== other.space2 ||
+          this.weight !== other.weight ||
+          this.invisibleBoundary !== other.invisibleBoundary ||
+          this.snappable !== other.snappable)
+        return false;
+
+      if ((this.color === undefined) !== (other.color === undefined))
+        return false;
+      if (this.color && !this.color.equals(other.color!))
+        return false;
+
+      if ((this.angle1 === undefined) !== (other.angle1 === undefined))
+        return false;
+      if (this.angle1 && !this.angle1.isAlmostEqualNoPeriodShift(other.angle1!))
+        return false;
+
+      if ((this.angle2 === undefined) !== (other.angle2 === undefined))
+        return false;
+      if (this.angle2 && !this.angle2.isAlmostEqualNoPeriodShift(other.angle2!))
+        return false;
+
+      if ((this.origin === undefined) !== (other.origin === undefined))
+        return false;
+      if (this.origin && !this.origin.isAlmostEqual(other.origin!))
+        return false;
+
+      if ((this.rotation === undefined) !== (other.rotation === undefined))
+        return false;
+      if (this.rotation && !this.rotation.isAlmostEqual(other.rotation!))
+        return false;
+
+      if ((this.symbolId === undefined) !== (other.symbolId === undefined))
+        return false;
+      if (this.symbolId && !this.symbolId.equals(other.symbolId!))
+        return false;
+
+      if ((this.defLines === undefined) !== (other.defLines === undefined))
+        return false;
+      if (this.defLines) {
+        if (this.defLines.length !== other.defLines!.length)
+          return false;
+
+        for (let i = 0; i < this.defLines.length; ++i) {
+          const otherLine = other.defLines![i];
+          const thisLine = this.defLines[i];
+
+          if ((thisLine.angle === undefined) !== (otherLine.angle === undefined))
+            return false;
+          if (thisLine.angle && !thisLine.angle.isAlmostEqualNoPeriodShift(otherLine.angle!))
+            return false;
+
+          if ((thisLine.through === undefined) !== (otherLine.through === undefined))
+            return false;
+          if (thisLine.through && !thisLine.through.isAlmostEqual(otherLine.through!))
+            return false;
+
+          if ((thisLine.offset === undefined) !== (otherLine.offset === undefined))
+            return false;
+          if (thisLine.offset && !thisLine.offset.isAlmostEqual(otherLine.offset!))
+            return false;
+
+          if ((thisLine.dashes === undefined) !== (otherLine.dashes === undefined))
+            return false;
+          if (thisLine.dashes && thisLine.dashes.length !== otherLine.dashes!.length)
+            return false;
+          if (thisLine.dashes) {
+            for (let dash = 0; dash < thisLine.dashes.length; ++dash) {
+              if (!Geometry.isSameCoordinate(thisLine.dashes[dash], otherLine.dashes![dash]))
+                return false;
+            }
+          }
         }
       }
-    } else {
-      this._space1 = PatternParams.transformPatternSpace(this._space1, this._rMatrix, this._angle1, transform);
-
-      if (0 !== this._space2)
-        this._space2 = PatternParams.transformPatternSpace(this._space2, this._rMatrix, this._angle2, transform);
+      return true;
     }
 
-    transform.multiplyPoint(this._origin);
-    this._rMatrix.multiplyMatrixMatrix(transform.matrix, this._rMatrix);
-    const normalized = RotMatrix.createRigidFromRotMatrix(this._rMatrix);
-    if (normalized)
-      this._rMatrix.setFrom(normalized);
-  }
+    public static transformPatternSpace(transform: Transform, oldSpace: number, patRot: RotMatrix, angle?: Angle): number {
+      let tmpRot: RotMatrix;
+      if (angle && !angle.isAlmostZero()) {
+        const yprTriple = new YawPitchRollAngles(angle);
+        const angRot = yprTriple.toRotMatrix();
+        tmpRot = patRot.multiplyMatrixMatrix(angRot);
+      } else {
+        tmpRot = patRot;
+      }
+      const yDir = tmpRot.getColumn(1);
+      yDir.scale(oldSpace, yDir);
+      transform.multiplyVector(yDir, yDir);
+      return yDir.magnitude();
+    }
 
+    public static getTransformPatternScale(transform: Transform): number {
+      const xDir = transform.matrix.getColumn(0);
+      const mag = xDir.magnitude();
+      return (mag > 1.0e-10) ? mag : 1.0;
+    }
+
+    public applyTransform(transform: Transform): boolean {
+      if (transform.isIdentity())
+        return true;
+      const origin = this.origin ? this.origin : Point3d.createZero();
+      const rMatrix = this.rotation ? this.rotation.toRotMatrix() : RotMatrix.createIdentity();
+      if (this.symbolId !== undefined) {
+         this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
+         this.space2 = Params.transformPatternSpace(transform, this.space2 ? this.space2 : 0.0, rMatrix, this.angle2);
+         const scale = Params.getTransformPatternScale(transform);
+         this.scale = this.scale ? this.scale *= scale : scale;
+      } else if (this.defLines) {
+        const scale = Params.getTransformPatternScale(transform);
+        if (!Geometry.isSameCoordinate(scale, 1.0)) {
+          this.scale = this.scale ? this.scale *= scale : scale;
+          for (const line of this.defLines) {
+            if (line.through) {
+              line.through.x *= scale;
+              line.through.y *= scale;
+            }
+            if (line.offset) {
+              line.offset.x *= scale;
+              line.offset.y *= scale;
+            }
+            if (line.dashes) {
+              for (let iDash = 0; iDash < line.dashes.length; iDash++)
+                line.dashes[iDash] *= scale;
+            }
+          }
+        }
+      } else {
+        this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
+        if (this.space2 && 0 !== this.space2)
+          this.space2 = Params.transformPatternSpace(transform, this.space2, rMatrix, this.angle2);
+      }
+
+      transform.multiplyPoint(origin);
+      rMatrix.multiplyMatrixMatrix(transform.matrix, rMatrix);
+      const normalized = RotMatrix.createRigidFromRotMatrix(rMatrix);
+      if (!normalized)
+        return false;
+      const newRotation = YawPitchRollAngles.createFromRotMatrix(normalized);
+      if (undefined === newRotation)
+        return false;
+      this.origin = origin;
+      this.rotation = newRotation;
+      return true;
+    }
+  }
 }

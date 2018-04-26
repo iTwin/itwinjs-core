@@ -14,6 +14,8 @@ import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-commo
 import { NotificationManager } from "./NotificationManager";
 import { RenderQueue } from "./render/Task";
 import { System } from "./render/webgl/System";
+import { RenderSystem } from "./render/System";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 import * as selectTool from "./tools/SelectTool";
 import * as viewTool from "./tools/ViewTool";
@@ -30,7 +32,7 @@ import * as idleTool from "./tools/IdleTool";
  */
 export class IModelApp {
   protected static _initialized = false;
-  public static renderSystem: System;
+  protected static _renderSystem?: RenderSystem;
   public static renderQueue: RenderQueue;
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
@@ -48,6 +50,20 @@ export class IModelApp {
   public static get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
 
   /**
+   * Gets the instance of the RenderSystem which provides display capabilities. Display capabilities must be explicitly requested by
+   * passing an HTMLCanvasElement to startup().
+   * @return the instance of the RenderSystem.
+   * @throws [[IModelError]] if display capabilities are not enabled.
+   */
+  public static get renderSystem() {
+    if (undefined === this._renderSystem) {
+      throw new IModelError(BentleyStatus.ERROR, "Display capabilities unavailable");
+    } else {
+      return this._renderSystem;
+    }
+  }
+
+  /**
    * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
@@ -59,8 +75,10 @@ export class IModelApp {
    * ``` ts
    * MyApp.startup();
    * ```
+   *
+   * If display capabilities are desired, an HTMLCanvasElement must be supplied as the canvas to which to render.
    */
-  public static startup(deploymentEnv: DeploymentEnv = "QA") {
+  public static startup(deploymentEnv: DeploymentEnv = "QA", canvas?: HTMLCanvasElement) {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
@@ -79,7 +97,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.renderSystem) IModelApp.renderSystem = new System();
+    if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem(canvas);
     if (!IModelApp.renderQueue) IModelApp.renderQueue = new RenderQueue();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
@@ -89,7 +107,10 @@ export class IModelApp {
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
-    IModelApp.renderSystem.onInitialized();
+    if (undefined !== IModelApp._renderSystem) {
+      IModelApp._renderSystem.onInitialized();
+    }
+
     IModelApp.renderQueue.onInitialized();
     IModelApp.viewManager.onInitialized();
     IModelApp.toolAdmin.onInitialized();
@@ -111,4 +132,9 @@ export class IModelApp {
    * Implement this method to supply options for the initialization of the internationalization.
    */
   protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
+
+  /**
+   * Implement this method to supply the RenderSystem which provides display capabilities.
+   */
+  protected static supplyRenderSystem(canvas?: HTMLCanvasElement): RenderSystem | undefined { return System.create(canvas); }
 }

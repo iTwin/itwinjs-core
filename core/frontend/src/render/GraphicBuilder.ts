@@ -19,7 +19,7 @@ import { Transform,
          Angle,
          Box,
          StrokeOptions } from "@bentley/geometry-core";
-import { PatternParams,
+import { AreaPattern,
          ColorDef,
          RenderGraphic,
          GraphicParams,
@@ -27,7 +27,7 @@ import { PatternParams,
          GeometryParams,
          LinePixels,
          TextString,
-         LineStyleInfo} from "@bentley/imodeljs-common";
+         LineStyle} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 
 /**
@@ -156,9 +156,9 @@ export abstract class GraphicBuilder {
   constructor(public readonly createParams: GraphicBuilderCreateParams) {}
 
   /** IFacetOptions => StrokeOptions */
-  public wantStrokeLineStyle(_symb: LineStyleInfo, _facetOptions: StrokeOptions): boolean { return true; } // tslint:disable-line
+  public wantStrokeLineStyle(_symb: LineStyle.Info, _facetOptions: StrokeOptions): boolean { return true; }
 
-  public wantStrokePattern(_pattern: PatternParams): boolean { return true; }
+  public wantStrokePattern(_pattern: AreaPattern.Params): boolean { return true; }
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
   public abstract _finish(): RenderGraphic | undefined;

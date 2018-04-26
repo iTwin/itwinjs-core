@@ -3,11 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem } from "../System";
+import { RenderTarget } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
+import { System } from "./System";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -141,18 +142,16 @@ export class Target extends RenderTarget {
   protected _overridesUpdateTime?: BeTimePoint;
   protected _hilite?: HilitedSet;
   protected _hiliteUpdateTime?: BeTimePoint;
-  public readonly tileSizeModifier: number;
-  public readonly gl: WebGLRenderingContext;
+  public readonly context: WebGLRenderingContext;
   private readonly _techniques?: Techniques; // ###TODO this moves to System...
 
   public get hilite(): HilitedSet { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
   public get techniques(): Techniques { return this._techniques!; }
 
-  protected constructor(system: RenderSystem, gl: WebGLRenderingContext, tileSizeModifier: number = RenderTarget.defaultTileSizeModifier()) {
+  protected constructor(system: System, gl: WebGLRenderingContext) {
     super(system);
-    this.gl = gl;
-    this.tileSizeModifier = tileSizeModifier;
+    this.context = gl;
 
     this._techniques = Techniques.create(gl);
   }
@@ -171,7 +170,7 @@ export class Target extends RenderTarget {
 }
 
 export class OnScreenTarget extends Target {
-  public constructor(system: RenderSystem, gl: WebGLRenderingContext, tileSizeModifier?: number) {
-    super(system, gl, tileSizeModifier);
+  public constructor(system: System, gl: WebGLRenderingContext) {
+    super(system, gl);
   }
 }
