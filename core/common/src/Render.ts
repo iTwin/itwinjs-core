@@ -245,8 +245,7 @@ export abstract class RenderGraphic {
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
  */
 export class GraphicParams {
-  public isFilled = false;
-  public isBlankingRegion = false;
+  public fillFlags = FillFlags.None;
   public linePixels = LinePixels.Solid;
   public rasterWidth = 1;
   public readonly lineColor = new ColorDef();
@@ -292,7 +291,7 @@ export class GraphicParams {
   public static FromBlankingFill(fillColor: ColorDef): GraphicParams {
     const graphicParams = new GraphicParams();
     graphicParams.setFillColor(fillColor);
-    graphicParams.isBlankingRegion = true;
+    graphicParams.fillFlags = FillFlags.Blanking;
     return graphicParams;
   }
 }
