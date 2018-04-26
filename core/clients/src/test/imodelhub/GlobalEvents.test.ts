@@ -5,14 +5,14 @@ import * as chai from "chai";
 import chaiString = require("chai-string");
 import * as chaiAsPromised from "chai-as-promised";
 
-import { TestConfig, TestUsers } from "./TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 
-import { IModel, GlobalEventSubscription, GlobalEventSAS, SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent, NamedVersionCreatedEvent, IModelQuery } from "../imodelhub";
-import { ResponseBuilder, RequestType, ScopeType } from "./ResponseBuilder";
-import { IModelHubClient } from "../imodelhub/Client";
-import { AuthorizationToken, AccessToken } from "../Token";
-import { ConnectClient, Project } from "../ConnectClients";
-import { AzureFileHandler } from "../imodelhub/AzureFileHandler";
+import { IModel, GlobalEventSubscription, GlobalEventSAS, SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent, NamedVersionCreatedEvent, IModelQuery } from "../../imodelhub";
+import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
+import { IModelHubClient } from "../../imodelhub/Client";
+import { AuthorizationToken, AccessToken } from "../../Token";
+import { ConnectClient, Project } from "../../ConnectClients";
+import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 chai.use(chaiString);
 chai.use(chaiAsPromised);
