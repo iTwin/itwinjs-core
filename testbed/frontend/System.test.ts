@@ -30,7 +30,7 @@ describe("System WebGL Capabilities", () => {
 
   it("capabilities should be able to be initialized", () => {
     const context = new WebGLTestContext();
-    const gl: WebGLRenderingContext | undefined = context.gl;
+    const gl: WebGLRenderingContext | undefined = context.context;
     if (undefined === gl) {
       // do not enable below assert until we know GL can succeed on PRG
       // assert.isOk(false, "Could not initialize GL");
@@ -44,7 +44,7 @@ describe("System WebGL Capabilities", () => {
 
   it("capabilities should be able to be read", () => {
     const context = new WebGLTestContext();
-    const gl: WebGLRenderingContext | undefined = context.gl;
+    const gl: WebGLRenderingContext | undefined = context.context;
     if (undefined === gl) {
       // do not enable below assert until we know GL can succeed on PRG
       // assert.isOk(false, "Could not initialize GL");

@@ -474,16 +474,16 @@ export class VertexShaderBuilder extends ShaderBuilder {
     this.addFunction(ShaderSource.Vertex.unquantizePosition);
 
     this.addAttribute("a_pos", VariableType.Vec3, (prog) => {
-      prog.addAttribute("a_pos", (attr, params) => { params.geometry.bindVertexArray(params.gl, attr); });
+      prog.addAttribute("a_pos", (attr, params) => { params.geometry.bindVertexArray(params.context, attr); });
     });
     this.addUniform("u_qScale", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_qScale", (uniform, params) => {
-        uniform.setUniform3fv(params.gl, params.geometry.qScale);
+        uniform.setUniform3fv(params.context, params.geometry.qScale);
       });
     });
     this.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
-        uniform.setUniform3fv(params.gl, params.geometry.qOrigin);
+        uniform.setUniform3fv(params.context, params.geometry.qOrigin);
       });
     });
 

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RenderGraphic, GraphicBranch } from "@bentley/imodeljs-common";
+import { RenderGraphic, GraphicBranch, IModelError } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget } from "./Target";
@@ -9,6 +9,7 @@ import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/Geometry";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
+import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
 
 export const enum ContextState {
   Uninitialized,
@@ -157,9 +158,37 @@ export class Capabilities {
 }
 
 export class System extends RenderSystem {
-  public onInitialized(): void {}
-  public createTarget(gl: WebGLRenderingContext, tileSizeModifier: number): RenderTarget { return new OnScreenTarget(this, gl, tileSizeModifier); }
+  private readonly _canvas: HTMLCanvasElement;
+  private readonly _context: WebGLRenderingContext;
+
+  public static create(canvas?: HTMLCanvasElement): System | undefined {
+    if (undefined === canvas) {
+      return undefined;
+    }
+
+    let context = canvas.getContext("webgl");
+    if (null === context) {
+      context = canvas.getContext("experimental-webgl"); // IE, Edge...
+      if (null === context) {
+        throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
+      }
+    }
+
+    return new System(canvas, context);
+  }
+
+  public createTarget(): RenderTarget { return new OnScreenTarget(this, this._context); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext) {
+    super();
+    this._canvas = canvas;
+    this._context = context;
+
+    // Silence unused variable warnings...
+    assert(undefined !== this._canvas);
+    assert(undefined !== this._context);
+  }
 }
