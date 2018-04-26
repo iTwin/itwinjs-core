@@ -4,17 +4,22 @@
 import initLogging from "./logging";
 import { Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
-import { BentleyCloudGatewayConfiguration, IModelGateway } from "@bentley/imodeljs-common";
+import { BentleyCloudGatewayConfiguration, StandaloneIModelGateway, IModelReadGateway, GatewayOperation, IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentationGateway } from "@bentley/ecpresentation-frontend";
+import { ECPresentation, ECPresentationGateway } from "@bentley/ecpresentation-frontend";
 import SampleGateway from "./SampleGateway";
 
 // initialize logging
 initLogging();
 
+// initialize ECPresentation
+ECPresentation.initialize();
+
 // Initialize my application gateway configuration for the frontend
-BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } },
-  [IModelGateway, ECPresentationGateway, SampleGateway]);
+const gateways = [StandaloneIModelGateway, IModelReadGateway, ECPresentationGateway, SampleGateway];
+BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } }, gateways);
+for (const gateway of gateways)
+  GatewayOperation.forEach(gateway, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test")); // wtf?
 
 // Configure a CORS proxy in development mode.
 if (process.env.NODE_ENV === "development")

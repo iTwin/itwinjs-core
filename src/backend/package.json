@@ -23,6 +23,7 @@
     "lint": "tslint -p ./tsconfig.json",
     "prepublishOnly": "npm run build",
     "test": "node ../../scripts/run-tests.js",
+    "validatePackageJson": "validjson ./package.json",
     "watch": "npm run test -- --watch"
   },
   "dependencies": {
@@ -32,20 +33,23 @@
     "No need to repeat all of the dependencies that I have in common with backend."
   ],
   "peerDependencies": {
-    "@bentley/imodeljs-backend": "~0.76.1"
+    "@bentley/imodeljs-backend": "~0.77.5"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7",
     "@bentley/bentleyjs-tools": "^2.2.0",
     "@bentley/geometry-core": "^7",
-    "@bentley/imodeljs-backend": "~0.76.1",
+    "@bentley/imodeljs-backend": "~0.77.5",
     "@bentley/imodeljs-clients": "^5.1.0",
-    "@bentley/imodeljs-common": "~0.76.1",
+    "@bentley/imodeljs-common": "~0.77.1",
     "@types/chai": "^4.0.10",
+    "@types/chai-jest-snapshot": "^1.3.0",
     "@types/chai-spies": "0.0.0",
     "@types/faker": "^4.1.0",
     "@types/mocha": "^2.2.44",
+    "@types/source-map-support": "^0.4.0",
     "chai": "^4.1.2",
+    "chai-jest-snapshot": "^1.3.0",
     "chai-spies": "1.0.0",
     "chokidar": "^2.0.0",
     "faker": "^4.1.0",
@@ -57,7 +61,8 @@
     "ts-node": "^3.3.0",
     "tsconfig-paths": "^2.7.2",
     "typemoq": "^2.1.0",
-    "typescript": "^2.6.2"
+    "typescript": "^2.6.2",
+    "valid-json-cli": "^1.3.0"
   },
   "nyc": {
     "nycrc-path": "../../.nycrc",

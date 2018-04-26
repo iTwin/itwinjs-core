@@ -3,20 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as h from "../../common/Hierarchy";
-import { nullable } from "./Misc";
+import { nullable, createRandomId } from "./Misc";
 
-export const createRandomECInstanceNodeKey = (): h.NavNodeKey => {
+export const createRandomECInstanceNodeKey = (): h.NodeKey => {
   return {
     type: "ECInstanceNode",
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
-    classId: faker.random.number().toString(),
-    instanceId: faker.random.number().toString(),
-  } as h.NavNodeKey;
+    classId: createRandomId(),
+    instanceId: createRandomId(),
+  } as h.NodeKey;
 };
 
-export const createRandomECInstanceNode = (): h.NavNode => {
+export const createRandomECInstanceNode = (): h.Node => {
   return {
-    nodeId: Math.floor(faker.random.number(Number.MAX_VALUE)),
     key: createRandomECInstanceNodeKey(),
     label: faker.random.words(),
     description: faker.lorem.sentence(),
@@ -32,8 +31,8 @@ export const createRandomECInstanceNode = (): h.NavNode => {
   };
 };
 
-export const createRandomNodePathElement = (depth: number = 1): h.NavNodePathElement => {
-  const el: h.NavNodePathElement = {
+export const createRandomNodePathElement = (depth: number = 1): h.NodePathElement => {
+  const el: h.NodePathElement = {
     node: createRandomECInstanceNode(),
     index: faker.random.number(999),
     isMarked: faker.random.boolean(),

@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "API cleanup",
+      "type": "patch"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Stop using intermediate JSON format for data objects",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

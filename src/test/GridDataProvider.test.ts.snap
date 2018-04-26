@@ -1,0 +1,468 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GridDataProvider getColumns returns columns for a single instance 1`] = `
+Array [
+  Object {
+    "description": Object {
+      "displayLabel": "Label",
+      "editor": undefined,
+      "name": "DisplayLabel",
+      "typename": "string",
+    },
+    "editable": false,
+    "filterable": true,
+    "key": "DisplayLabel",
+    "label": "Label",
+    "sortable": true,
+  },
+  Object {
+    "description": Object {
+      "displayLabel": "Modeled Element",
+      "editor": undefined,
+      "name": "FunctionalModel_ModeledElement",
+      "typename": "navigation",
+    },
+    "editable": false,
+    "filterable": true,
+    "key": "FunctionalModel_ModeledElement",
+    "label": "Modeled Element",
+    "sortable": true,
+  },
+]
+`;
+
+exports[`GridDataProvider getColumns returns columns for multiple instances 1`] = `
+Array [
+  Object {
+    "description": Object {
+      "displayLabel": "Label",
+      "editor": undefined,
+      "name": "DisplayLabel",
+      "typename": "string",
+    },
+    "editable": false,
+    "filterable": true,
+    "key": "DisplayLabel",
+    "label": "Label",
+    "sortable": true,
+  },
+  Object {
+    "description": Object {
+      "displayLabel": "Modeled Element",
+      "editor": undefined,
+      "name": "PhysicalModel_FunctionalModel_ModeledElement",
+      "typename": "navigation",
+    },
+    "editable": false,
+    "filterable": true,
+    "key": "PhysicalModel_FunctionalModel_ModeledElement",
+    "label": "Modeled Element",
+    "sortable": true,
+  },
+]
+`;
+
+exports[`GridDataProvider getRow returns first row 1`] = `
+Object {
+  "cells": Array [
+    Object {
+      "displayValue": "Functional Model-0-H",
+      "isBold": false,
+      "isDisabled": false,
+      "isItalic": false,
+      "key": "DisplayLabel",
+      "value": Object {
+        "description": "Functional Model-0-H",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Label",
+          "editor": undefined,
+          "name": "DisplayLabel",
+          "typename": "string",
+        },
+        "unit": "",
+        "value": Object {
+          "displayValue": "Functional Model-0-H",
+          "value": "Functional Model-0-H",
+          "valueFormat": "Primitive",
+        },
+      },
+    },
+    Object {
+      "displayValue": "Functional-Tag",
+      "isBold": false,
+      "isDisabled": false,
+      "isItalic": false,
+      "key": "FunctionalModel_ModeledElement",
+      "value": Object {
+        "description": "Functional-Tag",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Modeled Element",
+          "editor": undefined,
+          "name": "FunctionalModel_ModeledElement",
+          "typename": "navigation",
+        },
+        "unit": "",
+        "value": Object {
+          "displayValue": "Functional-Tag",
+          "value": 17,
+          "valueFormat": "Primitive",
+        },
+      },
+    },
+  ],
+  "key": Object {
+    "className": "Functional:FunctionalModel",
+    "id": "0x11",
+  },
+}
+`;
+
+exports[`GridDataProvider sort sorts instances ascending 1`] = `
+Array [
+  Object {
+    "cells": Array [
+      Object {
+        "displayValue": "Functional Model-0-H",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "DisplayLabel",
+        "value": Object {
+          "description": "Functional Model-0-H",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Label",
+            "editor": undefined,
+            "name": "DisplayLabel",
+            "typename": "string",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Functional Model-0-H",
+            "value": "Functional Model-0-H",
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+      Object {
+        "displayValue": "Functional-Tag",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "value": Object {
+          "description": "Functional-Tag",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "editor": undefined,
+            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "typename": "navigation",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Functional-Tag",
+            "value": 17,
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+    ],
+    "key": Object {
+      "className": "Functional:FunctionalModel",
+      "id": "0x11",
+    },
+  },
+  Object {
+    "cells": Array [
+      Object {
+        "displayValue": "Physical Model-0-I",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "DisplayLabel",
+        "value": Object {
+          "description": "Physical Model-0-I",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Label",
+            "editor": undefined,
+            "name": "DisplayLabel",
+            "typename": "string",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Physical Model-0-I",
+            "value": "Physical Model-0-I",
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+      Object {
+        "displayValue": "Physical-Tag",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "value": Object {
+          "description": "Physical-Tag",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "editor": undefined,
+            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "typename": "navigation",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Physical-Tag",
+            "value": 18,
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+    ],
+    "key": Object {
+      "className": "BisCore:PhysicalModel",
+      "id": "0x12",
+    },
+  },
+  Object {
+    "cells": Array [
+      Object {
+        "displayValue": "Repository Model-0-1",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "DisplayLabel",
+        "value": Object {
+          "description": "Repository Model-0-1",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Label",
+            "editor": undefined,
+            "name": "DisplayLabel",
+            "typename": "string",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Repository Model-0-1",
+            "value": "Repository Model-0-1",
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+      Object {
+        "displayValue": "Not specified",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "value": Object {
+          "description": "Not specified",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "editor": undefined,
+            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "typename": "navigation",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Not specified",
+            "value": null,
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+    ],
+    "key": Object {
+      "className": "BisCore:RepositoryModel",
+      "id": "0x1",
+    },
+  },
+]
+`;
+
+exports[`GridDataProvider sort sorts instances descending 1`] = `
+Array [
+  Object {
+    "cells": Array [
+      Object {
+        "displayValue": "Repository Model-0-1",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "DisplayLabel",
+        "value": Object {
+          "description": "Repository Model-0-1",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Label",
+            "editor": undefined,
+            "name": "DisplayLabel",
+            "typename": "string",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Repository Model-0-1",
+            "value": "Repository Model-0-1",
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+      Object {
+        "displayValue": "Not specified",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "value": Object {
+          "description": "Not specified",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "editor": undefined,
+            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "typename": "navigation",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Not specified",
+            "value": null,
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+    ],
+    "key": Object {
+      "className": "BisCore:RepositoryModel",
+      "id": "0x1",
+    },
+  },
+  Object {
+    "cells": Array [
+      Object {
+        "displayValue": "Physical Model-0-I",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "DisplayLabel",
+        "value": Object {
+          "description": "Physical Model-0-I",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Label",
+            "editor": undefined,
+            "name": "DisplayLabel",
+            "typename": "string",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Physical Model-0-I",
+            "value": "Physical Model-0-I",
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+      Object {
+        "displayValue": "Physical-Tag",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "value": Object {
+          "description": "Physical-Tag",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "editor": undefined,
+            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "typename": "navigation",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Physical-Tag",
+            "value": 18,
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+    ],
+    "key": Object {
+      "className": "BisCore:PhysicalModel",
+      "id": "0x12",
+    },
+  },
+  Object {
+    "cells": Array [
+      Object {
+        "displayValue": "Functional Model-0-H",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "DisplayLabel",
+        "value": Object {
+          "description": "Functional Model-0-H",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Label",
+            "editor": undefined,
+            "name": "DisplayLabel",
+            "typename": "string",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Functional Model-0-H",
+            "value": "Functional Model-0-H",
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+      Object {
+        "displayValue": "Functional-Tag",
+        "isBold": false,
+        "isDisabled": false,
+        "isItalic": false,
+        "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+        "value": Object {
+          "description": "Functional-Tag",
+          "isMerged": false,
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "editor": undefined,
+            "name": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
+            "typename": "navigation",
+          },
+          "unit": "",
+          "value": Object {
+            "displayValue": "Functional-Tag",
+            "value": 17,
+            "valueFormat": "Primitive",
+          },
+        },
+      },
+    ],
+    "key": Object {
+      "className": "Functional:FunctionalModel",
+      "id": "0x11",
+    },
+  },
+]
+`;

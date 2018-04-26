@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
-import { NavNode } from "@bentley/ecpresentation-common";
+import { Node } from "@bentley/ecpresentation-common";
 
 export default class StyleHelper {
   private static getColor(name: string): number {
@@ -178,8 +178,8 @@ export default class StyleHelper {
     return color;
   }
 
-  public static isBold(node: NavNode): boolean { return node.fontStyle ? (node.fontStyle.indexOf("Bold") !== -1) : false; }
-  public static isItalic(node: NavNode): boolean { return node.fontStyle ? (node.fontStyle.indexOf("Italic") !== -1) : false; }
-  public static getForeColor(node: NavNode): number | undefined { return node.foreColor ? StyleHelper.getColor(node.foreColor) : undefined; }
-  public static getBackColor(node: NavNode): number | undefined { return node.backColor ? StyleHelper.getColor(node.backColor) : undefined; }
+  public static isBold(node: Node): boolean { return node.fontStyle ? (node.fontStyle.indexOf("Bold") !== -1) : false; }
+  public static isItalic(node: Node): boolean { return node.fontStyle ? (node.fontStyle.indexOf("Italic") !== -1) : false; }
+  public static getForeColor(node: Node): number | undefined { return node.foreColor ? StyleHelper.getColor(node.foreColor) : undefined; }
+  public static getBackColor(node: Node): number | undefined { return node.backColor ? StyleHelper.getColor(node.backColor) : undefined; }
 }

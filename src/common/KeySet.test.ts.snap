@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`KeySet serialization roundtrip 1`] = `
+Object {
+  "instanceKeys": Array [
+    Array [
+      "Ergonomic Concrete Computer",
+      Array [
+        "0xc5e2000000a425",
+        "0x14990000016cd0",
+      ],
+    ],
+    Array [
+      "Rustic Soft Fish",
+      Array [
+        "0xa46c00000153ae",
+      ],
+    ],
+  ],
+  "nodeKeys": Array [
+    Object {
+      "classId": "0xb5370000005de7",
+      "instanceId": "0x1816600000067a9",
+      "pathFromRoot": Array [
+        "1e674819-3238-44e6-9599-0ce47a5f28a7",
+        "241922d2-ad4d-4ed7-b584-50311c418df8",
+      ],
+      "type": "ECInstanceNode",
+    },
+  ],
+}
+`;

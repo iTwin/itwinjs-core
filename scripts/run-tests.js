@@ -27,8 +27,8 @@ const shouldRecurseIntoDirectory = (directoryPath) => {
 
 const requireLibModules = (dir) => {
   const files = fs.readdirSync(dir);
-  files.map((fileName) => path.join(dir, fileName)).filter(shouldRecurseIntoDirectory).forEach((fileName) => {
-    requireLibModules(path.join(dir, fileName));
+  files.map((fileName) => path.join(dir, fileName)).filter(shouldRecurseIntoDirectory).forEach((filePath) => {
+    requireLibModules(filePath);
   });
   files.filter((fileName) => {
     return fileName.endsWith(".ts") && !fileName.endsWith(".test.ts");
@@ -41,12 +41,12 @@ const requireLibModules = (dir) => {
 const getTestFiles = () => {
   const testFiles = [];
   const addFilesRecursively = (dir) => {
-    const files = fs.readdirSync(dir);
-    files.map((fileName) => path.join(dir, fileName)).filter(shouldRecurseIntoDirectory).forEach((file) => {
-      addFilesRecursively(file);
+    const files = fs.readdirSync(dir).map((fileName) => path.join(dir, fileName));
+    files.filter(shouldRecurseIntoDirectory).forEach((filePath) => {
+      addFilesRecursively(filePath);
     });
-    files.filter((file) => file.endsWith(".ts")).forEach((file) => {
-      testFiles.push(path.join(dir, file));
+    files.filter((filePath) => filePath.endsWith(".ts")).forEach((filePath) => {
+      testFiles.push(filePath);
     });
   };
   addFilesRecursively("./");
@@ -82,6 +82,7 @@ const runOnce = () => {
     };
     mocha = mocha.reporter("mocha-multi-reporters", reporterOptions).ignoreLeaks(false).useColors(true).fullTrace();
   }
+  mocha.timeout(10000);
   mocha.enableTimeouts(timeoutsEnabled);
   getTestFiles().forEach((file) => {
     mocha.addFile(file);

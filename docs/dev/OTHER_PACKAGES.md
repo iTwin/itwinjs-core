@@ -35,11 +35,11 @@ The above commands will create a folder `{OutRoot}/Winx64/packages`.
 The next step is make npm use these packages. After running `rush install`:
 ```batch
 cd common/temp
+npm link {OutRoot}/Winx64/packages/imodeljs-native-platform-api
+npm link {OutRoot}/Winx64/packages/imodeljs-native-platform-electron
+npm link {OutRoot}/Winx64/packages/imodeljs-native-platform-node
+npm link {OutRoot}/Winx64/packages/imodeljs-n_8-win32-x64
 npm link {OutRoot}/Winx64/packages/imodeljs-e_1_6_11-win32-x64
-npm link {OutRoot}/Winx64/packages/imodeljs-electronaddon
-npm link {OutRoot}/Winx64/packages/imodeljs-n_8_9-win32-x64
-npm link {OutRoot}/Winx64/packages/imodeljs-nodeaddon
-npm link {OutRoot}/Winx64/packages/imodeljs-nodeaddonapi
 cd ../../
 ```
 **Note:** Replace `{OutRoot}` with the location where BentleyBuild creates its output.

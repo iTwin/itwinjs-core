@@ -3,11 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import * as content from "@bentley/ecpresentation-common/lib/content";
-import { NestedContent } from "@bentley/ecpresentation-common/lib/content/Content";
-import { isPropertiesField, isNestedContentField } from "@bentley/ecpresentation-common/lib/content/Fields";
-import { isFieldMerged, getFieldPropertyValueKeys } from "@bentley/ecpresentation-common/lib/content/Item";
-import { isPrimitiveDescription, isArrayDescription, isStructDescription } from "@bentley/ecpresentation-common/lib/content/TypeDescription";
-import * as ec from "@bentley/ecpresentation-common/lib/EC";
 
 export interface PropertyDescription {
   name: string;
@@ -40,17 +35,26 @@ export interface StructValue extends PropertyValue {
   members: { [name: string]: PropertyRecord };
 }
 export interface ArrayValue extends PropertyValue {
-  members: PropertyRecord[];
+  items: PropertyRecord[];
 }
 export const isPrimitiveValue = (v: PropertyValue): v is PrimitiveValue => (content.PropertyValueFormat.Primitive === v.valueFormat);
 export const isStructValue = (v: PropertyValue): v is StructValue => (content.PropertyValueFormat.Struct === v.valueFormat);
 export const isArrayValue = (v: PropertyValue): v is ArrayValue => (content.PropertyValueFormat.Array === v.valueFormat);
+export const isValueEmpty = (v: PropertyValue): boolean => {
+  if (isPrimitiveValue(v))
+    return (null === v.value || undefined === v.value || "" === v.value);
+  if (isStructValue(v))
+    return !v.members;
+  if (isArrayValue(v))
+    return !v.items || 0 === v.items.length;
+  return false;
+};
 
 export interface PropertyRecord {
   property: PropertyDescription;
   value: PropertyValue;
   description: string;
-  unit: string;
+  unit?: string;
   isReadonly: boolean;
   isMerged: boolean;
 }
@@ -72,8 +76,8 @@ class NestedContentRecord implements PropertyRecord {
     this.description = "";
     this.unit = "";
     this.property = ContentBuilder.createPropertyDescription(field);
-    this.isMerged = isFieldMerged(item, field.name);
-    this.isReadonly = field.isReadOnly || this.isMerged;
+    this.isMerged = item.isFieldMerged(field.name);
+    this.isReadonly = field.isReadonly || this.isMerged;
 
     if (this.isMerged) {
       // if the value is merged, just take the '*** Varies ***' stored in display values map
@@ -86,16 +90,16 @@ class NestedContentRecord implements PropertyRecord {
       } as PrimitiveValue;
     } else {
       // nested content value is in Array<NestedContent> format
-      const nestedContentArray: NestedContent[] = item.values[field.name];
-      const members = new Array<PropertyRecord>();
+      const nestedContentArray: content.NestedContent[] = item.values[field.name];
+      const items = new Array<PropertyRecord>();
       for (const nestedContent of nestedContentArray)
-        members.push(this.createNestedStructRecord(nestedContent, path));
+        items.push(this.createNestedStructRecord(nestedContent, path));
       const value = {
         valueFormat: content.PropertyValueFormat.Array,
-        members,
+        items,
       } as ArrayValue;
       if (1 === nestedContentArray.length)
-        this.value = value.members[0].value;
+        this.value = value.items[0].value;
       else
         this.value = value;
     }
@@ -112,7 +116,7 @@ class NestedContentRecord implements PropertyRecord {
           record.property = ContentBuilder.createPropertyDescription(path.pop() || nestedField);
           break;
         }
-        if (isArrayValue(record.value) && 0 === record.value.members.length) {
+        if (isArrayValue(record.value) && 0 === record.value.items.length) {
           // found empty array which means no value
           record.property = ContentBuilder.createPropertyDescription(path.pop() || nestedField);
           record.value = {
@@ -121,9 +125,9 @@ class NestedContentRecord implements PropertyRecord {
           } as PrimitiveValue;
           break;
         }
-        if (isArrayValue(record.value) && 1 === record.value.members.length) {
+        if (isArrayValue(record.value) && 1 === record.value.items.length) {
           const members: { [name: string]: PropertyRecord } = {};
-          members[nestedField.name] = record.value.members[0];
+          members[nestedField.name] = record.value.items[0];
           record.value = {
             valueFormat: content.PropertyValueFormat.Struct,
             members,
@@ -145,17 +149,9 @@ class NestedContentRecord implements PropertyRecord {
     }
   }
 
-  private createNestedStructRecord(nestedContent: NestedContent, path?: content.Field[]): PropertyRecord {
-    const item = {
-      primaryKeys: nestedContent.PrimaryKeys,
-      classInfo: this._field.contentClassInfo,
-      label: "",
-      imageId: "",
-      values: nestedContent.Values,
-      displayValues: nestedContent.DisplayValues,
-      mergedFieldNames: [],
-      fieldPropertyValueKeys: {},
-    } as content.Item;
+  private createNestedStructRecord(nestedContent: content.NestedContent, path?: content.Field[]): PropertyRecord {
+    const item = new content.Item(nestedContent.primaryKeys, "", "",
+      this._field.contentClassInfo, nestedContent.values, nestedContent.displayValues, []);
 
     let pathField: content.Field | undefined;
     if (path) {
@@ -180,7 +176,7 @@ class NestedContentRecord implements PropertyRecord {
       } as StructValue,
       description: "",
       unit: "",
-      isReadonly: this._field.isReadOnly,
+      isReadonly: this._field.isReadonly,
       isMerged: false,
     } as PropertyRecord;
   }
@@ -201,7 +197,7 @@ export default class ContentBuilder {
       return undefined;
     };
     const createArrayValue = (arrayDescription: content.ArrayTypeDescription, values: any[], displayValues: Array<string | undefined>): ArrayValue => {
-      const members = new Array<PropertyRecord>();
+      const items = new Array<PropertyRecord>();
       if (values && displayValues) {
         assert(values.length === displayValues.length);
         for (let i = 0; i < values.length; ++i) {
@@ -213,12 +209,12 @@ export default class ContentBuilder {
           } as PropertyDescription;
           const record = ContentBuilder.createRecord(memberDescription, arrayDescription.memberType,
             values[i], displayValues[i], true, false);
-          members.push(record);
+          items.push(record);
         }
       }
       return {
         valueFormat: content.PropertyValueFormat.Array,
-        members,
+        items,
       } as ArrayValue;
     };
     const createStructValue = (description: content.StructTypeDescription,
@@ -249,9 +245,9 @@ export default class ContentBuilder {
     };
     const createValue = (): PropertyValue | undefined => {
       if (!isMerged) {
-        if (isArrayDescription(typeDescription))
+        if (typeDescription.valueFormat === content.PropertyValueFormat.Array)
           return createArrayValue(typeDescription, value, displayValue);
-        if (isStructDescription(typeDescription))
+        if (typeDescription.valueFormat === content.PropertyValueFormat.Struct)
           return createStructValue(typeDescription, value, displayValue);
       }
       return {
@@ -272,18 +268,13 @@ export default class ContentBuilder {
   }
 
   public static createPropertyRecord(field: content.Field, item: content.Item, path?: content.Field[]): PropertyRecord {
-    if (isNestedContentField(field))
+    if (field.isNestedContentField())
       return new NestedContentRecord(field, item, path);
 
-    const isValueReadOnly = field.isReadOnly || isFieldMerged(item, field.name) || getFieldPropertyValueKeys(item, field.name).every((keys: content.PropertyValueKeys): boolean => {
-      // note: fields can have multiple properties and each field value can belong to zero or more ECInstances -
-      // we consider field value read-only if there's at least one ECInstanceKey which doesn't have an ECInstanceId.
-      return keys.keys.every((key: ec.InstanceKey): boolean => (key.instanceId !== "0"));
-    });
-
-    return ContentBuilder.createRecord(ContentBuilder.createPropertyDescription(field), field.description,
+    const isValueReadOnly = field.isReadonly || item.isFieldMerged(field.name);
+    return ContentBuilder.createRecord(ContentBuilder.createPropertyDescription(field), field.type,
       item.values[field.name], item.displayValues[field.name],
-      isValueReadOnly, isFieldMerged(item, field.name));
+      isValueReadOnly, item.isFieldMerged(field.name));
   }
 
   public static createInvalidPropertyRecord(): PropertyRecord {
@@ -297,12 +288,12 @@ export default class ContentBuilder {
   }
 
   public static createPropertyDescription(field: content.Field): PropertyDescription {
-    if (isPrimitiveDescription(field.description) && "enum" === field.description.typeName) {
-      if (isPropertiesField(field)) {
+    if (field.type.valueFormat === content.PropertyValueFormat.Primitive && "enum" === field.type.typeName) {
+      if (field.isPropertiesField()) {
         return {
           name: field.name,
           displayLabel: field.label,
-          typename: field.description.typeName,
+          typename: field.type.typeName,
           editor: field.editor ? field.editor.name : undefined,
           enumerationInfo: field.properties[0].property.enumerationInfo!,
           maxDisplayedRows: undefined,
@@ -314,7 +305,7 @@ export default class ContentBuilder {
     return {
       name: field.name,
       displayLabel: field.label,
-      typename: field.description.typeName,
+      typename: field.type.typeName,
       editor: field.editor ? field.editor.name : undefined,
     } as PropertyDescription;
   }

@@ -15,7 +15,7 @@ export default class SampleGateway extends SampleGatewayDefinition {
     const files = fs.readdirSync(dir);
     return files.map((name: string) => (path.resolve(dir, name)));
   }
-  
+
 }
 
 /** Auto-register the gateway when this file is included. */

@@ -5,7 +5,13 @@
     "module": "commonjs",
     "skipLibCheck": true,
     "outDir": "./lib",
-    "baseUrl": "./node_modules"
+    "baseUrl": "./node_modules/",
+    "paths": {
+      "*": [
+        "@types/*",
+        "*"
+      ]
+    }
   },
   "include": [
     "./**/*.ts"

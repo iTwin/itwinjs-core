@@ -2,17 +2,21 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
-import { InstanceKeysList, PageOptions } from "@bentley/ecpresentation-common";
-import { ECPresentationManager } from "@bentley/ecpresentation-common";
+import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
+import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import * as content from "@bentley/ecpresentation-common/lib/content";
+
+export interface CacheInvalidationProps {
+  descriptor?: boolean;
+  size?: boolean;
+  content?: boolean;
+}
 
 /** Base class for all data providers that are based on @ref PresentationManager. */
 export default abstract class ContentDataProvider {
-  private _manager: ECPresentationManager;
   private _rulesetId: string;
   private _displayType: string;
   private _descriptor: Readonly<content.Descriptor> | undefined;
-  private _configuredDescriptor: Readonly<content.Descriptor> | undefined;
   private _contentSetSize: number | undefined;
   private _content: Readonly<content.Content> | undefined;
   private _imodelToken: Readonly<IModelToken>;
@@ -22,42 +26,30 @@ export default abstract class ContentDataProvider {
    * load data for. See @ref ContentDisplayType
    * @param imodelToken Token of the imodel to pull data from.
    */
-  constructor(manager: ECPresentationManager, imodelToken: IModelToken, rulesetId: string, displayType: string) {
-    this._manager = manager;
+  constructor(imodelToken: IModelToken, rulesetId: string, displayType: string) {
     this._rulesetId = rulesetId;
     this._displayType = displayType;
     this._imodelToken = imodelToken;
-    this.invalidateCache();
-  }
-
-  public set imodelToken(token: IModelToken) {
-    this._imodelToken = token;
-    this.invalidateCache();
+    this.invalidateCache({ descriptor: true, size: true, content: true });
   }
 
   public get imodelToken(): IModelToken { return this._imodelToken; }
 
+  public set imodelToken(token: IModelToken) {
+    this._imodelToken = token;
+    this.invalidateCache({ descriptor: true, size: true, content: true });
+  }
+
   /** Fully invalidates cached content including the descriptor. Called after events like
    * selection changes.
    */
-  protected invalidateCache(): void {
-    this._descriptor = undefined;
-    this._configuredDescriptor = undefined;
-    this.invalidateContentCache(true);
-  }
-
-  /** Invalidates just the content but not the descriptor. Called after events like
-   * sorting or filtering changes.
-   * @param invalidateContentSetSize Should content set size also be invalidated.
-   * The size invalidation can be skipped after operations like sorting, because the
-   * amount of items in the content set doesn't change.
-   */
-  protected invalidateContentCache(invalidateContentSetSize: boolean): void {
-    this._configuredDescriptor = undefined;
-    this._content = undefined;
-
-    if (invalidateContentSetSize)
+  protected invalidateCache(props: CacheInvalidationProps): void {
+    if (props.descriptor)
+      this._descriptor = undefined;
+    if (props.size)
       this._contentSetSize = undefined;
+    if (props.content)
+      this._content = undefined;
   }
 
   /** Called to create extended options for content requests. The actual options depend on the
@@ -69,22 +61,16 @@ export default abstract class ContentDataProvider {
     };
   }
 
-  /** Get the content descriptor currently used by this data provider. */
-  public get descriptor(): content.Descriptor | undefined { return this._descriptor; }
-
   /** Get the content descriptor.
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  public async getContentDescriptor(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
-    if (!this._configuredDescriptor) {
-      if (!this._descriptor) {
-        this._descriptor = await this._manager.getContentDescriptor(this.imodelToken, this._displayType, keys,
-          selectionInfo, this.createRequestOptions());
-      }
-      this._configuredDescriptor = this.configureContentDescriptor(this._descriptor);
+  protected async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
+    if (!this._descriptor) {
+      this._descriptor = await ECPresentation.presentation.getContentDescriptor(this.imodelToken, this._displayType, keys,
+        selectionInfo, this.createRequestOptions());
     }
-    return this._configuredDescriptor;
+    return this.configureContentDescriptor(this._descriptor);
   }
 
   /** Called to configure the content descriptor. This is the place where concrete
@@ -112,14 +98,13 @@ export default abstract class ContentDataProvider {
   /** Get the content.
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
-   * @param pageStart Start index of the page to load.
-   * @param pageSize The number of requested items in the page (0 means all items).
+   * @param pageOptions Paging options.
    */
-  protected async getContent(keys: InstanceKeysList, selectionInfo: content.SelectionInfo | undefined, { pageStart = 0, pageSize = 0 }: PageOptions): Promise<Readonly<content.Content>> {
+  protected async getContent(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo, pageOptions?: PageOptions): Promise<Readonly<content.Content>> {
     if (!this._content) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      this._content = await this._manager.getContent(this.imodelToken, descriptor, keys,
-        { pageStart, pageSize }, this.createRequestOptions());
+      this._content = await ECPresentation.presentation.getContent(this.imodelToken, descriptor, keys,
+        pageOptions, this.createRequestOptions());
     }
     return this._content;
   }
@@ -129,10 +114,10 @@ export default abstract class ContentDataProvider {
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    * @note The method returns the total number of records (without paging).
    */
-  protected async getContentSetSize(keys: InstanceKeysList, selectionInfo?: content.SelectionInfo): Promise<number> {
+  protected async getContentSetSize(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (undefined === this._contentSetSize) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      this._contentSetSize = await this._manager.getContentSetSize(this.imodelToken, descriptor,
+      this._contentSetSize = await ECPresentation.presentation.getContentSetSize(this.imodelToken, descriptor,
         keys, this.createRequestOptions());
     }
     return this._contentSetSize;
