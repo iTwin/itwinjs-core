@@ -1,6 +1,8 @@
 # Schema Customization
 
-TODO: *COMMENT: This is really about dynamic metadata, not data. Or you could just call it extended metadata... the point is not that it is changing (it is not), it is simply metadata that extends beyond the current state of BIS.
+<!-- TODO
+COMMENT: This is really about dynamic metadata, not data. Or you could just call it extended metadata... the point is not that it is changing (it is not), it is simply metadata that extends beyond the current state of BIS.
+-->
 
 ## Introduction
 
@@ -16,21 +18,15 @@ This page discusses strategies available for creating and controlling this data,
 
 Properties that vary per class or type should be modeled using property definitions, properties which vary per instance should be modeled using Json.
 
+<!-- TODO
 ## Dynamic Schemas
-
-xxxxxxxx
 
 ### Creating Dynamic Schemas
 
-xxxxxxxx
-
 ### Inherent Risks of Dynamic Schemas
 
-xxxxxxxxx
-
 ### Allowed and Forbidden Capabilities in Dynamic Schemas
-
-xxxxxxxxx
+-->
 
 ## Vendor Data and Related Catalogs
 
@@ -53,7 +49,9 @@ When BigCo's pump catalog is distributed, it will include:
 - BigCo:MonsterPumpType class definition
 - Multiple BigCo:MonsterPumpType instances (defining the pump types available for purchase)
 
- QUESTION: *IN PRACTICE, DOES THIS MEAN THAT IF I WANT TO CHANGE A PUMP FROM BIGCO TO LITTLECO, THEN I NEED TO CHANGE THE CLASS OF PUMP AS WELL (IE - I NEED TO DELETE AND RECREATED THE PUMP)?*
+<!-- TODO
+QUESTION: *IN PRACTICE, DOES THIS MEAN THAT IF I WANT TO CHANGE A PUMP FROM BIGCO TO LITTLECO, THEN I NEED TO CHANGE THE CLASS OF PUMP AS WELL (IE - I NEED TO DELETE AND RECREATED THE PUMP)?*
+-->
 
 ## Data Imported from Other Databases (including via iModel Bridges)
 
@@ -62,8 +60,6 @@ The technology (often iModel bridges) that converts data from other databases in
 ## Dynamic Schema Minor Change Considerations
 
 As dynamic schemas are extensions of BIS schemas, they must follow the rules of BIS schemas to prevent upgrade problems. These rules are defined in [Schema Versioning and Generations](schema-versioning-and-generations). The most notable of these rules is that classes and properties cannot be removed or significantly redefined. In general, only additions to schemas are allowed.
-
-xxxxxxxx
 
 ## Minor (BIS) Schema Upgrade Considerations
 
@@ -82,4 +78,4 @@ As defined in [Schema Versioning and Generations](schema-versioning-and-generati
 - Moving of properties between classes (as a simple case, from PhysicalElementType subclass to its related PhysicalElement subclass)
 - Rearrangement of Model hierarchy
 
- There needs to be a default strategy for converting the dynamic schemas to descent from the new BIS schemas, and for the conversion of dynamic data. We cannot rely on custom code to perform the upgrade; the entity that created the custom schemas may not even be in business any more.
+There needs to be a default strategy for converting the dynamic schemas to descent from the new BIS schemas, and for the conversion of dynamic data. We cannot rely on custom code to perform the upgrade; the entity that created the custom schemas may not even be in business any more.
