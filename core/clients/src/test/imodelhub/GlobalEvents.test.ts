@@ -18,7 +18,7 @@ chai.use(chaiString);
 chai.use(chaiAsPromised);
 chai.should();
 
-describe("GlobalEvents", () => {
+describe("iModelHub GlobalEventHandler", () => {
   let accessToken: AccessToken;
   let serviceAccountAccessToken: AccessToken;
   let globalEventSubscription: GlobalEventSubscription;
@@ -26,7 +26,7 @@ describe("GlobalEvents", () => {
   let projectId: string;
   const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
-  const downloadToPath: string = __dirname + "/assets/";
+  const downloadToPath: string = __dirname + "/../assets/";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
