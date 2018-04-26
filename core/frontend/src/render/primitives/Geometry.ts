@@ -35,7 +35,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
 import { RenderSystem } from "../System";
-import { DisplayParams, DisplayParamsCache, DisplayParamsType } from "./DisplayParams";
+import { DisplayParams, DisplayParamsType } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 
 export abstract class Geometry {
@@ -45,7 +45,7 @@ export abstract class Geometry {
 
   public constructor(public transform: Transform, public tileRange: Range3d, public entityId: Id64, public displayParams: DisplayParams, public isCurved: boolean) {
     this.facetCount = 0;
-    this.hasTextured = displayParams.isTextured();
+    this.hasTextured = displayParams.isTextured;
   }
 
   // public abstract get polyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList;
@@ -102,15 +102,17 @@ export class GeometryAccumulator {
   public geometries?: GeometryList;
   public transform: Transform;
   public elementId: Id64 = new Id64();
-  public displayParamsCache: DisplayParamsCache;
   public surfacesOnly: boolean;
   public haveTransform: boolean;
   public checkGlyphBoxes: boolean = false;
   public tileRange: Range3d;
+  readonly iModel: IModelConnection;
+  readonly system: RenderSystem;
 
   public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform?: Transform, tileRange?: Range3d) {
     this.surfacesOnly = surfacesOnly;
-    this.displayParamsCache = new DisplayParamsCache(iModel, system);
+    this.iModel = iModel;
+    this.system = system;
     if (transform && tileRange) {
       this.transform = transform;
       this.tileRange = tileRange;
@@ -122,7 +124,6 @@ export class GeometryAccumulator {
     }
   }
 
-  public get iModel(): IModelConnection { return this.displayParamsCache.iModel; }
   public get isEmpty(): boolean { return !!this.geometries && this.geometries.isEmpty; }
 
   public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector) {
@@ -238,8 +239,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curve.children.push(gapSegment);
     }
     if (this.accum) {
-      let displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams();
-      if (!displayParams) { displayParams = new DisplayParams(); }
+      let displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
       this.accum.addCurveVector(curve, /*filled,*/ displayParams, this.localToWorldTransform, false, this.currClip);
     }
   }
@@ -263,8 +263,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     if (disjoint !== undefined) {
       assert(!filled || !disjoint);
       if (this.accum) {
-        let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams();
-        if (!displayParams) { displayParams = new DisplayParams(); }
+        let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
         this.accum.addCurveVector(curves, /*filled,*/ displayParams, this.localToWorldTransform, disjoint, this.currClip);
       }
     }
@@ -290,8 +289,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       // The typical case...
       assert(!filled || !haveDisjoint);
       if (this.accum) {
-        let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams();
-        if (!displayParams) { displayParams = new DisplayParams(); }
+        let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
         this.accum.addCurveVector(curves, /*filled,*/ displayParams, this.localToWorldTransform, haveDisjoint, this.currClip);
       }
       return;
@@ -309,13 +307,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curves.children.filter((child) => !GeometryListBuilder.isDisjointCurvePrimitive(child));
     }
     if (this.accum) {
-      let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams();
-      if (!displayParams) { displayParams = new DisplayParams(); }
+      let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
       this.accum.addCurveVector(curves, /*false,*/ displayParams, this.localToWorldTransform, false, this.currClip);
     }
     if (this.accum) {
-      let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams(filled) : this.getLinearDisplayParams();
-      if (!displayParams) { displayParams = new DisplayParams(); }
+      let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
       this.accum.addCurveVector(disjointCurves, /*false,*/ displayParams, this.localToWorldTransform, true, this.currClip);
     }
   }
@@ -323,13 +319,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public get geometryParams(): GeometryParams | undefined { return this.geometryParamsValid ? this._geometryParams : undefined; }
   public get elementId(): Id64 { return this.accum ? this.accum.elementId : new Id64(); }
 
-  public get displayParamsCache() { return this.accum ? this.accum.displayParamsCache : undefined; }
-  public getDisplayParams(type: DisplayParamsType, filled: boolean): DisplayParams | undefined { return this.accum ? this.accum.displayParamsCache.get(type, this.graphicParams, this.geometryParams ? this.geometryParams : new GeometryParams(new Id64()), filled) : undefined; }
-  public getMeshDisplayParams(filled: boolean): DisplayParams | undefined { return this.getDisplayParams(DisplayParamsType.Mesh, filled); }
-  public getLinearDisplayParams(): DisplayParams | undefined { return this.getDisplayParams(DisplayParamsType.Linear, false); }
-  public get textDisplayParams(): DisplayParams | undefined { return this.getDisplayParams(DisplayParamsType.Text, false); }
+  public getDisplayParams(type: DisplayParamsType): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
+  public getMeshDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParamsType.Mesh); }
+  public getLinearDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParamsType.Linear); }
+  public get textDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParamsType.Text); }
 
-  public get system(): RenderSystem | undefined { return this.accum ? this.accum.displayParamsCache.system : undefined; }
+  public get system(): RenderSystem | undefined { return this.accum ? this.accum.system : undefined; }
 
   public add(geom: Geometry): void { if (this.accum) this.accum.addGeometryWithGeom(geom); }
 

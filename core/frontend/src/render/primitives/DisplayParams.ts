@@ -2,215 +2,140 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64 } from "@bentley/bentleyjs-core";
-import { GraphicParams, GeometryParams, ColorDef, GeometryClass, LinePixels, FillDisplay, FillFlags, BackgroundFill } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../IModelConnection";
-import { RenderSystem } from "../System";
+import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, Material } from "@bentley/imodeljs-common";
 
+/** This class says what type of geometry is described by a particular DisplayParams instance. */
 export const enum DisplayParamsType {
   Mesh,
   Linear,
   Text,
 }
+
+/** Describes what kind of comparison a DisplayParams comparison routine will perform. */
+export const enum DisplayParamsComparePurpose {
+  Merge,  // considers colors equivalent if both have or both lack transparency
+  Strict  // compares all members
+}
+
+/** This class is used to determine if things can be batched together for display. */
 export class DisplayParams {
-  public type: DisplayParamsType = DisplayParamsType.Mesh;
-  public categoryId: Id64 = new Id64();
-  public subCategoryId: Id64 = new Id64();
-  public materialId: Id64 = new Id64();
-  // public material: Material; // meshes only // Material doesn't exist yet!!!
-  // public gradient: GradientSymb; // GradientSymb doesn't exist yet!!!
-  // public textureMapping: TextureMapping; // only if m_material is null (e.g. gradients, glyph bitmaps) // TextureMapping doesn't exist yet!!!
-  public lineColor: ColorDef = ColorDef.white; // all types of geometry (edge color for meshes)
-  public fillColor: ColorDef = ColorDef.white; // meshes only
-  public width: number = 0; // linear and mesh (edges)
-  public linePixels: LinePixels = LinePixels.Solid; // linear and mesh (edges)
-  public fillFlags: FillFlags = FillFlags.None; // meshes only
-  public geomClass: GeometryClass = GeometryClass.Primary;
-  public ignoreLighting: boolean = false; // always true for text and linear geometry; true for meshes only if normals not desired
-  public hasRegionOutline: boolean = false;
+  readonly type: DisplayParamsType = DisplayParamsType.Mesh;
+  readonly material: Material | undefined = undefined; // meshes only
+  readonly gradient: Gradient.Symb | undefined = undefined;
+  // ###TODO: public textureMapping: TextureMapping; // only if m_material is null (e.g. gradients, glyph bitmaps) // TextureMapping doesn't exist yet!!!
+  readonly lineColor: ColorDef = ColorDef.white; // all types of geometry (edge color for meshes)
+  readonly fillColor: ColorDef = ColorDef.white; // meshes only
+  readonly width: number = 0; // linear and mesh (edges)
+  readonly linePixels: LinePixels = LinePixels.Solid; // linear and mesh (edges)
+  readonly fillFlags: FillFlags = FillFlags.None; // meshes only
+  readonly ignoreLighting: boolean = false; // always true for text and linear geometry; true for meshes only if normals not desired
+  readonly hasRegionOutline: boolean = false;
 
-  public constructor() { }
-  public static create(type: DisplayParamsType, categoryId: Id64, subCategoryId: Id64, /*gradient: GradientSymb,*/ materialId: Id64, lineColor: ColorDef, fillColor: ColorDef, width: number, linePixels: LinePixels, fillFlags: FillFlags, geomClass: GeometryClass/*, iModel: IModelConnection, renderSys: System*/): DisplayParams {
-    const output = new DisplayParams();
-    output.type = type;
-    output.categoryId = categoryId;
-    output.subCategoryId = subCategoryId;
-    output.materialId = materialId;
-    output.geomClass = geomClass;
-    output.lineColor = lineColor;
-    output.fillColor = fillColor;
-    output.width = width;
-    output.linePixels = linePixels;
-    // output.gradient = gradient;
-    output.fillFlags = fillFlags;
-    // if (materialId.isValid()) { output.material = renderSys.getMaterial(materialId, iModel); }
-    return output;
-  }
-  public static createText(lineColor: ColorDef, catId: Id64, subCatId: Id64, geomClass: GeometryClass): DisplayParams {
-    const output = new DisplayParams();
-    output.initText(lineColor, catId, subCatId, geomClass);
-    return output;
-  }
-  public static createLinear(lineColor: ColorDef, width: number, px: LinePixels, cat: Id64, sub: Id64, gc: GeometryClass): DisplayParams {
-    const output = new DisplayParams();
-    output.initLinear(lineColor, width, px, cat, sub, gc);
-    return output;
-  }
-  public static createMesh(lineColor: ColorDef, fillColor: ColorDef, width: number, px: LinePixels, /*mat: Material, grad, GradientSymb, tx: TextureMapping,*/ ff: FillFlags, cat: Id64, sub: Id64, gc: GeometryClass): DisplayParams {
-    const output = new DisplayParams();
-    output.initMesh(lineColor, fillColor, width, px, /*mat, grad, tx,*/ ff, cat, sub, gc);
-    return output;
+  /** Instantiates the class based on a generic argument class defined above. */
+  private constructor(type: DisplayParamsType, gf: GraphicParams) {
+    this.type = type;
+    this.lineColor = gf.lineColor.clone();
+    switch (type) {
+      case DisplayParamsType.Mesh:
+        this.material = gf.material;
+        this.gradient = gf.gradient;
+        // ###TODO: set texturemapping if m_material is undefined, and base it on gradient
+        this.fillColor = gf.fillColor.clone();
+        this.fillFlags = gf.fillFlags;
+        this.width = gf.rasterWidth;
+        this.linePixels = gf.linePixels;
+        this.hasRegionOutline = this.computeHasRegionOutline();
+        break;
+
+      case DisplayParamsType.Linear:
+        this.fillColor = this.lineColor.clone();
+        this.width = gf.rasterWidth;
+        this.linePixels = gf.linePixels;
+        break;
+
+      case DisplayParamsType.Text:
+        this.fillColor = this.lineColor.clone();
+        this.ignoreLighting = true;
+        this.fillFlags = FillFlags.Always;
+        break;
+    }
+    // otherwise, generic DisplayParams; keep default property values.
   }
 
-  public static forMesh(gf: GraphicParams, geom: GeometryParams, filled: boolean /*, iModel: IModelConnection, sys: System*/): DisplayParams {
-    let catId = new Id64();
-    let subCatId = new Id64();
-    let geomClass = GeometryClass.Primary;
-    let fillFlags: FillFlags = filled ? FillFlags.ByView : FillFlags.None;
-    if (gf.isBlankingRegion) { fillFlags |= FillFlags.Blanking; }
+  /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
+  public static createForType(type: DisplayParamsType, gf: GraphicParams): DisplayParams {
+    switch (type) {
+      case DisplayParamsType.Mesh:
+        return this.createForMesh(gf);
 
-    // TFS#786614: BRep with multiple face attachments - params may no longer be resolved.
-    // Doesn't matter - we will create GeometryParams for each of the face attachments - only need the
-    // class, category, and sub-category here.
-    if (geom) {
-      catId = geom.categoryId;
-      subCatId = geom.subCategoryId;
-      geomClass = geom.geometryClass ? geom.geometryClass : GeometryClass.Primary;
-      if (geom.pattern) { fillFlags |= FillFlags.Behind; }
-      if (filled) {
-        if (FillDisplay.Always === geom.fillDisplay) {
-          fillFlags |= FillFlags.Always;
-          fillFlags &= ~FillFlags.ByView;
-        }
-        if (geom.backgroundFill !== undefined && geom.backgroundFill !== BackgroundFill.None) { fillFlags |= FillFlags.Background; }
-      }
-    }
-      // const grad = gf.gradient;
-      // const tex: TextureMapping;
-      // if (grad) { tex = new TextureMapping(sys.getTexture(grad, iModel)); }
-    return DisplayParams.createMesh(gf.lineColor, gf.fillColor, gf.rasterWidth, gf.linePixels, /*gf.material, grad, tex,*/ fillFlags, catId, subCatId, geomClass);
-  }
-  public static forText(gf: GraphicParams, geom: GeometryParams) {
-    let catId = new Id64();
-    let subCatId = new Id64();
-    let geomClass = GeometryClass.Primary;
-    if (geom) {
-      catId = geom.categoryId;
-      subCatId = geom.subCategoryId;
-      geomClass = geom.geometryClass ? geom.geometryClass : GeometryClass.Primary;
-    }
-    return DisplayParams.createText(gf.lineColor, catId, subCatId, geomClass);
-  }
-  public static forLinear(gf: GraphicParams, geom: GeometryParams) {
-    let catId = new Id64();
-    let subCatId = new Id64();
-    let geomClass: GeometryClass = GeometryClass.Primary;
-    if (geom) {
-      catId = geom.categoryId;
-      subCatId = geom.subCategoryId;
-      geomClass = geom.geometryClass ? geom.geometryClass : GeometryClass.Primary;
-    }
-    return DisplayParams.createLinear(gf.lineColor, gf.rasterWidth, gf.linePixels, catId, subCatId, geomClass);
-  }
-  public static forType(type: DisplayParamsType, gf: GraphicParams, geom: GeometryParams, filled: boolean/*, iModel: IModelConnection, sys: System*/): DisplayParams {
-    if (type === DisplayParamsType.Mesh) {
-      return this.forMesh(gf, geom, filled/*, iModel, sys*/);
-    } else if (type === DisplayParamsType.Text) {
-      return this.forText(gf, geom);
-    } else if (type === DisplayParamsType.Linear) {
-      return this.forLinear(gf, geom);
-    } else {
-      assert(false); return this.forText(gf, geom);
+      case DisplayParamsType.Linear:
+        return this.createForLinear(gf);
+
+      case DisplayParamsType.Text:
+        return this.createForText(gf);
     }
   }
 
-  public initMesh(lineColor: ColorDef, fillColor: ColorDef, width: number, pixels: LinePixels, /*mat: Material, grad: GradientSymb, tex: TextureMapping,*/ fillFlags: FillFlags,
-    catId: Id64, subCatId: Id64, geomClass: GeometryClass) {
-    this.initGeomParams(catId, subCatId, geomClass);
-    this.type = DisplayParamsType.Mesh;
-    this.lineColor = lineColor;
-    this.fillColor = fillColor;
-    this.fillFlags = fillFlags;
-    // this.material = mat;
-    // this.gradient = grad;
-    this.width = width;
-    this.linePixels = pixels;
-    this.hasRegionOutline = this.computeHasRegionOutline();
-    // if (!mat && !tex) { this.textureMapping = tex; }
-    // assert(this.gradient.isNull() || this.textureMapping.isValid());
-    // assert(this.gradient.isNull() || this.gradient.getRefCount() > 1); // assume caller allocated on heap...
-  }
-  public initText(lineColor: ColorDef, catId: Id64, subCatId: Id64, geomClass: GeometryClass) {
-    this.initGeomParams(catId, subCatId, geomClass);
-    this.type = DisplayParamsType.Text;
-    this.lineColor = this.fillColor = lineColor;
-    this.ignoreLighting = true;
-    this.fillFlags = FillFlags.Always;
-  }
-  public initLinear(lineColor: ColorDef, width: number, pixels: LinePixels, catId: Id64, subCatId: Id64, geomClass: GeometryClass): void {
-    this.initGeomParams(catId, subCatId, geomClass);
-    this.type = DisplayParamsType.Linear;
-    this.lineColor = this.fillColor = lineColor;
-    this.width = width;
-    this.linePixels = pixels;
-  }
-  public initGeomParams(catId: Id64, subCatId: Id64, geomClass: GeometryClass) {
-    this.categoryId = catId;
-    this.subCategoryId = subCatId;
-    this.geomClass = geomClass;
+  /** Creates a DisplayParams object that describes mesh geometry based on the specified GraphicParams. */
+  public static createForMesh(gf: GraphicParams): DisplayParams {
+    return new DisplayParams(DisplayParamsType.Mesh, gf);
   }
 
-  public clone(): DisplayParams {
-    const output = new DisplayParams();
-    output.categoryId = this.categoryId;
-    output.fillColor = this.fillColor;
-    output.geomClass = this.geomClass;
-    output.hasRegionOutline = this.hasRegionOutline;
-    output.ignoreLighting = this.ignoreLighting;
-    output.lineColor = this.lineColor;
-    output.linePixels = this.linePixels;
-    output.materialId = this.materialId;
-    output.subCategoryId = this.subCategoryId;
-    output.type = this.type;
-    output.width = this.width;
-    return output;
+  /** Creates a DisplayParams object that describes linear geometry based on the specified GraphicParams. */
+  public static createForLinear(gf: GraphicParams): DisplayParams {
+    return new DisplayParams(DisplayParamsType.Linear, gf);
+  }
+
+  /** Creates a DisplayParams object that describes text geometry based on the specified GraphicParams. */
+  public static createForText(gf: GraphicParams): DisplayParams {
+    return new DisplayParams(DisplayParamsType.Text, gf);
   }
 
   public computeHasRegionOutline(): boolean {
-    if (false /*this.gradient.isValid()*/) {
-    //   return this.gradient.getIsOutlined();
-    } else {
-      return !this.neverRegionOutline() && this.fillColor !== this.lineColor;
+    if (undefined !== this.gradient && undefined !== this.gradient.flags) {
+      let gradFlags: Gradient.Flags = this.gradient.flags;
+      return 0 !== (gradFlags & Gradient.Flags.Outline) ? true : false;
     }
+    return !this.neverRegionOutline && !this.fillColor.equals(this.lineColor);
   }
-  public neverRegionOutline(): boolean { return this.hasBlankingFill() /*|| (this.gradient.isValid() && !this.gradient.getIsOutlined())*/; }
-  public hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
-  public hasFillTransparency(): boolean { return 0 !== this.fillColor.getAlpha(); }
-  public hasLineTransparency(): boolean { return 0 !== this.lineColor.getAlpha(); }
-  public isTextured(): boolean { return false; } // return this.textureMapping.isValid(); }
-}
 
-export class DisplayParamsCache {
-  public set: DisplayParams[] = [];
-  public constructor(public iModel: IModelConnection, public system: RenderSystem) { }
-
-  public getForMesh(gf: GraphicParams, geom: GeometryParams, filled: boolean): DisplayParams { return this.get(DisplayParamsType.Mesh, gf, geom, filled); }
-  public getForLinear(gf: GraphicParams, geom: GeometryParams): DisplayParams { return this.get(DisplayParamsType.Linear, gf, geom, false); }
-  public getForText(gf: GraphicParams, geom: GeometryParams): DisplayParams { return this.get(DisplayParamsType.Text, gf, geom, false); }
-  public get(type: DisplayParamsType, gf: GraphicParams, geom: GeometryParams, filled: boolean): DisplayParams {
-    const ndp = DisplayParams.forType(type, gf, geom, filled/*, this.iModel, this.system*/);
-    return this.getFromDisplayParams(ndp);
-  }
-  public getFromDisplayParams(toFind: DisplayParams): DisplayParams {
-    const matches = this.set.filter((x) => x === toFind || (x.type === toFind.type && x.ignoreLighting === toFind.ignoreLighting && x.width === toFind.width
-      /*&& x.material === toFind.material*/ && x.linePixels === toFind.linePixels && x.fillFlags === toFind.fillFlags && x.categoryId === toFind.categoryId
-      && x.hasRegionOutline === toFind.hasRegionOutline /*&& x.getTextureMapping().getTexture() === toFind.getTextureMapping().getTexture()*/
-      && x.fillColor === toFind.fillColor && x.lineColor === toFind.lineColor && x.subCategoryId === toFind.subCategoryId && x.geomClass === toFind.geomClass));
-    if (matches.length === 0) {
-      const match = toFind.clone();
-      this.set.push(match);
-      return match;
+  public get neverRegionOutline(): boolean {
+    if (this.hasBlankingFill)
+      return true;
+    if (undefined !== this.gradient && undefined !== this.gradient.flags) {
+      let gradFlags: Gradient.Flags = this.gradient.flags;
+      return 0 !== (gradFlags & Gradient.Flags.Outline) ? false : true;
     }
-    return matches[0];
+    return false;
+  }
+  public get hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
+  public get hasFillTransparency(): boolean { return 0 !== this.fillColor.getAlpha(); }
+  public get hasLineTransparency(): boolean { return 0 !== this.lineColor.getAlpha(); }
+  public get isTextured(): boolean { return false; } // return this.textureMapping.isValid(); }
+
+  /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
+  public equals(rhs: DisplayParams, purpose: DisplayParamsComparePurpose = DisplayParamsComparePurpose.Strict): boolean {
+    if (rhs === this)
+      return true;
+
+    if (this.type !== rhs.type) return false;
+    if (this.ignoreLighting !== rhs.ignoreLighting) return false;
+    if (this.width !== rhs.width) return false;
+    if (this.material !== rhs.material) return false; // comparing objects ok?  Need equals() method / cloning?
+    if (this.linePixels !== rhs.linePixels) return false;
+    if (this.fillFlags !== rhs.fillFlags) return false;
+    // ###TODO: if (this.textureMapping.texture !== rhs.textureMapping.texture) return false;
+    if (this.hasRegionOutline !== rhs.hasRegionOutline) return false;
+
+    if (DisplayParamsComparePurpose.Merge === purpose) {
+      if (this.hasFillTransparency !== rhs.hasFillTransparency) return false;
+      if (this.hasLineTransparency !== rhs.hasLineTransparency) return false;
+      // ###TODO: if texture mapping, test fillColor to match // Textures may use color so they can't be merged. (could test if texture actually uses color).
+      return true;
+    }
+
+    if (!this.fillColor.equals(rhs.fillColor)) return false;
+    if (!this.lineColor.equals(rhs.lineColor)) return false;
+    return true;
   }
 }
