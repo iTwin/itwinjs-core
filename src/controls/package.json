@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-controls",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Frontend controls based on ECPresentation library",
   "keywords": [
     "Bentley",

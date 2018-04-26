@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecpresentation-controls
 
-This log was last generated on Thu, 26 Apr 2018 09:32:56 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Apr 2018 15:17:48 GMT and should not be manually modified.
+
+## 0.1.1
+Thu, 26 Apr 2018 15:17:48 GMT
+
+### Patches
+
+- Fixed TS2349 which consumers get when using data providers.
 
 ## 0.1.0
 Thu, 26 Apr 2018 09:27:06 GMT

@@ -25,7 +25,7 @@
     "@bentley/ecpresentation-backend": "~0.1.0",
     "@bentley/ecpresentation-common": "~0.1.0",
     "@bentley/ecpresentation-frontend": "~0.1.0",
-    "@bentley/ecpresentation-controls": "~0.1.0",
+    "@bentley/ecpresentation-controls": "~0.1.1",
     "@bentley/bentleyjs-core": "^7",
     "@bentley/geometry-core": "^7",
     "@bentley/imodeljs-clients": "^5.1.0",

@@ -2,6 +2,18 @@
   "name": "@bentley/ecpresentation-controls",
   "entries": [
     {
+      "version": "0.1.1",
+      "tag": "@bentley/ecpresentation-controls_v0.1.1",
+      "date": "Thu, 26 Apr 2018 15:17:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed TS2349 which consumers get when using data providers."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.0",
       "tag": "@bentley/ecpresentation-controls_v0.1.0",
       "date": "Thu, 26 Apr 2018 09:27:06 GMT",
