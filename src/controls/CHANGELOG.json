@@ -2,6 +2,35 @@
   "name": "@bentley/ecpresentation-controls",
   "entries": [
     {
+      "version": "0.1.0",
+      "tag": "@bentley/ecpresentation-controls_v0.1.0",
+      "date": "Thu, 26 Apr 2018 09:27:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "PresentationManager now accepts keys as KeySets"
+          },
+          {
+            "comment": "ECPresentationManager can now be accessed as singleton through ECPresentation static class"
+          },
+          {
+            "comment": "Selection manager now uses KeySet"
+          },
+          {
+            "comment": "React to ecpresentation API changes"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.5` to `~0.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `~0.0.21` to `~0.1.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.2",
       "tag": "@bentley/ecpresentation-controls_v0.0.2",
       "date": "Fri, 20 Apr 2018 13:57:47 GMT",

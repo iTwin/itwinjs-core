@@ -2,6 +2,35 @@
   "name": "@bentley/ecpresentation-backend",
   "entries": [
     {
+      "version": "0.1.0",
+      "tag": "@bentley/ecpresentation-backend_v0.1.0",
+      "date": "Thu, 26 Apr 2018 09:27:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Ids are now Id64. InstanceKey now stores class name instead of id."
+          },
+          {
+            "comment": "PresentationManager now accepts keys as KeySets"
+          },
+          {
+            "comment": "Added a static ECPresentation class which provides access to singleton ECPresentationManager"
+          },
+          {
+            "comment": "Readonly-ness fixes"
+          },
+          {
+            "comment": "React to ecpresentation-common API changes"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.5` to `~0.1.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.32",
       "tag": "@bentley/ecpresentation-backend_v0.0.32",
       "date": "Fri, 20 Apr 2018 13:57:47 GMT",

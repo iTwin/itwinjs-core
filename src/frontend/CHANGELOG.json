@@ -2,6 +2,44 @@
   "name": "@bentley/ecpresentation-frontend",
   "entries": [
     {
+      "version": "0.1.0",
+      "tag": "@bentley/ecpresentation-frontend_v0.1.0",
+      "date": "Thu, 26 Apr 2018 09:27:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added a PersistenceHelper to convert between KeySet and PersistentKeysContainer"
+          },
+          {
+            "comment": "PresentationManager now accepts keys as KeySets"
+          },
+          {
+            "comment": "Added a static ECPresentation class which provides access to singleton ECPresentationManager"
+          },
+          {
+            "comment": "Readonly-ness fixes"
+          },
+          {
+            "comment": "Selection manager now uses KeySet to store selection"
+          },
+          {
+            "comment": "Unified selection API cleanup"
+          },
+          {
+            "comment": "ECPresentation now provides access to singleton selection manager instance"
+          },
+          {
+            "comment": "React to imodeljs-core and ecpresentation-common API changes"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `~0.0.5` to `~0.1.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.21",
       "tag": "@bentley/ecpresentation-frontend_v0.0.21",
       "date": "Fri, 20 Apr 2018 13:57:47 GMT",

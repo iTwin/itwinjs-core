@@ -1,6 +1,17 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Fri, 20 Apr 2018 13:57:47 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Apr 2018 09:32:56 GMT and should not be manually modified.
+
+## 0.1.0
+Thu, 26 Apr 2018 09:27:06 GMT
+
+### Patches
+
+- Ids are now Id64. InstanceKey now stores class name instead of id.
+- PresentationManager now accepts keys as KeySets
+- Added a static ECPresentation class which provides access to singleton ECPresentationManager
+- Readonly-ness fixes
+- React to ecpresentation-common API changes
 
 ## 0.0.32
 Fri, 20 Apr 2018 13:57:47 GMT

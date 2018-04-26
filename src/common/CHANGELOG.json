@@ -2,6 +2,39 @@
   "name": "@bentley/ecpresentation-common",
   "entries": [
     {
+      "version": "0.1.0",
+      "tag": "@bentley/ecpresentation-common_v0.1.0",
+      "date": "Thu, 26 Apr 2018 09:27:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Added a KeySet and PersistentKeysContainer definition. Changed InstanceKey definition to store class name instead of id."
+          },
+          {
+            "comment": "KeySet (de)serialization for passing over gateway / addon boundary"
+          },
+          {
+            "comment": "PresentationManager now accepts keys as KeySets"
+          },
+          {
+            "comment": "Fixed node keys deserialization."
+          },
+          {
+            "comment": "Readonly-ness fixes"
+          },
+          {
+            "comment": "KeySet can now work with other KeySets or SerializedKeySets"
+          },
+          {
+            "comment": "API cleanup"
+          },
+          {
+            "comment": "Stop using intermediate JSON format for data objects"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.5",
       "tag": "@bentley/ecpresentation-common_v0.0.5",
       "date": "Fri, 20 Apr 2018 13:57:47 GMT",
