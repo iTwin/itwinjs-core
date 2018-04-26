@@ -142,21 +142,18 @@ export class Target extends RenderTarget {
   protected _overridesUpdateTime?: BeTimePoint;
   protected _hilite?: HilitedSet;
   protected _hiliteUpdateTime?: BeTimePoint;
-  private readonly _techniques?: Techniques; // ###TODO this moves to System...
   public readonly system: System;
   public readonly context: WebGLRenderingContext;
 
   public get renderSystem(): RenderSystem { return this.system; }
   public get hilite(): HilitedSet { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
-  public get techniques(): Techniques { return this._techniques!; }
+  public get techniques(): Techniques { return this.system.techniques!; }
 
   protected constructor(system: System, context: WebGLRenderingContext) {
     super();
     this.system = system;
     this.context = context;
-
-    this._techniques = Techniques.create(context);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

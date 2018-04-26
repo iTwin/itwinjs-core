@@ -10,6 +10,7 @@ import { PrimitiveBuilder } from "../primitives/Geometry";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
+import { Techniques } from "./Technique";
 
 export const enum ContextState {
   Uninitialized,
@@ -160,6 +161,7 @@ export class Capabilities {
 export class System extends RenderSystem {
   private readonly _canvas: HTMLCanvasElement;
   private readonly _context: WebGLRenderingContext;
+  public readonly techniques: Techniques;
 
   public static create(canvas?: HTMLCanvasElement): System | undefined {
     if (undefined === canvas) {
@@ -174,7 +176,12 @@ export class System extends RenderSystem {
       }
     }
 
-    return new System(canvas, context);
+    const techniques = Techniques.create(context);
+    if (undefined === techniques) {
+      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering techniques");
+    }
+
+    return new System(canvas, context, techniques);
   }
 
   public createTarget(): RenderTarget { return new OnScreenTarget(this, this._context); }
@@ -182,10 +189,11 @@ export class System extends RenderSystem {
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext) {
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques) {
     super();
     this._canvas = canvas;
     this._context = context;
+    this.techniques = techniques;
 
     // Silence unused variable warnings...
     assert(undefined !== this._canvas);
