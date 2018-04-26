@@ -625,8 +625,11 @@ export class BriefcaseManager {
     await BriefcaseManager.deleteBriefcaseFromHub(accessToken, briefcase);
   }
 
-  /** Get change sets */
-  private static async getChangeSets(accessToken: AccessToken, iModelId: string, includeDownloadLink: boolean, toChangeSetId: string, fromChangeSetId: string): Promise<ChangeSet[]> {
+  /** Get change sets in the specified range
+   *  * Gets change sets *after* the specified fromChangeSetId, up to and including the toChangeSetId
+   *  * If the ids are the same returns an empty array
+   */
+  private static async getChangeSets(accessToken: AccessToken, iModelId: string, includeDownloadLink: boolean, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
     if (toChangeSetId === "" /* first version */ || fromChangeSetId === toChangeSetId)
       return new Array<ChangeSet>();
 
@@ -647,7 +650,9 @@ export class BriefcaseManager {
     return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound));
   }
 
-  private static async downloadChangeSetsInternal(changeSetsPath: string, changeSets: ChangeSet[]) {
+  private static async downloadChangeSetsInternal(iModelId: string, changeSets: ChangeSet[]) {
+    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
+
     const changeSetsToDownload = new Array<ChangeSet>();
     for (const changeSet of changeSets) {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
@@ -664,13 +669,16 @@ export class BriefcaseManager {
     }
   }
 
-  /** Downloads Change Sets in the specified range */
-  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, iModelId: string, toChangeSetId: string, fromChangeSetId: string): Promise<ChangeSet[]> {
-    const changeSets = await BriefcaseManager.getChangeSets(accessToken, iModelId, true /*includeDownloadLink*/, toChangeSetId, fromChangeSetId);
+  /** Downloads change sets in the specified range.
+   *  * Downloads change sets *after* the specified fromChangeSetId, up to and including the toChangeSetId
+   *  * If the ids are the same returns an empty array.
+   */
+  public static async downloadChangeSets(accessToken: AccessToken, iModelId: string, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]> {
+    const changeSets = await BriefcaseManager.getChangeSets(accessToken, iModelId, true /*includeDownloadLink*/, fromChangeSetId, toChangeSetId);
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
-    await BriefcaseManager.downloadChangeSetsInternal(changeSetsPath, changeSets);
+    await BriefcaseManager.downloadChangeSetsInternal(iModelId, changeSets);
 
     return changeSets;
   }
@@ -857,8 +865,7 @@ export class BriefcaseManager {
     }
 
     const reverse: boolean = (targetChangeSetIndex < currentChangeSetIndex);
-    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(briefcase.iModelId);
-    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, changeSetsPath, briefcase.iModelId, reverse ? currentChangeSetId : targetChangeSetId, reverse ? targetChangeSetId : currentChangeSetId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, briefcase.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
     assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
     if (reverse)
       changeSets.reverse();
@@ -978,7 +985,7 @@ export class BriefcaseManager {
     const query = new ChangeSetQuery().filter(`$id+in+[${pendingChangeSets.map((value: string) => `'${value}'`).join(",")}]`).selectDownloadUrl();
     const changeSets: ChangeSet[] = await BriefcaseManager.hubClient!.ChangeSets().get(accessToken, briefcase.iModelId, query);
 
-    await BriefcaseManager.downloadChangeSetsInternal(BriefcaseManager.getChangeSetsPath(briefcase.iModelId), changeSets);
+    await BriefcaseManager.downloadChangeSetsInternal(briefcase.iModelId, changeSets);
 
     const changeSetTokens: ChangeSetToken[] = BriefcaseManager.buildChangeSetTokens(changeSets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
 

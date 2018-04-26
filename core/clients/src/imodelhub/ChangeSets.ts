@@ -82,7 +82,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query all ChangeSets that are after given ChangeSet id.
+   * Query all ChangeSets that are after given ChangeSet id (does not include the specified change set)
    * @param id Id of a ChangeSet.
    * @returns This query.
    */

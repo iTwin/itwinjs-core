@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { AccessToken, ChangeSet, UserInfo, IModelHubClient, ChangeSetQuery, UserInfoQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, UserInfo, IModelHubClient, UserInfoQuery, AzureFileHandler, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
 import { IModelHost } from "./IModelHost";
@@ -124,6 +124,20 @@ export class ChangeSummaryManager {
       throw new IModelError(res, `Failed to detach ECChanges cache file from ${iModel.briefcase.pathname}.`);
   }
 
+  private static async getParentChangeSetId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<string> {
+    if (!changeSetId)
+      return Promise.reject("The first change set does not have a parent");
+
+    const query = new ChangeSetQuery();
+    query.byId(changeSetId);
+
+    const changeSets: ChangeSet[] = await ChangeSummaryManager.hubClient!.ChangeSets().get(accessToken, iModelId, query);
+    if (changeSets.length === 0)
+      return Promise.reject(`Unable to find change set ${changeSetId} in ${iModelId}`);
+
+    return changeSets[0].parentId || "";
+  }
+
   /** Extracts change summaries from the specified iModel.
    * Change summaries are extracted from the specified startChangeSetId up through the change set the iModel was opened with.
    * If startChangeSetId is undefined, the first changeset will be used.
@@ -143,7 +157,7 @@ export class ChangeSummaryManager {
     const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
     assert(endChangeSetId.length !== 0);
 
-    let startChangeSetId: string | undefined;
+    let startChangeSetId: string = "";
     if (options) {
       if (options.startChangeSetId)
         startChangeSetId = options.startChangeSetId;
@@ -154,14 +168,18 @@ export class ChangeSummaryManager {
 
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [Changesets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
-    let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos from Hub");
+    let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
     if (!ChangeSummaryManager.hubClient ||  this.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig) {
       this.deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
       ChangeSummaryManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
     }
 
     const accessToken: AccessToken = IModelDb.getAccessToken(iModelId);
-    const changeSetInfos: ChangeSet[] = await this.retrieveChangeSetInfos(ChangeSummaryManager.hubClient, accessToken, iModelId, endChangeSetId, startChangeSetId);
+
+    // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
+    const beforeStartChangeSetId: string = startChangeSetId ? await ChangeSummaryManager.getParentChangeSetId(accessToken, iModelId, startChangeSetId) : "";
+
+    const changeSetInfos: ChangeSet[] = await BriefcaseManager.downloadChangeSets(accessToken, iModelId, beforeStartChangeSetId, endChangeSetId);
     assert(!startChangeSetId || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
     perfLogger.dispose();
@@ -235,47 +253,6 @@ export class ChangeSummaryManager {
 
       totalPerf.dispose();
     }
-  }
-
-  private static async retrieveChangeSetInfos(hubClient: IModelHubClient, accessToken: AccessToken, iModelId: string, endChangeSetId: string, startChangeSetId?: string): Promise<ChangeSet[]> {
-    if (startChangeSetId === endChangeSetId)
-      return await hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(startChangeSetId));
-
-    const query = new ChangeSetQuery();
-    if (startChangeSetId)
-      query.fromId(startChangeSetId);
-    const changeSetInfos: ChangeSet[] = await hubClient.ChangeSets().get(accessToken, iModelId, query);
-
-    // getChangeSets does not retrieve the specified from-changeset itself, but only its direct child. So we must retrieve the from-changeset
-    // ourselves first
-    if (startChangeSetId) {
-      const startChangeSetInfo: ChangeSet = (await hubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(startChangeSetId)))[0];
-      changeSetInfos.unshift(startChangeSetInfo);
-    }
-
-    if (changeSetInfos.length === 0)
-      return changeSetInfos;
-
-    let endChangeSetIx: number = -1;
-    for (let i = 0; i < changeSetInfos.length; i++) {
-      if (changeSetInfos[i].wsgId === endChangeSetId) {
-        endChangeSetIx = i;
-        break;
-      }
-    }
-
-    if (endChangeSetIx === changeSetInfos.length - 1)
-      return changeSetInfos;
-
-    if (endChangeSetIx < 0) {
-      const errorMsg: string = startChangeSetId !== undefined && startChangeSetId !== null ? `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It does not exist.` :
-        `Invalid ChangeSet ${endChangeSetId} for iModel ${iModelId}. It either does not exist or it is not a successor of the start changeset ${startChangeSetId}.`;
-      throw new IModelError(IModelStatus.BadArg, errorMsg);
-    }
-
-    const deleteIx: number = endChangeSetIx + 1;
-    changeSetInfos.splice(deleteIx, changeSetInfos.length - deleteIx);
-    return changeSetInfos;
   }
 
   private static openOrCreateChangesFile(iModel: IModelDb): ECDb {

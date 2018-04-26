@@ -23,7 +23,7 @@ function setupTest(iModelId: string): void {
     IModelJsFs.removeSync(cacheFilePath);
 }
 
-describe.skip("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "true";
   let accessToken: AccessToken = new MockAccessToken();

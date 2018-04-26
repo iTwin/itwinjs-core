@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "5.3.3",
+  "version": "5.3.4",
   "description": "Clients for various Bentley Services used by iModelJs",
   "main": "lib/index.js",
   "typings": "lib/index",
