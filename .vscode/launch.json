@@ -4,7 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
     {
       "type": "node",
       "request": "launch",
@@ -28,7 +27,37 @@
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/core/backend/lib/test",
+        "--debug",
+        "--offline"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Performance test (Offline)",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/perftest",
+        "--debug",
+        "--offline"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "name": "Run Geometry Tests",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/core/geometry",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/core/geometry/lib/test",
         "--debug"
       ],
       "port": 9229,

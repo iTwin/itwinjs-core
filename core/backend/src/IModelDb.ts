@@ -474,12 +474,13 @@ export class IModelDb extends IModel {
    * @param guid Optionally provide db guid. If its not provided the method would generate one.
    */
   public setAsMaster(guid?: Guid): void {
-    if (guid === undefined)
+    if (guid === undefined) {
       if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
         throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
-
+    } else {
     if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
       throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
+    }
   }
 
   /**
