@@ -1,4 +1,5 @@
 /*---------------------------------------------------------------------------------------------
+/*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
@@ -109,31 +110,8 @@ export namespace AreaPattern {
       return result;
     }
 
-    /** Add properties to an object for serializing to JSON */
-    public toJSON(): ParamsProps {
-      return this.toJSON() as ParamsProps;
-    }
-
     public clone(): Params {
-      const retVal = new Params();
-      retVal.origin = this.origin ? Point3d.createFrom(this.origin) : undefined;
-      retVal.rotation = this.rotation ? this.rotation.clone() : undefined;
-      retVal.space1 = this.space1;
-      retVal.space2 = this.space2;
-      retVal.angle1 = this.angle1;
-      retVal.angle2 = this.angle2;
-      retVal.scale = this.scale;
-      retVal.color = this.color;
-      retVal.weight = this.weight;
-      retVal.invisibleBoundary = this.invisibleBoundary;
-      retVal.snappable = this.snappable;
-      retVal.symbolId = this.symbolId;
-      if (this.defLines) {
-        const defLines: HatchDefLine[] = [];
-        this.defLines.forEach((defLine) => defLines.push(new HatchDefLine(defLine)));
-        retVal.defLines = defLines;
-      }
-      return retVal;
+      return Params.fromJSON(this);
     }
 
     public isEqualTo(other: Params): boolean {
