@@ -27,6 +27,59 @@ export enum FillFlags {
   Background = 1 << 3,          // Use background color specified by view
 }
 
+export enum PolyLineTypeFlags {
+  Normal  = 0,
+  Edge    = 1 << 0,
+  Outline = 1 << 1,
+}
+
+export class PolylineFlags {
+  public isDisjoint: boolean = false;
+  public isPlanar: boolean = false;
+  public is2d: boolean = false;
+  public type: PolyLineTypeFlags = PolyLineTypeFlags.Normal;
+
+  public constructor(is2d?: boolean, isPlanar?: boolean, isDisjoint?: boolean, type?: PolyLineTypeFlags) {
+    if (is2d !== undefined) {
+      if (is2d)
+        this.setIs2d();
+    }
+    if (isPlanar !== undefined) {
+      if (isPlanar)
+        this.setIsPlanar();
+    }
+    if (isDisjoint !== undefined) {
+      if (isDisjoint)
+        this.setIsDisjoint();
+    }
+    if (type !== undefined) {
+      if (type !== PolyLineTypeFlags.Normal)
+        this.type = type;
+    }
+  }
+  public setIsDisjoint(): void { this.isDisjoint = true; }
+  public setIsPlanar(): void { this.isPlanar = true; }
+  public setIs2d(): void { this.is2d = true; }
+  public setIsNormalEdge(): void { this.type = PolyLineTypeFlags.Edge; }
+  public setIsOutlineEdge(): void {this.type = PolyLineTypeFlags.Outline; }
+
+  public isOutlineEdge(): boolean { return PolyLineTypeFlags.Outline === this.type; }
+  public isNormalEdge(): boolean { return PolyLineTypeFlags.Edge === this.type; }
+  public isAnyEdge(): boolean { return PolyLineTypeFlags.Normal !== this.type; }
+
+  public getValue(): number {
+    let val: number = 0;
+    if (this.isDisjoint)
+      val += 1;
+    if (this.isPlanar)
+      val += 1 << 1;
+    if (this.is2d)
+      val += 1 << 2;
+    val += (this.type as number) << 3;
+    return val;
+  }
+}
+
 /* An individual polyline which indexes into a shared set of vertices */
 export class PolylineData {
   public constructor(public vertIndices: number[] = [], public numIndices = 0, public startDistance = 0, public rangeCenter = new Point3d()) { }
@@ -48,9 +101,11 @@ export class IndexedPolylineArgs {
   public features = new FeatureIndex();
   public width = 0;
   public linePixels = LinePixels.Solid;
-  public disjoint = false;
+  public flags: PolylineFlags;
   public constructor(public points: Uint16Array = new Uint16Array(), public numPoints = 0, public lines: PolylineData[] = [], public numLines = 0, public pointParams?: QParams3d,
-                     public is2d = false, public isPlanar = false) { }
+                     is2d = false, isPlanar = false) {
+    this.flags = new PolylineFlags(is2d, isPlanar);
+  }
 }
 
 export class MeshPolyline {

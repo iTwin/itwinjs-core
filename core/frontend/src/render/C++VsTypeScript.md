@@ -100,7 +100,7 @@
 | ImageLight::Mapping | DgnPlatform/Render.h | N/A | | enum |
 | ImageSource | DgnPlatform/Render.h | N/A | | |
 | ImageSource::Format|DgnPlatform/Render.h|ImageSourceFormat|./source/common/Image.ts|enum
-| IndexedPolylineArgs | DgnPlatform/Render.h | N/A | | |
+| IndexedPolylineArgs | DgnPlatform/Render.h | IndexedPolylineArgs | core/common/src/Render.ts | |
 | IndexedPolylineArgs::Polyline | DgnPlatform/Render.h | N/A | | |
 | IPixelDataBuffer | DgnPlatform/Render.h | N/A | | enum |
 | ISolidPrimitive | Geom/SolidPrimitive.h | SolidPrimitive | @bentley/geometry-core | |

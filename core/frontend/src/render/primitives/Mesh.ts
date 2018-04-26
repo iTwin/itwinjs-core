@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { TriMeshArgs, IndexedPolylineArgs, PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d,
+import { TriMeshArgs, PolylineFlags, IndexedPolylineArgs, PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d,
          FeatureTable, FeatureIndex, FeatureIndexType } from "@bentley/imodeljs-common";
 import { DisplayParams } from "./DisplayParams";
 // import { IModelConnection } from "../../IModelConnection";
@@ -19,7 +19,7 @@ export class PolylineArgs extends IndexedPolylineArgs {
 
   public isValid(): boolean { return this.polylines.length !== 0; }
   public reset(): void {
-    this.disjoint = this.is2d = this.isPlanar = false;
+    this.flags = new PolylineFlags();
     this.numPoints = this.numLines = 0;
     this.points = new Uint16Array();
     this.lines = [];
@@ -32,9 +32,20 @@ export class PolylineArgs extends IndexedPolylineArgs {
     this.reset();
     this.width = mesh.displayParams.width;
     this.linePixels = mesh.displayParams.linePixels;
-    this.is2d = mesh.is2d;
-    this.isPlanar = mesh.isPlanar;
-    this.disjoint = MeshPrimitiveType.Point === mesh.type;
+    if (mesh.is2d)
+      this.flags.setIs2d();
+    if (mesh.isPlanar)
+      this.flags.setIsPlanar();
+    if (MeshPrimitiveType.Point === mesh.type)
+      this.flags.setIsDisjoint();
+    if (mesh.displayParams.computeHasRegionOutline()) {
+      // This polyline is behaving as the edges of a region surface.
+      // TODO: GradientSymb not implemented yet!  Uncomment following lines when it is implemented.
+      // if (mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined())
+      //   this.flags.setIsNormalEdge();
+      // else
+        this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
+    }
     this.polylines.reverse();
     mesh.polylines.forEach((polyline) => {
       const indexedPolyline = new PolylineData();
