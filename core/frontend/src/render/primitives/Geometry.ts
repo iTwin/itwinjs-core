@@ -106,8 +106,8 @@ export class GeometryAccumulator {
   public haveTransform: boolean;
   public checkGlyphBoxes: boolean = false;
   public tileRange: Range3d;
-  readonly iModel: IModelConnection;
-  readonly system: RenderSystem;
+  public readonly iModel: IModelConnection;
+  public readonly system: RenderSystem;
 
   public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform?: Transform, tileRange?: Range3d) {
     this.surfacesOnly = surfacesOnly;
@@ -239,7 +239,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curve.children.push(gapSegment);
     }
     if (this.accum) {
-      let displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+      const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
       this.accum.addCurveVector(curve, /*filled,*/ displayParams, this.localToWorldTransform, false, this.currClip);
     }
   }
@@ -263,7 +263,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     if (disjoint !== undefined) {
       assert(!filled || !disjoint);
       if (this.accum) {
-        let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+        const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
         this.accum.addCurveVector(curves, /*filled,*/ displayParams, this.localToWorldTransform, disjoint, this.currClip);
       }
     }
@@ -289,7 +289,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       // The typical case...
       assert(!filled || !haveDisjoint);
       if (this.accum) {
-        let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+        const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
         this.accum.addCurveVector(curves, /*filled,*/ displayParams, this.localToWorldTransform, haveDisjoint, this.currClip);
       }
       return;
@@ -307,11 +307,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curves.children.filter((child) => !GeometryListBuilder.isDisjointCurvePrimitive(child));
     }
     if (this.accum) {
-      let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+      const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
       this.accum.addCurveVector(curves, /*false,*/ displayParams, this.localToWorldTransform, false, this.currClip);
     }
     if (this.accum) {
-      let displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+      const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
       this.accum.addCurveVector(disjointCurves, /*false,*/ displayParams, this.localToWorldTransform, true, this.currClip);
     }
   }
