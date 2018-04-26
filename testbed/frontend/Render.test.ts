@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Feature, FeatureTable, GeometryClass } from "@bentley/imodeljs-common";
+import { Feature, FeatureTable, GeometryClass, PolylineFlags } from "@bentley/imodeljs-common";
 
 describe("Feature", () => {
   it("constructor works as expected", () => {
@@ -134,5 +134,24 @@ describe("FeatureTable", () => {
     assert.isTrue(a.maxFeatures === c.maxFeatures, "fromFeatureTable maxFeatures is correct");
     assert.isTrue(a.modelId.value === c.modelId.value, "fromFeatureTable modelId is correct");
     assert.isTrue(a.map.size === c.map.size, "fromFeatureTable map is correct");
+  });
+});
+
+describe("PolylineFlags", () => {
+  it("converts to and from numeric representation", () => {
+    const f = new PolylineFlags();
+    expect(f.pack()).to.equal(0);
+    let f2 = PolylineFlags.unpack(0);
+    expect(f.equals(f2)).to.equal(true);
+
+    f.isPlanar = f.isDisjoint = true;
+    f.setIsOutlineEdge();
+
+    expect(f.pack()).to.equal(19);
+    f2 = PolylineFlags.unpack(19);
+    expect(f.equals(f2)).to.equal(true);
+
+    f2 = PolylineFlags.unpack(21);
+    expect(f.equals(f2)).to.equal(false);
   });
 });

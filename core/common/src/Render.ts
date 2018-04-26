@@ -27,47 +27,50 @@ export enum FillFlags {
   Background = 1 << 3,          // Use background color specified by view
 }
 
-export enum PolyLineTypeFlags {
-  Normal  = 0,
-  Edge    = 1 << 0,
-  Outline = 1 << 1,
+export enum PolylineTypeFlags {
+  Normal  = 0,      // Just an ordinary polyline
+  Edge    = 1 << 0, // A polyline used to define the edges of a planar region.
+  Outline = 1 << 1, // Like Edge, but the edges are only displayed in wireframe mode when surface fill is undisplayed.
 }
 
+/** Flags describing a polyline. A polyline may represent a continuous line string, or a set of discrete points. */
 export class PolylineFlags {
-  public isDisjoint: boolean = false;
-  public isPlanar: boolean = false;
-  public is2d: boolean = false;
-  public type: PolyLineTypeFlags = PolyLineTypeFlags.Normal;
+  public isDisjoint: boolean;
+  public isPlanar: boolean;
+  public is2d: boolean;
+  public type: PolylineTypeFlags;
 
-  public constructor(is2d?: boolean, isPlanar?: boolean, isDisjoint?: boolean, type?: PolyLineTypeFlags) {
-    if (is2d !== undefined) {
-      if (is2d)
-        this.setIs2d();
-    }
-    if (isPlanar !== undefined) {
-      if (isPlanar)
-        this.setIsPlanar();
-    }
-    if (isDisjoint !== undefined) {
-      if (isDisjoint)
-        this.setIsDisjoint();
-    }
-    if (type !== undefined) {
-      if (type !== PolyLineTypeFlags.Normal)
-        this.type = type;
-    }
+  public constructor(is2d = false, isPlanar = false, isDisjoint = false, type = PolylineTypeFlags.Normal) {
+    this.isDisjoint = isDisjoint;
+    this.isPlanar = isPlanar;
+    this.is2d = is2d;
+    this.type = type;
   }
-  public setIsDisjoint(): void { this.isDisjoint = true; }
-  public setIsPlanar(): void { this.isPlanar = true; }
-  public setIs2d(): void { this.is2d = true; }
-  public setIsNormalEdge(): void { this.type = PolyLineTypeFlags.Edge; }
-  public setIsOutlineEdge(): void {this.type = PolyLineTypeFlags.Outline; }
 
-  public isOutlineEdge(): boolean { return PolyLineTypeFlags.Outline === this.type; }
-  public isNormalEdge(): boolean { return PolyLineTypeFlags.Edge === this.type; }
-  public isAnyEdge(): boolean { return PolyLineTypeFlags.Normal !== this.type; }
+  /** Create a PolylineFlags from a serialized numberic representation. */
+  public static unpack(value: number): PolylineFlags {
+    const isDisjoint = 0 !== (value & 1);
+    const isPlanar = 0 !== (value & 2);
+    const is2d = 0 !== (value & 4);
+    const type: PolylineTypeFlags = (value >> 3);
+    assert(type === PolylineTypeFlags.Normal || type === PolylineTypeFlags.Edge || type === PolylineTypeFlags.Outline);
 
-  public getValue(): number {
+    return new PolylineFlags(is2d, isPlanar, isDisjoint, type);
+  }
+
+  public initDefaults() {
+    this.isDisjoint = this.isPlanar = this.is2d = false;
+    this.type = PolylineTypeFlags.Normal;
+  }
+
+  public get isOutlineEdge(): boolean { return PolylineTypeFlags.Outline === this.type; }
+  public get isNormalEdge(): boolean { return PolylineTypeFlags.Edge === this.type; }
+  public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }
+  public setIsNormalEdge(): void { this.type = PolylineTypeFlags.Edge; }
+  public setIsOutlineEdge(): void {this.type = PolylineTypeFlags.Outline; }
+
+  /** Convert these flags to a numeric representation for serialization. */
+  public pack(): number {
     let val: number = 0;
     if (this.isDisjoint)
       val += 1;
@@ -77,6 +80,10 @@ export class PolylineFlags {
       val += 1 << 2;
     val += (this.type as number) << 3;
     return val;
+  }
+
+  public equals(other: PolylineFlags) {
+    return this.type === other.type && this.is2d === other.is2d && this.isPlanar === other.isPlanar && this.isDisjoint === other.isDisjoint;
   }
 }
 
