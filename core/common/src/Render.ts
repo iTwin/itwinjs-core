@@ -725,20 +725,8 @@ export namespace Gradient {
       return result;
     }
 
-    /** Add properties to an object for serializing to JSON */
-    public toJSON(): SymbProps {
-      return this.toJSON() as SymbProps;
-    }
-
     public clone(): Symb {
-      const retVal = new Symb();
-      retVal.mode = this.mode;
-      retVal.flags = this.flags;
-      retVal.angle = this.angle;
-      retVal.tint = this.tint;
-      retVal.shift = this.shift;
-      this.keys.forEach((key) => retVal.keys.push(key));
-      return retVal;
+      return Symb.fromJSON(this);
     }
 
     public isEqualTo(other: Symb): boolean {
