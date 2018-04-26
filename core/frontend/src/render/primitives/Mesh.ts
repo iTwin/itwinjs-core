@@ -5,7 +5,7 @@
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { TriMeshArgs, IndexedPolylineArgs, PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d,
          FeatureTable, FeatureIndex, FeatureIndexType } from "@bentley/imodeljs-common";
-import { DisplayParams } from "./DisplayParams";
+import { DisplayParams, DisplayParamsRegionEdgeType } from "./DisplayParams";
 // import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
 // import { RenderSystem } from "../System";
@@ -36,7 +36,7 @@ export class PolylineArgs extends IndexedPolylineArgs {
     this.flags.is2d = mesh.is2d;
     this.flags.isPlanar = mesh.isPlanar;
     this.flags.isDisjoint = MeshPrimitiveType.Point === mesh.type;
-    if (mesh.displayParams.computeHasRegionOutline()) {
+    if (DisplayParamsRegionEdgeType.Outline === mesh.displayParams.regionEdgeType) {
       // This polyline is behaving as the edges of a region surface.
       // TODO: GradientSymb not implemented yet!  Uncomment following lines when it is implemented.
       // if (mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined())
