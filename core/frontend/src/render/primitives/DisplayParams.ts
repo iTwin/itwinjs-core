@@ -31,7 +31,7 @@ export class DisplayParams {
   readonly ignoreLighting: boolean = false; // always true for text and linear geometry; true for meshes only if normals not desired
   readonly hasRegionOutline: boolean = false;
 
-  /** Instantiates the class based on a generic argument class defined above. */
+  /** Instantiates the class based on DisplayParamsType and GraphicParams. */
   private constructor(type: DisplayParamsType, gf: GraphicParams) {
     this.type = type;
     this.lineColor = gf.lineColor.clone();
