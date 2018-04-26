@@ -7,7 +7,9 @@ import ECStringConstants from "./Constants";
 export { PropertyType } from "./PropertyTypes";
 
 // NEEDSWORK: This shim is currently required to use async iterators.  See https://github.com/Microsoft/TypeScript/issues/14151
-(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
+if (!(Symbol as any).asyncIterator) {
+  (Symbol as any).asyncIterator = Symbol.for("Symbol.asyncIterator");
+}
 
 export const enum ECClassModifier {
   None,
