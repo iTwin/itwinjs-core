@@ -29,8 +29,8 @@ export class DisplayParams {
   public readonly material?: Material; // meshes only
   public readonly gradient?: Gradient.Symb;
   // ###TODO: public textureMapping: TextureMapping; // only if m_material is null (e.g. gradients, glyph bitmaps) // TextureMapping doesn't exist yet!!!
-  public readonly lineColor: ColorDef = ColorDef.white; // all types of geometry (edge color for meshes)
-  public readonly fillColor: ColorDef = ColorDef.white; // meshes only
+  public readonly lineColor: ColorDef; // all types of geometry (edge color for meshes)
+  public readonly fillColor: ColorDef; // meshes only
   public readonly width: number = 0; // linear and mesh (edges)
   public readonly linePixels: LinePixels = LinePixels.Solid; // linear and mesh (edges)
   public readonly fillFlags: FillFlags = FillFlags.None; // meshes only
@@ -39,31 +39,30 @@ export class DisplayParams {
   /** Instantiates the class based on DisplayParamsType and GraphicParams. */
   private constructor(type: DisplayParamsType, gf: GraphicParams) {
     this.type = type;
-    this.lineColor.setFrom(gf.lineColor);
+    this.lineColor = gf.lineColor.clone();
     switch (type) {
       case DisplayParamsType.Mesh:
         this.material = gf.material;
         this.gradient = gf.gradient;
         // ###TODO: set texturemapping if m_material is undefined, and base it on gradient
-        this.fillColor.setFrom(gf.fillColor);
+        this.fillColor = gf.fillColor.clone();
         this.fillFlags = gf.fillFlags;
         this.width = gf.rasterWidth;
         this.linePixels = gf.linePixels;
         break;
 
       case DisplayParamsType.Linear:
-        this.fillColor.setFrom(this.lineColor);
+        this.fillColor = this.lineColor;
         this.width = gf.rasterWidth;
         this.linePixels = gf.linePixels;
         break;
 
-      case DisplayParamsType.Text:
-        this.fillColor.setFrom(this.lineColor);
+      default: // DisplayParamsType.Text
+        this.fillColor = this.lineColor;
         this.ignoreLighting = true;
         this.fillFlags = FillFlags.Always;
         break;
     }
-    // otherwise, generic DisplayParams; keep default property values.
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
