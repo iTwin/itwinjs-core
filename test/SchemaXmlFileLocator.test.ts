@@ -150,16 +150,21 @@ describe("SchemaXmlFileLocater tests:", () => {
     assert.isTrue(fs.existsSync(key.fileName));
   });
 
-  it("getSchema, reference does not exist, no error, no references.", async () => {
+  it("getSchema, reference does not exist, throws.", async () => {
     // Arrange
     locator.addSchemaSearchPaths(paths);
 
     // Act
-    const stub = await locator.getSchema(new SchemaKey("RefDoesNotExist", 1, 1, 1), SchemaMatchType.Exact);
+    try {
+      await locator.getSchema(new SchemaKey("RefDoesNotExist", 1, 1, 1), SchemaMatchType.Exact);
+    } catch (e) {
+      const error = e as ECObjectsError;
+      assert.equal(error.errorNumber, ECObjectsStatus.UnableToLocateSchema);
+      return;
+    }
 
     // Assert
-    assert.isDefined(stub);
-    assert.equal(stub!.references.length, 0);
+    assert.fail();
   });
 
   it("getSchema, readFileSync returns undefined, 'latest' schema is skipped", async () => {

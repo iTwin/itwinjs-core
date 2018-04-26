@@ -183,8 +183,10 @@ export class SchemaXmlFileLocater implements ISchemaLocater {
         schema.references.push(refSchema);
         */
       const refSchema = await this.getSchema(key, SchemaMatchType.LatestReadCompatible);
-      if (refSchema)
-        schema.references.push(refSchema);
+      if (!refSchema)
+        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate referenced schema: ${key.name}.${key.readVersion}.${key.writeVersion}.${key.minorVersion}`);
+
+      schema.references.push(refSchema);
     }
   }
 
