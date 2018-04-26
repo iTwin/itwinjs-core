@@ -94,7 +94,7 @@ const runOnce = () => {
     ui: "bdd",
   });
   mocha = setupReporter(mocha)  
-    .timeout(10000)
+    .timeout(10 * 60 * 1000) // 10 minutes
     .enableTimeouts(options.timeoutsEnabled)  
     .ignoreLeaks(false)
     .useColors(true)
