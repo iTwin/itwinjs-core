@@ -1,11 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import memoize = require("lodash/memoize");
+import { memoize, MemoizedFunction } from "lodash";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import StyleHelper from "../common/StyleHelper";
+
+// wip: workaround for TS4029 and TS6133
+export type MemoizedFunction = MemoizedFunction;
 
 /** State of a checkbox */
 export enum CheckBoxState {
@@ -85,13 +88,13 @@ export default class TreeDataProvider {
   /** Returns the root nodes.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public getRootNodes: _.MemoizedFunction = memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
+  public getRootNodes = memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const nodes = await ECPresentation.presentation.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
     return this.createTreeNodeItems(nodes);
   }, getRootNodesKeyResolver);
 
   /** Returns the total number of root nodes. */
-  public getRootNodesCount: _.MemoizedFunction = memoize(async (): Promise<number> => {
+  public getRootNodesCount = memoize(async (): Promise<number> => {
     return await ECPresentation.presentation.getRootNodesCount(this.imodelToken, this.createRequestOptions());
   });
 
@@ -99,7 +102,7 @@ export default class TreeDataProvider {
    * @param[in] parentNode The parent node to return children for.
    * @param[in] pageOptions Information about the requested page of data.
    */
-  public getChildNodes: _.MemoizedFunction = memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
+  public getChildNodes = memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
     const nodes = await ECPresentation.presentation.getChildren(this.imodelToken, parentKey, pageOptions, this.createRequestOptions());
     const items = this.createTreeNodeItems(nodes);
@@ -112,7 +115,7 @@ export default class TreeDataProvider {
   /** Returns the total number of child nodes.
    * @param[in] parentNode The parent node to return children count for.
    */
-  public getChildNodesCount: _.MemoizedFunction = memoize(async (parentNode: TreeNodeItem): Promise<number> => {
+  public getChildNodesCount = memoize(async (parentNode: TreeNodeItem): Promise<number> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
     return await ECPresentation.presentation.getChildrenCount(this.imodelToken, parentKey, this.createRequestOptions());
   }, getChildNodesCountKeyResolver);

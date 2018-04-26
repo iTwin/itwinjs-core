@@ -1,13 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import memoize = require("lodash/memoize");
+import { memoize, MemoizedFunction } from "lodash";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { InstanceKey, KeySet, PageOptions } from "@bentley/ecpresentation-common";
+
+// wip: workaround for TS4029 and TS6133
+export type MemoizedFunction = MemoizedFunction;
 
 // note: I expect the below types to be defined somewhere outside ecpresentation repository
 
@@ -59,7 +62,7 @@ class Page {
 
   public get rows(): Array<Readonly<RowItem>> | undefined { return this._rows; }
 
-  public getRows: _.MemoizedFunction = memoize(async (): Promise<Array<Readonly<RowItem>>> => {
+  public getRows = memoize(async (): Promise<Array<Readonly<RowItem>>> => {
     const c = await this._content;
     this._rows = this.createRows(c);
     return this._rows;
@@ -289,7 +292,7 @@ export default class GridDataProvider extends ContentDataProvider {
   }
 
   /** Returns column definitions for the content. */
-  public getColumns: _.MemoizedFunction = memoize(async (): Promise<Array<Readonly<ColumnDescription>>> => {
+  public getColumns = memoize(async (): Promise<Array<Readonly<ColumnDescription>>> => {
     const descriptor = await this.getContentDescriptor(this.keys);
     const sortedFields = descriptor.fields.slice();
     sortedFields.sort((a: content.Field, b: content.Field): number => {
@@ -316,14 +319,14 @@ export default class GridDataProvider extends ContentDataProvider {
   });
 
   /** Get the total number of rows in the content. */
-  public getRowsCount: _.MemoizedFunction = memoize(async (): Promise<number> => {
+  public getRowsCount = memoize(async (): Promise<number> => {
     return await this.getContentSetSize(this.keys);
   });
 
   /** Get a single row.
    * @param[in] rowIndex Index of the row to return.
    */
-  public getRow: _.MemoizedFunction = memoize(async (rowIndex: number): Promise<Readonly<RowItem>> => {
+  public getRow = memoize(async (rowIndex: number): Promise<Readonly<RowItem>> => {
     let page = this._pages.getPage(rowIndex);
     if (!page) {
       const position = this._pages.reservePage(rowIndex);
