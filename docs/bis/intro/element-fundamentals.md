@@ -36,7 +36,7 @@ The UserLabel may serve an alternate “friendlier” name in a GUI, e.g. the Ro
 
 The `JsonProperties` member holds *ad hoc* data on an Element in JSON format. It is a dictionary of key-value pairs, where the key is a *namespace* (see below) and the value is a JSON object. In this manner the `JsonProperties` member can hold any form and complexity of externally-defined (i.e. outside of BIS) data on any element.
 
-To avoid conflicts in naming values, the top-level names for members of `JsonProperties` are reserved for *namespaces*. There is no registry for namespaces, so they should be chosen to be long and unique enough to avoid the possibility of collision (at least 8 characters.) By convention, 
+To avoid conflicts in naming values, the top-level names for members of `JsonProperties` are reserved for *namespaces*. There is no registry for namespaces, so they should be chosen to be long and unique enough to avoid the possibility of collision (at least 8 characters.) By convention,
 
 > Note: all JSON property names, and therefore namespaces, are *case sensitive*.
 
@@ -77,8 +77,9 @@ The largest advantage of JSON properties is that they do not require any schema 
 - No type-safety. There is no mechanism for controlling what is stored for any property name.
 - No required data. There is no mechanism for defining the requirement for certain properties to be defined.
 
+<!-- TODO
 ### JsonProperties and ECSQL
-
+-->
 
 ## Elements and Models
 
@@ -90,7 +91,7 @@ There is one exception to the “Every Model models an Element” rule: There is
 
 ## ElementIds in iModels
 
-When stored in an iModel, Elements also have a unique 64-bit identifier, called an ElementId. ElementId is generated when new Elements are crated by encoding the BriefcaseId in the high 24 bits, with next-available sequence number in the lower 40 bits. This allows new Elements to be created in any Briefcase without fear of ElementId collision.
+When stored in an iModel, Elements also have a unique 64-bit identifier, called an ElementId. ElementId is generated when new Elements are created by storing the BriefcaseId in the high 24 bits, with the next-available sequence number in the lower 40 bits. This allows new Elements to be created in any Briefcase without fear of ElementId collision.
 
 ## Elements and Child Elements
 

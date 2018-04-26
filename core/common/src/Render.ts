@@ -8,13 +8,13 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, Point2d, XYAndZ, Transform, Angle, Vector3d } from "@bentley/geometry-core";
-import { PatternParams } from "./geometry/AreaPattern";
-import { LineStyleInfo } from "./geometry/LineStyle";
+import { Point3d, Point2d, XYAndZ, Transform, Angle, AngleProps, Vector3d } from "@bentley/geometry-core";
+import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 import { QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
 import { ColorIndex, FeatureIndex } from "./FeatureIndex";
+import { AreaPattern } from "./geometry/AreaPattern";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
@@ -698,6 +698,7 @@ export namespace HiddenLine {
     }
   }
 }
+
 export namespace Gradient {
   export const enum Flags {
     None = 0,
@@ -715,28 +716,87 @@ export namespace Gradient {
     Thematic = 6,
   }
 
-  export class Symb {
+  /** @hidden Gradient settings specific to thematic mesh display */
+  export interface ThematicProps {
+    mode?: number;
+    stepCount?: number;
+    margin?: number;
+    marginColor?: ColorDef;
+    colorScheme?: number;
+    rangeLow?: number;
+    rangeHigh?: number;
+  }
+
+  /** Gradient fraction value to [[ColorDef]] pair */
+  export interface KeyColorProps {
+    /** Fraction from 0.0 to 1.0 to denote position along gradient */
+    value: number;
+    /** Color value for given fraction */
+    color: ColorDef;
+  }
+
+  export class KeyColor implements KeyColorProps {
+    public value: number;
+    public color: ColorDef;
+    public constructor(json: KeyColorProps) {
+      this.value = json.value;
+      this.color = json.color;
+    }
+  }
+
+  /** Multi-color area fill defined by a range of colors that vary by position */
+  export interface SymbProps {
+    /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
+    mode: Mode;
+    /** Gradient flags to enable outline display and invert color fractions */
+    flags?: Flags;
+    /** Gradient rotation angle */
+    angle?: AngleProps;
+    /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1 */
+    tint?: number;
+    /** Gradient shift value from 0.0 to 1.0 */
+    shift?: number;
+    /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
+    keys: KeyColorProps[];
+    /** @hidden Settings applicable to meshes and Gradient.Mode.Thematic only */
+    thematicSettings?: ThematicProps;
+  }
+
+  export class Symb implements SymbProps {
     public mode = Mode.None;
-    public flags = Flags.None;
-    public nKeys = 0;
-    public angle = 0.0;
-    public tint = 0.0;
-    public shift = 0.0;
-    public readonly colors: ColorDef[] = [];
-    public readonly values: number[] = [];
+    public flags?: Flags;
+    public angle?: Angle;
+    public tint?: number;
+    public shift?: number;
+    public keys: KeyColor[] = [];
+
+    /** create a GradientSymb from a json object. */
+    public static fromJSON(json?: SymbProps) {
+      const result = new Symb();
+      if (!json)
+        return result;
+      result.mode = json.mode;
+      result.flags = json.flags;
+      result.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
+      result.tint = json.tint;
+      result.shift = json.shift;
+      json.keys.forEach((key) => result.keys.push(key));
+      return result;
+    }
+
+    /** Add properties to an object for serializing to JSON */
+    public toJSON(): SymbProps {
+      return this.toJSON() as SymbProps;
+    }
 
     public clone(): Symb {
       const retVal = new Symb();
       retVal.mode = this.mode;
       retVal.flags = this.flags;
-      retVal.nKeys = this.nKeys;
       retVal.angle = this.angle;
       retVal.tint = this.tint;
       retVal.shift = this.shift;
-      for (let i = 0; i < this.nKeys; ++i) {
-        retVal.colors.push(this.colors[i]);
-        retVal.values.push(this.values[i]);
-      }
+      this.keys.forEach((key) => retVal.keys.push(key));
       return retVal;
     }
 
@@ -747,18 +807,18 @@ export namespace Gradient {
         return false;
       if (this.flags !== other.flags)
         return false;
-      if (this.nKeys !== other.nKeys)
-        return false;
-      if (this.angle !== other.angle)
-        return false;
       if (this.tint !== other.tint)
         return false;
       if (this.shift !== other.shift)
         return false;
-      for (let i = 0; i < this.nKeys; ++i) {
-        if (other.values[i] !== this.values[i])
+      if ((this.angle === undefined) !== (other.angle === undefined))
+        return false;
+      if (this.angle && !this.angle.isAlmostEqualNoPeriodShift(other.angle!))
+        return false;
+      for (let i = 0; i < this.keys.length; ++i) {
+        if (this.keys[i].value !== other.keys[i].value)
           return false;
-        if (!other.colors[i].equals(this.colors[i]))
+        if (!this.keys[i].color.equals(other.keys[i].color))
           return false;
       }
       return true;
@@ -811,9 +871,9 @@ export class GeometryParams {
   public elmTransparency?: number; // transparency, 1.0 == completely transparent
   public fillTransparency?: number;  // fill transparency, 1.0 == completely transparent
   public geometryClass?: GeometryClass; // geometry class, default GeometryClass.Primary
-  public styleInfo?: LineStyleInfo; // line style id plus modifiers.
+  public styleInfo?: LineStyle.Info; // line style id plus modifiers.
   public gradient?: Gradient.Symb; // gradient fill settings.
-  public pattern?: PatternParams; // area pattern settings.
+  public pattern?: AreaPattern.Params; // area pattern settings.
 
   constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid()) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
 
@@ -939,8 +999,8 @@ export class GeometryParams {
   public applyTransform(transform: Transform) {
     if (this.pattern)
       this.pattern.applyTransform(transform);
-    if (this.styleInfo)
-      this.styleInfo.styleParams.applyTransform(transform);
+    if (this.styleInfo && this.styleInfo.styleMod)
+      this.styleInfo.styleMod.applyTransform(transform);
   }
 }
 

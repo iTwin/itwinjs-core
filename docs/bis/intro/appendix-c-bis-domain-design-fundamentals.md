@@ -13,7 +13,7 @@
 
 ## Physical Backbone
 
-## Planning Ahead for Interop
+## Planning Ahead for Interoperability
 
 Physical Elements
 

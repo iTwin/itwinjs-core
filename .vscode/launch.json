@@ -36,6 +36,22 @@
       "outputCapture": "std"
     },
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Performance test (Offline)",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/core/backend/lib/perftest",
+        "--debug",
+        "--offline"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
       "name": "Run Geometry Tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
       "cwd": "${workspaceFolder}/core/geometry",
