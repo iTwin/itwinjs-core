@@ -76,15 +76,7 @@ describe("PerformanceElementsTests", () => {
       elementProps.baseDouble = values.baseDouble;
       return elementProps;
   }
-  // function createElems(className: string, count: number, iModelName: IModelDb, modId: Id64, catId: Id64): any[] {
-  //   const elementColl: Element[] = [];
-  //   for (let m = 0; m < count; ++m) {
-  //     const elementProps = createElemProps(className, iModelName, modId, catId);
-  //     const geomElement = iModelName.elements.createElement(elementProps);
-  //     elementColl.push(geomElement);
-  //   }
-  //   return elementColl;
-  // }
+
   function verifyProps(testElement: Element): boolean {
     let passed: boolean = false;
     switch (testElement.classFullName) {
@@ -135,13 +127,12 @@ describe("PerformanceElementsTests", () => {
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         seedIModel.importSchema(testSchemaName);
         assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
-        [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
-
+        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
         if (undefined === spatialCategoryId) {
           spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
         }
-        spatialCategoryId1 = spatialCategoryId;
+
         for (let m = 0; m < dbSize; ++m) {
           const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
           const geomElement = seedIModel.elements.createElement(elementProps);
