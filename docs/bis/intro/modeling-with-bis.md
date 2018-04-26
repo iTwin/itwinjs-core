@@ -10,8 +10,7 @@ The BIS View of the World
 =========================
 
 > To "model" reality is to represent it in a simplified, purposeful way that we call a modeling **[Perspective]{.smallcaps}**. Consider a real-world physical **[Object]{.smallcaps}**. We can model both its physical form (Physical Perspective) and the role it plays in a functioning system (Functional Perspective). BIS conceives of Objects as composed of multiple Entities, where each **[Entity]{.smallcaps}** has a subset of the Object's attributes (relevant to a given Perspective).
-
-<img src="./media/bis-modeling-01.png" style="width:5.51546in;height:1.97637in" />
+![](./media/bis-modeling-01.png) style="width:5.51546in;height:1.97637in"
 
 A **[BIS Digital Twin]{.smallcaps}** models Entities like:
 
@@ -37,29 +36,29 @@ Element
 
 > An **[Element]{.smallcaps}** models a real-world Entity. A set of closely-related Elements (each modeling a different Entity comprising the Object) collectively model the complete Object. One Element will be the "lead" Element, based on the nature of the Object being modeled. For example, if it is a Physical Object, then the PhysicalElement (modeling the Physical Entity) will be the "lead" Element, and all other Elements (modeling the other Entities comprising the Object) will relate back to the lead PhysicalElement. For a purely spatial Object (e.g. a political border) the SpatialLocationElement would be the "lead". For an "information" Object, an InformationContentElement would be the "lead".
 >
-> <img src="./media/bis-modeling-02.png" style="width:4.4325in;height:1.84167in" />
+![](./media/bis-modeling-02.png)" style="width:4.4325in;height:1.84167in" />
 
 Model
 -----
 
 > A **[Model]{.smallcaps}** is a collection of Elements, all from a [single]{.underline} Perspective. Collectively, those Elements model some Entity that is "larger" than the Entities modeled by the Elements contained in the Model. For example, consider a PhysicalModel containing PhysicalElements that model the physical form of car parts. Collectively, they model the Physical Entity of a car-as-a-whole.
 >
-> <img src="./media/bis-modeling-03.png" style="width:5.31382in;height:2.075in" />
+![](./media/bis-modeling-03.png) style="width:5.31382in;height:2.075in" />
 >
 > An Element in a different Model (see "P-0" below) models the car-as-a-whole as an "atomic" thing. The Model containing the "car part" Elements has a "breaks-down" relationship to the Element modeling the car-as-a-whole because it "breaks down" the Element (a simple, atomic model) into a finer-grained Model. Thus a BIS repository can cohesively model the car at two different Granularities---[both]{.underline} as an "atomic" thing [and]{.underline} as a fine-grained collection of parts.
 >
-> <img src="./media/bis-modeling-04.png" style="width:4.39167in;height:2.6594in" />
+![](./media/bis-modeling-04.png) style="width:4.39167in;height:2.6594in" />
 >
 > The Element modeling the car-as-a-whole is also in a Model. What Element is [that]{.underline} Model breaking down? BIS escapes from infinite regression by defining a special RepositoryModel that is not required to "break down" some other Element. The RepositoryModel acts as the "Table of Contents" of the BIS Repository. It contains a "Subject" Element that textually references the Object that the BIS Repository is about. The RepositoryModel also contains one or more InformationPartitionElements. Each declares a modeling Perspective used to model the Subject. Each Partition will be "broken down" by Models of the same Perspective, e.g. a PhysicalModel will "break down" a PhysicalPartition.
 >
-> <img src="./media/bis-modeling-05.png" style="width:5.73446in;height:3.35in" />
+![](./media/bis-modeling-05.png) style="width:5.73446in;height:3.35in" />
 
 Relationships
 -------------
 
 > There can be many different kinds of Relationships among Elements within a Model or spanning Models. The various specializations of the ElementHasChildElements relationship are particularly important---they implement parent-child/whole-part relationships among Elements. For example, if Object 1 is a Door, it might have DoorHardware as a Child.
 >
-> <img src="./media/bis-modeling-06.png" style="width:5.57041in;height:3.24167in" />
+![](./media/bis-modeling-06.png) style="width:5.57041in;height:3.24167in" />
 >
 > Thus, BIS supports two ways of modeling an Object and its parts:
 
