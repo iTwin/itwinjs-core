@@ -148,33 +148,28 @@ export namespace GL {
     StencilWriteMask = WebGLRenderingContext.STENCIL_WRITEMASK,
   }
 
-  export enum WrapMode {
-    Repeat = WebGLRenderingContext.REPEAT,
-    MirroredRepeat = WebGLRenderingContext.MIRRORED_REPEAT,
-    ClampToEdge = WebGLRenderingContext.CLAMP_TO_EDGE,
-  }
+  export namespace Texture {
+    export enum Format {
+      Rgb = WebGLRenderingContext.RGB,
+      Rgba = WebGLRenderingContext.RGBA,
+      DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
+      Luminance = WebGLRenderingContext.LUMINANCE,
+      DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+    }
 
-  export enum TextureInternalFormat {
-    Rgb = WebGLRenderingContext.RGB,
-    Rgba = WebGLRenderingContext.RGBA,
-    DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
-    Luminance = WebGLRenderingContext.LUMINANCE,
-    DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
-  }
+    // This name is unambiguous as it is qualified by the namespace...https://github.com/palantir/tslint/issues/3789
+    export enum DataType { // tslint:disable-line:no-shadowed-variable
+      Float = WebGLRenderingContext.FLOAT,
+      UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
+  //    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
+      UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
+    }
 
-  export enum TextureFormat {
-    Rgb = WebGLRenderingContext.RGB,
-    Rgba = WebGLRenderingContext.RGBA,
-    DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
-    Luminance = WebGLRenderingContext.LUMINANCE,
-    DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
-  }
-
-  export enum TextureDataType {
-    Float = WebGLRenderingContext.FLOAT,
-    UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
-//    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
-    UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
+    export enum WrapMode {
+      Repeat = WebGLRenderingContext.REPEAT,
+      MirroredRepeat = WebGLRenderingContext.MIRRORED_REPEAT,
+      ClampToEdge = WebGLRenderingContext.CLAMP_TO_EDGE,
+    }
   }
 
   export enum ShaderType {
