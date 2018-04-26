@@ -33,15 +33,15 @@
     "No need to repeat all of the dependencies that I have in common with backend."
   ],
   "peerDependencies": {
-    "@bentley/imodeljs-backend": "~0.77.2"
+    "@bentley/imodeljs-backend": "~0.77.5"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^7",
     "@bentley/bentleyjs-tools": "^2.2.0",
     "@bentley/geometry-core": "^7",
-    "@bentley/imodeljs-backend": "~0.77.2",
+    "@bentley/imodeljs-backend": "~0.77.5",
     "@bentley/imodeljs-clients": "^5.1.0",
-    "@bentley/imodeljs-common": "~0.77.0",
+    "@bentley/imodeljs-common": "~0.77.1",
     "@types/chai": "^4.0.10",
     "@types/chai-jest-snapshot": "^1.3.0",
     "@types/chai-spies": "0.0.0",
