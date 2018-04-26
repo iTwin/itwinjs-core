@@ -5,11 +5,8 @@
 Relationships are one of the main building blocks of BIS. They are used to define associations among entities. More specifically, BIS depends heavily upon EC relationships to define its conceptual schema. With the exception of relationships used by navigation properties, all relationships in BIS must inherit from some relationship in the core. The most commonly used core relationships are:
 
 - ElementOwnsChildElements
-
-- ElementsReferToElements
-
+- ElementRefersToElements
 - ElementOwnsUniqueAspect / ElementOwnsMultiAspects
-
 - ModelContainsElements
 
 ## Relationship Inheritance in BIS
@@ -27,11 +24,8 @@ In addition, all BIS relationships, excepting the ones used to define new naviga
 Inheriting relationships must “narrow” the relationship:
 
 - Equal or more-specific sources and targets.
-
 - Equal or more-restrictive multiplicity.
-
 - The polymorphic flag may be changed from `true` to `false` but not `false` to `true`.
-
 - Strength and direction must be the same.
 
 ## Relationship Strength
@@ -50,7 +44,7 @@ In most cases, both the strength and direction of a relationship are already def
 
 ## Relationship multiplicity
 
-Each endpoint of a relationship must define a multiplicity, they together define the cardinality of the relationship.  The multiplicity format specifies the number of times an endpoint may be used in this relationship.  It is defined using the format `(<lower>..<upper>)`.  Lower must be between `0` and `*` and upper between `1` and `*`, where `*` represents unbounded. 
+Each endpoint of a relationship must define a multiplicity, they together define the cardinality of the relationship.  The multiplicity format specifies the number of times an endpoint may be used in this relationship.  It is defined using the format `(<lower>..<upper>)`.  Lower must be between `0` and `*` and upper between `1` and `*`, where `*` represents unbounded.
 
 ### Example
 
@@ -93,7 +87,7 @@ Relationships in BIS are restricted more than in plain EC.
 
 - Relationship inheritance is strictly limited, as discussed previously. A relationship may only have a single base class.
 
-- Relationship end points must be either entity classes or link-table relationships. 
+- Relationship end points must be either entity classes or link-table relationships.
 
 - Relationship end points must have a single constraint class.
 

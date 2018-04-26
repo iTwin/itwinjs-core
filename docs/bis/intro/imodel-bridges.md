@@ -3,7 +3,7 @@
 Often, information modeled in an iModel is created by an application that stores its data in another format.
 iModel Bridges exist for the purpose of transforming data from these other applications into iModels in iModelHub. Many iModel Bridges can be associated with a single iModel and hence the resulting iModel becomes an aggregator of many sources of data.
 
-iModel Bridges need to carefully transform the source data to BIS-based data in the iModel, and hence each Bridge is written for a specific data source. 
+iModel Bridges need to carefully transform the source data to BIS-based data in the iModel, and hence each Bridge is written for a specific data source.
 
 Examples of iModel Bridges include:
 
@@ -27,7 +27,7 @@ Some key characteristics of iModel Bridges are:
 - Bridges may run on a pre-determined schedule, or on an event that the source data has changed.
 - Bridges store a mapping of source Ids to Ids in iModels. to create a "back-link" from data in iModels to its source application.
 - Multiple bridges (called *jobs*) may target the iModel.
-- Each "job generates data that is isolated from all other jobs' data. The resulting combined iModel is partitioned at the Subject level of the iModel; each Bridge job has its own Subject.
+- Each job generates data that is isolated from all other jobs' data. The resulting combined iModel is partitioned at the Subject level of the iModel; each Bridge job has its own Subject.
 - Bridges jobs *hold the locks* for all of their data, so it may not be modified by other iModel applications.
 
 ## Data Alignment
