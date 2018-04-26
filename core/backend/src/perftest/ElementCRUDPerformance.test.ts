@@ -26,26 +26,12 @@ describe("PerformanceElementsTests", () => {
   const opSizes: any[] = [1000, 2000, 3000];
   const dbSizes: any[] = [10000, 100000, 1000000];
   const classNames: any[] = ["PerfElement", "PerfElementSub1", "PerfElementSub2", "PerfElementSub3"];
+
   const values: any = {baseStr: "PerfElement - InitValue", sub1Str: "PerfElementSub1 - InitValue",
                       sub2Str: "PerfElementSub2 - InitValue", sub3Str: "PerfElementSub3 - InitValue",
                       baseLong: "0x989680", sub1Long: "0x1312d00", sub2Long: "0x1c9c380", sub3Long: "0x2625a00",
                       baseDouble: -3.1416, sub1Double: 2.71828, sub2Double: 1.414121, sub3Double: 1.61803398874};
   const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
-
-  function determineElementIdIncrement(initialInstanceCount: number, opCount: number): number {
-    const incr = Math.floor(initialInstanceCount / opCount);
-    return incr;
-    }
-
-  function getMinElemId(iModelName: IModelDb, className: string): number {
-    let minId: number = 0;
-    iModelName.withPreparedStatement("SELECT min(ECInstanceId) AS [minID] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
-      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-      const row = stmt.getRow();
-      minId = row.minID;
-    });
-    return minId;
-  }
 
   function createElemProps(className: string, iModelName: IModelDb, modId: Id64, catId: Id64): GeometricElementProps {
       // add Geometry
@@ -88,15 +74,7 @@ describe("PerformanceElementsTests", () => {
       elementProps.baseDouble = values.baseDouble;
       return elementProps;
   }
-  // function createElems(className: string, count: number, iModelName: IModelDb, modId: Id64, catId: Id64): any[] {
-  //   const elementColl: Element[] = [];
-  //   for (let m = 0; m < count; ++m) {
-  //     const elementProps = createElemProps(className, iModelName, modId, catId);
-  //     const geomElement = iModelName.elements.createElement(elementProps);
-  //     elementColl.push(geomElement);
-  //   }
-  //   return elementColl;
-  // }
+
   function verifyProps(testElement: Element): boolean {
     let passed: boolean = false;
     switch (testElement.classFullName) {
@@ -137,38 +115,27 @@ describe("PerformanceElementsTests", () => {
     }
     return passed;
   }
-
   before(() => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const fileName = "Performance_seed_" + className + "_" + dbSize + ".bim";
-        if (!IModelJsFs.existsSync(path.join(KnownTestLocations.outputDir, fileName))) {
-          seedIModel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: fileName, enableTransactions: true });
-          const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-          const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-          seedIModel.importSchema(testSchemaName);
-          assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
-          let newModelId: Id64;
-          [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
-          const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
-          assert.isFalse(undefined === defaultCategoryId);
-          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
-          if (undefined === spatialCategoryId) {
-            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
-          }
-          for (let m = 0; m < dbSize; ++m) {
-            const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
-            const geomElement = seedIModel.elements.createElement(elementProps);
-            const id = seedIModel.elements.insertElement(geomElement);
-            assert.isTrue(id.isValid(), "insert worked");
-          }
-          seedIModel.saveChanges();
-          seedIModel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
-            assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-            const row = stmt.getRow();
-            assert.equal(row.count, dbSize);
-          });
-          IModelTestUtils.closeIModel(seedIModel);
+        seedIModel = IModelTestUtils.createStandaloneIModel(fileName, {rootSubject: {name: "PerfTest"}});
+        seedIModel.setAsMaster();
+        const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+        const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
+        seedIModel.importSchema(testSchemaName);
+        assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
+        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
+        let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+        if (undefined === spatialCategoryId) {
+          spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+        }
+
+        for (let m = 0; m < dbSize; ++m) {
+          const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
+          const geomElement = seedIModel.elements.createElement(elementProps);
+          const id = seedIModel.elements.insertElement(geomElement);
+          assert.isTrue(id.isValid(), "insert worked");
         }
       }
     }
@@ -224,13 +191,14 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Delete_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const minId = getMinElemId(perfimodel, className);
-          const incr = determineElementIdIncrement(dbSize, opCount);
+          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GeometricElement3d")[0];
+          const elementIdIncrement = Math.floor(dbSize / opCount);
+          assert.equal((stat.maxId - stat.minId + 1) , dbSize);
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             try {
-              const id = new Id64("0x" + (minId + (i * incr)).toString(16));
-              perfimodel.elements.deleteElement(id);
+              const elId = stat.minId + elementIdIncrement * i;
+              perfimodel.elements.deleteElement( new Id64 ([elId, 0]));
             } catch (err) {
               assert.isTrue(false);
             }
@@ -258,12 +226,13 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Read_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const minId = getMinElemId(perfimodel, className);
-          const incr = determineElementIdIncrement(dbSize, opCount);
+          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GeometricElement3d")[0];
+          const elementIdIncrement = Math.floor(dbSize / opCount);
+          assert.equal((stat.maxId - stat.minId + 1) , dbSize);
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
-            const id = new Id64("0x" + (minId + (i * incr)).toString(16));
-            const elemFound: Element = perfimodel.elements.getElement(id);
+            const elId = stat.minId + elementIdIncrement * i;
+            const elemFound: Element = perfimodel.elements.getElement(new Id64 ([elId, 0]));
             assert.isTrue(verifyProps(elemFound));
           }
           const endTime = new Date().getTime();
@@ -284,43 +253,41 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Update_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const minId = getMinElemId(perfimodel, className);
-          const incr = determineElementIdIncrement(dbSize, opCount);
+          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GeometricElement3d")[0];
+          const elementIdIncrement = Math.floor(dbSize / opCount);
           // first construct modified elements
-          const elementColl: any = [];
+          // now lets update and record time
+                      // add Geometry
+          const geomArray: Arc3d[] = [
+            Arc3d.createXY(Point3d.create(0, 0), 2),
+            Arc3d.createXY(Point3d.create(5, 5), 5),
+            Arc3d.createXY(Point3d.create(-5, -5), 10),
+          ];
+
+          const geometryStream: GeometryStreamProps = [];
+          for (const geom of geomArray) {
+            const arcData = GeomJson.Writer.toIModelJson(geom);
+            geometryStream.push(arcData);
+          }
+          const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
-            const id = new Id64("0x" + (minId + (i * incr)).toString(16));
-            const elemFound: Element = perfimodel.elements.getElement(id);
+            const elId = stat.minId + elementIdIncrement * i;
+            const elemFound: Element = perfimodel.elements.getElement(new Id64 ([elId, 0]));
             const editElem = elemFound.copyForEdit<Element>();
             editElem.baseStr = "PerfElement - UpdatedValue";
-            // add Geometry
-            const geomArray: Arc3d[] = [
-              Arc3d.createXY(Point3d.create(0, 0), 2),
-              Arc3d.createXY(Point3d.create(5, 5), 5),
-              Arc3d.createXY(Point3d.create(-5, -5), 10),
-            ];
-            const geometryStream: GeometryStreamProps = [];
-            for (const geom of geomArray) {
-              const arcData = GeomJson.Writer.toIModelJson(geom);
-              geometryStream.push(arcData);
-            }
             editElem.setUserProperties("geom", geometryStream);
-            elementColl.push(editElem);
-          }
-          // now lets update and record time
-          const startTime = new Date().getTime();
-          for (let m = 0; m < opCount; ++m) {
             try {
-              perfimodel.elements.updateElement(elementColl[m]);
+              perfimodel.elements.updateElement(editElem);
             } catch (_err) {
               assert.fail("Element.update failed");
             }
           }
+
           const endTime = new Date().getTime();
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
-            const id = new Id64("0x" + (minId + (i * incr)).toString(16));
-            const elemFound: Element = perfimodel.elements.getElement(id);
+            const elId = stat.minId + elementIdIncrement * i;
+            const elemFound: Element = perfimodel.elements.getElement(new Id64 ([elId, 0]));
             assert.equal(elemFound.baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;

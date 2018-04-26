@@ -8,12 +8,10 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, Point2d, XYAndZ, Transform, Angle, AngleProps, Vector3d } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
-import { QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
-import { ColorIndex, FeatureIndex } from "./FeatureIndex";
 import { AreaPattern } from "./geometry/AreaPattern";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
@@ -102,19 +100,6 @@ export class PolylineData {
   }
 }
 
-/* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
-export class IndexedPolylineArgs {
-  public colors = new ColorIndex();
-  public features = new FeatureIndex();
-  public width = 0;
-  public linePixels = LinePixels.Solid;
-  public flags: PolylineFlags;
-  public constructor(public points: Uint16Array = new Uint16Array(), public numPoints = 0, public lines: PolylineData[] = [], public numLines = 0, public pointParams?: QParams3d,
-                     is2d = false, isPlanar = false) {
-    this.flags = new PolylineFlags(is2d, isPlanar);
-  }
-}
-
 export class MeshPolyline {
   public indices: number[] = [];
   public rangeCenter = new Point3d();
@@ -190,49 +175,6 @@ export class PolylineEdgeArgs {
   }
 }
 
-// The vertices of the edges are shared with those of the surface
-export class TriMeshArgsEdges {
-  public edges = new EdgeArgs();
-  public silhouettes = new SilhouetteEdgeArgs();
-  public polylines = new PolylineEdgeArgs();
-  public width = 0;
-  public linePixels = LinePixels.Solid;
-
-  public clear(): void {
-    this.edges = new EdgeArgs();
-    this.silhouettes = new SilhouetteEdgeArgs();
-    this.polylines = new PolylineEdgeArgs();
-    this.width = 0;
-    this.linePixels = LinePixels.Solid;
-  }
-  public isValid(): boolean { return this.edges.isValid() || this.silhouettes.isValid() || this.polylines.isValid(); }
-}
-
-/* Information needed to draw a triangle mesh and its edges. */
-export class TriMeshArgs {
-  public edges = new TriMeshArgsEdges();
-  public numIndices = 0;
-  public vertIndex: number[] = [];
-  public numPoints = 0;
-  public points?: Uint16Array;
-  public normals: OctEncodedNormal[] = [];
-  public textureUv: Point2d[] = [];
-  public texture?: Texture;
-  public colors = new ColorIndex();
-  public features = new FeatureIndex();
-  public pointParams?: QParams3d;
-  public material?: Material;
-  public fillFlags = FillFlags.None;
-  public isPlanar = false;
-  public is2d = false;
-
-  // public toPolyface(): IndexedPolyface {
-  //   let polyFace = IndexedPolyface.create(); // PolyfaceHeaderPtr polyFace = PolyfaceHeader::CreateFixedBlockIndexed(3);
-  //   let pointIndex = polyFace.pointCount;
-  //   pointIndex. // In Progress!!
-  // }
-}
-
 /**
  * A renderer-specific object that can be placed into a display list.
  */
@@ -245,8 +187,7 @@ export abstract class RenderGraphic {
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
  */
 export class GraphicParams {
-  public isFilled = false;
-  public isBlankingRegion = false;
+  public fillFlags = FillFlags.None;
   public linePixels = LinePixels.Solid;
   public rasterWidth = 1;
   public readonly lineColor = new ColorDef();
@@ -292,7 +233,7 @@ export class GraphicParams {
   public static FromBlankingFill(fillColor: ColorDef): GraphicParams {
     const graphicParams = new GraphicParams();
     graphicParams.setFillColor(fillColor);
-    graphicParams.isBlankingRegion = true;
+    graphicParams.fillFlags = FillFlags.Blanking;
     return graphicParams;
   }
 }
@@ -784,20 +725,8 @@ export namespace Gradient {
       return result;
     }
 
-    /** Add properties to an object for serializing to JSON */
-    public toJSON(): SymbProps {
-      return this.toJSON() as SymbProps;
-    }
-
     public clone(): Symb {
-      const retVal = new Symb();
-      retVal.mode = this.mode;
-      retVal.flags = this.flags;
-      retVal.angle = this.angle;
-      retVal.tint = this.tint;
-      retVal.shift = this.shift;
-      this.keys.forEach((key) => retVal.keys.push(key));
-      return retVal;
+      return Symb.fromJSON(this);
     }
 
     public isEqualTo(other: Symb): boolean {

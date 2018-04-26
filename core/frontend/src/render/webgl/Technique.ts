@@ -8,9 +8,10 @@ import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "./ShaderBuilder";
 import { DrawParams } from "./DrawCommand";
+import { GLDisposable } from "./GLDisposable";
 
 // Defines a rendering technique implemented using one or more shader programs.
-export interface Technique {
+export interface Technique extends GLDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
 }
 
@@ -21,10 +22,12 @@ export class SingularTechnique implements Technique {
   public constructor(program: ShaderProgram) { this.program = program; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
+
+  public dispose(gl: WebGLRenderingContext): void { this.program.dispose(gl); }
 }
 
 // A collection of rendering techniques accessed by ID.
-export class Techniques {
+export class Techniques implements GLDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
@@ -61,6 +64,14 @@ export class Techniques {
         executor.draw(params);
       }
     });
+  }
+
+  public dispose(gl: WebGLRenderingContext): void {
+    for (const tech of this._list) {
+      tech.dispose(gl);
+    }
+
+    this._list.length = 0;
   }
 
   private constructor() { }

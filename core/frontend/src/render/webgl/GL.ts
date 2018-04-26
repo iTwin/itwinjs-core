@@ -190,4 +190,17 @@ export namespace GL {
     Lines = WebGLRenderingContext.LINES,
     Triangles = WebGLRenderingContext.TRIANGLES,
   }
+
+  export namespace RenderBuffer {
+    export const TARGET = WebGLRenderingContext.RENDERBUFFER;
+
+    export enum Format {
+      DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+      // Currently this is the only supported format
+    }
+  }
+
+  export namespace FrameBuffer {
+    export const TARGET = WebGLRenderingContext.FRAMEBUFFER;
+  }
 }

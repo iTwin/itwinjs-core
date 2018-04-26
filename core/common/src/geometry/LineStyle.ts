@@ -70,14 +70,9 @@ export namespace LineStyle {
       this.rotation = props.rotation ? YawPitchRollAngles.fromJSON(props.rotation) : undefined;
     }
 
-    /** Add properties to an object for serializing to JSON */
-    public toJSON(): ModifierProps {
-      return this.toJSON() as ModifierProps;
-    }
-
     /** Returns a deep copy of this object. */
     public clone() {
-      return new Modifier(this.toJSON());
+      return new Modifier(this);
     }
 
     /** Compare two LineStyle.Modifier for equivalence */
@@ -167,14 +162,10 @@ export namespace LineStyle {
     public styleId: Id64;
     public styleMod?: Modifier; // Optional modifiers to override line style definition
 
-    private constructor(styleId: Id64, styleMod?: Modifier) {
+    /** Creates a LineStyle.Info object */
+    constructor(styleId: Id64, styleMod?: Modifier) {
       this.styleId = styleId;
       this.styleMod = styleMod;
-    }
-
-    /** Creates a LineStyleInfo object */
-    public static create(styleId: Id64, styleMod?: Modifier): Info {
-      return new Info(styleId, styleMod);
     }
 
     /** Returns a deep copy of this object. */

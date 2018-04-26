@@ -44,7 +44,7 @@ export interface AreaFillProps {
   transparency?: number;
   /** Set fill color to view background color. Use [[BackgroundFill.Solid]] for an opaque fill and [[BackgroundFill.Outline]] to display an outline using the line color */
   backgroundFill?: BackgroundFill;
-  /** Set fill color to a specific color. If the fill color and line color are the same, it's an opaque fill, otherwise it's an outline fill */
+  /** Set fill color to a specific color. If the fill color is undefined or the same as the line color, it's an opaque fill, otherwise it's an outline fill */
   color?: ColorDef;
   /** Set fill using gradient properties */
   gradient?: Gradient.SymbProps;

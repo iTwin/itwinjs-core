@@ -2,7 +2,7 @@
 
 ## [Introduction](./intro/introduction)
 
-## [Quick Tour](./intro/quick-tour)
+## [Modeling with BIS](./intro/modeling-with-bis)
 
 ## [BIS Organization](./intro/bis-organization)
 
@@ -18,7 +18,7 @@
 
 ## [Relationship Fundamentals](./intro/relationship-fundamentals)
 
-## [Schemas (./intro/“Domains”)](./intro/schemas-domains)
+## [Schemas (“Domains”)](./intro/schemas-domains)
 
 ## [Model Hierarchy](./intro/model-hierarchy)
 
@@ -27,6 +27,8 @@
 ## [Functional Models and Elements](./intro/functional-models-and-elements)
 
 ## [Information Models and Elements](./intro/information-models-and-elements)
+
+## [Quick Tour](./intro/quick-tour)
 
 # Background for BIS
 

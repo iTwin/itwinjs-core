@@ -3,40 +3,50 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { TriMeshArgs, IndexedPolylineArgs, PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d,
-         FeatureTable, FeatureIndex, FeatureIndexType } from "@bentley/imodeljs-common";
-import { DisplayParams } from "./DisplayParams";
+import { PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d, EdgeArgs, SilhouetteEdgeArgs, PolylineEdgeArgs, FillFlags,
+         FeatureTable, FeatureIndex, FeatureIndexType, ColorIndex, PolylineFlags, LinePixels, OctEncodedNormal, Texture, Material } from "@bentley/imodeljs-common";
+import { DisplayParams, DisplayParamsRegionEdgeType } from "./DisplayParams";
 // import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
 // import { RenderSystem } from "../System";
 import { TriangleList } from "./Primitives";
 import { Graphic } from "../webgl/Graphic";
 
-export class PolylineArgs extends IndexedPolylineArgs {
-  public polylines: PolylineData[] = [];
-  public colorTable: Uint32Array = new Uint32Array();
-  public constructor() { super(); }
+/* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
+export class PolylineArgs {
+  public colors = new ColorIndex();
+  public features = new FeatureIndex();
+  public width = 0;
+  public linePixels = LinePixels.Solid;
+  public flags: PolylineFlags;
+  public points: Uint16Array;
+  public polylines: PolylineData[];
+  public pointParams?: QParams3d;
 
-  public isValid(): boolean { return this.polylines.length !== 0; }
+  public constructor(points: Uint16Array = new Uint16Array(), polylines: PolylineData[] = [], pointParams?: QParams3d,
+                     is2d = false, isPlanar = false) {
+    this.points = points;
+    this.polylines = polylines;
+    this.pointParams = pointParams;
+    this.flags = new PolylineFlags(is2d, isPlanar);
+  }
+
+  public get isValid(): boolean { return this.polylines.length !== 0; }
   public reset(): void {
     this.flags.initDefaults();
-    this.numPoints = this.numLines = 0;
     this.points = new Uint16Array();
-    this.lines = [];
     this.polylines = [];
     this.colors.reset();
-    this.colorTable = new Uint32Array();
     this.features.reset();
   }
   public init(mesh: Mesh) {
     this.reset();
     this.width = mesh.displayParams.width;
     this.linePixels = mesh.displayParams.linePixels;
-
     this.flags.is2d = mesh.is2d;
     this.flags.isPlanar = mesh.isPlanar;
     this.flags.isDisjoint = MeshPrimitiveType.Point === mesh.type;
-    if (mesh.displayParams.computeHasRegionOutline()) {
+    if (DisplayParamsRegionEdgeType.Outline === mesh.displayParams.regionEdgeType) {
       // This polyline is behaving as the edges of a region surface.
       // TODO: GradientSymb not implemented yet!  Uncomment following lines when it is implemented.
       // if (mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined())
@@ -45,34 +55,65 @@ export class PolylineArgs extends IndexedPolylineArgs {
         this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
     }
 
-    this.polylines.reverse();
     mesh.polylines.forEach((polyline) => {
       const indexedPolyline = new PolylineData();
       if (indexedPolyline.init(polyline)) { this.polylines.push(indexedPolyline); }
     });
-    if (!this.isValid()) { return false; }
+    if (!this.isValid) { return false; }
     this.finishInit(mesh);
     return true;
   }
   public finishInit(mesh: Mesh) {
     this.pointParams = mesh.points.params;
-    this.numPoints = mesh.points.length;
     this.points = mesh.points.toTypedArray();
-    mesh.colorMap.toColorIndex(this.colors, this.colorTable, mesh.colors);
+    mesh.colorMap.toColorIndex(this.colors, mesh.colors);
     mesh.toFeatureIndex(this.features);
-    this.numLines = this.polylines.length;
-    this.lines = this.polylines.splice(0);
   }
 }
 
-export class MeshArgs extends TriMeshArgs {
-  public colorTable: number[] = [];
+// The vertices of the edges are shared with those of the surface
+export class MeshArgsEdges {
+  public edges = new EdgeArgs();
+  public silhouettes = new SilhouetteEdgeArgs();
+  public polylines = new PolylineEdgeArgs();
+  public width = 0;
+  public linePixels = LinePixels.Solid;
+
+  public clear(): void {
+    this.edges = new EdgeArgs();
+    this.silhouettes = new SilhouetteEdgeArgs();
+    this.polylines = new PolylineEdgeArgs();
+    this.width = 0;
+    this.linePixels = LinePixels.Solid;
+  }
+  public isValid(): boolean { return this.edges.isValid() || this.silhouettes.isValid() || this.polylines.isValid(); }
+}
+
+/* Information needed to draw a triangle mesh and its edges. */
+export class MeshArgs {
+  public edges = new MeshArgsEdges();
+  public vertIndices: number[] = [];
+  public points?: Uint16Array;
+  public normals: OctEncodedNormal[] = [];
+  public textureUv: Point2d[] = [];
+  public texture?: Texture;
+  public colors = new ColorIndex();
+  public features = new FeatureIndex();
+  public pointParams?: QParams3d;
+  public material?: Material;
+  public fillFlags = FillFlags.None;
+  public isPlanar = false;
+  public is2d = false;
   public polylineEdges: PolylineData[] = [];
 
+  // public toPolyface(): IndexedPolyface {
+  //   let polyFace = IndexedPolyface.create(); // PolyfaceHeaderPtr polyFace = PolyfaceHeader::CreateFixedBlockIndexed(3);
+  //   let pointIndex = polyFace.pointCount;
+  //   pointIndex. // In Progress!!
+  // }
+
   public clear() {
-    this.numIndices = 0;
-    this.vertIndex = [];
-    this.numPoints = 0;
+    this.vertIndices = [];
     this.points = undefined;
     this.normals = [];
     this.textureUv = [];
@@ -80,7 +121,6 @@ export class MeshArgs extends TriMeshArgs {
     this.isPlanar = false;
     this.is2d = false;
     this.colors.reset();
-    this.colorTable = [];
     this.features.reset();
     this.polylineEdges = [];
     this.edges.clear();
@@ -89,20 +129,18 @@ export class MeshArgs extends TriMeshArgs {
     this.clear();
     if (mesh.triangles.empty) { return false; }
     this.pointParams = mesh.points.params;
-    this.vertIndex = mesh.triangles.indices;
-    this.numIndices = this.vertIndex.length;
+    this.vertIndices = mesh.triangles.indices;
     this.points = mesh.points.toTypedArray();
-    this.numPoints = mesh.points.length;
     this.textureUv = mesh.uvParams;
     if (!mesh.displayParams.ignoreLighting) { this.normals = mesh.normals.slice(); }
 
-    // this.texture = <TextureP>(mesh.displayParams.GetTextureMapping().GetTexture());
+    // this.texture = mesh.displayParams.GetTextureMapping().GetTexture());
     // this.material = mesh.displayParams.material;
     this.fillFlags = mesh.displayParams.fillFlags;
     this.isPlanar = mesh.isPlanar;
     this.is2d = mesh.is2d;
 
-    mesh.colorMap.toColorIndex(this.colors, new Uint32Array(this.colorTable), mesh.colors);
+    mesh.colorMap.toColorIndex(this.colors, mesh.colors);
     mesh.toFeatureIndex(this.features);
 
     this.edges.width = mesh.displayParams.width;
@@ -111,7 +149,6 @@ export class MeshArgs extends TriMeshArgs {
     const meshEdges: MeshEdges = mesh.edges;
     if (!meshEdges) { return true; }
 
-    this.polylineEdges.reverse();
     meshEdges.polylines.forEach((meshPolyline: MeshPolyline) => {
       const polyline = new PolylineData();
       if (polyline.init(meshPolyline)) { this.polylineEdges.push(polyline); }
@@ -119,7 +156,6 @@ export class MeshArgs extends TriMeshArgs {
 
     this.edges.polylines.init(this.polylineEdges);
     // this.auxData = mesh.auxData();
-
     return true;
   }
 }

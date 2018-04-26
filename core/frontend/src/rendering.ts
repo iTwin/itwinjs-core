@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 export * from "./render/primitives/ColorMap";
+export * from "./render/primitives/DisplayParams";
 export * from "./render/primitives/Geometry";
 export * from "./render/primitives/Mesh";
 export * from "./render/primitives/Primitives";
