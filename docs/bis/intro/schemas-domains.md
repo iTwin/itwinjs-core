@@ -1,14 +1,15 @@
 # Schemas (“Domains”)
 
+<!-- TODO
 *AB> Are we ok with identifying the primary author/contact for each chapter?*
-
 *AB> "Domain" and "Schema" not same thing*
+-->
 
 ## Introduction
 
 Domain is a synonym for BIS ECSchema. Domains define the data types for a naturally coherent and limited subject matter. This approach aims to avoid problems and complexities associated with understanding and managing monolithic or very large schemas. It highly depends on coordination and cooperation among multiple BIS domain designers so each sharable concept needed by BIS applications find its appropriate home (i.e. domain) where it will be managed and maintained.
 
-With Domains being the main concept in BIS behind how the world is divided in, and each domain being small enough to have a clear scope and owner, BIS can also be thought as a modular family of “domain” ECSchemas.
+With Domains being the main concept in BIS behind how the world is divided in, and each domain being small enough to have a clear scope and owner, BIS can also be thought as a modular family of “domain” schemas.
 
 ## A Layered Approach
 
@@ -26,11 +27,11 @@ BisCore defines the core ECClasses and organizational strategies that all other 
 
 The next layer in the BIS family of ECSchemas above “Core” is “Common”. That is where broad concepts applicable to multiple disciplines are defined. As an example, a Building “Common” schema may include concepts like stories, but not details of architecture (such as Windows), or structure (such as beams).
 
-The three layers above “Common” specialize on a single discipline (in the figure above, sharing the same initial letter), while differentiating in their purpose: “Interop”, “Physical” and “Functional/Analytical”.
+The three layers above “Common” specialize on a single discipline (in the figure above, sharing the same initial letter), while differentiating in their purpose: “Interoperability”, “Physical” and “Functional/Analytical”.
 
-### The Interop layer
+### The Interoperability layer
 
-The “Interop” layer aims to contain concepts that other disciplines will need to implement or reference. As an example, an IElectricalLoad mixin defined by the electrical discipline may allow other disciplines to define required electrical service (pumps, elevators, server rooms, etc.).
+The “Interoperability” layer aims to contain concepts that other disciplines will need to implement or reference. As an example, an IElectricalLoad mixin defined by the electrical discipline may allow other disciplines to define required electrical service (pumps, elevators, server rooms, etc.).
 
 ### The Physical layer
 
@@ -42,7 +43,9 @@ The Physical layer defines real-world physical entities and closely associated i
 
 This layer defines data types for functional or analytical data towards enabling various schematics and simulations.
 
+<!-- TODO
 *AB> Add example elements (Vern?).*
+-->
 
 ### The Application Layer
 
@@ -54,7 +57,9 @@ A key organizational strategy for both the BIS schemas and the organization of d
 
 Within a BIS repository, the representation of the physical world becomes the framework upon which we can organize other data. All data in BIS repositories is expected to be about or related to physical infrastructure. The physical infrastructure is modeled as a hierarchy and other non-physical information (e.g. Functional or Analytical perspectives) is stored relative to that hierarchy. However, it is expected that in some workflows the physical infrastructure appears after other non-physical data is modeled. Thus, the concept of a “physical backbone”, albeit not being mandatory from the start of a BIS repository, it should drive the design of the various domains in a discipline.
 
+<!-- TODO
 *AB> "...is stored relative to that hierarchy..." no longer true?*
+-->
 
 ## Domain Handlers
 
