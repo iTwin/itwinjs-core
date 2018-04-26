@@ -21,9 +21,8 @@
   "scripts": {
     "rush:install": "node ./common/rush.js install",
     "rush:build": "node ./common/rush.js rebuild -v",
-    "rush:lint": "node ./common/rush.js lint",
-    "rush:cover": "node ./common/rush.js cover",
-    "rush:test": "node ./common/rush.js test",
+    "rush:lint": "node ./common/rush.js lint -v",
+    "rush:test+cover": "node ./common/rush.js test+cover -v && npm run cover:merge",
     "build": "echo use 'rush rebuild'",
     "clean": "rimraf out",
     "cover": "echo use 'rush cover'",
@@ -31,6 +30,7 @@
     "lint": "echo use 'rush lint'",
     "start": "cd src/sample && npm start",
     "test": "echo use 'rush test'",
+    "test+cover": "echo use 'rush test+cover'",
     "validatePackageJson": "validjson ./package.json"
   },
   "dependencies": {},

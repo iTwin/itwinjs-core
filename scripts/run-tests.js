@@ -3,10 +3,14 @@ const path = require("path");
 const yargs = require("yargs").argv;
 const chokidar = require("chokidar");
 const Mocha = require("mocha");
-const tldrReporter = require('mocha-tldr-reporter');
 
-const repeat = (yargs.repeat ? yargs.repeat : 1);
-const timeoutsEnabled = !(yargs.noTimeouts || false);
+const options = {
+  repeat: (yargs.repeat ? yargs.repeat : 1), // number of times the tests run should be repeated
+  watch: yargs.watch || false, // watch for test and source files and re-run tests on changes
+  timeoutsEnabled: yargs.noTimeouts || true, // measure tests' coverage
+  coverage: yargs.coverage || false, // create test coverage report
+  report: yargs.report || false, // create test run report
+};
 const testsName = path.basename(path.resolve("./"));
 
 let extensionsRegistered = false;
@@ -18,6 +22,8 @@ const registerExtensions = () => {
     extensionsRegistered = true;
   }
 };
+if (!options.coverage)
+  registerExtensions();
 
 const shouldRecurseIntoDirectory = (directoryPath) => {
   return fs.lstatSync(directoryPath).isDirectory()
@@ -60,30 +66,39 @@ const clearTestFilesCache = () => {
   });
 };
 
-const runOnce = () => {
-  let mocha = new Mocha({
-    ui: "bdd",
-  });
-  if (!yargs.coverage)
-    registerExtensions();
-  if (yargs.coverage) {
-    requireLibModules("./");
-    mocha = mocha.reporter(tldrReporter).ignoreLeaks(true);
-  } else if (yargs.watch) {
-    mocha = mocha.reporter("min").ignoreLeaks(false);
-  } else if (repeat > 1) {
-    mocha = mocha.reporter("spec").ignoreLeaks(false);
-  } else {
-    const reporterOptions = {
-      reporterEnabled: "mocha-junit-reporter, spec",
+const setupReporter = (mocha) => {
+  let reporter = "spec";
+  let reporterOptions = undefined;
+  if (options.coverage) {
+    reporter = "mocha-tldr-reporter";
+  } else if (options.watch) {
+    reporter = "min";
+  }
+  if (options.report) {
+    reporterOptions = {
+      reporterEnabled: `mocha-junit-reporter, ${reporter}`,
       mochaJunitReporterReporterOptions: {
         mochaFile: `../../out/reports/tests/results.${testsName}.xml`,
       },
     };
-    mocha = mocha.reporter("mocha-multi-reporters", reporterOptions).ignoreLeaks(false).useColors(true).fullTrace();
+    reporter = "mocha-multi-reporters";
   }
-  mocha.timeout(10000);
-  mocha.enableTimeouts(timeoutsEnabled);
+  return mocha.reporter(reporter, reporterOptions);
+}
+
+const runOnce = () => {
+  if (options.coverage) {
+    requireLibModules("./");
+  }
+  let mocha = new Mocha({
+    ui: "bdd",
+  });
+  mocha = setupReporter(mocha)  
+    .timeout(10000)
+    .enableTimeouts(options.timeoutsEnabled)  
+    .ignoreLeaks(false)
+    .useColors(true)
+    .fullTrace();
   getTestFiles().forEach((file) => {
     mocha.addFile(file);
   });
@@ -100,16 +115,16 @@ const runOnce = () => {
 
 const run = () => {
   let chain = Promise.resolve();
-  for (let i = 0; i < repeat; ++i) {
+  for (let i = 0; i < options.repeat; ++i) {
     chain = chain.then(() => {
       clearTestFilesCache();
-      if (repeat > 1)
+      if (options.repeat > 1)
         console.log(`Starting test iteration #${i + 1}`);
       return runOnce();
     });
   }
   chain.catch((err) => {
-    if (yargs.watch)
+    if (options.watch)
       return;
     if (err)
       console.log(err);
@@ -119,7 +134,7 @@ const run = () => {
 
 run();
 
-if (yargs.watch) {
+if (options.watch) {
   const watcher = chokidar.watch('', {
     ignored: "**/node_modules/**",
     ignoreInitial: true,

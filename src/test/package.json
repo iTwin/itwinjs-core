@@ -14,6 +14,7 @@
     "cover": "nyc node ../../scripts/run-tests.js --coverage",
     "lint": "tslint -p ./tsconfig.json",
     "test": "node ../../scripts/run-tests.js",
+    "test+cover": "nyc node ../../scripts/run-tests.js --coverage --report",
     "validatePackageJson": "validjson ./package.json",
     "watch": "npm run test -- --watch"
   },

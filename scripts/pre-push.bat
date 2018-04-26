@@ -27,7 +27,7 @@ if errorlevel 1 (
   exit /b %errorlevel%
 )
 
-call npm run test -s
+call rush test+cover
 if errorlevel 1 (
   echo Tests failed
   exit /b %errorlevel%

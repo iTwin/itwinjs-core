@@ -18,6 +18,7 @@
     "lint": "",
     "start": "imodeljs-react-scripts start",
     "test": "",
+    "test+cover": "",
     "validatePackageJson": "validjson ./package.json"
   },
   "dependencies": {

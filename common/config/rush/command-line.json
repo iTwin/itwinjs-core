@@ -30,6 +30,12 @@
       "summary": "Validate package.json files",
       "documentation": "Making a mistake in package.json by leaving a trailing comma or similar ir an easy to make mistake. This step checks if the JSON specified in package.json is valid.",
       "parallelized": true,
+    },
+    {
+      "name": "test+cover",
+      "summary": "Runs tests and generates test and coverage reports",
+      "documentation": "",
+      "parallelized": true
     }
   ]
 }
