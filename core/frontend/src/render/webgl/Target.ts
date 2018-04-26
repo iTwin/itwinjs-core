@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { RenderTarget } from "../System";
+import { RenderTarget, RenderSystem } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -142,18 +142,21 @@ export class Target extends RenderTarget {
   protected _overridesUpdateTime?: BeTimePoint;
   protected _hilite?: HilitedSet;
   protected _hiliteUpdateTime?: BeTimePoint;
-  public readonly context: WebGLRenderingContext;
   private readonly _techniques?: Techniques; // ###TODO this moves to System...
+  public readonly system: System;
+  public readonly context: WebGLRenderingContext;
 
+  public get renderSystem(): RenderSystem { return this.system; }
   public get hilite(): HilitedSet { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
   public get techniques(): Techniques { return this._techniques!; }
 
-  protected constructor(system: System, gl: WebGLRenderingContext) {
-    super(system);
-    this.context = gl;
+  protected constructor(system: System, context: WebGLRenderingContext) {
+    super();
+    this.system = system;
+    this.context = context;
 
-    this._techniques = Techniques.create(gl);
+    this._techniques = Techniques.create(context);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

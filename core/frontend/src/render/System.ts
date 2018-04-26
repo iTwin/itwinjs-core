@@ -62,14 +62,11 @@ export class RenderPlan {
  * Every DgnViewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget {
-  public readonly system: RenderSystem;
   public decorations = new Decorations();
 
-  protected constructor(system: RenderSystem) {
-    this.system = system;
-  }
+  public abstract get renderSystem(): RenderSystem;
 
-  public createGraphic(params: GraphicBuilderCreateParams) { return this.system.createGraphic(params); }
+  public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
   public changeDecorations(decorations: Decorations) { this.decorations = decorations; }
   public abstract setHiliteSet(hilited: HilitedSet): void;
   public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
