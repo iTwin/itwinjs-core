@@ -206,7 +206,7 @@ export class ShaderProgram implements GLDisposable {
   }
 
   public use(params: ShaderProgramParams): boolean {
-    if (!this.compile(params.gl)) {
+    if (!this.compile(params.context)) {
       return false;
     }
 
@@ -217,7 +217,7 @@ export class ShaderProgram implements GLDisposable {
 
     assert(!this._inUse);
     this._inUse = true;
-    params.gl.useProgram(this._glProgram);
+    params.context.useProgram(this._glProgram);
 
     for (const uniform of this._programUniforms) {
       if (!uniform.bind(params)) {
@@ -243,7 +243,7 @@ export class ShaderProgram implements GLDisposable {
       attribute.bind(params);
     }
 
-    // ###TODO params.geometry.draw(params.gl);
+    // ###TODO params.geometry.draw(params.context);
   }
 
   public addProgramUniform(name: string, binding: BindProgramUniform) {
@@ -297,7 +297,7 @@ export class ShaderProgramExecutor implements IDisposable {
     if (this._program === program) {
       return true;
     } else if (undefined !== this._program) {
-      this._program.endUse(this._params.gl);
+      this._program.endUse(this._params.context);
     }
 
     this._program = program;

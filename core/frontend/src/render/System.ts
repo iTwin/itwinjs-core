@@ -98,7 +98,7 @@ export abstract class RenderSystem {
   public notPainting() { this._nowPainting = undefined; }
 
   /** Create a render target. */
-  public abstract createTarget(gl: WebGLRenderingContext, tileSizeModifier: number): RenderTarget;
+  public abstract createTarget(): RenderTarget;
 
   // /** Create an offscreen render target. */
   // public abstract createOffscreenTarget(tileSizeModifier: number): RenderTarget;
@@ -185,4 +185,6 @@ export abstract class RenderSystem {
    * An idle frame is classified one tick of the render loop during which no viewports are open and the render queue is empty.
    */
   public idle(): void {}
+
+  public onInitialized(): void { }
 }
