@@ -47,5 +47,3 @@
 ## [Standard Relationship “Strengths” Names](./naming-guidelines/standard-relationship-strengths-names)
 
 ## [BIS Schemas Names](./naming-guidelines/bis-schemas-names)
-
-## [Appendix](./naming-guidelines/appendix)

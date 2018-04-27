@@ -1,5 +1,7 @@
 # BIS Schemas Names
 
+<!-- TODO: Do we want to include this in the docs? -->
+
 All EcSchema/BIS Domain Names must be registered with BIS workgroup to avoid conflicts.
 
 Schemas are manages in the [bis-schemas](https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/_git/bis-spec) repository. The list below is the summary of those schemas.
@@ -22,7 +24,7 @@ Schemas are manages in the [bis-schemas](https://tfs.bentley.com/tfs/ProductLine
 | Costing | Costing | A | Schema for Cost-Estimation. | cost | bis |
 | Electrical | ElectricalPhysical | A | Bentley Electrical Schema | elec | bis |
 | Forms | Forms | A | Forms Schema | frm | bis, prf |
-| Grids | Grids | A | | grids | bis,AECU | 
+| Grids | Grids | A | | grids | bis,AECU |
 | LinearReferencing | LinearReferencing | A | Base schema for Linear Referencing. | lr | bis |
 | Planning | Planning | A | | bp | bis, ecdbmap, CoreCA|
 | Plant (OP Converted) | PlantCustomAttributes | B | Custom attributes for Plant | PlantCA | |
