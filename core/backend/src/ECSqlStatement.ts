@@ -42,13 +42,9 @@ export class ECSqlInsertResult {
  * > statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  *
- * #### Example:
- *
- * ```ts
- * [[include:ECSqlStatement.Examples]]
- * ```
- *
- * See [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) for more on ECSQL.
+ * See also
+ * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iModelJs API.
+ * - [Code samples]($docs/learning/backend/ExecutingECSQL#code-examples) illustrate the use of iModelJs API for executing and working with ECSQL
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: NativeECSqlStatement | undefined;
@@ -197,8 +193,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
    *
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
+   *
+   * See also these [Code Samples]($docs/learning/backend/ExecutingECSQL#binding-to-all-parameters-at-once)
    */
   public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
@@ -246,6 +244,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *  - Error status in case of errors.
    *
    *  >  Insert statements can be used with ECDb only, not with IModelDb.
+   *
+   * See also: [Code Samples]($docs/learning/backend/ExecutingECSQL#code-examples)
    */
   public step(): DbResult { return this._stmt!.step(); }
 
@@ -271,7 +271,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
    *
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
+   * See also:
+   * - [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
+   * - [Code Samples]($docs/learning/backend/ExecutingECSQL#working-with-the-query-result)
    */
   public getRow(): any {
     const colCount: number = this.getColumnCount();
@@ -290,7 +292,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Calls step when called as an iterator.
    *
-   *  Each iteration returns an [ECSQL row format]($docs/learning/ECSQLRowFormat)
+   *  Each iteration returns an [ECSQL row format]($docs/learning/ECSQLRowFormat) as returned
+   *  from [ECSqlStatement.getRow]($imodeljs-backend.ECSqlStatement.getRow).
    */
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
@@ -311,13 +314,19 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of ECSQL column in query result (0-based)
+   *
+   * See also: [Code Samples]($docs/learning/backend/ExecutingECSQL#working-with-the-query-result)
    */
   public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
 }
 
 /** Value of a column in a row of an ECSQL query result.
  *
- * See [ECSqlStatement]($imodeljs-backend.ECSqlStatement), [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
+ * See also:
+ *
+ * - [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
+ * - [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
+ * - [Code Samples]($docs/learning/backend/ExecutingECSQL#working-with-the-query-result)
  */
 export class ECSqlValue {
   private _val: NativeECSqlValue;

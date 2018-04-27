@@ -16,7 +16,10 @@ import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./Platform";
 
-/** Equivalent of the ECEnumeration OpCode in the `ECDbChange` ECSchema */
+/** Equivalent of the ECEnumeration OpCode in the `ECDbChange` ECSchema
+ *  See also
+ *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
+ */
 export enum ChangeOpCode {
   Insert = 1,
   Update = 2,
@@ -27,6 +30,9 @@ export enum ChangeOpCode {
  *  **Changes**.
  * The enum can be used when programmatically binding values to the ChangedValueState argument
  * in an ECSQL using the **Changes** ECSQL function.
+ *
+ *  See also
+ *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -37,7 +43,9 @@ export enum ChangedValueState {
 
 /** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
  *
- *  See also [ChangeSummaryManager.queryChangeSummary]($imodeljs-backend.ChangeSummaryManager.queryChangeSummary)
+ *  See also
+ *  - [ChangeSummaryManager.queryChangeSummary]($imodeljs-backend.ChangeSummaryManager.queryChangeSummary)
+ *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
  */
 export interface ChangeSummary {
   id: Id64;
@@ -46,7 +54,9 @@ export interface ChangeSummary {
 
 /** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
  *
- *  See also [ChangeSummaryManager.queryInstanceChange]($imodeljs-backend.ChangeSummaryManager.queryInstanceChange)
+ *  See also
+ *  - [ChangeSummaryManager.queryInstanceChange]($imodeljs-backend.ChangeSummaryManager.queryInstanceChange)
+ *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
  */
 export interface InstanceChange {
   id: Id64;
@@ -83,11 +93,15 @@ class ChangeSummaryExtractContext {
   public get iModelId(): string { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
 }
 
-/** Class to extract change summaries for a briefcase. */
+/** Class to extract Change Summaries for a briefcase.
+ *
+ *  See also:
+ *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
+ */
 export class ChangeSummaryManager {
-  /** Determines whether the Changes cache file is attached to the specified iModel or not
-   * @param iModel iModel to check whether a Changes cache file is attached
-   * @returns Returns true if the Changes cache file is attached to the iModel. false otherwise
+  /** Determines whether the *Changes Cache File* is attached to the specified iModel or not
+   * @param iModel iModel to check whether a *Changes Cache File* is attached
+   * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
     if (!iModel || !iModel.nativeDb)
@@ -96,9 +110,9 @@ export class ChangeSummaryManager {
     return iModel.nativeDb.isChangeCacheAttached();
   }
 
-  /** Attaches the Changes cache file to the specified iModel if it hasn't been attached yet.
-   * A new Changes cache file will be created for the iModel if it hasn't existed before.
-   * @param iModel iModel to attach the Changes cache file to
+  /** Attaches the *Changes Cache File* to the specified iModel if it hasn't been attached yet.
+   * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
+   * @param iModel iModel to attach the *Changes Cache File* file to
    * @throws [IModelError]($imodeljs-common.IModelError)
    */
   public static attachChangeCache(iModel: IModelDb): void {
@@ -118,12 +132,12 @@ export class ChangeSummaryManager {
     assert(IModelJsFs.existsSync(changesCacheFilePath));
     const res: DbResult = iModel.nativeDb.attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to attach Changes cache file to ${iModel.briefcase.pathname}.`);
+      throw new IModelError(res, `Failed to attach Changes Cache file to ${iModel.briefcase.pathname}.`);
   }
 
-  /** Detaches the ECChanges cache file from the specified iModel.
-   * @param iModel iModel to detach the ECChanges cache file to
-   * @throws [IModelError]($imodeljs-common.IModelError) in case of errors, e.g. if no ECChanges cache was attached before.
+  /** Detaches the *Changes Cache File* from the specified iModel.
+   * @param iModel iModel to detach the *Changes Cache File* to
+   * @throws [IModelError]($imodeljs-common.IModelError) in case of errors, e.g. if no *Changes Cache File* was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -132,7 +146,7 @@ export class ChangeSummaryManager {
     iModel.clearStatementCache();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to detach ECChanges cache file from ${iModel.briefcase.pathname}.`);
+      throw new IModelError(res, `Failed to detach Changes Cache file from ${iModel.briefcase.pathname}.`);
   }
 
   /** Extracts change summaries from the specified iModel.
@@ -176,7 +190,7 @@ export class ChangeSummaryManager {
 
     if (!changesFile || !changesFile.nativeDb) {
       assert(false, "Should not happen as an exception should have been thrown in that case");
-      throw new IModelError(IModelStatus.BadArg, "Failed to create ECChanges file.");
+      throw new IModelError(IModelStatus.BadArg, "Failed to create Change Cache file.");
     }
 
     try {
@@ -296,7 +310,7 @@ export class ChangeSummaryManager {
     assert(iModel.nativeDb);
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changesFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Failed to create ECChanges file at '" + changesFilePath + "'.");
+      throw new IModelError(stat, "Failed to create Change Cache file at '" + changesFilePath + "'.");
 
     // Extended information like changeset ids, push dates are persisted in the IModelChange ECSchema
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
@@ -343,7 +357,7 @@ export class ChangeSummaryManager {
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
-      throw new IModelError(IModelStatus.BadArg, "ECChange cache must be attached to iModel.");
+      throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
     return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
     (stmt: ECSqlStatement) => {
@@ -365,7 +379,7 @@ export class ChangeSummaryManager {
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
-      throw new IModelError(IModelStatus.BadArg, "ECChange cache must be attached to iModel.");
+      throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
     // query instance changes
     const instanceChange: InstanceChange = iModel.withPreparedStatement(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
