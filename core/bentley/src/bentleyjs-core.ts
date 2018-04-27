@@ -56,7 +56,7 @@ export * from "./Time";
  * Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism.
  * <p><em>Example:</em>
  * ``` ts
- * [[include:Logging.serviceLoggingExample]($bentleyjs-core.
+ * [[include:Logging.serviceLoggingExample]]
  * ```
  * An example of the logging portion of a configuration .json file that is deployed with a service might be:
  * ``` json

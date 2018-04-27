@@ -3,81 +3,56 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 
-export class ColorIndexNonUniform {
-  public colors: Uint32Array;
-  public indices: Uint16Array;
-  public hasAlpha: boolean;
+export class NonUniformColor {
+  public readonly colors: Uint32Array;
+  public readonly indices: Uint16Array;
+  public readonly isOpaque: boolean;
+
   public constructor(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean) {
     this.colors = new Uint32Array(colors.buffer);
     this.indices = new Uint16Array(indices.buffer);
-    this.hasAlpha = hasAlpha;
+    this.isOpaque = !hasAlpha;
   }
 }
 
 export class ColorIndex {
-  public numColors: number = 1;
-  public uniform: number = 0x00ffffff;
-  public nonUniform: ColorIndexNonUniform | undefined;
-  public constructor() {
-    this.reset();
-  }
-  public isValid(): boolean { return this.numColors > 0; }
-  public isUniform(): boolean {
-    assert(this.numColors > 0);
-    return this.numColors === 1;
-  }
-  public hasAlpha(): boolean {
-    if (this.isUniform())
-      return (0 !== (this.uniform & 0xff000000));
-    else {
-      assert(undefined !== this.nonUniform);
-      if (undefined !== this.nonUniform)
-        return this.nonUniform.hasAlpha;
-      else
-        return false;
-    }
-  }
-  public reset() {
-    this.numColors = 1;
-    this.uniform = ColorDef.white.tbgr;
-    this.nonUniform = undefined;
-  }
-  public setUniform(color: number | ColorDef) {
-    if (typeof color === "number") {
-      this.numColors = 1;
-      this.uniform = color;
-      this.nonUniform = undefined;
-    } else {
-      this.setUniform(color.tbgr);
-    }
-  }
-  public setNonUniform(numColors: number, colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean) {
-    assert(numColors > 1);
-    this.numColors = numColors;
-    this.nonUniform = new ColorIndexNonUniform(colors, indices, hasAlpha);
-    this.uniform = 0;
+  private color: ColorDef | NonUniformColor;
+
+  public get hasAlpha() { return !this.color.isOpaque; }
+  public get isUniform() { return this.color instanceof ColorDef; }
+  public get numColors(): number { return this.isUniform ? 1 : this.nonUniform!.colors.length; }
+
+  public constructor() { this.color = ColorDef.white.clone(); }
+
+  public reset() { this.color = ColorDef.white.clone(); }
+
+  public get uniform(): ColorDef | undefined { return this.isUniform ? this.color as ColorDef : undefined; }
+  public initUniform(color: ColorDef | number) { this.color = ("number" === typeof color) ? new ColorDef(color) : (color as ColorDef).clone(); }
+
+  public get nonUniform(): NonUniformColor | undefined { return !this.isUniform ? this.color as NonUniformColor : undefined; }
+  public initNonUniform(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean) {
+    this.color = new NonUniformColor(colors, indices, hasAlpha);
   }
 }
 
 export const enum FeatureIndexType {
-  kEmpty,
-  kUniform,
-  kNonUniform,
+  Empty,
+  Uniform,
+  NonUniform,
 }
 
 export class FeatureIndex {
-  public type: FeatureIndexType = FeatureIndexType.kEmpty;
+  public type: FeatureIndexType = FeatureIndexType.Empty;
   public featureID: number = 0;
-  public featureIDs: Uint32Array | undefined = undefined;
+  public featureIDs?: Uint32Array;
 
   public constructor() {
     this.reset();
   }
 
-  public isUniform(): boolean { return FeatureIndexType.kUniform === this.type; }
-  public isEmpty(): boolean { return FeatureIndexType.kEmpty === this.type; }
-  public reset(): void { this.type = FeatureIndexType.kEmpty; this.featureID = 0; this.featureIDs = undefined; }
+  public isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
+  public isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
+  public reset(): void { this.type = FeatureIndexType.Empty; this.featureID = 0; this.featureIDs = undefined; }
 }

@@ -20,7 +20,7 @@ BIS is the conceptual schema for a “Digital World” to make cohesive sense of
 
 To fulfill the vision of a cohesive Digital World, we must break down existing product/discipline/phase data silos. Historically, we have each optimized data repositories and structures for our particular use cases, without much regard for other portions of the infrastructure workflows. To move forward, we need to break down the silos and agree on the semantics and structure of our data. If three products and two services need to define Widgets, they will need to collaborate to define a Widget only once (although each may have other non-overlapping Widget-related data).
 
-BIS is not just for “interop” like our previous “consensus schemas”. BIS is the native (“editing”) schema family for new applications and services.
+BIS is not just for “interoperability” like our previous “consensus schemas”. BIS is the native (“editing”) schema family for new applications and services.
 
 ## Evolution of Data Over Time
 
@@ -44,14 +44,16 @@ BIS is modularized into a set of interrelated "domains" (each expressed in a sep
 
 Unless noted otherwise, all references to “schema”, “class” and “property” in this document refer to ECSchema, ECClass and ECProperty.
 
+<!-- TODO: Move to Glossary?
 ## Some Terminology
-
-(only subset of terms needed to understand this document are defined here)
 
 Discipline – **_XXXX NEED DEFINITION XXXX_**
 
 Domain – A synonym for BIS ECSchema. Domains are intended to define the data types for a naturally coherent and limited subject matter.
+-->
 
+<!-- TODO: Remove?
 ## How to use this document
 
 This document is intended for developers. Others should see(**_XXXXX 10 page doc somewhere XXXX_**) for non-developer introduction. This document can be read linearly from start to finish, or can be used as a reference. In general, later chapters build upon the concepts discussed in earlier chapters. A supplemental document with greater detail will be created for schema designers.
+-->
