@@ -25,7 +25,7 @@ function createPurpleQuadTechnique(target: Target): TechniqueId {
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
   builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
 
-  const prog = builder.buildProgram(target.context);
+  const prog = builder.buildProgram(System.instance.context);
   const technique = new SingularTechnique(prog);
   return target.techniques.addDynamicTechnique(technique, "PurpleQuad");
 }
