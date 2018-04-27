@@ -98,7 +98,7 @@ export * from "./gateway/StandaloneIModelGateway";
  *
  * ### Defining Gateways
  *
- * A gateway *definition* is an abstract TypeScript class that extends [Gateway]($imodeljs-common/Gateway).
+ * A gateway *definition* is an abstract TypeScript class that extends [Gateway]($imodeljs-common.Gateway).
  *
  * The definition class must define a static, asynchronous method for each operation that is to be exposed by the service.
  * That defines the gateway API.
@@ -120,7 +120,7 @@ export * from "./gateway/StandaloneIModelGateway";
  *
  * ### Implementing Gateways
  *
- * A gateway *implementation* is a TypeScript class that implements a particular gateway definition and extends [Gateway]($imodeljs-common/Gateway).
+ * A gateway *implementation* is a TypeScript class that implements a particular gateway definition and extends [Gateway]($imodeljs-common.Gateway).
  *
  * The implementation class must override each API method defined by the gateway definition, that is, it must actually implement the operations.
  * A best practice is that a gateway implementation should simply forward the calls, so that each method is a one-liner.
@@ -137,9 +137,9 @@ export * from "./gateway/StandaloneIModelGateway";
  *
  * A service must expose the gateways that it implements or imports, so that clients can use them.
  *
- * First, the service must call [Gateway.registerImplementation]($imodeljs-common/Gateway#registerImplementation) to register the gateways that it implements, if any.
+ * First, the service must call [Gateway.registerImplementation]($imodeljs-common.Gateway.registerImplementation) to register the gateways that it implements, if any.
  *
- * Next, the service must use a [GatewayConfiguration]($imodeljs-common/GatewayConfiguration) to configure the gateways that it wants to expose. It must
+ * Next, the service must use a [GatewayConfiguration]($imodeljs-common.GatewayConfiguration) to configure the gateways that it wants to expose. It must
  * choose the gateway configuration to use, based on how the service itself is configured. Choices include ....
  *
  * A service can expose multiple gateways.
@@ -152,7 +152,7 @@ export * from "./gateway/StandaloneIModelGateway";
  * ```
  * This example shows how a service could configure and expose more than one gateway, including imported gateways.
  * It also shows how to choose the appropriate configuration.
- * It also shows how a service could use [FeatureGates]($imodeljs-common/FeatureGates) to decide which gateways to expose.
+ * It also shows how a service could use [FeatureGates]($imodeljs-common.FeatureGates) to decide which gateways to expose.
  *
  * ### Serving Gateways (Service side)
  *
@@ -180,12 +180,12 @@ export * from "./gateway/StandaloneIModelGateway";
  * ### Configuring and Calling Gateways (Client side)
  *
  * A client (e.g., an app frontend) must configure the gateways that it intends to use.
- * It must use the appropriate [GatewayConfiguration]($imodeljs-common/GatewayConfiguration) for each gateway, depending on how
+ * It must use the appropriate [GatewayConfiguration]($imodeljs-common.GatewayConfiguration) for each gateway, depending on how
  * the client itself it configured and how the service that implements the gateway is deployed.
  * ... TBD more details on this ...
  * ... TBD code sample ...
  *
- * A client makes calls on a gateway's [proxy]($imodeljs-common/Gateway#getProxyForGateway). Each method in the proxy forwards the
+ * A client makes calls on a gateway's [proxy]($imodeljs-common.Gateway.getProxyForGateway). Each method in the proxy forwards the
  * call to the implementation. The call signature for the proxy methods is the same as given in the definition.
  *
  * ### Gateway Performance
