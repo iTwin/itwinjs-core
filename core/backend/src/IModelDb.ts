@@ -294,6 +294,11 @@ export class IModelDb extends IModel {
    *
    * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
    * the already prepared statement from the cache will be reused.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   *
    * @param ecsql The ECSQL statement to execute
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
@@ -314,6 +319,11 @@ export class IModelDb extends IModel {
   /** Execute a query against this IModelDb.
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   *
    * @param ecsql The ECSQL SELECT statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an *array* of values if the parameters are *positional*.
@@ -323,7 +333,6 @@ export class IModelDb extends IModel {
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($imodeljs-common.IModelError) If the statement is invalid
-   * See [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) for more on ECSQL.
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {

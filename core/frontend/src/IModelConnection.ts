@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeEvent } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
@@ -55,13 +55,6 @@ export class IModelConnection extends IModel {
     this.views = new IModelConnectionViews(this);
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
-  }
-
-  /** @hidden */
-  public static async toPropsArray(jsonArray: string[]): Promise<any[]> {
-    const props: any[] = [];
-    jsonArray.forEach((json) => props.push(JSON.parse(json)));
-    return props;
   }
 
   /** Open an IModelConnection to an iModel */
@@ -124,16 +117,20 @@ export class IModelConnection extends IModel {
    * Execute a query against the iModel.
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ExecutingECSQL#code-examples)
+   *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
    * @throws [[IModelError]] if the ECSQL is invalid
-   * See [Executing ECSQL]($docs/learning/frontend/ExecutingECSQL) for more on ECSQL.
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
@@ -168,6 +165,23 @@ export class IModelConnection extends IModel {
   }
 
   /**
+   * Determines whether the *Changes Cache File* is attached to this iModel or not.
+   *
+   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
+   */
+  public async isChangeCacheAttached(): Promise<boolean> { return await IModelReadGateway.getProxy().isChangeCacheAttached(this.iModelToken); }
+
+  /**
+   * Attaches the *Changes Cache File* to this iModel if it hasn't been attached yet.
+   *
+   * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
+   *
+   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   */
+  public async attachChangeCache(): Promise<void> { await IModelReadGateway.getProxy().attachChangeCache(this.iModelToken); }
+
+  /**
    * Execute a test by name
    * @param testName The name of the test to execute
    * @param params A JSON string containing all parameters the test requires
@@ -188,7 +202,7 @@ export class IModelConnectionModels {
 
   /** Get a batch of [[ModelProps]] given a list of model ids. */
   public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
+    return await IModelReadGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
   }
 
   public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
@@ -248,7 +262,7 @@ export class IModelConnectionModels {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsTemplate=FALSE ";
     }
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryModelProps(this._iModel.iModelToken, params));
+    return await IModelReadGateway.getProxy().queryModelProps(this._iModel.iModelToken, params);
   }
 }
 
@@ -265,12 +279,12 @@ export class IModelConnectionElements {
 
   /** Get a batch of [[ElementProps]] given one or more element ids. */
   public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg)));
+    return await IModelReadGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
   }
 
   /** get a bach of [[ElementProps]] that satisfy a query */
   public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
+    return await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params);
   }
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
@@ -347,7 +361,9 @@ export class IModelConnectionViews {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsPrivate=FALSE ";
     }
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
+    const viewProps = await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params);
+    assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
+    return viewProps as ViewDefinitionProps[];
   }
 
   /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.77.7",
+  "version": "0.79.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
