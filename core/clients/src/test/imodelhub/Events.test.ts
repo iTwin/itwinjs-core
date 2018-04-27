@@ -4,6 +4,7 @@
 import * as chai from "chai";
 import chaiString = require("chai-string");
 import * as chaiAsPromised from "chai-as-promised";
+import * as utils from "./TestUtils";
 
 import { TestConfig } from "../TestConfig";
 
@@ -84,6 +85,12 @@ describe("iModelHub EventHandler", () => {
     const postBody = responseBuilder.generatePostBody<EventSAS>(responseBuilder.generateObject<EventSAS>(EventSAS));
     responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody);
     const sas = await imodelHubClient.Events().getSASToken(accessToken, iModelId);
+
+    if (!TestConfig.enableNock) {
+      const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
+      const briefcaseId = parseInt(briefcases[0].wsgId, undefined);
+      await imodelHubClient.Codes().update(accessToken, iModelId, [utils.randomCode(briefcaseId)]);
+    }
 
     requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Subscriptions", subscription.wsgId + "/messages/head");
     requestResponse = '{"EventTopic":"123","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","BriefcaseId":1,"CodeScope":"0X100000000FF","CodeSpecId":"0xff","State":1,"Values":["TestCode143678383"]}';

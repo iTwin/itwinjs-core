@@ -4,6 +4,7 @@
 import * as chai from "chai";
 import chaiString = require("chai-string");
 import * as chaiAsPromised from "chai-as-promised";
+import * as utils from "./TestUtils";
 
 import { TestConfig } from "../TestConfig";
 
@@ -13,7 +14,6 @@ import { AuthorizationToken, AccessToken } from "../../Token";
 import { ConnectClient, Project } from "../../ConnectClients";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
-import { ECJsonTypeMap } from "../../index";
 
 chai.use(chaiString);
 chai.use(chaiAsPromised);
@@ -24,8 +24,8 @@ describe("iModelHub CodeHandler", () => {
   let projectId: string;
   let iModelId: string;
   // let seedFileId: string;
-  const briefcaseId: number = 2;
-  const briefcaseId2: number = 3;
+  let briefcaseId: number;
+  let briefcaseId2: number;
   const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
@@ -59,67 +59,27 @@ describe("iModelHub CodeHandler", () => {
     }
 
     iModelId = iModels[0].wsgId;
+
+    // TODO: Should acquire here if not enough briefcases
+    if (TestConfig.enableNock) {
+      briefcaseId = 2;
+      briefcaseId2 = 3;
+    } else {
+      const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
+      briefcaseId = parseInt(briefcases[0].wsgId, undefined);
+      briefcaseId2 = parseInt(briefcases[1].wsgId, undefined);
+    }
   });
 
   afterEach(() => {
     responseBuilder.clearMocks();
   });
 
-  function randomCodeValue(prefix: string): string {
-    return (prefix +  Math.floor(Math.random() * Math.pow(2, 30)).toString());
-  }
-
-  function randomCode(briefcase: number): Code {
-    const code = new Code();
-    code.briefcaseId = briefcase;
-    code.codeScope = "TestScope";
-    code.codeSpecId = "0XA";
-    code.state = CodeState.Reserved;
-    code.value = randomCodeValue("TestCode");
-    return code;
-  }
-
-  /** assumes all have same scope / specId */
-  function mockUpdateCodes(...codes: Code[]) {
-    const multiCode = new MultiCode();
-    multiCode.briefcaseId = codes[0].briefcaseId;
-    multiCode.codeScope = codes[0].codeScope;
-    multiCode.codeSpecId = codes[0].codeSpecId;
-    multiCode.state = codes[0].state;
-    multiCode.values = codes.map((value) => value.value!);
-    multiCode.changeState = "new";
-
-    const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
-    const requestResponse = responseBuilder.generateChangesetResponse<MultiCode>([multiCode]);
-    const postBody = responseBuilder.generateChangesetBody<MultiCode>([multiCode]);
-    responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody);
-  }
-
-  /** assumes all have same scope / specId */
-  function mockDeniedCodes(...codes: Code[]) {
-    const multiCode = new MultiCode();
-    multiCode.briefcaseId = codes[0].briefcaseId;
-    multiCode.codeScope = codes[0].codeScope;
-    multiCode.codeSpecId = codes[0].codeSpecId;
-    multiCode.state = codes[0].state;
-    multiCode.values = codes.map((value) => value.value!);
-    multiCode.changeState = "new";
-
-    const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
-    const requestResponse = responseBuilder.generateError("iModelHub.CodeReservedByAnotherBriefcase", "", "", new Map<string, any>([["ConflictingCodes", JSON.stringify(codes.map((value) => {
-      const obj = ECJsonTypeMap.toJson<Code>("wsg", value);
-      return obj.properties;
-    })),
-    ]]));
-    const postBody = responseBuilder.generateChangesetBody<MultiCode>([multiCode]);
-    responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
-  }
-
   it("should reserve multiple codes", async () => {
-    const code1 = randomCode(briefcaseId);
-    const code2 = randomCode(briefcaseId);
+    const code1 = utils.randomCode(briefcaseId);
+    const code2 = utils.randomCode(briefcaseId);
 
-    mockUpdateCodes(code1, code2);
+    utils.mockUpdateCodes(responseBuilder, iModelId, code1, code2);
 
     const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2]);
     chai.expect(result);
@@ -128,12 +88,12 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should fail on conflicting codes", async () => {
-    const code1 = randomCode(briefcaseId);
-    const code2 = randomCode(briefcaseId);
-    const code3 = randomCode(briefcaseId);
-    const code4 = randomCode(briefcaseId);
+    const code1 = utils.randomCode(briefcaseId);
+    const code2 = utils.randomCode(briefcaseId);
+    const code3 = utils.randomCode(briefcaseId);
+    const code4 = utils.randomCode(briefcaseId);
 
-    mockUpdateCodes(code1, code2, code3);
+    utils.mockUpdateCodes(responseBuilder, iModelId, code1, code2, code3);
 
     const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2, code3]);
     chai.expect(result);
@@ -144,9 +104,9 @@ describe("iModelHub CodeHandler", () => {
     code3.briefcaseId = briefcaseId2;
     code4.briefcaseId = briefcaseId2;
 
-    mockDeniedCodes(code2);
-    mockDeniedCodes(code3);
-    mockUpdateCodes(code4);
+    utils.mockDeniedCodes(responseBuilder, iModelId, code2);
+    utils.mockDeniedCodes(responseBuilder, iModelId, code3);
+    utils.mockUpdateCodes(responseBuilder, iModelId, code4);
 
     let receivedError: Error | undefined;
     try {
@@ -159,12 +119,12 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should return conflicting codes", async () => {
-    const code1 = randomCode(briefcaseId);
-    const code2 = randomCode(briefcaseId);
-    const code3 = randomCode(briefcaseId);
-    const code4 = randomCode(briefcaseId);
+    const code1 = utils.randomCode(briefcaseId);
+    const code2 = utils.randomCode(briefcaseId);
+    const code3 = utils.randomCode(briefcaseId);
+    const code4 = utils.randomCode(briefcaseId);
 
-    mockUpdateCodes(code1, code2, code3);
+    utils.mockUpdateCodes(responseBuilder, iModelId, code1, code2, code3);
 
     const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2, code3]);
     chai.expect(result);
@@ -175,9 +135,9 @@ describe("iModelHub CodeHandler", () => {
     code3.briefcaseId = briefcaseId2;
     code4.briefcaseId = briefcaseId2;
 
-    mockDeniedCodes(code2);
-    mockDeniedCodes(code3);
-    mockUpdateCodes(code4);
+    utils.mockDeniedCodes(responseBuilder, iModelId, code2);
+    utils.mockDeniedCodes(responseBuilder, iModelId, code3);
+    utils.mockUpdateCodes(responseBuilder, iModelId, code4);
 
     let receivedError: ConflictingCodesError | undefined;
     try {
@@ -201,7 +161,7 @@ describe("iModelHub CodeHandler", () => {
     code.codeSpecId = "0XA";
     code.state = CodeState.Reserved;
     code.changeState = "new";
-    code.value = randomCodeValue("TestCode");
+    code.value = utils.randomCodeValue("TestCode");
 
     const multiCode = new MultiCode();
     multiCode.briefcaseId = code.briefcaseId;

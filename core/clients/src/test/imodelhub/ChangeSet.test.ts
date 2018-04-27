@@ -142,7 +142,8 @@ describe("iModelHub ChangeSetHandler", () => {
     }
   });
 
-  it("should find information on the ChangeSet a specific Element was last modified in", async () => {
+  // TODO: Requires locks management to have this working as integration test
+  TestConfig.enableNock ? it : it.skip("should find information on the ChangeSet a specific Element was last modified in", async () => {
     const mockId = "bb1848116eb71d83747ad6bf49c1c459c7555ef9";
     let requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$top=1");
     let requestResponse = responseBuilder.generateGetResponse<Lock>(responseBuilder.generateObject<Lock>(Lock,

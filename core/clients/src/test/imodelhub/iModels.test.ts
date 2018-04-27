@@ -186,9 +186,7 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
       .and.have.property("id", IModelHubResponseErrorId.ProjectIdIsNotSpecified);
   });
 
-  it("should fail creating existing and initialized iModel", async () => {
-    if (!TestConfig.enableNock)
-      return;
+  TestConfig.enableNock ? it : it.skip("should fail creating existing and initialized iModel", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     const requestResponse = responseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
                                                           new Map<string, any>([["iModelInitialized", true]]));
@@ -200,9 +198,7 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
                     .and.have.property("id", IModelHubResponseErrorId.iModelAlreadyExists);
   });
 
-  it("should create iModel and upload SeedFile", async () => {
-    if (!TestConfig.enableNock)
-      return;
+  TestConfig.enableNock ? it : it.skip("should create iModel and upload SeedFile", async () => {
     let requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     let postBody = responseBuilder.generatePostBody<IModel>(
                       responseBuilder.generateObject<IModel>(IModel,
@@ -257,9 +253,7 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(iModel.initialized).equals(true);
   });
 
-  it("should continue creating not initialized iModel", async () => {
-    if (!TestConfig.enableNock)
-      return;
+  TestConfig.enableNock ? it : it.skip("should continue creating not initialized iModel", async () => {
     let requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     let postBody = responseBuilder.generatePostBody<IModel>(
                       responseBuilder.generateObject<IModel>(IModel,

@@ -61,7 +61,7 @@ describe("iModelHub VersionHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  it("should get named versions", async () => {
+  TestConfig.enableNock ? it : it.skip("should get named versions", async () => {
     const versionsCount = 3;
     const responseObject = responseBuilder.generateObject<Version>(Version, new Map<string, any>([
                                                               ["wsgId", "00000000-0000-0000-0000-000000000000"],
@@ -72,6 +72,7 @@ describe("iModelHub VersionHandler", () => {
     let requestResponse = responseBuilder.generateGetResponse<SeedFile>(responseObject, versionsCount);
     responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
 
+    // Needs to create before expecting more than 0
     const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
     chai.expect(versions.length).equals(3);
 
