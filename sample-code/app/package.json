@@ -4,12 +4,11 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2",
+    "build": "tsc 1>&2 && npm run extract",
     "clean": "rimraf lib package-deps.json ../../generated-docs",
-    "extract:backend":  "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./backend  --out=../../generated-docs/extract",
-    "extract:common":   "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./common   --out=../../generated-docs/extract",
-    "extract:frontend": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./frontend --out=../../generated-docs/extract",
-    "extract": "npm run extract:backend && npm run extract:common && npm run extract:frontend",
+    "extract:backend":  "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/backend  --out=../../generated-docs/extract",
+    "extract:common":   "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/common   --out=../../generated-docs/extract",
+    "extract": "npm run extract:backend && npm run extract:common",
     "docs": "",
     "test": ""
   },
