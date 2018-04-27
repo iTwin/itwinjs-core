@@ -48,6 +48,7 @@ export class IModelApp {
   protected static _iModelHubClient?: IModelHubClient;
   public static get initialized() { return IModelApp._initialized; }
   public static get iModelHubClient(): IModelHubClient { return this._iModelHubClient ? this._iModelHubClient : (this._iModelHubClient = new IModelHubClient(this.deploymentEnv)); }
+  public static get hasRenderSystem() { return undefined !== this._renderSystem; }
 
   /**
    * Gets the instance of the RenderSystem which provides display capabilities. Display capabilities must be explicitly requested by

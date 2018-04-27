@@ -3,7 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { getWebGLContext } from "./WebGLTestContext";
+import { System } from "@bentley/imodeljs-frontend/lib/rendering";
+import { WebGLTestContext } from "./WebGLTestContext";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
   VariableType,
   VariableScope,
@@ -78,24 +80,26 @@ describe("ShaderVariables tests", () => {
 });
 
 describe("Test shader compilation", () => {
+  before(() => WebGLTestContext.startup());
+  after(() => WebGLTestContext.shutdown());
+
   it("should build and compile a simple shader program", () => {
     const builder = new ProgramBuilder(false);
     builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
     builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
     builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
 
-    const gl = getWebGLContext();
-    if (undefined === gl) {
+    if (!IModelApp.hasRenderSystem) {
       return;
     }
 
-    const prog = builder.buildProgram(gl);
+    const prog = builder.buildProgram(System.instance.context);
     expect(prog.isValid).to.equal(true);
     expect(prog.isUncompiled).to.equal(true);
-    expect(prog.compile(gl)).to.equal(true);
+    expect(prog.compile()).to.equal(true);
     expect(prog.isUncompiled).to.equal(false);
 
-    prog.dispose(gl);
+    prog.dispose();
     expect(prog.isValid).to.equal(false);
     expect(prog.isUncompiled).to.equal(true);
     });

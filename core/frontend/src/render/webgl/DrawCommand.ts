@@ -7,6 +7,7 @@ import { Target } from "./Target";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform } from "@bentley/geometry-core";
 import { RenderPass } from "./RenderFlags";
+import { System } from "./System";
 
 export class ShaderProgramParams {
   public readonly target: Target;
@@ -28,7 +29,7 @@ export class ShaderProgramParams {
 
   public get isViewCoords() { return RenderPass.ViewOverlay === this.renderPass || RenderPass.Background === this.renderPass; }
   public get isOverlayPass() { return RenderPass.WorldOverlay === this.renderPass || RenderPass.ViewOverlay === this.renderPass; }
-  public get context() { return this.target.context; }
+  public get context() { return System.instance.context; }
 }
 
 export class DrawParams extends ShaderProgramParams {

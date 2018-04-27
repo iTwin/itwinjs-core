@@ -10,6 +10,7 @@ import { GL } from "./GL";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { TechniqueFlags } from "./TechniqueFlags";
+import { System } from "./System";
 
 /** Describes the location of a uniform variable within a shader program. */
 export class Uniform {
@@ -18,10 +19,10 @@ export class Uniform {
 
   protected constructor(name: string) { this._name = name; }
 
-  public compile(gl: WebGLRenderingContext, prog: ShaderProgram): boolean {
+  public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
     if (undefined !== prog.glProgram) {
-      this._handle = UniformHandle.create(gl, prog.glProgram, this._name, true);
+      this._handle = UniformHandle.create(prog.glProgram, this._name, true);
     }
 
     return this.isValid;
@@ -95,10 +96,10 @@ export class Attribute {
     this._bind = bind;
   }
 
-  public compile(gl: WebGLRenderingContext, prog: ShaderProgram): boolean {
+  public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
     if (undefined !== prog.glProgram) {
-      this._handle = AttributeHandle.create(gl, prog.glProgram, this._name, true);
+      this._handle = AttributeHandle.create(prog.glProgram, this._name, true);
     }
 
     return this.isValid;
@@ -130,7 +131,7 @@ export class ShaderProgram implements GLDisposable {
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attributes = new Array<Attribute>();
 
-  public constructor(vertSource: string, fragSource: string, description: string, gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string) {
     this._description = description;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
@@ -142,10 +143,10 @@ export class ShaderProgram implements GLDisposable {
     assert(undefined !== this._description);
   }
 
-  public dispose(gl: WebGLRenderingContext): void {
+  public dispose(): void {
     if (undefined !== this._glProgram && null !== this._glProgram) {
       assert(!this._inUse);
-      gl.deleteProgram(this._glProgram);
+      System.instance.context.deleteProgram(this._glProgram);
       this._glProgram = undefined;
       this._status = CompileStatus.Uncompiled;
     }
@@ -155,7 +156,9 @@ export class ShaderProgram implements GLDisposable {
   public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
   public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
 
-  private compileShader(gl: WebGLRenderingContext, type: GL.ShaderType): WebGLShader | undefined {
+  private compileShader(type: GL.ShaderType): WebGLShader | undefined {
+    const gl: WebGLRenderingContext = System.instance.context;
+
     const shader = gl.createShader(type);
     if (null === shader) {
       return undefined;
@@ -168,18 +171,19 @@ export class ShaderProgram implements GLDisposable {
     assert(succeeded);
     return succeeded ? shader : undefined;
   }
-  private linkProgram(gl: WebGLRenderingContext, vert: WebGLShader, frag: WebGLShader): boolean {
+  private linkProgram(vert: WebGLShader, frag: WebGLShader): boolean {
     assert(undefined !== this.glProgram);
     if (undefined === this._glProgram || null === this._glProgram) { // because WebGL APIs used Thing|null, not Thing|undefined...
       return false;
     }
 
+    const gl: WebGLRenderingContext = System.instance.context;
     gl.attachShader(this._glProgram, vert);
     gl.attachShader(this._glProgram, frag);
     gl.linkProgram(this._glProgram);
     return gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
   }
-  public compile(gl: WebGLRenderingContext): boolean {
+  public compile(): boolean {
     switch (this._status) {
       case CompileStatus.Failure: return false;
       case CompileStatus.Success: return true;
@@ -192,10 +196,10 @@ export class ShaderProgram implements GLDisposable {
       }
     }
 
-    const vert = this.compileShader(gl, GL.ShaderType.Vertex);
-    const frag = this.compileShader(gl, GL.ShaderType.Fragment);
+    const vert = this.compileShader(GL.ShaderType.Vertex);
+    const frag = this.compileShader(GL.ShaderType.Fragment);
     if (undefined !== vert && undefined !== frag) {
-      if (this.linkProgram(gl, vert, frag)) {
+      if (this.linkProgram(vert, frag)) {
         this._status = CompileStatus.Success;
         return true;
       }
@@ -206,7 +210,7 @@ export class ShaderProgram implements GLDisposable {
   }
 
   public use(params: ShaderProgramParams): boolean {
-    if (!this.compile(params.context)) {
+    if (!this.compile()) {
       return false;
     }
 
@@ -227,10 +231,10 @@ export class ShaderProgram implements GLDisposable {
 
     return true;
   }
-  public endUse(gl: WebGLRenderingContext) {
+  public endUse() {
     assert(this._inUse);
     this._inUse = false;
-    gl.useProgram(null);
+    System.instance.context.useProgram(null);
   }
 
   public draw(params: DrawParams): void {
@@ -297,7 +301,7 @@ export class ShaderProgramExecutor implements IDisposable {
     if (this._program === program) {
       return true;
     } else if (undefined !== this._program) {
-      this._program.endUse(this._params.context);
+      this._program.endUse();
     }
 
     this._program = program;

@@ -142,19 +142,11 @@ export class Target extends RenderTarget {
   protected _overridesUpdateTime?: BeTimePoint;
   protected _hilite?: HilitedSet;
   protected _hiliteUpdateTime?: BeTimePoint;
-  public readonly system: System;
-  public readonly context: WebGLRenderingContext;
 
-  public get renderSystem(): RenderSystem { return this.system; }
+  public get renderSystem(): RenderSystem { return System.instance; }
   public get hilite(): HilitedSet { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
-  public get techniques(): Techniques { return this.system.techniques!; }
-
-  protected constructor(system: System, context: WebGLRenderingContext) {
-    super();
-    this.system = system;
-    this.context = context;
-  }
+  public get techniques(): Techniques { return System.instance.techniques!; }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this._overrides = ovr;
@@ -170,7 +162,4 @@ export class Target extends RenderTarget {
 }
 
 export class OnScreenTarget extends Target {
-  public constructor(system: System, gl: WebGLRenderingContext) {
-    super(system, gl);
-  }
 }

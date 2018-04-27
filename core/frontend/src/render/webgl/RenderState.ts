@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GL } from "./GL";
+import { System } from "./System";
 
 export class RenderStateFlags {
   public cull: boolean = false;
@@ -42,19 +43,20 @@ export class RenderStateFlags {
         && this.depthMask === rhs.depthMask;
   }
 
-  public apply(gl: WebGLRenderingContext, previousFlags: RenderStateFlags): void {
-    RenderStateFlags.enableOrDisable(gl, this.cull, GL.Capability.CullFace, previousFlags.cull);
-    RenderStateFlags.enableOrDisable(gl, this.depthTest, GL.Capability.DepthTest, previousFlags.depthTest);
-    RenderStateFlags.enableOrDisable(gl, this.blend, GL.Capability.Blend, previousFlags.blend);
-    RenderStateFlags.enableOrDisable(gl, this.stencilTest, GL.Capability.StencilTest, previousFlags.stencilTest);
+  public apply(previousFlags: RenderStateFlags): void {
+    RenderStateFlags.enableOrDisable(this.cull, GL.Capability.CullFace, previousFlags.cull);
+    RenderStateFlags.enableOrDisable(this.depthTest, GL.Capability.DepthTest, previousFlags.depthTest);
+    RenderStateFlags.enableOrDisable(this.blend, GL.Capability.Blend, previousFlags.blend);
+    RenderStateFlags.enableOrDisable(this.stencilTest, GL.Capability.StencilTest, previousFlags.stencilTest);
 
     if (previousFlags.depthMask !== this.depthMask) {
-      gl.depthMask(this.depthMask);
+      System.instance.context.depthMask(this.depthMask);
     }
   }
 
-  public static enableOrDisable(gl: WebGLRenderingContext, currentFlag: boolean, value: number, previousFlag: boolean) {
+  public static enableOrDisable(currentFlag: boolean, value: number, previousFlag: boolean) {
     if (currentFlag !== previousFlag) {
+      const gl: WebGLRenderingContext = System.instance.context;
       if (currentFlag) {
         gl.enable(value);
       } else {
@@ -79,7 +81,9 @@ export class RenderStateBlend {
     }
   }
 
-  public apply(gl: WebGLRenderingContext, previousBlend?: RenderStateBlend): void {
+  public apply(previousBlend?: RenderStateBlend): void {
+    const gl: WebGLRenderingContext = System.instance.context;
+
     if (previousBlend === undefined || previousBlend.color !== this.color) {
       gl.blendColor(this.color[0], this.color[1], this.color[2], this.color[3]);
     }
@@ -294,25 +298,25 @@ export class RenderState {
         && this.stencilMask === rhs.stencilMask;
   }
 
-  public apply(gl: WebGLRenderingContext, prevState: RenderState): void {
-    this.flags.apply(gl, prevState.flags);
+  public apply(prevState: RenderState): void {
+    this.flags.apply(prevState.flags);
 
     if (this.flags.blend) {
       if (prevState.flags.blend)
-        this.blend.apply(gl, prevState.blend);
+        this.blend.apply(prevState.blend);
       else
-        this.blend.apply(gl);
+        this.blend.apply();
     }
 
     if (this.flags.cull) {
       if (!prevState.flags.cull || prevState.cullFace !== this.cullFace) {
-        gl.cullFace(this.cullFace);
+        System.instance.context.cullFace(this.cullFace);
       }
     }
 
     if (this.flags.depthTest) {
       if (!prevState.flags.depthTest || prevState.depthFunc !== this.depthFunc) {
-        gl.depthFunc(this.depthFunc);
+        System.instance.context.depthFunc(this.depthFunc);
       }
     }
 
@@ -325,11 +329,11 @@ export class RenderState {
     // }
 
     if (this.frontFace !== prevState.frontFace) {
-      gl.frontFace(this.frontFace);
+      System.instance.context.frontFace(this.frontFace);
     }
 
     if (this.stencilMask !== prevState.stencilMask) {
-      gl.stencilMask(this.stencilMask);
+      System.instance.context.stencilMask(this.stencilMask);
     }
   }
 }
