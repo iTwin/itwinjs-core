@@ -43,7 +43,7 @@ export abstract class IModelReadGateway extends Gateway {
   public getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
   public queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> { return this.forward.apply(this, arguments); }
   public getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<string[]> { return this.forward.apply(this, arguments); }
+  public queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> { return this.forward.apply(this, arguments); }
   public queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
   public formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
   public loadMetaDataForClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<any[]> { return this.forward.apply(this, arguments); }

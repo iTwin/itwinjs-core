@@ -52,12 +52,12 @@ export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway 
     return this.getModelProps(iModelToken, ids);
   }
 
-  public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<string[]> {
+  public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: string[] = [];
     for (const id of elementIds) {
       try {
-        elementProps.push(JSON.stringify(iModelDb.elements.getElementJson(JSON.stringify({ id }))));
+        elementProps.push(iModelDb.elements.getElementJson(JSON.stringify({ id })));
       } catch (error) {
         if (elementIds.size === 1)
           throw error; // if they're asking for more than one element, don't throw on error.
@@ -66,7 +66,7 @@ export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway 
     return elementProps;
   }
 
-  public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+  public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<any[]> {
     const ids = await this.queryEntityIds(iModelToken, params);
     return this.getElementProps(iModelToken, ids);
   }
