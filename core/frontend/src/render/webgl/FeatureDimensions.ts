@@ -3,11 +3,72 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
+import { IModelApp } from "../../IModelApp";
 
 /** Describes the dimensionality of a texture used as a look-up table. */
 export const enum LUTDimension {
   Uniform, //  uniform lookup table
   NonUniform, // 1- or 2-dimensional lookup table
+}
+
+export class LUTDimensions {
+  private _width: number = 0;
+  private _height: number = 0;
+
+  public get width(): number { return this._width; }
+  public get height(): number { return this._height; }
+
+  public static create(nEntries: number, nRgbaPerEntry: number): LUTDimensions {
+    const dims = new LUTDimensions();
+    dims.init(nEntries, nRgbaPerEntry);
+    return dims;
+  }
+
+  /**
+   * Constraints:
+   *    - Dimensions < max texture size
+   *        - Dimensions < max texture size
+   *        - in practice expect at least 2048 and most tablets/phones at least 4096 (96.3% of all browsers according to webglstats.com)
+   *    - Roughly square to reduce unused bytes at end of last row
+   *    - No extra unused bytes at end of each row
+   */
+  public init(nEntries: number, nRgbaPerEntry: number): void {
+    const sMaxWidth = 8192;
+    const nRgba = nEntries * nRgbaPerEntry;
+    let maxWidth = IModelApp.renderSystem.maxTextureSize;
+    if (maxWidth > sMaxWidth)
+      maxWidth = sMaxWidth;
+
+    if (nRgba < maxWidth) {
+      this._width = nRgba;
+      this._height = 1;
+      return;
+    }
+
+    // Make roughly square to reduce unused space in last row
+    let width = Math.ceil(Math.sqrt(nRgba));
+
+    // Ensure a given entry's RGBA values all fit on the same row.
+    const remainder = width % nRgbaPerEntry;
+    width += nRgbaPerEntry - remainder;
+
+    // Compute height
+    let height = nRgba / width;
+    if (width * height < nRgba)
+      ++height;
+
+    assert(height <= maxWidth);
+    assert(width <= maxWidth);
+    assert(width * height >= nRgba);
+
+    // Row padding should never be necessary...
+    assert(0 === width % nRgbaPerEntry);
+
+    this._width  = width;
+    this._height = height;
+  }
+
+  public toParams(): LUTParams { return LUTParams.create(this.width, this.height); }
 }
 
 /** Parameters passed to shader programs describing the structure of a lookup table.
@@ -35,6 +96,12 @@ export class LUTParams {
     this.texStep[1] = stepX * 0.5;
     this.texStep[2] = stepY;
     this.texStep[3] = stepY * 0.5;
+  }
+
+  public static create(width: number, height: number): LUTParams {
+    const params = new LUTParams();
+    params.init(width, height);
+    return params;
   }
 
   public equals(rhs: LUTParams): boolean {
