@@ -9,6 +9,7 @@ import { GatewayInvocation } from "./GatewayInvocation";
 import { GatewayConfiguration } from "./GatewayConfiguration";
 import { GatewayOperation } from "./GatewayOperation";
 import { GatewayMarshaling } from "./GatewayMarshaling";
+import { Gateway, GatewayDefinition } from "../../Gateway";
 
 /** A serialized gateway operation descriptor. */
 export interface SerializedGatewayOperation {
@@ -29,6 +30,12 @@ export interface SerializedGatewayRequest {
 
 /** A gateway operation request fulfillment. */
 export interface GatewayRequestFulfillment {
+  /** The gateway for the request. */
+  gateway: string;
+
+  /** The id for the request. */
+  id: string;
+
   /** The serialized result for the request. */
   result: string;
 
@@ -51,6 +58,7 @@ export enum GatewayProtocolEvent {
   BackendReportedPending,
   BackendErrorOccurred,
   AcknowledgementCreated,
+  ReleaseResources,
 }
 
 /** Handles gateway protocol events. */
@@ -135,4 +143,10 @@ export abstract class GatewayProtocol {
     this.configuration = configuration;
     this.events.addListener ((type, object) => GatewayProtocol.events.raiseEvent(type, object));
   }
+
+  /** @hidden @internal */
+  public onGatewayProxyInitialized(_definition: GatewayDefinition, _instance: Gateway): void { }
+
+  /** @hidden @internal */
+  public onGatewayImplementationInitialized(_definition: GatewayDefinition, _instance: Gateway): void { }
 }

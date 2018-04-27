@@ -34,11 +34,18 @@ export class GatewayPendingResponse extends GatewayControlResponse {
 
 /** Manages requests and responses for a gateway configuration. */
 export class GatewayControlChannel {
+  private configuration: GatewayConfiguration;
   private pendingInterval: any = undefined;
+  private disposeInterval: any = undefined;
   private pending: GatewayRequest[] = [];
+
+  /** @hidden @internal */
+  public requests: Map<string, GatewayRequest> = new Map();
+
   private pendingLock: number = 0;
 
   private constructor(configuration: GatewayConfiguration) {
+    this.configuration = configuration;
     GatewayRequest.events.addListener(this.requestEventHandler, this);
     GatewayProtocol.events.addListener(this.protocolEventHandler, this);
 
@@ -74,7 +81,15 @@ export class GatewayControlChannel {
     return channel;
   }
 
-  private protocolEventHandler(type: GatewayProtocolEvent, _object: GatewayRequest | GatewayInvocation): void {
+  private protocolEventHandler(type: GatewayProtocolEvent, object: GatewayRequest | GatewayInvocation): void {
+    if (type === GatewayProtocolEvent.ReleaseResources) {
+      this.disposeIntervalHandler();
+      return;
+    }
+
+    if (object.protocol.configuration !== this.configuration)
+      return;
+
     const now = new Date().getTime();
 
     switch (type) {
@@ -93,10 +108,19 @@ export class GatewayControlChannel {
   }
 
   private requestEventHandler(type: GatewayRequestEvent, request: GatewayRequest): void {
+    if (request.protocol.configuration !== this.configuration)
+      return;
+
     if (type !== GatewayRequestEvent.StatusChanged)
       return;
 
     switch (request.status) {
+      case GatewayRequestStatus.Created: {
+        this.requests.set (request.id, request);
+        this.setDisposeInterval();
+        break;
+      }
+
       case GatewayRequestStatus.Submitted: {
         aggregateLoad.lastRequest = request.lastSubmitted;
         break;
@@ -190,5 +214,26 @@ export class GatewayControlChannel {
       clearInterval(this.pendingInterval);
       this.pendingInterval = undefined;
     }
+  }
+
+  private disposeIntervalHandler = function (this: GatewayControlChannel) {
+    this.requests.forEach((value, key, _map) => {
+      if (value.status === GatewayRequestStatus.Finalized) {
+        value.dispose();
+        this.requests.delete(key);
+      }
+    });
+
+    if (!this.requests.size) {
+      clearInterval(this.disposeInterval);
+      this.disposeInterval = undefined;
+    }
+  }.bind(this);
+
+  private setDisposeInterval() {
+    if (this.disposeInterval)
+      return;
+
+    this.disposeInterval = setInterval(this.disposeIntervalHandler, 60000);
   }
 }

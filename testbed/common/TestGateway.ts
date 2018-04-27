@@ -93,3 +93,16 @@ export abstract class TestGateway2 extends Gateway {
     return this.forward.apply(this, arguments);
   }
 }
+
+export abstract class TestGateway3 extends Gateway {
+  public static version = "1.0.0";
+  public static types = () => [];
+
+  public static getProxy(): TestGateway3 {
+    return Gateway.getProxyForGateway(TestGateway3);
+  }
+
+  public async op1(_input: number): Promise<number> {
+    return this.forward.apply(this, arguments);
+  }
+}

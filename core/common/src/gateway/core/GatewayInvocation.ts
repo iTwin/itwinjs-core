@@ -19,6 +19,9 @@ export class GatewayInvocation {
   private _threw: boolean;
   private _pending: boolean = false;
 
+  /** The protocol for this invocation. */
+  public readonly protocol: GatewayProtocol;
+
   /** The received request. */
   public readonly request: SerializedGatewayRequest;
 
@@ -48,6 +51,7 @@ export class GatewayInvocation {
 
   /** Constructs an invocation. */
   public constructor(protocol: GatewayProtocol, request: SerializedGatewayRequest) {
+    this.protocol = protocol;
     this.request = request;
     this.operation = GatewayOperation.lookup(request.operation.gateway, request.operation.name);
     protocol.events.raiseEvent(GatewayProtocolEvent.RequestReceived, this);
@@ -69,19 +73,19 @@ export class GatewayInvocation {
       const result = GatewayMarshaling.serialize(this.operation, protocol, value);
       const status = protocol.getCode(this.status);
       protocol.events.raiseEvent(GatewayProtocolEvent.BackendResponseCreated, this);
-      return { result, status };
+      return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
     }, (reason) => {
       if (reason instanceof GatewayPendingResponse) {
         this._pending = true;
         protocol.events.raiseEvent(GatewayProtocolEvent.BackendReportedPending, this);
-        return { result: reason.message, status: protocol.getCode(this.status) };
+        return { result: reason.message, status: protocol.getCode(this.status), id: this.request.id, gateway: this.operation.gateway.name };
       }
 
       this._threw = true;
       const result = this.supplyErrorMessage(reason);
       const status = protocol.getCode(this.status);
       protocol.events.raiseEvent(GatewayProtocolEvent.BackendErrorOccurred, this);
-      return { result, status };
+      return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
     });
   }
 

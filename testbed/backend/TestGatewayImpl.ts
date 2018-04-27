@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { TestGateway, TestOp1Params, TestGateway2 } from "../common/TestGateway";
+import { TestGateway, TestOp1Params, TestGateway2, TestGateway3 } from "../common/TestGateway";
 import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
@@ -75,6 +75,16 @@ export class TestGateway2Impl extends Gateway implements TestGateway2 {
     // Demonstrates how a consumer can create and supply an instance of the gateway's implementation class if necessary.
     const instance = new TestGateway2Impl();
     Gateway.supplyImplementationInstance(TestGateway2, instance);
+  }
+
+  public async op1(input: number): Promise<number> {
+    return input;
+  }
+}
+
+export class TestGateway3Impl extends Gateway implements TestGateway3 {
+  public static register() {
+    Gateway.registerImplementation(TestGateway3, TestGateway3Impl);
   }
 
   public async op1(input: number): Promise<number> {
