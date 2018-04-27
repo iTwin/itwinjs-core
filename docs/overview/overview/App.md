@@ -75,8 +75,6 @@ The static methods of the gateway interface are the operations offered by the se
 
 A gateway is unidirectional. It allows a client to make a request on a service and get a return value. Services never send requests to clients.
 
-Gateway methods are static. Services should be stateless.
-
 Gateway methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
 
 The key API class is [Gateway]($imodeljs-common/Gateway).

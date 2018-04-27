@@ -2,12 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Gateway.definition
-
 import { Gateway, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 
-// ---- RobotsAndBarriersService Gateway *Definitions* ----
+// RobotsAndBarriersService Gateway Definitions
 // These classes are common to RobotsAndBarriersService and its clients.
 // If these are app-specific gateways, then they would be defined in a directory
 // in the app's source tree that is common to both frontend and backend.
@@ -17,15 +16,10 @@ import { Point3d } from "@bentley/geometry-core";
 
 // The "write" gateway that may be exposed by the RobotsAndBarriersService.
 export abstract class RBSWriteGateway extends Gateway {
-  /** The version of the gateway. */
-  public static version = "1.0.0";
+  public static version = "1.0.0"; // The API version of the gateway
 
   /** The types that used by the gateway and must be marshalled. */
-  public static types = () => [
-    IModelToken,
-    Id64,
-    Point3d,
-  ]
+  public static types = () => [IModelToken, Id64, Point3d];
 
   // The gateway operations:
   public async insertRobot(_iModelToken: IModelToken, _name: string, _location: Point3d): Promise<Id64> {
@@ -47,14 +41,10 @@ export abstract class RBSWriteGateway extends Gateway {
 
 // The "read" gateway that may be exposed by the RobotsAndBarriersService.
 export abstract class RBSReadGateway extends Gateway {
-  /** The version of the gateway. */
-  public static version = "1.0.0";
+  public static version = "1.0.0";  // The API version of the gateway
 
   /** The types that can be marshaled by the gateway. */
-  public static types = () => [
-    IModelToken,
-    Id64,
-  ]
+  public static types = () => [IModelToken, Id64];
 
   // The gateway operations:
   public async countRobotsInArray(_iModelToken: IModelToken, _elemIds: Id64[]): Promise<number> {
