@@ -3,9 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Gateway */
 
-import { Logger, Id64Set } from "@bentley/bentleyjs-core";
+import { Logger, Id64Set, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams, Gateway, IModel, IModelReadGateway, IModelToken, IModelVersion } from "@bentley/imodeljs-common";
+import { EntityQueryParams, Gateway, IModel, IModelReadGateway, IModelToken, IModelVersion, ModelProps, ElementProps } from "@bentley/imodeljs-common";
 import { EntityMetaData } from "../Entity";
 import { IModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
@@ -34,12 +34,15 @@ export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway 
     return rows;
   }
 
-  public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<string[]> {
+  public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<ModelProps[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const modelJsonArray: string[] = [];
+    const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
-        modelJsonArray.push(iModelDb.models.getModelJson(JSON.stringify({ id })));
+        // TODO: Change iModelDbModels.getModelJson to return a ModelProps object, rather than a string.
+        const modelProps: any = JSON.parse(iModelDb.models.getModelJson(JSON.stringify({ id })));
+        assert("modeledElement" in modelProps, "iModelDb.models.getModelJson must return a ModelProps object");
+        modelJsonArray.push(modelProps);
       } catch (error) {
         if (modelIds.size === 1)
           throw error; // if they're asking for more than one model, don't throw on error.
@@ -48,14 +51,14 @@ export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway 
     return modelJsonArray;
   }
 
-  public async queryModelProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+  public async queryModelProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<ModelProps[]> {
     const ids = await this.queryEntityIds(iModelToken, params);
     return this.getModelProps(iModelToken, ids);
   }
 
-  public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<string[]> {
+  public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<ElementProps[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const elementProps: string[] = [];
+    const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {
         elementProps.push(iModelDb.elements.getElementJson(JSON.stringify({ id })));
@@ -67,7 +70,7 @@ export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway 
     return elementProps;
   }
 
-  public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<string[]> {
+  public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<ElementProps[]> {
     const ids = await this.queryEntityIds(iModelToken, params);
     return this.getElementProps(iModelToken, ids);
   }
