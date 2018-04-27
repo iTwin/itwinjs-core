@@ -79,7 +79,7 @@ export class QPoint2d {
   public get y() { return this._y; }
   public set y(y: number) { assert(Quantization.isQuantized(y)); this._y = y; }
 
-  private constructor() { }
+  public constructor() { }
 
   /** Initialize this point by quantizing the supplied Point2d using the specified params */
   public init(pos: Point2d, params: QParams2d) {
