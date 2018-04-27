@@ -8,10 +8,9 @@ import * as utils from "./TestUtils";
 
 import { TestConfig } from "../TestConfig";
 
-import { IModel, EventSubscription, CodeEvent, EventSAS, IModelQuery } from "../../imodelhub";
+import { EventSubscription, CodeEvent, EventSAS } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
-import { AuthorizationToken, AccessToken } from "../../Token";
-import { ConnectClient, Project } from "../../ConnectClients";
+import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
@@ -21,42 +20,14 @@ chai.should();
 
 describe("iModelHub EventHandler", () => {
   let accessToken: AccessToken;
-  let projectId: string;
   let iModelId: string;
   let subscription: EventSubscription;
-  const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    accessToken = await connectClient.getAccessToken(authToken);
-
-    const project: Project | undefined = await connectClient.getProject(accessToken, {
-      $select: "*",
-      $filter: "Name+eq+'" + TestConfig.projectName + "'",
-    });
-    chai.expect(project);
-
-    projectId = project.wsgId;
-    chai.expect(projectId);
-
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel",
-                                              "?$filter=Name+eq+%27" + TestConfig.iModelName + "%27");
-    const requestResponse = responseBuilder.generateGetResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
-                                            new Map<string, any>([
-                                              ["wsgId", "b74b6451-cca3-40f1-9890-42c769a28f3e"],
-                                              ["name", TestConfig.iModelName],
-                                            ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-    const iModels = await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(TestConfig.iModelName));
-
-    if (!iModels[0].wsgId) {
-      chai.assert(false);
-      return;
-    }
-
-    iModelId = iModels[0].wsgId;
+    accessToken = await utils.login();
+    iModelId = await utils.getIModelId(accessToken);
   });
 
   afterEach(() => {
@@ -86,7 +57,7 @@ describe("iModelHub EventHandler", () => {
     responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody);
     const sas = await imodelHubClient.Events().getSASToken(accessToken, iModelId);
 
-    if (!TestConfig.enableNock) {
+    if (!TestConfig.enableMocks) {
       const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
       const briefcaseId = parseInt(briefcases[0].wsgId, undefined);
       await imodelHubClient.Codes().update(accessToken, iModelId, [utils.randomCode(briefcaseId)]);

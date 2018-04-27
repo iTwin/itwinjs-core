@@ -7,48 +7,36 @@ import * as chaiAsPromised from "chai-as-promised";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 
-import { IModel, GlobalEventSubscription, GlobalEventSAS, SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent, NamedVersionCreatedEvent, IModelQuery } from "../../imodelhub";
+import { IModel, GlobalEventSubscription, GlobalEventSAS, SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent, NamedVersionCreatedEvent } from "../../imodelhub";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { IModelHubClient } from "../../imodelhub/Client";
-import { AuthorizationToken, AccessToken } from "../../Token";
-import { ConnectClient, Project } from "../../ConnectClients";
+import { AccessToken } from "../../Token";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
+import * as utils from "./TestUtils";
 
 chai.use(chaiString);
 chai.use(chaiAsPromised);
 chai.should();
 
-(TestConfig.enableNock || TestConfig.deploymentEnv === "DEV") ? describe : describe.skip("iModelHub GlobalEventHandler", () => {
+((TestConfig.enableMocks || TestConfig.deploymentEnv === "DEV") ? describe : describe.skip)("iModelHub GlobalEventHandler", () => {
   let accessToken: AccessToken;
   let serviceAccountAccessToken: AccessToken;
   let globalEventSubscription: GlobalEventSubscription;
   let globalEventSas: GlobalEventSAS;
   let projectId: string;
-  const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   const downloadToPath: string = __dirname + "/../assets/";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
-    const serviceAccountAuthToken: AuthorizationToken = await TestConfig.login(TestUsers.serviceAccount1);
-    serviceAccountAccessToken = await connectClient.getAccessToken(serviceAccountAuthToken);
+    projectId = await utils.getProjectId();
+    serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
+    accessToken = await utils.login();
+    await utils.deleteIModelByName(accessToken, projectId, "GlobalEventTestModel");
+  });
 
-    const authToken: AuthorizationToken = await TestConfig.login();
-    accessToken = await connectClient.getAccessToken(authToken);
-
-    const project: Project | undefined = await connectClient.getProject(accessToken, {
-      $select: "*",
-      $filter: "Name+eq+'" + TestConfig.projectName + "'",
-    });
-    chai.expect(project);
-
-    projectId = project.wsgId;
-    chai.expect(projectId);
-
-    const iModels = await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName("GlobalEventTestModel"));
-    if (iModels.length > 0) {
-      await imodelHubClient.IModels().delete(accessToken, projectId, iModels[0].wsgId);
-    }
+  after(async () => {
+    await utils.deleteIModelByName(accessToken, projectId, "GlobalEventTestModel");
   });
 
   afterEach(() => {
@@ -83,7 +71,7 @@ chai.should();
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "iModelCreatedEvent"});
-    if (!TestConfig.enableNock) {
+    if (!TestConfig.enableMocks) {
       // Actual iModel create event
       const iModel = await imodelHubClient.IModels().create(accessToken, projectId, "GlobalEventTestModel", downloadToPath + "TestModel/iModelHubTestSeedFile.bim");
       await imodelHubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
@@ -94,7 +82,7 @@ chai.should();
     chai.expect(event).instanceof(IModelCreatedEvent);
   });
 
-  TestConfig.enableNock ? it : it.skip("should receive Global Event SoftiModelDeleteEvent", async () => {
+  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event SoftiModelDeleteEvent", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "SoftiModelDeleteEvent"});
@@ -103,7 +91,7 @@ chai.should();
     chai.expect(event).instanceof(SoftiModelDeleteEvent);
   });
 
-  TestConfig.enableNock ? it : it.skip("should receive Global Event HardiModelDeleteEvent", async () => {
+  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event HardiModelDeleteEvent", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "HardiModelDeleteEvent"});
@@ -112,7 +100,7 @@ chai.should();
     chai.expect(event).instanceof(HardiModelDeleteEvent);
   });
 
-  TestConfig.enableNock ? it : it.skip("should receive Global Event ChangeSetCreatedEvent", async () => {
+  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event ChangeSetCreatedEvent", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","BriefcaseId":2,"ChangeSetId":"369","ChangeSetIndex":"1"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "ChangeSetCreatedEvent"});
@@ -135,7 +123,7 @@ chai.should();
     chai.expect(globalEventSubscription.eventTypes!).to.deep.equal(newEventTypesList);
   });
 
-  TestConfig.enableNock ? it : it.skip("should receive Global Event NamedVersionCreatedEvent", async () => {
+  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event NamedVersionCreatedEvent", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","ChangeSetId":"369","VersionId":"159","VersionName":"357"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "NamedVersionCreatedEvent"});

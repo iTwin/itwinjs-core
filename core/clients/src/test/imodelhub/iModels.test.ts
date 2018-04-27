@@ -15,6 +15,7 @@ import { ConnectClient, Project } from "../../ConnectClients";
 import { WsgError } from "../../WsgClient";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
+import * as utils from "./TestUtils";
 
 declare const __dirname: string;
 
@@ -33,27 +34,17 @@ describe("iModelHub iModelHandler", () => {
   let accessToken: AccessToken;
   let projectId: string;
   let testiModelName: string | undefined;
-  const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    accessToken = await connectClient.getAccessToken(authToken);
-
-    const project: Project | undefined = await connectClient.getProject(accessToken, {
-      $select: "*",
-      $filter: "Name+eq+'" + TestConfig.projectName + "'",
-    });
-    chai.expect(project);
-
-    chai.expect(project.wsgId);
-    projectId = project.wsgId;
+    projectId = await utils.getProjectId();
+    accessToken = await utils.login();
   });
 
   afterEach(async () => {
     responseBuilder.clearMocks();
-    if (!TestConfig.enableNock) {
+    if (!TestConfig.enableMocks) {
       if (testiModelName) {
         await deleteiModelByName(imodelHubClient, accessToken, projectId, testiModelName);
         testiModelName = undefined;
@@ -186,7 +177,7 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
       .and.have.property("id", IModelHubResponseErrorId.ProjectIdIsNotSpecified);
   });
 
-  TestConfig.enableNock ? it : it.skip("should fail creating existing and initialized iModel", async () => {
+  (TestConfig.enableMocks ? it : it.skip)("should fail creating existing and initialized iModel", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     const requestResponse = responseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
                                                           new Map<string, any>([["iModelInitialized", true]]));
@@ -198,7 +189,7 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
                     .and.have.property("id", IModelHubResponseErrorId.iModelAlreadyExists);
   });
 
-  TestConfig.enableNock ? it : it.skip("should create iModel and upload SeedFile", async () => {
+  (TestConfig.enableMocks ? it : it.skip)("should create iModel and upload SeedFile", async () => {
     let requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     let postBody = responseBuilder.generatePostBody<IModel>(
                       responseBuilder.generateObject<IModel>(IModel,
@@ -253,7 +244,7 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(iModel.initialized).equals(true);
   });
 
-  TestConfig.enableNock ? it : it.skip("should continue creating not initialized iModel", async () => {
+  (TestConfig.enableMocks ? it : it.skip)("should continue creating not initialized iModel", async () => {
     let requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     let postBody = responseBuilder.generatePostBody<IModel>(
                       responseBuilder.generateObject<IModel>(IModel,

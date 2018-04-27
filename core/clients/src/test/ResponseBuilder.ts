@@ -226,7 +226,7 @@ export class ResponseBuilder {
    */
   public MockResponse(requestType: RequestType, requestPath: string, requestResponse: string, times = 1, postBody?: string,
     headers?: any, responseCode = 200): void {
-    if (!TestConfig.enableNock)
+    if (!TestConfig.enableMocks)
       return;
     const url = "https://qa-imodelhubapi.bentley.com";
     switch (requestType) {
@@ -262,7 +262,7 @@ export class ResponseBuilder {
    * @param file Path to the file that will be sent as a response.
    */
   public mockFileResponse(host: string, requestPath: string, file: string): void {
-    if (!TestConfig.enableNock)
+    if (!TestConfig.enableMocks)
       return;
     nock(host)
         .get(requestPath)
@@ -291,7 +291,7 @@ export class ResponseBuilder {
    * Clears all mocked objects.
    */
   public clearMocks(): void {
-    if (!TestConfig.enableNock)
+    if (!TestConfig.enableMocks)
       return;
     nock.cleanAll();
   }
