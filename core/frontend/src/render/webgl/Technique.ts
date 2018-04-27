@@ -23,7 +23,7 @@ export class SingularTechnique implements Technique {
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
 
-  public dispose(gl: WebGLRenderingContext): void { this.program.dispose(gl); }
+  public dispose(): void { this.program.dispose(); }
 }
 
 // A collection of rendering techniques accessed by ID.
@@ -66,9 +66,9 @@ export class Techniques implements GLDisposable {
     });
   }
 
-  public dispose(gl: WebGLRenderingContext): void {
+  public dispose(): void {
     for (const tech of this._list) {
-      tech.dispose(gl);
+      tech.dispose();
     }
 
     this._list.length = 0;

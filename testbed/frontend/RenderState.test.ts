@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { GL, RenderState } from "@bentley/imodeljs-frontend/lib/rendering";
-import { getWebGLContext } from "./WebGLTestContext";
+import { GL, RenderState, System } from "@bentley/imodeljs-frontend/lib/rendering";
+import { WebGLTestContext } from "./WebGLTestContext";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -241,11 +242,15 @@ describe("RenderState API", () => {
 });
 
 describe("RenderState.apply()", () => {
+  before(() => WebGLTestContext.startup());
+  after(() => WebGLTestContext.shutdown());
+
   it("should apply state", () => {
-    const gl = getWebGLContext();
-    if (undefined === gl) {
+    if (!IModelApp.hasRenderSystem) {
       return;
     }
+
+    const gl: WebGLRenderingContext = System.instance.context;
 
     // Test default state of WebGL.
     assert.isTrue(gl.getParameter(GL.Capability.FrontFace) === GL.FrontFace.CounterClockwise, "FrontFace should be CounterClockwise by default");

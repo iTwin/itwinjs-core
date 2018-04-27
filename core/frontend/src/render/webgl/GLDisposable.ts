@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 export interface GLDisposable {
-  dispose(context: WebGLRenderingContext): void;
+  dispose(): void;
 }
 
-export function usingGL<TResult>(context: WebGLRenderingContext, disposable: GLDisposable, func: () => TResult): TResult {
+export function usingGL<TResult>(disposable: GLDisposable, func: () => TResult): TResult {
   try {
     return func();
   } finally {
-    disposable.dispose(context);
+    disposable.dispose();
   }
 }
