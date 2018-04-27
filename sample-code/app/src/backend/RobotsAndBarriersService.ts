@@ -50,32 +50,46 @@ export class RobotsAndBarriersService {
     });
   }
 
-  public static queryRobotsHittingBarriers(_iModelDb: IModelDb): Id64[] {
+  public static queryRobotsHittingBarriers(iModelDb: IModelDb): Id64[] {
     // *** TBD: spatial query
-    return [];
+      iModelDb.elements;
+      return [];
   }
 
-  public async moveRobot(_iModelDb: IModelDb, _id: Id64, _location: Point3d) {
+  public static moveRobot(iModelDb: IModelDb, id: Id64, location: Point3d) {
     // *** TBD: moveRobot
+    iModelDb.elements;
+    id.isValid;
+    location.x;
   }
 
 // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
   // An experimental method. It's in the release build, but only turned on in some deployments.
-  public async fuseRobot(_iModelDb: IModelDb, _id: Id64, _location: Point3d) {
+  public static fuseRobots(iModelDb: IModelDb, r1: Id64, r2: Id64, location: Point3d) {
       if (RobotsAndBarriersService.features.check("experimentalMethods") === undefined)
         return;
+
       // *** TBD: new fuse operation
+      iModelDb.elements;
+      r1.isValid();
+      r2.isValid();
+      location.x;
     }
 // __PUBLISH_EXTRACT_END__
 
-  public async insertRobot(_iModelDb: IModelDb, _name: string, _location: Point3d): Promise<Id64> {
+  public static insertRobot(iModelDb: IModelDb, name: string, location: Point3d): Id64 {
     // *** TBD: insert a barrier
-    return new Id64();
+      iModelDb.elements;
+      name.length;
+      location.x;
+      return new Id64();
   }
 
-  public async insertBarrier(_iModelDb: IModelDb, _location: Point3d): Promise<Id64> {
+  public static insertBarrier(iModelDb: IModelDb, location: Point3d): Id64 {
     // *** TBD: insert a barrier
-    return new Id64();
+      iModelDb.elements;
+      location.x;
+      return new Id64();
   }
 
   public static run() {

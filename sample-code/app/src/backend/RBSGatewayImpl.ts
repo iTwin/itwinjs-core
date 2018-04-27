@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Gateway.implementation
-
 import { Gateway, IModelToken, GatewayDefinition, IModelReadGateway, IModelWriteGateway, BentleyCloudGatewayConfiguration, GatewayElectronConfiguration } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Platform, IModelDb } from "@bentley/imodeljs-backend";
@@ -10,13 +9,14 @@ import { RobotsAndBarriersService } from "./RobotsAndBarriersService";
 import { RBSReadGateway, RBSWriteGateway } from "../common/RBSGatewayDefinition";
 import { Point3d } from "@bentley/geometry-core";
 
-// These classes are specific to RobotsAndBarriersService itself. They are backend code.
-// They must be defined in the service itself.
+// RobotsAndBarriersService Gateway Implementations
 
-// If these are app-specific gateways, then they would be defined in and imported from a directory
+// Definitions must be defined in the service (backend code).
+
+// The implementations 'implement' the definition. The definitions are common
+// to clients and this implementation. They definitions could be defined in a location
 // in the app's source tree that is common to both frontend and backend.
-// If these are service gateways, then they would be defined in and imported from a common gateway
-// definition package.
+// If these are service gateways, then they would have to be defined in package.
 // import { RBSWriteGateway, RBSReadGateway } from "@my-domain/RBSGateway";
 
 // Implement RBSWriteGateway
@@ -24,23 +24,21 @@ class RBSWriteGatewayImpl extends Gateway implements RBSWriteGateway {
   public static register() {
     Gateway.registerImplementation(RBSWriteGateway, RBSWriteGatewayImpl);
   }
-  public async insertRobot(_iModelToken: IModelToken, _name: string, _location: Point3d): Promise<Id64> {
-    return this.forward.apply(this, arguments);
+  public async insertRobot(iModelToken: IModelToken, name: string, location: Point3d): Promise<Id64> {
+    return RobotsAndBarriersService.insertRobot(IModelDb.find(iModelToken), name, location);
   }
 
-  public async moveRobot(_iModelToken: IModelToken, _id: Id64, _location: Point3d): Promise<void> {
-    // *** TBD
+  public async moveRobot(iModelToken: IModelToken, id: Id64, location: Point3d): Promise<void> {
+    RobotsAndBarriersService.moveRobot(IModelDb.find(iModelToken), id, location);
   }
 
-  public async fuseRobots(_iModelToken: IModelToken, _r1: Id64, _r2: Id64, _location: Point3d): Promise<void> {
-    // *** TBD
+  public async fuseRobots(iModelToken: IModelToken, r1: Id64, r2: Id64, location: Point3d): Promise<void> {
+    RobotsAndBarriersService.fuseRobots(IModelDb.find(iModelToken), r1, r2, location);
   }
 
-  public async insertBarrier(_iModelToken: IModelToken, _location: Point3d): Promise<Id64> {
-    // *** TBD
-    return new Id64();
+  public async insertBarrier(iModelToken: IModelToken, location: Point3d): Promise<Id64> {
+    return RobotsAndBarriersService.insertBarrier(IModelDb.find(iModelToken), location);
   }
-
 }
 
 // Implement RBSReadGateway
