@@ -53,6 +53,16 @@ export abstract class GatewayConfiguration {
   public static supply(gateway: Gateway): GatewayConfiguration {
     return GatewayConfiguration.obtain(gateway.configurationSupplier ? gateway.configurationSupplier() : GatewayDefaultConfiguration);
   }
+
+  /** @hidden @internal */
+  public onGatewayProxyInitialized(definition: GatewayDefinition, instance: Gateway): void {
+    this.protocol.onGatewayProxyInitialized(definition, instance);
+  }
+
+  /** @hidden @internal */
+  public onGatewayImplementationInitialized(definition: GatewayDefinition, instance: Gateway): void {
+    this.protocol.onGatewayImplementationInitialized(definition, instance);
+  }
 }
 
 // A default configuration that can be used for basic testing within a library.
@@ -71,7 +81,7 @@ export class GatewayDirectProtocol extends GatewayProtocol {
 // A default request type that can be used for basic testing within a library.
 export class GatewayDirectRequest extends GatewayRequest {
   public headers: Map<string, string> = new Map();
-  public fulfillment: GatewayRequestFulfillment = { result: "", status: 0 };
+  public fulfillment: GatewayRequestFulfillment = { result: "", status: 0, id: "", gateway: "" };
 
   protected send(): void {
     const request = this.protocol.serialize(this);

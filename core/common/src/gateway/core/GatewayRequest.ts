@@ -37,6 +37,7 @@ export enum GatewayRequestStatus {
   Enqueued,
   Acknowledged,
   Finalized,
+  Disposed,
 }
 
 /** Gateway request event types. */
@@ -259,6 +260,11 @@ export class GatewayRequest<TResponse = any> {
 
   private finalize(): void {
     this.setStatus(GatewayRequestStatus.Finalized);
+  }
+
+  /** @hidden @internal */
+  public dispose(): void {
+    this.setStatus(GatewayRequestStatus.Disposed);
   }
 
   private setPending(status: GatewayRequestStatus.Provisioning | GatewayRequestStatus.Pending, extendedStatus: string): void {
