@@ -303,6 +303,8 @@ export class ColorDef {
   public setAlpha(alpha: number): void { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
   /** get the alpha value for this ColorDef. Will be between 0-255 */
   public getAlpha(): number { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
+  /** get whether this ColorDef is fully opaque */
+  public get isOpaque() { return 255 === this.getAlpha(); }
 
   /** the "known name" for this ColorDef. Will be undefined if color value is not in #ColorByName list */
   public get name(): string | undefined { return ColorByName[this._tbgr]; }

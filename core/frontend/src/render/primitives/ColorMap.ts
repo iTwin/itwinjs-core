@@ -48,7 +48,7 @@ export class ColorMap {
     if (this.empty()) {
       assert(false, "empty color map");
     } else if (this.isUniform()) {
-      index.setUniform(this.map.keys().next().value);
+      index.initUniform(this.map.keys().next().value);
     } else {
       assert(0 !== indices.length);
 
@@ -57,7 +57,7 @@ export class ColorMap {
         colors[item] = key;
       });
 
-      index.setNonUniform(this.getNumIndices(), colors, indices, this.hasAlpha);
+      index.initNonUniform(colors, indices, this.hasAlpha);
     }
   }
 }

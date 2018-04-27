@@ -59,103 +59,31 @@ export class LUTDimensions {
 }
 
 export const enum FeatureDimension {
-  kEmpty,
-  kSingleUniform,
-  kSingleNonUniform,
-  kMultiple,
-  kCOUNT,
+  Empty,
+  SingleUniform,
+  SingleNonUniform,
+  Multiple,
+  COUNT,
 }
 
-export function getFeatureName(dim: FeatureDimension): string | undefined {
+export function getFeatureName(dim: FeatureDimension): string {
   switch (dim) {
-    case FeatureDimension.kEmpty: return "Empty";
-    case FeatureDimension.kSingleUniform: return "Single/Uniform";
-    case FeatureDimension.kSingleNonUniform: return "Single/Non-uniform";
-    case FeatureDimension.kMultiple: return "Multiple";
-    default: return undefined;
+    case FeatureDimension.Empty: return "Empty";
+    case FeatureDimension.SingleUniform: return "Single/Uniform";
+    case FeatureDimension.SingleNonUniform: return "Single/Non-uniform";
+    case FeatureDimension.Multiple: return "Multiple";
+    default: assert(false); return "Invalid";
   }
 }
 
-/** Describes the dimensionality of feature lookup based on the combination of:
- * - number of features contained in Primitive (0, 1, or multiple); and
- * - dimensionality of FeatureTable (uniform, 1d, or 2d).
- * Note if Primitive contains multiple features, FeatureTable by definition is not uniform.
- */
-export class FeatureDimensions {
-  private value: FeatureDimension;
-
-  public constructor(val?: FeatureDimension) {
-    if (val === undefined) {
-      this.value = FeatureDimension.kEmpty;
-    } else {
-      assert((val as number) < (FeatureDimension.kCOUNT as number));
-      this.value = val;
-    }
-  }
-
-  public copyFrom(src: FeatureDimensions): void {
-    this.value = src.value;
-  }
-
-  public clone(result?: FeatureDimensions): FeatureDimensions {
-    if (!result) {
-      return new FeatureDimensions();
-    } else {
-      result.copyFrom(this);
-      return result;
-    }
-  }
-
-  public init(dim: LUTDimension, type: FeatureIndexType): void {
-    if (type === FeatureIndexType.kEmpty) {
-      this.value = FeatureDimension.kEmpty;
-    } else if (type === FeatureIndexType.kNonUniform) {
+export function computeFeatureDimension(dim: LUTDimension, type: FeatureIndexType) {
+  switch (type) {
+    case FeatureIndexType.Empty:
+      return FeatureDimension.Empty;
+    case FeatureIndexType.NonUniform:
       assert(LUTDimension.Uniform !== dim);
-      this.value = FeatureDimension.kMultiple;
-    } else {
-      if (LUTDimension.Uniform === dim) {
-        this.value = FeatureDimension.kSingleUniform;
-      } else {
-        this.value = FeatureDimension.kSingleNonUniform;
-      }
-    }
+      return FeatureDimension.Multiple;
+    default:
+      return LUTDimension.Uniform === dim ? FeatureDimension.SingleUniform : FeatureDimension.SingleNonUniform;
   }
-
-  public static empty(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kEmpty); }
-  public static singleUniform(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kSingleUniform); }
-  public static singleNonUniform(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kSingleNonUniform); }
-  public static multiple(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kMultiple); }
-
-  public getValue(): number { return this.value as number; }
-
-  public equals(rhs: FeatureDimensions): boolean { return this.value === rhs.value; }
-  public lessThan(rhs: FeatureDimensions): boolean { return this.value < rhs.value; }
-
-  public isEmpty() { return FeatureDimension.kEmpty === this.value; }
-  public isSingle() { return FeatureDimension.kSingleUniform === this.value || FeatureDimension.kSingleNonUniform === this.value; }
-  public isMultiple() { return FeatureDimension.kMultiple === this.value; }
-  public isUniform() { return FeatureDimension.kSingleUniform === this.value; }
-  public isNonUniform() { return FeatureDimension.kSingleNonUniform === this.value || FeatureDimension.kMultiple === this.value; }
-
-  public getFeatureIndexType(): FeatureIndexType {
-    if (this.isEmpty()) {
-      return FeatureIndexType.kEmpty;
-    } else if (this.isMultiple()) {
-      return FeatureIndexType.kNonUniform;
-    } else {
-      return FeatureIndexType.kUniform;
-    }
-  }
-}
-
-export class FeatureDimensionsIterator {
-  private current: FeatureDimension;
-  public constructor(value: FeatureDimension) { this.current = value; }
-  public static begin(): FeatureDimensionsIterator { return new FeatureDimensionsIterator(FeatureDimension.kEmpty); }
-  public static end(): FeatureDimensionsIterator { return new FeatureDimensionsIterator(FeatureDimension.kCOUNT); }
-  public equals(rhs: FeatureDimensionsIterator): boolean { return this.current === rhs.current; }
-  public next(): void {
-    this.current = (this.current.valueOf() + 1) as FeatureDimension;
-  }
-  public get(): FeatureDimensions { return new FeatureDimensions(this.current); }
 }

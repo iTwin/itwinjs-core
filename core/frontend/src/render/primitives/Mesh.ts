@@ -176,12 +176,12 @@ export class MeshFeatures {
   // public add(feat: Feature, numVerts: number) { /*unfinished*/ }
   public toFeatureIndex(index: FeatureIndex): void {
     if (!this.initialized) {
-      index.type = FeatureIndexType.kEmpty;
+      index.type = FeatureIndexType.Empty;
     } else if (this.indices.length === 0) {
-      index.type = FeatureIndexType.kUniform;
+      index.type = FeatureIndexType.Uniform;
       index.featureID = this.uniform;
     } else {
-      index.type = FeatureIndexType.kNonUniform;
+      index.type = FeatureIndexType.NonUniform;
       index.featureIDs = new Uint32Array(this.indices);
     }
   }

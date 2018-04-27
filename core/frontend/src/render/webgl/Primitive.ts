@@ -11,14 +11,14 @@ export class IndexedPrimitiveParamsFeatures {
   public nonUniform: Uint32Array | undefined;
 
   public constructor(index?: FeatureIndex, nVerts?: number) {
-    this.type = FeatureIndexType.kEmpty;
+    this.type = FeatureIndexType.Empty;
     this.uniform = 0;
     this.nonUniform = undefined;
     if (undefined !== index) {
       this.type = index.type;
-      if (FeatureIndexType.kUniform === index.type)
+      if (FeatureIndexType.Uniform === index.type)
         this.uniform = index.featureID;
-      else if (FeatureIndexType.kNonUniform === index.type) {
+      else if (FeatureIndexType.NonUniform === index.type) {
         assert(undefined !== nVerts);
         assert(undefined !== index.featureIDs);
         if (undefined !== nVerts && undefined !== index.featureIDs) {
@@ -36,10 +36,10 @@ export class IndexedPrimitiveParamsFeatures {
     if (undefined !== this.nonUniform) {
       this.nonUniform = undefined;
     }
-    this.type = FeatureIndexType.kEmpty;
+    this.type = FeatureIndexType.Empty;
   }
-  public isUniform(): boolean { return FeatureIndexType.kUniform === this.type; }
-  public isEmpty(): boolean { return FeatureIndexType.kEmpty === this.type; }
+  public isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
+  public isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
 
   public toFeatureIndex(): FeatureIndex {
     const fIndex: FeatureIndex = new FeatureIndex();
