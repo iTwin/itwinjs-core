@@ -51,7 +51,7 @@ The Element modeling the car-as-a-whole is also in a Model. What Element is [tha
 
 There can be many different kinds of Relationships among Elements within a Model or spanning Models. The various specializations of the ElementHasChildElements relationship are particularly important---they implement parent-child/whole-part relationships among Elements. For example, if Object 1 is a Door, it might have DoorHardware as a Child.
 
-![06](./media/bis-modeling-06.png "Within a Model, parent Elements allow child Elements") <!--style="width:5.57041in;height:3.24167in" -->
+![06](./media/bis-modeling-06.Png "Within a Model, parent Elements allow child Elements") <!--style="width:5.57041in;height:3.24167in" -->
 
 Thus, BIS supports two ways of modeling an Object and its parts:
 
