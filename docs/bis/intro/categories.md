@@ -53,9 +53,7 @@ Category and SubCategory names comes from their `CodeValue`.
 
 To avoid creating names that are unprintable, indistinguishable to users, and/or cannot be export to other systems, the following characters are disallowed in Category and SubCategory names:
 
-```cpp
-static Utf8CP GetIllegalCharacters() {return "<>\\/.\"?*|,='&\n\t";}
-```
+`<>\\/.\"?*|,='&\n\t`
 
 ## Category CodeScope
 
@@ -81,13 +79,13 @@ Every `SpatialElement` subclass does **not** need its own `SpatialCategory`. Two
    1. A SpatialCategory is used for a class and all its descendent classes.
    2. A SpatialCategory is used for a set of unrelated classes that have some conceptual similarity but do not fit rule 1.
 
-TODO: *Clarify how/where the Domain authors document the Categories*.
+<!-- TODO: Clarify how/where the Domain authors document the Categories. -->
 
 ## User Control of DrawingCategories
 
 DrawingCategories are similar to drawing layer/level standards and are ultimately under the control of the user. It is intended that DrawingCategories will be distributed via catalogs in the future.
 
-TODO: *Elaborate on how user can (or will be able to) control drawing standards in the future. They won't be manually changing GeometricElement2dIsInCategory?*
+<!-- TODO: Elaborate on how user can (or will be able to) control drawing standards in the future. They won't be manually changing GeometricElement2dIsInCategory? -->
 
 ## iModel Bridges and Categories
 

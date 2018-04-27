@@ -1,0 +1,50 @@
+{
+  "name": "sample-code-snippets",
+  "//private": "NOTE: this is a private package that is never published",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc 1>&2 && npm run copy:assets && npm run extract",
+    "clean": "rimraf lib package-deps.json ../../generated-docs",
+    "copy:assets": "cpx ./src/backend/assets/**/* ./lib/backend/assets",
+    "extract:backend":  "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/backend  --out=../../generated-docs/extract",
+    "extract:common":   "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/common   --out=../../generated-docs/extract",
+    "extract:frontend": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/frontend --out=../../generated-docs/extract",
+    "extract": "npm run extract:backend && npm run extract:common && npm run extract:frontend",
+    "docs": "",
+    "test": "npm run test:backend",
+    "pretest:backend": "npm run copy:assets && rush build -t sample-code-snippets",
+    "test:backend": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib\""
+  },
+  "repository": {},
+  "//dependencies": [
+    "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
+  ],
+  "dependencies": {
+    "@bentley/bentleyjs-core": "7",
+    "@bentley/geometry-core": "7",
+    "@bentley/imodeljs-backend": "0",
+    "@bentley/imodeljs-n_8-win32-x64": "~16.0.2",
+    "@bentley/imodeljs-clients": "5",
+    "@bentley/imodeljs-common": "0",
+    "@bentley/imodeljs-frontend": "0",
+    "body-parser": "^1.18.2",
+    "chai": "^4.1.2",
+    "commander": "^2.14.1",
+    "electron": "1.6.11",
+    "express": "^4.16.2",
+    "fs-extra": "^5.0.0",
+    "fuse.js": "^3.2.0",
+    "i18next": "^10.2.2",
+    "i18next-browser-languagedetector": "^2.1.0",
+    "i18next-xhr-backend": "^1.5.1",
+    "js-base64": "^2.4.0",
+    "save": "^2.3.2",
+    "webpack": "^3.10.0"
+  },
+  "devDependencies": {
+    "cpx": "^1.5.0",
+    "rimraf": "^2.6.2",
+    "typescript": "~2.7.2"
+  }
+}

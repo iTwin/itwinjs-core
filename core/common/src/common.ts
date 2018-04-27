@@ -47,17 +47,16 @@ export * from "./gateway/StandaloneIModelGateway";
 /**
  * @docs-group-description App
  * Classes for defining an app.
- * For more information [[?]]
+ * For more information, see [App Overview]($docs/overview/overview/App.md).
  */
 /**
  * @docs-group-description BisCore
  * Classes for working with the major classes in the BisCore schema.
- * For more information [[?]]
+ * For more information, see [BIS Overview]($docs/overview/overview/BIS.md)
  */
  /**
   * @docs-group-description Codes
   * Classes for working with Codes.
-  * For more information [[?]]
   */
 /**
  * @docs-group-description ECSQL
@@ -67,68 +66,31 @@ export * from "./gateway/StandaloneIModelGateway";
 /**
  * @docs-group-description Errors
  * Classes for working with errors.
- * For more information [[?]]
  */
 /**
  * @docs-group-description FontsAndSymbology
  * Classes for working with fonts, colors, and other symbology.
- * For more information [[?]]
  */
 /**
  * @docs-group-description Gateway
- * Classes for working with Gateways. The key class is #Gateway.
- * For more information on the role of gateways in an app, see [Gateways]($docs/overview/overview/App.md#gateways)
- *
- * Gateways are TypeScript classes that represent a channel of communication between a client and a service. The client
- * could be a Web app and the service a shared service in the cloud. Or, the client could be a service itself, calling on another service.
- * Or, the client could be the frontend of an app and the "service" its own backend. The same app could be configured
- * to run as a Web app, a desktop app, and/or a mobile app.
- * In all of these scenarios, Gateways factor out the communication mechanism that is used by client and server.
- * Gateways present a TypeScript API to the client and allow a service to implement the required operations in TypeScript.
- * Neither party needs to be concerned about how the calls are marshalled. Both sides are written purely in TypeScript.
- * A client can use and a service can expose multiple gateways.
- *
- * Defining a gateway begins with the Gateway interface and the client-side proxies. All gateway definitions are derived
- * from the [Gateway]($imodeljs-common/Gateway) class. Note that this class is defined in `imodeljs-common`, as gateway definitions
- * are common to both client and service.
- * <p><em>Example:</em>
- * ```ts
- * [[include:Gateway.definition]]
- * ```
- *
- * A service implements a particular gateway interface and exposes it when it starts up. The service can decide at run
- * time which gateways to expose, perhaps based on deployment parameters.
- * The service chooses the appropriate [configuration]($imodeljs-common/GatewayConfiguration) for the gateways,
- * based on how the service itself is configured. Configuring a list of gateways does two things: it assigns a
- * protocol to the gateways and it also exposes them.
- * Note that gateway implementations must be [registered]($imodeljs-common/Gateway#registerImplementation)
- * before they are configured. A service can also expose gateways implemented by the packages that it imports.
- * To do that, the server just adds them to the list of gateways to be configured and exposed.
- * <p><em>Example:</em>
- * ```ts
- * [[include:Gateway.implementation]]
- * ```
- *
- * A client (e.g., an app frontend) configures the gateways that it intends to use. To call a method on a gateway,
- * the client gets the method's [proxy]($imodeljs-common/Gateway#getProxyForGateway) and calls that.
+ * Classes for working with Gateways. The key class is [Gateway]($imodeljs-common/Gateway).
+ * For more information, see [Gateway Overview]($docs/overview/overview/App.md#gateways).
  */
 /**
  * @docs-group-description Geometry
  * Classes for working with geometry.
- * For more information [[?]]
  */
 /**
  * @docs-group-description iModels
  * Classes for working with iModels.
- * For more information [[?]]
+ * For more information, see [iModel Overview]($docs/overview/overview/IModels.md)
  */
 /**
  * @docs-group-description Schemas
  * Classes for working with ECSchemas.
- * For more information [[?]]
+ * For more information: [Executing ECSQL]($docs/learning/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Views
  * Classes for working with views of models and elements.
- * For more information [[?]]
  */

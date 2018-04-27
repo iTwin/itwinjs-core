@@ -1,20 +1,16 @@
 {
-  "name": "imodeljs-core-sample-code",
+  "name": "sample-code-app",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "copy:backendassets": "cpx ./backend_test_assets/**/* ./out/backend/assets",
-    "build": "npm run build:backend && npm run build:frontend && npm run build:common && npm run extract",
-    "build:backend": "cd ./backend && tsc --outDir ../out/backend 1>&2",
-    "build:common": "cd ./common && tsc --outDir ../out/common 1>&2",
-    "build:frontend": "cd ./frontend && tsc --outDir ../out/frontend 1>&2",
-    "extract": "node ../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./backend --out=../generated-docs/extract",
-    "clean": "rimraf lib out package-deps.json ../generated-docs/extract",
+    "build": "tsc 1>&2 && npm run extract",
+    "clean": "rimraf lib package-deps.json ../../generated-docs",
+    "extract:backend":  "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/backend  --out=../../generated-docs/extract",
+    "extract:common":   "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/common   --out=../../generated-docs/extract",
+    "extract": "npm run extract:backend && npm run extract:common",
     "docs": "",
-    "test": "npm run test:backend",
-    "pretest:backend": "npm run copy:backendassets && rush build -t imodeljs-core-sample-code",
-    "test:backend": "npm run pretest:backend && node ../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../\" --testDir=\"./out/backend\""
+    "test": ""
   },
   "repository": {},
   "//dependencies": [

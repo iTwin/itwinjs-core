@@ -63,7 +63,7 @@ The frontend makes requests on backend services in order to access iModel conten
 
 ### Gateways
 
-A *gateway* is a channel of communication between a client and a service. To the iModelJs app programmer, a gateway is a TypeScript class, and using a gateway is a method call. Client and service must both be implemented in TypeScript/JavaScript. iModelJs services support only compliant script clients, and iModelJs clients use gateways exclusively when communicating with iModelJs services.
+A *gateway* is a set of operations exposed by a service that a client can call. To the iModelJs app programmer, a gateway is a TypeScript class, and using a gateway is a method call. Client and service must both be implemented in TypeScript/JavaScript. iModelJs services support only compliant script clients, and iModelJs clients use gateways exclusively when communicating with iModelJs services.
 
 In operational terms, a gateway is composed of four things:
 * A TypeScript interface that declares a set of requests that are provided by a service, including their parameters.
@@ -71,13 +71,15 @@ In operational terms, a gateway is composed of four things:
 * An implementation class that allows the service to handle the requests.
 * A [configuration](#gateway-configurations) that marshalls the requests.
 
-The static methods of the gateway interface are the requests offered by the service. The parameters and return type of the methods are the parameters and results of the requests. Note that the service is declared and exposed in TypeScript. There is no separate definition of the service. A client sends a request to a service by obtaining the proxy for the appropriate gateway and calling the appropriate method on it. A service exposes its API by defining and registering a class that is derived from the gateway interface. As far as both client and service are concerned, service requests are TypeScript method calls. The section on [gateway configurations](#gateway-configurations) below described how these calls are marshalled and dispatched.
+The static methods of the gateway interface are the operations offered by the service. The parameters and return type of the methods are the parameters and results of the operations. Note that the service is declared and exposed in TypeScript. There is no separate definition of the service. A client sends a request to a service by obtaining the proxy for the appropriate gateway and calling the appropriate method on it. A service exposes its API by defining and registering a class that is derived from the gateway interface. As far as both client and service are concerned, service operations are TypeScript method calls. The section on [gateway configurations](#gateway-configurations) below described how these calls are marshalled and dispatched.
 
 A gateway is unidirectional. It allows a client to make a request on a service and get a return value. Services never send requests to clients.
 
 Gateway methods are static. Services should be stateless.
 
 Gateway methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
+
+The key API class is [Gateway]($imodeljs-common/Gateway).
 
 ### Gateway Configurations
 
@@ -89,11 +91,15 @@ Transforms client calls on the gateway into HTTP requests. Provides endpoint-pro
 
 The iModelJs cloud gateway configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure.
 
+See [BentleyCloudGatewayConfiguration]($imodeljs-common/gateway/http/BentleyCloudGatewayConfiguration).
+
 #### Desktop gateway configuration
 
 Marshalls calls on the gateway through high-bandwidth, low-latency pipes between cooperating processes on the same computer. Provides endpoint-processing and call dispatching in the service backend process.
 
 The iModelJs desktop gateway configuration is specific to Electron.
+
+See [GatewayElectronConfiguration]($imodeljs-common/gateway/electron/GatewayElectronConfiguration).
 
 #### In-process gateway configuration
 

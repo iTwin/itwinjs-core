@@ -1,6 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+// tslint:disable:only-arrow-functions
+// tslint:disable:space-before-function-paren
+
 // Testing order of initialization for imodeljs-frontend and imodeljs-common
 import * as frontend from "@bentley/imodeljs-frontend";
 frontend;
@@ -16,8 +19,12 @@ TestbedConfig.initializeGatewayConfig();
 if (TestbedConfig.gatewayConfig)
   TestbedConfig.gatewayConfig.protocol.pathPrefix = `http://localhost:${TestbedConfig.serverPort}`;
 
-// tslint:disable:only-arrow-functions
-// tslint:disable:space-before-function-paren
+after(() => {
+  setTimeout(() =>  {
+    common.GatewayProtocol.events.raiseEvent (common.GatewayProtocolEvent.ReleaseResources);
+  }, 2000);
+});
+
 describe("Testbed", function () {
   if (TestbedConfig.gatewayConfig) {
     it("Server should be accessible", (done) => {

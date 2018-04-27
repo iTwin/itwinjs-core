@@ -30,11 +30,7 @@
 
 ## [Quick Tour](./intro/quick-tour)
 
-# Background for BIS
-
 ## [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time)
-
-## [BIS Domain Design Fundamentals](./intro/appendix-c-bis-domain-design-fundamentals)
 
 # BIS Naming Guidelines
 

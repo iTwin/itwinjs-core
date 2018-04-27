@@ -12,31 +12,16 @@ export class GatewayElectronRequest extends GatewayRequest {
   public readonly protocol: GatewayElectronProtocol = this.gateway.configuration.protocol as any;
 
   /** The fulfillment of this request. */
-  public fulfillment: GatewayRequestFulfillment = { result: "", status: 0 };
-
-  /** Initializes the request communication channel. */
-  protected initializeChannel(): void {
-
-  }
+  public fulfillment: GatewayRequestFulfillment = { result: "", status: 0, id: "", gateway: "" };
 
   /** Sends the request. */
   protected send(): void {
     try {
-      interop.ipcRenderer.once(`${CHANNEL}${this.id}`, (_evt: any, arg: any) => {
-        this.fulfillment = arg;
-        this.protocol.events.raiseEvent(GatewayProtocolEvent.ResponseLoaded, this);
-      });
-
       const request = this.protocol.serialize(this);
       interop.ipcRenderer.send(CHANNEL, request);
     } catch (e) {
       this.protocol.events.raiseEvent(GatewayProtocolEvent.ConnectionErrorReceived, this);
     }
-  }
-
-  /** Sets request header values. */
-  protected setHeader(_name: string, _value: string): void {
-
   }
 
   /** Supplies response status code. */
