@@ -1,6 +1,6 @@
 # Modeling with BIS
 
-This section describes how BIS models the world, and why. First, we introduce the way that BIS perceives the real world. Next, we describe the fundamental building blocks for modeling with BIS. Finally, we describe how those blocks are used to construct a cohesive "Digital Twin"---which is significantly different from how one would define the data model of an application-specific "silo" database.
+This section describes how BIS models the world, and why. First, we introduce the way that BIS perceives the real world. Next, we describe the fundamental building blocks for modeling with BIS and how those blocks are used to construct a cohesive "Digital Twin"—which is significantly different from how one would define the data model of an application-specific "silo" database.
 
 This section uses terms without fully defining them. See more-detailed definitions in the [BIS Glossary](TODO-Need-Glossary-Link) and [BIS Reference Docs](TODO-Need-Glossary-Link).
 
@@ -31,37 +31,36 @@ The fundamental building blocks for a Digital Twin in a BIS Repository are infor
 
 An [Element](TODO-Need-Glossary-Link) models a real-world Entity. A set of closely-related Elements (each modeling a different Entity comprising the Object) collectively model the complete Object. One Element will be the "lead" Element, based on the nature of the Object being modeled. For example, if it is a Physical Object, then the PhysicalElement (modeling the Physical Entity) will be the "lead" Element, and all other Elements (modeling the other Entities comprising the Object) will relate back to the lead PhysicalElement. For a purely spatial Object (e.g. a political border) the SpatialLocationElement would be the "lead". For an "information" Object, an InformationContentElement would be the "lead".
 
-![02](./media/bis-modeling-02.png "Elements model Entities")<!-- style="width:4.4325in;height:1.84167in" -->
+![02](./media/bis-modeling-02.png "Elements model Entities")
 
 ### Model
 
-A [Model](TODO-Need-Glossary-Link) is a collection of Elements, all from a [single]{.underline} Perspective. Collectively, those Elements model some Entity that is "larger" than the Entities modeled by the Elements contained in the Model. For example, consider a PhysicalModel containing PhysicalElements that model the physical form of car parts. Collectively, they model the Physical Entity of a car-as-a-whole.
+A [Model](TODO-Need-Glossary-Link) is a collection of Elements, all from a __single__ Perspective. Collectively, those Elements model some Entity that is "larger" than the Entities modeled by the Elements contained in the Model. For example, consider a PhysicalModel containing PhysicalElements that model the physical form of car parts. Collectively, they model the Physical Entity of a car-as-a-whole.
 
-![03](./media/bis-modeling-03.png "Models are collections of Elements with a common Perspective") <!--style="width:5.31382in;height:2.075in" -->
+![03](./media/bis-modeling-03.png "Models are collections of Elements with a common Perspective")
+An Element in a different Model (see "P-0" below) models the car-as-a-whole as an "atomic" thing. The Model containing the "car part" Elements has a "breaks-down" relationship to the Element modeling the car-as-a-whole because it "breaks down" the Element (a simple, atomic model) into a finer-grained Model. Thus a BIS repository can cohesively model the car at two different Granularities--__both__ as an "atomic" thing __and__ as a fine-grained collection of parts.
 
-An Element in a different Model (see "P-0" below) models the car-as-a-whole as an "atomic" thing. The Model containing the "car part" Elements has a "breaks-down" relationship to the Element modeling the car-as-a-whole because it "breaks down" the Element (a simple, atomic model) into a finer-grained Model. Thus a BIS repository can cohesively model the car at two different Granularities---[both]{.underline} as an "atomic" thing [and]{.underline} as a fine-grained collection of parts.
+![04](./media/bis-modeling-04.png "Models break-down Elements for finer-grained modeling")
 
-![04](./media/bis-modeling-04.png "Models break-down Elements for finer-grained modeling") <!--style="width:4.39167in;height:2.6594in" -->
+The Element modeling the car-as-a-whole is also in a Model. What Element is __that__ Model breaking down? BIS escapes from infinite regression by defining a special RepositoryModel that is not required to "break down" some other Element. The RepositoryModel acts as the "Table of Contents" of the BIS Repository. It contains a "Subject" Element that textually references the Object that the BIS Repository is about. The RepositoryModel also contains one or more InformationPartitionElements. Each declares a modeling Perspective used to model the Subject. Each Partition will be "broken down" by Models of the same Perspective, e.g. a PhysicalModel will "break down" a PhysicalPartition.
 
-The Element modeling the car-as-a-whole is also in a Model. What Element is [that]{.underline} Model breaking down? BIS escapes from infinite regression by defining a special RepositoryModel that is not required to "break down" some other Element. The RepositoryModel acts as the "Table of Contents" of the BIS Repository. It contains a "Subject" Element that textually references the Object that the BIS Repository is about. The RepositoryModel also contains one or more InformationPartitionElements. Each declares a modeling Perspective used to model the Subject. Each Partition will be "broken down" by Models of the same Perspective, e.g. a PhysicalModel will "break down" a PhysicalPartition.
-
-![05](./media/bis-modeling-05.png "The RepositoryModel acts as the Table of Contents of the BIS Repository") <!--style="width:5.73446in;height:3.35in" -->
+![05](./media/bis-modeling-05.png "The RepositoryModel acts as the Table of Contents of the BIS Repository")
 
 ### Relationships
 
-There can be many different kinds of Relationships among Elements within a Model or spanning Models. The various specializations of the ElementHasChildElements relationship are particularly important---they implement parent-child/whole-part relationships among Elements. For example, if Object 1 is a Door, it might have DoorHardware as a Child.
+There can be many different kinds of Relationships among Elements within a Model or spanning Models. The various specializations of the ElementHasChildElements relationship are particularly important—they implement parent-child/whole-part relationships among Elements. For example, if Object 1 is a Door, it might have DoorHardware as a Child.
 
-![06](./media/bis-modeling-06.Png "Within a Model, parent Elements allow child Elements") <!--style="width:5.57041in;height:3.24167in" -->
+![06](./media/bis-modeling-06.Png "Within a Model, parent Elements allow child Elements")
 
 Thus, BIS supports two ways of modeling an Object and its parts:
 
 1. The class of Element modeling the Object can be "atomic" (not allowing any child Elements) and be broken-down as many Elements in a finer-grained "sub-Model". BIS calls this a "sub-modeled Element". The sub-modeled Element is intentionally redundant with the Elements in its sub-Model.
 
-2. The class of Element modeling the Object can allow "child" Elements, but then it is not allowed to be broken-down in a sub-Model. BIS calls this a "parent Element"---essentially modeling an Entity as an aggregate[^1]. A parent Element is not redundant with its child Elements.
+2. The class of Element modeling the Object can allow "child" Elements, but then it is not allowed to be broken-down in a sub-Model. BIS calls this a "parent Element"—essentially modeling an Entity as an [aggregate](TODO-Need-Glossary-Link). A parent Element is not redundant with its child Elements.
 
 At a minimum, a parent Element represents the identity of the aggregate. Optionally, it may model part the "substance" of the aggregate, in which case, its part of the "substance" should not be redundant with it child Elements. For example, the physical geometry of the DoorElement should not contain the geometry of the door hardware (assuming it has a DoorHardware child Element that contains that geometry.) You can model a "pure" assembly PhysicalElement by giving the parent Element no geometry and add child Elements that hold all of the geometry of the aggregate Entity.
 
-These two rules imply that a given class of Element cannot be both sub-modeled [and]{.underline} a parent. The schema author must choose one or the other (or choose to make the Element "strictly atomic", meaning it can neither be sub-modeled nor have children.)
+These two rules imply that a given class of Element cannot be both sub-modeled __and__ a parent. The schema author must choose one or the other (or choose to make the Element "strictly atomic", meaning it can neither be sub-modeled nor have children.)
 
 ### ElementAspect
 
@@ -73,7 +72,7 @@ Elements have three primary identifiers: [ElementId](TODO-Need-Glossary-Link), [
 
 The ElementId is a 64-bit integer that must be unique within the BIS Repository. Different implementations of BIS Repository manage this identifier differently.
 
-The Code is a human-readable identifier that en[code]{.underline}s some business meaning. Elements have three properties supporting the Code:
+The Code is a human-readable identifier that en**code**s some business meaning. Elements have three properties supporting the Code:
 
 - A CodeScope NavigationProperty pointing to an Element that defines the scope within which the Code must be unique
 
@@ -86,5 +85,3 @@ The Code is often used to identify Entities on drawings and in GUIs and may be u
 The FederationGuid is optional but can be used to precisely identify an Entity that is represented in many different systems, including those that do not use BIS.
 
 UserLabel is an optional property of an Element that can be used as an informal name in the GUI, but it does not have to be unique. In some GUIs, if the UserLabel is null, the CodeValue will be used as a display label.
-
-[^1]: Definition of aggregate: a whole formed by combining several (typically disparate) parts
