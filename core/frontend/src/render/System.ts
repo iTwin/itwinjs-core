@@ -92,9 +92,7 @@ export abstract class RenderSystem {
   public get isPainting(): boolean { return !!this._nowPainting; }
   public checkPainting(target?: RenderTarget): boolean { return target === this._nowPainting; }
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
-  public notPainting() { this._nowPainting = undefined; }
-
-  public abstract get maxTextureSize(): number;
+  public nowPainting() { this._nowPainting = undefined; }
 
   /** Create a render target. */
   public abstract createTarget(): RenderTarget;

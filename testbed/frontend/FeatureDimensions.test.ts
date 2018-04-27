@@ -3,29 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { LUTParams, getFeatureName, FeatureDimension, FeatureDimensions, FeatureDimensionsIterator } from "@bentley/imodeljs-frontend/lib/rendering";
-
-describe("LUTParams", () => {
-  it("should create and store LUTParams", () => {
-    const a = new LUTParams();
-    a.init(640, 480);
-    const b = new LUTParams();
-    b.init(640, 480);
-    assert.isTrue(a.equals(b), "same 2d LUTParams should compare as equal");
-    assert.isTrue(b.equals(a), "2d LUTParams equality should be symetric");
-
-    b.init(1024, 1024);
-    assert.isFalse(a.equals(b), "different 2d LUTParams should compare as !equal");
-
-    a.init(128, 1);
-    b.init(128, 1);
-    assert.isTrue(a.equals(b), "same 1d LUTParams should compare as equal");
-    assert.isTrue(b.equals(a), "1d LUTParams equality should be symetric");
-
-    b.init(512, 1);
-    assert.isFalse(a.equals(b), "different 1d LUTParams should compare as !equal");
-  });
-});
+import { getFeatureName, FeatureDimension, FeatureDimensions, FeatureDimensionsIterator } from "@bentley/imodeljs-frontend/lib/rendering";
 
 describe("FeatureDimension getFeatureName", () => {
   it("should return correct string name for corresponding FeatureDimension type", () => {
