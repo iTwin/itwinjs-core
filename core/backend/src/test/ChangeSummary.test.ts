@@ -253,7 +253,7 @@ describe("ChangeSummary", () => {
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(changesetId));
@@ -296,7 +296,7 @@ describe("ChangeSummary", () => {
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
 
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(firstChangesetId));
@@ -363,14 +363,14 @@ describe("ChangeSummary", () => {
     setupTest(testIModelId);
 
     let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    // extract on closed iModel should fail
     try {
       assert.exists(iModel);
+      await iModel.close(accessToken);
       await ChangeSummaryManager.extractChangeSummaries(iModel);
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
-    } finally {
-      await iModel.close(accessToken);
     }
 
     // open standalone iModel
@@ -396,7 +396,7 @@ describe("ChangeSummary", () => {
     setupTest(testIModelId);
 
     let perfLogger = new PerfLogger("IModelDb.open");
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     perfLogger.dispose();
     await ChangeSummaryManager.extractChangeSummaries(iModel);
     assert.exists(iModel);
