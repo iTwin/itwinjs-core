@@ -113,10 +113,12 @@ export abstract class ViewState extends ElementState {
   protected _noQuery: boolean = false;
   protected _featureOverridesDirty: boolean = false;
   protected _selectionSetDirty: boolean = false;
+  protected _gridOrientation: GridOrientationType = GridOrientationType.WorldXY;
+  protected _gridsPerRef: number = 10;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
-
+  public readonly gridSpacing: Point2d = new Point2d(1.0, 1.0);
   /** Get the set of special elements for this ViewState. */
   public readonly specialElements: SpecialElements = new SpecialElements();
 
@@ -156,9 +158,9 @@ export abstract class ViewState extends ElementState {
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
   public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
-
+  public get gridsPerRef(): number { return this._gridsPerRef; }
+  public get gridOrientation(): number { return this._gridOrientation; }
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
-
   public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
 
   public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
@@ -193,6 +195,14 @@ export abstract class ViewState extends ElementState {
   /** Set the extents of this view */
   public abstract setExtents(viewDelta: Vector3d): void;
 
+  public async drawGridFromAuxSystem(acsId: Id64, context: DecorateContext): Promise<void> {
+    if (acsId.isValid()) {
+      const props     = await this.iModel.elements.getProps(acsId),
+            auxSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+      auxSystem.drawGrid(context);
+    }
+  }
+
   /** Change the rotation of the view.
    *  <em>note:</em> rot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
    */
@@ -209,6 +219,34 @@ export abstract class ViewState extends ElementState {
   public getCenter(result?: Point3d): Point3d {
     const delta = this.getRotation().transpose().multiplyVector(this.getExtents());
     return this.getOrigin().plusScaled(delta, 0.5, result);
+  }
+
+  public drawGrid(context: DecorateContext): void {
+    const vp = context.viewport;
+
+    if (!vp.isGridOn)
+      return;
+
+    const orientation = this.gridOrientation;
+
+    if (GridOrientationType.AuxCoord === orientation) {
+      this.drawGridFromAuxSystem(this.getAuxiliaryCoordinateSystemId(), context);
+      return;
+    } else if (GridOrientationType.GeoCoord === orientation) {
+      // NEEDSWORK...
+    }
+
+    // #TODO
+    // let isoGrid = false,
+    //     gridsPerRef = 0;
+    // const spacing = new Point2d();
+    // const origin = new Point3d();
+    // const rMatrix = new RotMatrix();
+    // const fixedRepsAuto = new Point2d();
+
+    // this.getGridSpacing(spacing);
+    // this.getGridOrientation(vp, origin, rMatrix, orientation);
+    // context.drawStandardGrid(origin, rMatrix, spacing gridsPerRef, isoGrid, GridOrientationType.View !== orientation ? fixedRepsAUto : undefined);
   }
 
   /**

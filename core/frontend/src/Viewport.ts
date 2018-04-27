@@ -253,6 +253,11 @@ export class Viewport {
    */
   public get isActive(): boolean { return !!this._view && !!this._target; }
 
+  /**
+   * Determine whether the Grid display is currently enabled in this DgnViewport.
+   * @return true if the grid display is on.
+   */
+  public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
