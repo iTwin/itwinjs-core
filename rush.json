@@ -44,8 +44,13 @@
       "shouldPublish": false
     },
     {
-      "packageName": "imodeljs-core-sample-code",
-      "projectFolder": "sample-code",
+      "packageName": "sample-code-snippets",
+      "projectFolder": "sample-code/snippets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "sample-code-app",
+      "projectFolder": "sample-code/app",
       "shouldPublish": false
     }
   ],
