@@ -8,6 +8,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { EntityQueryParams, Gateway, IModel, IModelReadGateway, IModelToken, IModelVersion } from "@bentley/imodeljs-common";
 import { EntityMetaData } from "../Entity";
 import { IModelDb } from "../IModelDb";
+import { ChangeSummaryManager } from "../ChangeSummaryManager";
 
 const loggingCategory = "imodeljs-backend.IModelReadGatewayImpl";
 
@@ -110,4 +111,6 @@ export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway 
 
   public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<any> { return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId); }
   public async readFontJson(iModelToken: IModelToken): Promise<any> { return IModelDb.find(iModelToken).readFontJson(); }
+  public async isChangeCacheAttached(iModelToken: IModelToken): Promise<boolean> { return ChangeSummaryManager.isChangeCacheAttached(IModelDb.find(iModelToken)); }
+  public async attachChangeCache(iModelToken: IModelToken): Promise<void> { ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken)); }
 }

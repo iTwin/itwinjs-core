@@ -10,42 +10,17 @@ import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { ChangeOpCode, ChangedValueState, IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
 import { KnownLocations } from "./Platform";
 
-/** Equivalent of the ECEnumeration OpCode in the `ECDbChange` ECSchema
- *  See also
- *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
- */
-export enum ChangeOpCode {
-  Insert = 1,
-  Update = 2,
-  Delete = 4,
-}
-
-/** The enum represents the values for the ChangedValueState argument of the ECSQL function
- *  **Changes**.
- * The enum can be used when programmatically binding values to the ChangedValueState argument
- * in an ECSQL using the **Changes** ECSQL function.
- *
- *  See also
- *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
- */
-export enum ChangedValueState {
-  AfterInsert = 1,
-  BeforeUpdate = 2,
-  AfterUpdate = 3,
-  BeforeDelete = 4,
-}
-
 /** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
  *
  *  See also
  *  - [ChangeSummaryManager.queryChangeSummary]($imodeljs-backend.ChangeSummaryManager.queryChangeSummary)
- *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
+ *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
  */
 export interface ChangeSummary {
   id: Id64;
@@ -56,7 +31,7 @@ export interface ChangeSummary {
  *
  *  See also
  *  - [ChangeSummaryManager.queryInstanceChange]($imodeljs-backend.ChangeSummaryManager.queryInstanceChange)
- *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
+ *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
  */
 export interface InstanceChange {
   id: Id64;
@@ -96,7 +71,7 @@ class ChangeSummaryExtractContext {
 /** Class to extract Change Summaries for a briefcase.
  *
  *  See also:
- *  - [ChangeSummary Overview]($docs/learning/backend/ChangeSummaries)
+ *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
   /** Determines whether the *Changes Cache File* is attached to the specified iModel or not
@@ -349,8 +324,10 @@ export class ChangeSummaryManager {
   }
 
   /** Queries the ChangeSummary for the specified change summary id
+   *
+   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
    * @param iModel iModel
-   * @param changeSummaryId ECInstanceId of the ChangeSummary (see `ECDbChange.ChangeSummary` ECClass)
+   * @param changeSummaryId ECInstanceId of the ChangeSummary
    * @returns Returns the requested ChangeSummary object
    * @throws [IModelError]($imodeljs-common.IModelError) If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
@@ -370,9 +347,12 @@ export class ChangeSummaryManager {
     });
   }
 
-  /** Queries the InstanceChange for the specified instance change id
+  /** Queries the InstanceChange for the specified instance change id.
+   *
+   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   *
    * @param iModel iModel
-   * @param instanceChangeId ECInstanceId of the InstanceChange (see `ECDbChange.InstanceChange` ECClass)
+   * @param instanceChangeId ECInstanceId of the InstanceChange (see `ECDbChange.InstanceChange` ECClass in the *ECDbChange* ECSchema)
    * @returns Returns the requested InstanceChange object
    * @throws [IModelError]($imodeljs-common.IModelError) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.

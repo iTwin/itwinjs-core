@@ -172,6 +172,23 @@ export class IModelConnection extends IModel {
   }
 
   /**
+   * Determines whether the *Changes Cache File* is attached to this iModel or not.
+   *
+   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
+   */
+  public async isChangeCacheAttached(): Promise<boolean> { return await IModelReadGateway.getProxy().isChangeCacheAttached(this.iModelToken); }
+
+  /**
+   * Attaches the *Changes Cache File* to this iModel if it hasn't been attached yet.
+   *
+   * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
+   *
+   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   */
+  public async attachChangeCache(): Promise<void> { await IModelReadGateway.getProxy().attachChangeCache(this.iModelToken); }
+
+  /**
    * Execute a test by name
    * @param testName The name of the test to execute
    * @param params A JSON string containing all parameters the test requires
