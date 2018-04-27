@@ -11,6 +11,8 @@ import { Gateway } from "../Gateway";
 import { EntityQueryParams } from "../EntityProps";
 import { IModel, IModelToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
+import { ModelProps } from "../ModelProps";
+import { ElementProps } from "../ElementProps";
 
 /**
  * The Gateway for reading from an iModel.
@@ -40,10 +42,10 @@ export abstract class IModelReadGateway extends Gateway {
   public openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward.apply(this, arguments); }
   public close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
   public executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<any[]> { return this.forward.apply(this, arguments); }
+  public getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]> { return this.forward.apply(this, arguments); }
+  public queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward.apply(this, arguments); }
+  public getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<ElementProps[]> { return this.forward.apply(this, arguments); }
+  public queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward.apply(this, arguments); }
   public queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
   public formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
   public loadMetaDataForClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<any[]> { return this.forward.apply(this, arguments); }

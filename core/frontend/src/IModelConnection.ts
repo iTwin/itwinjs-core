@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeEvent } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
@@ -55,13 +55,6 @@ export class IModelConnection extends IModel {
     this.views = new IModelConnectionViews(this);
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
-  }
-
-  /** @hidden */
-  public static async toPropsArray(jsonArray: string[]): Promise<any[]> {
-    const props: any[] = [];
-    jsonArray.forEach((json) => props.push(JSON.parse(json)));
-    return props;
   }
 
   /** Open an IModelConnection to an iModel */
@@ -192,7 +185,7 @@ export class IModelConnectionModels {
 
   /** Get a batch of [[ModelProps]] given a list of model ids. */
   public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds)));
+    return await IModelReadGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
   }
 
   public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
@@ -252,7 +245,7 @@ export class IModelConnectionModels {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsTemplate=FALSE ";
     }
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryModelProps(this._iModel.iModelToken, params));
+    return await IModelReadGateway.getProxy().queryModelProps(this._iModel.iModelToken, params);
   }
 }
 
@@ -269,12 +262,12 @@ export class IModelConnectionElements {
 
   /** Get a batch of [[ElementProps]] given one or more element ids. */
   public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg)));
+    return await IModelReadGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
   }
 
   /** get a bach of [[ElementProps]] that satisfy a query */
   public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
+    return await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params);
   }
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
@@ -351,7 +344,9 @@ export class IModelConnectionViews {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsPrivate=FALSE ";
     }
-    return IModelConnection.toPropsArray(await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params));
+    const viewProps = await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params);
+    assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
+    return viewProps as ViewDefinitionProps[];
   }
 
   /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
