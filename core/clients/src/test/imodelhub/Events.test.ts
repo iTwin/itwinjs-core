@@ -2,8 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
-import * as chaiAsPromised from "chai-as-promised";
 import * as utils from "./TestUtils";
 
 import { TestConfig } from "../TestConfig";
@@ -14,8 +12,6 @@ import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
-chai.use(chaiString);
-chai.use(chaiAsPromised);
 chai.should();
 
 describe("iModelHub EventHandler", () => {

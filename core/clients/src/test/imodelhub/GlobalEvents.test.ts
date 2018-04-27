@@ -2,8 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
-import * as chaiAsPromised from "chai-as-promised";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 
@@ -14,8 +12,6 @@ import { AccessToken } from "../../Token";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
-chai.use(chaiString);
-chai.use(chaiAsPromised);
 chai.should();
 
 ((TestConfig.enableMocks || TestConfig.deploymentEnv === "DEV") ? describe : describe.skip)("iModelHub GlobalEventHandler", () => {

@@ -2,8 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
-import * as chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -19,8 +17,6 @@ import * as utils from "./TestUtils";
 
 declare const __dirname: string;
 
-chai.use(chaiString);
-chai.use(chaiAsPromised);
 chai.should();
 
 describe("iModelHub BriefcaseHandler", () => {
@@ -80,9 +76,15 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should fail getting an invalid briefcase", async () => {
-    await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(-1))
-    .should.eventually.be.rejectedWith(IModelHubRequestError)
-    .and.have.property("id", IModelHubRequestErrorId.InvalidArgumentError);
+    let error: any;
+    try {
+      await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(-1));
+    } catch (err) {
+      error = err;
+    }
+    chai.assert(error);
+    chai.expect(error instanceof IModelHubRequestError);
+    chai.expect(error.id === IModelHubRequestErrorId.InvalidArgumentError);
   });
 
   it("should get information on a briefcase", async () => {
@@ -104,9 +106,15 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should fail deleting an invalid briefcase", async () => {
-    await imodelHubClient.Briefcases().delete(accessToken, iModelId, -1)
-      .should.eventually.be.rejectedWith(IModelHubRequestError)
-      .and.have.property("id", IModelHubRequestErrorId.InvalidArgumentError);
+    let error: any;
+    try {
+      await imodelHubClient.Briefcases().delete(accessToken, iModelId, -1);
+    } catch (err) {
+      error = err;
+    }
+    chai.assert(error);
+    chai.expect(error instanceof IModelHubRequestError);
+    chai.expect(error.id === IModelHubRequestErrorId.InvalidArgumentError);
   });
 
   it("should get the download URL for a Briefcase", async () => {
@@ -125,7 +133,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.expect(briefcase.fileName).to.be.equal(TestConfig.iModelName + ".bim");
     chai.expect(briefcase.eTag).to.have.length.above(5);
-    chai.expect(briefcase.downloadUrl).to.startWith("https://");
+    chai.expect(briefcase.downloadUrl!.startsWith("https://"));
   });
 
   it("should download a Briefcase", async () => {

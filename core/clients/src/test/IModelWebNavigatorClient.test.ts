@@ -2,10 +2,8 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
 import { IModelWebNavigatorClient } from "../IModelWebNavigatorClient";
 
-chai.use(chaiString);
 chai.should();
 
 describe("IModelWebNavigatorClient", () => {

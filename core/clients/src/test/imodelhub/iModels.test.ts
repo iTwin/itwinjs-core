@@ -2,8 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
-import * as chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 
 import { TestConfig } from "../TestConfig";
@@ -18,10 +16,6 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
 declare const __dirname: string;
-
-chai.use(chaiString);
-chai.use(chaiAsPromised);
-chai.should();
 
 async function deleteiModelByName(imodelHubClient: IModelHubClient, accessToken: AccessToken, projectId: string, imodelName: string): Promise<void> {
   const imodels = await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName));
@@ -161,20 +155,34 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
   it("should fail getting an invalid iModel", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel", "00000000-0000-0000-0000-000000000000");
     responseBuilder.MockResponse(RequestType.Get, requestPath, responseBuilder.generateError("InstanceNotFound"),
-                                                                                        1, undefined, undefined, 404);
+      1, undefined, undefined, 404);
 
-    await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byId("00000000-0000-0000-0000-000000000000"))
-      .should.eventually.be.rejectedWith(WsgError)
-      .and.have.property("name", "InstanceNotFound");
+    let error: WsgError | undefined;
+    try {
+      await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byId("00000000-0000-0000-0000-000000000000"));
+    } catch (err) {
+      if (err instanceof WsgError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.name === "InstanceNotFound");
   });
 
   it("should fail getting an iModel without projectId", async () => {
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Project, "", "iModel", iModelId);
-    responseBuilder.MockResponse(RequestType.Get, requestPath, responseBuilder.generateError("iModelHub.ProjectIdIsNotSpecified"),
-                                                                                        1, undefined, undefined, 400);
-    await imodelHubClient.IModels().get(accessToken, "", new IModelQuery().byId(iModelId))
-      .should.eventually.be.rejectedWith(IModelHubResponseError)
-      .and.have.property("id", IModelHubResponseErrorId.ProjectIdIsNotSpecified);
+    responseBuilder.MockResponse(RequestType.Get, requestPath,
+      responseBuilder.generateError("iModelHub.ProjectIdIsNotSpecified"),
+      1, undefined, undefined, 400);
+    let error: IModelHubResponseError | undefined;
+    try {
+      await imodelHubClient.IModels().get(accessToken, "", new IModelQuery().byId(iModelId));
+    } catch (err) {
+      if (err instanceof IModelHubResponseError)
+        error = err;
+    }
+
+    chai.expect(error);
+    chai.expect(error!.id === IModelHubResponseErrorId.ProjectIdIsNotSpecified);
   });
 
   (TestConfig.enableMocks ? it : it.skip)("should fail creating existing and initialized iModel", async () => {
@@ -183,10 +191,16 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
                                                           new Map<string, any>([["iModelInitialized", true]]));
     responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, undefined, undefined, 409);
 
-    await imodelHubClient.IModels().create(accessToken, projectId, TestConfig.iModelName,
-                    downloadToPath + "empty-files/empty.bim")
-                    .should.eventually.be.rejectedWith(IModelHubResponseError)
-                    .and.have.property("id", IModelHubResponseErrorId.iModelAlreadyExists);
+    let error: IModelHubResponseError | undefined;
+    try {
+      await imodelHubClient.IModels().create(accessToken, projectId, TestConfig.iModelName,
+        downloadToPath + "empty-files/empty.bim");
+    } catch (err) {
+      if (err instanceof IModelHubResponseError)
+        error = err;
+    }
+    chai.expect(error);
+    chai.expect(error!.id === IModelHubResponseErrorId.iModelAlreadyExists);
   });
 
   (TestConfig.enableMocks ? it : it.skip)("should create iModel and upload SeedFile", async () => {

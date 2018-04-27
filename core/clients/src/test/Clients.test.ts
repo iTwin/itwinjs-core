@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
 import { UrlDiscoveryClient } from "../Client";
 import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
 import { ConnectClient, RbacClient } from "../ConnectClients";
@@ -12,7 +11,6 @@ import { RealityDataServicesClient } from "../RealityDataServicesClient";
 import { TileDataAccessClient } from "../TileDataAccessClient";
 import { TilesGeneratorClient } from "../TilesGeneratorClient";
 
-chai.use(chaiString);
 chai.should();
 
 describe("UrlDiscoveryClient", () => {

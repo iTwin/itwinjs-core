@@ -2,8 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
-import * as chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -19,8 +17,6 @@ import * as utils from "./TestUtils";
 
 declare const __dirname: string;
 
-chai.use(chaiString);
-chai.use(chaiAsPromised);
 chai.should();
 
 describe("iModelHub ChangeSetHandler", () => {
@@ -74,7 +70,7 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(fileName.length).to.be.greaterThan(0);
 
       const downloadUrl: string = changeSet.downloadUrl!;
-      chai.expect(downloadUrl).to.startWith("https://");
+      chai.expect(downloadUrl.startsWith("https://"));
 
       const changeSet2: ChangeSet = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSet.wsgId)))[0];
 
