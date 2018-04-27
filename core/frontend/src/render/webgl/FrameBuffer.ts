@@ -5,6 +5,7 @@
 // import { assert } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
+// import { GLDisposable } from "./GLDisposable";
 
 export type DepthBuffer = RenderBuffer | TextureHandle;
 
@@ -17,11 +18,28 @@ export const enum FrameBufferState {
 
 /*
 export class FrameBuffer implements GLDisposable {
-  private _glFbo?: WebGLFrameBuffer;
+  private _glFbo?: WebGLFramebuffer;
   private _state: FrameBufferState;
   private readonly _colorTextures: TextureHandle[];
   private readonly _depthBuffer?: DepthBuffer;
   // ###TODO gl.drawBuffersEXT()...private readonly _activeColorAttachments = new Array<number>();
+
+  public get isValid(): boolean { return gl.FRAMEBUFFER_COMPLETE === checkStatus(); }
+  public get isBound(): boolean { return FrameBufferState.Bound === this._state; }
+  public get isSuspended(): boolean { return FrameBufferState.Suspended === this._state; }
+
+  public static createForColors(gl: WebGLRenderingContext, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer): FrameBuffer {
+    const glBuffer = gl.createRenderbuffer();
+    if (null === glBuffer) {
+      return undefined;
+    }
+    assert(0 < width && 0 < height);
+    RenderBuffer.bindBuffer(gl, glBuffer);
+    gl.renderbufferStorage(GL.RenderBuffer.TARGET, format, width, height);
+    RenderBuffer.unbind(gl);
+
+    return new RenderBuffer(glBuffer);
+  }
 
   public dispose(gl: WebGLRenderingContext): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
@@ -38,7 +56,7 @@ export class FrameBuffer implements GLDisposable {
     }
   }
 
-  private constructor(glFbo: WebGLFrameBuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
+  private constructor(glFbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
   }
 
   private static bindBuffer(gl: WebGLRenderingContext, glFbo: WebGLFramebuffer | null, andAttachments) {
