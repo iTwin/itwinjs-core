@@ -62,9 +62,9 @@ export * from "./Time";
  * ``` json
  * {
  *   "loggerConfig": {
- *      "defaultLevel": "${MY-SERVICE-DEFAULT-LOG-LEVEL}",
+ *      "defaultLevel": "${RBS-DEFAULT-LOG-LEVEL}",
  *      "categoryLevels": [
- *          {"category": "MyService", "logLevel": "Trace"},
+ *          {"category": "RBS", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway.BentleyCloudGatewayProtocol", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway.GatewayHttpProtocol", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway", "logLevel": "Trace"},
@@ -77,8 +77,8 @@ export * from "./Time";
  *      ]
  *    },
  *    "seq": {
- *      "hostURL": "${MY-SERVICE-SEQ-URL}",
- *      "port": "${MY-SERVICE-SEQ-PORT}"
+ *      "hostURL": "${RBS-SEQ-URL}",
+ *      "port": "${RBS-SEQ-PORT}"
  *    },
  * }
  * ```

@@ -154,6 +154,29 @@ export * from "./gateway/StandaloneIModelGateway";
  * It also shows how to choose the appropriate configuration.
  * It also shows how a service could use [FeatureGates]($imodeljs-common/FeatureGates) to decide which gateways to expose.
  *
+ * ### Serving Gateways (Service side)
+ *
+ * A service must serve out its gateways, so that in-coming client calls/requests on the gateway are forwarded to the
+ * gateway implementations.
+ *
+ * #### Web Server
+ *
+ * When a service is configured as a Web service, it can use any Web server technology you like. A single function call is required to integrate
+ * all configured Gateways with the Web server. For example, if you use express, do this:
+ * ```ts
+ * const app = express();
+ * ...
+ * app.post("*", async (req, res) => gatewaysConfig.protocol.handleOperationPostRequest(req, res));
+ * ```
+ *
+ * #### Electron Desktop App
+ *
+ * When a service is the backend of an Electron desktop app, no additional code is required to serve out gateways, beyond calling GatewayElectronConfiguration to configure them.
+ *
+ * #### Mobile App
+ *
+ * When a service is the backend of a mobile app, <em>TBD...</em.
+ *
  * ### Configuring and Calling Gateways (Client side)
  *
  * A client (e.g., an app frontend) must configure the gateways that it intends to use.
