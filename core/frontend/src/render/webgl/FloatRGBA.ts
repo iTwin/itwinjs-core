@@ -2,90 +2,67 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ColorDef } from "@bentley/imodeljs-common";
+import { assert } from "@bentley/bentleyjs-core";
 
-/** An RGB color. */
+function assertComponent(c: number) { assert(1.0 >= c && 0.0 <= c); }
+function assertRgb(rgb: FloatRgb) {
+  assertComponent(rgb.red);
+  assertComponent(rgb.green);
+  assertComponent(rgb.blue);
+}
+function assertRgba(rgba: FloatRgba) {
+  assertRgb(rgba);
+  assertComponent(rgba.alpha);
+}
+
+/** An RGB color with components in the range [0, 1]. */
 export class FloatRgb {
-  public red = 0;
-  public green = 0;
-  public blue = 0;
+  public readonly red: number;
+  public readonly green: number;
+  public readonly blue: number;
 
-  /** Create a FloatRgb using a ColorDef.
-   * @param def A ColorDef used to create a new FloatRgb.
-   * @returns Returns the newly created FloatRgb
-   */
-  public static fromColorDef(def: ColorDef): FloatRgb {
-    const rgb: FloatRgb = new FloatRgb();
-    rgb.initFromColorDef(def);
-    return rgb;
+  /** Construct from red, green, and blue components. */
+  public constructor(red: number, green: number, blue: number) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+
+    assertRgb(this);
   }
 
-  /** Initialize a FloatRgb using a ColorDef.
-   * @param def A ColorDef used to create a new FloatRgb.
-   */
-  public initFromColorDef(def: ColorDef): void {
-    const colors = def.colors;
-    this.red = colors.r / 255.0;
-    this.green = colors.g / 255.0;
-    this.blue = colors.b / 255.0;
+  /** Create a FloatRgb using a ColorDef. */
+  public static fromColorDef(def: ColorDef) {
+    const c = def.colors;
+    return new FloatRgb(c.r / 255.0, c.g / 255.0, c.b / 255.0);
   }
 }
 
-/** An RGBA color. */
+/** An RGBA color with components in the range [0, 1]. */
 export class FloatRgba {
-  public red = 0;
-  public green = 0;
-  public blue = 0;
-  public alpha = 0;
+  public readonly red: number;
+  public readonly green: number;
+  public readonly blue: number;
+  public readonly alpha: number;
+
+  /** Construct a FloatRgba from red, green, blue, and alpha components */
+  public constructor(red: number, green: number, blue: number, alpha: number) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+    this.alpha = alpha;
+
+    assertRgba(this);
+  }
 
   /** Return whether or not the FloatRgba is translucent.
    * @returns if the FloatRgba has translucency.
    */
-  public hasTranslucency(): boolean {
-    return 1.0 === this.alpha;
-  }
+  public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
 
-  /** Create a FloatRgba using a FloatPreMulRgba.
-   * @param src A FloatPreMulRgba used to create a new FloatRgba.
-   * @returns Returns the newly created FloatRgba
-   */
+  /** Produce a FloatRgba from a FloatPreMulRgba by reversing the pre-multiplication */
   public static fromPreMulRgba(src: FloatPreMulRgba): FloatRgba {
-    const rgba: FloatRgba = new FloatRgba();
-    rgba.initFromPreMulRgba(src);
-    return rgba;
-  }
-
-  /** Create a FloatRgba using a FloatPreMulRgba.
-   * @param r A Number used to set the red variable in the new FloatRgba.
-   * @param g A Number used to set the green variable in the new FloatRgba.
-   * @param b A Number used to set the blue variable in the new FloatRgba.
-   * @param a A Number used to set the alpha variable in the new FloatRgba.
-   * @returns Returns the newly created FloatRgba
-   */
-  public static from(r: number, g: number, b: number, a: number): FloatRgba {
-    const rgba: FloatRgba = new FloatRgba();
-    rgba.red = r;
-    rgba.green = g;
-    rgba.blue = b;
-    rgba.alpha = a;
-    return rgba;
-  }
-
-  /** Initialize a FloatRgba using a FloatPreMulRgba.
-   * @param preMulRgba A FloatPreMulRgba used to create a new FloatRgba.
-   */
-  public initFromPreMulRgba(preMulRgba: FloatPreMulRgba): void {
-    // !defined(DEBUG_PREMUL_RGBA)
-    if (preMulRgba.alpha !== 0.0 && preMulRgba.alpha !== 1.0) {
-      this.red = preMulRgba.red / preMulRgba.alpha;
-      this.green = preMulRgba.green / preMulRgba.alpha;
-      this.blue = preMulRgba.blue / preMulRgba.alpha;
-      this.alpha = preMulRgba.alpha;
-    } else {
-      this.red = preMulRgba.red;
-      this.green = preMulRgba.green;
-      this.blue = preMulRgba.blue;
-      this.alpha = preMulRgba.alpha;
-    }
+    const f = 0.0 !== src.alpha ? 1.0 / src.alpha : 0.0;
+    return new FloatRgba(src.red * f, src.green * f, src.blue * f, src.alpha);
   }
 
   /** Create a FloatRgba using a FloatRgb.
@@ -94,17 +71,7 @@ export class FloatRgba {
    * @returns Returns the newly created FloatRgba
    */
   public static fromRgb(rgb: FloatRgb, alpha: number = 1.0): FloatRgba {
-    return this.from(rgb.red, rgb.green, rgb.blue, alpha);
-  }
-
-  /** Initialize a FloatRgba using a ColorDef.
-   * @param preMulRgba A ColorDef used to create a new FloatRgba.
-   */
-  public initFromColorDef(def: ColorDef): void {
-    const colors = def.colors;
-    this.red = colors.r / 255.0;
-    this.green = colors.g / 255.0;
-    this.blue = colors.b / 255.0;
+    return new FloatRgba(rgb.red, rgb.green, rgb.blue, alpha);
   }
 
   /** Create a FloatRgba using a ColorDef.
@@ -112,9 +79,8 @@ export class FloatRgba {
    * @returns Returns the newly created FloatRgba
    */
   public static fromColorDef(def: ColorDef): FloatRgba {
-    const rgb: FloatRgba = new FloatRgba();
-    rgb.initFromColorDef(def);
-    return rgb;
+    const c = def.colors;
+    return new FloatRgba(c.r / 255.0, c.g / 255.0, c.b / 255.0, (255.0 - c.t) / 255.0);
   }
 
   /** Return whether or not the two FloatRgbas are equal.
@@ -125,44 +91,24 @@ export class FloatRgba {
   }
 }
 
-/** An RGBA color with pre-multiplied alpha applied. */
+/** An RGBA color with  with components in the range [0, 1], wherein the red, green, and blue components are pre-multiplied by the alpha component. */
 export class FloatPreMulRgba {
-  public red = 0;
-  public green = 0;
-  public blue = 0;
-  public alpha = 0;
+  public readonly red: number;
+  public readonly green: number;
+  public readonly blue: number;
+  public readonly alpha: number;
 
   /** Return whether or not the FloatPreMulRgba is translucent.
    * @returns if the FloatPreMulRgba has translucency.
    */
-  public hasTranslucency(): boolean {
-    return 1.0 === this.alpha;
-  }
+  public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
 
   /** Create a FloatPreMulRgba using a ColorDef.
    * @param src A FloatRgba used to create a new FloatPreMulRgba.
    * @returns Returns the newly created FloatPreMulRgba
    */
   public static fromRgba(src: FloatRgba): FloatPreMulRgba {
-    const rgba: FloatPreMulRgba = new FloatPreMulRgba();
-    rgba.initFromRgba(src);
-    return rgba;
-  }
-
-  /** Initialize a FloatPreMulRgba using a FloatRgba.
-   * @param rgba A FloatRgba used to create a new FloatPreMulRgba.
-   */
-  public initFromRgba(rgba: FloatRgba): void {
-    this.red = rgba.red * rgba.alpha;
-    this.green = rgba.green * rgba.alpha;
-    this.blue = rgba.blue * rgba.alpha;
-    this.alpha = rgba.alpha;
-
-    // if defined DEBUG_PREMUL_RGBA
-    // this.red = rgba.red;
-    // this.green = rgba.green;
-    // this.blue = rgba.blue;
-    // this.alpha = rgba.alpha;
+    return new FloatPreMulRgba(src.red * src.alpha, src.green * src.alpha, src.blue * src.alpha, src.alpha);
   }
 
   /** Create a FloatPreMulRgba using a ColorDef.
@@ -170,28 +116,9 @@ export class FloatPreMulRgba {
    * @returns Returns the newly created FloatPreMulRgba
    */
   public static fromColorDef(src: ColorDef): FloatPreMulRgba {
-    const rgba: FloatPreMulRgba = new FloatPreMulRgba();
-    rgba.initFromColorDef(src);
-    return rgba;
-  }
-
-  /** Initialize a FloatPreMulRgba using a ColorDef.
-   * @param colorDef A FloatRgba used to create a new ColorDef.
-   */
-  public initFromColorDef(colorDef: ColorDef): void {
-    // if !defined(DEBUG_PREMUL_RGBA)
-    const colors = colorDef.colors;
-    this.red = colors.r / 255.0;
-    this.green = colors.g / 255.0;
-    this.blue = colors.b / 255.0;
-    this.alpha = colors.t / 255.0;
-
-    // if defined(DEBUG_PREMUL_RGBA)
-    // const colors = colorDef.getColors();
-    // this.red = colors.r;
-    // this.green = colors.g;
-    // this.blue = colors.b;
-    // this.alpha = colorDef.getAlpha();
+    const c = src.colors;
+    const a = (255.0 - c.t) / 255.0;
+    return new FloatPreMulRgba(c.r * a / 255.0, c.g * a / 255.0, c.b * a / 255.0, a);
   }
 
   /** Return whether or not the two FloatPreMulRgbas are equal.
@@ -199,5 +126,14 @@ export class FloatPreMulRgba {
    */
   public equals(rhs: FloatPreMulRgba): boolean {
     return this.red === rhs.red && this.green === rhs.green && this.blue === rhs.blue && this.alpha === rhs.alpha;
+  }
+
+  private constructor(r: number, g: number, b: number, a: number) {
+    this.red = r;
+    this.green = g;
+    this.blue = b;
+    this.alpha = a;
+
+    assertRgba(this);
   }
 }

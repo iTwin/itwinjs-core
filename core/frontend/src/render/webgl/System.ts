@@ -170,8 +170,6 @@ export class System extends RenderSystem {
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
 
-  public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
-
   public static create(canvas?: HTMLCanvasElement): System | undefined {
     if (undefined === canvas) {
       return undefined;
