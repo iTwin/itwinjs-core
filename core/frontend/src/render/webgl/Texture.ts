@@ -6,6 +6,7 @@ import { assert } from "@bentley/bentleyjs-core";
 // import { Texture, TextureCreateParams } from "@bentley/imodeljs-common";
 import { GLDisposable } from "./GLDisposable";
 import { GL } from "./GL";
+import { System } from "./System";
 
 export const enum TextureFlags {
   None = 0,
@@ -85,9 +86,9 @@ export class TextureHandle implements GLDisposable {
     assert(0 < this._params.width);
   }
 
-  public dispose(gl: WebGLRenderingContext) {
+  public dispose() {
     if (undefined !== this._glTexture) {
-      gl.deleteTexture(this._glTexture);
+      System.instance.context.deleteTexture(this._glTexture);
       this._glTexture = undefined;
       this._isValid = false;
     }

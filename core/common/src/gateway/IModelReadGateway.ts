@@ -17,6 +17,7 @@ import { ElementProps } from "../ElementProps";
 /**
  * The Gateway for reading from an iModel.
  * All operations only require read-only access.
+ * This gateway is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
  */
 export abstract class IModelReadGateway extends Gateway {
   /** The version of the gateway. */

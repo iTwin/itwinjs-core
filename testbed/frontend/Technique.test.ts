@@ -5,6 +5,7 @@
 import { expect, assert } from "chai";
 import { Transform } from "@bentley/geometry-core";
 import { WebGLTestContext } from "./WebGLTestContext";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
   ProgramBuilder,
   VertexShaderComponent,
@@ -30,18 +31,15 @@ function createPurpleQuadTechnique(target: Target): TechniqueId {
 }
 
 function createTarget(): Target | undefined {
-  const canvas = WebGLTestContext.createCanvas();
-  assert(undefined !== canvas);
-
-  const system = System.create(canvas);
-  assert(undefined !== system);
-
-  return system!.createTarget() as Target;
+  return System.instance!.createTarget() as Target;
 }
 
 describe("Technique tests", () => {
+  before(() => WebGLTestContext.startup());
+  after(() => WebGLTestContext.shutdown());
+
   it("should produce a simple dynamic rendering technique", () => {
-    if (!WebGLTestContext.isEnabled) {
+    if (!IModelApp.hasRenderSystem) {
       return;
     }
 
@@ -53,7 +51,7 @@ describe("Technique tests", () => {
   });
 
   it("should render a purple quad", () => {
-    if (!WebGLTestContext.isEnabled) {
+    if (!IModelApp.hasRenderSystem) {
       return;
     }
 
@@ -64,7 +62,7 @@ describe("Technique tests", () => {
     }
 
     const techId = createPurpleQuadTechnique(target);
-    const geom = ViewportQuadGeometry.create(target.context, techId);
+    const geom = ViewportQuadGeometry.create(techId);
     assert.isDefined(geom);
 
     const drawParams = new DrawParams(target, geom!, Transform.createIdentity(), RenderPass.OpaqueGeneral);
