@@ -6,6 +6,7 @@ Table of Contents:
 * [Backend](./backend/index)
 * [Common](./common/index)
 * [ECSQL](./ECSQL)
+* [Change Summaries](./ChangeSummaries)
 * [Frequently asked Questions](./faq)
 
 See also the [iModelJs Glossary](./Glossary)

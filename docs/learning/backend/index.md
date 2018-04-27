@@ -31,6 +31,6 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 
 ## Change Summary
 
-* [Change Summaries](./ChangeSummaries)
+* [Change Summary Overview](../learning/ChangeSummaries)
 
 ## BriefcaseManager
