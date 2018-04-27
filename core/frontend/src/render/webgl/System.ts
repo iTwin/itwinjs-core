@@ -123,6 +123,11 @@ export class Capabilities {
     return this.hasRequiredFeatures && this.hasRequiredDrawTargets && this.hasRequiredTextureUnits;
   }
 
+  public static create(gl: WebGLRenderingContext): Capabilities | undefined {
+    const caps = new Capabilities();
+    return caps.init(gl) ? caps : undefined;
+  }
+
   /** Determines if a particular texture type is color-renderable on the host system. */
   private isTextureRenderable(gl: WebGLRenderingContext, texType: number): boolean {
     const tex: WebGLTexture | null = gl.createTexture();
@@ -161,7 +166,9 @@ export class Capabilities {
 export class System extends RenderSystem {
   private readonly _canvas: HTMLCanvasElement;
   private readonly _context: WebGLRenderingContext;
+
   public readonly techniques: Techniques;
+  public readonly capabilities: Capabilities;
 
   public static create(canvas?: HTMLCanvasElement): System | undefined {
     if (undefined === canvas) {
@@ -181,7 +188,12 @@ export class System extends RenderSystem {
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering techniques");
     }
 
-    return new System(canvas, context, techniques);
+    const capabilities = Capabilities.create(context);
+    if (undefined === capabilities) {
+      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
+    }
+
+    return new System(canvas, context, techniques, capabilities);
   }
 
   public createTarget(): RenderTarget { return new OnScreenTarget(this, this._context); }
@@ -189,12 +201,12 @@ export class System extends RenderSystem {
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques) {
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
     this._canvas = canvas;
     this._context = context;
     this.techniques = techniques;
-
+    this.capabilities = capabilities;
     // Silence unused variable warnings...
     assert(undefined !== this._canvas);
     assert(undefined !== this._context);

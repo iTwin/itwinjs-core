@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { expect } from "chai";
 import { LinePixels, HiddenLine } from "@bentley/imodeljs-common";
 import { LineCode, EdgeOverrides, FloatPreMulRgba, OvrFlags } from "@bentley/imodeljs-frontend/lib/rendering";
 
@@ -26,50 +26,33 @@ describe("LineCode", () => {
 
 describe("EdgeOverrides", () => {
   it("default constructor sets flags to None", () => {
-    assert.isTrue(new EdgeOverrides().flags === OvrFlags.None);
+    expect(new EdgeOverrides().computeOvrFlags()).to.equal(OvrFlags.None);
   });
   it("anyOverridden returns true if flags is not equal to None", () => {
-    assert.isFalse(new EdgeOverrides().anyOverridden(), "default is false");
-    let override = new EdgeOverrides();
-    override.flags |= OvrFlags.Alpha;
-    assert.isTrue(override.anyOverridden(), "true if flags set to OvrFlag other than None");
-    override = new EdgeOverrides();
-    override.flags = OvrFlags.None;
-    assert.isFalse(override.anyOverridden(), "false if flags set to None");
-  });
-  it("isOverridden returns true if given flag is equivalent to member flag", () => {
-    let override = new EdgeOverrides();
-    override.flags = OvrFlags.Alpha;
-    assert.isTrue(override.isOverridden(OvrFlags.Alpha), "true if flag is overridden");
-    override = new EdgeOverrides();
-    override.flags = OvrFlags.LineCode;
-    assert.isFalse(override.isOverridden(OvrFlags.Alpha), "false if given flag not overridden");
+    expect(new EdgeOverrides().anyOverridden).to.equal(false);
+    const override = new EdgeOverrides(undefined, true);
+    expect(override.anyOverridden).to.equal(true);
+    expect(override.computeOvrFlags()).to.equal(OvrFlags.Alpha);
   });
   it("init properly sets member values", () => {
-    let override = new EdgeOverrides();
+    const override = new EdgeOverrides();
     let style = new HiddenLine.Style({ ovrColor: true, color: 0xf00d, width: 0, pattern: 0 });
-    let color = new FloatPreMulRgba();
+    let color = FloatPreMulRgba.fromColorDef(style.color);
     override.init(style, true);
-    color.initFromColorDef(style.color);
-    assert.isTrue(override.isOverridden(OvrFlags.Rgba), "if style's ovrColor is true, then flags contains Rgba"); //tslint:disable-line
-    assert.isFalse(override.isOverridden(OvrFlags.Weight), "if style's weight is 0, then flags does not contain Weight");//tslint:disable-line
-    assert.isTrue(override.color.equals(color), "if style's ovrColor is true, then color is equivalent to style's color as FlatPreMulRgba");
-    assert.isTrue(override.weight === style.width, "style's width is equivalent to the weight");
-    assert.isTrue(override.isOverridden(OvrFlags.Alpha), "if forceOpaque is true, then flags contains Alpha");//tslint:disable-line
-    assert.isTrue(override.isOverridden(OvrFlags.LineCode), "if style's pattern is valid, then flags contain LineCode");//tslint:disable-line
-    expect(override.lineCode).to.equal(LineCode.valueFromLinePixels(style.pattern));
+    expect(override.overridesColor).to.equal(true);
+    expect(override.overridesWeight).to.equal(false);
+    expect(override.color!.equals(color)).to.equal(true);
+    expect(override.overridesAlpha).to.equal(true);
+    expect(override.overridesLineCode).to.equal(true);
+    expect(override.lineCode!).to.equal(LineCode.valueFromLinePixels(style.pattern));
 
     style = new HiddenLine.Style({ ovrColor: false, color: 0xf00c, width: 5, pattern: 0xffffffff });
-    color = new FloatPreMulRgba();
-    color.initFromColorDef(style.color);
-    override = new EdgeOverrides();
+    color = FloatPreMulRgba.fromColorDef(style.color);
     override.init(style, false);
-    assert.isFalse(override.isOverridden(OvrFlags.Rgba), "if style's ovrColor is false, then flags does not contain Rgba");//tslint:disable-line
-    assert.isFalse(override.color.equals(color), "if style's ovrColor is false, then color isn't set");
-    assert.isTrue(override.isOverridden(OvrFlags.Weight), "if style's width not equal to 0, then flags contain Weight");//tslint:disable-line
-    assert.isTrue(override.weight === style.width, "if style's width isn't 0, then weight is equivalent to its width");
-    assert.isFalse(override.isOverridden(OvrFlags.LineCode), "if style's pattern is invalid, then flags does not contains LineCode");//tslint:disable-line
-    assert.isTrue(LinePixels.Solid === override.lineCode, "if style's pattern is invalid, then lineCode is set to solid");
-    assert.isFalse(override.isOverridden(OvrFlags.Alpha), "if forceOpaque is false then flags is not equal to Alpha");//tslint:disable-line
+    expect(override.overridesColor).to.equal(false);
+    expect(override.overridesWeight).to.equal(true);
+    expect(override.weight!).to.equal(style.width);
+    expect(override.overridesLineCode).to.equal(false);
+    expect(override.overridesAlpha).to.equal(false);
   });
 });

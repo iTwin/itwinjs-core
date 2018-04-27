@@ -124,16 +124,20 @@ export class IModelConnection extends IModel {
    * Execute a query against the iModel.
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ExecutingECSQL#code-examples)
+   *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
    * @throws [[IModelError]] if the ECSQL is invalid
-   * See [Executing ECSQL]($docs/learning/frontend/ExecutingECSQL) for more on ECSQL.
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
