@@ -5,6 +5,7 @@ import { FeatureGates } from "@bentley/imodeljs-common";
 import { EnvMacroSubst, Id64, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb, Element, ECSqlStatement } from "@bentley/imodeljs-backend";
 import { initializeGateways } from "./RBSGatewayImpl";
+import { initializeLogging } from "./Logging";
 import { Point3d } from "@bentley/geometry-core";
 
 // An example of how to implement a service.
@@ -94,6 +95,7 @@ export class RobotsAndBarriersService {
 
   public static run() {
     RobotsAndBarriersService.readFeatureGates();
+    initializeLogging();
     initializeGateways();
     // ... run the service ...
   }

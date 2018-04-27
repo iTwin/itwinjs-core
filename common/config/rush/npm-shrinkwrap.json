@@ -5,9 +5,9 @@
   "requires": true,
   "dependencies": {
     "@bentley/bentleyjs-tools": {
-      "version": "3.3.1",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-tools/-/bentleyjs-tools-3.3.1.tgz",
-      "integrity": "sha1-CNh7LC4jvnV1vpR+Co3L9TRmYww=",
+      "version": "3.3.2",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bentleyjs-tools/-/bentleyjs-tools-3.3.2.tgz",
+      "integrity": "sha1-uUfbA+jEX+D69QjkzMXWSdLgDHE=",
       "requires": {
         "chai": "4.1.2",
         "chalk": "2.4.1",
@@ -23,6 +23,7 @@
         "mocha-junit-reporter": "1.17.0",
         "nyc": "11.7.1",
         "obj-traverse": "1.0.0",
+        "recursive-readdir": "2.2.2",
         "rimraf": "2.6.2",
         "ts-node": "3.3.0",
         "tsconfig-paths": "2.7.3",
@@ -139,7 +140,7 @@
     },
     "@rush-temp/bentleyjs-core": {
       "version": "file:projects/bentleyjs-core.tgz",
-      "integrity": "sha1-by4oouSv38Dr1zX6XElk19SwZyQ=",
+      "integrity": "sha1-h0rBk3YNJfkU4Aw0Tjh4T03cyIU=",
       "requires": {
         "rimraf": "2.6.2",
         "typedoc": "0.11.1",
@@ -148,7 +149,7 @@
     },
     "@rush-temp/geometry-core": {
       "version": "file:projects/geometry-core.tgz",
-      "integrity": "sha1-C59Hu+Z2Y6jsyJABV4c2i4pwEhI=",
+      "integrity": "sha1-0ylNdPOoePCMjFTysRqxIs/F6DI=",
       "requires": {
         "@types/lodash": "4.14.106",
         "chai": "4.1.2",
@@ -167,7 +168,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-TQKIVZ2xROSNI+1j/Qzbtp1A9a8=",
+      "integrity": "sha1-InYi8MJp6DV0NrAYuQY8aimPd6U=",
       "requires": {
         "@bentley/imodeljs-native-platform-api": "16.0.4",
         "@bentley/imodeljs-native-platform-electron": "16.0.4",
@@ -189,7 +190,7 @@
     },
     "@rush-temp/imodeljs-clients": {
       "version": "file:projects/imodeljs-clients.tgz",
-      "integrity": "sha1-AsEhBf9g47SLF1SiTi9UISoIn18=",
+      "integrity": "sha1-h42nxaFJnPiszSN4SVJ9tVnf2Jo=",
       "requires": {
         "@types/chai-as-promised": "0.0.31",
         "@types/chai-string": "1.1.30",
@@ -221,7 +222,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-vp3dOFFITBveOhbWP5NAY7tC9gM=",
+      "integrity": "sha1-Nd+7pX6noPnkHuwlT/ixjF5PG0o=",
       "requires": {
         "@types/uuid": "3.4.3",
         "rimraf": "2.6.2",
@@ -232,9 +233,9 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-5HARPHFkgdYYviB0EzXFUMT+0BY=",
+      "integrity": "sha1-XfL0PzB1BRJ4qEb0YyMT61vMn5I=",
       "requires": {
-        "@bentley/bentleyjs-tools": "3.3.1",
+        "@bentley/bentleyjs-tools": "3.3.2",
         "@types/body-parser": "1.17.0",
         "@types/chai": "4.1.3",
         "@types/express": "4.11.1",
@@ -286,7 +287,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-tL0iMjy3eA29lUkwhLtHzEx9C0g=",
+      "integrity": "sha1-nCVU/oMTGjlNSIQAxmZEQInN+20=",
       "requires": {
         "@bentley/imodeljs-e_1_6_11-win32-x64": "16.0.4",
         "body-parser": "1.18.2",
@@ -311,7 +312,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-ES4sYgLUqGHMWyZHmZl3dx4Jo8g=",
+      "integrity": "sha1-TA7DtOndk9mQbdFnF6n4L/G1smo=",
       "requires": {
         "cpx": "1.5.0",
         "fuse.js": "3.2.0",
@@ -326,7 +327,7 @@
     },
     "@rush-temp/sample-code-app": {
       "version": "file:projects/sample-code-app.tgz",
-      "integrity": "sha1-LSfSzevQ1sA1eb6RBlQVNkOyDSo=",
+      "integrity": "sha1-qv//0tVlCNP6vByiD3F4cg7mTX8=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "16.0.4",
         "body-parser": "1.18.2",
@@ -349,7 +350,7 @@
     },
     "@rush-temp/sample-code-snippets": {
       "version": "file:projects/sample-code-snippets.tgz",
-      "integrity": "sha1-DokmJ7n/GIDtkv6zX4eCYSRtyEA=",
+      "integrity": "sha1-FReSaOPQHm8bRqC7WSSktVbiK7o=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "16.0.4",
         "body-parser": "1.18.2",
@@ -883,9 +884,9 @@
       "integrity": "sha1-x57Zf380y48robyXkLzDZkdLS3k="
     },
     "atob": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/atob/-/atob-2.1.0.tgz",
-      "integrity": "sha512-SuiKH8vbsOyCALjA/+EINmt/Kdl+TQPrtFgW7XZZcwtryFu9e5kQoX3bjCW6mIvGH1fbeAZZuvwGR5IlBRznGw=="
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/atob/-/atob-2.1.1.tgz",
+      "integrity": "sha1-ri1acpR38onWDdf5amMUoi3Wwio="
     },
     "aws-sign2": {
       "version": "0.7.0",
@@ -8315,6 +8316,14 @@
         "resolve": "1.7.1"
       }
     },
+    "recursive-readdir": {
+      "version": "2.2.2",
+      "resolved": "https://registry.npmjs.org/recursive-readdir/-/recursive-readdir-2.2.2.tgz",
+      "integrity": "sha512-nRCcW9Sj7NuZwa2XvH9co8NPeXUBhZP7CRKJtU+cS6PW9FpCIFoI5ib0NT1ZrbNuPoRy0ylyCaUL8Gih4LSyFg==",
+      "requires": {
+        "minimatch": "3.0.4"
+      }
+    },
     "redent": {
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/redent/-/redent-1.0.0.tgz",
@@ -8929,7 +8938,7 @@
       "resolved": "https://registry.npmjs.org/source-map-resolve/-/source-map-resolve-0.5.1.tgz",
       "integrity": "sha512-0KW2wvzfxm8NCTb30z0LMNyPqWCdDGE2viwzUaucqJdkTRXtZiSY3I+2A6nVAjmdOy0I4gU8DwnVVGsk9jvP2A==",
       "requires": {
-        "atob": "2.1.0",
+        "atob": "2.1.1",
         "decode-uri-component": "0.2.0",
         "resolve-url": "0.2.1",
         "source-map-url": "0.4.0",
@@ -9829,9 +9838,9 @@
       }
     },
     "upath": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/upath/-/upath-1.0.4.tgz",
-      "integrity": "sha512-d4SJySNBXDaQp+DPrziv3xGS6w3d2Xt69FijJr86zMPBy23JEloMCEOUBBzuN7xCtjLCnmB9tI/z7SBCahHBOw=="
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/upath/-/upath-1.0.5.tgz",
+      "integrity": "sha512-qbKn90aDQ0YEwvXoLqj0oiuUYroLX2lVHZ+b+xwjozFasAOC4GneDq5+OaIG5Zj+jFmbz/uO+f7a9qxjktJQww=="
     },
     "uri-js": {
       "version": "3.0.2",
@@ -10052,7 +10061,7 @@
             "normalize-path": "2.1.1",
             "path-is-absolute": "1.0.1",
             "readdirp": "2.1.0",
-            "upath": "1.0.4"
+            "upath": "1.0.5"
           }
         },
         "expand-brackets": {

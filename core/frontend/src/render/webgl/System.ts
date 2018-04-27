@@ -199,7 +199,7 @@ export class System extends RenderSystem {
     return new System(canvas, context, techniques, capabilities);
   }
 
-  public createTarget(): RenderTarget { return new OnScreenTarget(this, this.context); }
+  public createTarget(): RenderTarget { return new OnScreenTarget(); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }

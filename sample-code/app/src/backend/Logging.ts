@@ -12,9 +12,9 @@ export function initializeLogging(): void {
   const config = require("./MyService.config.json");
 
   const defaultConfigValues: any = {
-    "MY-SERVICE-DEFAULT-LOG-LEVEL": "Error",
-    "MY-SERVICE-SEQ-URL": "http://localhost",
-    "MY-SERVICE-SEQ-PORT": "5341",
+    "RBS-DEFAULT-LOG-LEVEL": "Error",
+    "RBS-SEQ-URL": "http://localhost",
+    "RBS-SEQ-PORT": "5341",
   };
 
   EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
