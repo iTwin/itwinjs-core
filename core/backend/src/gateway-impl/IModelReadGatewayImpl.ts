@@ -57,7 +57,7 @@ export class IModelReadGatewayImpl extends Gateway implements IModelReadGateway 
     const elementProps: string[] = [];
     for (const id of elementIds) {
       try {
-        elementProps.push(iModelDb.elements.getElementJson(JSON.stringify({ id })));
+        elementProps.push(JSON.stringify(iModelDb.elements.getElementJson(JSON.stringify({ id }))));
       } catch (error) {
         if (elementIds.size === 1)
           throw error; // if they're asking for more than one element, don't throw on error.
