@@ -6,9 +6,11 @@ import { assert } from "chai";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
 export namespace WebGLTestContext {
-  // ###TODO: on PRG, canvas.getContext() returns null? We will want these tests to run on PRG eventually...
-  // For now, set this to true locally to run the tests which require a WebGLRenderingContext.
-  const isEnabled = false;
+  // When tests requiring a WebGLRenderingContext were first introduced, they appeared to fail to obtain
+  // the context when executed on the continuous integration server. As a temporary workaround we added
+  // this flag, set to false, which could be manually set to true in developer build to enable such tests.
+  // Not clear if this is still required.
+  const isEnabled = true;
 
   function createCanvas(): HTMLCanvasElement | undefined {
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
