@@ -19,20 +19,21 @@ export namespace VertexLUT {
     public readonly data: Uint8Array;
     public readonly dimensions: LUTDimensions;
     public readonly colorInfo: ColorInfo;
+    public readonly numVertices: number;
 
     /** Construct a VertexLUT.Params using the vertex data supplied by the Builder */
     public constructor(builder: Builder, colorIndex: ColorIndex) {
-      const numVertices = builder.numVertices;
+      this.numVertices = builder.numVertices;
       const numRgbaPerVertex = builder.numRgbaPerVertex;
       const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
       this.colorInfo = new ColorInfo(colorIndex);
-      this.dimensions = new LUTDimensions(numVertices, numRgbaPerVertex, numColors);
+      this.dimensions = new LUTDimensions(this.numVertices, numRgbaPerVertex, numColors);
       assert(0 === this.dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === this.dimensions.height));
 
       this.data = new Uint8Array(this.dimensions.width * this.dimensions.height * 4);
 
       builder.params = this;
-      for (let i = 0; i < numVertices; i++) {
+      for (let i = 0; i < this.numVertices; i++) {
         builder.appendVertex(i);
       }
 
@@ -69,7 +70,7 @@ export namespace VertexLUT {
     protected append8(val: number) {
       assert(0 <= val);
       assert(val <= 0xff);
-      assert(0 === Math.floor(val));
+      assert(val === Math.floor(val));
 
       this.params!.data[this._curIndex] = val;
       this.advance(1);
@@ -118,7 +119,7 @@ export namespace VertexLUT {
   export type SimpleVertexData = PolylineArgs | MeshArgs;
 
   /**
-   * Supplies vertex data from a PolylineArgs or MeshArgs. Each vertex consists of 24 bytes:
+   * Supplies vertex data from a PolylineArgs or MeshArgs. Each vertex consists of 12 bytes:
    *  pos.x           00
    *  pos.y           02
    *  pos.z           04
@@ -173,7 +174,7 @@ export namespace VertexLUT {
     public constructor(args: MeshArgs) { super(args); }
   }
 
-  /** Supplies vertex data from a MeshArgs where each vertex consists of 32 bytes.
+  /** Supplies vertex data from a MeshArgs where each vertex consists of 16 bytes.
    * In addition to the SimpleBuilder data, the final 4 bytes hold the quantized UV params
    * The color index is left uninitialized as it is unused.
    */
@@ -215,7 +216,7 @@ export namespace VertexLUT {
     protected appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
   }
 
-  /** 32 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
+  /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
   export class LitMeshBuilder extends MeshBuilder {
     public constructor(args: MeshArgs) {
       super(args);
