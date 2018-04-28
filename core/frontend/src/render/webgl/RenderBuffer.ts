@@ -2,12 +2,11 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
-import { GLDisposable } from "./GLDisposable";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { System } from "./System";
 
-export class RenderBuffer implements GLDisposable {
+export class RenderBuffer implements IDisposable {
   private _glBuffer?: WebGLRenderbuffer;
 
   public static create(width: number, height: number, format = GL.RenderBuffer.Format.DepthComponent) {

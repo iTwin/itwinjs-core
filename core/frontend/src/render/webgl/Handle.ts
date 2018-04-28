@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
-import { GLDisposable } from "./GLDisposable";
 import { System } from "./System";
 
 export type BufferData = ArrayBufferView | ArrayBuffer;
@@ -14,7 +13,7 @@ export type BufferData = ArrayBufferView | ArrayBuffer;
  * A handle to a WebGLBuffer, such as a vertex or index buffer.
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  */
-export class BufferHandle implements GLDisposable {
+export class BufferHandle implements IDisposable {
   private _glBuffer: WebGLBuffer | undefined;
 
   /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */

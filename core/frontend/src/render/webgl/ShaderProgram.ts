@@ -5,7 +5,6 @@
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { UniformHandle, AttributeHandle } from "./Handle";
 import { ShaderProgramParams, DrawParams } from "./DrawCommand";
-import { GLDisposable } from "./GLDisposable";
 import { GL } from "./GL";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
@@ -120,7 +119,7 @@ export const enum CompileStatus {
   Uncompiled, // No attempt has yet been made to compile the program.
 }
 
-export class ShaderProgram implements GLDisposable {
+export class ShaderProgram implements IDisposable {
   private _description: string; // for debugging purposes...
   public readonly vertSource: string;
   public readonly fragSource: string;

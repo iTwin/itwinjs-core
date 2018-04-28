@@ -2,9 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 // import { Texture, TextureCreateParams } from "@bentley/imodeljs-common";
-import { GLDisposable } from "./GLDisposable";
 import { GL } from "./GL";
 import { System } from "./System";
 
@@ -71,7 +70,7 @@ export class TextureParams {
 }
 
 // A handle to a WebGLTexture object.
-export class TextureHandle implements GLDisposable {
+export class TextureHandle implements IDisposable {
   private readonly _params: TextureParams;
   private _glTexture?: WebGLTexture;
   private _isValid = true;
