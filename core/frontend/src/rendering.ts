@@ -31,5 +31,6 @@ export * from "./render/webgl/Technique";
 export * from "./render/webgl/TechniqueFlags";
 export * from "./render/webgl/TechniqueId";
 export * from "./render/webgl/Texture";
+export * from "./render/webgl/VertexLUT";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
