@@ -1,0 +1,55 @@
+{
+  "name": "@bentley/ecpresentation-controls",
+  "version": "0.1.1",
+  "description": "Frontend controls based on ECPresentation library",
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iModelJS",
+    "Frontend",
+    "React",
+    "Controls"
+  ],
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "scripts": {
+    "build": "tsc -p ./src",
+    "clean": "rimraf lib package-deps.json",
+    "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
+    "lint": "tslint -p ./src",
+    "pack": "node ../../scripts/pack.js",
+    "test": "node ../../scripts/run-tests.js --testsDir ./tests",
+    "test+cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
+    "validatePackageJson": "validjson ./package.json",
+    "watch": "npm test -- --watch"
+  },
+  "dependencies": {
+    "@bentley/ecpresentation-common": "~0.1.0",
+    "@bentley/ecpresentation-frontend": "~0.1.0",
+    "lodash": "^4.14.0"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "^7",
+    "@bentley/imodeljs-clients": "^5.1.0",
+    "@bentley/imodeljs-common": "~0.77.1",
+    "@bentley/imodeljs-frontend": "~0.77.1",
+    "@types/lodash": "^4.14.0",
+    "cross-env": "^5.1.0",
+    "nyc": "^11.6.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.9.0",
+    "typescript": "^2.8.3",
+    "valid-json-cli": "^1.3.0"
+  },
+  "nyc": {
+    "nycrc-path": "../../.nycrc",
+    "temp-directory": "../../out/reports/coverage/controls/.nyc_output",
+    "report-dir": "../../out/reports/coverage/controls"
+  }
+}

@@ -1,3 +1,6 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 const fs = require("fs");
 const path = require("path");
 const yargs = require("yargs").argv;
@@ -5,13 +8,16 @@ const chokidar = require("chokidar");
 const Mocha = require("mocha");
 
 const options = {
-  repeat: (yargs.repeat ? yargs.repeat : 1), // number of times the tests run should be repeated
+  testsDir: path.resolve(yargs.testsDir || "./"), // the directory where test files are located
+  repeat: yargs.repeat || 1, // number of times the tests run should be repeated
   watch: yargs.watch || false, // watch for test and source files and re-run tests on changes
   timeoutsEnabled: yargs.noTimeouts || true, // measure tests' coverage
   coverage: yargs.coverage || false, // create test coverage report
   report: yargs.report || false, // create test run report
 };
 const testsName = path.basename(path.resolve("./"));
+
+process.env.TS_NODE_PROJECT = options.testsDir;
 
 let extensionsRegistered = false;
 const registerExtensions = () => {
@@ -55,7 +61,7 @@ const getTestFiles = () => {
       testFiles.push(filePath);
     });
   };
-  addFilesRecursively("./");
+  addFilesRecursively(options.testsDir);
   addFilesRecursively("../test-helpers/");
   return testFiles;
 };
@@ -88,7 +94,7 @@ const setupReporter = (mocha) => {
 
 const runOnce = () => {
   if (options.coverage) {
-    requireLibModules("./");
+    requireLibModules("./src/");
   }
   let mocha = new Mocha({
     ui: "bdd",

@@ -1,21 +1,20 @@
 # dependencies
 /node_modules
-/src/common/node_modules
-/src/backend/node_modules
-/src/frontend/node_modules
-/src/controls/node_modules
-/src/sample/node_modules
-/src/test/node_modules
+/packages/common/node_modules
+/packages/backend/node_modules
+/packages/frontend/node_modules
+/packages/controls/node_modules
+/packages/sample/node_modules
+/packages/integration-tests/node_modules
 
 # production
 /out
-/lib
-/src/common/lib
-/src/backend/lib
-/src/frontend/lib
-/src/controls/lib
-/src/sample/lib
-/src/test/lib
+/packages/common/lib
+/packages/backend/lib
+/packages/frontend/lib
+/packages/controls/lib
+/packages/sample/lib
+/packages/integration-tests/lib
 
 # rush-specific
 /common/temp

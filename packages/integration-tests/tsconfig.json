@@ -1,0 +1,19 @@
+{
+  "extends": "../../node_modules/@bentley/bentleyjs-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "outDir": "./lib",
+    "baseUrl": "./node_modules",
+    "paths": {
+      "@helpers/*": ["../../test-helpers/*"],
+      "*": ["../../node_modules/*", "*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ]
+}

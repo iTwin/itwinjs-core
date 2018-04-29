@@ -1,7 +1,6 @@
 # Creating a Pull Request
 
-Developers who can't have their code reviewed by ECPresentation team
-should only push changes using *pull requests*. Below are the instructions
+Developers should only push changes using *pull requests*. Below are the instructions
 on how to create one.
 
 1. Create a new branch locally:

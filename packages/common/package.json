@@ -1,0 +1,47 @@
+{
+  "name": "@bentley/ecpresentation-common",
+  "version": "0.1.0",
+  "description": "Common pieces for ecpresentation packages.",
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iModelJS"
+  ],
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "scripts": {
+    "build": "tsc -p ./src",
+    "clean": "rimraf lib package-deps.json",
+    "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
+    "lint": "tslint -p ./src",
+    "pack": "node ../../scripts/pack.js",
+    "test": "node ../../scripts/run-tests.js --testsDir ./tests",
+    "test+cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
+    "validatePackageJson": "validjson ./package.json",
+    "watch": "npm test -- --watch"
+  },
+  "//peerDependencies": [
+    "No need to repeat all of the dependencies are already expressed by frontend and backend."
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "^7",
+    "@bentley/imodeljs-common": "~0.77.1",
+    "cross-env": "^5.1.0",
+    "nyc": "^11.6.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.9.0",
+    "typescript": "^2.8.3",
+    "valid-json-cli": "^1.3.0"
+  },
+  "nyc": {
+    "nycrc-path": "../../.nycrc",
+    "temp-directory": "../../out/reports/coverage/common/.nyc_output",
+    "report-dir": "../../out/reports/coverage/common"
+  }
+}

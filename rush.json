@@ -1,38 +1,38 @@
 {
-  "rushVersion": "4.2.5",
+  "rushVersion": "4.3.2",
   "npmVersion": "5.5.1",
   "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
   "projects": [
     {
       "packageName": "@bentley/ecpresentation-common",
-      "projectFolder": "src/common",
+      "projectFolder": "packages/common",
       "shouldPublish": true
     },
     {
       "packageName": "@bentley/ecpresentation-backend",
-      "projectFolder": "src/backend",
+      "projectFolder": "packages/backend",
       "shouldPublish": true
     },
     {
       "packageName": "@bentley/ecpresentation-frontend",
-      "projectFolder": "src/frontend",
+      "projectFolder": "packages/frontend",
       "shouldPublish": true
     },
     {
       "packageName": "@bentley/ecpresentation-controls",
-      "projectFolder": "src/controls",
+      "projectFolder": "packages/controls",
       "shouldPublish": true
     },
     {
-      "packageName": "@bentley/ecpresentation-sample",
-      "projectFolder": "src/sample"
+      "packageName": "sample",
+      "projectFolder": "packages/sample"
     },
     {
-      "packageName": "@bentley/ecpresentation-tests",
-      "projectFolder": "src/test"
+      "packageName": "integration-tests",
+      "projectFolder": "packages/integration-tests"
     },
     {
-      "packageName": "@bentley/ecpresentation",
+      "packageName": "main",
       "projectFolder": "."
     }
   ]
