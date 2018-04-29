@@ -2,6 +2,18 @@
   "name": "@bentley/ecpresentation-common",
   "entries": [
     {
+      "version": "0.1.1",
+      "tag": "@bentley/ecpresentation-common_v0.1.1",
+      "date": "Sun, 29 Apr 2018 08:07:40 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixed packaging."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.0",
       "tag": "@bentley/ecpresentation-common_v0.1.0",
       "date": "Thu, 26 Apr 2018 09:27:06 GMT",

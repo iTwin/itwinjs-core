@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecpresentation-controls
 
-This log was last generated on Thu, 26 Apr 2018 15:17:48 GMT and should not be manually modified.
+This log was last generated on Sun, 29 Apr 2018 08:07:40 GMT and should not be manually modified.
+
+## 0.1.2
+Sun, 29 Apr 2018 08:07:40 GMT
+
+### Patches
+
+- Fixed packaging.
 
 ## 0.1.1
 Thu, 26 Apr 2018 15:17:48 GMT

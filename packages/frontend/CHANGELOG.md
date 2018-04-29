@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecpresentation-frontend
 
-This log was last generated on Thu, 26 Apr 2018 09:32:56 GMT and should not be manually modified.
+This log was last generated on Sun, 29 Apr 2018 08:07:40 GMT and should not be manually modified.
+
+## 0.1.1
+Sun, 29 Apr 2018 08:07:40 GMT
+
+### Patches
+
+- Fixed packaging.
 
 ## 0.1.0
 Thu, 26 Apr 2018 09:27:06 GMT
