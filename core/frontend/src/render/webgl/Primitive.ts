@@ -124,18 +124,14 @@ export class PolylineParamVertex {
 }
 
 export abstract class Primitive extends Graphic {
-  public cachedGeometry: CachedGeometry | undefined = undefined;
+  public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  public constructor(iModel: IModelConnection) { super(iModel); }
+  public constructor(iModel: IModelConnection, cachedGeom: CachedGeometry) { super(iModel); this.cachedGeometry = cachedGeom; }
 
-  public abstract createCachedGeometry(): CachedGeometry;
   public abstract clearData(): void;
 
   public getRenderPass(target: Target) {
-    assert(undefined !== this.cachedGeometry);
-    if (undefined === this.cachedGeometry)
-        return RenderPass.None;
     if (this.isPixelMode)
         return RenderPass.ViewOverlay;
     return this.cachedGeometry.getRenderPass(target);
@@ -143,9 +139,6 @@ export abstract class Primitive extends Graphic {
 
   /* ###TODO need to implement LUTGeometry
   public getColorDimension(target: Target) {
-    assert(undefined !== this.cachedGeometry);
-    if (undefined === this.cachedGeometry)
-      return LUTDimension.Uniform;
     const geom = this.cachedGeometry.toLUT();
     if (undefined === geom)
       return LUTDimension.Uniform;
@@ -155,9 +148,6 @@ export abstract class Primitive extends Graphic {
   */
 
   public get featureIndexType(): FeatureIndexType {
-    assert(undefined !== this.cachedGeometry);
-    if (undefined === this.cachedGeometry)
-      return FeatureIndexType.Empty;
     const feature = this.cachedGeometry.featuresInfo;
     if (undefined === feature)
       return FeatureIndexType.Empty;
@@ -168,9 +158,6 @@ export abstract class Primitive extends Graphic {
   }
 
   public usesMaterialColor(): boolean {
-    assert(undefined !== this.cachedGeometry);
-    if (undefined === this.cachedGeometry)
-      return false;
     const materialData = this.cachedGeometry.material;
     if (undefined === materialData)
       return false;
@@ -180,17 +167,10 @@ export abstract class Primitive extends Graphic {
     return false; // ###TODO remove after implementing MaterialData
   }
 
-  public get isLit(): boolean {
-    if (undefined === this.cachedGeometry)
-      return false;
-    return this.cachedGeometry.isLitSurface;
-  }
+  public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
 
   /* ###TODO need to implement RenderCommands
-  public addCommands(commands: RenderCommands): void {
-    if (undefined !== this.cachedGeometry) {
-      commands.AddPrimitive(this);
-    }
+  public addCommands(commands: RenderCommands): void { commands.AddPrimitive(this); }
   }
   */
 
@@ -199,16 +179,12 @@ export abstract class Primitive extends Graphic {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
     if (this.isEdge) {
-      if (undefined !== this.cachedGeometry)
-          commands.Add(DrawCommand.fromBatchPrimitive(this, &batch));
+      commands.Add(DrawCommand.fromBatchPrimitive(this, &batch));
     }
   }
   */
 
-  public SetUniformFeatureIndices(featId: number): void {
-    if (undefined !== this.cachedGeometry)
-      this.cachedGeometry.uniformFeatureIndices = featId;
-  }
+  public SetUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
 
   public get isEdge(): boolean { return false; }
 
@@ -217,19 +193,12 @@ export abstract class Primitive extends Graphic {
   public abstract get renderOrder(): RenderOrder;
 
   public Draw(shader: ShaderProgramExecutor): void {
-    assert(undefined !== this.cachedGeometry);
-    if (undefined !== this.cachedGeometry) {
-      // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
-      // ###TODO:
-      // const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform(), shader.renderPass);
-      const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
-      shader.draw(drawParams);
-    }
+    // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
+    const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
+    shader.draw(drawParams);
   }
 
-  public getTechniqueId(target: Target): TechniqueId {
-    return undefined !== this.cachedGeometry ? this.cachedGeometry.getTechniqueId(target) : TechniqueId.Invalid;
-  }
+  public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 
-  public get debugString(): string { return undefined === this.cachedGeometry ? "null" : this.cachedGeometry.debugString; }
+  public get debugString(): string { return this.cachedGeometry.debugString; }
 }
