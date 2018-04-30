@@ -59,10 +59,10 @@ class ChangeSummaryExtractContext {
   public readonly accessToken: AccessToken;
   public readonly hubClient: IModelHubClient;
 
-  public constructor(iModel: IModelDb) {
+  public constructor(iModel: IModelDb, hubclient?: IModelHubClient) {
     this.iModel = iModel;
     this.accessToken = IModelDb.getAccessToken(this.iModelId);
-    this.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
+    this.hubClient = hubclient ? hubclient : new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
   }
 
   public get iModelId(): string { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
@@ -74,6 +74,8 @@ class ChangeSummaryExtractContext {
  *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
+  private static hubClient?: IModelHubClient;
+
   /** Determines whether the *Changes Cache File* is attached to the specified iModel or not
    * @param iModel iModel to check whether a *Changes Cache File* is attached
    * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
@@ -138,7 +140,10 @@ export class ChangeSummaryManager {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.briefcase.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
-    const ctx = new ChangeSummaryExtractContext(iModel);
+    if (!ChangeSummaryManager.hubClient ||  ChangeSummaryManager.hubClient!.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig)
+      ChangeSummaryManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
+
+    const ctx = new ChangeSummaryExtractContext(iModel, this.hubClient);
 
     const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
     assert(endChangeSetId.length !== 0);

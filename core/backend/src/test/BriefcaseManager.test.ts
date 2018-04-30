@@ -98,6 +98,7 @@ describe("BriefcaseManager", () => {
       console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
       startTime = new Date().getTime();
 
+      MockAssetUtil.setupMockAssets(assetDir);
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console

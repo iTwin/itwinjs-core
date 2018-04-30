@@ -13,7 +13,6 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
-import { IModelHost } from "../IModelHost";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "./MockAssetUtil";
 import * as TypeMoq from "typemoq";
 
@@ -47,10 +46,9 @@ describe("ChangeSummary", () => {
       console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
       startTime = new Date().getTime();
 
+      await MockAssetUtil.setupMockAssets(assetDir);
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
       (ChangeSummaryManager as any).hubClient = iModelHubClientMock.object;
-      (ChangeSummaryManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
-      HubTestUtils.hubClient = iModelHubClientMock.object;
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
@@ -66,7 +64,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
-    const testIModelId: string = testIModels[0].id;
+    const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
@@ -192,7 +190,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
-    const testIModelId: string = testIModels[0].id;
+    const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());

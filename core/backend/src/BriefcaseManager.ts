@@ -205,7 +205,6 @@ export class BriefcaseManager {
   private static hubClient?: IModelHubClient;
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static standaloneCache: BriefcaseCache = new BriefcaseCache();
-  private static deploymentEnv: string;
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
@@ -294,10 +293,8 @@ export class BriefcaseManager {
     const startTime = new Date().getTime();
 
     // Reset the hubclient in case the configuration has changed
-    if (!BriefcaseManager.hubClient || this.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig) {
-      this.deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
+    if (!BriefcaseManager.hubClient || BriefcaseManager.hubClient!.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig)
       BriefcaseManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
-    }
 
     if (!accessToken)
       return;

@@ -30,7 +30,8 @@
         "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test",
         "--debug",
-        "--offline"
+        "--offline",
+        "mock"
       ],
       "port": 9229,
       "protocol": "inspector",

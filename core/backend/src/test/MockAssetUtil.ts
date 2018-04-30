@@ -3,11 +3,13 @@ import * as path from "path";
 import { assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
 import { BriefcaseManager, IModelHost } from "../backend";
+import { HubTestUtils } from "./HubTestUtils";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel, Briefcase, SeedFile, SeedFileInitState,
   UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
   ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
+  ConnectRequestQueryOptions,
 } from "@bentley/imodeljs-clients";
 import { KnownLocations } from "../Platform";
 
@@ -66,9 +68,8 @@ export class TestIModelInfo {
 
 /** Provides utility functions for working with mock objects */
 export class MockAssetUtil {
-  private static iModelMap = new Map<string, string>([["233e1f55-561d-42a4-8e80-d6f91743863e", "ReadOnlyTest"],
-                                                      ["c8060470-c5d0-4288-a1a2-4c98efaa474e", "ReadWriteTest"],
-                                                      ["0aea4c09-09f4-449d-bf47-045228d259ba", "NoVersionsTest"]]); // <IModelID, IModelName>
+  private static projectMap = new Map<string, string>(); // <ProjectID, ProjectName>
+  private static iModelMap = new Map<string, string>(); // <IModelID, IModelName>
 
   private static versionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
 
@@ -76,6 +77,45 @@ export class MockAssetUtil {
     assert(testIModelInfos.length === this.iModelMap.size, "IModelInfo array has the wrong number of entries");
     for (const iModelInfo of testIModelInfos) {
       assert(iModelInfo.name === this.iModelMap.get(iModelInfo.id), `Bad information for ${iModelInfo.name} iModel`);
+    }
+  }
+
+  // Read the contents of the provided assets directory to populate the projectMap and iModelMap.
+  // We assume that there exists a single folder for project .json files, and that all other files
+  // contain iModel assets
+  public static async setupMockAssets(assetDir: string) {
+    const assets = IModelJsFs.readdirSync(assetDir);
+    const iModelAssetFolders = assets.filter((x: string) => x !== "Projects");
+    const projectAssetsFolder = assets.filter((x: string) => x === "Projects");
+
+    // Read the name and wsg ID of each project.json file in the Projects folder
+    for (const projectAssetFolder of projectAssetsFolder) {
+      const projectFolderPath = path.join(assetDir, projectAssetFolder);
+      const projectAssets = IModelJsFs.readdirSync(projectFolderPath);
+      for (const projectAsset of projectAssets) {
+        const buff = IModelJsFs.readFileSync(path.join(projectFolderPath, projectAsset));
+        const jsonObj = JSON.parse(buff.toString())[0];
+        const projectObj = getTypedInstance<Project>(Project, jsonObj);
+        this.projectMap.set(projectObj.wsgId.toString(), projectObj.name!);
+      }
+    }
+
+    // Read the name and wsg ID of each iModel.json file in each iModel assets folder.
+    // We ignore all other contents of each iModel assets folder at this time.
+    for (const iModelAssetFolder of iModelAssetFolders) {
+      const iModelFolderPath = path.join(assetDir, iModelAssetFolder);
+      const iModelAssets = IModelJsFs.readdirSync(iModelFolderPath);
+      let iModelName: string;
+      for (const iModelAsset of iModelAssets) {
+        // Find the .json asset file
+        if (iModelAsset.substring(0, iModelAsset.indexOf(".")) === iModelAssetFolder && iModelAsset.substring(iModelAsset.indexOf(".")) === ".json") {
+          const buff = IModelJsFs.readFileSync(path.join(iModelFolderPath, iModelAsset));
+          const jsonObj = JSON.parse(buff.toString())[0];
+          const iModelObj = getTypedInstance<HubIModel>(HubIModel, jsonObj);
+          iModelName = iModelAsset.substring(0, iModelAsset.indexOf("."));
+          this.iModelMap.set(iModelObj.wsgId.toString(), iModelName);
+        }
+      }
     }
   }
 
@@ -93,6 +133,7 @@ export class MockAssetUtil {
 
     (BriefcaseManager as any).hubClient = iModelHubClientMock.object;
     (BriefcaseManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
+    HubTestUtils.hubClient = iModelHubClientMock.object;
 
     // Get test projectId from the mocked connection client
     const project: Project = await connectClientMock.object.getProject(accessToken as any, {
@@ -128,11 +169,16 @@ export class MockAssetUtil {
   public static async setupConnectClientMock(connectClientMock: TypeMoq.IMock<ConnectClient>, assetDir: string) {
     // For any parameters passed, grab the Sample Project json file from the assets folder and parse it into an instance
     connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
-      .returns(() => {
-        const assetPath = path.join(assetDir, "Project", "SampleProject.json");
-        const buff = IModelJsFs.readFileSync(assetPath);
-        const jsonObj = JSON.parse(buff.toString())[0];
-        return Promise.resolve(getTypedInstance<Project>(Project, jsonObj));
+      .returns((_tok: AccessToken, query: ConnectRequestQueryOptions) => {
+        for (const project of this.projectMap) {
+          if (query.$filter!.toLocaleLowerCase().includes(project[1].toLocaleLowerCase())) {
+            const assetPath = path.join(assetDir, "Projects", `${project[1]}.json`);
+            const buff = IModelJsFs.readFileSync(assetPath);
+            const jsonObj = JSON.parse(buff.toString())[0];
+            return Promise.resolve(getTypedInstance<Project>(Project, jsonObj));
+          }
+        }
+        return Promise.reject(`No matching asset(s) found for Project against query: ${query}`);
       });
   }
 
@@ -380,5 +426,7 @@ export class MockAssetUtil {
     iModelHubClientMock.setup((f: IModelHubClient) => f.ChangeSets()).returns(() => changeSetHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.Versions()).returns(() => versionHandlerMock.object);
     iModelHubClientMock.setup((f: IModelHubClient) => f.Users()).returns(() => userInfoHandlerMock.object);
+    const temp = IModelHost.configuration!.iModelHubDeployConfig;
+    iModelHubClientMock.setup((f: IModelHubClient) => f.deploymentEnv).returns(() => temp);
   }
 }
