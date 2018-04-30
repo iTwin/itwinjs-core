@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem } from "../System";
+import { Transform, Vector3d, Point3d, ClipPlane, ClipVector } from "@bentley/geometry-core";
+import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
+import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan  } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { System } from "./System";
+import { BranchStack, BranchState } from "./BranchState";
+import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
+import { Branch } from "./Graphic";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -30,8 +33,9 @@ const enum FrustumData {
 }
 
 export class FrustumUniforms {
-  private planeData: Float32Array;
-  private frustumData: Float32Array;
+  private _planeData: Float32Array;
+  private _frustumData: Float32Array;
+
   public constructor() {
     const pData = [];
     pData[Plane.kTop] = 0.0;
@@ -42,126 +46,225 @@ export class FrustumUniforms {
     fData[FrustumData.kNear] = 0.0;
     fData[FrustumData.kFar] = 0.0;
     fData[FrustumData.kType] = 0.0;
-    this.planeData = new Float32Array(pData);
-    this.frustumData = new Float32Array(fData);
+    this._planeData = new Float32Array(pData);
+    this._frustumData = new Float32Array(fData);
   }
-  public getFrustumPlanes(): Float32Array { return this.planeData; }  // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
-  public getFrustum(): Float32Array { return this.frustumData; } // uniform vec3 u_frustum; // { near, far, type }
-  public getNearPlane(): number { return this.frustumData[FrustumData.kNear]; }
-  public getFarPlane(): number { return this.frustumData[FrustumData.kFar]; }
-  public GetType(): FrustumUniformType { return this.getFrustum()[FrustumData.kType] as FrustumUniformType; }
-  public Is2d(): boolean { return FrustumUniformType.TwoDee === this.GetType(); }
 
-  public SetPlanes(top: number, bottom: number, left: number, right: number): void {
-    this.planeData[Plane.kTop] = top;
-    this.planeData[Plane.kBottom] = bottom;
-    this.planeData[Plane.kLeft] = left;
-    this.planeData[Plane.kRight] = right;
+  public get frustumPlanes(): Float32Array { return this._planeData; }  // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
+  public get frustum(): Float32Array { return this._frustumData; } // uniform vec3 u_frustum; // { near, far, type }
+  public get nearPlane(): number { return this._frustumData[FrustumData.kNear]; }
+  public get farPlane(): number { return this._frustumData[FrustumData.kFar]; }
+  public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
+  public get is2d(): boolean { return FrustumUniformType.TwoDee === this.type; }
+
+  public setPlanes(top: number, bottom: number, left: number, right: number): void {
+    this._planeData[Plane.kTop] = top;
+    this._planeData[Plane.kBottom] = bottom;
+    this._planeData[Plane.kLeft] = left;
+    this._planeData[Plane.kRight] = right;
   }
-  public SetFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
-    this.frustumData[FrustumData.kNear] = nearPlane;
-    this.frustumData[FrustumData.kFar] = farPlane;
-    this.frustumData[FrustumData.kType] = type as number;
+  public setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
+    this._frustumData[FrustumData.kNear] = nearPlane;
+    this._frustumData[FrustumData.kFar] = farPlane;
+    this._frustumData[FrustumData.kType] = type as number;
   }
 }
 
 /** Interface for GPU clipping. Max of 6 planes of clipping; no nesting */
-export class GLESClips {
-  private clips: Float32Array;
-  private clipCount: number;
-  private clipActive: number;  // count of SetActiveClip nesting (only outermost used)
+export class Clips {
+  private readonly _clips: Float32Array;
+  private _clipCount: number;
+  private _clipActive: number;  // count of SetActiveClip nesting (only outermost used)
 
   public constructor() {
-    this.clipCount = 0;
-    this.clipActive = 0;
+    this._clipCount = 0;
+    this._clipActive = 0;
     const data = [];
     for (let i = 0; i < 6 * 4; i++) {
       data[i] = 0.0;
     }
-    this.clips = new Float32Array(data);
+
+    this._clips = new Float32Array(data);
   }
 
-  /** Only simple clip planes supported in shader... ###TODO more complex clips must be applied to geometry beforehand. */
-  public static convertClipToPlanes(clipVec: ClipVector, clipPlanes: ClipPlane[]): number {
-    if (undefined === clipVec || 1 !== clipVec.clips.length)
-      return 0;
-
-    const clipPrim: ClipShape = clipVec.clips[0];
-    const clipPlanesRef: ClipPlaneSet = clipPrim.fetchClipPlanesRef();
-    const convexClipPlaneSets: ConvexClipPlaneSet[] = clipPlanesRef.convexSets;
-    if (undefined === convexClipPlaneSets || 1 !== convexClipPlaneSets.length)
-      return 0;
-
-    const planes = convexClipPlaneSets[0].planes;
-    const clipCount: number = planes.length;
-    if (clipCount === 0 || clipCount > 6)
-      return 0;
-
-    for (let i = 0; i < clipCount; i++)
-      clipPlanes[i] = planes[i];
-
-    return clipCount;
-  }
-
-  public setClips(count: number, planes: ClipPlane[], viewMatrix: Transform): void {
-    this.clipActive++;
-    if (1 === this.clipActive) {
-      this.clipCount = count;
+  public setFrom(planes: ClipPlane[], viewMatrix: Transform): void {
+    this._clipActive++;
+    if (1 === this._clipActive) {
+      const count = planes.length;
+      this._clipCount = count;
       for (let i = 0; i < count; ++i) {
         // Transform direction of clip plane
         const norm: Vector3d = planes[i].inwardNormalRef;
         const dir: Vector3d = viewMatrix.multiplyVector(norm);
         dir.normalizeInPlace();
-        this.clips[i * 4] = dir.x;
-        this.clips[i * 4 + 1] = dir.y;
-        this.clips[i * 4 + 2] = dir.z;
+        this._clips[i * 4] = dir.x;
+        this._clips[i * 4 + 1] = dir.y;
+        this._clips[i * 4 + 2] = dir.z;
 
         // Transform distance of clip plane
         const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
         const xFormPos: Point3d = viewMatrix.multiplyPoint(pos);
-        this.clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
+        this._clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
       }
     }
   }
 
-  public clearClips(): void {
-    if (this.clipActive === 1)
-      this.clipCount = 0;
-    if (this.clipActive > 0)
-      this.clipActive--;
+  public clear(): void {
+    if (this._clipActive === 1) {
+      this._clipCount = 0;
+    }
+
+    if (this._clipActive > 0) {
+      this._clipActive--;
+    }
   }
 
-  public getClips(): Float32Array { return this.clips; }
-  public getClipCount(): number { return this.clipCount; }
-  public isValid(): boolean { return this.getClipCount() > 0; }
+  public get clips(): Float32Array { return this._clips; }
+  public get length(): number { return this._clipCount; }
+  public get isValid(): boolean { return this.length > 0; }
 }
 
-export class Target extends RenderTarget {
-  private readonly _tempViewFlags = new ViewFlags(); // ###TODO BranchStack...
-  protected _overrides?: FeatureSymbology.Overrides;
-  protected _overridesUpdateTime?: BeTimePoint;
-  protected _hilite?: HilitedSet;
-  protected _hiliteUpdateTime?: BeTimePoint;
+export abstract class Target extends RenderTarget {
+  private _stack = new BranchStack();
+  private readonly _viewMatrix = Transform.createIdentity();
+  private _scene = new GraphicList();
+  private _decorations = new Decorations();
+  private _dynamics?: DecorationList;
+  private _overridesUpdateTime = BeTimePoint.now();
+  private _hilite?: HilitedSet;
+  private _hiliteUpdateTime = BeTimePoint.now();
+  private _flashedElemId = Id64.invalidId;
+  private _flashedUpdateTime = BeTimePoint.now();
+  private _flashIntensity: number = 0;
+  protected _dcAssigned: boolean = false;
+  public readonly clips = new Clips();
+  public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
+  public readonly frustumUniforms = new FrustumUniforms();
 
-  public get renderSystem(): RenderSystem { return System.instance; }
-  public get hilite(): HilitedSet { return this._hilite!; }
-  public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
-  public get techniques(): Techniques { return System.instance.techniques!; }
-
-  public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
-    this._overrides = ovr;
-    this._overridesUpdateTime = BeTimePoint.now();
+  protected constructor() {
+    super();
   }
 
+  public get hilite(): HilitedSet { return this._hilite!; }
+  public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
+  public get techniques(): Techniques { return System.instance.techniques!; }
+
+  public get flashedElemId(): Id64 { return this._flashedElemId; }
+  public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
+  public get flashIntensity(): number { return this._flashIntensity; }
+
+  public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
+
+  public get scene(): GraphicList { return this._scene; }
+  public get decorations(): Decorations { return this._decorations; }
+  public get dynamics(): DecorationList | undefined { return this._dynamics; }
+
+  public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
+  public get currentTransform(): Transform { return this._stack.top.transform; }
+  public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
+  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+
+  public get is2d(): boolean { return this.frustumUniforms.is2d; }
+  public get is3d(): boolean { return !this.is2d; }
+
+  public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
+    this._stack.pushBranch(branch);
+    const clip = this._stack.top.clipVolume;
+    if (undefined !== clip) {
+      clip.push(exec);
+    }
+  }
+  public pushState(state: BranchState) {
+    assert(undefined === state.clipVolume);
+    this._stack.pushState(state);
+  }
+  public popBranch(): void {
+    const clip = this._stack.top.clipVolume;
+    if (undefined !== clip) {
+      clip.pop(this);
+    }
+
+    this._stack.pop();
+  }
+
+  public get viewMatrix() { return this._viewMatrix; }
+
+  // ---- Implementation of RenderTarget interface ---- //
+
+  public get renderSystem(): RenderSystem { return System.instance; }
+  public get cameraFrustumNearScaleLimit() {
+    return 0; // ###TODO
+  }
+
+  public changeDecorations(decs: Decorations): void { this._decorations = decs; }
+  public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
+    this._scene = scene;
+    // ###TODO active volume
+  }
+  public changeDynamics(dynamics?: DecorationList) {
+    // ###TODO: set feature IDs into each graphic so that edge display works correctly...
+    this._dynamics = dynamics;
+  }
+  public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
+    this._stack.setSymbologyOverrides(ovr);
+    this._overridesUpdateTime = BeTimePoint.now();
+  }
   public setHiliteSet(hilite: HilitedSet): void {
     this._hilite = hilite;
     this._hiliteUpdateTime = BeTimePoint.now();
   }
+  public setFlashed(id: Id64, intensity: number) {
+    if (!id.equals(this._flashedElemId)) {
+      this._flashedElemId = id;
+      this._flashedUpdateTime = BeTimePoint.now();
+    }
 
-  public get currentViewFlags() { return this._tempViewFlags; } // ###TODO BranchStack...
+    this._flashIntensity = intensity;
+  }
+  public onResized(): void {
+    // ###TODO
+    this._dcAssigned = false;
+  }
 
-  public get currentTransform() { return Transform.createIdentity(); } // ###TODO return one from top of BranchStack...
+  public changeRenderPlan(_plan: RenderPlan): void {
+  }
+
+  public drawFrame(): void {
+    // ###TODO
+  }
+
+  // ---- Methods expected to be overridden by subclasses ---- //
+
+  protected abstract assignDC(): boolean;
+  protected abstract makeCurrent(): void;
+  protected abstract beginPaint(): void;
+  protected abstract endPaint(): void;
+  protected update(): void { }
 }
 
 export class OnScreenTarget extends Target {
+  public constructor() {
+    super();
+  }
+
+  // ###TODO...
+  protected assignDC(): boolean {
+    this._dcAssigned = true;
+    return true;
+  }
+  protected makeCurrent(): void { }
+  protected beginPaint(): void { }
+  protected endPaint(): void { }
+}
+
+export class OffScreenTarget extends Target {
+  public constructor() {
+    super();
+  }
+
+  // ###TODO...
+  protected assignDC(): boolean { return false; }
+  protected makeCurrent(): void { }
+  protected beginPaint(): void { }
+  protected endPaint(): void { }
 }

@@ -2,16 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "../../IModelConnection";
-import { ViewFlags,
-         FeatureTable,
-         RenderGraphic,
-         IModel,
-         GraphicBranch } from "@bentley/imodeljs-common";
+import { ViewFlags, ViewFlag, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
+import { RenderGraphic, GraphicBranch } from "../System";
+import { Clip } from "./ClipVolume";
 
 export abstract class Graphic extends RenderGraphic {
-  constructor(public readonly iModel: IModel) { super(iModel); }
+  constructor(iModel: IModelConnection) { super(iModel); }
   // public abstract addCommands(commands: RenderCommands): void;
   // public abstract addHiliteCommands(commands: DrawCommands, batch: Batch): void;
   // public abstract setUniformFeatureIndices(uint32_t): void;
@@ -38,13 +36,21 @@ export class Batch extends Graphic {
 }
 
 export class Branch extends Graphic {
-  public get localToWorldTransform(): Transform { return this._localToWorldTransform; }
-  // public clipPlanes: ClipPlane;
-  constructor(iModel: IModelConnection,
-              _branch: GraphicBranch = new GraphicBranch(),
-              private _localToWorldTransform: Transform = Transform.createIdentity(),
-              _clips?: ClipVector,
-              _viewflags?: ViewFlags) { super(iModel); }
+  public readonly branch: GraphicBranch;
+  public readonly localToWorldTransform: Transform;
+  public readonly clips?: Clip.Volume;
+
+  public constructor(iModel: IModelConnection, branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
+    super(iModel);
+    this.branch = branch;
+    this.localToWorldTransform = localToWorld;
+    this.clips = Clip.getClipVolume(clips, iModel);
+    if (undefined !== viewFlags) {
+      // ###TODO: Avoid useless `new` below...
+      branch.viewFlagOverrides = new ViewFlag.Overrides(viewFlags);
+    }
+  }
+
   // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
   // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
   // public push(shader: ShaderProgramExecutor): void {}

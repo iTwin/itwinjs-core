@@ -7,11 +7,12 @@ import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, Li
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
-import { DecorationList, GraphicList, Decorations, RenderGraphic, ViewFlags, Npc } from "@bentley/imodeljs-common";
+import { ViewFlags, Npc } from "@bentley/imodeljs-common";
+
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { PrimitiveBuilder } from "./render/primitives/Geometry";
-import { RenderTarget, RenderSystem } from "./render/System";
+import { DecorationList, GraphicList, Decorations, RenderGraphic, RenderTarget, RenderSystem } from "./render/System";
 
 const gridConstants = { maxGridDotsInRow: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225, maxGridPoints: 90, maxGridRefs: 40 };
 

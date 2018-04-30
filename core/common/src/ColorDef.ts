@@ -289,7 +289,7 @@ export class ColorDef {
 
   /** the color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
   public get tbgr(): number { return this._tbgr; }
-  public set tbgr(tbgr: number) { this._tbgr = (tbgr | 0) >>> 0; }
+  public set tbgr(tbgr: number) { scratchUInt32[0] = tbgr; this._tbgr = scratchUInt32[0]; } // force to be a 32 bit unsigned integer
 
   /** get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
   public getAbgr(): number { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - scratchBytes[3]; return scratchUInt32[0]; }

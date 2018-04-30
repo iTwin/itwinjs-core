@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderGraphic, GraphicList, IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { RenderGraphic, GraphicList, IModel, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
 
 export class FakeGraphic extends RenderGraphic {
-  constructor(iModel: IModel) { super(iModel); }
+  constructor(iModel: IModelConnection) { super(iModel); }
 }
 
 function withinTol(x: number, y: number): boolean {

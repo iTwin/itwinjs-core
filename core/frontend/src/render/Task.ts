@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RenderTarget, RenderSystem } from "./System";
+import { Decorations, RenderTarget, RenderSystem } from "./System";
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { Decorations } from "@bentley/imodeljs-common";
 import { ViewState } from "../ViewState";
 import { HilitedSet } from "../SelectionSet";
 import { FeatureSymbology } from "./FeatureSymbology";

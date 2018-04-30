@@ -9,7 +9,7 @@ From the same JavaScript codebase, it is possible to create:
 
 ## Agents and Services
 
-iModel agents and services are apps that have no interactive user interface. They are generally deployed on servers, often in the cloud using containers (e.g. Docker) and managed using a cloud orchestration framework (e.g. Kubernetes.) Agents and services are always hosted by nodejs. (App backends are not.)
+iModel agents and services are apps that have no interactive user interface. They are generally deployed on servers, often in the cloud using containers (e.g. Docker) and managed using a cloud orchestration framework (e.g. Kubernetes.) Agents and services are always hosted by NodeJs.
 
 Agents and services are [backend](../../learning/Glossary.md#Backend) code. Their main concern is to access and process the content of iModels. They use [briefcases](../../learning/Glossary.md#Briefcase) to access iModels.
 
