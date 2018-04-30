@@ -14,6 +14,10 @@ The rules are broken into the different parts of the Schema they are validated a
 - A schema's ECXML version must be at least, 3.1
   - http://www.bentley.com/schemas/Bentley.ECXML.3.1
 - A schema may not reference any EC2 or EC3.0 schemas
+- A schema must specify a three-part version number
+  - The version number must be in the format RR.WW.mm (that is, Read.Write.Minor)
+  - Each version component must be zero-padded to two digits (e.g. 01.02.00)
+- A schema reference must specify a three-part version number (in the same format described above)
 - If the schema contains 'dynamic' (case-insensitive) in its name it must apply the **CoreCA:DynamicSchema** custom attribute
 
 ### Mixin Rules
