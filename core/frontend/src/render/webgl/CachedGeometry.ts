@@ -46,6 +46,7 @@ export abstract class CachedGeometry {
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public set uniformFeatureIndices(value: number) { assert(undefined !== value); } // silence 'unused variable' warning...
   public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
+  public get debugString(): string { return ""; }
 
   public get isEdge(): boolean {
     switch (this.renderOrder) {
@@ -267,6 +268,7 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
 export abstract class EdgeGeometry { /* ###TODO */ }
 export abstract class PointStringGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
+export abstract class LUTGeometry { /* ###TODO */ }
 export abstract class MaterialData { /* ###TODO */ }
 export abstract class PolylineBuffers { /* ###TODO */ }
 export abstract class FeaturesInfo { /* ###TODO */ }

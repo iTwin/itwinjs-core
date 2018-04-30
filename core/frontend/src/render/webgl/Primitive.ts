@@ -4,6 +4,15 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { IModelConnection } from "../../IModelConnection";
+import { Target } from "./Target";
+import { Graphic } from "./Graphic";
+import { CachedGeometry } from "./CachedGeometry";
+import { RenderPass, RenderOrder } from "./RenderFlags";
+// import { LUTDimension } from "./FeatureDimensions";
+import { ShaderProgramExecutor } from "./ShaderProgram";
+import { DrawParams } from "./DrawCommand";
+import { TechniqueId } from "./TechniqueId";
 
 export class IndexedPrimitiveParamsFeatures {
   public type: FeatureIndexType;
@@ -112,4 +121,115 @@ export class PolylineParamVertex {
     param = adjust + param;
     return param;
   }
+}
+
+export abstract class Primitive extends Graphic {
+  public cachedGeometry: CachedGeometry | undefined = undefined;
+  public isPixelMode: boolean = false;
+
+  public constructor(iModel: IModelConnection) { super(iModel); }
+
+  public abstract createCachedGeometry(): CachedGeometry;
+  public abstract clearData(): void;
+
+  public getRenderPass(target: Target) {
+    assert(undefined !== this.cachedGeometry);
+    if (undefined === this.cachedGeometry)
+        return RenderPass.None;
+    if (this.isPixelMode)
+        return RenderPass.ViewOverlay;
+    return this.cachedGeometry.getRenderPass(target);
+  }
+
+  /* ###TODO need to implement LUTGeometry
+  public getColorDimension(target: Target) {
+    assert(undefined !== this.cachedGeometry);
+    if (undefined === this.cachedGeometry)
+      return LUTDimension.Uniform;
+    const geom = this.cachedGeometry.toLUT();
+    if (undefined === geom)
+      return LUTDimension.Uniform;
+    const color = geom->getColor(target);
+    return color.IsUniform() ? LUTDimension.Uniform : LUTDimension.NonUniform;
+  }
+  */
+
+  public get featureIndexType(): FeatureIndexType {
+    assert(undefined !== this.cachedGeometry);
+    if (undefined === this.cachedGeometry)
+      return FeatureIndexType.Empty;
+    const feature = this.cachedGeometry.featuresInfo;
+    if (undefined === feature)
+      return FeatureIndexType.Empty;
+    /* ###TODO need to implement FeaturesInfo
+    return feature.type;
+    */
+    return FeatureIndexType.Empty; // ###TODO remove after implementing FeaturesInfo
+  }
+
+  public usesMaterialColor(): boolean {
+    assert(undefined !== this.cachedGeometry);
+    if (undefined === this.cachedGeometry)
+      return false;
+    const materialData = this.cachedGeometry.material;
+    if (undefined === materialData)
+      return false;
+    /* ###TODO need to implement MaterialData
+    return materialData.definesColor();
+    */
+    return false; // ###TODO remove after implementing MaterialData
+  }
+
+  public get isLit(): boolean {
+    if (undefined === this.cachedGeometry)
+      return false;
+    return this.cachedGeometry.isLitSurface;
+  }
+
+  /* ###TODO need to implement RenderCommands
+  public addCommands(commands: RenderCommands): void {
+    if (undefined !== this.cachedGeometry) {
+      commands.AddPrimitive(this);
+    }
+  }
+  */
+
+  /* ###TODO need to implement DrawCommands
+  public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
+    // Edges do not contribute to hilite pass.
+    // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
+    if (this.isEdge) {
+      if (undefined !== this.cachedGeometry)
+          commands.Add(DrawCommand.fromBatchPrimitive(this, &batch));
+    }
+  }
+  */
+
+  public SetUniformFeatureIndices(featId: number): void {
+    if (undefined !== this.cachedGeometry)
+      this.cachedGeometry.uniformFeatureIndices = featId;
+  }
+
+  public get isEdge(): boolean { return false; }
+
+  public toPrimitive(): Primitive { return this; }
+
+  public abstract get renderOrder(): RenderOrder;
+
+  public Draw(shader: ShaderProgramExecutor): void {
+    assert(undefined !== this.cachedGeometry);
+    if (undefined !== this.cachedGeometry) {
+      // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
+      // ###TODO:
+      // const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform(), shader.renderPass);
+      const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
+      shader.draw(drawParams);
+    }
+  }
+
+  public getTechniqueId(target: Target): TechniqueId {
+    return undefined !== this.cachedGeometry ? this.cachedGeometry.getTechniqueId(target) : TechniqueId.Invalid;
+  }
+
+  public get debugString(): string { return undefined === this.cachedGeometry ? "null" : this.cachedGeometry.debugString; }
 }
