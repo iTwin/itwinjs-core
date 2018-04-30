@@ -825,7 +825,7 @@ describe("ECSqlStatement", () => {
       });
   });
 
-  it("BindRange3d", () => {
+  it("BindRange3d for parameter in spatial SQL function", () => {
     const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("bindrange3d.imodel", {rootSubject: { name: "test"}});
     try {
     iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
@@ -843,6 +843,36 @@ describe("ECSqlStatement", () => {
     } finally {
     iModel.closeStandalone();
     }
+  });
+
+  it("BindRange3d", () => {
+    using(ECDbTestHelper.createECDb(_outDir, "bindrange3d.ecdb",
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="Range" typeName="binary"/>
+        </ECEntityClass>
+       </ECSchema>`), (ecdb) => {
+
+        assert.isTrue(ecdb.isOpen());
+
+        const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Range) VALUES(?)", (stmt: ECSqlStatement) => {
+          stmt.bindRange3d(1, testRange);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          return res.id!;
+        });
+
+        ecdb.withPreparedStatement("SELECT Range FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const rangeBlob: ArrayBuffer = stmt.getValue(0).getBlob();
+          const rangeFloatArray = new Float64Array(rangeBlob);
+          assert.equal(rangeFloatArray.length, 6);
+          const actualRange = new Range3d(...rangeFloatArray);
+          assert.isTrue(actualRange.isAlmostEqual(testRange));
+        });
+      });
   });
 
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
