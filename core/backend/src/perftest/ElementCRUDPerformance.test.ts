@@ -121,23 +121,29 @@ describe("PerformanceElementsTests", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const fileName = "Performance_seed_" + className + "_" + dbSize + ".bim";
-        seedIModel = IModelTestUtils.createStandaloneIModel(fileName, {rootSubject: {name: "PerfTest"}});
-        seedIModel.setAsMaster();
-        const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-        const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        seedIModel.importSchema(testSchemaName);
-        assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
-        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
-        let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
-        if (undefined === spatialCategoryId) {
-          spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
-        }
+        const pathname = path.join(KnownTestLocations.outputDir, fileName);
+        if (!IModelJsFs.existsSync(pathname)) {
+          seedIModel = IModelTestUtils.createStandaloneIModel(fileName, {rootSubject: {name: "PerfTest"}});
+          const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
+          seedIModel.importSchema(testSchemaName);
+          seedIModel.setAsMaster();
+          const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+          assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
+          const [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(seedIModel, Code.createEmpty(), true);
+          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+          if (undefined === spatialCategoryId) {
+            spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
+          }
 
-        for (let m = 0; m < dbSize; ++m) {
-          const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement);
-          assert.isTrue(id.isValid(), "insert worked");
+          for (let m = 0; m < dbSize; ++m) {
+            const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = seedIModel.elements.insertElement(geomElement);
+            assert.isTrue(id.isValid(), "insert worked");
+          }
+
+          seedIModel.saveChanges();
+          IModelTestUtils.closeIModel(seedIModel);
         }
       }
     }
@@ -145,7 +151,7 @@ describe("PerformanceElementsTests", () => {
       fs.appendFileSync(csvPath, "DateTime,TestCaseName,TestName,ExecutionTime(s),opCount,TestDescription,OpType,InitialCount\n");
   });
 
-  it("ElementsInsert", () => {
+  it.skip("ElementsInsert", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
@@ -153,10 +159,8 @@ describe("PerformanceElementsTests", () => {
           const testFileName = "ImodelPerformance_Insert_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
           const dictionary: DictionaryModel = perfimodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-          const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
           let newModelId: Id64;
           [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(perfimodel, Code.createEmpty(), true);
-          assert.isFalse(undefined === defaultCategoryId);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
           if (undefined === spatialCategoryId) {
             spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
@@ -186,14 +190,14 @@ describe("PerformanceElementsTests", () => {
     }
   });
 
-  it("ElementsDelete", () => {
+  it.skip("ElementsDelete", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Delete_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GeometricElement3d")[0];
+          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           assert.equal((stat.maxId - stat.minId + 1) , dbSize);
           const startTime = new Date().getTime();
@@ -228,7 +232,7 @@ describe("PerformanceElementsTests", () => {
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Read_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GeometricElement3d")[0];
+          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           assert.equal((stat.maxId - stat.minId + 1) , dbSize);
           const startTime = new Date().getTime();
@@ -248,14 +252,14 @@ describe("PerformanceElementsTests", () => {
     }
   });
 
-  it("ElementsUpdate", () => {
+  it.skip("ElementsUpdate", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
         for (const opCount of opSizes) {
           const testFileName = "ImodelPerformance_Update_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.GeometricElement3d")[0];
+          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           // first construct modified elements
           // now lets update and record time
