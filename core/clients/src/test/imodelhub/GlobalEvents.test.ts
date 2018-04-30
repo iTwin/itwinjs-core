@@ -14,7 +14,7 @@ import * as utils from "./TestUtils";
 
 chai.should();
 
-((TestConfig.enableMocks || TestConfig.deploymentEnv === "DEV") ? describe : describe.skip)("iModelHub GlobalEventHandler", () => {
+describe("iModelHub GlobalEventHandler", () => {
   let accessToken: AccessToken;
   let serviceAccountAccessToken: AccessToken;
   let globalEventSubscription: GlobalEventSubscription;
@@ -24,7 +24,14 @@ chai.should();
   const downloadToPath: string = __dirname + "/../assets/";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
-  before(async () => {
+  function shouldRun(): boolean {
+    return (TestConfig.enableMocks || TestConfig.deploymentEnv === "DEV");
+  }
+
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (!shouldRun())
+      this.skip();
+
     projectId = await utils.getProjectId();
     serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
     accessToken = await utils.login();
@@ -32,7 +39,8 @@ chai.should();
   });
 
   after(async () => {
-    await utils.deleteIModelByName(accessToken, projectId, "GlobalEventTestModel");
+    if (shouldRun())
+      await utils.deleteIModelByName(accessToken, projectId, "GlobalEventTestModel");
   });
 
   afterEach(() => {
@@ -78,7 +86,10 @@ chai.should();
     chai.expect(event).instanceof(IModelCreatedEvent);
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event SoftiModelDeleteEvent", async () => {
+  it("should receive Global Event SoftiModelDeleteEvent", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "SoftiModelDeleteEvent"});
@@ -87,7 +98,10 @@ chai.should();
     chai.expect(event).instanceof(SoftiModelDeleteEvent);
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event HardiModelDeleteEvent", async () => {
+  it("should receive Global Event HardiModelDeleteEvent", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "HardiModelDeleteEvent"});
@@ -96,7 +110,10 @@ chai.should();
     chai.expect(event).instanceof(HardiModelDeleteEvent);
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event ChangeSetCreatedEvent", async () => {
+  it("should receive Global Event ChangeSetCreatedEvent", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","BriefcaseId":2,"ChangeSetId":"369","ChangeSetIndex":"1"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "ChangeSetCreatedEvent"});
@@ -119,7 +136,10 @@ chai.should();
     chai.expect(globalEventSubscription.eventTypes!).to.deep.equal(newEventTypesList);
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should receive Global Event NamedVersionCreatedEvent", async () => {
+  it("should receive Global Event NamedVersionCreatedEvent", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Global, "", "Subscriptions", globalEventSubscription.wsgId + "/messages/head");
     const requestResponse = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","ChangeSetId":"369","VersionId":"159","VersionName":"357"}';
     responseBuilder.MockResponse(RequestType.Delete, requestPath, requestResponse, 1, "", {"content-type": "NamedVersionCreatedEvent"});

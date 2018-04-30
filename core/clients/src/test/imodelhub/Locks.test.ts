@@ -29,7 +29,10 @@ describe("iModelHubClient LockHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should get information on Locks", async () => {
+  it("should get information on Locks", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Lock");
     const requestResponse = responseBuilder.generateGetResponse<Lock>(responseBuilder.generateObject<Lock>(Lock));
     responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);

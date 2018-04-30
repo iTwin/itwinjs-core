@@ -17,7 +17,8 @@
     "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/clients --json=../../generated-docs/clients/json/file.json --tsIndexFile=index.ts %TYPEDOC_THEME%",
     "lint": "tslint --config tslint.json --project ./",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-clients",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline",
+    "test:online": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {},

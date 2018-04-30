@@ -29,7 +29,10 @@ describe("iModelHub VersionHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should get named versions", async () => {
+  it("should get named versions",  async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     const versionsCount = 3;
     const responseObject = responseBuilder.generateObject<Version>(Version, new Map<string, any>([
                                                               ["wsgId", "00000000-0000-0000-0000-000000000000"],

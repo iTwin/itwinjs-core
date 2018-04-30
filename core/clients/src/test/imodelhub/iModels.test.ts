@@ -185,7 +185,10 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(error!.id === IModelHubResponseErrorId.ProjectIdIsNotSpecified);
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should fail creating existing and initialized iModel", async () => {
+  it("should fail creating existing and initialized iModel", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     const requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     const requestResponse = responseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
                                                           new Map<string, any>([["iModelInitialized", true]]));
@@ -203,7 +206,10 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(error!.id === IModelHubResponseErrorId.iModelAlreadyExists);
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should create iModel and upload SeedFile", async () => {
+  it("should create iModel and upload SeedFile", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     let requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     let postBody = responseBuilder.generatePostBody<IModel>(
                       responseBuilder.generateObject<IModel>(IModel,
@@ -258,7 +264,10 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(iModel.initialized).equals(true);
   });
 
-  (TestConfig.enableMocks ? it : it.skip)("should continue creating not initialized iModel", async () => {
+  it("should continue creating not initialized iModel", async function(this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     let requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel");
     let postBody = responseBuilder.generatePostBody<IModel>(
                       responseBuilder.generateObject<IModel>(IModel,

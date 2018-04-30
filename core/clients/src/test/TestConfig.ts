@@ -19,6 +19,11 @@ export interface UserCredentials {
   password: string;
 }
 
+function isOfflineSet(): boolean {
+  const index = process.argv.indexOf("--offline");
+  return process.argv[index + 1] === "true";
+}
+
 /** Basic configuration used by all tests
  * Note: Setup test cases at both the DEV and QA environments, so that
  * the tests can be run at either place.
@@ -32,7 +37,7 @@ export class TestConfig {
   /** Name of project used by most tests */
   public static readonly projectName: string = "NodeJsTestProject";
   public static readonly iModelName: string = "TestModel";
-  public static readonly enableMocks: boolean = true; // Needs to be set at compile time or Mocha version updated
+  public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
   public static async login(user: UserCredentials = TestUsers.user1): Promise<AuthorizationToken> {
