@@ -143,4 +143,3 @@ export const enum ChangeSetApplyOption {
   /** ChangeSet that was previously reversed will be reinstated into the Db */
   Reinstate,
 }
-
