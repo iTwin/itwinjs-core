@@ -11,6 +11,15 @@ import { RenderPass } from "./RenderFlags";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 
+/** Flags which control some conditional branches in shader code */
+export const enum ShaderFlags {
+  None = 0,
+  Monochrome = 1 << 0,
+  NonUniformColor = 1 << 1,
+  FlatAlphaWeight = 1 << 2,
+  ScaleAlphaWeight = 1 << 3,
+}
+
 /** Describes the location of a uniform variable within a shader program. */
 export class Uniform {
   private readonly _name: string;

@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RenderGraphic, GraphicBranch, IModelError } from "@bentley/imodeljs-common";
+import { IModelError } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderSystem, RenderTarget } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/Geometry";
@@ -202,7 +202,7 @@ export class System extends RenderSystem {
   public createTarget(): RenderTarget { return new OnScreenTarget(); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
-  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();

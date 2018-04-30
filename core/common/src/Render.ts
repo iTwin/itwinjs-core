@@ -176,13 +176,6 @@ export class PolylineEdgeArgs {
 }
 
 /**
- * A renderer-specific object that can be placed into a display list.
- */
-export abstract class RenderGraphic {
-  constructor(public readonly iModel: IModel) { }
-}
-
-/**
  * The "cooked" material and symbology for a RenderGraphic. This determines the appearance
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
  */
@@ -247,43 +240,6 @@ export const enum RenderMode {
   SmoothShade = 6,
 }
 
-export class GraphicList {
-  public list: RenderGraphic[] = [];
-  public isEmpty(): boolean { return this.list.length === 0; }
-  public clear() { this.list.length = 0; }
-  public add(graphic: RenderGraphic) { this.list.push(graphic); }
-  public getCount(): number { return this.list.length; }
-  public at(index: number): RenderGraphic | undefined { return this.list[index]; }
-  public get length(): number { return this.list.length; }
-  constructor(...graphics: RenderGraphic[]) { graphics.forEach(this.add.bind(this)); }
-}
-
-export class DecorationList extends GraphicList {
-}
-
-/**
- * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
- * in addition to the Scene.
- */
-export class Decorations {
-  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
-}
-
-export class GraphicBranch {
-  public get entries(): RenderGraphic[] { return this._entries; }
-  constructor(private _entries: RenderGraphic[] = [],
-              private _viewFlagOverrides: ViewFlag.Overrides = new ViewFlag.Overrides()) {}
-  public add(graphic: RenderGraphic): void { this._entries.push(graphic); }
-  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
-  public setViewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides = ovr; }
-  public getViewFlags(flags: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags); }
-  public clear() { this._entries = []; }
-}
-
 /**
  * The current position (eyepoint), lens angle, and focus distance of a camera.
  */
@@ -344,9 +300,9 @@ export class ViewFlags {
   public noGeometryMap: boolean = false;        // ignore geometry maps
   public hLineMaterialColors: boolean = false;  // use material colors for hidden lines
   public edgeMask: number = 0;                  // 0=none, 1=generate mask, 2=use mask
-  public clone(): ViewFlags { return ViewFlags.createFrom(this); }
-  public static createFrom(other?: ViewFlags): ViewFlags {
-    const val = new ViewFlags();
+  public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
+  public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
+    const val = undefined !== out ? out : new ViewFlags();
     if (other) {
       val.renderMode = other.renderMode;
       val.dimensions = other.dimensions;
@@ -537,6 +493,16 @@ export namespace ViewFlag {
 
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags */
     constructor(flags?: ViewFlags) { this.values = ViewFlags.createFrom(flags); this.present = 0xffffffff; }
+
+    public clone(out?: Overrides) {
+      const result = undefined !== out ? out : new Overrides();
+      result.copyFrom(this);
+      return result;
+    }
+    public copyFrom(other: Overrides): void {
+      this.values.clone(other.values);
+      this.present = other.present;
+    }
 
     public setShowDimensions(val: boolean) { this.values.setShowDimensions(val); this.setPresent(PresenceFlag.kDimensions); }
     public setShowPatterns(val: boolean) { this.values.setShowPatterns(val); this.setPresent(PresenceFlag.kPatterns); }

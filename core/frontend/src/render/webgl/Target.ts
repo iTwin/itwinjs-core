@@ -9,6 +9,8 @@ import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { System } from "./System";
+import { BranchStack } from "./BranchState";
+import { ShaderFlags } from "./ShaderProgram";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -120,17 +122,17 @@ export class Clips {
 }
 
 export class Target extends RenderTarget {
-  private readonly _tempViewFlags = new ViewFlags(); // ###TODO BranchStack...
+  private _stack = new BranchStack();
   protected _overrides?: FeatureSymbology.Overrides;
-  protected _overridesUpdateTime?: BeTimePoint;
+  protected _overridesUpdateTime = BeTimePoint.now();
   protected _hilite?: HilitedSet;
-  protected _hiliteUpdateTime?: BeTimePoint;
+  protected _hiliteUpdateTime = BeTimePoint.now();
   private readonly _viewMatrix = Transform.createIdentity();
-  private readonly _clips = new Clips();
+  public readonly clips = new Clips();
 
   public get renderSystem(): RenderSystem { return System.instance; }
   public get hilite(): HilitedSet { return this._hilite!; }
-  public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime!; }
+  public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
@@ -143,11 +145,12 @@ export class Target extends RenderTarget {
     this._hiliteUpdateTime = BeTimePoint.now();
   }
 
-  public get currentViewFlags() { return this._tempViewFlags; } // ###TODO BranchStack...
+  public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
+  public get currentTransform(): Transform { return this._stack.top.transform; }
+  public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
+  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
 
-  public get currentTransform() { return Transform.createIdentity(); } // ###TODO return one from top of BranchStack...
   public get viewMatrix() { return this._viewMatrix; }
-  public get clips() { return this._clips; }
 }
 
 export class OnScreenTarget extends Target {

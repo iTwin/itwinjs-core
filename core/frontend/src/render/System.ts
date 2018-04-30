@@ -6,13 +6,11 @@ import { assert } from "@bentley/bentleyjs-core";
 import { AntiAliasPref,
          SceneLights,
          ViewFlags,
+         ViewFlag,
          Frustum,
          Hilite,
          HiddenLine,
-         ColorDef,
-         RenderGraphic,
-         Decorations,
-         GraphicBranch } from "@bentley/imodeljs-common";
+         ColorDef } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
@@ -53,6 +51,57 @@ export class RenderPlan {
     this.hline = style.is3d() ? style.getHiddenLineParams() : undefined;
     this.lights = undefined; // view.is3d() ? view.getLights() : undefined
   }
+}
+
+/**
+ * A renderer-specific object that can be placed into a display list.
+ */
+export abstract class RenderGraphic {
+  public readonly iModel: IModelConnection;
+
+  constructor(iModel: IModelConnection) { this.iModel = iModel; }
+}
+
+export class GraphicList {
+  public list: RenderGraphic[] = [];
+  public isEmpty(): boolean { return this.list.length === 0; }
+  public clear() { this.list.length = 0; }
+  public add(graphic: RenderGraphic) { this.list.push(graphic); }
+  public getCount(): number { return this.list.length; }
+  public at(index: number): RenderGraphic | undefined { return this.list[index]; }
+  public get length(): number { return this.list.length; }
+  constructor(...graphics: RenderGraphic[]) { graphics.forEach(this.add.bind(this)); }
+}
+
+export class DecorationList extends GraphicList {
+}
+
+/**
+ * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
+ * in addition to the Scene.
+ */
+export class Decorations {
+  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
+  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
+  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
+}
+
+export class GraphicBranch {
+  public readonly entries: RenderGraphic[] = [];
+  private _viewFlagOverrides = new ViewFlag.Overrides();
+  public symbologyOverrides?: FeatureSymbology.Overrides;
+
+  public constructor() { }
+
+  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
+  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
+
+  public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
+  public set viewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides.copyFrom(ovr); }
+
+  public clear() { this.entries.length = 0; }
 }
 
 /**
@@ -143,7 +192,7 @@ export abstract class RenderSystem {
   public abstract createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic;
 
   /** Create a Graphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
