@@ -2,15 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Transform, Vector3d, Point3d, ClipPlane } from "@bentley/geometry-core";
-import { BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { System } from "./System";
-import { BranchStack } from "./BranchState";
-import { ShaderFlags } from "./ShaderProgram";
+import { BranchStack, BranchState } from "./BranchState";
+import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
+import { Branch } from "./Graphic";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -123,12 +124,16 @@ export class Clips {
 
 export class Target extends RenderTarget {
   private _stack = new BranchStack();
-  protected _overrides?: FeatureSymbology.Overrides;
+  private readonly _viewMatrix = Transform.createIdentity();
   protected _overridesUpdateTime = BeTimePoint.now();
   protected _hilite?: HilitedSet;
   protected _hiliteUpdateTime = BeTimePoint.now();
-  private readonly _viewMatrix = Transform.createIdentity();
   public readonly clips = new Clips();
+  public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
+
+  protected constructor() {
+    super();
+  }
 
   public get renderSystem(): RenderSystem { return System.instance; }
   public get hilite(): HilitedSet { return this._hilite!; }
@@ -136,7 +141,7 @@ export class Target extends RenderTarget {
   public get techniques(): Techniques { return System.instance.techniques!; }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
-    this._overrides = ovr;
+    this._stack.setSymbologyOverrides(ovr);
     this._overridesUpdateTime = BeTimePoint.now();
   }
 
@@ -150,8 +155,31 @@ export class Target extends RenderTarget {
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
 
+  public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
+    this._stack.pushBranch(branch);
+    const clip = this._stack.top.clipVolume;
+    if (undefined !== clip) {
+      clip.push(exec);
+    }
+  }
+  public pushState(state: BranchState) {
+    assert(undefined === state.clipVolume);
+    this._stack.pushState(state);
+  }
+  public popBranch(): void {
+    const clip = this._stack.top.clipVolume;
+    if (undefined !== clip) {
+      clip.pop(this);
+    }
+
+    this._stack.pop();
+  }
+
   public get viewMatrix() { return this._viewMatrix; }
 }
 
 export class OnScreenTarget extends Target {
+  public constructor() {
+    super();
+  }
 }

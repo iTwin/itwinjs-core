@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@bentley/geometry-core";
-import { ViewFlags } from "@bentley/imodeljs-common";
+import { ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Clip } from "./ClipVolume";
@@ -29,6 +29,15 @@ export class BranchState {
     return new BranchState(ViewFlags.createFrom(flags), undefined !== transform ? transform.clone() : Transform.createIdentity(), ovrs, clip);
   }
 
+  public static createForDecorations(): BranchState {
+    const vf = new ViewFlags();
+    vf.setRenderMode(RenderMode.SmoothShade);
+    vf.setShowSourceLights(false);
+    vf.setShowCameraLights(false);
+    vf.setShowSolarLight(false);
+    return new BranchState(vf, Transform.createIdentity(), new FeatureSymbology.Overrides());
+  }
+
   public get viewFlags() { return this._viewFlags; }
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
   public get showClipVolume(): boolean { return this.viewFlags.showClipVolume(); }
@@ -51,7 +60,7 @@ export class BranchState {
 export class BranchStack {
   private readonly _stack: BranchState[] = [];
 
-  public constructor(flags?: ViewFlags, transform?: Transform) { this.push(BranchState.create(new FeatureSymbology.Overrides(), flags, transform)); }
+  public constructor(flags?: ViewFlags, transform?: Transform) { this.pushState(BranchState.create(new FeatureSymbology.Overrides(), flags, transform)); }
 
   public get top(): BranchState {
     assert(!this.empty);
@@ -66,13 +75,12 @@ export class BranchStack {
   public get length() { return this._stack.length; }
   public get empty() { return 0 === this.length; }
 
-  public push(branch: BranchState | Branch): void {
-    if (branch instanceof Branch) {
-      assert(this.length > 0);
-      this.push(BranchState.fromBranch(this.top, branch));
-    } else {
-      this._stack.push(branch);
-    }
+  public pushBranch(branch: Branch): void {
+    assert(this.length > 0);
+    this.pushState(BranchState.fromBranch(this.top, branch));
+  }
+  public pushState(state: BranchState) {
+    this._stack.push(state);
   }
 
   public pop(): void {
