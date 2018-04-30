@@ -171,6 +171,8 @@ export class System extends RenderSystem {
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
 
+  public readonly drawBuffersExtension?: WEBGL_draw_buffers;
+
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public static create(canvas?: HTMLCanvasElement): System | undefined {
@@ -210,6 +212,7 @@ export class System extends RenderSystem {
     this.context = context;
     this.techniques = techniques;
     this.capabilities = capabilities;
+    this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     // Silence unused variable warnings...
     assert(undefined !== this._canvas);
     assert(undefined !== this.context);
