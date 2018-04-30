@@ -270,6 +270,7 @@ export class BriefcaseManager {
 
   private static onIModelHostShutdown() {
     BriefcaseManager.clearCache();
+    IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.onIModelHostShutdown);
   }
 
   /** Create a directory, recursively setting up the path as necessary */
@@ -288,7 +289,7 @@ export class BriefcaseManager {
     if (!IModelHost.configuration)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
 
-    IModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
+    IModelHost.onBeforeShutdown.addListener(BriefcaseManager.onIModelHostShutdown);
 
     const startTime = new Date().getTime();
 
