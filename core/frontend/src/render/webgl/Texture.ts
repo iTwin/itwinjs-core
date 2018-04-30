@@ -15,7 +15,7 @@ export const enum TextureFlags {
 }
 
 export class TextureParams {
-  private readonly _data?: Uint8Array;
+  public readonly data?: Uint8Array;
   public readonly width: number;
   public readonly height: number;
   public readonly format: GL.Texture.Format;
@@ -49,7 +49,7 @@ export class TextureParams {
   private constructor(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType, wrap: GL.Texture.WrapMode, flags: TextureFlags, data?: Uint8Array) {
     assert(0 < width && 0 < height);
 
-    this._data = data;
+    this.data = data;
     this.width = width;
     this.height = height;
     this.format = format;
@@ -58,7 +58,7 @@ export class TextureParams {
     this._flags = flags;
 
     // silence unused variable warnings...
-    assert(undefined === this._data || 0 > this._data.length);
+    assert(undefined === this.data || 0 > this.data.length);
   }
 
   private setFlag(flag: TextureFlags, enable: boolean) {
@@ -71,20 +71,44 @@ export class TextureParams {
 
 // A handle to a WebGLTexture object.
 export class TextureHandle implements IDisposable {
-  private readonly _params: TextureParams;
   private _glTexture?: WebGLTexture;
   private _isValid = true;
 
   public getHandle() { return this._glTexture; }
 
-  // ###TODO: Do gl.createTexture() immediately - we only did that lazily in C++ because of threading concerns...
   public constructor(params: TextureParams) {
-    this._params = params;
+    const gl: WebGLRenderingContext = System.instance.context;
+
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1); // use tightly packed data
+
+    const glTex: WebGLTexture | null = gl.createTexture(); // generate a texture object
+    this._glTexture = null !== glTex ? glTex : undefined; // convert to WebGLTexture | undefined
+
+    gl.activeTexture(gl.TEXTURE0); // bind the texture object; make sure we do not interfere with other active textures
+    gl.bindTexture(gl.TEXTURE_2D, glTex);
+    assert(params.width > 0 && params.height > 0);
+
+    // send the texture data
+    const pixels: ArrayBufferView | null = params.data !== undefined ? params.data as ArrayBufferView : null;
+    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixels);
+
+    if (params.wantUseMipMaps) {
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    } else {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.wantInterpolate ? gl.LINEAR : gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.wantInterpolate ? gl.LINEAR : gl.NEAREST);
+    }
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, params.wrapMode);
+
+    gl.bindTexture(gl.TEXTURE_2D, 0);
 
     // silence unused variable warnings...
     assert(undefined === this._glTexture);
     assert(this._isValid);
-    assert(0 < this._params.width);
   }
 
   public dispose() {

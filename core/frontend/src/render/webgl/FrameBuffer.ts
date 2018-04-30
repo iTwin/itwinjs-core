@@ -23,7 +23,6 @@ export class FrameBuffer implements IDisposable {
   private readonly colorTextures: TextureHandle[] = [];
   private readonly colorAttachments: GLenum[] = [];
   public readonly depthBuffer?: DepthBuffer;
-  // ###TODO gl.drawBuffersEXT()...private readonly _activeColorAttachments = new Array<number>();
 
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState; }
