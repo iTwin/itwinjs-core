@@ -23,9 +23,11 @@ One of the nice things about consistent units is the ability to perform consiste
 
 Using SI units also has the benefit of being an international standard.
 
+<!-- TODO: Clarify...
 ### Not all Metric Units are SI Units
 
 It is important to remember that not all metric units satisfy the units requirements. Units such as kilometer, millimeter, kilowatt and millivolt are neither SI Base Units nor are derived from SI Base Units (without prefix).
+ -->
 
 ### Angle Units
 
