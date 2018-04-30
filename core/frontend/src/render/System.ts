@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { AntiAliasPref,
          SceneLights,
          ViewFlags,
@@ -111,25 +111,20 @@ export class GraphicBranch {
  * Every DgnViewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget {
-  public decorations = new Decorations();
-
   public abstract get renderSystem(): RenderSystem;
+  public abstract get cameraFrustumNearScaleLimit(): number;
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
-  public changeDecorations(decorations: Decorations) { this.decorations = decorations; }
-  public abstract setHiliteSet(hilited: HilitedSet): void;
-  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
-  /**
-   * #TODO: update with logic to determine the device type running application
-   */
-  public static isMobile(): boolean { return false; }
 
-  /**
-   * [WIP] - we are trying to predict the likely graphics performance of the box.
-   * 1.0 => Plan for the best on Windows (desktop) computers.
-   * 2.5 => Plan for the worst on mobile devices
-   */
-  public static defaultTileSizeModifier(): number { return RenderTarget.isMobile() ? 2.5 : 1.0; }
+  public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
+  public abstract changeDecorations(decorations: Decorations): void;
+  public abstract changeDynamics(dynamics?: DecorationList): void;
+  public abstract changeRenderPlan(plan: RenderPlan): void;
+  public abstract drawFrame(): void;
+  public abstract setHiliteSet(hilited: HilitedSet): void;
+  public abstract setFlashed(elementId: Id64, intensity: number): void;
+  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
+  public abstract onResized(): void;
 }
 
 /**

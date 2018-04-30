@@ -117,6 +117,9 @@ export class Id64 {
     }
     return ids;
   }
+
+  /** Obtain an Id64 instance with an invalid value. */
+  public static invalidId: Id64 = new Id64();
 }
 
 /** a string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid. */

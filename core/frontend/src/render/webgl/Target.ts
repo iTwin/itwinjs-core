@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Transform, Vector3d, Point3d, ClipPlane } from "@bentley/geometry-core";
-import { BeTimePoint, assert } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem } from "../System";
+import { Transform, Vector3d, Point3d, ClipPlane, ClipVector } from "@bentley/geometry-core";
+import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
+import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan  } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -33,8 +33,9 @@ const enum FrustumData {
 }
 
 export class FrustumUniforms {
-  private planeData: Float32Array;
-  private frustumData: Float32Array;
+  private _planeData: Float32Array;
+  private _frustumData: Float32Array;
+
   public constructor() {
     const pData = [];
     pData[Plane.kTop] = 0.0;
@@ -45,26 +46,27 @@ export class FrustumUniforms {
     fData[FrustumData.kNear] = 0.0;
     fData[FrustumData.kFar] = 0.0;
     fData[FrustumData.kType] = 0.0;
-    this.planeData = new Float32Array(pData);
-    this.frustumData = new Float32Array(fData);
+    this._planeData = new Float32Array(pData);
+    this._frustumData = new Float32Array(fData);
   }
-  public getFrustumPlanes(): Float32Array { return this.planeData; }  // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
-  public getFrustum(): Float32Array { return this.frustumData; } // uniform vec3 u_frustum; // { near, far, type }
-  public getNearPlane(): number { return this.frustumData[FrustumData.kNear]; }
-  public getFarPlane(): number { return this.frustumData[FrustumData.kFar]; }
-  public GetType(): FrustumUniformType { return this.getFrustum()[FrustumData.kType] as FrustumUniformType; }
-  public Is2d(): boolean { return FrustumUniformType.TwoDee === this.GetType(); }
 
-  public SetPlanes(top: number, bottom: number, left: number, right: number): void {
-    this.planeData[Plane.kTop] = top;
-    this.planeData[Plane.kBottom] = bottom;
-    this.planeData[Plane.kLeft] = left;
-    this.planeData[Plane.kRight] = right;
+  public get frustumPlanes(): Float32Array { return this._planeData; }  // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
+  public get frustum(): Float32Array { return this._frustumData; } // uniform vec3 u_frustum; // { near, far, type }
+  public get nearPlane(): number { return this._frustumData[FrustumData.kNear]; }
+  public get farPlane(): number { return this._frustumData[FrustumData.kFar]; }
+  public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
+  public get is2d(): boolean { return FrustumUniformType.TwoDee === this.type; }
+
+  public setPlanes(top: number, bottom: number, left: number, right: number): void {
+    this._planeData[Plane.kTop] = top;
+    this._planeData[Plane.kBottom] = bottom;
+    this._planeData[Plane.kLeft] = left;
+    this._planeData[Plane.kRight] = right;
   }
-  public SetFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
-    this.frustumData[FrustumData.kNear] = nearPlane;
-    this.frustumData[FrustumData.kFar] = farPlane;
-    this.frustumData[FrustumData.kType] = type as number;
+  public setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
+    this._frustumData[FrustumData.kNear] = nearPlane;
+    this._frustumData[FrustumData.kFar] = farPlane;
+    this._frustumData[FrustumData.kType] = type as number;
   }
 }
 
@@ -122,38 +124,48 @@ export class Clips {
   public get isValid(): boolean { return this.length > 0; }
 }
 
-export class Target extends RenderTarget {
+export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private readonly _viewMatrix = Transform.createIdentity();
-  protected _overridesUpdateTime = BeTimePoint.now();
-  protected _hilite?: HilitedSet;
-  protected _hiliteUpdateTime = BeTimePoint.now();
+  private _scene = new GraphicList();
+  private _decorations = new Decorations();
+  private _dynamics?: DecorationList;
+  private _overridesUpdateTime = BeTimePoint.now();
+  private _hilite?: HilitedSet;
+  private _hiliteUpdateTime = BeTimePoint.now();
+  private _flashedElemId = Id64.invalidId;
+  private _flashedUpdateTime = BeTimePoint.now();
+  private _flashIntensity: number = 0;
+  protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
+  public readonly frustumUniforms = new FrustumUniforms();
 
   protected constructor() {
     super();
   }
 
-  public get renderSystem(): RenderSystem { return System.instance; }
   public get hilite(): HilitedSet { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
-  public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
-    this._stack.setSymbologyOverrides(ovr);
-    this._overridesUpdateTime = BeTimePoint.now();
-  }
+  public get flashedElemId(): Id64 { return this._flashedElemId; }
+  public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
+  public get flashIntensity(): number { return this._flashIntensity; }
 
-  public setHiliteSet(hilite: HilitedSet): void {
-    this._hilite = hilite;
-    this._hiliteUpdateTime = BeTimePoint.now();
-  }
+  public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
+
+  public get scene(): GraphicList { return this._scene; }
+  public get decorations(): Decorations { return this._decorations; }
+  public get dynamics(): DecorationList | undefined { return this._dynamics; }
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+
+  public get is2d(): boolean { return this.frustumUniforms.is2d; }
+  public get is3d(): boolean { return !this.is2d; }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
     this._stack.pushBranch(branch);
@@ -176,10 +188,83 @@ export class Target extends RenderTarget {
   }
 
   public get viewMatrix() { return this._viewMatrix; }
+
+  // ---- Implementation of RenderTarget interface ---- //
+
+  public get renderSystem(): RenderSystem { return System.instance; }
+  public get cameraFrustumNearScaleLimit() {
+    return 0; // ###TODO
+  }
+
+  public changeDecorations(decs: Decorations): void { this._decorations = decs; }
+  public changeScene(scene: GraphicList, _activeVolume: ClipVector) {
+    this._scene = scene;
+    // ###TODO active volume
+  }
+  public changeDynamics(dynamics?: DecorationList) {
+    // ###TODO: set feature IDs into each graphic so that edge display works correctly...
+    this._dynamics = dynamics;
+  }
+  public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
+    this._stack.setSymbologyOverrides(ovr);
+    this._overridesUpdateTime = BeTimePoint.now();
+  }
+  public setHiliteSet(hilite: HilitedSet): void {
+    this._hilite = hilite;
+    this._hiliteUpdateTime = BeTimePoint.now();
+  }
+  public setFlashed(id: Id64, intensity: number) {
+    if (!id.equals(this._flashedElemId)) {
+      this._flashedElemId = id;
+      this._flashedUpdateTime = BeTimePoint.now();
+    }
+
+    this._flashIntensity = intensity;
+  }
+  public onResized(): void {
+    // ###TODO
+    this._dcAssigned = false;
+  }
+
+  public changeRenderPlan(_plan: RenderPlan): void {
+  }
+
+  public drawFrame(): void {
+    // ###TODO
+  }
+
+  // ---- Methods expected to be overridden by subclasses ---- //
+
+  protected abstract assignDC(): boolean;
+  protected abstract makeCurrent(): void;
+  protected abstract beginPaint(): void;
+  protected abstract endPaint(): void;
+  protected update(): void { }
 }
 
 export class OnScreenTarget extends Target {
   public constructor() {
     super();
   }
+
+  // ###TODO...
+  protected assignDC(): boolean {
+    this._dcAssigned = true;
+    return true;
+  }
+  protected makeCurrent(): void { }
+  protected beginPaint(): void { }
+  protected endPaint(): void { }
+}
+
+export class OffScreenTarget extends Target {
+  public constructor() {
+    super();
+  }
+
+  // ###TODO...
+  protected assignDC(): boolean { return false; }
+  protected makeCurrent(): void { }
+  protected beginPaint(): void { }
+  protected endPaint(): void { }
 }
