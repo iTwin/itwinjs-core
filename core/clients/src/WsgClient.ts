@@ -4,13 +4,35 @@
 import * as deepAssign from "deep-assign";
 
 import { AccessToken, AuthorizationToken } from "./Token";
-import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
+import { request, RequestOptions, RequestQueryOptions, Response, ResponseError, HttpResponseType } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { Logger } from "@bentley/bentleyjs-core";
 import { DefaultRequestOptionsProvider, AuthenticationError, Client, DeploymentEnv } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 
 const loggingCategory = "imodeljs-clients.Clients";
+
+enum WSError {
+  Unknown,
+
+  // Server returned error ids
+  LoginFailed,
+  SslRequired,
+  NotEnoughRights,
+  RepositoryNotFound,
+  SchemaNotFound,
+  ClassNotFound,
+  PropertyNotFound,
+  InstanceNotFound,
+  FileNotFound,
+  NotSupported,
+  NoServerLicense,
+  NoClientLicense,
+  TooManyBadLoginAttempts,
+
+  ServerError,
+  BadRequest,
+}
 
 /**
  * Error that was returned by a WSG based service.
@@ -50,6 +72,75 @@ export class WsgError extends ResponseError {
     return responseError;
   }
 
+  public static shouldRetry(error: any, response: any): boolean {
+    if (response === undefined || response === null) {
+      return super.shouldRetry(error, response);
+    }
+
+    const parsedError = WsgError.parse({response});
+    if (!(parsedError instanceof WsgError)) {
+      return super.shouldRetry(error, response);
+     }
+
+    const errorCodesToRetry: number[] = [WSError.ServerError,
+                                         WSError.Unknown];
+    const errorStatus = WsgError.getErrorStatus(parsedError.name !== undefined ?
+            WsgError.getWSErrorId(parsedError.name) : WSError.Unknown, response.statusType);
+    return errorCodesToRetry.includes(errorStatus);
+  }
+
+  private static getErrorStatus(errorId: number, httpStatusType: number): number {
+    if (WSError.Unknown !== errorId) {
+      return errorId;
+    }
+    if (httpStatusType === HttpResponseType.ServerError) {
+      return WSError.ServerError;
+    }
+    if (httpStatusType === HttpResponseType.ClientError) {
+      return WSError.BadRequest;
+    }
+    return WSError.Unknown;
+  }
+
+  private static getWSErrorId(error: string): number {
+    switch (error) {
+      case "LoginFailed":
+        return WSError.LoginFailed;
+      case "SslRequired":
+        return WSError.SslRequired;
+      case "NotEnoughRights":
+       return WSError.NotEnoughRights;
+      case "DatasourceNotFound":
+       return WSError.RepositoryNotFound;
+      case "RepositoryNotFound":
+       return WSError.RepositoryNotFound;
+      case "SchemaNotFound":
+       return WSError.SchemaNotFound;
+      case "ClassNotFound":
+       return WSError.ClassNotFound;
+      case "PropertyNotFound":
+       return WSError.PropertyNotFound;
+      case "LinkTypeNotFound":
+       return WSError.ClassNotFound;
+      case "ObjectNotFound":
+       return WSError.InstanceNotFound;
+      case "InstanceNotFound":
+       return WSError.InstanceNotFound;
+      case "FileNotFound":
+       return WSError.FileNotFound;
+      case "NotSupported":
+       return WSError.NotSupported;
+      case "NoServerLicense":
+       return WSError.NoServerLicense;
+      case "NoClientLicense":
+       return WSError.NoClientLicense;
+      case "TooManyBadLoginAttempts":
+       return WSError.TooManyBadLoginAttempts;
+      default:
+        return WSError.Unknown;
+    }
+  }
+
   /**
    * Logs this error
    */
@@ -68,6 +159,7 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
   constructor() {
     super();
     this.defaultOptions.errorCallback = WsgError.parse;
+    this.defaultOptions.retryCallback = WsgError.shouldRetry;
   }
 }
 

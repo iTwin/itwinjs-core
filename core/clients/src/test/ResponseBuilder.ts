@@ -117,10 +117,11 @@ export class ResponseBuilder {
    * @param otherProperties Additional error properties.
    * @returns Created error in JSON.
    */
-  public generateError(id: string, message?: string, description?: string, otherProperties?: Map<string, any>): string {
+  public generateError(id?: string, message?: string, description?: string, otherProperties?: Map<string, any>): string {
     let error = "{";
 
-    error += `"errorId":"${id}",`;
+    error += `"errorId":`;
+    id !== undefined ? error += `"${id}",` : error += "null,";
     error += '"errorMessage":';
     message !== undefined ? error += `"${message}",` : error += "null,";
     error += '"errorDescription":';
@@ -224,7 +225,7 @@ export class ResponseBuilder {
    * @param headers Specifies response headers.
    * @param responseCode Specifies response code.
    */
-  public MockResponse(requestType: RequestType, requestPath: string, requestResponse: string, times = 1, postBody?: string,
+  public MockResponse(requestType: RequestType, requestPath: string, requestResponse: any, times = 1, postBody?: string,
     headers?: any, responseCode = 200): void {
     if (!TestConfig.enableNock)
       return;

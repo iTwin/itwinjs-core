@@ -245,6 +245,19 @@ export class IModelHubResponseError extends WsgError {
     return wsgError;
   }
 
+  public static shouldRetry(error: any, response: any): boolean {
+    if (response === undefined || response === null) {
+      return super.shouldRetry(error, response);
+    }
+    const parsedError = IModelHubResponseError.parse({response});
+
+    if (!(parsedError instanceof IModelHubResponseError)) {
+      return super.shouldRetry(error, response);
+     }
+
+    return false;
+  }
+
   /**
    * Get log function
    */
