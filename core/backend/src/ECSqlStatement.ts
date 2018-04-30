@@ -160,7 +160,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index(1-based) or name of the parameter
    * @param val Range3d value
    */
-  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void { this.bindRange3d(parameter, val); }
+  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void { this.getBinder(parameter).bindRange3d(val); }
 
   /** Binds an string to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter

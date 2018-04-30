@@ -827,18 +827,22 @@ describe("ECSqlStatement", () => {
 
   it("BindRange3d", () => {
     const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("bindrange3d.imodel", {rootSubject: { name: "test"}});
-    iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
+    try {
+    iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
     (stmt: ECSqlStatement) => {
       stmt.bindRange3d(1, new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0));
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     });
 
-    iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
+    iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
       (stmt: ECSqlStatement) => {
       stmt.bindValues([new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0)]);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     });
 
+    } finally {
+    iModel.closeStandalone();
+    }
   });
 
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
