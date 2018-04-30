@@ -8,12 +8,10 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, Point2d, XYAndZ, Transform, Angle, AngleProps, Vector3d } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
-import { QParams3d } from "./QPoint";
 import { OctEncodedNormal } from "./OctEncodedNormal";
-import { ColorIndex, FeatureIndex } from "./FeatureIndex";
 import { AreaPattern } from "./geometry/AreaPattern";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
@@ -102,19 +100,6 @@ export class PolylineData {
   }
 }
 
-/* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
-export class IndexedPolylineArgs {
-  public colors = new ColorIndex();
-  public features = new FeatureIndex();
-  public width = 0;
-  public linePixels = LinePixels.Solid;
-  public flags: PolylineFlags;
-  public constructor(public points: Uint16Array = new Uint16Array(), public numPoints = 0, public lines: PolylineData[] = [], public numLines = 0, public pointParams?: QParams3d,
-                     is2d = false, isPlanar = false) {
-    this.flags = new PolylineFlags(is2d, isPlanar);
-  }
-}
-
 export class MeshPolyline {
   public indices: number[] = [];
   public rangeCenter = new Point3d();
@@ -190,63 +175,12 @@ export class PolylineEdgeArgs {
   }
 }
 
-// The vertices of the edges are shared with those of the surface
-export class TriMeshArgsEdges {
-  public edges = new EdgeArgs();
-  public silhouettes = new SilhouetteEdgeArgs();
-  public polylines = new PolylineEdgeArgs();
-  public width = 0;
-  public linePixels = LinePixels.Solid;
-
-  public clear(): void {
-    this.edges = new EdgeArgs();
-    this.silhouettes = new SilhouetteEdgeArgs();
-    this.polylines = new PolylineEdgeArgs();
-    this.width = 0;
-    this.linePixels = LinePixels.Solid;
-  }
-  public isValid(): boolean { return this.edges.isValid() || this.silhouettes.isValid() || this.polylines.isValid(); }
-}
-
-/* Information needed to draw a triangle mesh and its edges. */
-export class TriMeshArgs {
-  public edges = new TriMeshArgsEdges();
-  public numIndices = 0;
-  public vertIndex: number[] = [];
-  public numPoints = 0;
-  public points?: Uint16Array;
-  public normals: OctEncodedNormal[] = [];
-  public textureUv: Point2d[] = [];
-  public texture?: Texture;
-  public colors = new ColorIndex();
-  public features = new FeatureIndex();
-  public pointParams?: QParams3d;
-  public material?: Material;
-  public fillFlags = FillFlags.None;
-  public isPlanar = false;
-  public is2d = false;
-
-  // public toPolyface(): IndexedPolyface {
-  //   let polyFace = IndexedPolyface.create(); // PolyfaceHeaderPtr polyFace = PolyfaceHeader::CreateFixedBlockIndexed(3);
-  //   let pointIndex = polyFace.pointCount;
-  //   pointIndex. // In Progress!!
-  // }
-}
-
-/**
- * A renderer-specific object that can be placed into a display list.
- */
-export abstract class RenderGraphic {
-  constructor(public readonly iModel: IModel) { }
-}
-
 /**
  * The "cooked" material and symbology for a RenderGraphic. This determines the appearance
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
  */
 export class GraphicParams {
-  public isFilled = false;
-  public isBlankingRegion = false;
+  public fillFlags = FillFlags.None;
   public linePixels = LinePixels.Solid;
   public rasterWidth = 1;
   public readonly lineColor = new ColorDef();
@@ -292,7 +226,7 @@ export class GraphicParams {
   public static FromBlankingFill(fillColor: ColorDef): GraphicParams {
     const graphicParams = new GraphicParams();
     graphicParams.setFillColor(fillColor);
-    graphicParams.isBlankingRegion = true;
+    graphicParams.fillFlags = FillFlags.Blanking;
     return graphicParams;
   }
 }
@@ -304,43 +238,6 @@ export const enum RenderMode {
   HiddenLine = 3,
   SolidFill = 4,
   SmoothShade = 6,
-}
-
-export class GraphicList {
-  public list: RenderGraphic[] = [];
-  public isEmpty(): boolean { return this.list.length === 0; }
-  public clear() { this.list.length = 0; }
-  public add(graphic: RenderGraphic) { this.list.push(graphic); }
-  public getCount(): number { return this.list.length; }
-  public at(index: number): RenderGraphic | undefined { return this.list[index]; }
-  public get length(): number { return this.list.length; }
-  constructor(...graphics: RenderGraphic[]) { graphics.forEach(this.add.bind(this)); }
-}
-
-export class DecorationList extends GraphicList {
-}
-
-/**
- * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
- * in addition to the Scene.
- */
-export class Decorations {
-  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
-}
-
-export class GraphicBranch {
-  public get entries(): RenderGraphic[] { return this._entries; }
-  constructor(private _entries: RenderGraphic[] = [],
-              private _viewFlagOverrides: ViewFlag.Overrides = new ViewFlag.Overrides()) {}
-  public add(graphic: RenderGraphic): void { this._entries.push(graphic); }
-  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
-  public setViewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides = ovr; }
-  public getViewFlags(flags: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags); }
-  public clear() { this._entries = []; }
 }
 
 /**
@@ -403,9 +300,9 @@ export class ViewFlags {
   public noGeometryMap: boolean = false;        // ignore geometry maps
   public hLineMaterialColors: boolean = false;  // use material colors for hidden lines
   public edgeMask: number = 0;                  // 0=none, 1=generate mask, 2=use mask
-  public clone(): ViewFlags { return ViewFlags.createFrom(this); }
-  public static createFrom(other?: ViewFlags): ViewFlags {
-    const val = new ViewFlags();
+  public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
+  public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
+    const val = undefined !== out ? out : new ViewFlags();
     if (other) {
       val.renderMode = other.renderMode;
       val.dimensions = other.dimensions;
@@ -597,6 +494,16 @@ export namespace ViewFlag {
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags */
     constructor(flags?: ViewFlags) { this.values = ViewFlags.createFrom(flags); this.present = 0xffffffff; }
 
+    public clone(out?: Overrides) {
+      const result = undefined !== out ? out : new Overrides();
+      result.copyFrom(this);
+      return result;
+    }
+    public copyFrom(other: Overrides): void {
+      this.values.clone(other.values);
+      this.present = other.present;
+    }
+
     public setShowDimensions(val: boolean) { this.values.setShowDimensions(val); this.setPresent(PresenceFlag.kDimensions); }
     public setShowPatterns(val: boolean) { this.values.setShowPatterns(val); this.setPresent(PresenceFlag.kPatterns); }
     public setShowWeights(val: boolean) { this.values.setShowWeights(val); this.setPresent(PresenceFlag.kWeights); }
@@ -683,6 +590,19 @@ export namespace HiddenLine {
     }
     public equals(other: Style): boolean {
       return this.ovrColor === other.ovrColor && this.color === other.color && this.pattern === other.pattern && this.width === other.width;
+    }
+
+    public clone(out?: Style): Style {
+      const result = undefined !== out ? out : new Style({});
+      result.copyFrom(this);
+      return result;
+    }
+
+    public copyFrom(other: Style): void {
+      this.ovrColor = other.ovrColor;
+      this.color.setFrom(other.color);
+      this.pattern = other.pattern;
+      this.width = other.width;
     }
   }
 
@@ -784,20 +704,8 @@ export namespace Gradient {
       return result;
     }
 
-    /** Add properties to an object for serializing to JSON */
-    public toJSON(): SymbProps {
-      return this.toJSON() as SymbProps;
-    }
-
     public clone(): Symb {
-      const retVal = new Symb();
-      retVal.mode = this.mode;
-      retVal.flags = this.flags;
-      retVal.angle = this.angle;
-      retVal.tint = this.tint;
-      retVal.shift = this.shift;
-      this.keys.forEach((key) => retVal.keys.push(key));
-      return retVal;
+      return Symb.fromJSON(this);
     }
 
     public isEqualTo(other: Symb): boolean {
@@ -1028,6 +936,22 @@ export namespace Hilite {
     }
     /** Change the color, preserving all other settings */
     public setColor(color: ColorDef) { this.color.setFrom(color); }
+
+    public clone(out?: Settings): Settings {
+      if (undefined !== out) {
+        out.copyFrom(this);
+        return out;
+      } else {
+        return new Settings(this.color, this.visibleRatio, this.hiddenRatio, this.silhouette);
+      }
+    }
+
+    public copyFrom(other: Settings): void {
+      this.color.setFrom(other.color);
+      this.visibleRatio = other.visibleRatio;
+      this.hiddenRatio = other.hiddenRatio;
+      this.silhouette = other.silhouette;
+    }
   }
 }
 

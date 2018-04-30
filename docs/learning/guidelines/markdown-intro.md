@@ -51,7 +51,7 @@ Numbered list:
 
 A [link](https://en.wikipedia.org/wiki/Markdown)
 
-An image: ![logo](logo.png "Bentley Logo")
+An image: ![alternate text](logo.png "tooltip text")
 
 ## Source Code
 

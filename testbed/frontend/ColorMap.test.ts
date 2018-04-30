@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { ColorMap } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
@@ -113,38 +113,32 @@ describe("ColorMap", () => {
   it("test toColorIndex function", () => {
     /** Test toColorIndex function */
     let a: ColorMap = new ColorMap();
-    const uint32: Uint32Array = new Uint32Array(4);
     const uint16: Uint16Array = new Uint16Array(2);
     let colorIndex = new ColorIndex();
 
-    colorIndex.numColors = 0;
-    assert.isFalse(colorIndex.isValid(), "assert toColorIndex function test 1");
-    assert.isTrue(colorIndex.numColors === 0, "assert toColorIndex function test 2");
     a.getIndex(0xFFFFFF);
-    a.toColorIndex(colorIndex, uint32, uint16);
-    assert.isTrue(colorIndex.isValid(), "assert toColorIndex function test 3");
-    assert.isTrue(colorIndex.uniform === 0xFFFFFF, "assert toColorIndex function test 4");
+    a.toColorIndex(colorIndex, uint16);
+    expect(colorIndex.uniform!.tbgr).to.equal(0xFFFFFF);
     assert.isTrue(colorIndex.numColors === 1, "assert toColorIndex function test 5");
 
     a = new ColorMap();
     colorIndex = new ColorIndex();
-    assert.isTrue(colorIndex.uniform === ColorDef.white.tbgr, "assert toColorIndex function test 6");
+    expect(colorIndex.uniform!.tbgr).to.equal(ColorDef.white.tbgr);
     assert.isTrue(colorIndex.numColors === 1, "assert toColorIndex function test 7");
     a.getIndex(0x0000FFFF);
-    a.toColorIndex(colorIndex, uint32, uint16);
-    assert.isTrue(colorIndex.isUniform(), "assert toColorIndex function test 8");
-    assert.isFalse(colorIndex.uniform === ColorDef.white.tbgr, "assert toColorIndex function test 8");
-    assert.isTrue(colorIndex.uniform === 0x0000FFFF, "assert toColorIndex function test 9");
+    a.toColorIndex(colorIndex, uint16);
+    expect(colorIndex.isUniform).to.equal(true);
+    assert.isTrue(colorIndex.uniform!.tbgr === 0x0000FFFF, "assert toColorIndex function test 9");
     assert.isTrue(colorIndex.numColors === 1, "assert toColorIndex function test 10");
 
     a = new ColorMap();
     a.getIndex(0x0000FFFF);
     a.getIndex(0x000000FF);
     colorIndex = new ColorIndex();
-    colorIndex.setUniform(0x00FF00FF);
+    colorIndex.initUniform(0x00FF00FF);
     assert.isTrue(colorIndex.numColors === 1, "assert toColorIndex function test 9");
-    a.toColorIndex(colorIndex, uint32, uint16);
-    assert.isFalse(colorIndex.isUniform(), "assert toColorIndex function test 10");
+    a.toColorIndex(colorIndex, uint16);
+    assert.isFalse(colorIndex.isUniform, "assert toColorIndex function test 10");
     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 2, "assert toColorIndex function test 11");
     let values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
     assert.isTrue(values && values.next().value === 0x0000FFFF, "assert toColorIndex function test 12");
@@ -158,8 +152,8 @@ describe("ColorMap", () => {
     a.getIndex(0x000000FF);
     colorIndex = new ColorIndex();
     assert.isTrue(colorIndex.numColors === 1, "assert toColorIndex function test 16");
-    a.toColorIndex(colorIndex, uint32, uint16);
-    assert.isFalse(colorIndex.isUniform(), "assert toColorIndex function test 17");
+    a.toColorIndex(colorIndex, uint16);
+    assert.isFalse(colorIndex.isUniform, "assert toColorIndex function test 17");
     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 3, "assert toColorIndex function test 18");
     values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
     assert.isTrue(values && values.next().value === 0x00000000, "assert toColorIndex function test 19");

@@ -1,30 +1,27 @@
 {
-  "name": "imodeljs-core-sample-code",
+  "name": "sample-code-snippets",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "copy:backendassets": "cpx ./backend_test_assets/**/* ./out/backend/assets",
-    "build": "npm run build:backend && npm run build:frontend && npm run build:common && npm run extract",
-    "build:backend": "cd ./backend && tsc --outDir ../out/backend 1>&2",
-    "build:common": "cd ./common && tsc --outDir ../out/common 1>&2",
-    "build:frontend": "cd ./frontend && tsc --outDir ../out/frontend 1>&2",
-    "extract": "node ../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./backend --out=../generated-docs/extract",
-    "clean": "rimraf lib out package-deps.json ../generated-docs/extract",
+    "build": "tsc 1>&2 && npm run copy:assets && npm run extract",
+    "clean": "rimraf lib package-deps.json ../../generated-docs",
+    "copy:assets": "cpx ./src/backend/assets/**/* ./lib/backend/assets",
+    "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
     "test": "npm run test:backend",
-    "pretest:backend": "npm run copy:backendassets && rush build -t imodeljs-core-sample-code",
-    "test:backend": "npm run pretest:backend && node ../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../\" --testDir=\"./out/backend\""
+    "pretest:backend": "npm run copy:assets && rush build -t sample-code-snippets",
+    "test:backend": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib\""
   },
   "repository": {},
   "//dependencies": [
     "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "7",
+    "@bentley/bentleyjs-core": "8",
     "@bentley/geometry-core": "7",
     "@bentley/imodeljs-backend": "0",
-    "@bentley/imodeljs-n_8-win32-x64": "~16.0.2",
+    "@bentley/imodeljs-n_8-win32-x64": "~17.0.0",
     "@bentley/imodeljs-clients": "5",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-frontend": "0",

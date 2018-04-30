@@ -2,7 +2,7 @@
 
 ## [Introduction](./intro/introduction)
 
-## [Quick Tour](./intro/quick-tour)
+## [Modeling with BIS](./intro/modeling-with-bis)
 
 ## [BIS Organization](./intro/bis-organization)
 
@@ -18,7 +18,7 @@
 
 ## [Relationship Fundamentals](./intro/relationship-fundamentals)
 
-## [Schemas (./intro/“Domains”)](./intro/schemas-domains)
+## [Schemas (“Domains”)](./intro/schemas-domains)
 
 ## [Model Hierarchy](./intro/model-hierarchy)
 
@@ -28,11 +28,9 @@
 
 ## [Information Models and Elements](./intro/information-models-and-elements)
 
-# Background for BIS
+## [Quick Tour](./intro/quick-tour)
 
 ## [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time)
-
-## [BIS Domain Design Fundamentals](./intro/appendix-c-bis-domain-design-fundamentals)
 
 # BIS Naming Guidelines
 
@@ -49,5 +47,3 @@
 ## [Standard Relationship “Strengths” Names](./naming-guidelines/standard-relationship-strengths-names)
 
 ## [BIS Schemas Names](./naming-guidelines/bis-schemas-names)
-
-## [Appendix](./naming-guidelines/appendix)

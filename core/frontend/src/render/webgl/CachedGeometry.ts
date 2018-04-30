@@ -9,9 +9,10 @@ import { AttributeHandle, BufferHandle, QBufferHandle3d, QBufferHandle2d } from 
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
-import { RenderPass, RenderOrder } from "./RenderFlags";
+import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
+import { System } from "./System";
 
 // Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
@@ -36,15 +37,16 @@ export abstract class CachedGeometry {
   // Returns the scale of this geometry's quantization parameters.
   public abstract get qScale(): Float32Array;
   // Binds this geometry's vertex data to the vertex attribute.
-  public abstract bindVertexArray(gl: WebGLRenderingContext, handle: AttributeHandle): void;
+  public abstract bindVertexArray(handle: AttributeHandle): void;
   // Draws this geometry
-  public abstract draw(gl: WebGLRenderingContext): void;
+  public abstract draw(): void;
 
   // Intended to be overridden by specific subclasses
   public get material(): MaterialData | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public set uniformFeatureIndices(value: number) { assert(undefined !== value); } // silence 'unused variable' warning...
   public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
+  public get debugString(): string { return ""; }
 
   public get isEdge(): boolean {
     switch (this.renderOrder) {
@@ -74,14 +76,6 @@ export abstract class CachedGeometry {
     assert(Math.floor(weight) === weight);
     return weight;
   }
-
-  // Convenience functions for down-casting
-  public toEdge(): EdgeGeometry | undefined { return undefined; }
-  public toSilhouette(): SilhouetteGeometry | undefined { return undefined; }
-  public toPointString(): PointStringGeometry | undefined { return undefined; }
-  public toViewportQuad(): ViewportQuadGeometry | undefined { return undefined; }
-  public toTexturedViewportQuad(): TexturedViewportQuadGeometry | undefined { return undefined; }
-  public toComposite(): CompositeGeometry | undefined { return undefined; }
 }
 
 // Parameters used to construct an IndexedGeometry
@@ -96,9 +90,9 @@ export class IndexedGeometryParams {
     this.numIndices = numIndices;
   }
 
-  public static create(gl: WebGLRenderingContext, positions: Uint16Array, qparams: QParams3d, indices: Uint32Array) {
-    const posBuf = QBufferHandle3d.create(gl, qparams, positions);
-    const indBuf = BufferHandle.createBuffer(gl, GL.Buffer.Target.ElementArrayBuffer, indices);
+  public static create(positions: Uint16Array, qparams: QParams3d, indices: Uint32Array) {
+    const posBuf = QBufferHandle3d.create(qparams, positions);
+    const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
     if (undefined === posBuf || undefined === indBuf) {
       assert(false);
       return undefined;
@@ -107,8 +101,8 @@ export class IndexedGeometryParams {
     assert(posBuf.isValid && indBuf.isValid);
     return new IndexedGeometryParams(posBuf, indBuf, indices.length);
   }
-  public static createFromList(gl: WebGLRenderingContext, positions: QPoint3dList, indices: Uint32Array) {
-    return IndexedGeometryParams.create(gl, positions.toTypedArray(), positions.params, indices);
+  public static createFromList(positions: QPoint3dList, indices: Uint32Array) {
+    return IndexedGeometryParams.create(positions.toTypedArray(), positions.params, indices);
   }
 }
 
@@ -121,12 +115,12 @@ export abstract class IndexedGeometry extends CachedGeometry {
     this._params = params;
   }
 
-  public bindVertexArray(gl: WebGLRenderingContext, attr: AttributeHandle): void {
-    attr.enableArray(gl, this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
+  public bindVertexArray(attr: AttributeHandle): void {
+    attr.enableArray(this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
   }
-  public draw(gl: WebGLRenderingContext): void {
-    this._params.indices.bind(gl, GL.Buffer.Target.ElementArrayBuffer);
-    gl.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, GL.DataType.UnsignedInt, 0);
+  public draw(): void {
+    this._params.indices.bind(GL.Buffer.Target.ElementArrayBuffer);
+    System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, GL.DataType.UnsignedInt, 0);
   }
 
   public get qOrigin() { return this._params.positions.origin; }
@@ -176,8 +170,8 @@ class ViewportQuad {
     this.textureParams = textureUV.params;
   }
 
-  public createParams(gl: WebGLRenderingContext) {
-    return IndexedGeometryParams.create(gl, this.vertices, this.vertexParams, this.indices);
+  public createParams() {
+    return IndexedGeometryParams.create(this.vertices, this.vertexParams, this.indices);
   }
 }
 
@@ -191,39 +185,90 @@ export class ViewportQuadGeometry extends IndexedGeometry {
     super(params);
     this._techniqueId = techniqueId;
   }
-  public static create(gl: WebGLRenderingContext, techniqueId: TechniqueId) {
-    const params = _viewportQuad.createParams(gl);
+  public static create(techniqueId: TechniqueId) {
+    const params = _viewportQuad.createParams();
     return undefined !== params ? new ViewportQuadGeometry(params, techniqueId) : undefined;
   }
 
   public getTechniqueId(_target: Target) { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
   public get renderOrder() { return RenderOrder.Surface; }
-  public toViewportQuad() { return this; }
 }
 
 // Geometry used for view-space rendering techniques which involve sampling one or more textures.
 export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
   public readonly uvParams: QBufferHandle2d;
-  // ###TODO list of textures...
+  protected readonly _textures: WebGLTexture[];
 
-  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId, uvParams: QBufferHandle2d) {
+  protected static createUVParams(): QBufferHandle2d | undefined {
+    return QBufferHandle2d.create(_viewportQuad.textureParams, _viewportQuad.textureUV);
+  }
+
+  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId, uvParams: QBufferHandle2d, textures: WebGLTexture[]) {
     super(params, techniqueId);
     this.uvParams = uvParams;
+    this._textures = textures;
   }
-  public static create(gl: WebGLRenderingContext, techniqueId: TechniqueId) {
-    const params = _viewportQuad.createParams(gl);
-    const uvBuf = QBufferHandle2d.create(gl, _viewportQuad.textureParams, _viewportQuad.textureUV);
-    return undefined !== params && undefined !== uvBuf ? new TexturedViewportQuadGeometry(params, techniqueId, uvBuf) : undefined;
-  }
-
-  public toTexturedViewportQuad() { return this; }
 }
 
-export abstract class CompositeGeometry extends TexturedViewportQuadGeometry { /* ###TODO */ }
+// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
+export class CompositeGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
+    const params = _viewportQuad.createParams();
+    const uvBuf = this.createUVParams();
+    if (undefined === params || undefined === uvBuf) {
+      return undefined;
+    }
+
+    return new CompositeGeometry(params, uvBuf, [opaque, accum, reveal, hilite]);
+  }
+
+  public get opaque() { return this._textures[0]; }
+  public get accum() { return this._textures[1]; }
+  public get reveal() { return this._textures[2]; }
+  public get hilite() { return this._textures[3]; }
+
+  // Invoked each frame to determine the appropriate Technique to use.
+  public update(flags: CompositeFlags): void { this._techniqueId = this.determineTechnique(flags); }
+  private determineTechnique(flags: CompositeFlags): TechniqueId {
+    switch (flags) {
+      case CompositeFlags.Hilite: return TechniqueId.CompositeHilite;
+      case CompositeFlags.Translucent: return TechniqueId.CompositeTranslucent;
+      default: return TechniqueId.CompositeHiliteAndTranslucent;
+    }
+  }
+
+  private constructor(params: IndexedGeometryParams, uvParams: QBufferHandle2d, textures: WebGLTexture[]) {
+    super(params, TechniqueId.CompositeHilite, uvParams, textures);
+    assert(4 === this._textures.length);
+  }
+}
+
+// Geometry used to ping-pong the pick buffer data in between opaque passes.
+export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(idLow: WebGLTexture, idHigh: WebGLTexture, depthAndOrder: WebGLTexture) {
+    const params = _viewportQuad.createParams();
+    const uv = this.createUVParams();
+    if (undefined !== params && undefined !== uv) {
+      return new CopyPickBufferGeometry(params, uv, [idLow, idHigh, depthAndOrder]);
+    } else {
+      return undefined;
+    }
+  }
+
+  public get elemIdLow() { return this._textures[0]; }
+  public get elemIdHigh() { return this._textures[1]; }
+  public get depthAndOrder() { return this._textures[2]; }
+
+  private constructor(params: IndexedGeometryParams, uv: QBufferHandle2d, textures: WebGLTexture[]) {
+    super(params, TechniqueId.CopyPickBuffers, uv, textures);
+  }
+}
+
 export abstract class EdgeGeometry { /* ###TODO */ }
 export abstract class PointStringGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
+export abstract class LUTGeometry { /* ###TODO */ }
 export abstract class MaterialData { /* ###TODO */ }
 export abstract class PolylineBuffers { /* ###TODO */ }
 export abstract class FeaturesInfo { /* ###TODO */ }

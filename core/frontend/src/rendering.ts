@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 export * from "./render/primitives/ColorMap";
+export * from "./render/primitives/DisplayParams";
 export * from "./render/primitives/Geometry";
 export * from "./render/primitives/Mesh";
 export * from "./render/primitives/Primitives";
@@ -9,6 +10,7 @@ export * from "./render/primitives/Strokes";
 export * from "./render/primitives/VertexKey";
 export * from "./render/webgl/BranchState";
 export * from "./render/webgl/CachedGeometry";
+export * from "./render/webgl/ClipVolume";
 export * from "./render/webgl/DrawCommand";
 export * from "./render/webgl/EdgeOverrides";
 export * from "./render/webgl/FeatureDimensions";
@@ -30,5 +32,7 @@ export * from "./render/webgl/Technique";
 export * from "./render/webgl/TechniqueFlags";
 export * from "./render/webgl/TechniqueId";
 export * from "./render/webgl/Texture";
+export * from "./render/webgl/VertexLUT";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
+export * from "./render/System";

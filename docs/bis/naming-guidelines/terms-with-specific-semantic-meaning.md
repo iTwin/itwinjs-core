@@ -22,7 +22,7 @@ This definition of the semantic meaning will be captured in the BIS Thesaurus. T
 | Has             |                                                                                                                                        |
 | Instance        |                                                                                                                                        |
 | Item            | To indicate an in individual in a list, collection or set                                                                              |
-| Left            | [Are you serious? We can’t use “Left” to mean left and “Right” to mean right?]A node in an undirected or bi-directional relationship[] |
+| Left            | A node in an undirected or bi-directional relationship                                                                                 |
 | List            | A named collection ordered entities. Entities in the list not need to be distinct                                                      |
 | Object          |                                                                                                                                        |
 | Owns            |                                                                                                                                        |
@@ -32,12 +32,12 @@ This definition of the semantic meaning will be captured in the BIS Thesaurus. T
 | Relationship    |                                                                                                                                        |
 | Revision        |                                                                                                                                        |
 | Right           | A node in a undirected or bi-directional relationship                                                                                  |
-| Set             | A named? and unordered collection of distinct entities                                                                                 |
+| Set             | An unordered collection of distinct entities                                                                                           |
 | Shares          |                                                                                                                                        |
 | Source          | The source node in a directed relationship                                                                                             |
 | Target          | The target node in a directed relationship                                                                                             |
 | To              | The destination node in a directed graph                                                                                               |
 | Value           |                                                                                                                                        |
-| **Don’t Use These** | **Rather Use**                                                                                                                             |
+| **Don’t Use These** | **Rather Use**                                                                                                                     |
 | LineItem        | Item                                                                                                                                   |
 | Sequence        | List                                                                                                                                   |

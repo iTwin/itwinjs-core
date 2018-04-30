@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert, using } from "@bentley/bentleyjs-core";
+import { assert, using, IDisposable } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags } from "./TechniqueFlags";
@@ -10,7 +10,7 @@ import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "
 import { DrawParams } from "./DrawCommand";
 
 // Defines a rendering technique implemented using one or more shader programs.
-export interface Technique {
+export interface Technique extends IDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
 }
 
@@ -21,10 +21,12 @@ export class SingularTechnique implements Technique {
   public constructor(program: ShaderProgram) { this.program = program; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
+
+  public dispose(): void { this.program.dispose(); }
 }
 
 // A collection of rendering techniques accessed by ID.
-export class Techniques {
+export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
@@ -61,6 +63,14 @@ export class Techniques {
         executor.draw(params);
       }
     });
+  }
+
+  public dispose(): void {
+    for (const tech of this._list) {
+      tech.dispose();
+    }
+
+    this._list.length = 0;
   }
 
   private constructor() { }

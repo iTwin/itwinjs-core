@@ -5,7 +5,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
-import { TestGatewayImpl, TestGateway2Impl } from "./TestGatewayImpl";
+import { TestGatewayImpl, TestGateway2Impl, TestGateway3Impl } from "./TestGatewayImpl";
 import { CONSTANTS } from "../common/Testbed";
 
 let pendingsSent = 0;
@@ -33,6 +33,7 @@ ipcMain.on("testbed", (event: any, arg: any) => {
 IModelHost.startup();
 
 TestGatewayImpl.register();
+TestGateway3Impl.register();
 TestbedConfig.initializeGatewayConfig();
 
 if (TestbedConfig.gatewayConfig) {

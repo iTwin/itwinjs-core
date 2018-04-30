@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryStreamProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType,
+  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../backend";
@@ -21,7 +21,7 @@ describe("GeometryStream", () => {
     IModelTestUtils.closeIModel(imodel);
   });
 
-  it("create element using line codes 1-7", async () => {
+  it("create GeometricElement3d using line codes 1-7", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
@@ -49,13 +49,16 @@ describe("GeometryStream", () => {
       assert.isTrue(lsStylesExist[iStyle].equals(lsStyles[iStyle]));
     }
 
-    const geometryStream: GeometryStreamProps = [];
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
     const pointS = Point3d.createZero();
     const pointE = Point3d.create(5, 0, 0);
+
     lsStyles.forEach((styleId) => {
-      if (styleId.isValid())
-        geometryStream.push({ appearance: { style: styleId } });
-      geometryStream.push(GeomJson.Writer.toIModelJson(LineSegment3d.create(pointS, pointE)));
+      params.styleInfo = styleId.isValid() ? new LineStyle.Info(styleId) : undefined;
+      builder.appendGeometryParamsChange(params);
+      builder.appendGeometryQuery(LineSegment3d.create(pointS, pointE));
       pointS.y += 0.5; pointE.y += 0.5;
     });
 
@@ -66,7 +69,7 @@ describe("GeometryStream", () => {
       category: seedElement.category,
       code: Code.createEmpty(),
       userLabel: "UserLabel-" + 1,
-      geom: geometryStream,
+      geom: builder.geometryStream,
     };
 
     const newId = imodel.elements.insertElement(elementProps);
@@ -74,13 +77,13 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
   });
 
-  it("create element using continuous style", async () => {
+  it("create GeometricElement3d using continuous style", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    // create special "internal default" style for drawing curves using width overrides
+    // create special "internal default" continuous style for drawing curves using width overrides
     const styleId = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
     assert.isTrue(styleId.isValid());
 
@@ -88,7 +91,7 @@ describe("GeometryStream", () => {
     const styleIdExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
     assert.isTrue(styleIdExists.isValid() && styleIdExists.equals(styleId));
 
-    // create style with width defined
+    // create continuous style with pre-defined constant width
     const styleIdWidth = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
     assert.isTrue(styleIdWidth.isValid());
 
@@ -96,11 +99,28 @@ describe("GeometryStream", () => {
     const styleIdWidthExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
     assert.isTrue(styleIdWidthExists.isValid() && styleIdWidthExists.equals(styleIdWidth));
 
-    const geometryStream: GeometryStreamProps = [];
-    geometryStream.push({ appearance: { style: styleId } });
-    geometryStream.push(GeomJson.Writer.toIModelJson(LineSegment3d.create(Point3d.create(0, 0, 0),  Point3d.create(0, 5, 0))));
-    geometryStream.push({ appearance: { style: styleIdWidth } });
-    geometryStream.push(GeomJson.Writer.toIModelJson(LineSegment3d.create(Point3d.create(0.5, 0, 0),  Point3d.create(0.5, 5, 0))));
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
+    // add line using 0 width continuous style
+    params.styleInfo = new LineStyle.Info(styleId);
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 5, 0)));
+
+    // add line with width override, undefined endWidth = startWidth, only needed for taper
+    params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: 0.025, physicalWidth: true });
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(0.5, 0, 0), Point3d.create(0.5, 5, 0)));
+
+    // add line using pre-defined width continuous style
+    params.styleInfo = new LineStyle.Info(styleIdWidth);
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(1.0, 0, 0), Point3d.create(1.0, 5, 0)));
+
+    // add line with width override, undefined endWidth = startWidth, only needed for taper
+    params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: 0.075, physicalWidth: true });
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -109,7 +129,7 @@ describe("GeometryStream", () => {
       category: seedElement.category,
       code: Code.createEmpty(),
       userLabel: "UserLabel-" + 1,
-      geom: geometryStream,
+      geom: builder.geometryStream,
     };
 
     const newId = imodel.elements.insertElement(elementProps);
@@ -117,21 +137,25 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
   });
 
-  it("create element using arrow head style w/o using stroke pattern", async () => {
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const partStream: GeometryStreamProps = [];
-    partStream.push(GeomJson.Writer.toIModelJson(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0)))));
+    const partBuilder = new GeometryStreamBuilder();
+    const partParams = new GeometryParams(new Id64()); // category won't be used
+
+    partParams.fillDisplay = FillDisplay.Always;
+    partBuilder.appendGeometryParamsChange(partParams);
+    partBuilder.appendGeometryQuery(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
       iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
-      geom: partStream,
+      geom: partBuilder.geometryStream,
     };
 
     const partId = imodel.elements.insertElement(partProps);
@@ -150,9 +174,12 @@ describe("GeometryStream", () => {
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestArrowStyle", compoundData!);
     assert.isTrue(styleId.isValid());
 
-    const geometryStream: GeometryStreamProps = [];
-    geometryStream.push({ appearance: { style: styleId } });
-    geometryStream.push(GeomJson.Writer.toIModelJson(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0))));
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
+    params.styleInfo = new LineStyle.Info(styleId);
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -161,7 +188,7 @@ describe("GeometryStream", () => {
       category: seedElement.category,
       code: Code.createEmpty(),
       userLabel: "UserLabel-" + 1,
-      geom: geometryStream,
+      geom: builder.geometryStream,
     };
 
     const newId = imodel.elements.insertElement(elementProps);
@@ -169,7 +196,7 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
   });
 
-  it("create element using compound style with dash widths and symbol", async () => {
+  it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
@@ -186,15 +213,15 @@ describe("GeometryStream", () => {
     const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes } );
     assert.isTrue(undefined !== strokePatternData);
 
-    const partStream: GeometryStreamProps = [];
-    partStream.push(GeomJson.Writer.toIModelJson(Arc3d.createXY(Point3d.createZero(), 0.05)));
+    const partBuilder = new GeometryStreamBuilder();
+    partBuilder.appendGeometryQuery(Arc3d.createXY(Point3d.createZero(), 0.05));
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
       iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
-      geom: partStream,
+      geom: partBuilder.geometryStream,
     };
 
     const partId = imodel.elements.insertElement(partProps);
@@ -220,9 +247,12 @@ describe("GeometryStream", () => {
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData!);
     assert.isTrue(styleId.isValid());
 
-    const geometryStream: GeometryStreamProps = [];
-    geometryStream.push({ appearance: { style: styleId } });
-    geometryStream.push(GeomJson.Writer.toIModelJson(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0))));
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
+    params.styleInfo = new LineStyle.Info(styleId);
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -231,7 +261,7 @@ describe("GeometryStream", () => {
       category: seedElement.category,
       code: Code.createEmpty(),
       userLabel: "UserLabel-" + 1,
-      geom: geometryStream,
+      geom: builder.geometryStream,
     };
 
     const newId = imodel.elements.insertElement(elementProps);
@@ -239,7 +269,7 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
   });
 
-  it.skip("json encoding and decoding roundtrip of TextString in world coords", async () => {
+  it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
@@ -307,7 +337,7 @@ describe("GeometryStream", () => {
     }
   });
 
-  it("json encoding and decoding roundtrip of GeometryPart", async () => {
+  it("create GeometryPart from arcs", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
@@ -319,11 +349,10 @@ describe("GeometryStream", () => {
       Arc3d.createXY(Point3d.create(-5, -5), 20),
     ];
 
-    const geometryStream: GeometryStreamProps = [];
+    const partBuilder = new GeometryStreamBuilder();
 
     for (const geom of geomArray) {
-      const arcData = GeomJson.Writer.toIModelJson(geom);
-      geometryStream.push(arcData);
+      partBuilder.appendGeometryQuery(geom);
     }
 
     const partProps: GeometryPartProps = {
@@ -331,7 +360,7 @@ describe("GeometryStream", () => {
       iModel: imodel,
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
-      geom: geometryStream,
+      geom: partBuilder.geometryStream,
     };
 
     const testPart = imodel.elements.createElement(partProps);
@@ -343,7 +372,7 @@ describe("GeometryStream", () => {
     assert.isDefined(value.geom);
   });
 
-  it("json encoding and decoding roundtrip of arcs", async () => {
+  it("create GeometricElement3d from arcs", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
     assert.exists(seedElement);
@@ -355,11 +384,10 @@ describe("GeometryStream", () => {
       Arc3d.createXY(Point3d.create(-5, -5), 20),
     ];
 
-    const geometryStream: GeometryStreamProps = [];
+    const builder = new GeometryStreamBuilder();
 
     for (const geom of geomArray) {
-      const arcData = GeomJson.Writer.toIModelJson(geom);
-      geometryStream.push(arcData);
+      builder.appendGeometryQuery(geom);
     }
 
     const elementProps: GeometricElement3dProps = {
@@ -369,7 +397,7 @@ describe("GeometryStream", () => {
       category: seedElement.category,
       code: Code.createEmpty(),
       userLabel: "UserLabel-" + 1,
-      geom: geometryStream,
+      geom: builder.geometryStream,
     };
 
     const testElem = imodel.elements.createElement(elementProps);

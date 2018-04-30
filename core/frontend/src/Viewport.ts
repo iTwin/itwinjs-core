@@ -15,12 +15,12 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
+import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { RenderTarget } from "./render/System";
+import { Decorations, DecorationList, RenderTarget } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { ChangeDecorationsTask, TaskPriority, SetHiliteTask, OverrideFeatureSymbologyTask } from "./render/Task";
-import { Decorations, ViewFlags } from "@bentley/imodeljs-common";
+import { ViewFlags } from "@bentley/imodeljs-common";
 
 /** viewport synchronization flags */
 export class SyncFlags {
@@ -253,6 +253,11 @@ export class Viewport {
    */
   public get isActive(): boolean { return !!this._view && !!this._target; }
 
+  /**
+   * Determine whether the Grid display is currently enabled in this DgnViewport.
+   * @return true if the grid display is on.
+   */
+  public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }

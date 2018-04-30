@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "5.3.3",
+  "version": "5.3.4",
   "description": "Clients for various Bentley Services used by iModelJs",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -17,7 +17,7 @@
     "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/clients --json=../../generated-docs/clients/json/file.json --tsIndexFile=index.ts %TYPEDOC_THEME%",
     "lint": "tslint --config tslint.json --project ./",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-clients",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --offline=\"skip\" --packageRoot=\"../../\" --testDir=\"./lib/test\"",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {},
@@ -32,14 +32,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "7"
+    "@bentley/bentleyjs-core": "8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "7",
+    "@bentley/bentleyjs-core": "8",
     "@types/chai-as-promised": "0.0.31",
     "@types/chai-string": "1.1.30",
     "@types/clone": "^0.1.30",

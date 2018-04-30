@@ -2,11 +2,12 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel } from "@bentley/imodeljs-common";
-import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
+import { Angle, Point3d, Point2d, Vector2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
+import { DecorateContext } from "./ViewContext";
 
 export const enum ACSType {
   None = 0,
@@ -23,6 +24,14 @@ export const enum ACSDisplayOptions {
   CheckVisible = (1 << 3),
   Dynamics = (1 << 4),
 }
+
+// export class ACSGrid {
+//   public readonly repetitions: Point2d = new Point2d();
+//   public readonly originOffset: Point2d = new Point2d();
+//   public readonly spacing: Point2d = new Point2d();
+//   public gridPerRef: number = 10;
+//   public unused: number = 0;
+// }
 
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
   public type: number;
@@ -74,6 +83,18 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public abstract getRotation(result?: RotMatrix): RotMatrix;
   public abstract setRotation(val: RotMatrix): void;
   public is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
+
+  public drawGrid(context: DecorateContext): void {
+    // Called for active ACS when grid orientation is GridOrientationType::ACS.
+    const view        = context.viewport.view,
+          spacing     = Vector2d.createFrom(view.gridSpacing),
+          gridReps    = new Point2d(),
+          gridsPerRef = view.gridsPerRef,
+          origin      = this.getOrigin(),
+          rMatrix     = this.getRotation();
+
+    context.drawStandardGrid(origin, rMatrix, spacing, gridsPerRef, false, gridReps);
+  }
 }
 
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {

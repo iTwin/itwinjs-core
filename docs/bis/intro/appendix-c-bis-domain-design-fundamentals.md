@@ -1,6 +1,6 @@
+<!--
 # Appendix - BIS Domain Design Fundamentals
 
-<!--
 ## Introduction
 
 ## Begin with the end in mind

@@ -12,6 +12,7 @@ import { AxisAlignedBox3d } from "../geometry/Primitives";
 /**
  * The Gateway for writing to an iModel.
  * All operations require read+write access.
+ * This gateway is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
  */
 export abstract class IModelWriteGateway extends Gateway {
   /** The version of the gateway. */

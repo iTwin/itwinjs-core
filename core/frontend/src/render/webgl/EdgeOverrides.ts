@@ -28,29 +28,47 @@ export namespace LineCode {
 }
 
 export class EdgeOverrides {
-  public readonly color = new FloatPreMulRgba();
-  public lineCode = 0;
-  public weight = 0;
-  public flags: OvrFlags = OvrFlags.None;
-  public anyOverridden(): boolean { return this.flags !== OvrFlags.None; }
-  public isOverridden(flags: OvrFlags): boolean { return (flags & this.flags) === flags; }
-  public init(style: HiddenLine.Style, forceOpaque: boolean): void {
-    this.flags &= OvrFlags.None;
-    this.weight = style.width;
-    if (style.ovrColor) {
-      this.flags |= OvrFlags.Rgba;
-      this.color.initFromColorDef(style.color);
-    }
-    if (style.width !== 0) {
-      this.flags |= OvrFlags.Weight;
-    }
-    if (style.pattern !== LinePixels.Invalid) {
-      this.flags |= OvrFlags.LineCode;
-      this.lineCode = LineCode.valueFromLinePixels(style.pattern);
+  private _color?: FloatPreMulRgba;
+  private _lineCode?: number;
+  private _weight?: number;
+  private _forceOpaque: boolean = false;
+
+  public get color() { return this._color; }
+  public get lineCode() { return this._lineCode; }
+  public get weight() { return this._weight; }
+  public get forceOpaque() { return this._forceOpaque; }
+
+  public get overridesColor() { return undefined !== this.color; }
+  public get overridesLineCode() { return undefined !== this.lineCode; }
+  public get overridesWeight() { return undefined !== this.weight; }
+  public get overridesAlpha() { return this.forceOpaque; }
+  public get anyOverridden() { return this.overridesColor || this.overridesLineCode || this.overridesWeight || this.overridesAlpha; }
+
+  public constructor(style?: HiddenLine.Style, forceOpaque: boolean = false) {
+    this.init(forceOpaque, style);
+  }
+
+  public computeOvrFlags(): OvrFlags {
+    let flags = OvrFlags.None;
+
+    if (this.overridesColor)    flags |= OvrFlags.Rgba;
+    if (this.overridesWeight)   flags |= OvrFlags.Weight;
+    if (this.overridesLineCode) flags |= OvrFlags.LineCode;
+    if (this.overridesAlpha)    flags |= OvrFlags.Alpha;
+
+    return flags;
+  }
+
+  public init(forceOpaque: boolean, style?: HiddenLine.Style): void {
+    this._forceOpaque = forceOpaque;
+    if (undefined === style) {
+      this._color = undefined;
+      this._weight = undefined;
+      this._lineCode = undefined;
     } else {
-      this.lineCode = 0;
+      this._color = style.ovrColor ? FloatPreMulRgba.fromColorDef(style.color) : undefined;
+      this._weight = style.width !== 0 ? style.width : undefined;
+      this._lineCode = LinePixels.Invalid !== style.pattern ? LineCode.valueFromLinePixels(style.pattern) : undefined;
     }
-    if (forceOpaque)
-      this.flags |= OvrFlags.Alpha;
   }
 }

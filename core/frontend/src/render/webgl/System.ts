@@ -1,15 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RenderGraphic, GraphicBranch, IModelError } from "@bentley/imodeljs-common";
+import { IModelError } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderSystem, RenderTarget } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/Geometry";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
+import { Techniques } from "./Technique";
+import { IModelApp } from "../../IModelApp";
 
 export const enum ContextState {
   Uninitialized,
@@ -122,6 +124,11 @@ export class Capabilities {
     return this.hasRequiredFeatures && this.hasRequiredDrawTargets && this.hasRequiredTextureUnits;
   }
 
+  public static create(gl: WebGLRenderingContext): Capabilities | undefined {
+    const caps = new Capabilities();
+    return caps.init(gl) ? caps : undefined;
+  }
+
   /** Determines if a particular texture type is color-renderable on the host system. */
   private isTextureRenderable(gl: WebGLRenderingContext, texType: number): boolean {
     const tex: WebGLTexture | null = gl.createTexture();
@@ -159,7 +166,14 @@ export class Capabilities {
 
 export class System extends RenderSystem {
   private readonly _canvas: HTMLCanvasElement;
-  private readonly _context: WebGLRenderingContext;
+  public readonly context: WebGLRenderingContext;
+
+  public readonly techniques: Techniques;
+  public readonly capabilities: Capabilities;
+
+  public readonly drawBuffersExtension?: WEBGL_draw_buffers;
+
+  public static get instance() { return IModelApp.renderSystem as System; }
 
   public static create(canvas?: HTMLCanvasElement): System | undefined {
     if (undefined === canvas) {
@@ -174,21 +188,33 @@ export class System extends RenderSystem {
       }
     }
 
-    return new System(canvas, context);
+    const techniques = Techniques.create(context);
+    if (undefined === techniques) {
+      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering techniques");
+    }
+
+    const capabilities = Capabilities.create(context);
+    if (undefined === capabilities) {
+      throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
+    }
+
+    return new System(canvas, context, techniques, capabilities);
   }
 
-  public createTarget(): RenderTarget { return new OnScreenTarget(this, this._context); }
+  public createTarget(): RenderTarget { return new OnScreenTarget(); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
-  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext) {
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
     this._canvas = canvas;
-    this._context = context;
-
+    this.context = context;
+    this.techniques = techniques;
+    this.capabilities = capabilities;
+    this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     // Silence unused variable warnings...
     assert(undefined !== this._canvas);
-    assert(undefined !== this._context);
+    assert(undefined !== this.context);
   }
 }

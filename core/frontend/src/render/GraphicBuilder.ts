@@ -21,7 +21,6 @@ import { Transform,
          StrokeOptions } from "@bentley/geometry-core";
 import { AreaPattern,
          ColorDef,
-         RenderGraphic,
          GraphicParams,
          AsThickenedLine,
          GeometryParams,
@@ -29,6 +28,7 @@ import { AreaPattern,
          TextString,
          LineStyle} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
+import { RenderGraphic } from "./System";
 
 /**
  * Describes the type of a RenderGraphic. Used when creating a GraphicBuilder to specify the purpose of the RenderGraphic.

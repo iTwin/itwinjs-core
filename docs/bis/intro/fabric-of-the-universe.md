@@ -10,13 +10,13 @@ Most of the concepts below are defined as ECClasses in the “BisCore” domain 
 
 ## Elements
 
-A `Element` is an object in the virtual world that represents some entity in the real world, e.g. pumps, beams, contracts, companies, etc.). Elements are contained in Models. Elements are defined through ECProperties. Elements are the finest-grained object in BIS that can be individually identified and locked.
+An `Element` is an object in the virtual world that represents some entity in the real world, e.g. pumps, beams, contracts, companies, etc.). Elements are contained in Models. Elements are defined through ECProperties. Elements are the finest-grained object in BIS that can be individually identified and locked.
 
 See [Element Fundamentals](element-fundamentals) for a more detailed discussion.
 
 ## ElementAspects
 
-A `ElementAspect` is a set of ECProperties that “belong” to a particular Element, but which have an independent lifecycle (they may come and go over the lifetime of the Element). ElementAspect instances are *owned* a single Element; ElementAspects are never shared by more than one Element. An ElementAspect is considered part of the Element and therefore can not be the target of any “incoming” relationships (other than from the single Element that owns it.) There are ElementUniqueAspects that have a maximum of one instance per Element and ElementMultiAspects that may potentially have many instances per Element.
+An `ElementAspect` is a set of ECProperties that “belong” to a particular Element, but which have an independent lifecycle (they may come and go over the lifetime of the Element). ElementAspect instances are *owned* a single Element; ElementAspects are never shared by more than one Element. An ElementAspect is considered part of the Element and therefore can not be the target of any “incoming” relationships (other than from the single Element that owns it.) There are ElementUniqueAspects that have a maximum of one instance per Element and ElementMultiAspects that may potentially have many instances per Element.
 
 See [ElementAspect Fundamentals](elementaspect-fundamentals) for a more detailed discussion of ElementAspects.
 
@@ -32,8 +32,9 @@ Various ECRelationshipClasses are defined in BisCore to relate Models, Elements 
 
 ## No other Data Types
 
-All BIS information is defined using `Element`s, `ElementAspect`s, `Model`s and Relationships. BIS domain schemas (other than “BisCore”) can only define classes that (directly or indirectly) subclass classes defined in the “BisCore” domain.
+All BIS information is defined using the `Element`, `ElementAspect`, `Model` classes or by using relationships. BIS domain schemas (other than `BisCore`) can only define classes that (directly or indirectly) subclass classes defined in the `BisCore` domain.
 
+<!-- TODO
 ## Breaking Down the World with Models, Elements, ElementAspects and Relationships
 
 All data in an iModel is defined in a hierarchy of `Model`s, `Element`s and `ElementAspect`s, with relationships connecting them, as is shown below:
@@ -41,3 +42,4 @@ All data in an iModel is defined in a hierarchy of `Model`s, `Element`s and `Ele
 Xxxxxxxxxxx add figure xxxxxxxxxxx
 
 This hierarchy is described in more detail in xxxxxxxxxxx and xxxxxxxx.
+-->

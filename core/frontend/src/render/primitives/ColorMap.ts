@@ -43,21 +43,21 @@ export class ColorMap {
   public empty(): boolean { return this.map.size === 0; }
   public get(key: number): number | undefined { return this.map.get(key); }
 
-  public toColorIndex(index: ColorIndex, colors: Uint32Array, indices: Uint16Array): void {
+  public toColorIndex(index: ColorIndex, indices: Uint16Array): void {
     index.reset();
     if (this.empty()) {
       assert(false, "empty color map");
     } else if (this.isUniform()) {
-      index.setUniform(this.map.keys().next().value);
+      index.initUniform(this.map.keys().next().value);
     } else {
       assert(0 !== indices.length);
 
-      colors = new Uint32Array(this.size());
+      const colors = new Uint32Array(this.size());
       this.map.forEach((item, key) => {
         colors[item] = key;
       });
 
-      index.setNonUniform(this.getNumIndices(), colors, indices, this.hasAlpha);
+      index.initNonUniform(colors, indices, this.hasAlpha);
     }
   }
 }

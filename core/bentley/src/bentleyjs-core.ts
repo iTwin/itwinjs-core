@@ -56,15 +56,15 @@ export * from "./Time";
  * Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism.
  * <p><em>Example:</em>
  * ``` ts
- * [[include:Logging.serviceLoggingExample]($bentleyjs-core.
+ * [[include:Logging.serviceLoggingExample]]
  * ```
  * An example of the logging portion of a configuration .json file that is deployed with a service might be:
  * ``` json
  * {
  *   "loggerConfig": {
- *      "defaultLevel": "${MY-SERVICE-DEFAULT-LOG-LEVEL}",
+ *      "defaultLevel": "${RBS-DEFAULT-LOG-LEVEL}",
  *      "categoryLevels": [
- *          {"category": "MyService", "logLevel": "Trace"},
+ *          {"category": "RBS", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway.BentleyCloudGatewayProtocol", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway.GatewayHttpProtocol", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway", "logLevel": "Trace"},
@@ -77,8 +77,8 @@ export * from "./Time";
  *      ]
  *    },
  *    "seq": {
- *      "hostURL": "${MY-SERVICE-SEQ-URL}",
- *      "port": "${MY-SERVICE-SEQ-PORT}"
+ *      "hostURL": "${RBS-SEQ-URL}",
+ *      "port": "${RBS-SEQ-PORT}"
  *    },
  * }
  * ```

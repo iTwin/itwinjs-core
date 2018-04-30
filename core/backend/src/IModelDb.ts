@@ -294,6 +294,11 @@ export class IModelDb extends IModel {
    *
    * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
    * the already prepared statement from the cache will be reused.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   *
    * @param ecsql The ECSQL statement to execute
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
@@ -314,6 +319,11 @@ export class IModelDb extends IModel {
   /** Execute a query against this IModelDb.
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   *
    * @param ecsql The ECSQL SELECT statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an *array* of values if the parameters are *positional*.
@@ -323,7 +333,6 @@ export class IModelDb extends IModel {
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($imodeljs-common.IModelError) If the statement is invalid
-   * See [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) for more on ECSQL.
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -406,17 +415,22 @@ export class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "", Logger.logError);
 
-    if (!this.briefcase)
-      throw this._newNotOpenError();
-
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
     this.concurrencyControl.onSaveChanges();
 
-    const stat = this.briefcase.nativeDb.saveChanges(description);
+    const stat = this.briefcase!.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
 
     this.concurrencyControl.onSavedChanges();
+  }
+
+  /**
+   * Abandon pending changes in this iModel
+   */
+  public abandonChanges() {
+    this.concurrencyControl.abandonRequest();
+    this.briefcase!.nativeDb.abandonChanges();
   }
 
   /**
@@ -426,9 +440,8 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
-    await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase, version);
-    this.token.changeSetId = this.briefcase.changeSetId;
+    await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase!, version);
+    this.token.changeSetId = this.briefcase!.changeSetId;
     this.initializeIModelDb();
   }
 
@@ -439,10 +452,9 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
-    await BriefcaseManager.pushChanges(accessToken, this.briefcase, description);
-    this.token.changeSetId = this.briefcase.changeSetId;
+    await BriefcaseManager.pushChanges(accessToken, this.briefcase!, description);
+    this.token.changeSetId = this.briefcase!.changeSetId;
     this.initializeIModelDb();
   }
 
@@ -453,8 +465,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the reversal fails.
    */
   public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
-    await BriefcaseManager.reverseChanges(accessToken, this.briefcase, version);
+    await BriefcaseManager.reverseChanges(accessToken, this.briefcase!, version);
     this.initializeIModelDb();
   }
 
@@ -465,8 +476,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the reinstate fails.
    */
   public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
-    await BriefcaseManager.reinstateChanges(accessToken, this.briefcase, version);
+    await BriefcaseManager.reinstateChanges(accessToken, this.briefcase!, version);
     this.initializeIModelDb();
   }
 
@@ -481,15 +491,6 @@ export class IModelDb extends IModel {
     if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
       throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     }
-  }
-
-  /**
-   * Abandon pending changes to this iModel
-   */
-  public abandonChanges() {
-    if (!this.briefcase) throw this._newNotOpenError();
-    this.concurrencyControl.abandonRequest();
-    this.briefcase.nativeDb.abandonChanges();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { BentleyCloudGatewayConfiguration, GatewayElectronConfiguration, GatewayOperation, IModelToken, IModelReadGateway, IModelWriteGateway, StandaloneIModelGateway } from "@bentley/imodeljs-common";
 import { IModelUnitTestGateway } from "@bentley/imodeljs-common/lib/gateway/IModelUnitTestGateway"; // not part of the "barrel"
-import { TestGateway, TestGateway2 } from "../common/TestGateway";
+import { TestGateway, TestGateway2, TestGateway3 } from "../common/TestGateway";
 
 declare var ___TESTBED_IPC_RENDERER___: any;
 
@@ -27,6 +27,8 @@ export class TestbedConfig {
         GatewayOperation.forEach(gateway, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test"));
       }
     }
+
+    GatewayElectronConfiguration.initialize({}, [TestGateway3]);
   }
 
   public static sendToMainSync(msg: TestbedIpcMessage) {

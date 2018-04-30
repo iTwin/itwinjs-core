@@ -122,21 +122,24 @@ export class GatewayRegistry {
     if (registeredImplementation) {
       const implementation = this.setImplementationInstance(definition);
       directProtocol = implementation.configuration.protocol instanceof GatewayDirectProtocol;
+      implementation.configuration.onGatewayImplementationInitialized(definition, implementation);
     }
 
     if (!registeredImplementation || directProtocol) {
       if (this.proxies.has(definition.name))
         throw new IModelError(BentleyStatus.ERROR, `Gateway proxy for "${definition.name}" is already initialized.`);
 
-      const proxy = new (definition as any)();
+      const proxy = new (definition as any)() as T;
       this.proxies.set(definition.name, proxy);
 
       Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
         if (operationName === "constructor")
           return;
 
-        proxy[operationName] = proxy[operationName].bind(proxy, operationName);
+        (proxy as any)[operationName] = (proxy as any)[operationName].bind(proxy, operationName);
       });
+
+      proxy.configuration.onGatewayProxyInitialized(definition, proxy);
     }
   }
 
