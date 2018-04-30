@@ -64,5 +64,17 @@ describe("ColorDef", () => {
     const hsl = yellow.toHSL();
     yellow4 = hsl.toColorDef();
     assert.isTrue(yellow.equals(yellow4));
+
+    color1.tbgr = 0x123456; // no transparency
+    assert.equal(color1.tbgr, 0x123456);
+
+    color1.tbgr = 0xf0123456; // make sure this works if high-bit is set
+    assert.equal(color1.tbgr, 0xf0123456);
+
+    color1.tbgr = 0xff00000000; // try it with a number bigger than 32 bits
+    assert.equal(color1.tbgr, 0); // should get truncated
+
+    color1.tbgr = 1.1;
+    assert.equal(color1.tbgr, 1); // should get rounded down
   });
 });
