@@ -72,6 +72,11 @@ export class WsgError extends ResponseError {
     return responseError;
   }
 
+  /**
+   * Decides whether request should be retried or not
+   * @param error Superagent Error
+   * @param response Superagent Response
+   */
   public static shouldRetry(error: any, response: any): boolean {
     if (response === undefined || response === null) {
       return super.shouldRetry(error, response);
@@ -89,6 +94,11 @@ export class WsgError extends ResponseError {
     return errorCodesToRetry.includes(errorStatus);
   }
 
+  /**
+   * Gets error status from current WSError and HTTP Status type
+   * @param error Superagent Error
+   * @param response Superagent Response
+   */
   private static getErrorStatus(errorId: number, httpStatusType: number): number {
     if (WSError.Unknown !== errorId) {
       return errorId;
@@ -102,6 +112,10 @@ export class WsgError extends ResponseError {
     return WSError.Unknown;
   }
 
+  /**
+   * Get WSError from error string
+   * @param error error to be returned in WSError enum
+   */
   private static getWSErrorId(error: string): number {
     switch (error) {
       case "LoginFailed":

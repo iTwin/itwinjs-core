@@ -133,6 +133,11 @@ export class ResponseError extends Error {
     return error;
   }
 
+  /**
+   * Decides whether request should be retried or not
+   * @param error Superagent Error
+   * @param response Superagent Response
+   */
   public static shouldRetry(error: any, response: any): boolean {
     if (error !== undefined && error !== null) {
       if ((error.status === undefined || error.status === null) && (error.res === undefined || error.res === null)) {

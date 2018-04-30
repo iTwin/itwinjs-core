@@ -245,6 +245,11 @@ export class IModelHubResponseError extends WsgError {
     return wsgError;
   }
 
+  /**
+   * Decides whether request should be retried or not
+   * @param error Superagent Error
+   * @param response Superagent Response
+   */
   public static shouldRetry(error: any, response: any): boolean {
     if (response === undefined || response === null) {
       return super.shouldRetry(error, response);
