@@ -5,7 +5,7 @@ import { Transform } from "@bentley/geometry-core";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { ClipVolume } from "./ClipVolume";
+import { Clip } from "./ClipVolume";
 
 /**
  * Represents a branch node in the scene graph, with associated view flags and transform to be applied to
@@ -15,7 +15,7 @@ export class BranchState {
   public readonly transform: Transform;
   public readonly viewFlags: ViewFlags;
   public readonly symbologyOverrides?: FeatureSymbology.Overrides;
-  public readonly clipVolume?: ClipVolume;
+  public readonly clipVolume?: Clip.Volume;
 
   public constructor(flags?: ViewFlags, transform?: Transform) {
     this.viewFlags = ViewFlags.createFrom(flags);
