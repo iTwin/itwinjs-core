@@ -130,13 +130,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val GUID value
    */
-  public bindGuid(parameter: number | string, val: GuidProps): void { this.getBinder(parameter).bindGuid(ECSqlTypeHelper.toGuidString(val)); }
+  public bindGuid(parameter: number | string, val: GuidProps): void { this.getBinder(parameter).bindGuid(val); }
 
   /** Binds an Id value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64Props): void { this.getBinder(parameter).bindId(ECSqlTypeHelper.toIdString(val)); }
+  public bindId(parameter: number | string, val: Id64Props): void { this.getBinder(parameter).bindId(val); }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -148,19 +148,19 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val Point2d value
    */
-  public bindPoint2d(parameter: number | string, val: XAndY): void { this.getBinder(parameter).bindPoint2d(val.x, val.y); }
+  public bindPoint2d(parameter: number | string, val: XAndY): void { this.getBinder(parameter).bindPoint2d(val); }
 
   /** Binds an Point3d value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Point3d value
    */
-  public bindPoint3d(parameter: number | string, val: XYAndZ): void { this.getBinder(parameter).bindPoint3d(val.x, val.y, val.z); }
+  public bindPoint3d(parameter: number | string, val: XYAndZ): void { this.getBinder(parameter).bindPoint3d(val); }
 
   /** Binds a Range3d as a blob to the specified ECSQL parameter
    * @param parameter Index(1-based) or name of the parameter
    * @param val Range3d value
    */
-  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void { this.bindBlob(parameter, Range3d.toFloat64Array(val).buffer); }
+  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void { this.getBinder(parameter).bindRange3d(val); }
 
   /** Binds an string to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -172,20 +172,28 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val Navigation property value
    */
-  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void { this.getBinder(parameter).bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace); }
+  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void { this.getBinder(parameter).bindNavigation(val); }
 
   /** Binds a struct property value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
    * (of one of the supported types)
    */
-  public bindStruct(parameter: number | string, val: object): void { ECSqlBindingHelper.bindStruct(this.getBinder(parameter), val); }
+  public bindStruct(parameter: number | string, val: object): void { this.getBinder(parameter).bindStruct(val); }
 
   /** Binds an array value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Array value. The array value is an array of values of the supported types
    */
-  public bindArray(parameter: number | string, val: any[]): void { ECSqlBindingHelper.bindArray(this.getBinder(parameter), val); }
+  public bindArray(parameter: number | string, val: any[]): void { this.getBinder(parameter).bindArray(val); }
+
+  /**
+   * Gets a binder to bind a value for an ECSQL parameter
+   * > This is the most low-level API to bind a value to a specific parameter. Alternatively you can use the ECSqlStatement.bindXX methods
+   * > or [ECSqlStatement.bindValues]()$imodeljs-backend.ECSqlStatement.bindValues).
+   * @param parameter Index (1-based) or name of the parameter
+   */
+  public getBinder(parameter: string | number): ECSqlBinder { return new ECSqlBinder(this._stmt!.getBinder(parameter)); }
 
   /** Bind values to all parameters in the statement.
    * @param values The values to bind to the parameters.
@@ -220,8 +228,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       ECSqlBindingHelper.bindValue(this.getBinder(paramName), paramValue);
     }
   }
-
-  private getBinder(param: string | number): NativeECSqlBinder { return this._stmt!.getBinder(param); }
 
   /** Clear any bindings that were previously set on this statement.
    * @throws [IModelError]($imodeljs-common.IModelError) in case of errors
@@ -320,6 +326,160 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
 }
 
+/** Binds a value to an ECSQL parameter.
+ *
+ * See also:
+ *
+ * - [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
+ * - [ECSqlStatement.getBinder]($imodeljs-backend.ECSqlStatement.getBinder)
+ * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL)
+ */
+export class ECSqlBinder {
+  private _binder: NativeECSqlBinder;
+
+  public constructor(binder: NativeECSqlBinder) { this._binder = binder; }
+
+  /** Binds null to the ECSQL parameter. */
+  public bindNull(): void {
+    const stat: DbResult = this._binder.bindNull();
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds a BLOB value to the ECSQL parameter.
+   * @param BLOB value as either an ArrayBuffer or a Base64 string
+   */
+  public bindBlob(blob: string | ArrayBuffer | SharedArrayBuffer): void {
+    const stat: DbResult = this._binder.bindBlob(blob);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds a boolean value to the ECSQL parameter.
+   * @param val Boolean value
+   */
+  public bindBoolean(val: boolean): void {
+    const stat: DbResult = this._binder.bindBoolean(val);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds a DateTime value to the ECSQL parameter.
+   * @param isoDateTimeString DateTime value as ISO8601 string
+   */
+  public bindDateTime(isoDateTimeString: string): void {
+    const stat: DbResult = this._binder.bindDateTime(isoDateTimeString);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds a double value to the ECSQL parameter.
+   * @param val Double value
+   */
+  public bindDouble(val: number): void {
+    const stat: DbResult = this._binder.bindDouble(val);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds an GUID value to the ECSQL parameter.
+   * @param val GUID value. If passed as string, it must be formatted as described in [Guid]($bentleyjs-core.Guid).
+   */
+  public bindGuid(val: GuidProps | ECSqlTypedString): void {
+    const stat: DbResult = this._binder.bindGuid(ECSqlTypeHelper.toGuidString(val));
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds an Id value to the ECSQL parameter.
+   * @param val Id value. If passed as string it must be the hexadecimal representation of the Id.
+   */
+  public bindId(val: Id64Props | ECSqlTypedString): void {
+    const stat: DbResult = this._binder.bindId(ECSqlTypeHelper.toIdString(val));
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds an integer value to the ECSQL parameter.
+   * @param val Integer value as number, decimal string or hexadecimal string.
+   */
+  public bindInteger(val: number | string): void {
+    const stat: DbResult = this._binder.bindInteger(val);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds an Point2d value to the ECSQL parameter.
+   * @param val Point2d value
+   */
+  public bindPoint2d(val: XAndY): void {
+    const stat: DbResult = this._binder.bindPoint2d(val.x, val.y);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds an Point3d value to the ECSQL parameter.
+   * @param val Point3d value
+   */
+  public bindPoint3d(val: XYAndZ): void {
+    const stat: DbResult = this._binder.bindPoint3d(val.x, val.y, val.z);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds a Range3d as a blob to the ECSQL parameter.
+   * @param val Range3d value
+   */
+  public bindRange3d(val: LowAndHighXYZ): void {
+    const stat: DbResult = this._binder.bindBlob(Range3d.toFloat64Array(val).buffer);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds an string to the ECSQL parameter.
+   * @param val String value
+   */
+  public bindString(val: string): void {
+    const stat: DbResult = this._binder.bindString(val);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds a navigation property value to the ECSQL parameter.
+   * @param val Navigation property value
+   */
+  public bindNavigation(val: NavigationBindingValue): void {
+    const stat: DbResult = this._binder.bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace);
+    if (stat !== DbResult.BE_SQLITE_OK)
+        throw new IModelError(stat);
+  }
+
+  /** Binds a struct property value to the ECSQL parameter.
+   * @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
+   * (of one of the supported types)
+   */
+  public bindStruct(val: object): void { ECSqlBindingHelper.bindStruct(this, val); }
+
+  /** Gets the binder for the specified member of a struct parameter
+   *
+   * > This is the most low-level way to bind struct parameters with most flexibility. A simpler alternative is
+   * > to just call [bindStruct]($imodeljs-backend.ECSqlBinder.bindStruct).
+   */
+  public bindMember(memberName: string): ECSqlBinder { return new ECSqlBinder(this._binder.bindMember(memberName)); }
+
+  /** Binds an array value to the ECSQL parameter.
+   * @param val Array value. The array value is an array of values of the supported types
+   */
+  public bindArray(val: any[]): void { ECSqlBindingHelper.bindArray(this, val); }
+
+  /** Adds a new array element to the array parameter and returns the binder for the new array element
+   *
+   * > This is the most low-level way to bind array parameters with most flexibility. A simpler alternative is
+   * > to just call [bindArray]($imodeljs-backend.ECSqlBinder.bindArray).
+   */
+  public addArrayElement(): ECSqlBinder { return new ECSqlBinder(this._binder.addArrayElement()); }
+}
+
 /** Value of a column in a row of an ECSQL query result.
  *
  * See also:
@@ -367,6 +527,7 @@ export class ECSqlValue {
   public getXAndY(): XAndY { return this._val.getPoint2d(); }
   /** Get the value as [XYAndZ]($geometry-core.XYAndZ) */
   public getXYAndZ(): XYAndZ { return this._val.getPoint3d(); }
+
   /** Get the value as [NavigationValue]($imodeljs-common.NavigationValue) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }
 
@@ -458,15 +619,10 @@ class ECSqlBindingHelper {
    * @param val Value to be bound. (See [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes))
    * @throws IModelError in case of errors
    */
-  public static bindValue(binder: NativeECSqlBinder, val: any): void {
-    // returns undefined if val is no primitive and returns DbResult if it is primitive and a binding call was done
-    const primStat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
-    if (primStat !== undefined) {
-      if (primStat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(primStat);
-
+  public static bindValue(binder: ECSqlBinder, val: any): void {
+    // returns false if val is no primitive and returns true if it is primitive and a binding call was done
+    if (ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val))
       return;
-    }
 
     if (Array.isArray(val)) {
       ECSqlBindingHelper.bindArray(binder, val);
@@ -487,13 +643,9 @@ class ECSqlBindingHelper {
    *  null | undefined, boolean, number, string, DateTime, Blob, Id64, XY, XYZ, NavigationValue
    * @throws IModelError in case of errors
    */
-  public static bindPrimitive(binder: NativeECSqlBinder, val: any): void {
-    const stat: DbResult | undefined = ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val);
-    if (stat === undefined)
+  public static bindPrimitive(binder: ECSqlBinder, val: any): void {
+    if (!ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val))
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Binding value is of an unsupported primitive type: ${val}`);
-
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat);
   }
 
   /** Binds the specified object to the specified struct binder
@@ -501,12 +653,9 @@ class ECSqlBindingHelper {
    * @param val Value to be bound. Must be an Object with members of the supported types
    * @throws IModelError in case of errors
    */
-  public static bindStruct(binder: NativeECSqlBinder, val: object): void {
+  public static bindStruct(binder: ECSqlBinder, val: object): void {
     if (val === null || val === undefined) {
-      const stat: DbResult = binder.bindNull();
-      if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
-
+      binder.bindNull();
       return;
     }
 
@@ -522,12 +671,9 @@ class ECSqlBindingHelper {
    * @param val Value to be bound. Must be an Array with elements of the supported types
    * @throws IModelError in case of errors
    */
-  public static bindArray(binder: NativeECSqlBinder, val: any[]): void {
+  public static bindArray(binder: ECSqlBinder, val: any[]): void {
     if (val === null || val === undefined) {
-      const stat: DbResult = binder.bindNull();
-      if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
-
+      binder.bindNull();
       return;
     }
 
@@ -539,41 +685,72 @@ class ECSqlBindingHelper {
   /** tries to interpret the passed value as known leaf types (primitives and navigation values).
    *  @returns Returns undefined if the value wasn't a primitive. DbResult if it was a primitive and was bound to the binder
    */
-  private static tryBindPrimitiveTypes(binder: NativeECSqlBinder, val: any): DbResult | undefined {
-    if (val === undefined || val === null)
-      return binder.bindNull();
+  private static tryBindPrimitiveTypes(binder: ECSqlBinder, val: any): boolean {
+    if (val === undefined || val === null) {
+      binder.bindNull();
+      return true;
+    }
 
-    if (typeof (val) === "number")
-      return Number.isInteger(val) ? binder.bindInteger(val) : binder.bindDouble(val);
+    if (typeof (val) === "number") {
+      if (Number.isInteger(val))
+        binder.bindInteger(val);
+      else
+       binder.bindDouble(val);
 
-    if (typeof (val) === "boolean")
-      return binder.bindBoolean(val);
+      return true;
+    }
 
-    if (typeof (val) === "string")
-      return binder.bindString(val);
+    if (typeof (val) === "boolean") {
+      binder.bindBoolean(val);
+      return true;
+    }
 
-    if (ECSqlTypeHelper.isBlob(val))
-      return binder.bindBlob(val);
+    if (typeof (val) === "string") {
+      binder.bindString(val);
+      return true;
+    }
 
-    if (ECSqlTypeHelper.isDateTime(val))
-      return binder.bindDateTime(val.value);
+    if (ECSqlTypeHelper.isBlob(val)) {
+      binder.bindBlob(val);
+      return true;
+    }
 
-    if (ECSqlTypeHelper.isIdString(val) || val instanceof Id64)
-      return binder.bindId(ECSqlTypeHelper.toIdString(val));
+    if (ECSqlTypeHelper.isDateTime(val)) {
+      binder.bindDateTime(val.value);
+      return true;
+    }
 
-    if (ECSqlTypeHelper.isGuidString(val) || val instanceof Guid)
-      return binder.bindGuid(ECSqlTypeHelper.toGuidString(val));
+    if (ECSqlTypeHelper.isIdString(val) || val instanceof Id64) {
+      binder.bindId(val);
+      return true;
+    }
 
-    if (ECSqlTypeHelper.isXYAndZ(val))
-      return binder.bindPoint3d(val.x, val.y, val.z);
+    if (ECSqlTypeHelper.isGuidString(val) || val instanceof Guid) {
+      binder.bindGuid(val);
+      return true;
+    }
 
-    if (ECSqlTypeHelper.isXAndY(val))
-      return binder.bindPoint2d(val.x, val.y);
+    if (ECSqlTypeHelper.isXYAndZ(val)) {
+      binder.bindPoint3d(val);
+      return true;
+    }
 
-    if (ECSqlTypeHelper.isNavigationBindingValue(val))
-      return binder.bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace);
+    if (ECSqlTypeHelper.isXAndY(val)) {
+      binder.bindPoint2d(val);
+      return true;
+    }
 
-    return undefined;
+    if (ECSqlTypeHelper.isLowAndHighXYZ(val)) {
+      binder.bindRange3d(val);
+      return true;
+    }
+
+    if (ECSqlTypeHelper.isNavigationBindingValue(val)) {
+      binder.bindNavigation(val);
+      return true;
+    }
+
+    return false;
   }
 }
 
@@ -782,6 +959,7 @@ class ECSqlTypeHelper {
 
   public static isXAndY(val: any): val is XAndY { return XYZ.isXAndY(val); }
   public static isXYAndZ(val: any): val is XYAndZ { return XYZ.isXYAndZ(val); }
+  public static isLowAndHighXYZ(arg: any): arg is LowAndHighXYZ { return arg.low !== undefined && ECSqlTypeHelper.isXYAndZ(arg.low) && arg.high !== undefined && ECSqlTypeHelper.isXYAndZ(arg.high); }
 
   public static isNavigationBindingValue(val: any): val is NavigationBindingValue { return val.id !== undefined && (ECSqlTypeHelper.isIdString(val.id) || typeof (val.id) === "string" || val.id instanceof Id64); }
 }

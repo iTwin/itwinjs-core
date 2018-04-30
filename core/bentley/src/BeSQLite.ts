@@ -116,20 +116,6 @@ export const enum DbResult {
 }
 
 /**
- * TO BE DEPRECATED
- */
-export const enum ChangeSetProcessOption {
-  /** ChangeSet won't be used for upgrade */
-  None = 0,
-  /** ChangeSet will be merged into the Db */
-  Merge,
-  /** ChangeSet that was previously merged will be reversed from the Db */
-  Reverse,
-  /** ChangeSet that was previously reversed will be reinstated into the Db */
-  Reinstate,
-}
-
-/**
  * Option to apply change sets
  * This should be kept consistent with RevisionProcessOption defined in DgnDomain.h
  */

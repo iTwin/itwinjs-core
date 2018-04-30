@@ -18,7 +18,7 @@
     "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
   ],
   "dependencies": {
-    "@bentley/bentleyjs-core": "7",
+    "@bentley/bentleyjs-core": "8",
     "@bentley/geometry-core": "7",
     "@bentley/imodeljs-backend": "0",
     "@bentley/imodeljs-n_8-win32-x64": "~17.0.0",
