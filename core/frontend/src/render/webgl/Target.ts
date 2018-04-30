@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Transform, Vector3d, Point3d, ClipPlane, ClipVector } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan  } from "../System";
-import { ViewFlags } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -126,7 +126,6 @@ export class Clips {
 
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
-  private readonly _viewMatrix = Transform.createIdentity();
   private _scene = new GraphicList();
   private _decorations = new Decorations();
   private _dynamics?: DecorationList;
@@ -136,18 +135,28 @@ export abstract class Target extends RenderTarget {
   private _flashedElemId = Id64.invalidId;
   private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
+  private _transparencyThreshold: number = 0;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
+  public readonly bgColor = ColorDef.white.clone();
+  public readonly monoColor = ColorDef.white.clone();
+  public readonly hiliteSettings = new Hilite.Settings();
+  public readonly planFrustum = new Frustum();
+  public readonly nearPlaneCenter = new Point3d();
+  public readonly viewMatrix = Transform.createIdentity();
+  public readonly projectionMatrix = Matrix4d.createIdentity();
 
   protected constructor() {
     super();
   }
 
+  public get transparencyThreshold(): number { return this._transparencyThreshold; }
+  public get techniques(): Techniques { return System.instance.techniques!; }
+
   public get hilite(): HilitedSet { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
-  public get techniques(): Techniques { return System.instance.techniques!; }
 
   public get flashedElemId(): Id64 { return this._flashedElemId; }
   public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
@@ -187,8 +196,6 @@ export abstract class Target extends RenderTarget {
     this._stack.pop();
   }
 
-  public get viewMatrix() { return this._viewMatrix; }
-
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }
@@ -226,7 +233,136 @@ export abstract class Target extends RenderTarget {
     this._dcAssigned = false;
   }
 
-  public changeRenderPlan(_plan: RenderPlan): void {
+  private static scratch = {
+    viewFlags: new ViewFlags(),
+    nearCenter: new Point3d(),
+    viewX: new Vector3d(),
+    viewY: new Vector3d(),
+    viewZ: new Vector3d(),
+    vec3: new Vector3d(),
+    point3: new Point3d(),
+  };
+
+  public changeRenderPlan(plan: RenderPlan): void {
+    // ###TODO if (this._dcAssigned && plan.is3d !== this.is3d)) {
+    // ###TODO   // changed the dimensionality of the Target. World decorations no longer valid.
+    // ###TODO   this.worldDecorations = undefined;
+    // ###TODO }
+
+    this.assignDC();
+
+    this.bgColor.setFrom(plan.bgColor);
+    this.monoColor.setFrom(plan.monoColor);
+    this.hiliteSettings.copyFrom(plan.hiliteSettings);
+    this._transparencyThreshold = 0.0;
+
+    // ##TODO active volume...
+    // ###TODO hidden line params...
+
+    const scratch = Target.scratch;
+    const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
+    let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
+    switch (vf.renderMode) {
+      case RenderMode.Wireframe: {
+        // Edge overrides never apply in wireframe mode
+        vf.setShowVisibleEdges(false);
+        vf.setShowHiddenEdges(false);
+        forceEdgesOpaque = false;
+        break;
+      }
+      case RenderMode.SmoothShade: {
+        // Hidden edges require visible edges
+        if (!vf.showVisibleEdges()) {
+          vf.setShowHiddenEdges(false);
+        }
+
+        break;
+      }
+      case RenderMode.SolidFill:
+        // ###TODO: handle color override...
+      case RenderMode.HiddenLine: {
+        // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
+        vf.setShowVisibleEdges(true);
+
+        assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
+        if (undefined !== plan.hline) {
+          // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
+          // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
+          let threshold = plan.hline.transparencyThreshold;
+          threshold = Math.min(1.0, Math.max(0.0, threshold));
+          this._transparencyThreshold = 1.0 - threshold;
+        }
+
+        break;
+      }
+    }
+
+    assert(forceEdgesOpaque === forceEdgesOpaque); // ###TODO currently unused...
+    this._stack.setViewFlags(vf);
+
+    plan.frustum.clone(this.planFrustum);
+
+    const farLowerLeft = plan.frustum.getCorner(Npc.LeftBottomRear);
+    const farLowerRight = plan.frustum.getCorner(Npc.RightBottomRear);
+    const farUpperLeft = plan.frustum.getCorner(Npc.LeftTopRear);
+    const farUpperRight = plan.frustum.getCorner(Npc.RightTopRear);
+    const nearLowerLeft = plan.frustum.getCorner(Npc.LeftBottomFront);
+    const nearLowerRight = plan.frustum.getCorner(Npc.RightBottomFront);
+    const nearUpperLeft = plan.frustum.getCorner(Npc.LeftTopFront);
+    const nearUpperRight = plan.frustum.getCorner(Npc.RightTopFront);
+
+    const nearCenter = nearLowerLeft.interpolate(0.5, nearUpperRight, scratch.nearCenter);
+
+    const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, scratch.viewX);
+    const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, scratch.viewY);
+    const viewZ = viewX.crossProduct(viewY, scratch.viewZ).normalize()!;
+
+    if (!plan.is3d) {
+      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
+      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
+      const depth = 2 * RenderTarget.frustumDepth2d;
+
+      this.nearPlaneCenter.set(nearCenter.x, nearCenter.y, RenderTarget.frustumDepth2d);
+
+      lookIn(this.nearPlaneCenter, viewX, viewY, viewZ, this.viewMatrix);
+      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
+
+      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
+      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee);
+    } else if (plan.fraction > 0.999) { // ortho
+      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
+      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
+      const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3).magnitude();
+
+      lookIn(nearCenter, viewX, viewY, viewZ, this.viewMatrix);
+      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
+
+      this.nearPlaneCenter.setFrom(nearLowerLeft);
+      this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
+
+      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
+      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.Orthographic);
+    } else { // perspective
+      const scale = 1.0 / (1.0 - plan.fraction);
+      const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3);
+      const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, scratch.point3);
+
+      const frustumLeft = dotDifference(farLowerLeft, cameraPosition, viewX) * plan.fraction;
+      const frustumRight = dotDifference(farLowerRight, cameraPosition, viewX) * plan.fraction;
+      const frustumBottom = dotDifference(farLowerLeft, cameraPosition, viewY) * plan.fraction;
+      const frustumTop = dotDifference(farUpperLeft, cameraPosition, viewY) * plan.fraction;
+      const frustumFront = -dotDifference(nearLowerLeft, cameraPosition, viewZ);
+      const frustumBack = -dotDifference(farLowerLeft, cameraPosition, viewZ);
+
+      lookIn(cameraPosition, viewX, viewY, viewZ, this.viewMatrix);
+      frustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumFront, frustumBack, this.projectionMatrix);
+
+      this.nearPlaneCenter.setFrom(nearLowerLeft);
+      this.nearPlaneCenter.interpolate(0.5, nearUpperRight);
+
+      this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
+      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
+    }
   }
 
   public drawFrame(): void {
@@ -267,4 +403,54 @@ export class OffScreenTarget extends Target {
   protected makeCurrent(): void { }
   protected beginPaint(): void { }
   protected endPaint(): void { }
+}
+
+function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3d {
+  const result = undefined !== out ? out : new Vector3d();
+  result.x = p0.x - p1.x;
+  result.y = p0.y - p1.y;
+  result.z = p0.z - p1.z;
+  result.normalize();
+  return result;
+}
+
+function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
+  const result = undefined !== out ? out : new Point3d();
+  result.x = p.x + v.x * scale;
+  result.y = p.y + v.y * scale;
+  result.z = p.z + v.z * scale;
+  return result;
+}
+
+function dotDifference(pt: Point3d, origin: Point3d, vec: Vector3d): number {
+  return (pt.x - origin.x) * vec.x + (pt.y - origin.y) * vec.y + (pt.z - origin.z) * vec.z;
+}
+
+function lookIn(eye: Point3d, viewX: Vector3d, viewY: Vector3d, viewZ: Vector3d, result: Transform) {
+  const rot = result.matrix.coffs;
+  rot[0] = viewX.x; rot[1] = viewX.y; rot[2] = viewX.z;
+  rot[3] = viewY.x; rot[4] = viewY.y; rot[5] = viewY.z;
+  rot[6] = viewZ.x; rot[7] = viewZ.y; rot[8] = viewZ.z;
+
+  result.origin.x = -viewX.dotProduct(eye);
+  result.origin.y = -viewY.dotProduct(eye);
+  result.origin.z = -viewZ.dotProduct(eye);
+}
+
+function ortho(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
+  Matrix4d.createRowValues(
+    2.0 / (right - left), 0.0, 0.0, -(right + left) / (right - left),
+    0.0, 2.0 / (top - bottom), 0.0, -(top + bottom) / (top - bottom),
+    0.0, 0.0, -2.0 / (far - near), -(far + near) / (far - near),
+    0.0, 0.0, 0.0, 1.0,
+    result);
+}
+
+function frustum(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
+  Matrix4d.createRowValues(
+    (2.0 * near) / (right - left), 0.0, (right + left) / (right - left), 0.0,
+    0.0, (2.0 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0,
+    0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
+    0.0, 0.0, -1.0, 0.0,
+    result);
 }

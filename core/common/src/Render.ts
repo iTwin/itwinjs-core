@@ -923,6 +923,22 @@ export namespace Hilite {
     }
     /** Change the color, preserving all other settings */
     public setColor(color: ColorDef) { this.color.setFrom(color); }
+
+    public clone(out?: Settings): Settings {
+      if (undefined !== out) {
+        out.copyFrom(this);
+        return out;
+      } else {
+        return new Settings(this.color, this.visibleRatio, this.hiddenRatio, this.silhouette);
+      }
+    }
+
+    public copyFrom(other: Settings): void {
+      this.color.setFrom(other.color);
+      this.visibleRatio = other.visibleRatio;
+      this.hiddenRatio = other.hiddenRatio;
+      this.silhouette = other.silhouette;
+    }
   }
 }
 

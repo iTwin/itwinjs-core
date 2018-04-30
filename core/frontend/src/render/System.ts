@@ -111,6 +111,8 @@ export class GraphicBranch {
  * Every DgnViewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget {
+  public static get frustumDepth2d(): number { return 1.0; } // one meter
+
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
 
