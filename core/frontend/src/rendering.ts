@@ -10,6 +10,7 @@ export * from "./render/primitives/Strokes";
 export * from "./render/primitives/VertexKey";
 export * from "./render/webgl/BranchState";
 export * from "./render/webgl/CachedGeometry";
+export * from "./render/webgl/ClipVolume";
 export * from "./render/webgl/DrawCommand";
 export * from "./render/webgl/EdgeOverrides";
 export * from "./render/webgl/FeatureDimensions";

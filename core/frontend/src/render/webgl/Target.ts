@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ClipShape, ClipVector, Transform, Vector3d, Point3d, ClipPlane, ConvexClipPlaneSet, ClipPlaneSet } from "@bentley/geometry-core";
+import { Transform, Vector3d, Point3d, ClipPlane } from "@bentley/geometry-core";
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem } from "../System";
 import { ViewFlags } from "@bentley/imodeljs-common";
@@ -66,74 +66,57 @@ export class FrustumUniforms {
 }
 
 /** Interface for GPU clipping. Max of 6 planes of clipping; no nesting */
-export class GLESClips {
-  private clips: Float32Array;
-  private clipCount: number;
-  private clipActive: number;  // count of SetActiveClip nesting (only outermost used)
+export class Clips {
+  private readonly _clips: Float32Array;
+  private _clipCount: number;
+  private _clipActive: number;  // count of SetActiveClip nesting (only outermost used)
 
   public constructor() {
-    this.clipCount = 0;
-    this.clipActive = 0;
+    this._clipCount = 0;
+    this._clipActive = 0;
     const data = [];
     for (let i = 0; i < 6 * 4; i++) {
       data[i] = 0.0;
     }
-    this.clips = new Float32Array(data);
+
+    this._clips = new Float32Array(data);
   }
 
-  /** Only simple clip planes supported in shader... ###TODO more complex clips must be applied to geometry beforehand. */
-  public static convertClipToPlanes(clipVec: ClipVector, clipPlanes: ClipPlane[]): number {
-    if (undefined === clipVec || 1 !== clipVec.clips.length)
-      return 0;
-
-    const clipPrim: ClipShape = clipVec.clips[0];
-    const clipPlanesRef: ClipPlaneSet = clipPrim.fetchClipPlanesRef();
-    const convexClipPlaneSets: ConvexClipPlaneSet[] = clipPlanesRef.convexSets;
-    if (undefined === convexClipPlaneSets || 1 !== convexClipPlaneSets.length)
-      return 0;
-
-    const planes = convexClipPlaneSets[0].planes;
-    const clipCount: number = planes.length;
-    if (clipCount === 0 || clipCount > 6)
-      return 0;
-
-    for (let i = 0; i < clipCount; i++)
-      clipPlanes[i] = planes[i];
-
-    return clipCount;
-  }
-
-  public setClips(count: number, planes: ClipPlane[], viewMatrix: Transform): void {
-    this.clipActive++;
-    if (1 === this.clipActive) {
-      this.clipCount = count;
+  public setFrom(planes: ClipPlane[], viewMatrix: Transform): void {
+    this._clipActive++;
+    if (1 === this._clipActive) {
+      const count = planes.length;
+      this._clipCount = count;
       for (let i = 0; i < count; ++i) {
         // Transform direction of clip plane
         const norm: Vector3d = planes[i].inwardNormalRef;
         const dir: Vector3d = viewMatrix.multiplyVector(norm);
         dir.normalizeInPlace();
-        this.clips[i * 4] = dir.x;
-        this.clips[i * 4 + 1] = dir.y;
-        this.clips[i * 4 + 2] = dir.z;
+        this._clips[i * 4] = dir.x;
+        this._clips[i * 4 + 1] = dir.y;
+        this._clips[i * 4 + 2] = dir.z;
 
         // Transform distance of clip plane
         const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
         const xFormPos: Point3d = viewMatrix.multiplyPoint(pos);
-        this.clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
+        this._clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
       }
     }
   }
 
-  public clearClips(): void {
-    if (this.clipActive === 1)
-      this.clipCount = 0;
-    if (this.clipActive > 0)
-      this.clipActive--;
+  public clear(): void {
+    if (this._clipActive === 1) {
+      this._clipCount = 0;
+    }
+
+    if (this._clipActive > 0) {
+      this._clipActive--;
+    }
   }
 
-  public getClips(): Float32Array { return this.clips; }
-  public getClipCount(): number { return this.clipCount; }
-  public isValid(): boolean { return this.getClipCount() > 0; }
+  public get clips(): Float32Array { return this._clips; }
+  public get length(): number { return this._clipCount; }
+  public get isValid(): boolean { return this.length > 0; }
 }
 
 export class Target extends RenderTarget {
@@ -142,6 +125,8 @@ export class Target extends RenderTarget {
   protected _overridesUpdateTime?: BeTimePoint;
   protected _hilite?: HilitedSet;
   protected _hiliteUpdateTime?: BeTimePoint;
+  private readonly _viewMatrix = Transform.createIdentity();
+  private readonly _clips = new Clips();
 
   public get renderSystem(): RenderSystem { return System.instance; }
   public get hilite(): HilitedSet { return this._hilite!; }
@@ -161,6 +146,8 @@ export class Target extends RenderTarget {
   public get currentViewFlags() { return this._tempViewFlags; } // ###TODO BranchStack...
 
   public get currentTransform() { return Transform.createIdentity(); } // ###TODO return one from top of BranchStack...
+  public get viewMatrix() { return this._viewMatrix; }
+  public get clips() { return this._clips; }
 }
 
 export class OnScreenTarget extends Target {
