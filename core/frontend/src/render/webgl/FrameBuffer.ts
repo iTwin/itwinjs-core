@@ -2,67 +2,107 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-// import { assert } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
-// import { GLDisposable } from "./GLDisposable";
+import { GL } from "./GL";
+import { System } from "./System";
 
 export type DepthBuffer = RenderBuffer | TextureHandle;
 
-export const enum FrameBufferState {
+export const enum FrameBufferBindState {
   Unbound,
   Bound,
   BoundWithAttachments,
   Suspended,
 }
 
-/*
-export class FrameBuffer implements GLDisposable {
-  private _glFbo?: WebGLFramebuffer;
-  private _state: FrameBufferState;
-  private readonly _colorTextures: TextureHandle[];
-  private readonly _depthBuffer?: DepthBuffer;
+export class FrameBuffer implements IDisposable {
+  private _fbo?: WebGLFramebuffer;
+  private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
+  private readonly colorTextures: TextureHandle[] = [];
+  private readonly colorAttachments: GLenum[] = [];
+  public readonly depthBuffer?: DepthBuffer;
   // ###TODO gl.drawBuffersEXT()...private readonly _activeColorAttachments = new Array<number>();
 
-  public get isValid(): boolean { return gl.FRAMEBUFFER_COMPLETE === checkStatus(); }
-  public get isBound(): boolean { return FrameBufferState.Bound === this._state; }
-  public get isSuspended(): boolean { return FrameBufferState.Suspended === this._state; }
+  public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
+  public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState; }
+  public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
+  public getColor(ndx: number): TextureHandle { return this.colorTextures[ndx]; }
 
-  public static createForColors(gl: WebGLRenderingContext, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer): FrameBuffer {
-    const glBuffer = gl.createRenderbuffer();
-    if (null === glBuffer) {
+  private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
+    this._fbo = fbo;
+    const gl: WebGLRenderingContext = System.instance.context;
+
+    this.bind(false);
+
+    let i: number = 0;
+    for (const colTex of colorTextures) {
+      const attachmentEnum: GLenum = gl.COLOR_ATTACHMENT0 + i;
+      this.colorAttachments.push(attachmentEnum);
+      this.colorTextures.push(colTex);
+      const texHandle = colTex.getHandle();
+      if (undefined !== texHandle)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentEnum, gl.TEXTURE_2D, texHandle, 0);
+      i++;
+    }
+
+    if (depthBuffer !== undefined) {
+      this.depthBuffer = depthBuffer;
+      const dbHandle = depthBuffer.getHandle();
+      if (undefined !== dbHandle) {
+        if (depthBuffer instanceof RenderBuffer) {
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
+        } else {
+          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, dbHandle);
+        }
+      }
+    }
+
+    this.unbind();
+  }
+
+  public static create(colorTextures: TextureHandle[], depthBuffer?: DepthBuffer): FrameBuffer | undefined {
+    const fbo: WebGLFramebuffer | null = System.instance.context.createFramebuffer();
+    if (null === fbo) {
       return undefined;
     }
-    assert(0 < width && 0 < height);
-    RenderBuffer.bindBuffer(gl, glBuffer);
-    gl.renderbufferStorage(GL.RenderBuffer.TARGET, format, width, height);
-    RenderBuffer.unbind(gl);
-
-    return new RenderBuffer(glBuffer);
+    return new FrameBuffer(fbo, colorTextures, depthBuffer);
   }
 
-  public dispose(gl: WebGLRenderingContext): void {
+  public dispose(): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
-    if (undefined !== this._glFbo) {
-      gl.deleteFramebuffer(this._glFbo);
-      this._glFbo = undefined;
+    if (undefined !== this._fbo) {
+      System.instance.context.deleteFramebuffer(this._fbo);
+      this._fbo = undefined;
     }
   }
 
-  public bind(gl: WebGLRenderingContext, andAttachments = true) {
-    assert(undefined !== this._glFbo);
-    if (undefined !== this._glFbo) {
-      FrameBuffer.bindBuffer(gl, this._glFbo, andAttachments);
+  public bind(bindAttachments: boolean = false): boolean {
+    assert(undefined !== this._fbo);
+    assert(!this.isBound);
+
+    if (undefined === this._fbo)
+      return false;
+
+    const gl: WebGLRenderingContext = System.instance.context;
+
+    gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
+    if (!this.isBound || !this.isValid)
+      return false;
+
+    if (bindAttachments) {
+      // ### TODO glDrawBuffers
+      // gl.drawBuffersEXT(this._colorTextures.size, this._colorTextures);
+      // check retVal?
+      this._bindState = FrameBufferBindState.BoundWithAttachments;
+    } else {
+      this._bindState = FrameBufferBindState.Bound;
     }
+    return true;
   }
 
-  private constructor(glFbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
-  }
-
-  private static bindBuffer(gl: WebGLRenderingContext, glFbo: WebGLFramebuffer | null, andAttachments) {
-    gl.bindFramebuffer(GL.FrameBuffer.TARGET, glFbo);
-    assert(andAttachments || !andAttachments); // ###TODO: gl.drawBuffersEXT()...
-  }
-  private static unbind(gl: WebGLRenderingContext) { this.bindBuffer(gl, null, false); }
+  public unbind() { assert(this.isBound);  System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null); }
+  public suspend() { assert(this.isBound);  this._bindState = FrameBufferBindState.Suspended; }
+  public checkStatus(): GLenum { return System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET); }
 }
-*/

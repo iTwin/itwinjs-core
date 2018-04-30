@@ -75,6 +75,8 @@ export class TextureHandle implements IDisposable {
   private _glTexture?: WebGLTexture;
   private _isValid = true;
 
+  public getHandle() { return this._glTexture; }
+
   // ###TODO: Do gl.createTexture() immediately - we only did that lazily in C++ because of threading concerns...
   public constructor(params: TextureParams) {
     this._params = params;

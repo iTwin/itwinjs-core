@@ -9,6 +9,8 @@ import { System } from "./System";
 export class RenderBuffer implements IDisposable {
   private _glBuffer?: WebGLRenderbuffer;
 
+  public getHandle() { return this._glBuffer; }
+
   public static create(width: number, height: number, format = GL.RenderBuffer.Format.DepthComponent) {
     const gl: WebGLRenderingContext = System.instance.context;
 
