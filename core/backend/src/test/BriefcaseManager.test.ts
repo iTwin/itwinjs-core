@@ -2,7 +2,7 @@ import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { expect, assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
-import { Id64, OpenMode, DbOpcode, BeEvent, DbResult, ChangeSetProcessOption } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, DbOpcode, BeEvent, ChangeSetApplyOption, ChangeSetStatus } from "@bentley/bentleyjs-core";
 import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "./IModelTestUtils";
 import { ChangeSetToken, KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, IModelHostConfiguration, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../backend";
@@ -19,7 +19,7 @@ let lastAutoPushEventType: AutoPushEventType | undefined;
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.
 function createChangeSet(imodel: IModelDb): ChangeSetToken {
-  const res: ErrorStatusOrResult<DbResult, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
+  const res: ErrorStatusOrResult<ChangeSetStatus, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
   if (res.error)
     throw new IModelError(res.error.status);
 
@@ -31,17 +31,17 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
   IModelJsFs.copySync(token.pathname, csfilename);
   token.pathname = csfilename;
 
-  const result = imodel.briefcase!.nativeDb!.finishCreateChangeSet();
-  if (DbResult.BE_SQLITE_OK !== result)
-    throw new IModelError(result);
+  const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.finishCreateChangeSet();
+  if (ChangeSetStatus.Success !== status)
+    throw new IModelError(status);
 
   return token;
 }
 
 function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
-  const result: DbResult = imodel.briefcase!.nativeDb!.processChangeSets(JSON.stringify([cstoken]), ChangeSetProcessOption.Merge, cstoken.containsSchemaChanges === ContainsSchemaChanges.Yes);
+  const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.applyChangeSets(JSON.stringify([cstoken]), ChangeSetApplyOption.Merge, cstoken.containsSchemaChanges === ContainsSchemaChanges.Yes);
   imodel.onChangesetApplied.raiseEvent();
-  assert.equal(result, DbResult.BE_SQLITE_OK);
+  assert.equal(status, ChangeSetStatus.Success);
 }
 
 async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
@@ -68,7 +68,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: Access
 
 describe("BriefcaseManager", () => {
   const index = process.argv.indexOf("--offline");
-  const offline: boolean = process.argv[index + 1] === "true";
+  const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;
   const testIModels: TestIModelInfo[] = [
     new TestIModelInfo("ReadOnlyTest"),

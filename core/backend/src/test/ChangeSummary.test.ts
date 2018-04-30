@@ -25,7 +25,7 @@ function setupTest(iModelId: string): void {
 
 describe("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
-  const offline: boolean = process.argv[index + 1] === "true";
+  const offline: boolean = process.argv[index + 1] === "mock";
   let accessToken: AccessToken = new MockAccessToken();
   let testProjectId: string;
   let startTime = new Date().getTime();

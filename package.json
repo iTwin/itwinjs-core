@@ -57,7 +57,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "7",
-    "@bentley/bentleyjs-tools": "^3.3.2",
+    "@bentley/bentleyjs-tools": "^3.4.1",
     "@bentley/geometry-core": "7",
     "@bentley/imodeljs-clients": "5",
     "@types/body-parser": "^1.16.8",

@@ -415,17 +415,22 @@ export class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "", Logger.logError);
 
-    if (!this.briefcase)
-      throw this._newNotOpenError();
-
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
     this.concurrencyControl.onSaveChanges();
 
-    const stat = this.briefcase.nativeDb.saveChanges(description);
+    const stat = this.briefcase!.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError);
 
     this.concurrencyControl.onSavedChanges();
+  }
+
+  /**
+   * Abandon pending changes in this iModel
+   */
+  public abandonChanges() {
+    this.concurrencyControl.abandonRequest();
+    this.briefcase!.nativeDb.abandonChanges();
   }
 
   /**
@@ -435,9 +440,8 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pullAndMergeChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
-    await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase, version);
-    this.token.changeSetId = this.briefcase.changeSetId;
+    await BriefcaseManager.pullAndMergeChanges(accessToken, this.briefcase!, version);
+    this.token.changeSetId = this.briefcase!.changeSetId;
     this.initializeIModelDb();
   }
 
@@ -448,10 +452,9 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the pull and merge fails.
    */
   public async pushChanges(accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
-    await BriefcaseManager.pushChanges(accessToken, this.briefcase, description);
-    this.token.changeSetId = this.briefcase.changeSetId;
+    await BriefcaseManager.pushChanges(accessToken, this.briefcase!, description);
+    this.token.changeSetId = this.briefcase!.changeSetId;
     this.initializeIModelDb();
   }
 
@@ -462,8 +465,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the reversal fails.
    */
   public async reverseChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
-    await BriefcaseManager.reverseChanges(accessToken, this.briefcase, version);
+    await BriefcaseManager.reverseChanges(accessToken, this.briefcase!, version);
     this.initializeIModelDb();
   }
 
@@ -474,8 +476,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] If the reinstate fails.
    */
   public async reinstateChanges(accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    if (!this.briefcase) throw this._newNotOpenError();
-    await BriefcaseManager.reinstateChanges(accessToken, this.briefcase, version);
+    await BriefcaseManager.reinstateChanges(accessToken, this.briefcase!, version);
     this.initializeIModelDb();
   }
 
@@ -490,15 +491,6 @@ export class IModelDb extends IModel {
     if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
       throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     }
-  }
-
-  /**
-   * Abandon pending changes to this iModel
-   */
-  public abandonChanges() {
-    if (!this.briefcase) throw this._newNotOpenError();
-    this.concurrencyControl.abandonRequest();
-    this.briefcase.nativeDb.abandonChanges();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.

@@ -17,7 +17,7 @@
     "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend && cpx ./src/test/logging.config.json ./lib/test",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "test-offline": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline",
+    "test-offline": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline=\"mock\"",
     "perftest": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
@@ -72,9 +72,9 @@
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~16.0.4",
-    "@bentley/imodeljs-native-platform-node": "~16.0.4",
-    "@bentley/imodeljs-native-platform-electron": "~16.0.4",
+    "@bentley/imodeljs-native-platform-api": "~17.0.0",
+    "@bentley/imodeljs-native-platform-node": "~17.0.0",
+    "@bentley/imodeljs-native-platform-electron": "~17.0.0",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },

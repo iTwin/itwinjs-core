@@ -85,7 +85,7 @@ export const enum DbResult {
   BE_SQLITE_ERROR_ProfileTooNewForReadWrite = (BE_SQLITE_IOERR | (11 << 24)),              // Profile (aka application level schema) of file is too new for read-write access. Therefore file can only be opened read-only.
   BE_SQLITE_ERROR_ProfileTooNew = (BE_SQLITE_IOERR | (12 << 24)),                          // Profile (aka application level SQLite schema) of file is too new. Therefore file cannot be opened.
   BE_SQLITE_ERROR_ChangeTrackError = (BE_SQLITE_IOERR | (13 << 24)),                       // attempt to commit with active changetrack
-  BE_SQLITE_ERROR_InvalidRevisionVersion = (BE_SQLITE_IOERR | (14 << 24)),                 // invalid version of the revision file is being imported
+  BE_SQLITE_ERROR_InvalidChangeSetVersion = (BE_SQLITE_IOERR | (14 << 24)),                 // invalid version of the revision file is being imported
   BE_SQLITE_ERROR_SchemaUpgradeRequired = (BE_SQLITE_IOERR | 15 << 24),                    // The schemas found in the database need to be upgraded.
   BE_SQLITE_ERROR_SchemaTooNew = (BE_SQLITE_IOERR | 16 << 24),                             // The schemas found in the database are too new, and the application needs to be upgraded.
   BE_SQLITE_ERROR_SchemaTooOld = (BE_SQLITE_IOERR | 17 << 24),                             // The schemas found in the database are too old, and the DgnDb needs to be upgraded.
@@ -116,8 +116,7 @@ export const enum DbResult {
 }
 
 /**
- * Options to process change sets
- * This should be kept consistent with RevisionProcessOption defined in DgnDomain.h
+ * TO BE DEPRECATED
  */
 export const enum ChangeSetProcessOption {
   /** ChangeSet won't be used for upgrade */
@@ -129,3 +128,19 @@ export const enum ChangeSetProcessOption {
   /** ChangeSet that was previously reversed will be reinstated into the Db */
   Reinstate,
 }
+
+/**
+ * Option to apply change sets
+ * This should be kept consistent with RevisionProcessOption defined in DgnDomain.h
+ */
+export const enum ChangeSetApplyOption {
+  /** ChangeSet won't be used for upgrade */
+  None = 0,
+  /** ChangeSet will be merged into the Db */
+  Merge,
+  /** ChangeSet that was previously merged will be reversed from the Db */
+  Reverse,
+  /** ChangeSet that was previously reversed will be reinstated into the Db */
+  Reinstate,
+}
+
