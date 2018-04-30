@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 export const enum TechniqueId {
   // Techniques with many different variations
+  Invalid = -1,
   Surface,
   Polyline,
   PointCloud,

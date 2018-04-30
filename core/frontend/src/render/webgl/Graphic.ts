@@ -8,13 +8,14 @@ import { ViewFlags,
          IModel,
          GraphicBranch } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
+import { Primitive } from "./Primitive";
 
 export abstract class Graphic extends RenderGraphic {
   constructor(public readonly iModel: IModel) { super(iModel); }
   // public abstract addCommands(commands: RenderCommands): void;
   // public abstract addHiliteCommands(commands: DrawCommands, batch: Batch): void;
   // public abstract setUniformFeatureIndices(uint32_t): void;
-  // public abstract toPrimitive(): Primitive;
+  public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;
 }
 

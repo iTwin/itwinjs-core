@@ -279,6 +279,8 @@ export class ShaderProgramExecutor implements IDisposable {
 
   public setProgram(program: ShaderProgram) { this.changeProgram(program); }
   public get isValid() { return undefined !== this._program; }
+  public get target() { return this._params.target; }
+  public get renderPass() { return this._params.renderPass; }
 
   public draw(params: DrawParams) {
     assert(this.isValid);

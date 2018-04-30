@@ -159,6 +159,8 @@ export class Target extends RenderTarget {
   }
 
   public get currentViewFlags() { return this._tempViewFlags; } // ###TODO BranchStack...
+
+  public get currentTransform() { return Transform.createIdentity(); } // ###TODO return one from top of BranchStack...
 }
 
 export class OnScreenTarget extends Target {
