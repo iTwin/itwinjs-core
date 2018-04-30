@@ -38,7 +38,7 @@ describe("EdgeOverrides", () => {
     const override = new EdgeOverrides();
     let style = new HiddenLine.Style({ ovrColor: true, color: 0xf00d, width: 0, pattern: 0 });
     let color = FloatPreMulRgba.fromColorDef(style.color);
-    override.init(style, true);
+    override.init(true, style);
     expect(override.overridesColor).to.equal(true);
     expect(override.overridesWeight).to.equal(false);
     expect(override.color!.equals(color)).to.equal(true);
@@ -48,7 +48,7 @@ describe("EdgeOverrides", () => {
 
     style = new HiddenLine.Style({ ovrColor: false, color: 0xf00c, width: 5, pattern: 0xffffffff });
     color = FloatPreMulRgba.fromColorDef(style.color);
-    override.init(style, false);
+    override.init(false, style);
     expect(override.overridesColor).to.equal(false);
     expect(override.overridesWeight).to.equal(true);
     expect(override.weight!).to.equal(style.width);

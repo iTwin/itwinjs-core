@@ -45,11 +45,7 @@ export class EdgeOverrides {
   public get anyOverridden() { return this.overridesColor || this.overridesLineCode || this.overridesWeight || this.overridesAlpha; }
 
   public constructor(style?: HiddenLine.Style, forceOpaque: boolean = false) {
-    if (undefined !== style) {
-      this.init(style, forceOpaque);
-    } else {
-      this._forceOpaque = forceOpaque;
-    }
+    this.init(forceOpaque, style);
   }
 
   public computeOvrFlags(): OvrFlags {
@@ -63,10 +59,16 @@ export class EdgeOverrides {
     return flags;
   }
 
-  public init(style: HiddenLine.Style, forceOpaque: boolean): void {
+  public init(forceOpaque: boolean, style?: HiddenLine.Style): void {
     this._forceOpaque = forceOpaque;
-    this._color = style.ovrColor ? FloatPreMulRgba.fromColorDef(style.color) : undefined;
-    this._weight = style.width !== 0 ? style.width : undefined;
-    this._lineCode = LinePixels.Invalid !== style.pattern ? LineCode.valueFromLinePixels(style.pattern) : undefined;
+    if (undefined === style) {
+      this._color = undefined;
+      this._weight = undefined;
+      this._lineCode = undefined;
+    } else {
+      this._color = style.ovrColor ? FloatPreMulRgba.fromColorDef(style.color) : undefined;
+      this._weight = style.width !== 0 ? style.width : undefined;
+      this._lineCode = LinePixels.Invalid !== style.pattern ? LineCode.valueFromLinePixels(style.pattern) : undefined;
+    }
   }
 }

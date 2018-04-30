@@ -4,7 +4,7 @@
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan  } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -12,6 +12,7 @@ import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
 import { Branch } from "./Graphic";
+import { EdgeOverrides } from "./EdgeOverrides";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -147,6 +148,8 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
+  public readonly visibleEdgeOverrides = new EdgeOverrides();
+  public readonly hiddenEdgeOverrides = new EdgeOverrides();
 
   protected constructor() {
     super();
@@ -241,6 +244,8 @@ export abstract class Target extends RenderTarget {
     viewZ: new Vector3d(),
     vec3: new Vector3d(),
     point3: new Point3d(),
+    visibleEdges: new HiddenLine.Style({}),
+    hiddenEdges: new HiddenLine.Style({}),
   };
 
   public changeRenderPlan(plan: RenderPlan): void {
@@ -257,9 +262,11 @@ export abstract class Target extends RenderTarget {
     this._transparencyThreshold = 0.0;
 
     // ##TODO active volume...
-    // ###TODO hidden line params...
 
     const scratch = Target.scratch;
+    const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
+    const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
+
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
     switch (vf.renderMode) {
@@ -278,8 +285,16 @@ export abstract class Target extends RenderTarget {
 
         break;
       }
-      case RenderMode.SolidFill:
-        // ###TODO: handle color override...
+      case RenderMode.SolidFill: {
+        // In solid fill, if the edge color is not overridden, the edges do not use the element's line color
+        if (undefined !== visEdgeOvrs && !visEdgeOvrs.ovrColor) {
+          // ###TODO? Probably supposed to be contrast with fill and/or background color...
+          assert(undefined !== hidEdgeOvrs);
+          visEdgeOvrs.color.setFrom(ColorDef.white);
+          hidEdgeOvrs!.color.setFrom(ColorDef.white);
+          visEdgeOvrs.ovrColor = hidEdgeOvrs!.ovrColor = true;
+        }
+      } // fall-through intentional...
       case RenderMode.HiddenLine: {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
         vf.setShowVisibleEdges(true);
@@ -297,7 +312,9 @@ export abstract class Target extends RenderTarget {
       }
     }
 
-    assert(forceEdgesOpaque === forceEdgesOpaque); // ###TODO currently unused...
+    this.visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
+    this.hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
+
     this._stack.setViewFlags(vf);
 
     plan.frustum.clone(this.planFrustum);

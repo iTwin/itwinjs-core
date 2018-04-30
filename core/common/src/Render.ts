@@ -591,6 +591,19 @@ export namespace HiddenLine {
     public equals(other: Style): boolean {
       return this.ovrColor === other.ovrColor && this.color === other.color && this.pattern === other.pattern && this.width === other.width;
     }
+
+    public clone(out?: Style): Style {
+      const result = undefined !== out ? out : new Style({});
+      result.copyFrom(this);
+      return result;
+    }
+
+    public copyFrom(other: Style): void {
+      this.ovrColor = other.ovrColor;
+      this.color.setFrom(other.color);
+      this.pattern = other.pattern;
+      this.width = other.width;
+    }
   }
 
   export class Params {
