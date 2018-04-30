@@ -15,8 +15,8 @@
 
 ## Linking to Overview/Learning from Reference
 
-* To Learning:                    `[label]($docs/learning/path/filename.md#section)`  // Proposed: Not implemented yet.
-* To Overview:                    `[label]($docs/overview/path/filename.md#section)`  // Proposed: Not implemented yet.
+* To Learning:                    `[label]($docs/learning/path/filename.md#section)`
+* To Overview:                    `[label]($docs/overview/path/filename.md#section)`
 
 ## Linking to content outside of the site
 
