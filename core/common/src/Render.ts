@@ -771,13 +771,13 @@ export class Material {
 export class GeometryParams {
   public materialId?: Id64; // render material Id.
   public elmPriority?: number; // display priority (applies to 2d only)
-  public weight?: number;
+  public weight?: number; // integer value from 0 to 32
   public lineColor?: ColorDef;
   public fillColor?: ColorDef; // fill color (applicable only if filled)
   public backgroundFill?: BackgroundFill; // support for fill using the view's background color, default BackgroundFill.None
   public fillDisplay?: FillDisplay; // whether or not the element should be displayed filled, default FillDisplay.Never
-  public elmTransparency?: number; // transparency, 1.0 == completely transparent
-  public fillTransparency?: number;  // fill transparency, 1.0 == completely transparent
+  public elmTransparency?: number; // line transparency, 0.0 for completely opaque, 1.0 for completely transparent
+  public fillTransparency?: number;  // fill transparency, 0.0 for completely opaque, 1.0 for completely transparent
   public geometryClass?: GeometryClass; // geometry class, default GeometryClass.Primary
   public styleInfo?: LineStyle.Info; // line style id plus modifiers.
   public gradient?: Gradient.Symb; // gradient fill settings.
