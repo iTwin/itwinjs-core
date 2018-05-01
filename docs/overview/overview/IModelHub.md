@@ -9,9 +9,11 @@ Like [Git](https://git-scm.com/) repositories for source code, in the iModel eco
 1. Every iModel has an [identity](./iModels#every-imodel-has-a-guid) registered in iModelHub.
 2. Users log into iModelHub for authentication.
 3. iModelJs backends have an identity registered with iModelHub.
-4. iModel owners decide which users and which applications have access to their iModels.
+4. iModel owners decide, via iModelHub, which users and which applications have access to their iModels.
 
 When an iModelJs backend opens an iModel, it is first required to verify with iModelHub that the iModel's owner has granted the right for the current user and application to access his data. In this manner owners can maintain control over who-does-what with their iModels, even if someone receives an unauthorized copy<sup>1</sup>.
+
+This means that applications written using iModelJs require a valid project on iModelHub.
 
 ## The Timeline of Changes
 
