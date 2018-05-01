@@ -11,8 +11,9 @@ import { Techniques } from "./Technique";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch } from "./Graphic";
+import { Branch, WorldDecorations } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
+import { ViewRect } from "../../Viewport";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -127,9 +128,10 @@ export class Clips {
 
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
-  private _scene = new GraphicList();
+  private _scene: GraphicList = [];
   private _decorations = new Decorations();
   private _dynamics?: DecorationList;
+  private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
   private _hilite?: HilitedSet;
   private _hiliteUpdateTime = BeTimePoint.now();
@@ -170,11 +172,34 @@ export abstract class Target extends RenderTarget {
   public get scene(): GraphicList { return this._scene; }
   public get decorations(): Decorations { return this._decorations; }
   public get dynamics(): DecorationList | undefined { return this._dynamics; }
+  public getWorldDecorations(decs: DecorationList): WorldDecorations {
+    if (undefined === this._worldDecorations) {
+      assert(0 < decs.length);
+
+      // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
+      const vf = new ViewFlags();
+      vf.setRenderMode(RenderMode.SmoothShade);
+      vf.setShowClipVolume(false);
+      if (this.is2d) {
+        vf.setShowSourceLights(false);
+        vf.setShowCameraLights(false);
+        vf.setShowSolarLight(false);
+      }
+
+      this._worldDecorations = new WorldDecorations(decs[0].graphic.iModel, vf);
+    }
+
+    this._worldDecorations.init(decs);
+    return this._worldDecorations;
+  }
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
+  public get hasClipMask(): boolean { return false; } // ###TODO
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentOverrides(): any { return undefined; } // ###TODO
+  public get currentPickTable(): any { return undefined; } // ###TODO
 
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
@@ -396,8 +421,18 @@ export abstract class Target extends RenderTarget {
 }
 
 export class OnScreenTarget extends Target {
-  public constructor() {
+  private readonly _viewRect = new ViewRect();
+  private readonly _canvas: HTMLCanvasElement;
+
+  public constructor(canvas: HTMLCanvasElement) {
     super();
+    this._canvas = canvas;
+  }
+
+  public get viewRect(): ViewRect {
+    const clientRect = this._canvas.getBoundingClientRect();
+    this._viewRect.init(0, 0, clientRect.width, clientRect.height);
+    return this._viewRect;
   }
 
   // ###TODO...
@@ -411,9 +446,14 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
-  public constructor() {
+  private _viewRect: ViewRect;
+
+  public constructor(rect: ViewRect) {
     super();
+    this._viewRect = new ViewRect(rect.left, rect.bottom, rect.right, rect.top);
   }
+
+  public get viewRect(): ViewRect { return this._viewRect; }
 
   // ###TODO...
   protected assignDC(): boolean { return false; }

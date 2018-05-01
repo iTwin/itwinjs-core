@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="RobotWorld" alias="RobotWorld" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+    <ECSchemaReference name="ECDbMap" version="02.00" alias="ecdbmap"/>
+
+    <ECEntityClass typeName="Robot" modifier="Sealed">
+        <BaseClass>bis:SpatialLocationElement</BaseClass>
+        <ECProperty propertyName="radius" typeName="double" description="the girth of the robot" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Obstacle" modifier="Sealed">
+        <BaseClass>bis:SpatialLocationElement</BaseClass>
+        <ECProperty propertyName="length" typeName="double" description="the length of the barrier" />
+        <ECProperty propertyName="angle" typeName="double" description="the orientation angle of the barrier (degrees)" />
+    </ECEntityClass>
+
+</ECSchema>

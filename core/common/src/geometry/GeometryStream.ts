@@ -4,7 +4,7 @@
 /** @module Geometry */
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, LowAndHighXYZ,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
@@ -44,7 +44,7 @@ export interface AreaFillProps {
   transparency?: number;
   /** Set fill color to view background color. Use [[BackgroundFill.Solid]] for an opaque fill and [[BackgroundFill.Outline]] to display an outline using the line color */
   backgroundFill?: BackgroundFill;
-  /** Set fill color to a specific color. If the fill color is undefined or the same as the line color, it's an opaque fill, otherwise it's an outline fill */
+  /** Set fill color to a specific color. If the fill color the same as the line color, it's an opaque fill, otherwise it's an outline fill */
   color?: ColorDef;
   /** Set fill using gradient properties */
   gradient?: Gradient.SymbProps;
@@ -114,6 +114,14 @@ export class GeometryStreamBuilder {
     this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), angle)!));
   }
 
+  /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of locate and range testing for elements with a GeometryStream
+   * containing more than one GeometryQuery differentiable by range. Not useful for a single GeometryQuery, it's range and that of the GeometricElement are the same.
+   * Ignored when defining a GeometryPart, and not needed when only appending GeometryPart instances to a GeometricElement as these store their own range.
+   */
+  public appendGeometryRanges() {
+    this.geometryStream.push({ subRange: Range3d.createNull() });
+  }
+
   /** Change sub-category or reset to sub-category appearance for subsequent geometry.
    *  An invalid sub-category id can be supplied to force a reset to the current sub-category appearance.
    *  It is not valid to change the sub-category when defining a GeometryPart. GeometryParts inherit the symbology of their instance for anything not explicitly overridden.
@@ -147,7 +155,7 @@ export class GeometryStreamBuilder {
         transparency: geomParams.fillTransparency,
       };
       if (undefined !== geomParams.gradient && Gradient.Mode.None !== geomParams.gradient.mode)
-        fill.gradient = geomParams.gradient;
+        fill.gradient = geomParams.gradient.clone();
       else if (undefined !== geomParams.backgroundFill && BackgroundFill.None !== geomParams.backgroundFill)
         fill.backgroundFill = geomParams.backgroundFill;
       else if (undefined !== geomParams.fillColor)
@@ -156,25 +164,17 @@ export class GeometryStreamBuilder {
     }
 
     if (undefined !== geomParams.pattern) {
-      if (undefined === this.worldToLocal) {
-        this.geometryStream.push({ pattern: geomParams.pattern });
-      } else {
-        const localPattern = geomParams.pattern.clone();
-        if (!localPattern.applyTransform(this.worldToLocal))
-          return false;
-        this.geometryStream.push({ pattern: localPattern });
-      }
+      const localPattern = geomParams.pattern.clone();
+      if (undefined !== this.worldToLocal && !localPattern.applyTransform(this.worldToLocal))
+        return false;
+      this.geometryStream.push({ pattern: localPattern });
     }
 
     if (undefined !== geomParams.styleInfo && undefined !== geomParams.styleInfo.styleMod) {
-      if (undefined === this.worldToLocal) {
-        this.geometryStream.push({ styleMod: geomParams.styleInfo.styleMod });
-      } else {
-        const localStyleMod = new LineStyle.Modifier(geomParams.styleInfo.styleMod);
-        if (!localStyleMod.applyTransform(this.worldToLocal))
-          return false;
-        this.geometryStream.push({ styleMod: localStyleMod });
-      }
+      const localStyleMod = new LineStyle.Modifier(geomParams.styleInfo.styleMod);
+      if (undefined !== this.worldToLocal && !localStyleMod.applyTransform(this.worldToLocal))
+        return false;
+      this.geometryStream.push({ styleMod: localStyleMod });
     }
 
     return true;

@@ -31,7 +31,7 @@ export class TestSchema extends Schema {
         // Must import the schema. The schema must have been delivered by the app in the
         // assets directory. Note that, for portability, make sure the case of
         // the filename is correct!
-        imodeldb.importSchema(KnownLocations.assetsDir + "/TestSchema.ecschema.xml");
+        imodeldb.importSchema(KnownLocations.platformAssetsDir + "/TestSchema.ecschema.xml");
       }
     });
   }

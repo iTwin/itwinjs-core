@@ -33,13 +33,3 @@ Various ECRelationshipClasses are defined in BisCore to relate Models, Elements 
 ## No other Data Types
 
 All BIS information is defined using the `Element`, `ElementAspect`, `Model` classes or by using relationships. BIS domain schemas (other than `BisCore`) can only define classes that (directly or indirectly) subclass classes defined in the `BisCore` domain.
-
-<!-- TODO
-## Breaking Down the World with Models, Elements, ElementAspects and Relationships
-
-All data in an iModel is defined in a hierarchy of `Model`s, `Element`s and `ElementAspect`s, with relationships connecting them, as is shown below:
-
-Xxxxxxxxxxx add figure xxxxxxxxxxx
-
-This hierarchy is described in more detail in xxxxxxxxxxx and xxxxxxxx.
--->

@@ -12,9 +12,9 @@ export function initializeLogging(): void {
   const config = require("./MyService.config.json");
 
   const defaultConfigValues: any = {
-    "RBS-DEFAULT-LOG-LEVEL": "Error",
-    "RBS-SEQ-URL": "http://localhost",
-    "RBS-SEQ-PORT": "5341",
+    "RobotWorld-DEFAULT-LOG-LEVEL": "Error",
+    "RobotWorld-SEQ-URL": "http://localhost",
+    "RobotWorld-SEQ-PORT": "5341",
   };
 
   EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
@@ -25,7 +25,7 @@ export function initializeLogging(): void {
   // Set up to log to the seq service
   if ("seq" in config) {
     if (SeqLoggerConfig.validateProps(config.seq))
-      BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(config.seq as SeqConfig, "MyService"));
+      BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(config.seq as SeqConfig, "RobotWorld"));
   }
 
   // Configure log levels by category

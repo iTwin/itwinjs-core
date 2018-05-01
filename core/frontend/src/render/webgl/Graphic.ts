@@ -1,18 +1,20 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, ViewFlag, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch } from "../System";
+import { RenderGraphic, GraphicBranch, OvrGraphicParams, DecorationList } from "../System";
 import { Clip } from "./ClipVolume";
+import { RenderCommands, DrawCommands } from "./DrawCommand";
 
 export abstract class Graphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
-  // public abstract addCommands(commands: RenderCommands): void;
-  // public abstract addHiliteCommands(commands: DrawCommands, batch: Batch): void;
-  // public abstract setUniformFeatureIndices(uint32_t): void;
+  public /* TODO abstract */ addCommands(_commands: RenderCommands): void { assert(false); } // ###TODO: Implement for Primitive
+  public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); } // ###TODO: Implement for Primitive
+  public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;
 }
@@ -28,11 +30,9 @@ export class Batch extends Graphic {
               // private _pickTable: PickTable
               ) { super(_graphic.iModel); }
   // public onTargetDestroyed(target: Target): void {
-  //   this.imodel.verifyRenderThread();
   //   this._overrides.erase(target);
   // }
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
+  public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
 }
 
 export class Branch extends Graphic {
@@ -51,16 +51,49 @@ export class Branch extends Graphic {
     }
   }
 
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
-  // public push(shader: ShaderProgramExecutor): void {}
-  // public pop(shader: ShaderProgramExecutor): void {}
-  // public setUniformFeatureIndices(uint32_t)
+  public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
+  public assignUniformFeatureIndices(index: number): void {
+    for (const entry of this.branch.entries) {
+      (entry as Graphic).assignUniformFeatureIndices(index);
+    }
+  }
+}
+
+export type WorldDecorationOverrides = OvrGraphicParams | undefined;
+
+export class WorldDecorations extends Branch {
+  public readonly overrides: WorldDecorationOverrides[] = [];
+
+  public constructor(iModel: IModelConnection, viewFlags: ViewFlags) { super(iModel, new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
+
+  public init(decs: DecorationList): void {
+    this.branch.clear();
+    this.overrides.length = 0;
+    for (const dec of decs) {
+      this.branch.add(dec.graphic);
+      this.overrides.push(dec.overrides);
+    }
+  }
 }
 
 export class GraphicsList extends Graphic {
   constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); }
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
-  // public setUniformFeatureIndices(uint32_t)
+
+  public addCommands(commands: RenderCommands): void {
+    for (const graphic of this.graphics) {
+      (graphic as Graphic).addCommands(commands);
+    }
+  }
+
+  public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
+    for (const graphic of this.graphics) {
+      (graphic as Graphic).addHiliteCommands(commands, batch);
+    }
+  }
+
+  public assignUniformFeatureIndices(index: number): void {
+    for (const gf of this.graphics) {
+      (gf as Graphic).assignUniformFeatureIndices(index);
+    }
+  }
 }

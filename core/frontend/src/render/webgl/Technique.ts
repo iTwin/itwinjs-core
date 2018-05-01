@@ -7,7 +7,9 @@ import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "./ShaderBuilder";
-import { DrawParams } from "./DrawCommand";
+import { DrawParams, DrawCommands } from "./DrawCommand";
+import { Target } from "./Target";
+import { RenderPass } from "./RenderFlags";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -52,13 +54,44 @@ export class Techniques implements IDisposable {
     return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length - 1;
   }
 
-  // ###TODO: public draw(target: Target, commands: DrawCommands, pass: RenderPass): void { }
+  private readonly _scratchTechniqueFlags = new TechniqueFlags();
+
+  /** Execute each command in the list */
+  public execute(target: Target, commands: DrawCommands, renderPass: RenderPass) {
+    assert(RenderPass.None !== renderPass);
+
+    const flags = this._scratchTechniqueFlags;
+    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+      for (const command of commands) {
+        command.preExecute(executor);
+
+        const techniqueId = command.getTechniqueId(target);
+        if (TechniqueId.Invalid !== techniqueId) {
+          // A primitive command.
+          assert(command.isPrimitiveCommand);
+          flags.init(target, renderPass);
+          const tech = this.getTechnique(techniqueId);
+          const program = tech.getShader(flags);
+          if (executor.setProgram(program)) {
+            command.execute(executor);
+          }
+        } else {
+          // A branch command.
+          assert(!command.isPrimitiveCommand);
+          command.execute(executor);
+        }
+
+        command.postExecute(executor);
+      }
+    });
+  }
+
+  /** Draw a single primitive. Usually used for special-purpose rendering techniques. */
   public draw(params: DrawParams): void {
     const tech = this.getTechnique(params.geometry.getTechniqueId(params.target));
     const program = tech.getShader(TechniqueFlags.defaults);
-    const executor = new ShaderProgramExecutor(params.target, params.renderPass, program);
-    assert(executor.isValid);
-    using(executor, () => {
+    using(new ShaderProgramExecutor(params.target, params.renderPass, program), (executor: ShaderProgramExecutor) => {
+      assert(executor.isValid);
       if (executor.isValid) {
         executor.draw(params);
       }

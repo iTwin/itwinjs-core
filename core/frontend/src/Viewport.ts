@@ -267,10 +267,10 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState, private _target?: RenderTarget) { this.setCursor(); this.saveViewUndo(); }
+  constructor(public canvas: HTMLCanvasElement, private _view?: ViewState, private _target?: RenderTarget) { this.setCursor(); this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
-  public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
+  public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
 
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
@@ -289,7 +289,7 @@ export class Viewport {
   }
 
   /** change the cursor for this Viewport */
-  public setCursor(cursor: BeCursor = BeCursor.Default) { if (this.canvas) this.canvas.style.cursor = cursor; }
+  public setCursor(cursor: BeCursor = BeCursor.Default) { this.canvas.style.cursor = cursor; }
 
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this.flashedElem) {

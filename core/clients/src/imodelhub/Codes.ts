@@ -30,7 +30,7 @@ export enum CodeState {
 
 /** Base class for Code and MultiCode */
 export class CodeBase extends WsgInstance {
-  /** Code specification ID (hexadecimal ("0XA") or decimal ("10") string)) */
+  /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)) */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
   public codeSpecId?: string;
 
@@ -56,7 +56,7 @@ export class CodeBase extends WsgInstance {
 }
 
 /** Code */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.Code", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.Code", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Code extends CodeBase {
   /** Code value */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Value")
@@ -67,7 +67,7 @@ export class Code extends CodeBase {
  * MultiCode
  * Data about codes grouped by CodeSpecId, State and Briefcase
  */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiCode", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiCode", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiCode extends CodeBase {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Values")
   public values?: string[];
@@ -169,7 +169,7 @@ export class ConflictingCodesError extends IModelHubResponseError {
       this.conflictingCodes = [];
     }
     for (const value of (error.data.ConflictingCodes as any[])) {
-      const instance = {className : "Code", schemaName: "iModelScope", properties : value};
+      const instance = { className: "Code", schemaName: "iModelScope", properties: value };
       const code = ECJsonTypeMap.fromJson<Code>(Code, "wsg", instance);
       if (code) {
         this.conflictingCodes.push(code);

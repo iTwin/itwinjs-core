@@ -5,11 +5,11 @@
 import { Gateway, IModelToken, GatewayDefinition, IModelReadGateway, IModelWriteGateway, BentleyCloudGatewayConfiguration, GatewayElectronConfiguration } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Platform, IModelDb } from "@bentley/imodeljs-backend";
-import { RobotsAndBarriersService } from "./RobotsAndBarriersService";
-import { RBSReadGateway, RBSWriteGateway } from "../common/RBSGatewayDefinition";
+import { RobotWorldEngine } from "./RobotWorldEngine";
+import { RobotWorldReadGateway, RobotWorldWriteGateway } from "../common/RobotWorldGatewayDefinition";
 import { Point3d } from "@bentley/geometry-core";
 
-// RobotsAndBarriersService Gateway Implementations
+// RobotWorldEngine Gateway Implementations
 
 // Definitions must be defined in the service (backend code).
 
@@ -17,48 +17,48 @@ import { Point3d } from "@bentley/geometry-core";
 // to clients and this implementation. They definitions could be defined in a location
 // in the app's source tree that is common to both frontend and backend.
 // If these are service gateways, then they would have to be defined in package.
-// import { RBSWriteGateway, RBSReadGateway } from "@my-domain/RBSGateway";
+// import { ROWriteGateway, ROReadGateway } from "@my-domain/ROGateway";
 
-// Implement RBSWriteGateway
-class RBSWriteGatewayImpl extends Gateway implements RBSWriteGateway {
+// Implement ROWriteGateway
+class RobotWorldWriteGatewayImpl extends Gateway implements RobotWorldWriteGateway {
   public static register() {
-    Gateway.registerImplementation(RBSWriteGateway, RBSWriteGatewayImpl);
+    Gateway.registerImplementation(RobotWorldWriteGateway, RobotWorldWriteGatewayImpl);
   }
   public async insertRobot(iModelToken: IModelToken, name: string, location: Point3d): Promise<Id64> {
-    return RobotsAndBarriersService.insertRobot(IModelDb.find(iModelToken), name, location);
+    return RobotWorldEngine.insertRobot(IModelDb.find(iModelToken), name, location);
   }
 
   public async moveRobot(iModelToken: IModelToken, id: Id64, location: Point3d): Promise<void> {
-    RobotsAndBarriersService.moveRobot(IModelDb.find(iModelToken), id, location);
+    RobotWorldEngine.moveRobot(IModelDb.find(iModelToken), id, location);
   }
 
   public async fuseRobots(iModelToken: IModelToken, r1: Id64, r2: Id64, location: Point3d): Promise<void> {
-    RobotsAndBarriersService.fuseRobots(IModelDb.find(iModelToken), r1, r2, location);
+    RobotWorldEngine.fuseRobots(IModelDb.find(iModelToken), r1, r2, location);
   }
 
-  public async insertBarrier(iModelToken: IModelToken, location: Point3d): Promise<Id64> {
-    return RobotsAndBarriersService.insertBarrier(IModelDb.find(iModelToken), location);
+  public async insertObstacle(iModelToken: IModelToken, location: Point3d): Promise<Id64> {
+    return RobotWorldEngine.insertObstacle(IModelDb.find(iModelToken), location);
   }
 }
 
-// Implement RBSReadGateway
-class RBSReadGatewayImpl extends Gateway implements RBSReadGateway {
+// Implement ROReadGateway
+class RobotWorldReadGatewayImpl extends Gateway implements RobotWorldReadGateway {
   public static register() {
   }
 
   public async countRobotsInArray(iModelToken: IModelToken, elemIds: Id64[]): Promise<number> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return RobotsAndBarriersService.countRobotsInArray(iModelDb, elemIds);
+    return RobotWorldEngine.countRobotsInArray(iModelDb, elemIds);
   }
 
   public async countRobots(iModelToken: IModelToken): Promise<number> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return RobotsAndBarriersService.countRobots(iModelDb);
+    return RobotWorldEngine.countRobots(iModelDb);
   }
 
-  public async queryRobotsHittingBarriers(iModelToken: IModelToken): Promise<Id64[]> {
+  public async queryRobotsHittingObstacles(iModelToken: IModelToken): Promise<Id64[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return RobotsAndBarriersService.queryRobotsHittingBarriers(iModelDb);
+    return RobotWorldEngine.queryRobotsHittingObstacles(iModelDb);
   }
 
 }
@@ -72,24 +72,29 @@ function configureGateways(gateways: GatewayDefinition[], uriPrefix?: string) {
   } else if (Platform.getElectron() !== undefined) {
     GatewayElectronConfiguration.initialize({}, gateways);
   } else {
-    BentleyCloudGatewayConfiguration.initialize({ info: { title: "RobotsAndBarriersService", version: "v1.0" }, uriPrefix }, gateways);
+    BentleyCloudGatewayConfiguration.initialize({ info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix }, gateways);
   }
 }
 
 /* Expose the gateways that are implemented by this service */
 export function initializeGateways() {
   // Register my own gateways
-  Gateway.registerImplementation(RBSWriteGateway, RBSWriteGatewayImpl);
-  Gateway.registerImplementation(RBSReadGateway, RBSReadGatewayImpl);
+  Gateway.registerImplementation(RobotWorldWriteGateway, RobotWorldWriteGatewayImpl);
+  Gateway.registerImplementation(RobotWorldReadGateway, RobotWorldReadGatewayImpl);
 
   // Decide which gateways this service will expose.
-  const gateways: GatewayDefinition[] = [IModelReadGateway, RBSReadGateway];
 
-  // This is an example of using a FeatureGate to decide if the
+  // Start with the gateways that we know that we want to expose.
+  // Note that this is an example of exposing more than one gateway from a single service.
+  // It's also an example of exposing both a gateway that is implemented by an imported package
+  // and a gateway that is implemented by the service.
+  const gateways: GatewayDefinition[] = [IModelReadGateway, RobotWorldReadGateway];
+
+  // This is an example of using a FeatureGate to decide at runtime if the
   // service should expose one or more gateways.
-  if (RobotsAndBarriersService.features.check("readwrite").toLowerCase() === "true") {
+  if (RobotWorldEngine.features.check("readwrite")) {
     gateways.push(IModelWriteGateway);
-    gateways.push(RBSWriteGateway);
+    gateways.push(RobotWorldWriteGateway);
   }
 
   // Expose the gateways using the appropriate configuration.
@@ -97,5 +102,3 @@ export function initializeGateways() {
 }
 
 // __PUBLISH_EXTRACT_END__
-
-initializeGateways();

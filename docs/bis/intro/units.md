@@ -1,58 +1,53 @@
-# Units
+# Physical Units in BIS
 
-<!-- TODO: *THIS CHAPTER HAS NOT YET BEEN REVIEWED* -->
+BIS and iModels always use a well defined system of physical units.
 
-## Introduction
+## Physical Units must be *SI Base Units* or *SI Derived Units*
 
-BIS and iModels well defined system of units.
+All physical property values (including geometry) in a BIS schema must be either:
 
-## Storage Units are SI Base Units (and derivatives)
+- [SI Base Units](https://en.wikipedia.org/wiki/SI_base_unit) (m, kg, s, A, K, mol, cd)
+- [SI Derived Units](https://en.wikipedia.org/wiki/SI_derived_unit) without prefixes (Hz, rad, sr N, Pa, J, W, C, V, F, (Omega), S, Wb, T H, C, lm, lx, Bq, Gy, Sv, kat)
 
-Storage units for all EC properties are *consistent*. All floating point property values (including geometry) are stored in either:
+It is therefore possible to perform mathematical operations on physical values without considering units:
 
-- SI Base Units or
-- Derivatives of SI Base Units (without prefixes).
+```ts
+Mass = Density * Volume; // no unit conversions necessary
+````
 
-SI base units are: m, kg, s, A, K, mol, cd. More information is available at https://en.wikipedia.org/wiki/SI_base_unit .
+> Note: in iModels, all coordinate data is stored in meters.
 
-Derived SI Units include: Hz, rad, sr N, Pa, J, W, C, V, F, (Omega), S, Wb, T H, C, lm, lx, Bq, Gy, Sv, kat. More information on SI Derived units is available at https://en.wikipedia.org/wiki/SI_derived_unit .
+> Units with prefixes, such as kilometer, millimeter, kilowatt and millivolt are not allowed.
 
-One of the nice things about consistent units is the ability to perform consistent math without thinking about units:
+## Angle Units
 
-`Mass = Density * Volume; // no unit conversions necessary`
+Angle units are *radians*, as that is the *SI Derived Unit* for angles. Similarly the units for solid angles are *steradians*.
+> This may seem awkward, as "90" is a more recognizable value than "1.5707963267948966192313216916398" However, note that storage units are not directly presented to users.
 
-Using SI units also has the benefit of being an international standard.
+Radians are used to permit consistent mathematical computations.
 
-<!-- TODO: Clarify...
-### Not all Metric Units are SI Units
+For example:
 
-It is important to remember that not all metric units satisfy the units requirements. Units such as kilometer, millimeter, kilowatt and millivolt are neither SI Base Units nor are derived from SI Base Units (without prefix).
- -->
+```ts
+(luminous flux in lumens) = (luminous intensity in candela) * (solid angle in steradian)
 
-### Angle Units
+(energy in Joules) = (torque in N-m) * (rotation in radians)
+```
 
-Angle units in iModels are radians, as that is the base SI unit for angles (and similarly the units for solid angles are steradians). This causes a bit of awkwardness as "90" is a much, more recognizable value  than "1.5707963267948966192313216916398" (note that storage units are never presented to the user, however).
+## Exception for Roll, Pitch and Yaw
 
-We need to use radians as our consistent angle unit, or we can no longer perform consistent math. Also, some derived units are derived from angle units. For example:
-
-`(luminous flux in lumens) = (luminous intensity in candela) * (solid angle in steradian)`
-
-`(energy in Joules) = (torque in N-m) * (rotation in radians)`
-
-### SI Exception for Roll, Pitch and Yaw
-
-For historic reasons, Roll, Pitch and Yaw (in GeometricElement3d and ViewDefinition3d, AuxCoordinateSystem3d) are handled specially. They are defined in degrees and declared as unitless in the EC schema.
+`Roll`, `Pitch` and `Yaw` (in `GeometricElement3d` and `ViewDefinition3d`, `AuxCoordinateSystem3d`) are handled specially. They are defined in *degrees* and declared as unitless in the EC schema.
 
 Similarly, these properties are defined in degrees and declared as unitless in the EC schema:
 
-- Angle in AuxCoordSystem2d
-- Rotation in GeometricElement2d
-- LensAngle in ViewDefinition3d
-- RotationAngle in ViewDefinition2d
+- `Angle` in AuxCoordSystem2d
+- `Rotation` in GeometricElement2d
+- `LensAngle` in ViewDefinition3d
+- `RotationAngle` in ViewDefinition2d
 
-### SI Storage does not Apply to Names and Text
+## SI Units do not Apply to Names and Text
 
-The SI storage requirement only applies to double and geometry properties; it does not apply to text properties. "90-Degree Elbow" is an acceptable text value.
+The SI units requirement only applies to numeric physical and geometry properties; it does not apply to text properties. "90-Degree Elbow" is an acceptable text value.
 
 <!-- TODO
 ## Presentation Units

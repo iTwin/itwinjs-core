@@ -4,11 +4,15 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run extract",
+    "build": "npm run build-code && npm run extract",
+    "build-code": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json ../../generated-docs",
+    "copy:backend-assets": "cpx ./src/backend/assets/**/* ./lib/backend/assets",
+    "copy:test-backend-assets": "cpx ./src/backend/test/assets/**/* ./lib/backend/test/assets",
     "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
-    "test": ""
+    "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets && npm run build-code",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\""
   },
   "repository": {},
   "//dependencies": [

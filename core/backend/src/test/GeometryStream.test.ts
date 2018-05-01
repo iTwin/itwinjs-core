@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop } from "@bentley/geometry-core";
+import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle,
+  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../backend";
@@ -253,6 +253,190 @@ describe("GeometryStream", () => {
     params.styleInfo = new LineStyle.Info(styleId);
     builder.appendGeometryParamsChange(params);
     builder.appendGeometryQuery(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(newId.isValid());
+    imodel.saveChanges();
+  });
+
+  it("create GeometricElement3d using shapes with fill/gradient", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
+    builder.appendGeometryRanges(); // Test inclusion of local ranges...
+
+    const xOffset = Transform.createTranslation(Point3d.create(1.5));
+    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+
+    // No fill...
+    params.lineColor = ColorDef.green;
+    params.weight = 5;
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(shape);
+
+    // Opaque fill by view...
+    params.fillDisplay = FillDisplay.ByView;
+    params.fillColor = params.lineColor;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline fill by view...
+    params.fillColor = ColorDef.red;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline transparency fill always...
+    params.fillDisplay = FillDisplay.Always;
+    params.fillTransparency = 0.75;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Opaque background fill always...
+    params.backgroundFill = BackgroundFill.Solid;
+    params.fillTransparency = 0.0;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline background fill always...
+    params.backgroundFill = BackgroundFill.Outline;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Opaque gradient by view...
+    params.fillDisplay = FillDisplay.ByView;
+    params.gradient = new Gradient.Symb();
+    params.gradient.mode = Gradient.Mode.Linear;
+    params.gradient.flags = Gradient.Flags.Invert;
+    params.gradient.keys.push(new Gradient.KeyColor( { value: 0.0, color: ColorDef.blue } ));
+    params.gradient.keys.push(new Gradient.KeyColor( { value: 0.5, color: ColorDef.red } ));
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline gradient by view...Display issue, changes to gradient being ignored???
+    params.gradient.flags = Gradient.Flags.Outline;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(newId.isValid());
+    imodel.saveChanges();
+  });
+
+  it("create GeometricElement3d using shapes with patterns", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
+    builder.appendGeometryRanges(); // Test inclusion of local ranges...
+
+    const xOffset = Transform.createTranslation(Point3d.create(1.5));
+    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+
+    // Hatch w/o overrides
+    params.lineColor = new ColorDef(ColorByName.yellow);
+    params.weight = 5;
+    params.pattern = new AreaPattern.Params();
+    params.pattern.space1 = 0.05;
+    params.pattern.angle1 = Angle.createDegrees(45.0);
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(shape);
+
+    // Cross hatch with color/weight override
+    params.pattern.space2 = 0.1;
+    params.pattern.angle2 = Angle.createDegrees(-30.0);
+    params.pattern.color = ColorDef.red;
+    params.pattern.weight = 0;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    const partBuilder = new GeometryStreamBuilder();
+    partBuilder.appendGeometryQuery(Arc3d.createXY(Point3d.createZero(), 0.05));
+
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      iModel: imodel,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+
+    const partId = imodel.elements.insertElement(partProps);
+    assert.isTrue(partId.isValid());
+
+    // Area pattern w/o overrides
+    params.pattern = new AreaPattern.Params();
+    params.pattern.symbolId = partId;
+    params.pattern.space1 = params.pattern.space2 = 0.05;
+    params.pattern.angle1 = Angle.createDegrees(45.0);
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Area pattern with color/weight overrides, snappable geometry, and invisible boundary
+    params.pattern.origin = Point3d.create(0.05, 0.05, 0.0);
+    params.pattern.space1 = params.pattern.space2 = params.pattern.angle1 = undefined;
+    params.pattern.color = ColorDef.red;
+    params.pattern.weight = 1;
+    params.pattern.snappable = params.pattern.invisibleBoundary = true;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Hatch definition w/o overrides (zig-zag)
+    const defLines: AreaPattern.HatchDefLine[] = [
+      { angle: Angle.createDegrees(0), offset: Point2d.create(0.1, 0.1), dashes: [ 0.1, -0.1 ] },
+      { angle: Angle.createDegrees(90.0), through: Point2d.create(0.1, 0.0), offset: Point2d.create(0.1, 0.1), dashes: [ 0.1, -0.1 ] },
+    ];
+
+    params.pattern = new AreaPattern.Params();
+    params.pattern.defLines = defLines;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Hatch definition with color/weight overrides
+    params.pattern.color = ColorDef.red;
+    params.pattern.weight = 1;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",

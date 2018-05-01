@@ -62,9 +62,9 @@ export * from "./Time";
  * ``` json
  * {
  *   "loggerConfig": {
- *      "defaultLevel": "${RBS-DEFAULT-LOG-LEVEL}",
+ *      "defaultLevel": "${ROBOT-WORLD-DEFAULT-LOG-LEVEL}",
  *      "categoryLevels": [
- *          {"category": "RBS", "logLevel": "Trace"},
+ *          {"category": "ROBOT-WORLD", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway.BentleyCloudGatewayProtocol", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway.GatewayHttpProtocol", "logLevel": "Trace"},
  *          {"category": "imodeljs-gateway", "logLevel": "Trace"},
@@ -77,9 +77,9 @@ export * from "./Time";
  *      ]
  *    },
  *    "seq": {
- *      "hostURL": "${RBS-SEQ-URL}",
- *      "port": "${RBS-SEQ-PORT}"
- *    },
+ *      "hostURL": "${ROBOT-WORLD-SEQ-URL}",
+ *      "port": "${ROBOT-WORLD-SEQ-PORT}"
+ *    }
  * }
  * ```
  */
