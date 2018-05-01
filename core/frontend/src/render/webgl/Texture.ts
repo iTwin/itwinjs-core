@@ -55,7 +55,7 @@ export class TextureHandle implements IDisposable {
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }
 
   /** Creates a texture for an image based on certain parameters. */
-  public static createForImage(width: number, imageBytes: Uint8Array, isTranslucent: boolean, wrap = GL.Texture.WrapMode.Repeat, wantInterpolate = true, isGlyph = false, isTileSection = false) {
+  public static createForImage(width: number, imageBytes: Uint8Array, isTranslucent: boolean, useMipMaps = true, isGlyph = false, isTileSection = false) {
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
@@ -68,8 +68,8 @@ export class TextureHandle implements IDisposable {
     params.width = width;
     params.height = imageBytes.length / (width * (isTranslucent ? 4 : 3));
     params.data = imageBytes;
-    params.wrapMode = wrap;
-    params.wantInterpolate = wantInterpolate;
+    params.wrapMode = isTileSection ? GL.Texture.WrapMode.ClampToEdge : GL.Texture.WrapMode.Repeat;
+    params.wantUseMipMaps = useMipMaps;
     params.wantPreserveData = false; // ###TODO: When is this true?
 
     let targetWidth: number = params.width;
