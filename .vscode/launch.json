@@ -112,7 +112,8 @@
       "port": 5858,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/testbed/lib/**/*.js"
+        "${workspaceRoot}/testbed/lib/{backend,common}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ]
     },
     {
