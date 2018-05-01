@@ -1,22 +1,21 @@
 {
-  "name": "sample-code-app",
+  "name": "example-code-snippets",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run build-code && npm run extract",
-    "build-code": "tsc 1>&2",
+    "build": "tsc 1>&2 && npm run copy:assets && npm run extract",
     "clean": "rimraf lib package-deps.json ../../generated-docs",
-    "copy:backend-assets": "cpx ./src/backend/assets/**/* ./lib/backend/assets",
-    "copy:test-backend-assets": "cpx ./src/backend/test/assets/**/* ./lib/backend/test/assets",
+    "copy:assets": "cpx ./src/backend/assets/**/* ./lib/backend/assets",
     "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
-    "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets && npm run build-code",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\""
+    "test": "npm run test:backend",
+    "pretest:backend": "npm run copy:assets && rush build -t example-code-snippets",
+    "test:backend": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib\""
   },
   "repository": {},
   "//dependencies": [
-    "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
+    "NOTE: example-code-snippets is set up like a real app. It knows what platform it runs on and what addon it needs."
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "8",

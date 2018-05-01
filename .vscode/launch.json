@@ -86,12 +86,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Sample-code backend snippet tests",
+      "name": "example-code backend snippet tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/sample-code/snippets",
+      "cwd": "${workspaceFolder}/example-code/snippets",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/sample-code/snippets/lib/backend",
+        "--testDir=${workspaceFolder}/example-code/snippets/lib/backend",
         "--debug"
       ],
       "port": 9229,
@@ -101,12 +101,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Sample-code app backend tests",
+      "name": "example-code app backend tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/sample-code/app",
+      "cwd": "${workspaceFolder}/example-code/app",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/sample-code/app/lib/backend/test",
+        "--testDir=${workspaceFolder}/example-code/app/lib/backend/test",
         "--debug"
       ],
       "port": 9229,
