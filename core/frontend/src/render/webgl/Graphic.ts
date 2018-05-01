@@ -1,16 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, ViewFlag, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch } from "../System";
 import { Clip } from "./ClipVolume";
+import { RenderCommands } from "./DrawCommand";
 
 export abstract class Graphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
-  // public abstract addCommands(commands: RenderCommands): void;
+  public addCommands(_commands: RenderCommands): void { assert(false); } // ###TODO: Implement for Primitive
   // public abstract addHiliteCommands(commands: DrawCommands, batch: Batch): void;
   // public abstract setUniformFeatureIndices(uint32_t): void;
   public toPrimitive(): Primitive | undefined { return undefined; }
@@ -31,7 +33,7 @@ export class Batch extends Graphic {
   //   this.imodel.verifyRenderThread();
   //   this._overrides.erase(target);
   // }
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
+  public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
   // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
 }
 
@@ -51,7 +53,7 @@ export class Branch extends Graphic {
     }
   }
 
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
+  public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
   // public push(shader: ShaderProgramExecutor): void {}
   // public pop(shader: ShaderProgramExecutor): void {}
@@ -60,7 +62,12 @@ export class Branch extends Graphic {
 
 export class GraphicsList extends Graphic {
   constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); }
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
+  public addCommands(commands: RenderCommands): void {
+    for (const graphic of this.graphics) {
+      (graphic as Graphic).addCommands(commands);
+    }
+  }
+
   // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
   // public setUniformFeatureIndices(uint32_t)
 }

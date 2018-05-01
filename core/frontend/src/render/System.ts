@@ -11,7 +11,7 @@ import { AntiAliasPref,
          Hilite,
          HiddenLine,
          ColorDef } from "@bentley/imodeljs-common";
-import { Viewport } from "../Viewport";
+import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { HilitedSet } from "../SelectionSet";
@@ -115,6 +115,7 @@ export abstract class RenderTarget {
 
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
+  public abstract get viewRect(): ViewRect;
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
@@ -146,7 +147,7 @@ export abstract class RenderSystem {
   public abstract createTarget(): RenderTarget;
 
   // /** Create an offscreen render target. */
-  // public abstract createOffscreenTarget(tileSizeModifier: number): RenderTarget;
+  public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   // /** Find a previously-created Material by key. Returns null if no such material exists. */
   // public abstract findMaterial(key: MaterialKey, imodel: IModel): Material;

@@ -13,6 +13,7 @@ import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
 import { Branch } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
+import { ViewRect } from "../../Viewport";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -399,8 +400,18 @@ export abstract class Target extends RenderTarget {
 }
 
 export class OnScreenTarget extends Target {
-  public constructor() {
+  private readonly _viewRect = new ViewRect();
+  private readonly _canvas: HTMLCanvasElement;
+
+  public constructor(canvas: HTMLCanvasElement) {
     super();
+    this._canvas = canvas;
+  }
+
+  public get viewRect(): ViewRect {
+    const clientRect = this._canvas.getBoundingClientRect();
+    this._viewRect.init(0, 0, clientRect.width, clientRect.height);
+    return this._viewRect;
   }
 
   // ###TODO...
@@ -414,9 +425,14 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
-  public constructor() {
+  private _viewRect: ViewRect;
+
+  public constructor(rect: ViewRect) {
     super();
+    this._viewRect = new ViewRect(rect.left, rect.bottom, rect.right, rect.top);
   }
+
+  public get viewRect(): ViewRect { return this._viewRect; }
 
   // ###TODO...
   protected assignDC(): boolean { return false; }

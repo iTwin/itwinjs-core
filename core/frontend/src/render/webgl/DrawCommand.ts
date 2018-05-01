@@ -14,7 +14,7 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
-import { GraphicList, DecorationList, Decorations } from "../System";
+import { GraphicList, DecorationList, Decorations, RenderGraphic } from "../System";
 import { TechniqueId } from "./TechniqueId";
 
 export class ShaderProgramParams {
@@ -25,13 +25,12 @@ export class ShaderProgramParams {
   public constructor(target: Target, pass: RenderPass) {
     this.target = target;
     this.renderPass = pass;
-    /* ###TODO
     if (this.isViewCoords) {
-      this.projectionMatrix = Matrix4.ortho(0.0, target.renderRect.width, target.renderRect.height, 0.0, -1.0, 1.0);
+      const rect = target.viewRect;
+      this.projectionMatrix = Matrix4.fromOrtho(0.0, rect.width, rect.height, 0.0, -1.0, 1.0);
     } else {
-      this.projectionMatrix = Matrix4.fromDMatrix4d(target.projectionMatrix);
+      this.projectionMatrix = Matrix4.fromMatrix4d(target.projectionMatrix);
     }
-     */
     this.projectionMatrix = Matrix4.fromIdentity();
   }
 
@@ -46,14 +45,23 @@ export class DrawParams extends ShaderProgramParams {
   public readonly modelViewMatrix: Matrix4;
   public readonly modelMatrix: Matrix4;
 
+  private static readonly _scratchTransform = Transform.createIdentity();
   public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform, pass: RenderPass) {
     super(target, pass);
     this.geometry = geometry;
     this.modelMatrix = Matrix4.fromTransform(modelMatrix);
-    // ###TODO if (this.isViewCoords) {
-    // ###TODO } else {
-    // ###TODO }
-    this.modelViewMatrix = Matrix4.fromIdentity();
+
+    if (this.isViewCoords) {
+      // TFS#811077: Zero out Z...see clipping tools in ClipViewTools.cpp...
+      this.modelViewMatrix = this.modelMatrix.clone();
+      const tf = modelMatrix.clone(DrawParams._scratchTransform);
+      tf.matrix.coffs[2] = tf.matrix.coffs[5] = tf.matrix.coffs[8] = 0.0;
+      this.modelViewMatrix = Matrix4.fromTransform(tf);
+    } else {
+      const modelViewMatrix = target.viewMatrix.clone(DrawParams._scratchTransform);
+      modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+      this.modelViewMatrix = Matrix4.fromTransform(modelViewMatrix);
+    }
   }
 }
 
@@ -198,10 +206,9 @@ export class RenderCommands {
     this._stack = stack;
   }
 
-  // #TODO: implement addCommands in RenderGraphic, create iterator for GraphicList
-  public addGraphics(_scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
+  public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
-    // scene.forEach((entry: RenderGraphic) => entry.addCommands(this));
+    scene.list.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -223,7 +230,7 @@ export class RenderCommands {
 
     this._forcedRenderPass = RenderPass.Background;
     this._stack.pushState(this.target.decorationState);
-    // ###TODO: gf.addCommands(this);
+    (gf as Graphic).addCommands(this);
     this._stack.pop();
     this._forcedRenderPass = RenderPass.None;
   }
@@ -333,7 +340,7 @@ export class RenderCommands {
     return this._commands[idx];
   }
 
-  public pushAndPopBranch(branch: Branch, func: (branch: Branch) => void): void {
+  public pushAndPopBranch(branch: Branch, func: () => void): void {
     this._stack.pushBranch(branch);
 
     let cmds: DrawCommands;
@@ -347,7 +354,7 @@ export class RenderCommands {
     }
 
     // Add the commands from within the branch
-    func(branch);
+    func();
 
     const popCmd = DrawCommand.createForBranch(branch, PushOrPop.Pop);
     for (let i = start; i < end; ++i) {
@@ -423,11 +430,10 @@ export class RenderCommands {
     }
   }
 
-  // TODO: implement addCommands on RenderGraphic
-  public addBranch(_branch: Branch): void {
-    // this.pushAndPopBranch(branch, (branch: Branch) => {
-    //   branch.branch.entries.forEach((entry: RenderGraphic) => entry.addCommands(this));
-    // });
+  public addBranch(branch: Branch): void {
+    this.pushAndPopBranch(branch, () => {
+      branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    });
   }
 
   // #TODO: implement getOverrides(target) on Batch
@@ -463,7 +469,7 @@ export class RenderCommands {
       // this._translucentOverrides = overrides.anyTranslucent;
     }
 
-    // batch.graphic.addCommands(this);
+    (batch.graphic as Graphic).addCommands(this);
 
     if (!pushBatch) {
       assert(!this._opaqueOverrides && !this._translucentOverrides);
