@@ -6,16 +6,16 @@ import { Gateway, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 
-// RobotsAndBarriersService Gateway Definitions
-// These classes are common to RobotsAndBarriersService and its clients.
+// RobotWorldEngine Gateway Definitions
+// These classes are common to RobotWorldEngine and its clients.
 // If these are app-specific gateways, then they would be defined in a directory
 // in the app's source tree that is common to both frontend and backend.
 // If these are service gateways, then they would be defined in a gateway
 // definition package that is accessible by both the
 // service implementation and the clients that use the service.
 
-// The "write" gateway that may be exposed by the RobotsAndBarriersService.
-export abstract class RBSWriteGateway extends Gateway {
+// The "write" gateway that may be exposed by the RobotWorldEngine.
+export abstract class RobotWorldWriteGateway extends Gateway {
   public static version = "1.0.0"; // The API version of the gateway
 
   /** The types that used by the gateway and must be marshalled. */
@@ -34,13 +34,13 @@ export abstract class RBSWriteGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  public async insertBarrier(_iModelToken: IModelToken, _location: Point3d): Promise<Id64> {
+  public async insertObstacle(_iModelToken: IModelToken, _location: Point3d): Promise<Id64> {
     return this.forward.apply(this, arguments);
   }
 }
 
-// The "read" gateway that may be exposed by the RobotsAndBarriersService.
-export abstract class RBSReadGateway extends Gateway {
+// The "read" gateway that may be exposed by the RobotWorldEngine.
+export abstract class RobotWorldReadGateway extends Gateway {
   public static version = "1.0.0";  // The API version of the gateway
 
   /** The types that can be marshaled by the gateway. */
@@ -55,7 +55,7 @@ export abstract class RBSReadGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  public async queryRobotsHittingBarriers(_iModelToken: IModelToken): Promise<Id64[]> {
+  public async queryRobotsHittingObstacles(_iModelToken: IModelToken): Promise<Id64[]> {
     return this.forward.apply(this, arguments);
   }
 

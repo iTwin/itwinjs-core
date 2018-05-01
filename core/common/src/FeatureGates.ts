@@ -17,9 +17,9 @@
  * ``` json
  * {
  *   "features": {
- *      "readwrite": "${RBS-FEATURE-READWRITE}",
- *      "experimentalMethods": "${RBS-FEATURE-EXPERIMENTAL-METHODS}",
- *    },
+ *      "readwrite": "${ROBOT-WORLD-FEATURE-READWRITE}",
+ *      "experimentalMethods": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
+ *    }
  * }
  * ```
  *

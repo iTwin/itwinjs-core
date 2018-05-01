@@ -38,6 +38,9 @@ export class IModelHostConfiguration {
   public set briefcaseCacheDir(cacheDir: string) {
     this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep));
   }
+
+  /** The directory where the app's assets are found */
+  public appAssetsDir?: string;
 }
 
 /**
@@ -88,5 +91,10 @@ export class IModelHost {
       return;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
+  }
+
+  /** The directory where the app's assets are found */
+  public static get appAssetsDir(): string | undefined {
+    return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }
 }
