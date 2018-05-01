@@ -419,15 +419,13 @@ export abstract class Target extends RenderTarget {
   }
 
   public drawFrame(): void {
-    // ###TODO assert(System.instance.boundFBOs.isEmpty);
-
+    assert(System.instance.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
     this.paintScene();
-
-    // ###TODO assert(System.instance.boundFBOs.isEmpty);
+    assert(System.instance.frameBufferStack.isEmpty);
   }
 
   private paintScene(): void {

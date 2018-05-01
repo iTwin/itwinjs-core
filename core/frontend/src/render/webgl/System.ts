@@ -14,6 +14,7 @@ import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
 import { RenderState } from "./RenderState";
+import { FrameBufferStack } from "./FrameBuffer";
 
 export const enum ContextState {
   Uninitialized,
@@ -170,6 +171,7 @@ export class System extends RenderSystem {
   private readonly _canvas: HTMLCanvasElement;
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
+  public readonly frameBufferStack = new FrameBufferStack();
 
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
