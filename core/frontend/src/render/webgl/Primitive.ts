@@ -157,7 +157,7 @@ export abstract class Primitive extends Graphic {
     return FeatureIndexType.Empty; // ###TODO remove after implementing FeaturesInfo
   }
 
-  public usesMaterialColor(): boolean {
+  public get usesMaterialColor(): boolean {
     const materialData = this.cachedGeometry.material;
     if (undefined === materialData)
       return false;
@@ -184,7 +184,7 @@ export abstract class Primitive extends Graphic {
   }
   */
 
-  public SetUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
+  public setUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
 
   public get isEdge(): boolean { return false; }
 
@@ -192,7 +192,7 @@ export abstract class Primitive extends Graphic {
 
   public abstract get renderOrder(): RenderOrder;
 
-  public Draw(shader: ShaderProgramExecutor): void {
+  public draw(shader: ShaderProgramExecutor): void {
     // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
     const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
     shader.draw(drawParams);

@@ -108,8 +108,8 @@ export class Frustum {
   }
 
   /** Create a new Frustum from a Range3d */
-  public static fromRange(range: LowAndHighXYZ | LowAndHighXY): Frustum {
-    const frustum = new Frustum();
+  public static fromRange(range: LowAndHighXYZ | LowAndHighXY, out?: Frustum): Frustum {
+    const frustum = undefined !== out ? out : new Frustum();
     frustum.initFromRange(range);
     return frustum;
   }
