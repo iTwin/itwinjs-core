@@ -69,6 +69,8 @@
       "outputCapture": "std"
     },
     {
+      "type": "node",
+      "request": "launch",
       "name": "Run Geometry Tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
       "cwd": "${workspaceFolder}/core/geometry",
@@ -84,12 +86,27 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run sample-code Tests",
+      "name": "example-code backend snippet tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/sample-code",
+      "cwd": "${workspaceFolder}/example-code/snippets",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/sample-code/out/backend",
+        "--testDir=${workspaceFolder}/example-code/snippets/lib/backend",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "example-code app backend tests",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/example-code/app",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/example-code/app/lib/backend/test",
         "--debug"
       ],
       "port": 9229,

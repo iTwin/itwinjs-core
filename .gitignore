@@ -6,7 +6,6 @@ node_modules
 lib
 /core/geometry/src/test/output
 /core/backend/src/test/output
-/sample-code/out
 /generated-docs
 /generated_docs
 

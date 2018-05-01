@@ -1,5 +1,5 @@
 {
-  "name": "sample-code-snippets",
+  "name": "example-code-snippets",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
@@ -10,12 +10,12 @@
     "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
     "test": "npm run test:backend",
-    "pretest:backend": "npm run copy:assets && rush build -t sample-code-snippets",
+    "pretest:backend": "npm run copy:assets && rush build -t example-code-snippets",
     "test:backend": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib\""
   },
   "repository": {},
   "//dependencies": [
-    "NOTE: sample-code is set up like a real app. It knows what platform it runs on and what addon it needs."
+    "NOTE: example-code-snippets is set up like a real app. It knows what platform it runs on and what addon it needs."
   ],
   "dependencies": {
     "@bentley/bentleyjs-core": "8",

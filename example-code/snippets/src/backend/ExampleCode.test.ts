@@ -8,8 +8,8 @@ import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
-/** Sample code organized as tests to make sure that it builds and runs successfully. */
-describe("Sample Code", () => {
+/** Example code organized as tests to make sure that it builds and runs successfully. */
+describe("Example Code", () => {
   let iModel: IModelDb;
   let accessToken: AccessToken;
 
@@ -22,7 +22,7 @@ describe("Sample Code", () => {
     iModel.close(accessToken);
   });
 
-  /** Gives sample code something to call. */
+  /** Gives example code something to call. */
   const doSomethingWithString = (s: string) => {
     assert.exists(s);
   };
@@ -66,8 +66,8 @@ describe("Sample Code", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("should extract working sample code", async () => {
-    // __PUBLISH_EXTRACT_START__ BisCore1.sampleCode
+  it("should extract working example code", async () => {
+    // __PUBLISH_EXTRACT_START__ BisCore.registerSchemaAndGetClass
     // Register any schemas that will be used directly
     BisCore.registerSchema();
 
@@ -129,7 +129,7 @@ describe("Sample Code", () => {
 
     assert.isTrue(newModeledElementId !== undefined);
 
-    // assertions to ensure sample code is working properly
+    // assertions to ensure example code is working properly
     assert.equal(BisCore.name, elementClass.schema.name);
     assert.equal(Element.name, elementClass.name);
   });
