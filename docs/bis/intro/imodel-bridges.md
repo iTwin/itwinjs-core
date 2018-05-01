@@ -20,15 +20,19 @@ Examples of iModel Bridges include:
 - Substation
 - etc.
 
-Some key characteristics of iModel Bridges are:
+## Bridge execution
 
-- Transformations of data are *from* source *into* an iModel.
-- If necessary, bridges store enough information about source data to detect the differences in it between runs. In this manner bridges generate *ChangeSets* that are sent to iModelHub. This is the key difference between a Bridge and a one-time converter.
-- Bridges may run on a pre-determined schedule, or on an event that the source data has changed.
-- Bridges store a mapping of source Ids to Ids in iModels. to create a "back-link" from data in iModels to its source application.
-- Multiple bridges (called *jobs*) may target the iModel.
-- Each job generates data that is isolated from all other jobs' data. The resulting combined iModel is partitioned at the Subject level of the iModel; each Bridge job has its own Subject.
-- Bridges jobs *hold the locks* for all of their data, so it may not be modified by other iModel applications.
+Bridges are invoked by the *Bentley Orchestration Framework(OF)* product. The *Orchestration Framework* is installed on an *Automation server* machine. The *Automation Server* has access to a ProjectWise managed data source that contains the application native files. Any desired bridge can be installed on the *Automation Server*. All this data is specified in the connected project web-UI under *connection*.
+The application source file and destination iModel are identified in *mapping*.
+A *bridge-job* is the combination of *connection* and *mapping* and may be run on a pre-determined schedule.
+
+## Key characteristics of iModel Bridges
+
+- Mappings of data are *from* source *into* an iModel.
+- If necessary, bridges store enough information about source data to detect the differences in it between job-runs. In this manner bridges generate *ChangeSets* that are sent to iModelHub. This is the key difference between a Bridge and a one-time converter.
+- Bridges locally store a mapping of native source Ids to iModel global Ids. This creates a "back-link" from data in iModels to its source application.
+- Each job generates data in the iModel that is isolated from all other jobs' data. The resulting combined iModel is partitioned at the Subject level of the iModel; each Bridge job has its own Subject.
+- Bridge jobs *hold the locks* for all of their data, so it may not be modified by other iModel applications.
 
 ## Data Alignment
 
@@ -45,7 +49,7 @@ Sometimes BIS domain schemas are not adequate to capture all the data in the aut
 
 As iModel Bridges always run multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise change sets, the Bridges add to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](schema-versioning-and-generations)
 
-Apply the `DynamicSchema` custom attribute to the schema.  This custom attribute can be found in the standard schema `CoreCustomAttributes` and it enables us to programmatically detect dynamic schemas in the future.
+The `DynamicSchema` custom attribute should be set on customer specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes` and it enables the iModelHub to programmatically detect dynamic schemas. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
 ## Display Labels
 
