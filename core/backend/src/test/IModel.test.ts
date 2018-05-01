@@ -42,9 +42,7 @@ describe("iModel", () => {
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
   const testCopyAndJson = (entity: Entity) => {
-    assert.isTrue(entity.isPersistent());
     const copyOf = entity.copyForEdit();
-    assert.isFalse(copyOf.isPersistent());
     const s1 = JSON.stringify(entity); let s2 = JSON.stringify(copyOf);
     assert.equal(s1, s2);
 
