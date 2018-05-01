@@ -32,7 +32,6 @@ describe("ElementAspect", () => {
     assert.equal(aspect1.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1.length, 1);
-    assert.isTrue(Object.isFrozen(aspect1));
 
     const aspect2 = iModel.elements.getUniqueAspect(element.id, "DgnPlatformTest:TestUniqueAspect");
     assert.exists(aspect2);
@@ -40,7 +39,6 @@ describe("ElementAspect", () => {
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
     assert.equal(aspect2.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2.length);
-    assert.isTrue(Object.isFrozen(aspect2));
 
     const multiAspectsA: ElementMultiAspect[] = iModel.elements.getMultiAspects(element.id, "DgnPlatformTest:TestMultiAspectNoHandler");
     assert.exists(multiAspectsA);
@@ -51,7 +49,6 @@ describe("ElementAspect", () => {
       assert.equal(aspect.schemaName, "DgnPlatformTest");
       assert.equal(aspect.className, "TestMultiAspectNoHandler");
       assert.exists(aspect.testMultiAspectProperty);
-      assert.isTrue(Object.isFrozen(aspect));
     });
 
     const multiAspectsB: ElementMultiAspect[] = iModel.elements.getMultiAspects(element.id, "DgnPlatformTest:TestMultiAspect");
@@ -63,7 +60,6 @@ describe("ElementAspect", () => {
       assert.equal(aspect.schemaName, "DgnPlatformTest");
       assert.equal(aspect.className, "TestMultiAspect");
       assert.exists(aspect.testMultiAspectProperty);
-      assert.isTrue(Object.isFrozen(aspect));
     });
 
     let numErrorsCaught = 0;

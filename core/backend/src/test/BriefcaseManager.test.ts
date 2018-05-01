@@ -138,7 +138,7 @@ describe("BriefcaseManager", () => {
 
     const firstIModel: IModelDb = await IModelDb.open(firstUser, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
     const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
-    const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUser, testProjectId, testIModels[1].id , OpenMode.Readonly);
+    const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUser, testProjectId, testIModels[1].id, OpenMode.Readonly);
     assert.notEqual(firstIModel, secondIModel);
 
     // Set up optimistic concurrency. Note the defaults are:
@@ -160,7 +160,7 @@ describe("BriefcaseManager", () => {
 
     // firstUser: modify el1.userLabel
     if (true) {
-      const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
+      const el1cc: Element = firstIModel.elements.getElement(el1);
       el1cc.userLabel = el1cc.userLabel + " -> changed by firstUser";
       firstIModel.elements.updateElement(el1cc);
       firstIModel.saveChanges("firstUser modified el1.userLabel");
@@ -170,7 +170,7 @@ describe("BriefcaseManager", () => {
     // secondUser: modify el1.userLabel
     let expectedValueofEl1UserLabel: string;
     if (true) {
-      const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
+      const el1before: Element = (secondIModel.elements.getElement(el1));
       expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
       el1before.userLabel = expectedValueofEl1UserLabel;
       secondIModel.elements.updateElement(el1before);
@@ -203,7 +203,7 @@ describe("BriefcaseManager", () => {
     // firstUser: modify el1.userLabel
     const wasExpectedValueofEl1UserLabel = expectedValueofEl1UserLabel;
     if (true) {
-      const el1cc = (firstIModel.elements.getElement(el1)).copyForEdit<Element>();
+      const el1cc: Element = firstIModel.elements.getElement(el1);
       assert.equal(el1cc.userLabel, wasExpectedValueofEl1UserLabel);
       expectedValueofEl1UserLabel = el1cc.userLabel + " -> changed again by firstUser";
       el1cc.userLabel = expectedValueofEl1UserLabel;
@@ -224,7 +224,7 @@ describe("BriefcaseManager", () => {
     const secondUserPropName = "property";
     const expectedValueOfSecondUserProp: string = "x";
     if (true) {
-      const el1before = (secondIModel.elements.getElement(el1)).copyForEdit<Element>();
+      const el1before: Element = secondIModel.elements.getElement(el1);
       assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel);
       el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp }); // secondUser changes userProperties
       secondIModel.elements.updateElement(el1before);
@@ -316,7 +316,7 @@ describe("BriefcaseManager", () => {
 
     // first: modify el1.userLabel
     if (true) {
-      const el1cc = (first.elements.getElement(el1)).copyForEdit<Element>();
+      const el1cc = first.elements.getElement(el1);
       el1cc.userLabel = el1cc.userLabel + " -> changed by first";
       first.elements.updateElement(el1cc);
       first.saveChanges("first modified el1.userLabel");
@@ -327,7 +327,7 @@ describe("BriefcaseManager", () => {
     // second: modify el1.userLabel
     let expectedValueofEl1UserLabel: string;
     if (true) {
-      const el1before = (second.elements.getElement(el1)).copyForEdit<Element>();
+      const el1before: Element = second.elements.getElement(el1);
       expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by second";
       el1before.userLabel = expectedValueofEl1UserLabel;
       second.elements.updateElement(el1before);
@@ -407,7 +407,7 @@ describe("BriefcaseManager", () => {
     let timer = new Timer("open briefcase first time");
     const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel0.iModelToken.iModelId === testIModels[0].id, "Incorrect iModel ID");
+    assert(iModel0.iModelToken.iModelId === testIModels[0].id, "Incorrect iModel Id");
     timer.end();
 
     const briefcases = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
@@ -500,11 +500,11 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open a briefcase of an iModel with no versions", async () => {
-      const iModelNoVer = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly, IModelVersion.latest());
-      assert.exists(iModelNoVer);
-      assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
+    const iModelNoVer = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly, IModelVersion.latest());
+    assert.exists(iModelNoVer);
+    assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
 
-    });
+  });
 
   it("Should track the AccessTokens that are used to open IModels", async () => {
     await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly);
@@ -681,7 +681,7 @@ describe("BriefcaseManager", () => {
     rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
     // Show that we can modify the properties of an element. In this case, we modify the root element itself.
-    const rootEl: Element = (rwIModel.elements.getRootSubject()).copyForEdit<Element>();
+    const rootEl: Element = rwIModel.elements.getRootSubject();
     rootEl.userLabel = rootEl.userLabel + "changed";
     rwIModel.elements.updateElement(rootEl);
 

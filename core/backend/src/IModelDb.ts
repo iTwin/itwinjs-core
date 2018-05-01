@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { Guid, Id64, Id64Set, LRUMap, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64Set, OpenMode, DbResult, Logger, BeEvent, assert, Id64Props } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
@@ -56,8 +56,8 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
  *
  */
 export class IModelDb extends IModel {
-  public static readonly defaultLimit = 1000;
-  public static readonly maxLimit = 10000;
+  public static readonly defaultLimit = 1000; // default limit for batching queries
+  public static readonly maxLimit = 10000; // maximum limit for batching queries
   private static _accessTokens?: Map<string, AccessToken>;
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -261,7 +261,7 @@ export class IModelDb extends IModel {
   /** Get the in-memory handle of the native Db */
   public get nativeDb(): any { return (this.briefcase === undefined) ? undefined : this.briefcase.nativeDb; }
 
-  /** Get the briefcase ID of this iModel */
+  /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcase === undefined ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
 
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
@@ -488,8 +488,8 @@ export class IModelDb extends IModel {
       if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
         throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     } else {
-    if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
-      throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
+      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
+        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     }
   }
 
@@ -663,12 +663,8 @@ export class IModelDb extends IModel {
 
 /** The collection of models in an [[IModelDb]]. */
 export class IModelDbModels {
-  private readonly loaded = new LRUMap<string, Model>(500);
-
   /** @hidden */
-  public constructor(private _iModel: IModelDb, max: number = 500) {
-    this.loaded.limit = max;
-    this._iModel.onChangesetApplied.addListener(() => this.loaded.clear());
+  public constructor(private _iModel: IModelDb) {
   }
 
   /** Get the Model with the specified identifier.
@@ -676,20 +672,10 @@ export class IModelDbModels {
    * @throws [[IModelError]]
    */
   public getModel(modelId: Id64): Model {
-    // first see if the model is already in the local cache.
-    const loaded = this.loaded.get(modelId.value);
-    if (loaded)
-      return loaded;
-
     const json = this.getModelJson(JSON.stringify({ id: modelId }));
     const props = JSON.parse(json!) as ModelProps;
     props.iModel = this._iModel;
-    const model = this._iModel.constructEntity(props) as Model;
-
-    // We have created the model. Cache it before we return it.
-    model.setPersistent(); // models in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this.loaded.set(model.id.value, model);
-    return model;
+    return this._iModel.constructEntity(props) as Model;
   }
 
   /**
@@ -730,7 +716,6 @@ export class IModelDbModels {
    */
   public insertModel(model: Model): Id64 {
     if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-    if (model.isPersistent()) throw new IModelError(IModelStatus.WriteError, "Cannot insert a model marked as persistent. Call copyForEdit.", Logger.logError, loggingCategory);
     const { error, result } = this._iModel.briefcase.nativeDb.insertModel(JSON.stringify(model));
     if (error) throw new IModelError(error.status, "inserting model", Logger.logWarning, loggingCategory);
     return model.id = new Id64(JSON.parse(result!).id);
@@ -745,10 +730,6 @@ export class IModelDbModels {
     const error: IModelStatus = this._iModel.briefcase.nativeDb.updateModel(JSON.stringify(model));
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "updating model id=" + model.id, Logger.logWarning, loggingCategory);
-
-    // Discard from the cache, to make sure that the next fetch see the updated version.
-    if (model.id)
-      this.loaded.delete(model.id.toString());
   }
 
   /** Delete an existing model.
@@ -762,27 +743,19 @@ export class IModelDbModels {
     const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteModel(model.id.value);
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
-
-    // Discard from the cache
-    this.loaded.delete(model.id.value);
   }
 }
 
 /** The collection of elements in an [[IModelDb]]. */
 export class IModelDbElements {
-  private readonly loaded: LRUMap<string, Element>;
-
   /** @hidden */
-  public constructor(private _iModel: IModelDb, maxElements = 2000) {
-    this.loaded = new LRUMap<string, Element>(maxElements);
-    this._iModel.onChangesetApplied.addListener(() => this.loaded.clear());
+  public constructor(private _iModel: IModelDb) {
   }
 
   /** Private implementation details of getElementProps */
   private _getElementProps(opts: ElementLoadProps): ElementProps {
     const json = this.getElementJson(JSON.stringify(opts));
     const props = json as ElementProps;
-    props.iModel = this._iModel;
     return props;
   }
 
@@ -799,18 +772,8 @@ export class IModelDbElements {
 
   /** Private implementation details of getElement */
   private _doGetElement(opts: ElementLoadProps): Element {
-    // first see if the element is already in the local cache.
-    if (opts.id) {
-      const loaded = this.loaded.get(opts.id.toString());
-      if (loaded)
-        return loaded;
-    }
     const props = this._getElementProps(opts);
-    const el = this._iModel.constructEntity(props) as Element;
-    // We have created the element. Cache it before we return it.
-    el.setPersistent(); // elements in the cache must be immutable and in their just-loaded state. Freeze it to enforce that
-    this.loaded.set(el.id.value, el);
-    return el;
+    return this._iModel.constructEntity(props) as Element;
   }
 
   /**
@@ -892,10 +855,6 @@ export class IModelDbElements {
     const error: IModelStatus = this._iModel.briefcase.nativeDb.updateElement(JSON.stringify(props));
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
-
-    // Discard from the cache, to make sure that the next fetch see the updated version.
-    if (props.id)
-      this.loaded.delete(props.id.toString());
   }
 
   /**
@@ -910,9 +869,6 @@ export class IModelDbElements {
     const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteElement(id.value);
     if (error !== IModelStatus.Success)
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
-
-    // Discard from the cache
-    this.loaded.delete(id.value);
   }
 
   /** Query for the child elements of the specified element.
@@ -951,7 +907,6 @@ export class IModelDbElements {
       const entity = this._iModel.constructEntity(aspectProps);
       assert(entity instanceof ElementAspect);
       const aspect = entity as ElementAspect;
-      aspect.setPersistent();
       aspects.push(aspect);
     }
 
@@ -1018,7 +973,7 @@ export class IModelDbViews {
 export class TxnManager {
   constructor(private _iModel: IModelDb) { }
 
-  /** Get the ID of the first transaction, if any. */
+  /** Get the Id of the first transaction, if any. */
   public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.briefcase!.nativeDb!.txnManagerQueryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
@@ -1027,7 +982,7 @@ export class TxnManager {
   /** Get the predecessor of the specified TxnId */
   public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcase!.nativeDb!.txnManagerQueryPreviousTxnId(txnId); }
 
-  /** Get the ID of the current (tip) transaction.  */
+  /** Get the Id of the current (tip) transaction.  */
   public getCurrentTxnId(): TxnManager.TxnId { return this._iModel.briefcase!.nativeDb!.txnManagerGetCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
