@@ -27,7 +27,10 @@ export class FrameBuffer implements IDisposable {
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState; }
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
-  public getColor(ndx: number): TextureHandle { return this.colorTextures[ndx]; }
+  public getColor(ndx: number): TextureHandle {
+    assert(ndx < this.colorTextures.length);
+    return this.colorTextures[ndx];
+  }
 
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
     this._fbo = fbo;
@@ -105,4 +108,57 @@ export class FrameBuffer implements IDisposable {
   public unbind() { assert(this.isBound);  System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null); }
   public suspend() { assert(this.isBound);  this._bindState = FrameBufferBindState.Suspended; }
   public checkStatus(): GLenum { return System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET); }
+}
+
+interface Binding {
+  fbo: FrameBuffer;
+  withAttachments: boolean;
+}
+
+export class FrameBufferStack {
+  private readonly _stack: Binding[] = [];
+
+  private get top() { return !this.isEmpty ? this._stack[this._stack.length - 1] : undefined; }
+
+  public push(fbo: FrameBuffer, withAttachments: boolean): void {
+    if (undefined !== this.top) {
+      this.top.fbo.suspend();
+    }
+
+    assert(!fbo.isBound);
+    fbo.bind(withAttachments);
+    assert(fbo.isBound);
+
+    this._stack.push({ fbo, withAttachments });
+  }
+
+  public pop(): void {
+    assert(!this.isEmpty);
+    if (undefined === this.top) {
+      return;
+    }
+
+    const fbo = this.top.fbo;
+    this._stack.pop();
+
+    assert(fbo.isBound);
+    fbo.unbind();
+    assert(!fbo.isBound);
+
+    if (this.isEmpty) {
+      System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
+    } else {
+      const top = this.top;
+      assert(top.fbo.isSuspended);
+      top.fbo.bind(top.withAttachments);
+      assert(top.fbo.isBound);
+    }
+  }
+
+  public get currentColorBuffer(): TextureHandle | undefined {
+    assert(!this.isEmpty);
+    return undefined !== this.top ? this.top.fbo.getColor(0) : undefined;
+  }
+
+  public get isEmpty(): boolean { return 0 === this._stack.length; }
 }
