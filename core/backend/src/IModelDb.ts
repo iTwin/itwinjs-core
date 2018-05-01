@@ -56,8 +56,8 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
  *
  */
 export class IModelDb extends IModel {
-  public static readonly defaultLimit = 1000;
-  public static readonly maxLimit = 10000;
+  public static readonly defaultLimit = 1000; // default limit for batching queries
+  public static readonly maxLimit = 10000; // maximum limit for batching queries
   private static _accessTokens?: Map<string, AccessToken>;
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -261,7 +261,7 @@ export class IModelDb extends IModel {
   /** Get the in-memory handle of the native Db */
   public get nativeDb(): any { return (this.briefcase === undefined) ? undefined : this.briefcase.nativeDb; }
 
-  /** Get the briefcase ID of this iModel */
+  /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcase === undefined ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
 
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
@@ -973,7 +973,7 @@ export class IModelDbViews {
 export class TxnManager {
   constructor(private _iModel: IModelDb) { }
 
-  /** Get the ID of the first transaction, if any. */
+  /** Get the Id of the first transaction, if any. */
   public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.briefcase!.nativeDb!.txnManagerQueryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
@@ -982,7 +982,7 @@ export class TxnManager {
   /** Get the predecessor of the specified TxnId */
   public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.briefcase!.nativeDb!.txnManagerQueryPreviousTxnId(txnId); }
 
-  /** Get the ID of the current (tip) transaction.  */
+  /** Get the Id of the current (tip) transaction.  */
   public getCurrentTxnId(): TxnManager.TxnId { return this._iModel.briefcase!.nativeDb!.txnManagerGetCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */

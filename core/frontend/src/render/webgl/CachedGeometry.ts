@@ -23,7 +23,7 @@ export abstract class CachedGeometry {
   // Returns the edge/line pattern used to render this geometry
   protected _getLineCode(_params: ShaderProgramParams): number { return LineCode.solid; }
 
-  // Returns the ID of the Technique used to render this geometry
+  // Returns the Id of the Technique used to render this geometry
   public abstract getTechniqueId(target: Target): TechniqueId;
   // Returns the pass in which to render this geometry. RenderPass.None indicates it should not be rendered.
   public abstract getRenderPass(target: Target): RenderPass;

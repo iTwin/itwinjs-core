@@ -28,7 +28,6 @@ export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** Base class for all Entities. */
 export class Entity implements EntityProps {
-
   [propName: string]: any;
 
   /** The schema that defines this class. */
@@ -77,8 +76,8 @@ export class Entity implements EntityProps {
   /** Get the name of this class */
   public get className(): string { return this.constructor.name; }
 
-  /** make a copy of this Entity so that it may be be modified. */
-  public copyForEdit<T extends Entity>(): T { return new (this.constructor as any)(this, this.iModel) as T; }
+  /** Make a deep copy of this Entity */
+  public clone<T extends Entity>(): T { return new (this.constructor as any)(this, this.iModel) as T; }
 }
 
 /** A custom attribute instance */
