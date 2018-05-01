@@ -128,7 +128,7 @@ export class Clips {
 
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
-  private _scene = new GraphicList();
+  private _scene: GraphicList = [];
   private _decorations = new Decorations();
   private _dynamics?: DecorationList;
   private _overridesUpdateTime = BeTimePoint.now();

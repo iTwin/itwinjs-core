@@ -62,18 +62,25 @@ export abstract class RenderGraphic {
   constructor(iModel: IModelConnection) { this.iModel = iModel; }
 }
 
-export class GraphicList {
-  public list: RenderGraphic[] = [];
-  public isEmpty(): boolean { return this.list.length === 0; }
-  public clear() { this.list.length = 0; }
-  public add(graphic: RenderGraphic) { this.list.push(graphic); }
-  public getCount(): number { return this.list.length; }
-  public at(index: number): RenderGraphic | undefined { return this.list[index]; }
-  public get length(): number { return this.list.length; }
-  constructor(...graphics: RenderGraphic[]) { graphics.forEach(this.add.bind(this)); }
+export type GraphicList = RenderGraphic[];
+
+export class OvrGraphicParams {
+  // ###TODO
 }
 
-export class DecorationList extends GraphicList {
+/** A graphic used for decorations, optionally with symbology overrides. */
+export class Decoration {
+  public readonly graphic: RenderGraphic;
+  public readonly overrides?: OvrGraphicParams;
+
+  public constructor(graphic: RenderGraphic, overrides?: OvrGraphicParams) {
+    this.graphic = graphic;
+    this.overrides = overrides;
+  }
+}
+
+export class DecorationList extends Array<Decoration> {
+  public add(graphic: RenderGraphic, ovrs?: OvrGraphicParams) { this.push(new Decoration(graphic, ovrs)); }
 }
 
 /**

@@ -71,5 +71,3 @@ export class GraphicsList extends Graphic {
   // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
   // public setUniformFeatureIndices(uint32_t)
 }
-
-export class OvrGraphicParams {}

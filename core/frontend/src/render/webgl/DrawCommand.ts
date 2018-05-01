@@ -8,13 +8,13 @@ import { Transform } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
-import { Batch, OvrGraphicParams, Branch, Graphic } from "./Graphic";
+import { Batch, Branch, Graphic } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
-import { GraphicList, DecorationList, Decorations, RenderGraphic } from "../System";
+import { GraphicList, DecorationList, Decorations, RenderGraphic, OvrGraphicParams } from "../System";
 import { TechniqueId } from "./TechniqueId";
 
 export class ShaderProgramParams {
@@ -208,7 +208,7 @@ export class RenderCommands {
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
-    scene.list.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    scene.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
