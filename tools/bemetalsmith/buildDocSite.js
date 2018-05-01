@@ -12,13 +12,15 @@ let runRushBuild = argv.noBuild === undefined ? true : false;
 
 const runQuick = argv.mdOnly === undefined ? false : true;
 runTypeDoc = runQuick === true ? false : runTypeDoc;
-runRushBuild = runQuick === true ? false : runRushBuild;
 
 if (runTypeDoc) {
   runDocs();
 }
 if (runRushBuild) {
   runBuild();
+}
+if (runQuick) {
+  clearReference();
 }
 runStagingCopy();
 runBemetalsmith();
@@ -90,3 +92,8 @@ function getPackages() {
   });
   return retProjects;
 }
+
+function clearReference() {
+  fs.removeSync(path.join(process.cwd(), "generated-docs", "staging", "reference"));
+}
+
