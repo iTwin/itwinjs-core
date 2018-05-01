@@ -174,7 +174,10 @@ export abstract class Target extends RenderTarget {
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
+  public get hasClipMask(): boolean { return false; } // ###TODO
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentOverrides(): any { return undefined; } // ###TODO
+  public get currentPickTable(): any { return undefined; } // ###TODO
 
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }

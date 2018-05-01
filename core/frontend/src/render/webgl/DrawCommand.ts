@@ -15,6 +15,7 @@ import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
 import { GraphicList, DecorationList, Decorations } from "../System";
+import { TechniqueId } from "./TechniqueId";
 
 export class ShaderProgramParams {
   public readonly target: Target;
@@ -81,6 +82,7 @@ export abstract class DrawCommand {
   public get hasFeatureOverrides(): boolean { return FeatureIndexType.Empty !== this.featureIndexType; }
   public get renderOrder(): RenderOrder { return undefined !== this.primitive ? this.primitive.renderOrder : RenderOrder.BlankingRegion; }
   public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
+  public getTechniqueId(target: Target): TechniqueId { return undefined !== this.primitive ? this.primitive.getTechniqueId(target) : TechniqueId.Invalid; }
 
   public isPushCommand(branch?: Branch) {
     return PushOrPop.Push === this.pushOrPop && (undefined === branch || this.branch === branch);

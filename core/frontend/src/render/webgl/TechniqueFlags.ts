@@ -2,6 +2,9 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+import { Target } from "./Target";
+import { RenderPass } from "./RenderFlags";
+
 export const enum WithClipVolume {
   No,
   Yes,
@@ -25,6 +28,25 @@ export class TechniqueFlags {
     this.isTranslucent = translucent;
     this.hasClipVolume = this._isHilite = false;
     this.featureMode = FeatureMode.None;
+  }
+
+  public init(target: Target, pass: RenderPass): void {
+    const hasClip = target.hasClipVolume || target.hasClipMask;
+    if (RenderPass.Hilite === pass) {
+      this.initForHilite(hasClip ? WithClipVolume.Yes : WithClipVolume.No);
+    } else {
+      this._isHilite = false;
+      this.hasClipVolume = hasClip;
+      this.isTranslucent = RenderPass.Translucent === pass;
+
+      if (undefined !== target.currentOverrides) {
+        this.featureMode = FeatureMode.Overrides;
+      } else if (undefined !== target.currentPickTable) {
+        this.featureMode = FeatureMode.Pick;
+      } else {
+        this.featureMode = FeatureMode.None;
+      }
+    }
   }
 
   public get hasFeatures() { return FeatureMode.None !== this.featureMode; }
