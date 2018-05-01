@@ -54,6 +54,21 @@ export class TextureHandle implements IDisposable {
   /** Retrieves actual WebGLTexture object associated with this texture. */
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }
 
+  /** Binds texture handle (if available) associated with an instantiation of this class to specified texture unit. */
+  public bind(texUnit: GL.Texture.Unit): boolean {
+    if (undefined === this._glTexture)
+      return false;
+    TextureHandle.bindTexture(texUnit, this._glTexture);
+    return true;
+  }
+
+  /** Binds specified texture handle to specified texture unit. */
+  public static bindTexture(texUnit: GL.Texture.Unit, glTex: WebGLTexture | undefined) {
+    const gl: WebGLRenderingContext = System.instance.context;
+    gl.activeTexture(texUnit);
+    gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null); // ###TODO: might need to set the shader sampler handler here
+  }
+
   /** Creates a texture for an image based on certain parameters. */
   public static createForImage(width: number, imageBytes: Uint8Array, isTranslucent: boolean, useMipMaps = true, isGlyph = false, isTileSection = false) {
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
@@ -109,6 +124,27 @@ export class TextureHandle implements IDisposable {
     return new TextureHandle(glTex, params);
   }
 
+  /** Creates a texture for a color attachment (no data specified). */
+  public static createForColor(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType /* , isTranslucent: boolean */ ) {
+    const glTex: WebGLTexture | undefined = this.createTextureHandle();
+    if (undefined === glTex) {
+      return undefined;
+    }
+
+    const params: TextureCreateParams = new TextureCreateParams();
+    params.format = format;
+    params.dataType = dataType;
+    params.width = width;
+    params.height = height;
+    params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
+    params.wantInterpolate = true;
+    // ###TODO: isTranslucent flag - shouldn't this just be determined based on format?
+
+    return new TextureHandle(glTex, params);
+  }
+
+  // ###TODO: lookup table textures: createForVertexLookup, createForAnimationLookup
+
   public dispose() {
     if (undefined !== this._glTexture) {
       System.instance.context.deleteTexture(this._glTexture);
@@ -152,19 +188,6 @@ export class TextureHandle implements IDisposable {
 
       gl.bindTexture(gl.TEXTURE_2D, 0);
     }
-
-  public bind(texUnit: GL.Texture.Unit): boolean {
-    if (undefined === this._glTexture)
-      return false;
-    TextureHandle.bindTexture(texUnit, this._glTexture);
-    return true;
-  }
-
-  public static bindTexture(texUnit: GL.Texture.Unit, glTex: WebGLTexture | undefined) {
-    const gl: WebGLRenderingContext = System.instance.context;
-    gl.activeTexture(texUnit);
-    gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null); // ###TODO: might need to set the shader sampler handler here
-  }
 
   private static createTextureHandle(): WebGLTexture | undefined {
     const glTex: WebGLTexture | null = System.instance.context.createTexture();
