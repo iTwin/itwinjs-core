@@ -11,7 +11,7 @@ import { Techniques } from "./Technique";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch } from "./Graphic";
+import { Branch, WorldDecorations } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
 
@@ -131,6 +131,7 @@ export abstract class Target extends RenderTarget {
   private _scene: GraphicList = [];
   private _decorations = new Decorations();
   private _dynamics?: DecorationList;
+  private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
   private _hilite?: HilitedSet;
   private _hiliteUpdateTime = BeTimePoint.now();
@@ -171,6 +172,26 @@ export abstract class Target extends RenderTarget {
   public get scene(): GraphicList { return this._scene; }
   public get decorations(): Decorations { return this._decorations; }
   public get dynamics(): DecorationList | undefined { return this._dynamics; }
+  public getWorldDecorations(decs: DecorationList): WorldDecorations {
+    if (undefined === this._worldDecorations) {
+      assert(0 < decs.length);
+
+      // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
+      const vf = new ViewFlags();
+      vf.setRenderMode(RenderMode.SmoothShade);
+      vf.setShowClipVolume(false);
+      if (this.is2d) {
+        vf.setShowSourceLights(false);
+        vf.setShowCameraLights(false);
+        vf.setShowSolarLight(false);
+      }
+
+      this._worldDecorations = new WorldDecorations(decs[0].graphic.iModel, vf);
+    }
+
+    this._worldDecorations.init(decs);
+    return this._worldDecorations;
+  }
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }

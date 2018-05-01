@@ -212,14 +212,23 @@ export class RenderCommands {
     this._forcedRenderPass = RenderPass.None;
   }
 
-  // #TODO: implement DecorationListNode, create iterator for DecorationList
-  public addDecorations(_dec: DecorationList, _forcedPass: RenderPass = RenderPass.None): void {}
+  public addDecorations(dec: DecorationList, forcedPass: RenderPass = RenderPass.None): void {
+    this._forcedRenderPass = forcedPass;
+    for (const entry of dec) {
+      this.addDecoration(entry.graphic as Graphic, entry.overrides);
+    }
 
-  public addWorldDecorations(_decs: DecorationList): void {
-    // const world = this.target.getWorldDecorations(decs);
-    // assert(world.branch.entries.size === world.overrides.size);
+    this._forcedRenderPass = RenderPass.None;
+  }
 
-    // this.pushOrPopBranch(world, branch)
+  public addWorldDecorations(decs: DecorationList): void {
+    const world = this.target.getWorldDecorations(decs);
+    assert(world.branch.entries.length === world.overrides.length);
+    this.pushAndPopBranch(world, () => {
+      for (let i = 0; i < world.branch.entries.length; i++) {
+        this.addDecoration(world.branch.entries[i] as Graphic, world.overrides[i]);
+      }
+    });
   }
 
   public addBackground(gf?: Graphic): void {
@@ -303,18 +312,13 @@ export class RenderCommands {
     this.getCommands(pass).push(command);
   }
 
-  // #TODO: implement DecorationListNode
-  // public addDecorationListNode(node: DecorationListNode): void
-
   // #TODO: implement FeatureOverrides
-  // #TODO: implement addCommands on Graphic
-  // #TODO: implement flags, fillColor, and FLAGS_FillColorTransparency on OvrGraphicParams
-  public addDecoration(_gf: Graphic, _ovr: OvrGraphicParams): void {
-    // const anyOvr = FeatureOverrides.AnyOverrides(ovr);
-    // if (!anyOvr) {
-    //   gf.addCommands(this);
-    //   return;
-    // }
+  public addDecoration(gf: Graphic, _ovr?: OvrGraphicParams): void {
+    const anyOvr = false; // FeatureOverrides.anyOverrides(ovr);
+    if (!anyOvr) {
+      gf.addCommands(this);
+      return;
+    }
 
     // this._curOvrParams = ovr;
 
@@ -369,17 +373,13 @@ export class RenderCommands {
     this._stack.pop();
   }
 
-  // TODO:
-  // template<typename T> static bool IsValidDisplayList(RefCountedPtr<T> const& list) { return IsValidDisplayList(list.get()); }
-  // template<typename T> static bool IsValidDisplayList(T const* list) { return nullptr != list && !list->empty(); }
-
   public clear(): void {
     this._commands.forEach((cmds: DrawCommands) => { cmds.splice(0); });
     assert(undefined === this._curOvrParams);
   }
 
   // #TODO: implement overlayDecorationsState on target
-  public init(scene: GraphicList, _dynamics: DecorationList, _dec: Decorations, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, dynamics: DecorationList, dec: Decorations, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -392,27 +392,29 @@ export class RenderCommands {
       return;
     }
 
-    // #TODO: sort out dev.viewBacground nullable state and cast to Graphic from RenderGraphic...
-    // this.addBackground(dec.viewBackground)
-
+    this.addBackground(dec.viewBackground as Graphic);
     this.addGraphics(scene);
 
-    // if (this.isValidDisplayList(dynamics))
-    //   this.addDecorations(dynamics);
+    if (undefined !== dynamics && 0 < dynamics.length) {
+      this.addDecorations(dynamics);
+    }
 
-    // if (this.isValidDisplayList(dec.normal))
-    //   this.addDecorations(dec.normal);
+    if (undefined !== dec.normal && 0 < dec.normal.length) {
+      this.addGraphics(dec.normal);
+    }
 
-    // if (this.isValidDisplayList(dec.world))
-    //   this.addDecorations(dec.world);
+    if (undefined !== dec.world && 0 < dec.world.length) {
+      this.addWorldDecorations(dec.world);
+    }
 
-    // this._stack.pushState(this.target.overlayDecorationsState)
+    this._stack.pushState(this.target.decorationState);
+    if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
+      this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
+    }
 
-    // if (this.isValidDisplayList(dec.viewOverlay))
-    //   this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
-
-    // if (this.isValidDisplayList(dec.worldOverlay))
-    //   this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
+    if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
+      this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
+    }
 
     this._stack.pop();
   }
@@ -438,8 +440,6 @@ export class RenderCommands {
 
   // #TODO: implement getOverrides(target) on Batch
   // #TODO: implement property range on Batch
-  // #TODO: implement FrustumPlanes
-  // #TODO: implement addHiliteCommands on Graphic
   public addBatch(batch: Batch): void {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
@@ -480,10 +480,11 @@ export class RenderCommands {
     this._curBatch = undefined;
 
     // If the batch contains hilited features, need to render them in the hilite pass
-    // if (overrides.anyHilited) {
-    //   const hiliteCommands = this.getCommands(RenderPass.Hilite);
-    //   batch.graphic.addHiliteCommands(hiliteCommands, batch);
-    // }
+    const anyHilited = false; // ###TODO overrides.anyHilited
+    if (anyHilited) {
+      const hiliteCommands = this.getCommands(RenderPass.Hilite);
+      (batch.graphic as Graphic).addHiliteCommands(hiliteCommands, batch);
+    }
 
     this._opaqueOverrides = this._translucentOverrides = false;
   }
