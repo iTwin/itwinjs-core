@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json ../../generated-docs/common",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/common --json=../../generated-docs/common/json/file.json --tsIndexFile=./common.ts  %TYPEDOC_THEME%"
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/common/json/file.json --tsIndexFile=./common.ts --onlyJson %TYPEDOC_THEME%"
   },
   "repository": {},
   "keywords": [
