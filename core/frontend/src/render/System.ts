@@ -140,6 +140,8 @@ export abstract class RenderSystem {
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
   public nowPainting() { this._nowPainting = undefined; }
 
+  public abstract get canvas(): HTMLCanvasElement;
+
   /** Create a render target. */
   public abstract createTarget(): RenderTarget;
 
