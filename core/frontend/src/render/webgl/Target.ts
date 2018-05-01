@@ -14,6 +14,10 @@ import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
 import { Branch, WorldDecorations } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
+import { RenderCommands } from "./DrawCommand";
+import { RenderPass } from "./RenderFlags";
+import { RenderState } from "./RenderState";
+import { GL } from "./GL";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -139,6 +143,8 @@ export abstract class Target extends RenderTarget {
   private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
   private _transparencyThreshold: number = 0;
+  private _renderCommands: RenderCommands;
+  private _overlayRenderState: RenderState;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -155,6 +161,10 @@ export abstract class Target extends RenderTarget {
 
   protected constructor() {
     super();
+    this._renderCommands = new RenderCommands(this, this._stack);
+    this._overlayRenderState = new RenderState();
+    this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
+    this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
@@ -261,7 +271,7 @@ export abstract class Target extends RenderTarget {
     this._dcAssigned = false;
   }
 
-  private static scratch = {
+  private static _scratch = {
     viewFlags: new ViewFlags(),
     nearCenter: new Point3d(),
     viewX: new Vector3d(),
@@ -274,10 +284,11 @@ export abstract class Target extends RenderTarget {
   };
 
   public changeRenderPlan(plan: RenderPlan): void {
-    // ###TODO if (this._dcAssigned && plan.is3d !== this.is3d)) {
-    // ###TODO   // changed the dimensionality of the Target. World decorations no longer valid.
-    // ###TODO   this.worldDecorations = undefined;
-    // ###TODO }
+    if (this._dcAssigned && plan.is3d !== this.is3d) {
+      // changed the dimensionality of the Target. World decorations no longer valid.
+      // (lighting is enabled or disabled based on 2d vs 3d).
+      this._worldDecorations = undefined;
+    }
 
     this.assignDC();
 
@@ -288,7 +299,7 @@ export abstract class Target extends RenderTarget {
 
     // ##TODO active volume...
 
-    const scratch = Target.scratch;
+    const scratch = Target._scratch;
     const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
     const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
 
@@ -408,7 +419,53 @@ export abstract class Target extends RenderTarget {
   }
 
   public drawFrame(): void {
-    // ###TODO
+    // ###TODO assert(System.instance.boundFBOs.isEmpty);
+
+    if (undefined === this._scene) {
+      return;
+    }
+
+    this.paintScene();
+
+    // ###TODO assert(System.instance.boundFBOs.isEmpty);
+  }
+
+  private paintScene(): void {
+    if (!this._dcAssigned) {
+      return;
+    }
+
+    this.makeCurrent();
+    this.update();
+    this.beginPaint();
+
+    const gl = System.instance.context;
+    const rect = this.viewRect;
+    gl.viewport(0, 0, rect.width, rect.height);
+
+    // ###TODO? System.instance.garbage.execute();
+
+    this._renderCommands.init(this._scene, this._decorations, this._dynamics);
+
+    // ###TODO this._compositor.draw(this, this._renderCommands);
+
+    this._stack.pushState(this.decorationState);
+    this.drawPass(RenderPass.WorldOverlay);
+    this.drawPass(RenderPass.ViewOverlay);
+    this._stack.pop();
+
+    this.endPaint();
+  }
+
+  private drawPass(pass: RenderPass): void {
+    System.instance.applyRenderState(this.getRenderState(pass));
+    this.techniques.execute(this, this._renderCommands.getCommands(pass), pass);
+  }
+
+  private getRenderState(pass: RenderPass): RenderState {
+    // the other passes are handled by SceneCompositor
+    assert(RenderPass.ViewOverlay === pass || RenderPass.WorldOverlay === pass);
+    return this._overlayRenderState;
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //

@@ -13,6 +13,7 @@ import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
+import { RenderState } from "./RenderState";
 
 export const enum ContextState {
   Uninitialized,
@@ -167,6 +168,7 @@ export class Capabilities {
 
 export class System extends RenderSystem {
   private readonly _canvas: HTMLCanvasElement;
+  private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
 
   public readonly techniques: Techniques;
@@ -209,6 +211,11 @@ export class System extends RenderSystem {
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 
   public get canvas(): HTMLCanvasElement { return this._canvas; }
+
+  public applyRenderState(newState: RenderState) {
+    newState.apply(this._currentRenderState);
+    this._currentRenderState.copyFrom(newState);
+  }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();

@@ -379,7 +379,7 @@ export class RenderCommands {
   }
 
   // #TODO: implement overlayDecorationsState on target
-  public init(scene: GraphicList, dynamics: DecorationList, dec: Decorations, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, dec: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
