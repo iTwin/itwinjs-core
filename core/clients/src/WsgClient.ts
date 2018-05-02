@@ -12,7 +12,7 @@ import { ImsDelegationSecureTokenClient } from "./ImsClients";
 
 const loggingCategory = "imodeljs-clients.Clients";
 
-enum WSError {
+export enum WSError {
   Unknown,
 
   // Server returned error ids
@@ -74,8 +74,8 @@ export class WsgError extends ResponseError {
 
   /**
    * Decides whether request should be retried or not
-   * @param error Superagent Error
-   * @param response Superagent Response
+   * @param error Error
+   * @param response Response
    */
   public static shouldRetry(error: any, response: any): boolean {
     if (response === undefined || response === null) {
@@ -87,7 +87,21 @@ export class WsgError extends ResponseError {
       return super.shouldRetry(error, response);
      }
 
-    const errorCodesToRetry: number[] = [WSError.ServerError,
+    const errorCodesToRetry: number[] = [WSError.LoginFailed,
+                                         WSError.SslRequired,
+                                         WSError.NotEnoughRights,
+                                         WSError.RepositoryNotFound,
+                                         WSError.SchemaNotFound,
+                                         WSError.ClassNotFound,
+                                         WSError.PropertyNotFound,
+                                         WSError.InstanceNotFound,
+                                         WSError.FileNotFound,
+                                         WSError.NotSupported,
+                                         WSError.NoServerLicense,
+                                         WSError.NoClientLicense,
+                                         WSError.TooManyBadLoginAttempts,
+                                         WSError.ServerError,
+                                         WSError.BadRequest,
                                          WSError.Unknown];
     const errorStatus = WsgError.getErrorStatus(parsedError.name !== undefined ?
             WsgError.getWSErrorId(parsedError.name) : WSError.Unknown, response.statusType);
@@ -96,10 +110,10 @@ export class WsgError extends ResponseError {
 
   /**
    * Gets error status from current WSError and HTTP Status type
-   * @param error Superagent Error
-   * @param response Superagent Response
+   * @param error Error returned by request
+   * @param response Response returned by request
    */
-  private static getErrorStatus(errorId: number, httpStatusType: number): number {
+  public static getErrorStatus(errorId: number, httpStatusType: number): number {
     if (WSError.Unknown !== errorId) {
       return errorId;
     }
@@ -116,7 +130,7 @@ export class WsgError extends ResponseError {
    * Get WSError from error string
    * @param error error to be returned in WSError enum
    */
-  private static getWSErrorId(error: string): number {
+  public static getWSErrorId(error: string): number {
     switch (error) {
       case "LoginFailed":
         return WSError.LoginFailed;

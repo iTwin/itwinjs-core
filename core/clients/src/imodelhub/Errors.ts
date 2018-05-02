@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as deepAssign from "deep-assign";
 import { ResponseError } from "./../Request";
-import { WsgError } from "./../WsgClient";
+import { WsgError, WSError } from "./../WsgClient";
 import { Logger, LogFunction } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -247,8 +247,8 @@ export class IModelHubResponseError extends WsgError {
 
   /**
    * Decides whether request should be retried or not
-   * @param error Superagent Error
-   * @param response Superagent Response
+   * @param error Error returned by request
+   * @param response Response returned by request
    */
   public static shouldRetry(error: any, response: any): boolean {
     if (response === undefined || response === null) {
@@ -256,11 +256,20 @@ export class IModelHubResponseError extends WsgError {
     }
     const parsedError = IModelHubResponseError.parse({response});
 
-    if (!(parsedError instanceof IModelHubResponseError)) {
+    if (!(parsedError instanceof WsgError)) {
       return super.shouldRetry(error, response);
      }
 
-    return false;
+    if ((parsedError instanceof IModelHubResponseError)) {
+      return false;
+     }
+
+    const errorCodesToRetry: number[] = [WSError.ServerError,
+                                          WSError.Unknown];
+
+    const errorStatus = super.getErrorStatus(parsedError.name !== undefined ?
+        super.getWSErrorId(parsedError.name) : WSError.Unknown, response.statusType);
+    return errorCodesToRetry.includes(errorStatus);
   }
 
   /**

@@ -120,12 +120,9 @@ export class ResponseBuilder {
   public generateError(id?: string, message?: string, description?: string, otherProperties?: Map<string, any>): string {
     let error = "{";
 
-    error += `"errorId":`;
-    id !== undefined ? error += `"${id}",` : error += "null,";
-    error += '"errorMessage":';
-    message !== undefined ? error += `"${message}",` : error += "null,";
-    error += '"errorDescription":';
-    description !== undefined ? error += `"${description}"` : error += "null";
+    error += `"errorId": "${id || "null"}",`;
+    error += `"errorMessage": "${message || "null"}",`;
+    error += `"errorDescription": "${description || "null"}"`;
     if (otherProperties !== undefined) {
       otherProperties.forEach((value: any, key: string) => {
         error += ",";
@@ -225,7 +222,7 @@ export class ResponseBuilder {
    * @param headers Specifies response headers.
    * @param responseCode Specifies response code.
    */
-  public MockResponse(requestType: RequestType, requestPath: string, requestResponse: any, times = 1, postBody?: string,
+  public MockResponse(requestType: RequestType, requestPath: string, requestResponse: string | (() => string), times = 1, postBody?: string,
     headers?: any, responseCode = 200): void {
     if (!TestConfig.enableNock)
       return;

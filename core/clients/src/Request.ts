@@ -135,8 +135,8 @@ export class ResponseError extends Error {
 
   /**
    * Decides whether request should be retried or not
-   * @param error Superagent Error
-   * @param response Superagent Response
+   * @param error Error returned by request
+   * @param response Response returned by request
    */
   public static shouldRetry(error: any, response: any): boolean {
     if (error !== undefined && error !== null) {
@@ -172,8 +172,7 @@ export class ResponseError extends Error {
  */
 export async function request(url: string, options: RequestOptions): Promise<Response> {
   const proxyUrl = Config.devCorsProxyServer ? Config.devCorsProxyServer + url : url;
-  const retryCallback = options.retryCallback ? options.retryCallback : ResponseError.shouldRetry;
-  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(4, retryCallback);
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(4, options.retryCallback);
 
   if (options.headers) {
     sareq = sareq.set(options.headers);
