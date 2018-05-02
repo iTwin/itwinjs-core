@@ -5,24 +5,21 @@ import { FeatureIndexType,
          FeatureIndex } from "@bentley/imodeljs-common";
 
 export class FeaturesInfo {
-  public uniform = 0;
-  public type: FeatureIndexType;
+  public readonly uniform?: number;
 
-  public constructor(srcOrType?: FeatureIndex | FeatureIndexType, uniform?: number) {
-    if (srcOrType instanceof FeatureIndex) {
-      this.uniform = srcOrType.featureID;
-      this.type = srcOrType.type;
-    } else if (srcOrType !== undefined && uniform) {
-      this.uniform = uniform;
-      this.type = srcOrType;
-    } else {
-      this.type = FeatureIndexType.Empty;
+  public static create(featureIndex: FeatureIndex): FeaturesInfo | undefined {
+    switch (featureIndex.type) {
+      case FeatureIndexType.Empty:      return undefined;
+      case FeatureIndexType.Uniform:    return new FeaturesInfo(featureIndex.featureID);
+      default:                          return FeaturesInfo.nonUniform;
     }
   }
-  public isEmpty() { return FeatureIndexType.Empty === this.type; }
-  public isUniform() { return FeatureIndexType.Uniform === this.type; }
-  public isNonUniform() { return FeatureIndexType.NonUniform === this.type; }
 
-  public setUniform(uniform: number) { this.type = FeatureIndexType.Uniform; this.uniform = uniform; }
-  public clear() { this.type = FeatureIndexType.Empty; }
+  public get type(): FeatureIndexType { return undefined !== this.uniform ? FeatureIndexType.Uniform : FeatureIndexType.NonUniform; }
+  public get isUniform() { return FeatureIndexType.Uniform === this.type; }
+  public get isNonUniform() { return !this.isUniform; }
+
+  private constructor(uniform?: number) { this.uniform = uniform; }
+
+  private static nonUniform = new FeaturesInfo(undefined);
 }
