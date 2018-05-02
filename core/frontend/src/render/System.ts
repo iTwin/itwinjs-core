@@ -64,23 +64,19 @@ export abstract class RenderGraphic {
 
 export type GraphicList = RenderGraphic[];
 
-export class OvrGraphicParams {
-  // ###TODO
-}
-
 /** A graphic used for decorations, optionally with symbology overrides. */
 export class Decoration {
   public readonly graphic: RenderGraphic;
-  public readonly overrides?: OvrGraphicParams;
+  public readonly overrides?: FeatureSymbology.Appearance;
 
-  public constructor(graphic: RenderGraphic, overrides?: OvrGraphicParams) {
+  public constructor(graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance) {
     this.graphic = graphic;
     this.overrides = overrides;
   }
 }
 
 export class DecorationList extends Array<Decoration> {
-  public add(graphic: RenderGraphic, ovrs?: OvrGraphicParams) { this.push(new Decoration(graphic, ovrs)); }
+  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) { this.push(new Decoration(graphic, ovrs)); }
 }
 
 /**

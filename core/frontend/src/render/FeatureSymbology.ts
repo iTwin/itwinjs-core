@@ -26,9 +26,6 @@ export namespace FeatureSymbology {
     public get alpha(): number { return this._color.getAlpha(); }
     public set alpha(alpha: number) { this.flags.alpha = true; this._color.setAlpha(alpha); }
 
-    public get transparency(): number { return (255 - this._color.getAlpha() / 255); }
-    public set transparency(t: number) { this._color.setAlpha(new Uint8Array([(1 - t) * 255])[0]); }
-
     public get weight(): number { return this._weight; }
     public set weight(w: number) { this.flags.weight = true; this._weight = w; }
 
@@ -81,7 +78,6 @@ export namespace FeatureSymbology {
     }
 
     // public initFrom(over: DgnSubCategoryOverride) { }
-    // public get ovrGraphicParams(): OvrGraphicParams {}
   }
 
   export class Overrides {

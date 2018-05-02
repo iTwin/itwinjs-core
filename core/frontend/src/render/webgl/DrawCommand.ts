@@ -14,8 +14,9 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
-import { GraphicList, DecorationList, Decorations, RenderGraphic, OvrGraphicParams } from "../System";
+import { GraphicList, DecorationList, Decorations, RenderGraphic } from "../System";
 import { TechniqueId } from "./TechniqueId";
+import { FeatureSymbology } from "../FeatureSymbology";
 
 export class ShaderProgramParams {
   public readonly target: Target;
@@ -102,7 +103,7 @@ export abstract class DrawCommand {
   public static createForPrimitive(primitive: Primitive, batch?: Batch): DrawCommand {
     return undefined !== batch ? new BatchPrimitiveCommand(primitive, batch) : new PrimitiveCommand(primitive);
   }
-  public static createForDecoration(primitive: Primitive, ovrs?: OvrGraphicParams): DrawCommand {
+  public static createForDecoration(primitive: Primitive, ovrs?: FeatureSymbology.Appearance): DrawCommand {
     return undefined !== ovrs ? new OvrPrimitiveCommand(primitive, ovrs) : new PrimitiveCommand(primitive);
   }
   public static createForBranch(branch: Branch, pushOrPop: PushOrPop): DrawCommand { return new BranchCommand(branch, pushOrPop); }
@@ -161,11 +162,11 @@ class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 }
 
-/** Draws a decoration primitive with symbology overriden by OvrGraphicParams */
+/** Draws a decoration primitive with symbology overriden */
 class OvrPrimitiveCommand extends PrimitiveCommand {
-  private readonly _params: OvrGraphicParams;
+  private readonly _params: FeatureSymbology.Appearance;
 
-  public constructor(primitive: Primitive, params: OvrGraphicParams) {
+  public constructor(primitive: Primitive, params: FeatureSymbology.Appearance) {
     super(primitive);
     this._params = params;
   }
@@ -188,7 +189,7 @@ export class RenderCommands {
   private readonly _commands = new Array<DrawCommands>(RenderPass.COUNT);
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
-  private _curOvrParams?: OvrGraphicParams = undefined;
+  private _curOvrParams?: FeatureSymbology.Appearance = undefined;
   private _forcedRenderPass: RenderPass = RenderPass.None;
   private _opaqueOverrides: boolean = false;
   private _translucentOverrides: boolean = false;
@@ -313,7 +314,7 @@ export class RenderCommands {
   }
 
   // #TODO: implement FeatureOverrides
-  public addDecoration(gf: Graphic, _ovr?: OvrGraphicParams): void {
+  public addDecoration(gf: Graphic, _ovr?: FeatureSymbology.Appearance): void {
     const anyOvr = false; // FeatureOverrides.anyOverrides(ovr);
     if (!anyOvr) {
       gf.addCommands(this);

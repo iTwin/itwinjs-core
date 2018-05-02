@@ -12,7 +12,8 @@ import { ViewFlags, Npc } from "@bentley/imodeljs-common";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { PrimitiveBuilder } from "./render/primitives/Geometry";
-import { OvrGraphicParams, DecorationList, Decorations, RenderGraphic, RenderTarget, RenderSystem } from "./render/System";
+import { DecorationList, Decorations, RenderGraphic, RenderTarget, RenderSystem } from "./render/System";
+import { FeatureSymbology } from "./render/FeatureSymbology";
 
 const gridConstants = { maxGridDotsInRow: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225, maxGridPoints: 90, maxGridRefs: 40 };
 
@@ -215,21 +216,21 @@ export class DecorateContext extends RenderContext {
   }
 
   /** Display world coordinate graphic with smooth shading, default lighting, and z testing enabled. */
-  public addWorldDecoration(graphic: RenderGraphic, ovr?: OvrGraphicParams) {
+  public addWorldDecoration(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) {
     if (!this.decorations.world)
       this.decorations.world = new DecorationList();
     this.decorations.world.add(graphic, ovr);
   }
 
   /** Display world coordinate graphic with smooth shading, default lighting, and z testing disabled. */
-  public addWorldOverlay(graphic: RenderGraphic, ovr?: OvrGraphicParams) {
+  public addWorldOverlay(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) {
     if (!this.decorations.worldOverlay)
       this.decorations.worldOverlay = new DecorationList();
     this.decorations.worldOverlay.add(graphic, ovr);
   }
 
   /** Display view coordinate graphic with smooth shading, default lighting, and z testing disabled. */
-  public addViewOverlay(graphic: RenderGraphic, ovr?: OvrGraphicParams) {
+  public addViewOverlay(graphic: RenderGraphic, ovr?: FeatureSymbology.Appearance) {
     if (!this.decorations.viewOverlay)
       this.decorations.viewOverlay = new DecorationList();
     this.decorations.viewOverlay.add(graphic, ovr);
