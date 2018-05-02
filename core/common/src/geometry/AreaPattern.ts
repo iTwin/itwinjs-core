@@ -11,13 +11,13 @@ import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 export namespace AreaPattern {
   /** Single hatch line definition */
   export interface HatchDefLineProps {
-    /** Angle of hatch line */
+    /** Angle of hatch line, 0.0 if undefined */
     angle?: AngleProps;
-    /** Origin point (relative to placement) the hatch passes through */
+    /** Origin point (relative to placement) the hatch passes through, 0.0,0.0 if undefined */
     through?: XYProps;
-    /** Offset of successive lines. X offset staggers dashes (ignored for solid lines) and Y offset controls the distance between both solid and dashed lines */
+    /** Offset of successive lines. X offset staggers dashes (ignored for solid lines) and Y offset controls the distance between both solid and dashed lines, 0.0,0.0 if undefined */
     offset?: XYProps;
-    /** Array of gap and dash lengths for creating non-solid hatch lines, max of 20. A positive value denotes dash, a negative value a gap */
+    /** Array of gap and dash lengths for creating non-solid hatch lines, max of 20. A positive value denotes dash, a negative value a gap, solid line if undefined */
     dashes?: number[];
   }
 
@@ -41,27 +41,27 @@ export namespace AreaPattern {
 
   /** GeometryStream entry for adding a hatch, cross-hatch, or area pattern to a planar region */
   export interface ParamsProps {
-    /** Pattern offset (relative to placement) */
+    /** Pattern offset (relative to placement), 0.0,0.0,0.0 if undefined */
     origin?: XYZProps;
-    /** Pattern orientation (relative to placement) */
+    /** Pattern orientation (relative to placement), 0.0,0.0,0.0 if undefined */
     rotation?: YawPitchRollProps;
-    /** Spacing of first set of parallel lines in a hatch pattern, or row spacing between area pattern tiles */
+    /** Spacing of first set of parallel lines in a hatch pattern, or row spacing between area pattern tiles, 0.0 if undefined */
     space1?: number;
-    /** Spacing of second set of parallel lines in a cross-hatch (leave undefined or 0 for a hatch), or column spacing between area pattern tiles */
+    /** Spacing of second set of parallel lines in a cross-hatch (leave undefined or 0 for a hatch), or column spacing between area pattern tiles, 0.0 if undefined */
     space2?: number;
-    /** Angle of first set of parallel lines in a hatch pattern or area pattern tile direction */
+    /** Angle of first set of parallel lines in a hatch pattern or area pattern tile direction, 0.0 if undefined */
     angle1?: AngleProps;
-    /** Angle of second set of parallel lines in a cross-hatch */
+    /** Angle of second set of parallel lines in a cross-hatch, 0.0 if undefined */
     angle2?: AngleProps;
-    /** Scale to apply to area pattern symbol */
+    /** Scale to apply to area pattern symbol, 1.0 if undefined */
     scale?: number;
     /** Pattern color, leave undefined to inherit color from parent element. For area patterns, does not override explicit colors stored in symbol */
     color?: ColorDef;
     /** Pattern weight, leave undefined to inherit weight from parent element. For area patterns, does not override explicit weights stored in symbol */
     weight?: number;
-    /** Set to inhibit display of pattern boundary, not applicable when boundary is also filled */
+    /** Set to inhibit display of pattern boundary, not applicable when boundary is also filled, false if undefined */
     invisibleBoundary?: boolean;
-    /** Set to allow snapping to pattern geometry */
+    /** Set to allow snapping to pattern geometry, false if undefined */
     snappable?: boolean;
     /** GeometryPart id to use for tiled area pattern display */
     symbolId?: Id64Props;
