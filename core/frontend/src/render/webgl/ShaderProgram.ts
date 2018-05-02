@@ -10,6 +10,7 @@ import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
+import { Branch } from "./Graphic";
 
 /** Flags which control some conditional branches in shader code */
 export const enum ShaderFlags {
@@ -306,6 +307,9 @@ export class ShaderProgramExecutor implements IDisposable {
       this.draw(params);
     }
   }
+
+  public pushBranch(branch: Branch): void { this.target.pushBranch(this, branch); }
+  public popBranch(): void { this.target.popBranch(); }
 
   private changeProgram(program?: ShaderProgram): boolean {
     if (this._program === program) {

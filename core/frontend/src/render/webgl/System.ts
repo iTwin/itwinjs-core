@@ -4,7 +4,7 @@
 import { IModelError } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
-import { OnScreenTarget } from "./Target";
+import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/Geometry";
 import { GraphicsList, Branch } from "./Graphic";
@@ -12,6 +12,9 @@ import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
+import { ViewRect } from "../../Viewport";
+import { RenderState } from "./RenderState";
+import { FrameBufferStack } from "./FrameBuffer";
 
 export const enum ContextState {
   Uninitialized,
@@ -166,7 +169,9 @@ export class Capabilities {
 
 export class System extends RenderSystem {
   private readonly _canvas: HTMLCanvasElement;
+  private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
+  public readonly frameBufferStack = new FrameBufferStack();
 
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
@@ -201,10 +206,18 @@ export class System extends RenderSystem {
     return new System(canvas, context, techniques, capabilities);
   }
 
-  public createTarget(): RenderTarget { return new OnScreenTarget(); }
+  public createTarget(): RenderTarget { return new OnScreenTarget(this._canvas); }
+  public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+
+  public get canvas(): HTMLCanvasElement { return this._canvas; }
+
+  public applyRenderState(newState: RenderState) {
+    newState.apply(this._currentRenderState);
+    this._currentRenderState.copyFrom(newState);
+  }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();

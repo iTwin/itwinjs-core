@@ -54,7 +54,7 @@ export class Platform {
 export class KnownLocations {
 
   /** The directory where the platform's assets are stored. */
-  public static get assetsDir(): string {
+  public static get platformAssetsDir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
     if (imodeljsMobile !== undefined) {
       return path.join(imodeljsMobile.knownLocations.packageAssetsDir, "imodeljs-backend");

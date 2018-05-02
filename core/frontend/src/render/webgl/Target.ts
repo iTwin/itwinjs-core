@@ -11,8 +11,13 @@ import { Techniques } from "./Technique";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch } from "./Graphic";
+import { Branch, WorldDecorations } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
+import { ViewRect } from "../../Viewport";
+import { RenderCommands } from "./DrawCommand";
+import { RenderPass } from "./RenderFlags";
+import { RenderState } from "./RenderState";
+import { GL } from "./GL";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -127,9 +132,10 @@ export class Clips {
 
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
-  private _scene = new GraphicList();
+  private _scene: GraphicList = [];
   private _decorations = new Decorations();
   private _dynamics?: DecorationList;
+  private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
   private _hilite?: HilitedSet;
   private _hiliteUpdateTime = BeTimePoint.now();
@@ -137,6 +143,8 @@ export abstract class Target extends RenderTarget {
   private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
   private _transparencyThreshold: number = 0;
+  private _renderCommands: RenderCommands;
+  private _overlayRenderState: RenderState;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -153,6 +161,10 @@ export abstract class Target extends RenderTarget {
 
   protected constructor() {
     super();
+    this._renderCommands = new RenderCommands(this, this._stack);
+    this._overlayRenderState = new RenderState();
+    this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
+    this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
@@ -170,11 +182,34 @@ export abstract class Target extends RenderTarget {
   public get scene(): GraphicList { return this._scene; }
   public get decorations(): Decorations { return this._decorations; }
   public get dynamics(): DecorationList | undefined { return this._dynamics; }
+  public getWorldDecorations(decs: DecorationList): WorldDecorations {
+    if (undefined === this._worldDecorations) {
+      assert(0 < decs.length);
+
+      // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
+      const vf = new ViewFlags();
+      vf.setRenderMode(RenderMode.SmoothShade);
+      vf.setShowClipVolume(false);
+      if (this.is2d) {
+        vf.setShowSourceLights(false);
+        vf.setShowCameraLights(false);
+        vf.setShowSolarLight(false);
+      }
+
+      this._worldDecorations = new WorldDecorations(decs[0].graphic.iModel, vf);
+    }
+
+    this._worldDecorations.init(decs);
+    return this._worldDecorations;
+  }
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
+  public get hasClipMask(): boolean { return false; } // ###TODO
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentOverrides(): any { return undefined; } // ###TODO
+  public get currentPickTable(): any { return undefined; } // ###TODO
 
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
@@ -236,7 +271,7 @@ export abstract class Target extends RenderTarget {
     this._dcAssigned = false;
   }
 
-  private static scratch = {
+  private static _scratch = {
     viewFlags: new ViewFlags(),
     nearCenter: new Point3d(),
     viewX: new Vector3d(),
@@ -249,10 +284,11 @@ export abstract class Target extends RenderTarget {
   };
 
   public changeRenderPlan(plan: RenderPlan): void {
-    // ###TODO if (this._dcAssigned && plan.is3d !== this.is3d)) {
-    // ###TODO   // changed the dimensionality of the Target. World decorations no longer valid.
-    // ###TODO   this.worldDecorations = undefined;
-    // ###TODO }
+    if (this._dcAssigned && plan.is3d !== this.is3d) {
+      // changed the dimensionality of the Target. World decorations no longer valid.
+      // (lighting is enabled or disabled based on 2d vs 3d).
+      this._worldDecorations = undefined;
+    }
 
     this.assignDC();
 
@@ -263,7 +299,7 @@ export abstract class Target extends RenderTarget {
 
     // ##TODO active volume...
 
-    const scratch = Target.scratch;
+    const scratch = Target._scratch;
     const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
     const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
 
@@ -383,7 +419,51 @@ export abstract class Target extends RenderTarget {
   }
 
   public drawFrame(): void {
-    // ###TODO
+    assert(System.instance.frameBufferStack.isEmpty);
+    if (undefined === this._scene) {
+      return;
+    }
+
+    this.paintScene();
+    assert(System.instance.frameBufferStack.isEmpty);
+  }
+
+  private paintScene(): void {
+    if (!this._dcAssigned) {
+      return;
+    }
+
+    this.makeCurrent();
+    this.update();
+    this.beginPaint();
+
+    const gl = System.instance.context;
+    const rect = this.viewRect;
+    gl.viewport(0, 0, rect.width, rect.height);
+
+    // ###TODO? System.instance.garbage.execute();
+
+    this._renderCommands.init(this._scene, this._decorations, this._dynamics);
+
+    // ###TODO this._compositor.draw(this, this._renderCommands);
+
+    this._stack.pushState(this.decorationState);
+    this.drawPass(RenderPass.WorldOverlay);
+    this.drawPass(RenderPass.ViewOverlay);
+    this._stack.pop();
+
+    this.endPaint();
+  }
+
+  private drawPass(pass: RenderPass): void {
+    System.instance.applyRenderState(this.getRenderState(pass));
+    this.techniques.execute(this, this._renderCommands.getCommands(pass), pass);
+  }
+
+  private getRenderState(pass: RenderPass): RenderState {
+    // the other passes are handled by SceneCompositor
+    assert(RenderPass.ViewOverlay === pass || RenderPass.WorldOverlay === pass);
+    return this._overlayRenderState;
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //
@@ -396,8 +476,18 @@ export abstract class Target extends RenderTarget {
 }
 
 export class OnScreenTarget extends Target {
-  public constructor() {
+  private readonly _viewRect = new ViewRect();
+  private readonly _canvas: HTMLCanvasElement;
+
+  public constructor(canvas: HTMLCanvasElement) {
     super();
+    this._canvas = canvas;
+  }
+
+  public get viewRect(): ViewRect {
+    const clientRect = this._canvas.getBoundingClientRect();
+    this._viewRect.init(0, 0, clientRect.width, clientRect.height);
+    return this._viewRect;
   }
 
   // ###TODO...
@@ -411,9 +501,14 @@ export class OnScreenTarget extends Target {
 }
 
 export class OffScreenTarget extends Target {
-  public constructor() {
+  private _viewRect: ViewRect;
+
+  public constructor(rect: ViewRect) {
     super();
+    this._viewRect = new ViewRect(rect.left, rect.bottom, rect.right, rect.top);
   }
+
+  public get viewRect(): ViewRect { return this._viewRect; }
 
   // ###TODO...
   protected assignDC(): boolean { return false; }

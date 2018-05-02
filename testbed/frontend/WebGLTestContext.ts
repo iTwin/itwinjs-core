@@ -11,13 +11,24 @@ export namespace WebGLTestContext {
   // For now, all tests requiring WebGL are disabled by default; enable in developer builds by setting
   // isEnabled to true.
   const isEnabled = false;
+  const canvasId = "WebGLTestCanvas";
 
   function createCanvas(): HTMLCanvasElement | undefined {
-    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    let canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (null !== canvas) {
+      return canvas;
+    }
+
+    canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas) {
       return undefined;
     }
 
+    canvas.width = 300;
+    canvas.height = 150;
+    canvas.id = canvasId;
+
+    document.body.appendChild(document.createTextNode("WebGL tests"));
     document.body.appendChild(canvas);
     return canvas;
   }

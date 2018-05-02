@@ -297,7 +297,7 @@ export class ChangeSummaryManager {
   }
 
   private static getExtendedSchemaPath(): string {
-    return path.join(KnownLocations.assetsDir, "IModelChange.01.00.ecschema.xml");
+    return path.join(KnownLocations.platformAssetsDir, "IModelChange.01.00.ecschema.xml");
   }
 
   private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): boolean {

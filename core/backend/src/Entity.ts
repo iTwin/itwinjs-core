@@ -28,11 +28,6 @@ export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** Base class for all Entities. */
 export class Entity implements EntityProps {
-  private persistent: boolean = false;
-
-  /** @hidden */
-  public setPersistent() { this.persistent = true; Object.freeze(this); } // Internal use only
-
   [propName: string]: any;
 
   /** The schema that defines this class. */
@@ -81,13 +76,8 @@ export class Entity implements EntityProps {
   /** Get the name of this class */
   public get className(): string { return this.constructor.name; }
 
-  /** Determine whether this Entity is in the persistent (unmodified) state from the database. Persistent Entities may
-   * not be changed in any way. To modify an Entity, make a copy of it using [[copyForEdit]].
-   */
-  public isPersistent(): boolean { return this.persistent; }
-
-  /** make a copy of this Entity so that it may be be modified. */
-  public copyForEdit<T extends Entity>(): T { return new (this.constructor as any)(this, this.iModel) as T; }
+  /** Make a deep copy of this Entity */
+  public clone<T extends Entity>(): T { return new (this.constructor as any)(this, this.iModel) as T; }
 }
 
 /** A custom attribute instance */

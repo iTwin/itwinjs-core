@@ -11,7 +11,7 @@ import { AntiAliasPref,
          Hilite,
          HiddenLine,
          ColorDef } from "@bentley/imodeljs-common";
-import { Viewport } from "../Viewport";
+import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { HilitedSet } from "../SelectionSet";
@@ -62,18 +62,21 @@ export abstract class RenderGraphic {
   constructor(iModel: IModelConnection) { this.iModel = iModel; }
 }
 
-export class GraphicList {
-  public list: RenderGraphic[] = [];
-  public isEmpty(): boolean { return this.list.length === 0; }
-  public clear() { this.list.length = 0; }
-  public add(graphic: RenderGraphic) { this.list.push(graphic); }
-  public getCount(): number { return this.list.length; }
-  public at(index: number): RenderGraphic | undefined { return this.list[index]; }
-  public get length(): number { return this.list.length; }
-  constructor(...graphics: RenderGraphic[]) { graphics.forEach(this.add.bind(this)); }
+export type GraphicList = RenderGraphic[];
+
+/** A graphic used for decorations, optionally with symbology overrides. */
+export class Decoration {
+  public readonly graphic: RenderGraphic;
+  public readonly overrides?: FeatureSymbology.Appearance;
+
+  public constructor(graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance) {
+    this.graphic = graphic;
+    this.overrides = overrides;
+  }
 }
 
-export class DecorationList extends GraphicList {
+export class DecorationList extends Array<Decoration> {
+  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) { this.push(new Decoration(graphic, ovrs)); }
 }
 
 /**
@@ -115,6 +118,7 @@ export abstract class RenderTarget {
 
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
+  public abstract get viewRect(): ViewRect;
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
@@ -140,11 +144,13 @@ export abstract class RenderSystem {
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
   public nowPainting() { this._nowPainting = undefined; }
 
+  public abstract get canvas(): HTMLCanvasElement;
+
   /** Create a render target. */
   public abstract createTarget(): RenderTarget;
 
   // /** Create an offscreen render target. */
-  // public abstract createOffscreenTarget(tileSizeModifier: number): RenderTarget;
+  public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   // /** Find a previously-created Material by key. Returns null if no such material exists. */
   // public abstract findMaterial(key: MaterialKey, imodel: IModel): Material;

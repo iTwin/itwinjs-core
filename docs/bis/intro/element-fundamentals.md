@@ -30,7 +30,7 @@ Every `bis:Element` has an optional `UserLabel` property, to provide an *alias* 
 
 The UserLabel is always left for the user to enter and is not programmatically generated.
 
-The UserLabel may serve an alternate “friendlier” name in a GUI, e.g. the Room with CodeValue=R-134 might have UserLabel=”The Big Kitchen” or UserLabel=”John’s Office”
+The UserLabel may serve an alternate “friendlier” name in a GUI, e.g. the Room with `CodeValue`="R-134" might have `UserLabel`=”The Big Kitchen” or `UserLabel`=”John’s Office”
 
 ### JsonProperties
 
@@ -85,7 +85,7 @@ The largest advantage of JSON properties is that they do not require any schema 
 
 Each Element *lives in* a single Model. The Model *owns* the Element and Models cannot be deleted unless all of their Elements are first deleted. Models provide context and scope for their Elements.
 
-Every `Model` models some `Element`. This is a [key principle of BIS](model-hierarchy) to support modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single *root Subject* for the entire BIS Repository.
+Every `Model` models some `Element`. This is a [key principle of BIS](model-hierarchy.md) to support modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single *root Subject* for the entire BIS Repository.
 
 There is one exception to the “Every Model models an Element” rule: There is exactly one RepositoryModel in every BIS Repository which does not Model another Element (at least not another Element in the same BIS Repository). This RepositoryModel is at the top of the Model/Element hierarchy.
 

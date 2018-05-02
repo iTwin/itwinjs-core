@@ -35,8 +35,13 @@ describe("GraphicBuilderCreateParams", () => {
 
   it("should create a GraphicBuilderCreateParams successfully and use all functions", () => {
     /** Test constructors */
-    const vp: Viewport = new Viewport();
-    const vp2: Viewport = new Viewport();
+    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    assert(null !== canvas);
+    canvas!.width = canvas!.height = 1000;
+    document.body.appendChild(canvas!);
+
+    const vp: Viewport = new Viewport(canvas!);
+    const vp2: Viewport = new Viewport(canvas!);
     const tf: Transform = Transform.createIdentity();
     const tf2: Transform = Transform.createIdentity();
     tf2.multiplyXYZ(5, 10, 15);

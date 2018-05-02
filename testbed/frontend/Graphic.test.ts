@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicList, IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderGraphic, IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import * as path from "path";
@@ -33,16 +33,6 @@ describe("RenderGraphic", () => {
   it("RenderGraphic works as expected", () => {
     const g = new FakeGraphic(iModel);
     assert.isTrue(g.iModel instanceof IModelConnection, "can access IModelConnection");
-  });
-
-  it("GraphicList works as expected", () => {
-    const g1 = new FakeGraphic(iModel);
-    const g2 = new FakeGraphic(iModel);
-    const g3 = new FakeGraphic(iModel);
-    const g4 = new FakeGraphic(iModel);
-    const glist = new GraphicList(g1, g2, g3, g4);
-    assert.isTrue(glist.length === 4, "graphics loaded into array");
-    assert.isTrue(glist.at(0) instanceof RenderGraphic, "graphics can be accessed by index");
   });
 
   it("IndexedPrimitiveParamsFeatures works as expected", () => {

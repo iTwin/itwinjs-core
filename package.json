@@ -22,7 +22,8 @@
     "publish:frontend": "cd core/frontend && npm publish",
     "predocs": "echo NOTE: use 'rush docs' instead",
     "docs": " ",
-    "test": "npm run test:bentley && npm run test:geometry && npm run test:clients && npm run test:backend && npm run test:frontend && npm run test:sample-code-snippets",
+    "buildDocSite": "node tools/bemetalsmith/buildDocSite",
+    "test": "npm run test:bentley && npm run test:geometry && npm run test:clients && npm run test:backend && npm run test:frontend && npm run test:example-code-snippets && npm run test:example-code-app",
     "test:bentley": "cd core/bentley && npm run test",
     "test:geometry": "cd core/geometry && npm run test",
     "test:backend": "cd core/backend && npm run test",
@@ -30,7 +31,8 @@
     "test:clients": "cd core/clients && npm run test",
     "test:backendwebpackformobile": "cd core/backend && npm run webpackformobile",
     "test:frontend": "cd testbed && npm run build && node bin/testbed.js",
-    "test:sample-code-snippets": "cd sample-code/snippets && npm run test",
+    "test:example-code-snippets": "cd example-code/snippets && npm run test",
+    "test:example-code-app": "cd example-code/app && npm run test",
     "test:perf": "cd core/backend && npm run perftest",
     "testbed": "cd testbed && node bin/testbed.js --debug",
     "cover:geometry": "cd core/geometry && npm run cover",
@@ -56,6 +58,7 @@
     "WIP: Temporarily workaround monorepo/symlink issues by adding a devDependencies on @bentley/bentleyjs-core, @bentley/geometry-core and @bentley/imodeljs-clients"
   ],
   "devDependencies": {
+    "@bentley/bemetalsmith": "^1.21.2",
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "^3.4.1",
     "@bentley/geometry-core": "7",
