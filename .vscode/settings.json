@@ -4,10 +4,11 @@
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
+    "**/.nyc_output": true,
     "**/common/temp": true
   },
   "files.exclude": {
-    ".nyc_output": true,
+    "**/.nyc_output": true,
     "**/*.build.log": true,
     "**/*.build.error.log": true,
     "common/temp": true,
