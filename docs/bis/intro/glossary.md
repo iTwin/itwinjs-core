@@ -2,24 +2,24 @@
 
 Key BIS terms used in this documentation set are defined in this page.
 
+<!--
 **TODO - Style Questions**
- - "BIS Class" vs "ECClass" vs "class"
- - ECSchema vs Schema
-  - How long is too long for a definition?
-  - Is it ok to refer from the glossary to other pages (for more details....)?
-  - Should any references to iModel exist in this glossary? (some items have little relevance outside an iModel-like implementation)
+- "BIS Class" vs "ECClass" vs "class" (SS votes "class")
+- ECSchema vs Schema (SS votes "schema")
+- How long is too long for a definition?
+- Is it ok to refer from the glossary to other pages (for more details....)?
+- Should any references to iModel exist in this glossary? (some items have little relevance outside an iModel-like implementation)
 
 **TODO - Other Questions**
- - There does not appear to be a way to reference a particular definition from another MD file. So...how and when should we refer to this Glossary page?
-
+- There does not appear to be a way to reference a particular definition from another MD file. So...how and when should we refer to this Glossary page?
+-->
 
 Term|Description
 |--|--|
-|**Aspect** | xxxxxxxxxxxx. Not to be confused with ElementAspect.|
 |**BIS** | Base Infrastructure Schemas. A coordinated family of schemas for modeling built infrastructure (e.g. buildings, roads, bridges, factories, etc.) BIS also addresses concepts needed for infrastructure-related workflows (e.g. documents, drawings, requirements, issues, etc.).|
 |**BisCore**|The base BIS Domain for BIS. All ECClasses in any other Domain must derive (directly or indirectly) from a BisCore class.|
 |**BIS Repository** | An information repository with semantics and structure defined by BIS. Typically (but not necessarily) used to implement a Digital Twin. iModels are the most common BIS Repositories.|
-|**Category**|A property of a GeometricElement that "categorizes" its geometry. Every GeometricElement is assigned to one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. XXXXXXXXX should we mention here that the assignment is not available to users? XXXXXXXXX|
+|**Category**|A property of a GeometricElement that "categorizes" its geometry. Every GeometricElement is assigned to one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. |
 |**Class**|See ECClass.|
 |**Code**|An optional three part *human readable* identifier for an Element. A code consists of a CodeSpec, CodeScope, and CodeValue. If any of the three parts is defined, the combination of all three parts must be unique within an iModel.|
 |**CodeScope**|A Code Scope determines a *scope for uniqueness* for the CodeValue. For example, a scope may specify the whole repository, only within a certain Model, within an assembly, etc. For a given CodeSpec and CodeScope, all CodeValues must be unique.|
@@ -34,11 +34,11 @@ Term|Description
 |**ECProperty**|A named member of an ECClass.|
 |**ECRelationship**|A named type of relationship and cardinality between instances of ECClasses.|
 |**ECSchema**|A named group of ECClasses and ECRelationships.|
-|**Element** |The base class in BIS for an *Entity with a Code*. An Element is smallest individually identifiable building-block for modeling in a BIS Repository. There can be different subclasses of Element corresponding to different Modeling Perspectives. Multiple Elements (with different Perspectives) can be related together to model multiple Aspects of an Object. XXXXXXX DEFINITION SEEMS TOO LONG XXXXXXXX|
+|**Element** |The base class in BIS for an *Entity with a Code*. An Element is smallest individually identifiable building-block for modeling in a BIS Repository. There can be different subclasses of Element corresponding to different Modeling Perspectives. Multiple Elements can be related together to model different Perspectives of an Object.|
 |**ElementAspect** | A BIS class that adds properties and/or relationships to a single Element to add more detail. ElementAspects can be used, for example, to record information that is only be needed in certain situations or in some stages of the Element's lifecycle. An ElementAspect is *owned by*, and thus is deleted with, its owning Element.|
 |**ElementOwnsChildElements** | Relates an Element to *child* Elements which represent *parts* of the Entity modeled by the parent Element. Element subclasses can either allow the use child Elements to model its parts, or allow use of the ModelModelsElement relationship with another Model to express a detailed model of the parts, but not both.|
 |**Entity**|A portion of a real-world Object that is relevant for a given Modeling Perspective. The complete Object is the sum of its Entities. For example, an Entity can be the role that the Object plays in a particular system.|
-|**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuids are assigned by external systems and are used to *federate* Elements to their external meaning. XXXXXXX IS THERE ANY UNIQUENESS (WITHIN A REPOSITORY) CONSTRAINT ON FederationGuids? XXXXXXXXX|
+|**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuids are assigned by external systems and are used to *federate* Elements to their external meaning. Within a BIS Repository, FederationGuids must be unique.|
 |**GeometricElement**|A subclass of Element that can include geometry (in its GeometryStream property.) Only GeometricElements are visible in Views.|
 |**GeometricModel**|A subclass of Model that can hold GeometricElements.|
 |**GeometryPart**|A named GeometryStream that can be shared by many GeometricElements.|
