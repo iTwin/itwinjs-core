@@ -120,6 +120,7 @@ export class TextureHandle implements IDisposable {
       const rCanvas = TextureHandle.resizeImageBytesToCanvas(imageBytes, isTranslucent, params.width, params.height, targetWidth, targetHeight);
       if (undefined === rCanvas)
         return undefined;
+      params.resizedCanvas = rCanvas;
     }
 
     assert(0 < params.height);
@@ -250,8 +251,8 @@ export class TextureHandle implements IDisposable {
 
         // resize the image
         const resizedCanvas = document.createElement("canvas");
-        canvas.width = dstWidth;
-        canvas.height = dstHeight;
+        resizedCanvas.width = dstWidth;
+        resizedCanvas.height = dstHeight;
         const resizedCtx = resizedCanvas.getContext("2d");
         if (resizedCtx !== null) {
           resizedCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
