@@ -382,10 +382,6 @@ describe("BriefcaseManager", () => {
 
       assert.isTrue(onOpenedCalled);
       assert.isTrue(onOpenCalled);
-
-      expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
-      const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
-      expect(files.length).greaterThan(0, "iModel .bim file could not be read");
     } finally {
 
       IModelDb.onOpen.removeListener(onOpenListener);
@@ -397,50 +393,6 @@ describe("BriefcaseManager", () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
     assert(iModel.openMode === OpenMode.ReadWrite, "iModel not set to ReadWrite mode");
-
-    expect(IModelJsFs.existsSync(testIModels[1].localReadWritePath), "Local path to iModel does not exist");
-    const files = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
-    expect(files.length).greaterThan(0, "iModel .bim not found in cache directory");
-
-    iModel.close(accessToken);
-  });
-
-  it("should reuse open briefcases in Readonly mode", async () => {
-    let timer = new Timer("open briefcase first time");
-    const iModel0: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
-    assert.exists(iModel0, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel0.iModelToken.iModelId === testIModels[0].id, "Incorrect iModel Id");
-    timer.end();
-
-    const briefcases = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
-    expect(briefcases.length).greaterThan(0, "iModel .bim file could not be read");
-
-    timer = new Timer("open briefcase 5 more times");
-    const iModels = new Array<IModelDb>();
-    for (let ii = 0; ii < 5; ii++) {
-      const iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
-      assert.exists(iModel, "No iModel returned from repeat call to BriefcaseManager.open");
-      iModels.push(iModel);
-    }
-    timer.end();
-
-    const briefcases2 = IModelJsFs.readdirSync(testIModels[0].localReadonlyPath);
-    expect(briefcases2.length).equals(briefcases.length, "Extra or missing briefcases detected in the cache");
-    const diff = briefcases2.filter((item) => briefcases.indexOf(item) < 0);
-    expect(diff.length).equals(0, "Cache changed after repeat calls to BriefcaseManager.open");
-  });
-
-  it("should reuse closed briefcases in ReadWrite mode", async () => {
-    const files = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
-
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
-    assert.exists(iModel);
-
-    const files2 = IModelJsFs.readdirSync(testIModels[1].localReadWritePath);
-    expect(files2.length).equals(files.length);
-    const diff = files2.filter((item) => files.indexOf(item) < 0);
-    expect(diff.length).equals(0);
-
     iModel.close(accessToken);
   });
 
