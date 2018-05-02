@@ -595,3 +595,19 @@ Object.freeze(ColorDef.white);
 Object.freeze(ColorDef.red);
 Object.freeze(ColorDef.green);
 Object.freeze(ColorDef.blue);
+
+/** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255]. */
+export class RgbColor {
+  /** Constructs from red, green, and blue components. Any component not explicitly supplied defaults to zero. */
+  public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
+    this.r = Math.max(0, Math.min(this.r, 0xff));
+    this.g = Math.max(0, Math.min(this.g, 0xff));
+    this.b = Math.max(0, Math.min(this.b, 0xff));
+  }
+
+  /** Constructs from the red, green, and blue components of a ColorDef. The alpha component is ignored. */
+  public static fromColorDef(colorDef: ColorDef): RgbColor {
+    const colors = colorDef.colors;
+    return new RgbColor(colors.r, colors.g, colors.b);
+  }
+}

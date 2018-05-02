@@ -6,9 +6,10 @@ import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, ViewFlag, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, OvrGraphicParams, DecorationList } from "../System";
+import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
 import { Clip } from "./ClipVolume";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
+import { FeatureSymbology } from "../FeatureSymbology";
 
 export abstract class Graphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
@@ -59,10 +60,8 @@ export class Branch extends Graphic {
   }
 }
 
-export type WorldDecorationOverrides = OvrGraphicParams | undefined;
-
 export class WorldDecorations extends Branch {
-  public readonly overrides: WorldDecorationOverrides[] = [];
+  public readonly overrides: Array<FeatureSymbology.Appearance | undefined> = [];
 
   public constructor(iModel: IModelConnection, viewFlags: ViewFlags) { super(iModel, new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
 

@@ -186,7 +186,7 @@ export class TextureHandle implements IDisposable {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, params.wrapMode);
 
-      gl.bindTexture(gl.TEXTURE_2D, 0);
+      gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
   private static createTextureHandle(): WebGLTexture | undefined {

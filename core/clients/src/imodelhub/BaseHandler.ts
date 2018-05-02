@@ -16,6 +16,7 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
   public constructor() {
     super();
     this.defaultOptions.errorCallback = IModelHubResponseError.parse;
+    this.defaultOptions.retryCallback = IModelHubResponseError.shouldRetry;
   }
 }
 

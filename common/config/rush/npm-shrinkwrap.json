@@ -828,16 +828,62 @@
     },
     "@rush-temp/bentleyjs-core": {
       "version": "file:projects/bentleyjs-core.tgz",
-      "integrity": "sha1-3UgpMqTxkZk2BhnH/tL414LNISo=",
+      "integrity": "sha1-9F1R2UZsqg6vgpIUpJDaCGOCLxE=",
       "requires": {
         "rimraf": "2.6.2",
         "typedoc": "0.11.1",
         "typescript": "2.7.2"
       }
     },
+    "@rush-temp/example-code-app": {
+      "version": "file:projects/example-code-app.tgz",
+      "integrity": "sha1-jm5oH+dwNcSMp4VPOW9dnU674w4=",
+      "requires": {
+        "@bentley/imodeljs-n_8-win32-x64": "17.0.0",
+        "body-parser": "1.18.2",
+        "chai": "4.1.2",
+        "commander": "2.15.1",
+        "cpx": "1.5.0",
+        "electron": "1.6.11",
+        "express": "4.16.3",
+        "fs-extra": "5.0.0",
+        "fuse.js": "3.2.0",
+        "i18next": "10.6.0",
+        "i18next-browser-languagedetector": "2.2.0",
+        "i18next-xhr-backend": "1.5.1",
+        "js-base64": "2.4.3",
+        "rimraf": "2.6.2",
+        "save": "2.3.2",
+        "typescript": "2.7.2",
+        "webpack": "3.11.0"
+      }
+    },
+    "@rush-temp/example-code-snippets": {
+      "version": "file:projects/example-code-snippets.tgz",
+      "integrity": "sha1-TFYAFCy44uHuc8ehzoa3IlJszm4=",
+      "requires": {
+        "@bentley/imodeljs-n_8-win32-x64": "17.0.0",
+        "body-parser": "1.18.2",
+        "chai": "4.1.2",
+        "commander": "2.15.1",
+        "cpx": "1.5.0",
+        "electron": "1.6.11",
+        "express": "4.16.3",
+        "fs-extra": "5.0.0",
+        "fuse.js": "3.2.0",
+        "i18next": "10.6.0",
+        "i18next-browser-languagedetector": "2.2.0",
+        "i18next-xhr-backend": "1.5.1",
+        "js-base64": "2.4.3",
+        "rimraf": "2.6.2",
+        "save": "2.3.2",
+        "typescript": "2.7.2",
+        "webpack": "3.11.0"
+      }
+    },
     "@rush-temp/geometry-core": {
       "version": "file:projects/geometry-core.tgz",
-      "integrity": "sha1-MGbUMAhuPKuIPKBN/qtz7Bwoffg=",
+      "integrity": "sha1-qouSnAV7FfGYPRA1XLJwhZRAY9c=",
       "requires": {
         "@types/lodash": "4.14.106",
         "chai": "4.1.2",
@@ -856,11 +902,11 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-PI6UV85WWSjIa26o387kv+FJr5U=",
+      "integrity": "sha1-ku5jA7J4bPkkAdmk4cNelJggxqY=",
       "requires": {
-        "@bentley/imodeljs-native-platform-api": "17.1.1",
-        "@bentley/imodeljs-native-platform-electron": "17.1.1",
-        "@bentley/imodeljs-native-platform-node": "17.1.1",
+        "@bentley/imodeljs-native-platform-api": "17.0.0",
+        "@bentley/imodeljs-native-platform-electron": "17.0.0",
+        "@bentley/imodeljs-native-platform-node": "17.0.0",
         "asn1": "0.2.3",
         "cpx": "1.5.0",
         "fs-extra": "5.0.0",
@@ -878,7 +924,7 @@
     },
     "@rush-temp/imodeljs-clients": {
       "version": "file:projects/imodeljs-clients.tgz",
-      "integrity": "sha1-Rv2w7eKjnCI8ALneiiW57LAq7GU=",
+      "integrity": "sha1-aEyd/CrvKLgfPeypVhRNGtxd+QA=",
       "requires": {
         "@types/chai-as-promised": "0.0.31",
         "@types/chai-string": "1.1.30",
@@ -910,7 +956,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-I2GAhqhFGj60z8HphylQrV95ze0=",
+      "integrity": "sha1-upu15ta4YRBQXYBHJSO4K3dXQp0=",
       "requires": {
         "@types/uuid": "3.4.3",
         "rimraf": "2.6.2",
@@ -921,7 +967,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-0qas8vEH5Dv36bTQo15wQeVf0E0=",
+      "integrity": "sha1-SwtcvWUEPvV3zWUu9fk3B4e/Ybs=",
       "requires": {
         "@bentley/bemetalsmith": "1.21.3",
         "@bentley/bentleyjs-tools": "3.4.1",
@@ -976,9 +1022,9 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-DbzZi82VVj7LDgL4+j08L6yitaM=",
+      "integrity": "sha1-iPhmuKDnsVDW5xHPSJ1KojfJxgk=",
       "requires": {
-        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.1.1",
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.0.0",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
         "commander": "2.15.1",
@@ -1001,7 +1047,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-NGwyehxyaxXCXRgtUkBKHX1+NNc=",
+      "integrity": "sha1-nO8iVSscq/M/DqufH47MSamD7ok=",
       "requires": {
         "cpx": "1.5.0",
         "fuse.js": "3.2.0",
@@ -1012,52 +1058,6 @@
         "rimraf": "2.6.2",
         "typedoc": "0.11.1",
         "typescript": "2.7.2"
-      }
-    },
-    "@rush-temp/sample-code-app": {
-      "version": "file:projects/sample-code-app.tgz",
-      "integrity": "sha1-HGRtJ0No4BFqkSzMO5mYHROALIo=",
-      "requires": {
-        "@bentley/imodeljs-n_8-win32-x64": "17.1.1",
-        "body-parser": "1.18.2",
-        "chai": "4.1.2",
-        "commander": "2.15.1",
-        "cpx": "1.5.0",
-        "electron": "1.6.11",
-        "express": "4.16.3",
-        "fs-extra": "5.0.0",
-        "fuse.js": "3.2.0",
-        "i18next": "10.6.0",
-        "i18next-browser-languagedetector": "2.2.0",
-        "i18next-xhr-backend": "1.5.1",
-        "js-base64": "2.4.3",
-        "rimraf": "2.6.2",
-        "save": "2.3.2",
-        "typescript": "2.7.2",
-        "webpack": "3.11.0"
-      }
-    },
-    "@rush-temp/sample-code-snippets": {
-      "version": "file:projects/sample-code-snippets.tgz",
-      "integrity": "sha1-hk0JBu8RGqAucMf1uDPrZA0zfI8=",
-      "requires": {
-        "@bentley/imodeljs-n_8-win32-x64": "17.1.1",
-        "body-parser": "1.18.2",
-        "chai": "4.1.2",
-        "commander": "2.15.1",
-        "cpx": "1.5.0",
-        "electron": "1.6.11",
-        "express": "4.16.3",
-        "fs-extra": "5.0.0",
-        "fuse.js": "3.2.0",
-        "i18next": "10.6.0",
-        "i18next-browser-languagedetector": "2.2.0",
-        "i18next-xhr-backend": "1.5.1",
-        "js-base64": "2.4.3",
-        "rimraf": "2.6.2",
-        "save": "2.3.2",
-        "typescript": "2.7.2",
-        "webpack": "3.11.0"
       }
     },
     "@types/body-parser": {

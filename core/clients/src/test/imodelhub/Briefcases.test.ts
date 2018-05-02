@@ -177,4 +177,35 @@ describe("iModelHub BriefcaseHandler", () => {
     await imodelHubClient.Briefcases().download(briefcase, downloadToPathname);
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
+
+  (TestConfig.enableNock ? it : it.skip)("should get error 400 and retry to get briefcase", async () => {
+    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
+    const requestResponse = responseBuilder.generateGetResponse<Briefcase>(responseBuilder.generateObject<Briefcase>(Briefcase));
+
+    responseBuilder.MockResponse(RequestType.Get, requestPath, responseBuilder.generateError(undefined, "BadRequest"), 1, undefined, undefined, 400);
+    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    const briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId));
+    chai.expect(briefcase);
+  });
+
+  (TestConfig.enableNock ? it : it.skip)("should get error 409 and retry to get briefcase", async () => {
+    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
+    responseBuilder.MockResponse(RequestType.Get, requestPath, responseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
+    try {
+      (await imodelHubClient.Briefcases().get(accessToken, iModelId));
+    } catch (err) {
+      chai.expect(err.status).to.be.equal(409);
+      chai.expect(err.name).to.be.equal("NoServerLicense");
+    }
+  });
+
+  (TestConfig.enableNock ? it : it.skip)("should get error 500 and retry to get briefcase", async () => {
+    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
+    responseBuilder.MockResponse(RequestType.Get, requestPath, responseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
+    try {
+      (await imodelHubClient.Briefcases().get(accessToken, iModelId));
+    } catch (err) {
+      chai.expect(err.status).to.be.equal(500);
+    }
+  });
 });

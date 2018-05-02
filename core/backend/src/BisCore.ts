@@ -16,7 +16,7 @@ import * as linkMod from "./LinkTableRelationship";
 /** Represents the BisCore schema.
  * <p><em>Example:</em>
  * ``` ts
- * [[include:BisCore1.sampleCode]]
+ * [[include:BisCore.registerSchemaAndGetClass]]
  * ```
  */
 export class BisCore extends Schema {
