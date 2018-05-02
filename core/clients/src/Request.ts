@@ -10,6 +10,15 @@ import { Config } from "./Config";
 
 const loggingCategory = "imodeljs-clients.Request";
 
+// HTTP response type (status / 100)
+export enum HttpResponseType {
+  Info = 1,
+  Ok,
+  ClientError,
+  ServerError,
+  Error,
+}
+
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
@@ -70,6 +79,7 @@ export interface RequestOptions {
   accept?: string;
   redirects?: number;
   errorCallback?: (response: any) => ResponseError;
+  retryCallback?: (error: any, response: any) => boolean;
 }
 
 /** Response object if the request was successful. Note that the status within the range of 200-299
@@ -123,6 +133,20 @@ export class ResponseError extends Error {
     return error;
   }
 
+  /**
+   * Decides whether request should be retried or not
+   * @param error Error returned by request
+   * @param response Response returned by request
+   */
+  public static shouldRetry(error: any, response: any): boolean {
+    if (error !== undefined && error !== null) {
+      if ((error.status === undefined || error.status === null) && (error.res === undefined || error.res === null)) {
+        return true;
+      }
+    }
+    return (response !== undefined  && response.statusType === HttpResponseType.ServerError);
+  }
+
   protected logMessage(): string {
     return `${this.status} ${this.name}: ${this.message}`;
   }
@@ -148,7 +172,7 @@ export class ResponseError extends Error {
  */
 export async function request(url: string, options: RequestOptions): Promise<Response> {
   const proxyUrl = Config.devCorsProxyServer ? Config.devCorsProxyServer + url : url;
-  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(4);
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(4, options.retryCallback);
 
   if (options.headers) {
     sareq = sareq.set(options.headers);
