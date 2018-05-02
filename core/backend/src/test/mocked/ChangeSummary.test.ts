@@ -6,14 +6,14 @@ import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
-import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../ChangeSummaryManager";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { IModelDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { HubTestUtils } from "./HubTestUtils";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { IModelJsFs } from "../IModelJsFs";
-import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "./MockAssetUtil";
+import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../ChangeSummaryManager";
+import { BriefcaseManager } from "../../BriefcaseManager";
+import { IModelDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { HubTestUtils } from "../HubTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelJsFs } from "../../IModelJsFs";
+import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
 import * as TypeMoq from "typemoq";
 
 function setupTest(iModelId: string): void {
@@ -52,8 +52,6 @@ describe("ChangeSummary", () => {
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
-      accessToken = await IModelTestUtils.getTestUserAccessToken();
-      console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
       startTime = new Date().getTime();
 
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);

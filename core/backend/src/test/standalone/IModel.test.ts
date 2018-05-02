@@ -10,13 +10,13 @@ import {
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
   IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
   Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel,
-} from "../backend";
+} from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
   AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps,
 } from "@bentley/imodeljs-common";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 // spell-checker: disable
 

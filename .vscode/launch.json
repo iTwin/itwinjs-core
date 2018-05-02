@@ -14,13 +14,14 @@
       "args": [
         "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test",
+        "--testSubDirs=integrated,mocked,standalone",
         "--debug"
       ],
       "port": 9229,
       "protocol": "inspector",
       "outputCapture": "std"
     },
-    {
+  {
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Offline)",
@@ -29,6 +30,7 @@
       "args": [
         "--packageRoot=${workspaceFolder}",
         "--testDir=${workspaceFolder}/core/backend/lib/test",
+        "--testSubDirs=mocked,standalone",
         "--debug",
         "--offline",
         "mock"
