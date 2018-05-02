@@ -78,7 +78,7 @@ export * from "./gateway/StandaloneIModelGateway";
  * A gateway consists of:
  * * A TypeScript class that *defines* the gateway.
  * * The proxy class for clients to use.
- * * A TypeScript class that implements the gateway in [backend code]($docs/overview/overview/Glossary.md#backend).
+ * * A TypeScript class that implements the gateway in [backend code]($docs/learning/learning/Glossary.md#backend).
  * * Configurations that specify how calls on the gateway are to be marshalled.
  *
  * The key concept is that API definition, API implementation, and call marshalling are all distinct concepts. Marshalling is factored out, so
@@ -89,10 +89,10 @@ export * from "./gateway/StandaloneIModelGateway";
  * A client could be the frontend of an app, the backend of an app, a service, or an agent.
  * The term *service* is used to denote the code that implements and exposes a gateway to clients.
  * A service could be a deployed, stand-alone service, or the backend of an app, or a package that used by backend code.
- * The main point is that it is [backend code]($docs/overview/overview/Glossary.md#backend).
+ * The main point is that it is [backend code]($docs/learning/learning/Glossary.md#backend).
  *
  * Gateway methods are always asynchronous. That is because the gateway implementation and the client that calls it are never in the same
- * JavaScript context. This follows from the [iModelJs app architecture]($docs/overview/overview/App.md#interactive-app).
+ * JavaScript context. This follows from the [iModelJs app architecture]($docs/overview/overview/App.md#interactive-apps).
  *
  * For more information on the purpose of gateways and their role in app architecture, see [Gateways]($docs/overview/overview/App.md#gateways).
  *
