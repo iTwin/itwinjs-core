@@ -17,7 +17,8 @@ const enum TextureFlags {
 
 /** A private utility class used by TextureHandle to internally create textures with differing proprties. */
 class TextureCreateParams {
-  public data?: Uint8Array;
+  public rawData?: Uint8Array = undefined;
+  public resizedCanvas?: HTMLCanvasElement = undefined;
   public width: number = 0;
   public height: number = 0;
   public format: GL.Texture.Format = GL.Texture.Format.Rgb;
@@ -47,7 +48,8 @@ export class TextureHandle implements IDisposable {
   public readonly height: number;
   public readonly format: GL.Texture.Format;
   public readonly dataType: GL.Texture.DataType;
-  public readonly data?: Uint8Array;
+  public readonly data?: Uint8Array = undefined;
+  public readonly resizedCanvas?: HTMLCanvasElement = undefined;
 
   private _glTexture?: WebGLTexture;
 
@@ -70,7 +72,7 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Creates a texture for an image based on certain parameters. */
-  public static createForImage(width: number, imageBytes: Uint8Array, isTranslucent: boolean, useMipMaps = true, isGlyph = false, isTileSection = false) {
+  public static createForImage(width: number, imageBytes: Uint8Array, isTranslucent: boolean, useMipMaps = true, isGlyph = false, isTileSection = false, wantPreserveData = false) {
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
@@ -82,10 +84,10 @@ export class TextureHandle implements IDisposable {
     params.format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     params.width = width;
     params.height = imageBytes.length / (width * (isTranslucent ? 4 : 3));
-    params.data = imageBytes;
+    params.rawData = imageBytes;
     params.wrapMode = isTileSection ? GL.Texture.WrapMode.ClampToEdge : GL.Texture.WrapMode.Repeat;
     params.wantUseMipMaps = useMipMaps;
-    params.wantPreserveData = false; // ###TODO: When is this true?
+    params.wantPreserveData = wantPreserveData;
 
     let targetWidth: number = params.width;
     let targetHeight: number = params.height;
@@ -93,8 +95,8 @@ export class TextureHandle implements IDisposable {
     if (isGlyph) {
       params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
       params.wantUseMipMaps = true; // in order to always use mipmaps, must resize to power of 2
-      targetWidth = TextureHandle.roundToMultipleOfTwo(targetWidth);
-      targetHeight = TextureHandle.roundToMultipleOfTwo(targetHeight);
+      targetWidth = TextureHandle.nextHighestPowerOfTwo(targetWidth);
+      targetHeight = TextureHandle.nextHighestPowerOfTwo(targetHeight);
     } else if (!caps.supportsNonPowerOf2Textures && (!TextureHandle.isPowerOfTwo(targetWidth) || !TextureHandle.isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === params.wrapMode) {
         // NPOT are supported but not mipmaps
@@ -102,8 +104,8 @@ export class TextureHandle implements IDisposable {
         // Above comment is not necessarily true - WebGL doesn't support NPOT mipmapping, only supporting base NPOT caps
         params.wantUseMipMaps = false;
       } else if (GL.Texture.WrapMode.Repeat === params.wrapMode) {
-        targetWidth = TextureHandle.roundToMultipleOfTwo(targetWidth);
-        targetHeight = TextureHandle.roundToMultipleOfTwo(targetHeight);
+        targetWidth = TextureHandle.nextHighestPowerOfTwo(targetWidth);
+        targetHeight = TextureHandle.nextHighestPowerOfTwo(targetHeight);
       }
     }
 
@@ -115,7 +117,9 @@ export class TextureHandle implements IDisposable {
     }
 
     if (targetWidth !== params.width || targetWidth !== params.height) {
-      // ###TODO: resize the image
+      const rCanvas = TextureHandle.resizeImageBytesToCanvas(imageBytes, isTranslucent, params.width, params.height, targetWidth, targetHeight);
+      if (undefined === rCanvas)
+        return undefined;
     }
 
     assert(0 < params.height);
@@ -124,8 +128,9 @@ export class TextureHandle implements IDisposable {
     return new TextureHandle(glTex, params);
   }
 
-  /** Creates a texture for a color attachment (no data specified). */
+  /** Creates a texture for a framebuffer attachment (no data specified). */
   public static createForColor(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType /* , isTranslucent: boolean */ ) {
+    // ###TODO: rename createForAttachment
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
@@ -159,8 +164,10 @@ export class TextureHandle implements IDisposable {
       this.height = params.height;
       this.format = params.format;
       this.dataType = params.dataType;
-      if (params.wantPreserveData)
-        this.data = params.data;
+      if (params.wantPreserveData) {
+        this.data = params.rawData;
+        this.resizedCanvas = params.resizedCanvas;
+      }
 
       this._glTexture = glTex;
 
@@ -171,8 +178,14 @@ export class TextureHandle implements IDisposable {
       assert(this.width > 0 && this.height > 0);
 
       // send the texture data
-      const pixels: ArrayBufferView | null = params.data !== undefined ? params.data as ArrayBufferView : null;
-      gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixels);
+      if (params.resizedCanvas !== undefined) {
+        // use HTMLCanvasElement version of texImage2D
+        gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, params.resizedCanvas);
+      } else {
+        // use regular (raw bytes) version of texImage2D
+        const pixels: ArrayBufferView | null = params.rawData !== undefined ? params.rawData as ArrayBufferView : null;
+        gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixels);
+      }
 
       if (params.wantUseMipMaps) {
         gl.generateMipmap(gl.TEXTURE_2D);
@@ -196,7 +209,7 @@ export class TextureHandle implements IDisposable {
     return glTex;
   }
 
-  private static roundToMultipleOfTwo(num: number): number {
+  private static nextHighestPowerOfTwo(num: number): number {
     --num;
     for (let i = 1; i < 32; i <<= 1) {
         num = num | num >> i;
@@ -206,5 +219,46 @@ export class TextureHandle implements IDisposable {
 
   private static isPowerOfTwo(num: number): boolean {
       return (num & (num - 1)) === 0;
+  }
+
+  private static resizeImageBytesToCanvas(imageBytes: Uint8Array, hasAlpha: boolean, srcWidth: number, srcHeight: number, dstWidth: number, dstHeight: number): HTMLCanvasElement | undefined {
+    // ###TODO: would writing our own Uint8Array resize routine be faster than routing it through HTML canvas?
+    if (srcWidth !== dstWidth || srcHeight !== dstHeight) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx !== null ? ctx.createImageData(srcWidth, srcHeight) : undefined;
+
+      // store the image data in a HTMLCanvasElement
+      if (undefined !== imageData && ctx !== null) {
+        if (hasAlpha) {
+          for (let i = 0; i < imageData.data.length; i += 4) {
+            imageData.data[i + 0] = imageBytes[i + 0];
+            imageData.data[i + 1] = imageBytes[i + 1];
+            imageData.data[i + 2] = imageBytes[i + 2];
+            imageData.data[i + 3] = imageBytes[i + 3];
+          }
+        } else {
+          let ii = 0;
+          for (let i = 0; i < imageData.data.length; i += 4, ii += 3) {
+            imageData.data[i + 0] = imageBytes[ii + 0];
+            imageData.data[i + 1] = imageBytes[ii + 1];
+            imageData.data[i + 2] = imageBytes[ii + 2];
+            imageData.data[i + 3] = 0;
+          }
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        // resize the image
+        const resizedCanvas = document.createElement("canvas");
+        canvas.width = dstWidth;
+        canvas.height = dstHeight;
+        const resizedCtx = resizedCanvas.getContext("2d");
+        if (resizedCtx !== null) {
+          resizedCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+          return resizedCanvas;
+        }
+      }
+    }
+    return undefined;
   }
 }

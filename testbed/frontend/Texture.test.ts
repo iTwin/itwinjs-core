@@ -17,16 +17,18 @@ describe("Texture tests", () => {
     }
 
     const pixels: Uint8Array = new Uint8Array(3);  pixels[0] = pixels[1] = pixels[2] = 0;
-    const texture: TextureHandle | undefined = TextureHandle.createForImage(1, pixels, false, false, false, false);
+    // create texture with wantPreserveData=true
+    const texture: TextureHandle | undefined = TextureHandle.createForImage(1, pixels, false, false, false, false, true);
     assert(undefined !== texture);
     if (undefined === texture) {
       return;
     }
 
     expect(texture.getHandle()).to.not.be.undefined;
+    expect(texture.resizedCanvas).to.be.undefined; // should not be resized!
   });
 
-  it("should produce a color texture", () => {
+  it("should produce an attachment texture", () => {
     if (!IModelApp.hasRenderSystem) {
       return;
     }
@@ -38,5 +40,29 @@ describe("Texture tests", () => {
     }
 
     expect(texture.getHandle()).to.not.be.undefined;
+  });
+
+  it("should produce a glyph texture resized to power of two", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    const pixels: Uint8Array = new Uint8Array(3 * 3 * 3);
+    for (let i = 0; i < 3 * 3 * 3; i++) {
+      pixels[i] = 0;
+    }
+    // create texture with isGlyph=true, wantPreserveData=true
+    const texture: TextureHandle | undefined = TextureHandle.createForImage(3, pixels, false, false, true, false, true);
+    assert(undefined !== texture);
+    if (undefined === texture) {
+      return;
+    }
+
+    expect(texture.getHandle()).to.not.be.undefined;
+    expect(texture.resizedCanvas).to.not.be.undefined;
+    if (texture.resizedCanvas !== undefined) {
+      expect(texture.resizedCanvas.width).to.equal(4);
+      expect(texture.resizedCanvas.height).to.equal(4);
+    }
   });
 });
