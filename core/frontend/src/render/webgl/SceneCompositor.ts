@@ -11,6 +11,9 @@ import { dispose } from "./Disposable";
 import { System, RenderType } from "./System";
 import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
+import { RenderCommands, DrawParams } from "./DrawCommand";
+import { RenderState } from "./RenderState";
+import { CompositeFlags, RenderPass } from "./RenderFlags";
 
 class Textures {
   public accumulation?: TextureHandle;
@@ -166,6 +169,7 @@ class Geometry {
 }
 
 export class SceneCompositor {
+  private _target: Target;
   private _width: number = -1;
   private _height: number = -1;
   private _textures = new Textures();
@@ -173,13 +177,24 @@ export class SceneCompositor {
   private _fbos = new FrameBuffers();
   private _geometry = new Geometry();
   private _readPickDataFromPingPong: boolean = true;
+  private _opaqueRenderState = new RenderState();
+  private _translucentRenderState = new RenderState();
+  private _noDepthMaskRenderState = new RenderState();
 
-  public constructor() {
-    assert(this._readPickDataFromPingPong); // ###TODO currently unused...
+  public constructor(target: Target) {
+    this._target = target;
+
+    this._opaqueRenderState.flags.depthTest = true;
+
+    this._translucentRenderState.flags.depthMask = false;
+    this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
+    this._translucentRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
+
+    this._noDepthMaskRenderState.flags.depthMask = false;
   }
 
-  public update(target: Target): boolean {
-    const rect = target.viewRect;
+  public update(): boolean {
+    const rect = this._target.viewRect;
     const width = rect.width;
     const height = rect.height;
 
@@ -197,6 +212,54 @@ export class SceneCompositor {
     return result;
   }
 
+  public draw(commands: RenderCommands) {
+    if (!this.update()) {
+      assert(false);
+      return;
+    }
+
+    const flags = commands.compositeFlags;
+    const needTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
+    const needHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
+    const needComposite = needTranslucent || needHilite;
+
+    // Clear output targets
+    this.clearOpaque(needComposite);
+
+    this.renderBackground(commands, needComposite);
+
+    // Enable clipping
+    this._target.pushActiveVolume();
+
+    this.renderOpaque(commands, needComposite);
+
+    if (needComposite) {
+      this._geometry.composite!.update(flags);
+      this.clearTranslucent();
+      this.renderTranslucent(commands);
+      this.renderHilite(commands);
+      this.composite();
+    }
+
+    this._target.popActiveVolume();
+  }
+
+  public drawForReadPixels(commands: RenderCommands) {
+    if (!this.update()) {
+      assert(false);
+      return;
+    }
+
+    this.clearOpaque(false);
+    this._target.pushActiveVolume();
+    this.renderOpaque(commands, false, true);
+    this._target.popActiveVolume();
+  }
+
+  public get elementId0(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
+  public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
+  public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
+
   private reset() {
     this._depth = dispose(this._depth);
     this._textures.reset();
@@ -212,4 +275,128 @@ export class SceneCompositor {
       && this._fbos.init(this._textures, this._depth)
       && this._geometry.init(this._textures);
   }
+
+  private clearOpaque(needComposite: boolean) {
+    const fbo = needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!;
+    const system = System.instance;
+    system.frameBufferStack.execute(fbo, true, () => {
+      // Clear pick data buffers to 0's and color buffer to background color
+      // (0,0,0,0) in elementID0 and ElementID1 buffers indicates invalid element id
+      // (0,0,0,0) in DepthAndOrder buffer indicates render order 0 and encoded depth of 0 (= far plane)
+      system.applyRenderState(this._noDepthMaskRenderState);
+      const params = new DrawParams(this._target, this._geometry.clearPickAndColor!);
+      this._target.techniques.draw(params);
+
+      // Clear depth buffer
+      system.applyRenderState(RenderState.defaults); // depthMask == true.
+      system.context.clearDepth(1.0);
+      system.context.clear(GL.BufferBit.Depth);
+    });
+  }
+
+  private renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean = false) {
+    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
+    this._readPickDataFromPingPong = true;
+    const fbStack = System.instance.frameBufferStack;
+    fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
+      this.drawPass(commands, RenderPass.OpaqueLinear);
+      this.drawPass(commands, RenderPass.OpaquePlanar, true);
+      if (renderForReadPixels) {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+      }
+
+      this._readPickDataFromPingPong = false;
+    });
+
+    // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
+    if (!renderForReadPixels) {
+      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      });
+    }
+  }
+
+  private renderBackground(commands: RenderCommands, needComposite: boolean) {
+    const cmds = commands.getCommands(RenderPass.Background);
+    if (0 === cmds.length) {
+      return;
+    }
+
+    const fbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
+    const target = this._target;
+    System.instance.frameBufferStack.execute(fbo, true, () => {
+      target.pushState(target.decorationState);
+      System.instance.applyRenderState(this.getRenderState(RenderPass.Background));
+      target.techniques.execute(target, cmds, RenderPass.Background);
+      target.popBranch();
+    });
+  }
+
+  private pingPong() {
+    System.instance.applyRenderState(this._noDepthMaskRenderState);
+    System.instance.frameBufferStack.execute(this._fbos.pingPong!, true, () => {
+      const params = new DrawParams(this._target, this._geometry.copyPickBuffers!);
+      this._target.techniques.draw(params);
+    });
+  }
+
+  private clearTranslucent() {
+    System.instance.applyRenderState(this._noDepthMaskRenderState);
+    System.instance.frameBufferStack.execute(this._fbos.clearTranslucent!, true, () => {
+      const params = new DrawParams(this._target, this._geometry.clearTranslucent!);
+      this._target.techniques.draw(params);
+    });
+  }
+
+  private renderTranslucent(commands: RenderCommands) {
+    System.instance.frameBufferStack.execute(this._fbos.translucent!, true, () => {
+      this.drawPass(commands, RenderPass.Translucent);
+    });
+  }
+
+  private renderHilite(commands: RenderCommands) {
+    // Clear the hilite buffer.
+    const system = System.instance;
+    system.frameBufferStack.execute(this._fbos.hilite!, true, () => {
+      system.context.clearColor(0, 0, 0, 0);
+      system.context.clear(GL.BufferBit.Color);
+
+      this.drawPass(commands, RenderPass.Hilite);
+    });
+  }
+
+  private composite() {
+    System.instance.applyRenderState(RenderState.defaults);
+    const params = new DrawParams(this._target, this._geometry.composite!);
+    this._target.techniques.draw(params);
+  }
+
+  private getRenderState(pass: RenderPass): RenderState {
+    switch (pass) {
+      case RenderPass.OpaqueLinear:
+      case RenderPass.OpaquePlanar:
+      case RenderPass.OpaqueGeneral:
+        return this._opaqueRenderState;
+      case RenderPass.Translucent:
+        return this._translucentRenderState;
+      default:
+        return this._noDepthMaskRenderState;
+    }
+  }
+
+  private drawPass(commands: RenderCommands, pass: RenderPass, pingPong: boolean = false) {
+    const cmds = commands.getCommands(pass);
+    if (0 === cmds.length) {
+      return;
+    } else if (pingPong) {
+      this.pingPong();
+    }
+
+    System.instance.applyRenderState(this.getRenderState(pass));
+    this._target.techniques.execute(this._target, cmds, pass);
+  }
+
+  private get samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
+  private getSamplerTexture(index: number) { return this.samplerFbo.getColor(index); }
 }

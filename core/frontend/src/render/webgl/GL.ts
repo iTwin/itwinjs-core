@@ -238,4 +238,10 @@ export namespace GL {
   export namespace FrameBuffer {
     export const TARGET = WebGLRenderingContext.FRAMEBUFFER;
   }
+
+  export enum BufferBit {
+    Color = WebGLRenderingContext.COLOR_BUFFER_BIT,
+    Depth = WebGLRenderingContext.DEPTH_BUFFER_BIT,
+    Stencil = WebGLRenderingContext.STENCIL_BUFFER_BIT,
+  }
 }

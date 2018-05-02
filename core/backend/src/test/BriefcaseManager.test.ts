@@ -366,11 +366,13 @@ describe("BriefcaseManager", () => {
       assert.equal(openModeIn, OpenMode.Readonly);
     };
     IModelDb.onOpen.addListener(onOpenListener);
+
     let onOpenedCalled: boolean = false;
     const onOpenedListener = (iModelDb: IModelDb) => {
       onOpenedCalled = true;
       assert.equal(iModelDb.iModelToken.iModelId, testIModels[0].id);
     };
+    IModelDb.onOpened.addListener(onOpenedListener);
 
     try {
       const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
@@ -384,7 +386,7 @@ describe("BriefcaseManager", () => {
       expect(IModelJsFs.existsSync(testIModels[0].localReadonlyPath), "Local path to iModel does not exist");
       const files = IModelJsFs.readdirSync(path.join(testIModels[0].localReadonlyPath, "0"));
       expect(files.length).greaterThan(0, "iModel .bim file could not be read");
-    } catch (e) {
+    } finally {
 
       IModelDb.onOpen.removeListener(onOpenListener);
       IModelDb.onOpened.removeListener(onOpenedListener);
