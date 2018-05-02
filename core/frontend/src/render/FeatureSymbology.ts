@@ -1,60 +1,31 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { LinePixels, ColorDef, Cloneable } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, RgbColor, Cloneable } from "@bentley/imodeljs-common";
 import { Id64, Id64Set } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 import { IModelConnection } from "../IModelConnection";
 
 export namespace FeatureSymbology {
-  export class AppearanceFlags {
-    public rgb: boolean = false;
-    public alpha: boolean = false;
-    public weight: boolean = false;
-    public linePixels: boolean = false;
-    public ignoreMaterial: boolean = false;
-    public get hasOverrides(): boolean { return this.rgb || this.alpha || this.weight || this.linePixels || this.ignoreMaterial; }
-  }
-
   export class Appearance implements Cloneable<Appearance> {
-    private _weight: number = 0;
-    private _color: ColorDef = new ColorDef();
-    private _linePixels: LinePixels = LinePixels.Code0;
+    public rgb?: RgbColor;
+    public weight?: number;
+    public alpha?: number;
+    public linePixels?: LinePixels;
+    public ignoresMaterial: boolean = false;
 
-    public readonly flags: AppearanceFlags = new AppearanceFlags();
-
-    public get alpha(): number { return this._color.getAlpha(); }
-    public set alpha(alpha: number) { this.flags.alpha = true; this._color.setAlpha(alpha); }
-
-    public get weight(): number { return this._weight; }
-    public set weight(w: number) { this.flags.weight = true; this._weight = w; }
-
-    public get rgb(): ColorDef { return this._color; }
-    public set rgb(c: ColorDef) {
-      const color = c.clone();
-      this.flags.rgb = true;
-      if (this.overridesAlpha) color.setAlpha(this._color.getAlpha());
-      this._color = color;
-    }
-
-    public get linePixels(): LinePixels { return this._linePixels; }
-    public set linePixels(pix: LinePixels) { this.flags.linePixels = true; this._linePixels = pix; }
-
-    public get ignoresMaterial(): boolean { return this.flags.ignoreMaterial; }
-    public set ignoresMaterial(ignore: boolean) { this.flags.ignoreMaterial = ignore; }
-
-    public get overridesSymbology(): boolean { return this.flags.hasOverrides; }
-    public get overridesAlpha(): boolean { return this.flags.alpha; }
-    public get overridesRgb(): boolean { return this.flags.rgb; }
-    public get overridesWeight(): boolean { return this.flags.weight; }
-    public get overridesLinePixels(): boolean { return this.flags.linePixels; }
+    public get overridesSymbology() { return this.overridesRgb || this.overridesAlpha || this.overridesWeight || this.overridesLinePixels || this.ignoresMaterial; }
+    public get overridesRgb() { return undefined !== this.rgb; }
+    public get overridesAlpha() { return undefined !== this.alpha; }
+    public get overridesLinePixels() { return undefined !== this.linePixels; }
+    public get overridesWeight() { return undefined !== this.weight; }
 
     public extend(app: Appearance): Appearance {
-      if (this.overridesRgb && !app.overridesRgb) app.rgb = this.rgb;
-      if (this.overridesAlpha && !app.overridesAlpha) app.alpha = this.alpha;
-      if (this.overridesWeight && !app.overridesWeight) app.weight = this.weight;
-      if (this.overridesLinePixels && !app.overridesLinePixels) app.linePixels = this.linePixels;
-      if (this.ignoresMaterial) app.ignoresMaterial = true;
+      if (!app.overridesRgb)        app.rgb = this.rgb;
+      if (!app.overridesAlpha)      app.alpha = this.alpha;
+      if (!app.overridesWeight)     app.weight = this.weight;
+      if (!app.overridesLinePixels) app.linePixels = this.linePixels;
+      if (!app.ignoresMaterial)     app.ignoresMaterial = this.ignoresMaterial;
       return app;
     }
 
@@ -66,14 +37,14 @@ export namespace FeatureSymbology {
 
     public static fromRgb(rgb: ColorDef) {
       const app = new Appearance();
-      app.rgb = rgb;
+      app.rgb = RgbColor.fromColorDef(rgb);
       return app;
     }
 
-    public static fromRgba(rgba: ColorDef, alpha?: number) {
+    public static fromRgba(rgba: ColorDef) {
       const app = new Appearance();
-      app.rgb = rgba;
-      app.alpha = (!!alpha) ? alpha : rgba.getAlpha();
+      app.rgb = RgbColor.fromColorDef(rgba);
+      app.alpha = rgba.getAlpha();
       return app;
     }
 
