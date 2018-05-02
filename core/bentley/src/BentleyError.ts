@@ -91,12 +91,12 @@ export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDb
 /** Error status from various briefcase operations */
 export const enum BriefcaseStatus {
   CannotAcquire = 0x20000,
-  CannotDownload,
-  CannotUpload,
-  CannotCopy,
-  CannotDelete,
-  VersionNotFound,
-  CannotApplyChanges,
+  CannotDownload = 0x20001,
+  CannotUpload = 0x20002,
+  CannotCopy = 0x20003,
+  CannotDelete = 0x20004,
+  VersionNotFound = 0x20005,
+  CannotApplyChanges = 0x20006,
 }
 
 /** Error status from various ChangeSet operations */

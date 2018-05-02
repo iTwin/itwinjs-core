@@ -796,34 +796,34 @@
       "integrity": "sha1-TXBQ9kz0zScu6bKIuDB8cWjLCvQ="
     },
     "@bentley/imodeljs-e_1_6_11-win32-x64": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-17.0.0.tgz",
-      "integrity": "sha1-V6GMO68Ffk9Nkde3CrgHtxWrwmk="
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-17.1.1.tgz",
+      "integrity": "sha1-lMOJlc04TurF3ji8Nv+gNI3hFLQ="
     },
     "@bentley/imodeljs-n_8-win32-x64": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8-win32-x64/-/imodeljs-n_8-win32-x64-17.0.0.tgz",
-      "integrity": "sha1-70LG+kw8a5M/SIRbPth0UYz5Ozs="
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8-win32-x64/-/imodeljs-n_8-win32-x64-17.1.1.tgz",
+      "integrity": "sha1-gmN8Lr8NAC/Ivq3ACGqBRjH2FTc="
     },
     "@bentley/imodeljs-native-platform-api": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-17.0.0.tgz",
-      "integrity": "sha1-iWRCaKLruSCLxkho4denniX9xDU="
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-17.1.1.tgz",
+      "integrity": "sha1-75UCE5D2i2duQrZ4DCgFeF4Dkwo="
     },
     "@bentley/imodeljs-native-platform-electron": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-electron/-/imodeljs-native-platform-electron-17.0.0.tgz",
-      "integrity": "sha1-FiIjty99NXXxNBJkPS0Z+YFj3Tg=",
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-electron/-/imodeljs-native-platform-electron-17.1.1.tgz",
+      "integrity": "sha1-i5d2XTsd7aeGF2lno9KGi+2I+Gs=",
       "requires": {
-        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.0.0"
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.1.1"
       }
     },
     "@bentley/imodeljs-native-platform-node": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-node/-/imodeljs-native-platform-node-17.0.0.tgz",
-      "integrity": "sha1-TXACaiSk+sKdblK7k/MgZdjGsRg=",
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-node/-/imodeljs-native-platform-node-17.1.1.tgz",
+      "integrity": "sha1-LJ0OyDDzU6hWv2883PFoaUL6L2Y=",
       "requires": {
-        "@bentley/imodeljs-n_8-win32-x64": "17.0.0"
+        "@bentley/imodeljs-n_8-win32-x64": "17.1.1"
       }
     },
     "@rush-temp/bentleyjs-core": {
@@ -3681,7 +3681,7 @@
       "integrity": "sha1-C9dnBCWL6CmyOYu1Dkti0aFmsLk=",
       "requires": {
         "caniuse-db": "1.0.30000832",
-        "electron-to-chromium": "1.3.44"
+        "electron-to-chromium": "1.3.45"
       }
     },
     "bs-recipes": {
@@ -5933,9 +5933,9 @@
       }
     },
     "electron-to-chromium": {
-      "version": "1.3.44",
-      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.44.tgz",
-      "integrity": "sha1-72sVCmDVIwgjiMra2ICF7NL9RoQ="
+      "version": "1.3.45",
+      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.45.tgz",
+      "integrity": "sha1-RYrBscXHYM6IEaFtK/vZfsMLr7g="
     },
     "elliptic": {
       "version": "6.4.0",
