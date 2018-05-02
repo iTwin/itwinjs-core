@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { PhysicalElement } from "../../Element";
-import { ElementMultiAspect, ElementUniqueAspect } from "../../ElementAspect";
-import { IModelDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { PhysicalElement } from "../../../Element";
+import { ElementMultiAspect, ElementUniqueAspect } from "../../../ElementAspect";
+import { IModelDb } from "../../../IModelDb";
+import { IModelTestUtils } from "../../IModelTestUtils";
 
 describe("ElementAspect", () => {
 

@@ -1,15 +1,15 @@
 import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { expect, assert } from "chai";
-import { IModelJsFs } from "../../IModelJsFs";
+import { IModelJsFs } from "../../../IModelJsFs";
 import { OpenMode, DbOpcode } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { IModelTestUtils, Timer } from "../IModelTestUtils";
-import { IModelDb, Element, IModelHost, IModelHostConfiguration } from "../../backend";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
-import { HubTestUtils } from "../HubTestUtils";
-import { TestConfig } from "../TestConfig";
+import { IModelTestUtils, Timer } from "../../IModelTestUtils";
+import { IModelDb, Element, IModelHost, IModelHostConfiguration } from "../../../backend";
+import { ConcurrencyControl } from "../../../ConcurrencyControl";
+import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../../MockAssetUtil";
+import { HubTestUtils } from "../../HubTestUtils";
+import { TestConfig } from "../../TestConfig";
 import { AccessToken, ChangeSet, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
 
 describe("BriefcaseManager", () => {

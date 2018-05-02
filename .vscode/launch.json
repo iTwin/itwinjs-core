@@ -8,20 +8,19 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Backend Tests",
+      "name": "Run Backend Tests (Integratation)",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/core/backend/lib/test",
-        "--testSubDirs=integrated,mocked,standalone",
+        "--testDir=${workspaceFolder}/core/backend/lib/test/integration",
         "--debug"
       ],
       "port": 9229,
       "protocol": "inspector",
       "outputCapture": "std"
     },
-  {
+    {
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Offline)",
@@ -29,11 +28,25 @@
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/core/backend/lib/test",
-        "--testSubDirs=mocked,standalone",
+        "--testDir=${workspaceFolder}/core/backend/lib/test/offline",
         "--debug",
-        "--offline",
-        "mock"
+        "--recursive",
+        "--offline=mock"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Backend Tests (Online)",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/core/backend/lib/test/offline",
+        "--debug",
       ],
       "port": 9229,
       "protocol": "inspector",
