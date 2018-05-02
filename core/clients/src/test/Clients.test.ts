@@ -10,11 +10,17 @@ import { IModelWebNavigatorClient } from "../IModelWebNavigatorClient";
 import { RealityDataServicesClient } from "../RealityDataServicesClient";
 import { TileDataAccessClient } from "../TileDataAccessClient";
 import { TilesGeneratorClient } from "../TilesGeneratorClient";
+import { TestConfig } from "./TestConfig";
 
 chai.should();
 
 describe("UrlDiscoveryClient", () => {
   const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient("PROD"); // TODO: QA or DEV don't seem to work.
+
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
 
   it("should setup its URLs correctly", async () => {
     let url: string = await new UrlDiscoveryClient("DEV").getUrl();

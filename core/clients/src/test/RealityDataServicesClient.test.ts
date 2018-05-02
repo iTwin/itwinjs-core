@@ -22,7 +22,10 @@ describe("RealityDataServicesClient", () => {
   let versionId: string;
   let tilesId: string;
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await realityDataServiceClient.getAccessToken(authToken);

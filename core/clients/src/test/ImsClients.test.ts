@@ -10,6 +10,11 @@ import { TestConfig, TestUsers } from "./TestConfig";
 chai.should();
 
 describe("ImsFederatedAuthentiationClient", () => {
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
+
   it("should setup its URLs correctly", async () => {
     let url: string = await new ImsFederatedAuthentiationClient("DEV").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
@@ -26,6 +31,11 @@ describe("ImsFederatedAuthentiationClient", () => {
 });
 
 describe("ImsActiveSecureTokenClient", () => {
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
+
   it("should setup its URLs correctly", async () => {
     const prodClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient("PROD");
 
@@ -78,6 +88,11 @@ describe("ImsActiveSecureTokenClient", () => {
 
 describe("ImsDelegationSecureTokenClient", () => {
   const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient(TestConfig.deploymentEnv);
+
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
 
   it("should setup its URLs correctly", async () => {
     let url: string = await new ImsDelegationSecureTokenClient("DEV").getUrl();

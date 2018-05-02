@@ -18,7 +18,10 @@ describe("TilesGeneratorClient", () => {
   let iModelId: string;
   let versionId: string;
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(authToken);
 

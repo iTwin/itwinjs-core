@@ -5,10 +5,10 @@ import * as chai from "chai";
 
 import { TestConfig } from "../TestConfig";
 
-import { SeedFile, Version, VersionQuery } from "../../imodelhub";
+import { Version, VersionQuery } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
+import { ResponseBuilder } from "../ResponseBuilder";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
@@ -33,24 +33,15 @@ describe("iModelHub VersionHandler", () => {
     if (!TestConfig.enableMocks)
       this.skip();
 
-    const versionsCount = 3;
-    const responseObject = responseBuilder.generateObject<Version>(Version, new Map<string, any>([
-                                                              ["wsgId", "00000000-0000-0000-0000-000000000000"],
-                                                              ["name", "TestModel"],
-                                                              ["changesetId", "0123456789"],
-                                                            ]));
-    let requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Version");
-    let requestResponse = responseBuilder.generateGetResponse<SeedFile>(responseObject, versionsCount);
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-
+    const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
+    utils.mockGetVersions(responseBuilder, iModelId, ...mockedVersions);
     // Needs to create before expecting more than 0
     const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
     chai.expect(versions.length).equals(3);
 
-    requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Version", "00000000-0000-0000-0000-000000000000");
-    requestResponse = responseBuilder.generateGetResponse<Version>(responseObject);
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse, versionsCount);
+    let i = 0;
     for (const expectedVersion of versions) {
+      utils.mockGetVersionById(responseBuilder, iModelId, mockedVersions[i++]);
       const actualVersion: Version = (await imodelHubClient.Versions().get(accessToken, iModelId, new VersionQuery().byId(expectedVersion.wsgId)))[0];
       chai.expect(!!actualVersion);
       chai.expect(actualVersion.changeSetId).to.be.equal(expectedVersion.changeSetId);

@@ -7,7 +7,7 @@ import * as path from "path";
 
 import { TestConfig } from "../TestConfig";
 
-import { Briefcase, EventSubscription, IModelHubRequestError,
+import { Briefcase, IModelHubRequestError,
   IModelHubRequestErrorId, BriefcaseQuery } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
@@ -18,6 +18,27 @@ import * as utils from "./TestUtils";
 declare const __dirname: string;
 
 chai.should();
+
+function mockGetBriefcaseById(responseBuilder: ResponseBuilder, imodelId: string, briefcase: Briefcase) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", `${briefcase.briefcaseId!}`);
+  const requestResponse = responseBuilder.generateGetResponse(briefcase);
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
+function mockGetBriefcaseWithDownloadUrl(responseBuilder: ResponseBuilder, imodelId: string, briefcase: Briefcase) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase",
+    `${briefcase.briefcaseId!}?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`);
+  briefcase.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
+  briefcase.fileName = "TestModel.bim";
+  const requestResponse = responseBuilder.generateGetResponse<Briefcase>(briefcase);
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
 
 describe("iModelHub BriefcaseHandler", () => {
   let accessToken: AccessToken;
@@ -41,30 +62,20 @@ describe("iModelHub BriefcaseHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  function generateBriefcase(id: number): Briefcase {
-    return responseBuilder.generateObject<Briefcase>(Briefcase, new Map<string, any>([["briefcaseId", id]]));
-  }
-
   it("should get all briefcases, and acquire one if necessary", async () => {
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
-    let requestResponse = responseBuilder.generateGetResponse<Briefcase>(generateBriefcase(2));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-
+    utils.mockGetBriefcase(responseBuilder, iModelId, utils.generateBriefcase(2));
     let briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
+
     // Note: Avoiding acquiring a briefcase unless really necessary - there's only a limited amount of briefcases available
     if (briefcases.length < 2) {
       // Acquire 1 briefcase when using nock, to cover Briefcase.create()
-      requestResponse = responseBuilder.generatePostResponse<Briefcase>(generateBriefcase(3));
-      const postBody = responseBuilder.generatePostBody<EventSubscription>(responseBuilder.generateObject<Briefcase>(Briefcase));
-      responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody);
+      utils.mockCreateBriefcase(responseBuilder, iModelId, 3);
       for (let i = briefcases.length; i < 2; ++i) {
         const briefcase = await imodelHubClient.Briefcases().create(accessToken, iModelId);
         chai.expect(briefcase.briefcaseId).greaterThan(0);
       }
 
-      requestResponse = responseBuilder.generateGetArrayResponse<Briefcase>([generateBriefcase(2), generateBriefcase(3)]);
-      responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-
+      utils.mockGetBriefcase(responseBuilder, iModelId, utils.generateBriefcase(2), utils.generateBriefcase(3));
       briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
       chai.expect(briefcases.length).greaterThan(0);
     }
@@ -87,20 +98,10 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(error.id === IModelHubRequestErrorId.InvalidArgumentError);
   });
 
-  it("should get information on a briefcase", async () => {
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase", `${briefcaseId}`);
-    const requestResponse = responseBuilder.generateGetResponse<Briefcase>(responseBuilder.generateObject<Briefcase>(Briefcase,
-                                            new Map<string, any>([["iModelId", iModelId],
-                                              ["briefcaseId", briefcaseId],
-                                              ["fileName", "TestModel.bim"],
-                                              ["eTag", "v2QXvv8KWO"],
-                                            ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-
+  it("should get information on a briefcase by id", async () => {
+    mockGetBriefcaseById(responseBuilder, iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId)))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
-    chai.expect(briefcase.fileName).to.be.equal(TestConfig.iModelName + ".bim");
-    chai.expect(briefcase.eTag).to.have.length.above(5);
     chai.expect(briefcase.downloadUrl).to.be.equal(undefined);
     chai.expect(briefcase.iModelId).to.be.equal(iModelId);
   });
@@ -118,41 +119,23 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should get the download URL for a Briefcase", async () => {
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase",
-                                    `${briefcaseId}?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`);
-    const requestResponse = responseBuilder.generateGetResponse<Briefcase>(responseBuilder.generateObject<Briefcase>(Briefcase,
-                                            new Map<string, any>([
-                                              ["briefcaseId", briefcaseId],
-                                              ["fileName", "TestModel.bim"],
-                                              ["eTag", "v2QXvv8KWO"],
-                                              ["downloadUrl", "https://imodelhubqasa01.blob.core.windows.net/imodelhub"],
-                                            ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-
+    mockGetBriefcaseWithDownloadUrl(responseBuilder, iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
-    chai.expect(briefcase.fileName).to.be.equal(TestConfig.iModelName + ".bim");
-    chai.expect(briefcase.eTag).to.have.length.above(5);
+    chai.expect(briefcase.fileName).to.be.equal("TestModel.bim");
+    chai.expect(briefcase.downloadUrl);
     chai.expect(briefcase.downloadUrl!.startsWith("https://"));
   });
 
   it("should download a Briefcase", async () => {
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase",
-                        `${briefcaseId}?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`);
-    const requestResponse = responseBuilder.generateGetResponse<Briefcase>(responseBuilder.generateObject<Briefcase>(Briefcase,
-                                            new Map<string, any>([
-                                              ["fileName", "TestModel.bim"],
-                                              ["eTag", "v2QXvv8KWO"],
-                                              ["downloadUrl", "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile"],
-                                            ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    mockGetBriefcaseWithDownloadUrl(responseBuilder, iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
     const downloadToPathname: string = path.join(downloadToPath, fileName);
 
-    responseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim");
+    utils.mockFileResponse(responseBuilder, downloadToPath);
 
     await imodelHubClient.Briefcases().download(briefcase, downloadToPathname);
     fs.existsSync(downloadToPathname).should.be.equal(true);

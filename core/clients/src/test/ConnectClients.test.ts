@@ -12,7 +12,10 @@ describe("ConnectClient", () => {
   let accessToken: AccessToken;
   const connectClient: ConnectClient = new ConnectClient(TestConfig.deploymentEnv);
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(authToken);
   });
@@ -84,7 +87,10 @@ describe("RbacClient", () => {
   const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const rbacClient = new RbacClient(TestConfig.deploymentEnv);
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(authToken);
   });

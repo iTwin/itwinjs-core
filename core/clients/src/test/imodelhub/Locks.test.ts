@@ -14,6 +14,15 @@ import * as utils from "./TestUtils";
 
 chai.should();
 
+function mockGetLocks(responseBuilder: ResponseBuilder, imodelId: string, ...locks: Lock[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Lock");
+  const requestResponse = responseBuilder.generateGetArrayResponse<Lock>(locks);
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
 describe("iModelHubClient LockHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
@@ -33,10 +42,7 @@ describe("iModelHubClient LockHandler", () => {
     if (!TestConfig.enableMocks)
       this.skip();
 
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Lock");
-    const requestResponse = responseBuilder.generateGetResponse<Lock>(responseBuilder.generateObject<Lock>(Lock));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-
+    mockGetLocks(responseBuilder, iModelId, responseBuilder.generateObject<Lock>(Lock));
     // Needs to acquire before expecting more than 0.
     const locks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId);
     chai.expect(locks.length).to.be.greaterThan(0);

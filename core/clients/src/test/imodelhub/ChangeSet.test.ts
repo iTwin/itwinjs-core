@@ -19,6 +19,15 @@ declare const __dirname: string;
 
 chai.should();
 
+function mockGetChangeSetById(responseBuilder: ResponseBuilder, imodelId: string, changeSet: ChangeSet) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet", changeSet.wsgId);
+  const requestResponse = responseBuilder.generateGetResponse<ChangeSet>(changeSet);
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
 describe("iModelHub ChangeSetHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
@@ -41,31 +50,16 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should get information on ChangeSets", async () => {
-    const changesetCount = 3;
-    const mockId = "bb1848116eb71d83747ad6bf49c1c459c7555ef9";
-    let requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-                                                       "?$select=*,FileAccessKey-forward-AccessKey.DownloadURL");
-    let requestResponse = responseBuilder.generateGetResponse<ChangeSet>(responseBuilder.generateObject<ChangeSet>(ChangeSet,
-                                            new Map<string, any>([
-                                              ["fileName", "TestModel"],
-                                              ["downloadUrl", "https://imodelhubqasa01.blob.core.windows.net/imodelhub"],
-                                              ["wsgId", mockId],
-                                              ["index", "1"],
-                                            ])), changesetCount);
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    const mockedChangeSets = Array(3).fill(0).map(() => utils.generateChangeSet());
+    utils.mockGetChangeSet(responseBuilder, iModelId, ...mockedChangeSets);
 
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
-    requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-                                                       mockId);
-    requestResponse = responseBuilder.generateGetResponse<ChangeSet>(responseBuilder.generateObject<ChangeSet>(ChangeSet,
-                                        new Map<string, any>([
-                                          ["wsgId", mockId],
-                                          ["index", "1"],
-                                        ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse, changesetCount);
+    let i = 0;
     for (const changeSet of changeSets) {
+      mockGetChangeSetById(responseBuilder, iModelId, mockedChangeSets[i++]);
+
       const fileName: string = changeSet.fileName!;
       chai.expect(fileName.length).to.be.greaterThan(0);
 
@@ -78,28 +72,23 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(changeSet.index).to.be.equal(changeSet2.index);
     }
 
-    requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-                                                `?$filter=FollowingChangeSet-backward-ChangeSet.Id+eq+%27${mockId}%27`);
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
     const lastButOneId = changeSets[changeSets.length - 2].wsgId;
+    if (TestConfig.enableMocks) {
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=FollowingChangeSet-backward-ChangeSet.Id+eq+%27${lastButOneId}%27`);
+      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, responseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
+    }
     const lastChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().fromId(lastButOneId));
     chai.expect(lastChangeSets.length).to.be.equal(1);
   });
 
   it("should download ChangeSets", async () => {
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-                                                       "?$select=*,FileAccessKey-forward-AccessKey.DownloadURL");
-    const requestResponse = responseBuilder.generateGetResponse<ChangeSet>(responseBuilder.generateObject<ChangeSet>(ChangeSet,
-                                            new Map<string, any>([
-                                              ["fileName", "TestModel"],
-                                              ["downloadUrl", "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile"],
-                                            ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    utils.mockGetChangeSet(responseBuilder, iModelId, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
 
     const downloadChangeSetsToPath: string = path.join(downloadToPath, TestConfig.iModelName);
 
-    responseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim");
+    utils.mockFileResponse(responseBuilder, downloadToPath, 2);
     await imodelHubClient.ChangeSets().download(changeSets, downloadChangeSetsToPath);
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     for (const changeSet of changeSets) {
@@ -115,15 +104,17 @@ describe("iModelHub ChangeSetHandler", () => {
     if (!TestConfig.enableMocks)
       this.skip();
 
-    const mockId = "bb1848116eb71d83747ad6bf49c1c459c7555ef9";
-    let requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$top=1");
-    let requestResponse = responseBuilder.generateGetResponse<Lock>(responseBuilder.generateObject<Lock>(Lock,
-                                            new Map<string, any>([
-                                              ["objectId", "123"],
-                                              ["releasedWithChangeSet", mockId],
-                                              ["userCreated", "1"],
-                                              ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    const mockId = utils.generateChangeSetId();
+    if (TestConfig.enableMocks) {
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$top=1");
+      const requestResponse = responseBuilder.generateGetResponse<Lock>(responseBuilder.generateObject<Lock>(Lock,
+        new Map<string, any>([
+          ["objectId", "123"],
+          ["releasedWithChangeSet", mockId],
+          ["userCreated", "1"],
+        ])));
+      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    }
 
     // For a test case, find an element that was recently modified by looking at the first lock
     let queryOptions: RequestQueryOptions = {
@@ -134,8 +125,16 @@ describe("iModelHub ChangeSetHandler", () => {
     chai.expect(elementLocks.length).equals(1);
     const testElementId: string = elementLocks[0].objectId!; // Hex or Decimal
 
-    requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$top=1&$filter=ObjectId+eq+%27123%27");
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    if (TestConfig.enableMocks) {
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$top=1&$filter=ObjectId+eq+%27123%27");
+      const requestResponse = responseBuilder.generateGetResponse<Lock>(responseBuilder.generateObject<Lock>(Lock,
+        new Map<string, any>([
+          ["objectId", "123"],
+          ["releasedWithChangeSet", mockId],
+          ["userCreated", "1"],
+        ])));
+      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    }
     // Find the change set that the lock was modified in
     queryOptions = {
       $top: 1,
@@ -147,16 +146,20 @@ describe("iModelHub ChangeSetHandler", () => {
     const changeSetId: string = queryLocks[0].releasedWithChangeSet!; // Can get changeSetIndex also if necessary to compare against current
     chai.expect(changeSetId).length.greaterThan(0);
 
-    requestResponse = responseBuilder.generateGetResponse<ChangeSet>(responseBuilder.generateObject<ChangeSet>(ChangeSet,
-                                                                    new Map<string, any>([["userCreated", "1"]])));
-    requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet", mockId);
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    if (TestConfig.enableMocks) {
+      const requestResponse = responseBuilder.generateGetResponse<ChangeSet>(responseBuilder.generateObject<ChangeSet>(ChangeSet,
+        new Map<string, any>([["userCreated", "1"]])));
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet", mockId);
+      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    }
     const changeSet: ChangeSet = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
     chai.expect(!!changeSet);
 
-    requestResponse = responseBuilder.generateGetResponse<UserInfo>(responseBuilder.generateObject<UserInfo>(UserInfo));
-    requestPath = responseBuilder.createRequestUrl(ScopeType.iModel, iModelId, "UserInfo", "1");
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
+    if (TestConfig.enableMocks) {
+      const requestResponse = responseBuilder.generateGetResponse<UserInfo>(responseBuilder.generateObject<UserInfo>(UserInfo));
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "UserInfo", "1");
+      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    }
     const userInfo: UserInfo = (await imodelHubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(changeSet.userCreated!)))[0];
     chai.expect(!!userInfo);
   });

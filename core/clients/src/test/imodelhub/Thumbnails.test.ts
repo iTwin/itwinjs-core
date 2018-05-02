@@ -13,6 +13,17 @@ import * as utils from "./TestUtils";
 
 chai.should();
 
+const pngPrefixStr = "data:image/png;base64,iVBORw0KGgo";
+function mockGetThumbnail(responseBuilder: ResponseBuilder, projectId: string, imodelId: string, size: "Small" | "Large") {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, `${size}Thumbnail`, imodelId + "/$file");
+  let response = pngPrefixStr; // From 64bit encoding of bytes [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+  for (let i = 0; i < 3500; i++) { response += "a"; }
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, response);
+}
+
 describe("iModelHub ThumbnailHandler", () => {
   let accessToken: AccessToken;
   let projectId: string;
@@ -31,20 +42,12 @@ describe("iModelHub ThumbnailHandler", () => {
   });
 
   it("should get the thumbnail as a PNG file", async () => {
-    const pngPrefixStr = "data:image/png;base64,iVBORw0KGgo"; // From 64bit encoding of bytes [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
-    let response = pngPrefixStr;
-    let requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "SmallThumbnail", iModelId + "/$file");
-
-    for (let i = 0; i < 3500; i++) { response += "a"; }
-    responseBuilder.MockResponse(RequestType.Get, requestPath, response);
-
+    mockGetThumbnail(responseBuilder, projectId, iModelId, "Small");
     const smallImage: string = await imodelHubClient.Thumbnails().get(accessToken, projectId, iModelId, "Small");
     chai.expect(smallImage.length).greaterThan(1000);
     chai.expect(smallImage.startsWith(pngPrefixStr));
 
-    requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "LargeThumbnail", iModelId + "/$file");
-    responseBuilder.MockResponse(RequestType.Get, requestPath, response);
-
+    mockGetThumbnail(responseBuilder, projectId, iModelId, "Large");
     const largeImage: string = await imodelHubClient.Thumbnails().get(accessToken, projectId, iModelId, "Large");
     chai.expect(largeImage.length).greaterThan(3500);
     chai.expect(largeImage.startsWith(pngPrefixStr));
