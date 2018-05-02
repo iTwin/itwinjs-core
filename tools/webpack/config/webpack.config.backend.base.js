@@ -83,6 +83,12 @@ module.exports = (publicPath) => {
       ],
     },
     module: {
+      noParse: [
+        // Don't parse dtrace-provider for `require` calls.
+        // It attempts to include (optional) DTrace bindings on MacOS only.
+        // According to the bunyan README (https://github.com/trentm/node-bunyan#webpack), we can safely ignore this.
+        /dtrace-provider.js$/
+      ],
       strictExportPresence: true,
       rules: [
         // First, run the linter.
