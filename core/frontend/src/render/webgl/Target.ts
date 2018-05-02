@@ -19,6 +19,8 @@ import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { GL } from "./GL";
 import { SceneCompositor } from "./SceneCompositor";
+import { FrameBuffer } from "./FrameBuffer";
+import { TextureHandle } from "./Texture";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -273,11 +275,6 @@ export abstract class Target extends RenderTarget {
 
     this._flashIntensity = intensity;
   }
-  public onResized(): void {
-    // ###TODO
-    this._dcAssigned = false;
-  }
-
   private static _scratch = {
     viewFlags: new ViewFlags(),
     nearCenter: new Point3d(),
@@ -297,7 +294,10 @@ export abstract class Target extends RenderTarget {
       this._worldDecorations = undefined;
     }
 
-    this.assignDC();
+    if (!this.assignDC()) {
+      assert(false);
+      return;
+    }
 
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
@@ -440,9 +440,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.makeCurrent();
-    this.update();
-    this.beginPaint();
+    this._beginPaint();
 
     const gl = System.instance.context;
     const rect = this.viewRect;
@@ -459,7 +457,7 @@ export abstract class Target extends RenderTarget {
     this.drawPass(RenderPass.ViewOverlay);
     this._stack.pop();
 
-    this.endPaint();
+    this._endPaint();
   }
 
   private drawPass(pass: RenderPass): void {
@@ -473,18 +471,27 @@ export abstract class Target extends RenderTarget {
     return this._overlayRenderState;
   }
 
+  private assignDC(): boolean {
+    if (!this._dcAssigned) {
+      this._dcAssigned = this._assignDC();
+    }
+
+    assert(this._dcAssigned);
+    return this._dcAssigned;
+  }
+
   // ---- Methods expected to be overridden by subclasses ---- //
 
-  protected abstract assignDC(): boolean;
-  protected abstract makeCurrent(): void;
-  protected abstract beginPaint(): void;
-  protected abstract endPaint(): void;
-  protected update(): void { }
+  protected abstract _assignDC(): boolean;
+  protected abstract _beginPaint(): void;
+  protected abstract _endPaint(): void;
 }
 
+/** A Target which renders to a canvas on the screen */
 export class OnScreenTarget extends Target {
   private readonly _viewRect = new ViewRect();
   private readonly _canvas: HTMLCanvasElement;
+  private _fbo?: FrameBuffer;
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -497,14 +504,30 @@ export class OnScreenTarget extends Target {
     return this._viewRect;
   }
 
-  // ###TODO...
-  protected assignDC(): boolean {
-    this._dcAssigned = true;
-    return true;
+  protected _assignDC(): boolean {
+    assert(undefined === this._fbo);
+
+    const rect = this.viewRect;
+    const color = TextureHandle.createForColor(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (undefined === color) {
+      return false;
+    }
+
+    this._fbo = FrameBuffer.create([color]);
+    return undefined !== this._fbo;
   }
-  protected makeCurrent(): void { }
-  protected beginPaint(): void { }
-  protected endPaint(): void { }
+  protected _beginPaint(): void {
+    assert(undefined !== this._fbo);
+    System.instance.frameBufferStack.push(this._fbo!, true);
+  }
+  protected _endPaint(): void {
+    System.instance.frameBufferStack.pop();
+    // ###TODO this.blitSceneToScreen(this._fbo!.getColor(0));
+  }
+  public onResized(): void {
+    this._dcAssigned = false;
+    this._fbo = undefined;
+  }
 }
 
 export class OffScreenTarget extends Target {
@@ -518,10 +541,11 @@ export class OffScreenTarget extends Target {
   public get viewRect(): ViewRect { return this._viewRect; }
 
   // ###TODO...
-  protected assignDC(): boolean { return false; }
-  protected makeCurrent(): void { }
-  protected beginPaint(): void { }
-  protected endPaint(): void { }
+  protected _assignDC(): boolean { return false; }
+  protected _makeCurrent(): void { }
+  protected _beginPaint(): void { }
+  protected _endPaint(): void { }
+  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
 }
 
 function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3d {

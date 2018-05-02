@@ -10,7 +10,7 @@ export namespace WebGLTestContext {
   // Need to determine why, and how to fix.
   // For now, all tests requiring WebGL are disabled by default; enable in developer builds by setting
   // isEnabled to true.
-  const isEnabled = false;
+  const isEnabled = true;
   const canvasId = "WebGLTestCanvas";
 
   function createCanvas(): HTMLCanvasElement | undefined {
