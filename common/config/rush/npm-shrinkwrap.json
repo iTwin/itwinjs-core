@@ -28,9 +28,9 @@
       "integrity": "sha1-L6+hX7pF886shjxt3OhUW0M9rQE="
     },
     "@bentley/bemetalsmith": {
-      "version": "1.21.2",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-1.21.2.tgz",
-      "integrity": "sha1-0xPlIDrbQcmioAqpbopOsb1V9/w=",
+      "version": "1.21.3",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-1.21.3.tgz",
+      "integrity": "sha1-BrbPqCMsg395jXv++w/gVHCdKK8=",
       "requires": {
         "@bentley/be-cases": "1.17.0",
         "@bentley/bemetalsmith-add-descriptions": "1.18.7",
@@ -796,39 +796,39 @@
       "integrity": "sha1-TXBQ9kz0zScu6bKIuDB8cWjLCvQ="
     },
     "@bentley/imodeljs-e_1_6_11-win32-x64": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-17.0.0.tgz",
-      "integrity": "sha1-V6GMO68Ffk9Nkde3CrgHtxWrwmk="
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-e_1_6_11-win32-x64/-/imodeljs-e_1_6_11-win32-x64-17.1.1.tgz",
+      "integrity": "sha1-lMOJlc04TurF3ji8Nv+gNI3hFLQ="
     },
     "@bentley/imodeljs-n_8-win32-x64": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8-win32-x64/-/imodeljs-n_8-win32-x64-17.0.0.tgz",
-      "integrity": "sha1-70LG+kw8a5M/SIRbPth0UYz5Ozs="
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-n_8-win32-x64/-/imodeljs-n_8-win32-x64-17.1.1.tgz",
+      "integrity": "sha1-gmN8Lr8NAC/Ivq3ACGqBRjH2FTc="
     },
     "@bentley/imodeljs-native-platform-api": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-17.0.0.tgz",
-      "integrity": "sha1-iWRCaKLruSCLxkho4denniX9xDU="
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-17.1.1.tgz",
+      "integrity": "sha1-75UCE5D2i2duQrZ4DCgFeF4Dkwo="
     },
     "@bentley/imodeljs-native-platform-electron": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-electron/-/imodeljs-native-platform-electron-17.0.0.tgz",
-      "integrity": "sha1-FiIjty99NXXxNBJkPS0Z+YFj3Tg=",
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-electron/-/imodeljs-native-platform-electron-17.1.1.tgz",
+      "integrity": "sha1-i5d2XTsd7aeGF2lno9KGi+2I+Gs=",
       "requires": {
-        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.0.0"
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.1.1"
       }
     },
     "@bentley/imodeljs-native-platform-node": {
-      "version": "17.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-node/-/imodeljs-native-platform-node-17.0.0.tgz",
-      "integrity": "sha1-TXACaiSk+sKdblK7k/MgZdjGsRg=",
+      "version": "17.1.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-node/-/imodeljs-native-platform-node-17.1.1.tgz",
+      "integrity": "sha1-LJ0OyDDzU6hWv2883PFoaUL6L2Y=",
       "requires": {
-        "@bentley/imodeljs-n_8-win32-x64": "17.0.0"
+        "@bentley/imodeljs-n_8-win32-x64": "17.1.1"
       }
     },
     "@rush-temp/bentleyjs-core": {
       "version": "file:projects/bentleyjs-core.tgz",
-      "integrity": "sha1-5w1KjBUtLRFXADcdVQQN4BhUTmA=",
+      "integrity": "sha1-3UgpMqTxkZk2BhnH/tL414LNISo=",
       "requires": {
         "rimraf": "2.6.2",
         "typedoc": "0.11.1",
@@ -837,7 +837,7 @@
     },
     "@rush-temp/geometry-core": {
       "version": "file:projects/geometry-core.tgz",
-      "integrity": "sha1-JfWkPDKlyc4UlF5RPHRVynHkMnM=",
+      "integrity": "sha1-MGbUMAhuPKuIPKBN/qtz7Bwoffg=",
       "requires": {
         "@types/lodash": "4.14.106",
         "chai": "4.1.2",
@@ -856,11 +856,11 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-BhAsIGrvk8XioKlh+lVlOnzxnkQ=",
+      "integrity": "sha1-PI6UV85WWSjIa26o387kv+FJr5U=",
       "requires": {
-        "@bentley/imodeljs-native-platform-api": "17.0.0",
-        "@bentley/imodeljs-native-platform-electron": "17.0.0",
-        "@bentley/imodeljs-native-platform-node": "17.0.0",
+        "@bentley/imodeljs-native-platform-api": "17.1.1",
+        "@bentley/imodeljs-native-platform-electron": "17.1.1",
+        "@bentley/imodeljs-native-platform-node": "17.1.1",
         "asn1": "0.2.3",
         "cpx": "1.5.0",
         "fs-extra": "5.0.0",
@@ -878,7 +878,7 @@
     },
     "@rush-temp/imodeljs-clients": {
       "version": "file:projects/imodeljs-clients.tgz",
-      "integrity": "sha1-29NsHc0JX39Lvs4AtlA8UpLpdvg=",
+      "integrity": "sha1-Rv2w7eKjnCI8ALneiiW57LAq7GU=",
       "requires": {
         "@types/chai-as-promised": "0.0.31",
         "@types/chai-string": "1.1.30",
@@ -910,7 +910,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-1Gv3Bgvl6ToHzlErSDGhwIEoPAQ=",
+      "integrity": "sha1-I2GAhqhFGj60z8HphylQrV95ze0=",
       "requires": {
         "@types/uuid": "3.4.3",
         "rimraf": "2.6.2",
@@ -921,9 +921,9 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-48ToY8eWKViQq4tV49N/3gykYno=",
+      "integrity": "sha1-0qas8vEH5Dv36bTQo15wQeVf0E0=",
       "requires": {
-        "@bentley/bemetalsmith": "1.21.2",
+        "@bentley/bemetalsmith": "1.21.3",
         "@bentley/bentleyjs-tools": "3.4.1",
         "@types/body-parser": "1.17.0",
         "@types/chai": "4.1.3",
@@ -976,9 +976,9 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-v1jvN9Fog5SunPQrKrgkxggSrtE=",
+      "integrity": "sha1-DbzZi82VVj7LDgL4+j08L6yitaM=",
       "requires": {
-        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.0.0",
+        "@bentley/imodeljs-e_1_6_11-win32-x64": "17.1.1",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
         "commander": "2.15.1",
@@ -1001,7 +1001,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-gwTNKF+L6E9EV9I6i9l1BH+t79w=",
+      "integrity": "sha1-NGwyehxyaxXCXRgtUkBKHX1+NNc=",
       "requires": {
         "cpx": "1.5.0",
         "fuse.js": "3.2.0",
@@ -1016,9 +1016,9 @@
     },
     "@rush-temp/sample-code-app": {
       "version": "file:projects/sample-code-app.tgz",
-      "integrity": "sha1-8I1DQ7QMt89UUZuYV0nNuyUojIk=",
+      "integrity": "sha1-HGRtJ0No4BFqkSzMO5mYHROALIo=",
       "requires": {
-        "@bentley/imodeljs-n_8-win32-x64": "17.0.0",
+        "@bentley/imodeljs-n_8-win32-x64": "17.1.1",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
         "commander": "2.15.1",
@@ -1039,9 +1039,9 @@
     },
     "@rush-temp/sample-code-snippets": {
       "version": "file:projects/sample-code-snippets.tgz",
-      "integrity": "sha1-ie43uPNhEfAvTmel0lp13jLgPJM=",
+      "integrity": "sha1-hk0JBu8RGqAucMf1uDPrZA0zfI8=",
       "requires": {
-        "@bentley/imodeljs-n_8-win32-x64": "17.0.0",
+        "@bentley/imodeljs-n_8-win32-x64": "17.1.1",
         "body-parser": "1.18.2",
         "chai": "4.1.2",
         "commander": "2.15.1",
@@ -3681,7 +3681,7 @@
       "integrity": "sha1-C9dnBCWL6CmyOYu1Dkti0aFmsLk=",
       "requires": {
         "caniuse-db": "1.0.30000832",
-        "electron-to-chromium": "1.3.44"
+        "electron-to-chromium": "1.3.45"
       }
     },
     "bs-recipes": {
@@ -5933,9 +5933,9 @@
       }
     },
     "electron-to-chromium": {
-      "version": "1.3.44",
-      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.44.tgz",
-      "integrity": "sha1-72sVCmDVIwgjiMra2ICF7NL9RoQ="
+      "version": "1.3.45",
+      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.45.tgz",
+      "integrity": "sha1-RYrBscXHYM6IEaFtK/vZfsMLr7g="
     },
     "elliptic": {
       "version": "6.4.0",
