@@ -234,6 +234,9 @@ export abstract class Target extends RenderTarget {
     this._stack.pop();
   }
 
+  public pushActiveVolume(): void { } // ###TODO
+  public popActiveVolume(): void { } // ###TODO
+
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }

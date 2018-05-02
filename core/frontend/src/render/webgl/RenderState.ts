@@ -133,10 +133,10 @@ export class RenderStateBlend {
   }
 
   public setBlendFunc(src: GL.BlendFactor, dst: GL.BlendFactor): void {
-    this.setBlendFuncSeperate(src, src, dst, dst);
+    this.setBlendFuncSeparate(src, src, dst, dst);
   }
 
-  public setBlendFuncSeperate(srcRgb: GL.BlendFactor, srcAlpha: GL.BlendFactor, dstRgb: GL.BlendFactor, dstAlpha: GL.BlendFactor): void {
+  public setBlendFuncSeparate(srcRgb: GL.BlendFactor, srcAlpha: GL.BlendFactor, dstRgb: GL.BlendFactor, dstAlpha: GL.BlendFactor): void {
     this.functionSourceRgb = srcRgb;
     this.functionSourceAlpha = srcAlpha;
     this.functionDestRgb = dstRgb;
@@ -265,6 +265,8 @@ export class RenderState {
     }
   }
 
+  public static defaults = new RenderState();
+
   public copyFrom(src: RenderState): void {
     this.flags.copyFrom(src.flags);
     this.blend.copyFrom(src.blend);
@@ -337,3 +339,5 @@ export class RenderState {
     }
   }
 }
+
+Object.freeze(RenderState.defaults);

@@ -161,4 +161,10 @@ export class FrameBufferStack {
   }
 
   public get isEmpty(): boolean { return 0 === this._stack.length; }
+
+  public execute(fbo: FrameBuffer, withAttachments: boolean, func: () => void) {
+    this.push(fbo, withAttachments);
+    func();
+    this.pop();
+  }
 }

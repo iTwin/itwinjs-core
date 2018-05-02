@@ -183,6 +183,8 @@ export class System extends RenderSystem {
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
+  public static identityTransform = Transform.createIdentity();
+
   public static create(canvas?: HTMLCanvasElement): System | undefined {
     if (undefined === canvas) {
       return undefined;
@@ -249,3 +251,5 @@ export class System extends RenderSystem {
     assert(undefined !== this.context);
   }
 }
+
+Object.freeze(System.identityTransform);
