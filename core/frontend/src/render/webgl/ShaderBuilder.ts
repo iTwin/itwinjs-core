@@ -4,7 +4,8 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
-import { ShaderSource } from "./ShaderSource";
+import { GLSLVertex } from "./glsl/Vertex";
+import { GLSLDecode } from "./glsl/Decode";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
@@ -434,7 +435,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard);
-      main.add(ShaderSource.Vertex.earlyDiscard);
+      main.add(GLSLVertex.earlyDiscard);
     }
 
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
@@ -446,7 +447,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
-      main.add(ShaderSource.Vertex.discard);
+      main.add(GLSLVertex.discard);
     }
 
     const calcClipDist = this.get(VertexShaderComponent.CalcClipDist);
@@ -471,7 +472,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
   }
 
   private addPosition(positionFromLUT: boolean): void {
-    this.addFunction(ShaderSource.Vertex.unquantizePosition);
+    this.addFunction(GLSLVertex.unquantizePosition);
 
     this.addAttribute("a_pos", VariableType.Vec3, (prog) => {
       prog.addAttribute("a_pos", (attr, params) => { params.geometry.bindVertexArray(attr); });
@@ -488,7 +489,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     });
 
     if (!positionFromLUT) {
-      this.addFunction(ShaderSource.Vertex.unquantizeVertexPosition);
+      this.addFunction(GLSLVertex.unquantizeVertexPosition);
       return;
     }
 
@@ -497,13 +498,13 @@ export class VertexShaderBuilder extends ShaderBuilder {
     this.addGlobal("g_vertexData2", VariableType.Vec2);
     this.addGlobal("g_featureIndexCoords", VariableType.Vec2);
 
-    this.addFunction(ShaderSource.decodeUInt32);
-    this.addFunction(ShaderSource.decodeUInt16);
-    this.addFunction(ShaderSource.Vertex.unquantizeVertexPositionFromLUT);
+    this.addFunction(GLSLDecode.uint32);
+    this.addFunction(GLSLDecode.uint32);
+    this.addFunction(GLSLVertex.unquantizeVertexPositionFromLUT);
 
     // ###TODO: u_vertLUT, u_vertParams, LookupTable.AddToBuilder()
 
-    this.addInitializer(ShaderSource.Vertex.initializeVertLUTCoords);
+    this.addInitializer(GLSLVertex.initializeVertLUTCoords);
   }
 }
 

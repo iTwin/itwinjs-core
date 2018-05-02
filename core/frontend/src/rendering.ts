@@ -25,7 +25,6 @@ export * from "./render/webgl/RenderFlags";
 export * from "./render/webgl/RenderState";
 export * from "./render/webgl/ShaderBuilder";
 export * from "./render/webgl/ShaderProgram";
-export * from "./render/webgl/ShaderSource";
 export * from "./render/webgl/System";
 export * from "./render/webgl/Target";
 export * from "./render/webgl/Technique";

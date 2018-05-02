@@ -18,6 +18,9 @@ import { RenderCommands } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { GL } from "./GL";
+import { SceneCompositor } from "./SceneCompositor";
+import { FrameBuffer } from "./FrameBuffer";
+import { TextureHandle } from "./Texture";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -38,6 +41,7 @@ const enum FrustumData {
   kType,
 }
 
+/** Represents the frustum for use in glsl as a pair of uniforms. */
 export class FrustumUniforms {
   private _planeData: Float32Array;
   private _frustumData: Float32Array;
@@ -145,6 +149,7 @@ export abstract class Target extends RenderTarget {
   private _transparencyThreshold: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
+  private _compositor: SceneCompositor;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -165,6 +170,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
+    this._compositor = new SceneCompositor(this);
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
@@ -234,6 +240,9 @@ export abstract class Target extends RenderTarget {
     this._stack.pop();
   }
 
+  public pushActiveVolume(): void { } // ###TODO
+  public popActiveVolume(): void { } // ###TODO
+
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }
@@ -266,11 +275,6 @@ export abstract class Target extends RenderTarget {
 
     this._flashIntensity = intensity;
   }
-  public onResized(): void {
-    // ###TODO
-    this._dcAssigned = false;
-  }
-
   private static _scratch = {
     viewFlags: new ViewFlags(),
     nearCenter: new Point3d(),
@@ -290,7 +294,10 @@ export abstract class Target extends RenderTarget {
       this._worldDecorations = undefined;
     }
 
-    this.assignDC();
+    if (!this.assignDC()) {
+      assert(false);
+      return;
+    }
 
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
@@ -433,9 +440,7 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.makeCurrent();
-    this.update();
-    this.beginPaint();
+    this._beginPaint();
 
     const gl = System.instance.context;
     const rect = this.viewRect;
@@ -445,14 +450,14 @@ export abstract class Target extends RenderTarget {
 
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
-    // ###TODO this._compositor.draw(this, this._renderCommands);
+    this._compositor.draw(this._renderCommands);
 
     this._stack.pushState(this.decorationState);
     this.drawPass(RenderPass.WorldOverlay);
     this.drawPass(RenderPass.ViewOverlay);
     this._stack.pop();
 
-    this.endPaint();
+    this._endPaint();
   }
 
   private drawPass(pass: RenderPass): void {
@@ -466,18 +471,27 @@ export abstract class Target extends RenderTarget {
     return this._overlayRenderState;
   }
 
+  private assignDC(): boolean {
+    if (!this._dcAssigned) {
+      this._dcAssigned = this._assignDC();
+    }
+
+    assert(this._dcAssigned);
+    return this._dcAssigned;
+  }
+
   // ---- Methods expected to be overridden by subclasses ---- //
 
-  protected abstract assignDC(): boolean;
-  protected abstract makeCurrent(): void;
-  protected abstract beginPaint(): void;
-  protected abstract endPaint(): void;
-  protected update(): void { }
+  protected abstract _assignDC(): boolean;
+  protected abstract _beginPaint(): void;
+  protected abstract _endPaint(): void;
 }
 
+/** A Target which renders to a canvas on the screen */
 export class OnScreenTarget extends Target {
   private readonly _viewRect = new ViewRect();
   private readonly _canvas: HTMLCanvasElement;
+  private _fbo?: FrameBuffer;
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -490,14 +504,30 @@ export class OnScreenTarget extends Target {
     return this._viewRect;
   }
 
-  // ###TODO...
-  protected assignDC(): boolean {
-    this._dcAssigned = true;
-    return true;
+  protected _assignDC(): boolean {
+    assert(undefined === this._fbo);
+
+    const rect = this.viewRect;
+    const color = TextureHandle.createForColor(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (undefined === color) {
+      return false;
+    }
+
+    this._fbo = FrameBuffer.create([color]);
+    return undefined !== this._fbo;
   }
-  protected makeCurrent(): void { }
-  protected beginPaint(): void { }
-  protected endPaint(): void { }
+  protected _beginPaint(): void {
+    assert(undefined !== this._fbo);
+    System.instance.frameBufferStack.push(this._fbo!, true);
+  }
+  protected _endPaint(): void {
+    System.instance.frameBufferStack.pop();
+    // ###TODO this.blitSceneToScreen(this._fbo!.getColor(0));
+  }
+  public onResized(): void {
+    this._dcAssigned = false;
+    this._fbo = undefined;
+  }
 }
 
 export class OffScreenTarget extends Target {
@@ -511,10 +541,11 @@ export class OffScreenTarget extends Target {
   public get viewRect(): ViewRect { return this._viewRect; }
 
   // ###TODO...
-  protected assignDC(): boolean { return false; }
-  protected makeCurrent(): void { }
-  protected beginPaint(): void { }
-  protected endPaint(): void { }
+  protected _assignDC(): boolean { return false; }
+  protected _makeCurrent(): void { }
+  protected _beginPaint(): void { }
+  protected _endPaint(): void { }
+  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
 }
 
 function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3d {

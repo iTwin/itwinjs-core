@@ -11,7 +11,7 @@ import { System } from "./System";
 import { Batch, Branch, Graphic } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
-import { RenderPass, RenderOrder } from "./RenderFlags";
+import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack } from "./BranchState";
 import { GraphicList, DecorationList, Decorations, RenderGraphic } from "../System";
@@ -47,7 +47,7 @@ export class DrawParams extends ShaderProgramParams {
   public readonly modelMatrix: Matrix4;
 
   private static readonly _scratchTransform = Transform.createIdentity();
-  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform, pass: RenderPass) {
+  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = System.identityTransform, pass: RenderPass = RenderPass.OpaqueGeneral) {
     super(target, pass);
     this.geometry = geometry;
     this.modelMatrix = Matrix4.fromTransform(modelMatrix);
@@ -198,6 +198,10 @@ export class RenderCommands {
 
   public get hasDecorationOverrides(): boolean { return undefined !== this._curOvrParams; }
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
+  public get compositeFlags(): CompositeFlags {
+    const flags = this.hasCommands(RenderPass.Translucent) ? CompositeFlags.Translucent : CompositeFlags.None;
+    return this.hasCommands(RenderPass.Hilite) ? (flags | CompositeFlags.Hilite) : flags;
+  }
 
   public hasCommands(pass: RenderPass): boolean { return 0 !== this.getCommands(pass).length; }
   public isOpaquePass(pass: RenderPass): boolean { return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral; }
