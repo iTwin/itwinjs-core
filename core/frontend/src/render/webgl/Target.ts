@@ -18,6 +18,7 @@ import { RenderCommands } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { GL } from "./GL";
+import { SceneCompositor } from "./SceneCompositor";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -38,6 +39,7 @@ const enum FrustumData {
   kType,
 }
 
+/** Represents the frustum for use in glsl as a pair of uniforms. */
 export class FrustumUniforms {
   private _planeData: Float32Array;
   private _frustumData: Float32Array;
@@ -145,6 +147,7 @@ export abstract class Target extends RenderTarget {
   private _transparencyThreshold: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
+  private _compositor: SceneCompositor;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -165,6 +168,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
+    this._compositor = new SceneCompositor(this);
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
@@ -448,7 +452,7 @@ export abstract class Target extends RenderTarget {
 
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
-    // ###TODO this._compositor.draw(this, this._renderCommands);
+    this._compositor.draw(this._renderCommands);
 
     this._stack.pushState(this.decorationState);
     this.drawPass(RenderPass.WorldOverlay);
