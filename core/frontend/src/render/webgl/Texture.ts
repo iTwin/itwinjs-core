@@ -139,7 +139,6 @@ export class TextureHandle implements IDisposable {
 
   /** Creates a texture for a framebuffer attachment (no data specified). */
   public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType /* , isTranslucent: boolean */ ) {
-    // ###TODO: rename createForAttachment
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
