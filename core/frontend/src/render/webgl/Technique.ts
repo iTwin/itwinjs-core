@@ -9,11 +9,12 @@ import { TechniqueFlags } from "./TechniqueFlags";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "./ShaderBuilder";
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
+import { RenderPass, CompositeFlags } from "./RenderFlags";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createCopyColorProgram } from "./glsl/CopyColor";
 import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
+import { createCompositeProgram } from "./glsl/Composite";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -151,6 +152,9 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
+    this._list[TechniqueId.CompositeHilite] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite, gl));
+    this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
+    this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
 
     assert(this._list.length === TechniqueId.NumBuiltIn);
     return true;

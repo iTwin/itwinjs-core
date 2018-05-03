@@ -17,5 +17,5 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
 }
 
 export namespace GLSLFragment {
-  export const assignFragColor = `FragColor = baseColor`;
+  export const assignFragColor = `FragColor = baseColor;`;
 }

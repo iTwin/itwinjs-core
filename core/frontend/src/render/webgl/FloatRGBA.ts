@@ -94,10 +94,15 @@ export class FloatRgba extends Rgba {
 
   /** Create a FloatRgba using a ColorDef.
    * @param def A ColorDef used to create a new FloatRgba.
+   * @param transparency Optionally overrides the transparency value (0-255) specified by the ColorDef.
    * @returns Returns the newly created FloatRgba
    */
-  public static fromColorDef(def: ColorDef): FloatRgba {
+  public static fromColorDef(def: ColorDef, transparency?: number): FloatRgba {
     const c = def.colors;
+    if (undefined !== transparency) {
+      c.t = transparency;
+    }
+
     return new FloatRgba(c.r / 255.0, c.g / 255.0, c.b / 255.0, (255.0 - c.t) / 255.0);
   }
 }
