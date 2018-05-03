@@ -74,18 +74,19 @@ export interface DescriptorOverrides {
  * @ref Descriptor to control what content they get and how they get it.
  */
 export default class Descriptor {
-  public readonly connectionId: string = "";
-  public readonly inputKeysHash: string = "";
+  public readonly connectionId!: string;
+  public readonly inputKeysHash!: string;
   public readonly contentOptions: any;
   public readonly selectionInfo?: SelectionInfo;
-  public readonly displayType: string = "";
-  public readonly selectClasses: SelectClassInfo[] = [];
-  public readonly fields: Field[] = [];
-  public contentFlags: number = 0;
+  public readonly displayType!: string;
+  public readonly selectClasses!: SelectClassInfo[];
+  public readonly fields!: Field[];
+  public contentFlags!: number;
   public sortingField?: Field;
   public sortDirection?: SortDirection;
   public filterExpression?: string;
 
+  /* istanbul ignore next */
   private constructor() {}
 
   /*public toJSON(): DescriptorJSON {

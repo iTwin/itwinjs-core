@@ -3,15 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as h from "../../common/src/Hierarchy";
-import { nullable, createRandomId } from "./Misc";
+import { nullable } from "./Misc";
+import { createRandomECInstanceKey } from "@helpers/random/EC";
 
-export const createRandomECInstanceNodeKey = (): h.NodeKey => {
+export const createRandomECInstanceNodeKey = (): h.ECInstanceNodeKey => {
   return {
     type: "ECInstanceNode",
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
-    classId: createRandomId(),
-    instanceId: createRandomId(),
-  } as h.NodeKey;
+    instanceKey: createRandomECInstanceKey(),
+  } as h.ECInstanceNodeKey;
 };
 
 export const createRandomECInstanceNode = (): h.Node => {

@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as assert from "assert";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
-import { NodeKey } from "./Hierarchy";
+import { NodeKey, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
 
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
@@ -37,21 +36,17 @@ export default class KeySet {
     };
   }
 
-  public get instanceKeys(): ReadonlyMap<string, ReadonlySet<InstanceId>> {
+  public get instanceKeys(): Map<string, Set<InstanceId>> {
     const map = new Map<string, Set<InstanceId>>();
     for (const entry of this._instanceKeys)
       map.set(entry["0"], new Set([...entry["1"]].map((key: string) => new Id64(key))));
     return map;
   }
 
-  public get nodeKeys(): ReadonlySet<NodeKey> {
+  public get nodeKeys(): Set<NodeKey> {
     const set = new Set<NodeKey>();
     for (const serialized of this._nodeKeys) {
-      const key = JSON.parse(serialized, (objectKey: string, value: any): any => {
-        if (typeof(objectKey) === "string" && objectKey.endsWith("Id"))
-          return new Id64(value);
-        return value;
-      }) as NodeKey;
+      const key = nodeKeyFromJSON(JSON.parse(serialized));
       set.add(key);
     }
     return set;
@@ -111,7 +106,7 @@ export default class KeySet {
 
   public add(value: Keys | Key): KeySet {
     if (!value)
-      return this;
+      throw new Error("Invalid argument");
     if (this.isKeySet(value)) {
       this.addKeySet(value);
     } else if (this.isSerializedKeySet(value)) {
@@ -128,7 +123,7 @@ export default class KeySet {
     } else if (this.isEntityProps(value)) {
       this.add({ className: value.classFullName, id: new Id64(value.id) } as InstanceKey);
     } else {
-      assert(false);
+      throw new Error("Invalid argument");
     }
     return this;
   }
@@ -161,7 +156,7 @@ export default class KeySet {
 
   public delete(value: Keys | Key): KeySet {
     if (!value)
-      return this;
+      throw new Error("Invalid argument");
     if (this.isKeySet(value)) {
       this.deleteKeySet(value);
     } else if (this.isSerializedKeySet(value)) {
@@ -178,14 +173,14 @@ export default class KeySet {
     } else if (this.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else {
-      assert(false);
+      throw new Error("Invalid argument");
     }
     return this;
   }
 
   public has(value: Key): boolean {
     if (!value)
-      return false;
+      throw new Error("Invalid argument");
     if (this.isNodeKey(value))
       return this._nodeKeys.has(JSON.stringify(value));
     if (this.isInstanceKey(value)) {
@@ -194,8 +189,7 @@ export default class KeySet {
     }
     if (this.isEntityProps(value))
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
-    assert(false);
-    return false;
+    throw new Error("Invalid argument");
   }
 
   public get size(): number {

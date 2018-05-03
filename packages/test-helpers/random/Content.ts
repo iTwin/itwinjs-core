@@ -25,38 +25,38 @@ export const createRandomCategory = (): c.CategoryDescription => {
   } as c.CategoryDescription;
 };
 
-const createRandomTypeDescription = (): c.TypeDescription => {
+export const createRandomPrimitiveTypeDescription = (): c.TypeDescription => {
   return {
     valueFormat: c.PropertyValueFormat.Primitive,
     typeName: faker.database.type(),
   } as c.PrimitiveTypeDescription;
 };
 
-const createRandomEditorDescription = (): c.EditorDescription => {
+export const createRandomEditorDescription = (): c.EditorDescription => {
   return {
     name: faker.random.word(),
   } as c.EditorDescription;
 };
 
-const createRandomFieldJson = () => {
+const createRandomPrimitiveFieldJson = () => {
   return {
     category: createRandomCategory(),
     name: faker.random.word(),
     label: faker.random.words(),
-    type: createRandomTypeDescription(),
+    type: createRandomPrimitiveTypeDescription(),
     isReadonly: faker.random.boolean(),
     priority: faker.random.number(),
     editor: nullable(createRandomEditorDescription),
   };
 };
 
-export const createRandomField = (): c.Field => {
-  return c.Field.fromJSON(createRandomFieldJson())!;
+export const createRandomPrimitiveField = (): c.Field => {
+  return c.Field.fromJSON(createRandomPrimitiveFieldJson())!;
 };
 
-const createRandomDescriptorJson = (displayType?: string) => {
+export const createRandomDescriptorJson = (displayType?: string) => {
   const selectClasses = [createRandomSelectClassInfo(), createRandomSelectClassInfo()];
-  const fields = [createRandomFieldJson(), createRandomFieldJson(), createRandomFieldJson()];
+  const fields = [createRandomPrimitiveFieldJson(), createRandomPrimitiveFieldJson(), createRandomPrimitiveFieldJson()];
   return {
     connectionId: faker.random.uuid(),
     inputKeysHash: faker.random.uuid(),

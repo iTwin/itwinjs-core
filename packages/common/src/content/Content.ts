@@ -16,6 +16,7 @@ export default class Content {
   public readonly descriptor!: Readonly<Descriptor>;
   public readonly contentSet!: Array<Readonly<Item>>;
 
+  /* istanbul ignore next */
   private constructor() {}
 
   /*public toJSON(): ContentJSON {

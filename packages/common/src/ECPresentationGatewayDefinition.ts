@@ -16,6 +16,7 @@ export default abstract class ECPresentationGateway extends Gateway {
   public static version = "1.0.0";
 
   /** The types that can be marshaled by the gateway. */
+  /* istanbul ignore next */
   public static types = () => [
     Descriptor,
     Content,

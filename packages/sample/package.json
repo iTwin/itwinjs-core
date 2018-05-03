@@ -42,7 +42,7 @@
     "safe-json-stringify": "~1"
   },
   "devDependencies": {
-    "@bentley/imodeljs-react-scripts": "^4.0.2",
+    "@bentley/imodeljs-react-scripts": "^4.0.5",
     "@types/body-parser": "latest",
     "@types/bunyan": "^1.8.4",
     "@types/electron-devtools-installer": "^2.0.2",

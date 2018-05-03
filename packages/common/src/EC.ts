@@ -4,11 +4,23 @@
 import { Id64 } from "@bentley/bentleyjs-core";
 
 export type ClassId = Id64;
+
 export type InstanceId = Id64;
+
 export interface InstanceKey {
   className: string;
   id: InstanceId;
 }
+
+export interface InstanceKeyJSON {
+  className: string;
+  id: string;
+}
+
+export const instanceKeyFromJSON = (json: InstanceKeyJSON): InstanceKey => {
+  return { ...json, id: new Id64(json.id) };
+};
+
 export type InstanceKeysList = InstanceKey[];
 
 /** Information about an ECClass. */

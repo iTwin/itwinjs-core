@@ -88,6 +88,54 @@ describe("KeySet", () => {
 
   });
 
+  describe("[get] instanceKeys", () => {
+
+    it("returns empty map when there are no keys", () => {
+      const set = new KeySet();
+      expect(set.instanceKeys.size).to.eq(0);
+    });
+
+    it("returns map with one entry when all keys have same class name", () => {
+      const set = new KeySet([{
+        className: "aaa",
+        id: createRandomECInstanceId(),
+      }, {
+        className: "aaa",
+        id: createRandomECInstanceId(),
+      }]);
+      const keys = set.instanceKeys;
+      expect(keys).to.matchSnapshot();
+    });
+
+    it("returns map with multiple entries for each class name when keys have different class names", () => {
+      const set = new KeySet([{
+        className: "aaa",
+        id: createRandomECInstanceId(),
+      }, {
+        className: "bbb",
+        id: createRandomECInstanceId(),
+      }]);
+      const keys = set.instanceKeys;
+      expect(keys).to.matchSnapshot();
+    });
+
+  });
+
+  describe("[get] nodeKeys", () => {
+
+    it("returns empty set when there are no keys", () => {
+      const set = new KeySet();
+      expect(set.nodeKeys.size).to.eq(0);
+    });
+
+    it("returns set with node keys", () => {
+      const set = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()]);
+      const keys = set.nodeKeys;
+      expect(keys).to.matchSnapshot();
+    });
+
+  });
+
   describe("clear", () => {
 
     it("clears node keys", () => {
@@ -185,14 +233,16 @@ describe("KeySet", () => {
       expect(set.has(nodeKey1)).to.be.true;
 
       const instanceKey2 = createRandomECInstanceKey();
+      const instanceKey3 = { className: instanceKey1.className, id: createRandomECInstanceId() };
       const nodeKey2 = createRandomECInstanceNodeKey();
       const source = new KeySet();
-      source.add(instanceKey2).add(nodeKey2);
+      source.add([instanceKey2, instanceKey3]).add(nodeKey2);
 
       set.add(source);
-      expect(set.size).to.eq(4);
+      expect(set.size).to.eq(5);
       expect(set.has(instanceKey1)).to.be.true;
       expect(set.has(instanceKey2)).to.be.true;
+      expect(set.has(instanceKey3)).to.be.true;
       expect(set.has(nodeKey1)).to.be.true;
       expect(set.has(nodeKey2)).to.be.true;
     });
@@ -221,6 +271,16 @@ describe("KeySet", () => {
       expect(set.has(instanceKey2)).to.be.true;
       expect(set.has(nodeKey1)).to.be.true;
       expect(set.has(nodeKey2)).to.be.true;
+    });
+
+    it("handles invalid values", () => {
+      const set = new KeySet();
+      expect(() => (set as any).add(undefined)).to.throw();
+      expect(set.isEmpty).to.be.true;
+      expect(() => (set as any).add(null)).to.throw();
+      expect(set.isEmpty).to.be.true;
+      expect(() => (set as any).add({})).to.throw();
+      expect(set.isEmpty).to.be.true;
     });
 
   });
@@ -330,6 +390,51 @@ describe("KeySet", () => {
       expect(set.has(instanceKeys[1])).to.be.false;
       expect(set.has(nodeKeys[0])).to.be.false;
       expect(set.has(nodeKeys[1])).to.be.true;
+    });
+
+    it("does nothing when trying to delete an instance key from empty keyset", () => {
+      const set = new KeySet();
+      set.delete(createRandomECInstanceKey());
+      expect(set.size).to.eq(0);
+    });
+
+    it("does nothing when trying to delete a node key from empty keyset", () => {
+      const set = new KeySet();
+      set.delete(createRandomECInstanceNodeKey());
+      expect(set.size).to.eq(0);
+    });
+
+    it("does nothing when trying to delete a keyset from empty keyset", () => {
+      const set = new KeySet();
+      set.delete(new KeySet([createRandomECInstanceKey()]));
+      expect(set.size).to.eq(0);
+    });
+
+    it("does nothing when trying to delete a serialized keyset from empty keyset", () => {
+      const set = new KeySet();
+      set.delete(new KeySet([createRandomECInstanceKey()]).toJSON());
+      expect(set.size).to.eq(0);
+    });
+
+    it("handles invalid values", () => {
+      const set = new KeySet([createRandomECInstanceNodeKey()]);
+      expect(() => (set as any).delete(undefined)).to.throw();
+      expect(set.size).to.eq(1);
+      expect(() => (set as any).delete(null)).to.throw();
+      expect(set.size).to.eq(1);
+      expect(() => (set as any).delete({})).to.throw();
+      expect(set.size).to.eq(1);
+    });
+
+  });
+
+  describe("has", () => {
+
+    it("handles invalid values", () => {
+      const set = new KeySet([createRandomECInstanceNodeKey()]);
+      expect(() => (set as any).has(undefined)).to.throw();
+      expect(() => (set as any).has(null)).to.throw();
+      expect(() => (set as any).has({})).to.throw();
     });
 
   });

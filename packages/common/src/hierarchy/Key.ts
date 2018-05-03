@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { InstanceKey } from "../EC";
+import { InstanceKey, InstanceKeyJSON, instanceKeyFromJSON } from "../EC";
 
 export enum DefaultNodeTypes {
   ECInstanceNode = "ECInstanceNode",
@@ -23,6 +23,11 @@ export interface ECInstanceNodeKey extends BaseNodeKey {
   instanceKey: InstanceKey;
 }
 
+export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
+  type: DefaultNodeTypes.ECInstanceNode;
+  instanceKey: InstanceKeyJSON;
+}
+
 export interface ECClassGroupingNodeKey extends BaseNodeKey {
   type: DefaultNodeTypes.ECClassGroupingNode;
   className: string;
@@ -39,3 +44,13 @@ export interface LabelGroupingNodeKey extends BaseNodeKey {
   type: DefaultNodeTypes.DisplayLabelGroupingNode;
   label: string;
 }
+
+export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
+export const fromJSON = (json: NodeKeyJSON): NodeKey => {
+  switch (json.type) {
+    case DefaultNodeTypes.ECInstanceNode:
+      return { ...json, instanceKey: instanceKeyFromJSON((json as ECInstanceNodeKeyJSON).instanceKey) };
+    default:
+      return { ...json };
+  }
+};

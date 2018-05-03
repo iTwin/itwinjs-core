@@ -28,7 +28,9 @@
       "program": "${workspaceFolder}/scripts/run-tests.js",
       "cwd": "${workspaceFolder}/packages/common",
       "args": [
-        "--noTimeouts"
+        "--noTimeouts",
+        "--testsDir",
+        "./tests"
       ],
       "runtimeArgs": [
         "--inspect",
@@ -43,7 +45,9 @@
       "program": "${workspaceFolder}/scripts/run-tests.js",
       "cwd": "${workspaceFolder}/packages/backend",
       "args": [
-        "--noTimeouts"
+        "--noTimeouts",
+        "--testsDir",
+        "./tests"
       ],
       "runtimeArgs": [
         "--inspect",
@@ -58,7 +62,9 @@
       "program": "${workspaceFolder}/scripts/run-tests.js",
       "cwd": "${workspaceFolder}/packages/frontend",
       "args": [
-        "--noTimeouts"
+        "--noTimeouts",
+        "--testsDir",
+        "./tests"
       ],
       "runtimeArgs": [
         "--inspect",
@@ -73,7 +79,9 @@
       "program": "${workspaceFolder}/scripts/run-tests.js",
       "cwd": "${workspaceFolder}/packages/controls",
       "args": [
-        "--noTimeouts"
+        "--noTimeouts",
+        "--testsDir",
+        "./tests"
       ],
       "runtimeArgs": [
         "--inspect",
