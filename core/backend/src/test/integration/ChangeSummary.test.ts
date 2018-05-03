@@ -6,14 +6,14 @@ import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
-import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../../ChangeSummaryManager";
-import { BriefcaseManager } from "../../../BriefcaseManager";
-import { IModelDb } from "../../../IModelDb";
-import { IModelTestUtils } from "../../IModelTestUtils";
-import { HubTestUtils } from "../../HubTestUtils";
-import { KnownTestLocations } from "../../KnownTestLocations";
-import { IModelJsFs } from "../../../IModelJsFs";
-import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../../MockAssetUtil";
+import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../ChangeSummaryManager";
+import { BriefcaseManager } from "../../BriefcaseManager";
+import { IModelDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { HubTestUtils } from "../HubTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelJsFs } from "../../IModelJsFs";
+import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
 import * as TypeMoq from "typemoq";
 
 function setupTest(iModelId: string): void {
@@ -188,7 +188,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
-    const testIModelId: string = testIModels[1].id;
+    const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());

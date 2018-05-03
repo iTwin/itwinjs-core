@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { IModelTestUtils } from "../../IModelTestUtils";
-import { ECSqlStatement, ECSqlInsertResult } from "../../../ECSqlStatement";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { ECSqlStatement, ECSqlInsertResult } from "../../ECSqlStatement";
 import { ECSqlStringType, ECSqlTypedString, NavigationValue } from "@bentley/imodeljs-common";
-import { ECDb } from "../../../ECDb";
-import { IModelDb } from "../../../IModelDb";
+import { ECDb } from "../../ECDb";
+import { IModelDb } from "../../IModelDb";
 import { DbResult, Id64, using } from "@bentley/bentleyjs-core";
 import { XAndY, XYAndZ, Point2d, Point3d, Range3d } from "@bentley/geometry-core";
-import { KnownTestLocations } from "../../KnownTestLocations";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;

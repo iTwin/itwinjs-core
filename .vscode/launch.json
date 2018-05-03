@@ -8,12 +8,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Backend Tests (Integratation)",
+      "name": "Run Backend Tests (Integration)",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/core/backend/lib/test/integration",
+        "--testDir=${workspaceFolder}/core/backend/lib/test",
         "--debug"
       ],
       "port": 9229,
@@ -28,30 +28,33 @@
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/core/backend/lib/test/offline",
+        "--testDir=${workspaceFolder}/core/backend/lib/test/",
         "--debug",
         "--recursive",
-        "--offline=mock"
+        "--offline=mock",
+        "--grep",
+        "#online-required",
+        "--invert"
       ],
       "port": 9229,
       "protocol": "inspector",
       "outputCapture": "std"
     },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Run Backend Tests (Online)",
-      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend",
-      "args": [
-        "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/core/backend/lib/test/offline",
-        "--debug",
-      ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Run Backend Tests (Online)",
+    //   "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
+    //   "cwd": "${workspaceFolder}/core/backend",
+    //   "args": [
+    //     "--packageRoot=${workspaceFolder}",
+    //     "--testDir=${workspaceFolder}/core/backend/lib/test/offline",
+    //     "--debug",
+    //   ],
+    //   "port": 9229,
+    //   "protocol": "inspector",
+    //   "outputCapture": "std"
+    // },
     {
       "type": "node",
       "request": "launch",

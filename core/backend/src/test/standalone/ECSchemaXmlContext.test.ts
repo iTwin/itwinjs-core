@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { ECSchemaXmlContext, SchemaKey } from "../../../ECSchemaXmlContext";
-import { KnownTestLocations } from "../../KnownTestLocations";
+import { ECSchemaXmlContext, SchemaKey } from "../../ECSchemaXmlContext";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ECSchemaXmlContext", () => {
 

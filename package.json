@@ -27,7 +27,6 @@
     "test:bentley": "cd core/bentley && npm run test",
     "test:geometry": "cd core/geometry && npm run test",
     "test:backend-integration": "cd core/backend && npm run test-integration",
-    "test:backend-online": "cd core/backend && npm run test-online",
     "test:backend-offline": "cd core/backend && npm run test-offline",
     "test:clients": "cd core/clients && npm run test",
     "test:backendwebpackformobile": "cd core/backend && npm run webpackformobile",

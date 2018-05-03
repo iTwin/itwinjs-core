@@ -5,9 +5,9 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code } from "@bentley/imodeljs-common";
-import { DefinitionElement, EntityMetaData, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../../backend";
-import { IModelTestUtils } from "../../IModelTestUtils";
-import { KnownTestLocations } from "../../KnownTestLocations";
+import { DefinitionElement, EntityMetaData, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../backend";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
   let imodel: IModelDb;
