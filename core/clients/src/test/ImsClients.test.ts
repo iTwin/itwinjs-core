@@ -2,18 +2,19 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
-import * as chaiAsPromised from "chai-as-promised";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
 import { UserProfile } from "../UserProfile";
 import { TestConfig, TestUsers } from "./TestConfig";
 
-chai.use(chaiString);
-chai.use(chaiAsPromised);
 chai.should();
 
 describe("ImsFederatedAuthentiationClient", () => {
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
+
   it("should setup its URLs correctly", async () => {
     let url: string = await new ImsFederatedAuthentiationClient("DEV").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
@@ -30,6 +31,11 @@ describe("ImsFederatedAuthentiationClient", () => {
 });
 
 describe("ImsActiveSecureTokenClient", () => {
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
+
   it("should setup its URLs correctly", async () => {
     const prodClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient("PROD");
 
@@ -68,12 +74,13 @@ describe("ImsActiveSecureTokenClient", () => {
       const tokenStr = authToken!.toTokenString();
       chai.assert(!!tokenStr);
 
-      tokenStr!.should.startWith("X509 access_token=").and.have.length.greaterThan(1000);
+      chai.expect(tokenStr!.startsWith("X509 access_token="));
+      chai.expect(tokenStr!.length > 1000);
 
       const userProfile: UserProfile | undefined = authToken!.getUserProfile();
       chai.assert(!!userProfile);
 
-      userProfile!.email.should.equalIgnoreCase(TestUsers.regular.email);
+      chai.expect(userProfile!.email.toLowerCase() === TestUsers.regular.email.toLowerCase());
     }
   });
 
@@ -81,6 +88,11 @@ describe("ImsActiveSecureTokenClient", () => {
 
 describe("ImsDelegationSecureTokenClient", () => {
   const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient(TestConfig.deploymentEnv);
+
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
 
   it("should setup its URLs correctly", async () => {
     let url: string = await new ImsDelegationSecureTokenClient("DEV").getUrl();
@@ -111,7 +123,7 @@ describe("ImsDelegationSecureTokenClient", () => {
 
       const tokenString = accessToken.toTokenString();
       chai.expect(!!tokenString);
-      chai.expect(tokenString).startsWith("Token ");
+      chai.expect(tokenString!.startsWith("Token "));
       chai.expect(tokenString!.length).is.greaterThan(1000);
 
       const roundTrippedTokenString = AccessToken.fromTokenString(tokenString!)!.toTokenString();
