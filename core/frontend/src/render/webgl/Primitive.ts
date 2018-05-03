@@ -6,13 +6,14 @@ import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { Target } from "./Target";
-import { Graphic } from "./Graphic";
+import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
-// import { LUTDimension } from "./FeatureDimensions";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { DrawParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
+import { FeaturesInfo } from "./FeaturesInfo";
+import { RenderCommands, DrawCommand, DrawCommands } from "./DrawCommand";
 
 export class IndexedPrimitiveParamsFeatures {
   public type: FeatureIndexType;
@@ -127,13 +128,11 @@ export abstract class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  public constructor(iModel: IModelConnection, cachedGeom: CachedGeometry) { super(iModel); this.cachedGeometry = cachedGeom; }
-
-  public abstract clearData(): void;
+  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(iModel); this.cachedGeometry = cachedGeom; }
 
   public getRenderPass(target: Target) {
     if (this.isPixelMode)
-        return RenderPass.ViewOverlay;
+      return RenderPass.ViewOverlay;
     return this.cachedGeometry.getRenderPass(target);
   }
 
@@ -149,12 +148,9 @@ export abstract class Primitive extends Graphic {
 
   public get featureIndexType(): FeatureIndexType {
     const feature = this.cachedGeometry.featuresInfo;
-    if (undefined === feature)
-      return FeatureIndexType.Empty;
-    /* ###TODO need to implement FeaturesInfo
-    return feature.type;
-    */
-    return FeatureIndexType.Empty; // ###TODO remove after implementing FeaturesInfo
+    if (feature instanceof FeaturesInfo)
+      return feature.type;
+    return FeatureIndexType.Empty;
   }
 
   public get usesMaterialColor(): boolean {
@@ -169,20 +165,15 @@ export abstract class Primitive extends Graphic {
 
   public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
 
-  /* ###TODO need to implement RenderCommands
-  public addCommands(commands: RenderCommands): void { commands.AddPrimitive(this); }
-  }
-  */
+  public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
-  /* ###TODO need to implement DrawCommands
   public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
     if (this.isEdge) {
-      commands.Add(DrawCommand.fromBatchPrimitive(this, &batch));
+      commands.push(DrawCommand.createForPrimitive(this, batch));
     }
   }
-  */
 
   public setUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
 
@@ -201,4 +192,9 @@ export abstract class Primitive extends Graphic {
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 
   public get debugString(): string { return this.cachedGeometry.debugString; }
+}
+
+export class PointCloudPrimitive extends Primitive {
+  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(cachedGeom, iModel); }
+  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }

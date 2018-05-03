@@ -21,13 +21,17 @@ export class PolylineArgs {
   public flags: PolylineFlags;
   public points: Uint16Array;
   public polylines: PolylineData[];
-  public pointParams?: QParams3d;
+  public pointParams: QParams3d;
 
   public constructor(points: Uint16Array = new Uint16Array(), polylines: PolylineData[] = [], pointParams?: QParams3d,
                      is2d = false, isPlanar = false) {
     this.points = points;
     this.polylines = polylines;
-    this.pointParams = pointParams;
+    if (undefined === pointParams) {
+      this.pointParams = QParams3d.fromRange(Range3d.createNull());
+    } else {
+      this.pointParams = pointParams;
+    }
     this.flags = new PolylineFlags(is2d, isPlanar);
   }
 
