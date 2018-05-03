@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { GLSLVertex } from "./Vertex";
+import { GLSLDecode } from "./Decode";
 import { GL } from "../GL";
 import { TexturedViewportQuadGeometry } from "../CachedGeometry";
 
@@ -13,7 +13,7 @@ const computeTexCoord = `v_texCoord = unquantize2d(a_texCoord, u_qTexCoordParams
 function addTexture(prog: ProgramBuilder) {
   const vert = prog.vert;
 
-  vert.addFunction(GLSLVertex.unquantize2d);
+  vert.addFunction(GLSLDecode.unquantize2d);
   vert.addAttribute("a_texCoord", VariableType.Vec2, (program) => {
     program.addAttribute("a_texCoord", (attr, params) => {
         const geom = params.geometry as TexturedViewportQuadGeometry;

@@ -14,4 +14,10 @@ export namespace GLSLDecode {
       v = v * vec3(1.0, 256.0, 256.0*256.0); // v.y <<= 8; v.z <<= 16
       return dot(v, vec3(1.0)); // v.x+v.y+v.z => v.x | v.y | v.z
     }`;
+
+  export const unquantize3d = `vec3 unquantize3d(vec3 qpos, vec3 origin, vec3 scale) { return origin + scale * qpos; }`;
+
+  export const unquantize2d = `
+  // params.xy = origin. params.zw = scale.
+  vec2 unquantize2d(vec2 qpos, vec4 params) { return params.xy + params.zw * qpos; }`;
 }
