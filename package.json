@@ -27,7 +27,7 @@
     "build": "",
     "clean": "rimraf out",
     "cover:merge": "node scripts/merge-coverage-reports.js --coverageDir out/reports/coverage",
-    "start": "cd src/sample && npm start",
+    "start": "cd packages/sample && npm start",
     "validatePackageJson": "validjson ./package.json"
   },
   "dependencies": {},
