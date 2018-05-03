@@ -200,6 +200,11 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
   public readonly uvParams: QBufferHandle2d;
   protected readonly _textures: WebGLTexture[];
 
+  public getTexture(index: number): WebGLTexture {
+    assert(index < this._textures.length);
+    return this._textures[index];
+  }
+
   protected static createUVParams(): QBufferHandle2d | undefined {
     return QBufferHandle2d.create(_viewportQuad.textureParams, _viewportQuad.textureUV);
   }
