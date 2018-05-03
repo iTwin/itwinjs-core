@@ -4,6 +4,15 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { IModelConnection } from "../../IModelConnection";
+import { Target } from "./Target";
+import { Graphic } from "./Graphic";
+import { CachedGeometry } from "./CachedGeometry";
+import { RenderPass, RenderOrder } from "./RenderFlags";
+// import { LUTDimension } from "./FeatureDimensions";
+import { ShaderProgramExecutor } from "./ShaderProgram";
+import { DrawParams } from "./DrawCommand";
+import { TechniqueId } from "./TechniqueId";
 
 export class IndexedPrimitiveParamsFeatures {
   public type: FeatureIndexType;
@@ -11,14 +20,14 @@ export class IndexedPrimitiveParamsFeatures {
   public nonUniform: Uint32Array | undefined;
 
   public constructor(index?: FeatureIndex, nVerts?: number) {
-    this.type = FeatureIndexType.kEmpty;
+    this.type = FeatureIndexType.Empty;
     this.uniform = 0;
     this.nonUniform = undefined;
     if (undefined !== index) {
       this.type = index.type;
-      if (FeatureIndexType.kUniform === index.type)
+      if (FeatureIndexType.Uniform === index.type)
         this.uniform = index.featureID;
-      else if (FeatureIndexType.kNonUniform === index.type) {
+      else if (FeatureIndexType.NonUniform === index.type) {
         assert(undefined !== nVerts);
         assert(undefined !== index.featureIDs);
         if (undefined !== nVerts && undefined !== index.featureIDs) {
@@ -36,10 +45,10 @@ export class IndexedPrimitiveParamsFeatures {
     if (undefined !== this.nonUniform) {
       this.nonUniform = undefined;
     }
-    this.type = FeatureIndexType.kEmpty;
+    this.type = FeatureIndexType.Empty;
   }
-  public isUniform(): boolean { return FeatureIndexType.kUniform === this.type; }
-  public isEmpty(): boolean { return FeatureIndexType.kEmpty === this.type; }
+  public isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
+  public isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
 
   public toFeatureIndex(): FeatureIndex {
     const fIndex: FeatureIndex = new FeatureIndex();
@@ -112,4 +121,84 @@ export class PolylineParamVertex {
     param = adjust + param;
     return param;
   }
+}
+
+export abstract class Primitive extends Graphic {
+  public cachedGeometry: CachedGeometry;
+  public isPixelMode: boolean = false;
+
+  public constructor(iModel: IModelConnection, cachedGeom: CachedGeometry) { super(iModel); this.cachedGeometry = cachedGeom; }
+
+  public abstract clearData(): void;
+
+  public getRenderPass(target: Target) {
+    if (this.isPixelMode)
+        return RenderPass.ViewOverlay;
+    return this.cachedGeometry.getRenderPass(target);
+  }
+
+  /* ###TODO need to implement LUTGeometry
+  public getColorDimension(target: Target) {
+    const geom = this.cachedGeometry.toLUT();
+    if (undefined === geom)
+      return LUTDimension.Uniform;
+    const color = geom->getColor(target);
+    return color.IsUniform() ? LUTDimension.Uniform : LUTDimension.NonUniform;
+  }
+  */
+
+  public get featureIndexType(): FeatureIndexType {
+    const feature = this.cachedGeometry.featuresInfo;
+    if (undefined === feature)
+      return FeatureIndexType.Empty;
+    /* ###TODO need to implement FeaturesInfo
+    return feature.type;
+    */
+    return FeatureIndexType.Empty; // ###TODO remove after implementing FeaturesInfo
+  }
+
+  public get usesMaterialColor(): boolean {
+    const materialData = this.cachedGeometry.material;
+    if (undefined === materialData)
+      return false;
+    /* ###TODO need to implement MaterialData
+    return materialData.definesColor();
+    */
+    return false; // ###TODO remove after implementing MaterialData
+  }
+
+  public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
+
+  /* ###TODO need to implement RenderCommands
+  public addCommands(commands: RenderCommands): void { commands.AddPrimitive(this); }
+  }
+  */
+
+  /* ###TODO need to implement DrawCommands
+  public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
+    // Edges do not contribute to hilite pass.
+    // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
+    if (this.isEdge) {
+      commands.Add(DrawCommand.fromBatchPrimitive(this, &batch));
+    }
+  }
+  */
+
+  public setUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
+
+  public get isEdge(): boolean { return false; }
+
+  public toPrimitive(): Primitive { return this; }
+
+  public abstract get renderOrder(): RenderOrder;
+
+  public draw(shader: ShaderProgramExecutor): void {
+    // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
+    const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
+    shader.draw(drawParams);
+  }
+
+  public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
+
+  public get debugString(): string { return this.cachedGeometry.debugString; }
 }

@@ -7,18 +7,19 @@
  * A set of "gates" that can enable or disable features at runtime. A gate can be any type,
  * e.g. boolean, string, number or even object. Generally they are established at startup, but may be
  * changed at runtime based, for example, on user credentials or server-based priorities, etc.
+ *
+ * A service typically gets its feature gates from its deployment parameters.
  * <p><em>Example:</em>
  * ```ts
- * [[include:FeatureGates.extendedExample]]
+ * [[include:FeatureGates.defineFeatureGates]]
  * ```
  * An example of the feature gate portion of a configuration .json file that is deployed with a service might be:
  * ``` json
  * {
  *   "features": {
- *      "readwrite": "${MY-SERVICE-FEATURE-READWRITE}",
- *      "gateway2": "${MY-SERVICE-FEATURE-GATEWAY2}",
- *      "newFeature3": "${MY-SERVICE-FEATURE-NEWFEATURE3}",
- *    },
+ *      "readwrite": "${ROBOT-WORLD-FEATURE-READWRITE}",
+ *      "experimentalMethods": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
+ *    }
  * }
  * ```
  *
@@ -26,6 +27,12 @@
  * Such placeholders will be replaced by EnvMacroSubst with the values of like-named environment variables.
  * That allows a deployment mechanism to supply the values for configuration parameters and inject them into
  * the service.
+ *
+ * A service then checks its feature gates in its methods.
+ * <p><em>Example:</em>
+ * ```ts
+ * [[include:FeatureGates.checkFeatureGates]]
+ * ```
  */
 export class FeatureGates {
   private readonly gates: any = {};

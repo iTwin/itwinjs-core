@@ -41,9 +41,9 @@ export class SubCategory extends DefinitionElement {
 
   /** Get the SubCategory's Code value. That is the name of the SubCategory. */
   public getSubCategoryName(): string { return this.code.getValue(); }
-  /** Get the unique ID of the SubCategory. */
+  /** Get the uniqueIdID of the SubCategory. */
   public getSubCategoryId(): Id64 { return this.id; }
-  /** Get the ID of the parent Category. */
+  /** Get the Id of the parent Category. */
   public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
   /** Query if this is the default SubCategory of its parent Category. */
   public isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
@@ -73,12 +73,12 @@ export class Category extends DefinitionElement implements CategoryProps {
     return val;
   }
 
-  /** Get the ID of the default SubCategory for this Category. */
+  /** Get the Id of the default SubCategory for this Category. */
   public myDefaultSubCategoryId(): Id64 { return IModelDb.getDefaultSubCategoryId(this.id); }
 
   /** Set the appearance of the default SubCategory for this Category */
   public setDefaultAppearance(app: Appearance): void {
-    const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).copyForEdit();
+    const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).clone();
     subCat.appearance = app;
     this.iModel.elements.updateElement(subCat);
   }
@@ -139,7 +139,7 @@ export class SpatialCategory extends Category {
    * Create a new SpatialCategory element.
    * @param scopeModel The model in which the category element will be inserted by the caller.
    * @param categoryName The name of the category.
-   * @return a new, non-persistent SpatialCategory element.
+   * @return a new SpatialCategory element.
    */
   public static create(scopeModel: DefinitionModel, categoryName: string): SpatialCategory {
     return scopeModel.iModel.elements.createElement({

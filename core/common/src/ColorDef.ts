@@ -289,7 +289,7 @@ export class ColorDef {
 
   /** the color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
   public get tbgr(): number { return this._tbgr; }
-  public set tbgr(tbgr: number) { this._tbgr = tbgr | 0; }
+  public set tbgr(tbgr: number) { scratchUInt32[0] = tbgr; this._tbgr = scratchUInt32[0]; } // force to be a 32 bit unsigned integer
 
   /** get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
   public getAbgr(): number { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - scratchBytes[3]; return scratchUInt32[0]; }
@@ -303,6 +303,8 @@ export class ColorDef {
   public setAlpha(alpha: number): void { scratchUInt32[0] = this._tbgr; scratchBytes[3] = 255 - (alpha | 0); this._tbgr = scratchUInt32[0]; }
   /** get the alpha value for this ColorDef. Will be between 0-255 */
   public getAlpha(): number { scratchUInt32[0] = this._tbgr; return 255 - scratchBytes[3]; }
+  /** get whether this ColorDef is fully opaque */
+  public get isOpaque() { return 255 === this.getAlpha(); }
 
   /** the "known name" for this ColorDef. Will be undefined if color value is not in #ColorByName list */
   public get name(): string | undefined { return ColorByName[this._tbgr]; }
@@ -593,3 +595,19 @@ Object.freeze(ColorDef.white);
 Object.freeze(ColorDef.red);
 Object.freeze(ColorDef.green);
 Object.freeze(ColorDef.blue);
+
+/** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255]. */
+export class RgbColor {
+  /** Constructs from red, green, and blue components. Any component not explicitly supplied defaults to zero. */
+  public constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
+    this.r = Math.max(0, Math.min(this.r, 0xff));
+    this.g = Math.max(0, Math.min(this.g, 0xff));
+    this.b = Math.max(0, Math.min(this.b, 0xff));
+  }
+
+  /** Constructs from the red, green, and blue components of a ColorDef. The alpha component is ignored. */
+  public static fromColorDef(colorDef: ColorDef): RgbColor {
+    const colors = colorDef.colors;
+    return new RgbColor(colors.r, colors.g, colors.b);
+  }
+}

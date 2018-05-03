@@ -10,7 +10,9 @@ import { GatewayConfiguration, GatewayConfigurationSupplier } from "./gateway/co
 export interface GatewayDefinition<T extends Gateway = Gateway> { prototype: T; name: string; version: string; types: () => Function[]; }
 export type GatewayImplementation<T extends Gateway = Gateway> = new () => T;
 
-/** A set of related asynchronous APIs that operate over configurable protocols across multiple platforms. */
+/** A gateway is a set of operations exposed by a service that a client can call, using configurable protocols,
+ * in a platform-independent way. The Gateway class is the base class for gateway definitions and implementations.
+ */
 export abstract class Gateway {
   /**
    * Initializes a gateway class.

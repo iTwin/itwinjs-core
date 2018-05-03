@@ -14,11 +14,11 @@
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 60000 -r ts-node/register -r tsconfig-paths/register -r source-map-support/register ./src/test/**/*.test.ts",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --out=../../generated-docs/clients --json=../../generated-docs/clients/json/file.json --tsIndexFile=index.ts %TYPEDOC_THEME%",
+    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/clients/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --config tslint.json --project ./",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-clients",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline",
-    "test:online": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
+    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline=\"mock\"",
+    "test:online": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" ",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {},
@@ -33,14 +33,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "7"
+    "@bentley/bentleyjs-core": "8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "7",
+    "@bentley/bentleyjs-core": "8",
     "@types/clone": "^0.1.30",
     "@types/deep-assign": "^0.1.0",
     "@types/nock": "^9.1.2",

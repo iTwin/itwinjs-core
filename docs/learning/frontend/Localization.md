@@ -10,20 +10,20 @@ Of course, that doesn't happen by magic. The localization system needs a diction
 
 For example, suppose you are developing an application called Irrigation and you want to group information, warning, and error messages into a localization namespace. Name the JSON file IrrigationMessages.json, put it into the public/locales/en directory, and put the following JSON in it:
 
- ```ts
+ ```json
  {
    "info": {
      "login": {
        "notLoggedIn": "You are not currently logged in to Bentley Connect.",
        "loggedIn": "You are logged in to Bentley Connect as {{userName}}."
      }
-   }
+   },
    "warning": {
      "login": {
        "mustLogin": "That feature is unavailable unless you log in to Bentley Connect.",
        "notAuthorized": "You are not authorized to access that resource."
      }
-   }
+   },
    "error": {
      "loginIncorrect": "The username / password combination is not valid.",
      "offline": "Network connection not available."
@@ -68,7 +68,7 @@ PlaceSprinkler.register(toyToolsNS);
 
 Then the appropriate entry in the english version of IrrigationTools.json file might look like this:
 
-```ts
+```json
  {
    "tools": {
      "Place": {

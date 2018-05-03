@@ -15,12 +15,12 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
-import { DecorationList, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
+import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { RenderTarget } from "./render/System";
+import { Decorations, DecorationList, RenderTarget } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { ChangeDecorationsTask, TaskPriority, SetHiliteTask, OverrideFeatureSymbologyTask } from "./render/Task";
-import { Decorations, ViewFlags } from "@bentley/imodeljs-common";
+import { ViewFlags } from "@bentley/imodeljs-common";
 
 /** viewport synchronization flags */
 export class SyncFlags {
@@ -267,10 +267,10 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas?: HTMLCanvasElement, private _view?: ViewState, private _target?: RenderTarget) { this.setCursor(); this.saveViewUndo(); }
+  constructor(public canvas: HTMLCanvasElement, private _view?: ViewState, private _target?: RenderTarget) { this.setCursor(); this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
-  public getClientRect(): ClientRect { return this.canvas!.getBoundingClientRect(); }
+  public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
 
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
@@ -289,7 +289,7 @@ export class Viewport {
   }
 
   /** change the cursor for this Viewport */
-  public setCursor(cursor: BeCursor = BeCursor.Default) { if (this.canvas) this.canvas.style.cursor = cursor; }
+  public setCursor(cursor: BeCursor = BeCursor.Default) { this.canvas.style.cursor = cursor; }
 
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this.flashedElem) {

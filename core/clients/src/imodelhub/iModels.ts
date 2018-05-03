@@ -37,6 +37,8 @@ export enum SeedFileInitState {
   Scheduled = 2,
   Failed = 3,
   OutdatedFile = 4,
+  CodeTooLong = 5,
+  SeedFileIsBriefcase = 6,
 }
 
 /** SeedFile */

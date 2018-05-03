@@ -1,52 +1,57 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+*--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
-export class WebGLTestContext {
-  // ###TODO: on PRG, canvas.getContext() returns null? We will want these tests to run on PRG eventually...
-  // For now, set this to true locally to run the tests which require a WebGLRenderingContext.
-  public static isEnabled = false;
-  public readonly canvas?: HTMLCanvasElement = undefined;
-  public readonly context?: WebGLRenderingContext = undefined;
+export namespace WebGLTestContext {
+  // When executing on the continuous integration server, we fail to obtain a WebGLRenderingContext.
+  // Need to determine why, and how to fix.
+  // For now, all tests requiring WebGL are disabled by default; enable in developer builds by setting
+  // isEnabled to true.
+  const isEnabled = false;
+  const canvasId = "WebGLTestCanvas";
 
-  public constructor() {
-    if (!WebGLTestContext.isEnabled) {
-      return;
-    }
-
-    this.canvas = WebGLTestContext.createCanvas();
-    if (undefined === this.canvas) {
-      return;
-    }
-
-    let context = this.canvas.getContext("webgl");
-    if (null === context) {
-      context = this.canvas.getContext("experimental-webgl"); // IE/Edge...
-    }
-
-    if (null !== context) {
-      this.context = context;
-    }
-
-    assert(undefined !== this.context);
-  }
-
-  public get isValid() { return undefined !== this.context; }
-
-  public static createCanvas(): HTMLCanvasElement | undefined {
-    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  function createCanvas(width: number, height: number): HTMLCanvasElement | undefined {
+    let canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     if (null === canvas) {
-      return undefined;
+      canvas = document.createElement("canvas") as HTMLCanvasElement;
+      if (null === canvas) {
+        return undefined;
+      }
+
+      canvas.id = canvasId;
+      document.body.appendChild(document.createTextNode("WebGL tests"));
+      document.body.appendChild(canvas);
     }
 
-    document.body.appendChild(canvas);
+    canvas.width = width;
+    canvas.height = height;
+
     return canvas;
   }
-}
 
-export function getWebGLContext(): WebGLRenderingContext | undefined {
-  const context = new WebGLTestContext();
-  return context.context;
+  export let isInitialized = false;
+
+  export function startup(canvasWidth: number = 300, canvasHeight: number = 150) {
+    if (!isEnabled) {
+      return;
+    }
+
+    const canvas = createCanvas(canvasWidth, canvasHeight);
+    assert(undefined !== canvas);
+    if (undefined !== canvas) {
+      IModelApp.startup("QA", canvas);
+      isInitialized = IModelApp.hasRenderSystem;
+      assert(isInitialized);
+    }
+  }
+
+  export function shutdown() {
+    isInitialized = false;
+    if (IModelApp.initialized) {
+      IModelApp.shutdown();
+    }
+  }
 }

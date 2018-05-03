@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d, EdgeArgs, SilhouetteEdgeArgs, PolylineEdgeArgs, FillFlags,
+import { PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d, /*QPoint3d,*/ EdgeArgs, SilhouetteEdgeArgs, PolylineEdgeArgs, FillFlags,
          FeatureTable, FeatureIndex, FeatureIndexType, ColorIndex, PolylineFlags, LinePixels, OctEncodedNormal, Texture, Material } from "@bentley/imodeljs-common";
 import { DisplayParams, DisplayParamsRegionEdgeType } from "./DisplayParams";
 // import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
-// import { RenderSystem } from "../System";
+// import { System } from "../webgl/System";
 import { TriangleList } from "./Primitives";
 import { Graphic } from "../webgl/Graphic";
 
@@ -93,19 +93,20 @@ export class MeshArgsEdges {
 export class MeshArgs {
   public edges = new MeshArgsEdges();
   public vertIndices: number[] = [];
-  public points?: Uint16Array;
+  public points = new Uint16Array();
   public normals: OctEncodedNormal[] = [];
   public textureUv: Point2d[] = [];
   public texture?: Texture;
   public colors = new ColorIndex();
   public features = new FeatureIndex();
   public pointParams?: QParams3d;
-  public material?: Material;
+  public material = new Material();
   public fillFlags = FillFlags.None;
   public isPlanar = false;
   public is2d = false;
   public polylineEdges: PolylineData[] = [];
 
+  // TODO
   // public toPolyface(): IndexedPolyface {
   //   let polyFace = IndexedPolyface.create(); // PolyfaceHeaderPtr polyFace = PolyfaceHeader::CreateFixedBlockIndexed(3);
   //   let pointIndex = polyFace.pointCount;
@@ -114,7 +115,7 @@ export class MeshArgs {
 
   public clear() {
     this.vertIndices = [];
-    this.points = undefined;
+    this.points = new Uint16Array();
     this.normals = [];
     this.textureUv = [];
     this.texture = undefined;
@@ -134,6 +135,7 @@ export class MeshArgs {
     this.textureUv = mesh.uvParams;
     if (!mesh.displayParams.ignoreLighting) { this.normals = mesh.normals.slice(); }
 
+    // TODO
     // this.texture = mesh.displayParams.GetTextureMapping().GetTexture());
     // this.material = mesh.displayParams.material;
     this.fillFlags = mesh.displayParams.fillFlags;
@@ -155,6 +157,7 @@ export class MeshArgs {
     });
 
     this.edges.polylines.init(this.polylineEdges);
+    // TODO
     // this.auxData = mesh.auxData();
     return true;
   }
@@ -173,18 +176,20 @@ export class MeshFeatures {
 
   public constructor(table: FeatureTable) { this.table = table; }
 
+  // TODO
   // public add(feat: Feature, numVerts: number) { /*unfinished*/ }
   public toFeatureIndex(index: FeatureIndex): void {
     if (!this.initialized) {
-      index.type = FeatureIndexType.kEmpty;
+      index.type = FeatureIndexType.Empty;
     } else if (this.indices.length === 0) {
-      index.type = FeatureIndexType.kUniform;
+      index.type = FeatureIndexType.Uniform;
       index.featureID = this.uniform;
     } else {
-      index.type = FeatureIndexType.kNonUniform;
+      index.type = FeatureIndexType.NonUniform;
       index.featureIDs = new Uint32Array(this.indices);
     }
   }
+  // TODO
   // public setIndices(indices: number[]): void { /*unfinished*/ }
 }
 
@@ -213,7 +218,7 @@ export class Mesh {
 
   public get points(): QPoint3dList { return this.verts; }
   public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
-  public getGraphics(args: MeshGraphicArgs/*, system: RenderSystem, iModel: IModelConnection*/ ): Graphic | undefined {
+  public getGraphics(args: MeshGraphicArgs/*, system: System, iModel: IModelConnection*/ ): Graphic | undefined {
     const graphic = undefined;
     if (this.triangles.count() !== 0) {
       // if (args.meshArgs.init(this)) { graphic = system.createTriMesh(args.meshArgs, iModel); }

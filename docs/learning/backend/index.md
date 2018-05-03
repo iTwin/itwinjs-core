@@ -25,9 +25,12 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 
 * [What is ECSQL?](../learning/ECSQL)
 * [Executing ECSQL statements](./ExecutingECSQL)
+* [Code Examples](./ExecutingECSQL#code-examples)
 
 ## Dealing with Codes
 
 ## Change Summary
+
+* [Change Summary Overview](../learning/ChangeSummaries)
 
 ## BriefcaseManager

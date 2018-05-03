@@ -4,8 +4,10 @@
 
 * Link to package:                `[label]($package)`
 * Link to topic:                  `[label]($package:topic)`
-* Link to class:                  `[label]($package.class)`
-* Link to method:                 `[label]($package.class.method)`
+* Link to class:                  `[label]($package.class)` or `[label]($package/class)`
+* Link to method:                 `[label]($package.class.method)` or `[label]($package/class.method)`
+
+Note: leaving [label] empty will default to a label of 'class.method' or 'topic'.
 
 ## Linking to Overview/Learning to or from Overview/Learning
 
@@ -15,8 +17,8 @@
 
 ## Linking to Overview/Learning from Reference
 
-* To Learning:                    `[label]($docs/learning/path/filename.md#section)`  // Proposed: Not implemented yet.
-* To Overview:                    `[label]($docs/overview/path/filename.md#section)`  // Proposed: Not implemented yet.
+* To Learning:                    `[label]($docs/learning/path/filename.md#section)`
+* To Overview:                    `[label]($docs/overview/path/filename.md#section)`
 
 ## Linking to content outside of the site
 

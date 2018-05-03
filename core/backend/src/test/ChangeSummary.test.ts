@@ -13,7 +13,6 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
-import { IModelHost } from "../IModelHost";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "./MockAssetUtil";
 import * as TypeMoq from "typemoq";
 
@@ -25,7 +24,7 @@ function setupTest(iModelId: string): void {
 
 describe("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
-  const offline: boolean = process.argv[index + 1] === "true";
+  const offline: boolean = process.argv[index + 1] === "mock";
   let accessToken: AccessToken = new MockAccessToken();
   let testProjectId: string;
   let startTime = new Date().getTime();
@@ -47,10 +46,9 @@ describe("ChangeSummary", () => {
       console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
       startTime = new Date().getTime();
 
+      await MockAssetUtil.setupMockAssets(assetDir);
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
       (ChangeSummaryManager as any).hubClient = iModelHubClientMock.object;
-      (ChangeSummaryManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
-      HubTestUtils.hubClient = iModelHubClientMock.object;
 
       console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
@@ -66,7 +64,7 @@ describe("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
-    const testIModelId: string = testIModels[0].id;
+    const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
@@ -192,10 +190,10 @@ describe("ChangeSummary", () => {
   });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
-    const testIModelId: string = testIModels[0].id;
+    const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     await iModel.close(accessToken);
     assert.exists(iModel);
     assert.throw(() => ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -207,7 +205,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel);
     try {
       await ChangeSummaryManager.extractChangeSummaries(iModel);
@@ -253,7 +251,7 @@ describe("ChangeSummary", () => {
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(changesetId));
@@ -296,7 +294,7 @@ describe("ChangeSummary", () => {
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
 
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(firstChangesetId));
@@ -330,7 +328,7 @@ describe("ChangeSummary", () => {
       // now do second extraction for last changeset
       const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
       await iModel.close(accessToken);
-      iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite, IModelVersion.asOfChangeSet(lastChangesetId));
+      iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.asOfChangeSet(lastChangesetId));
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
@@ -363,14 +361,14 @@ describe("ChangeSummary", () => {
     setupTest(testIModelId);
 
     let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    // extract on closed iModel should fail
     try {
       assert.exists(iModel);
+      await iModel.close(accessToken);
       await ChangeSummaryManager.extractChangeSummaries(iModel);
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
-    } finally {
-      await iModel.close(accessToken);
     }
 
     // open standalone iModel
@@ -396,7 +394,7 @@ describe("ChangeSummary", () => {
     setupTest(testIModelId);
 
     let perfLogger = new PerfLogger("IModelDb.open");
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     perfLogger.dispose();
     await ChangeSummaryManager.extractChangeSummaries(iModel);
     assert.exists(iModel);

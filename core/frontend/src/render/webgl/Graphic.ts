@@ -1,20 +1,28 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
-import { ViewFlags,
-         FeatureTable,
-         RenderGraphic,
-         IModel,
-         GraphicBranch } from "@bentley/imodeljs-common";
+import { ViewFlags, ViewFlag, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
+import { Primitive } from "./Primitive";
+import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
+import { Clip } from "./ClipVolume";
+import { RenderCommands, DrawCommands } from "./DrawCommand";
+import { FeatureSymbology } from "../FeatureSymbology";
+
+export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
+    // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
+    const jointWidthThreshold = 5;
+    return is2d || lineWeight > jointWidthThreshold;
+  }
 
 export abstract class Graphic extends RenderGraphic {
-  constructor(public readonly iModel: IModel) { super(iModel); }
-  // public abstract addCommands(commands: RenderCommands): void;
-  // public abstract addHiliteCommands(commands: DrawCommands, batch: Batch): void;
-  // public abstract setUniformFeatureIndices(uint32_t): void;
-  // public abstract toPrimitive(): Primitive;
+  constructor(iModel: IModelConnection) { super(iModel); }
+  public /* TODO abstract */ addCommands(_commands: RenderCommands): void { assert(false); } // ###TODO: Implement for Primitive
+  public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); } // ###TODO: Implement for Primitive
+  public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
+  public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;
 }
 
@@ -29,31 +37,68 @@ export class Batch extends Graphic {
               // private _pickTable: PickTable
               ) { super(_graphic.iModel); }
   // public onTargetDestroyed(target: Target): void {
-  //   this.imodel.verifyRenderThread();
   //   this._overrides.erase(target);
   // }
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
+  public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
 }
 
 export class Branch extends Graphic {
-  public get localToWorldTransform(): Transform { return this._localToWorldTransform; }
-  // public clipPlanes: ClipPlane;
-  constructor(iModel: IModelConnection,
-              _branch: GraphicBranch = new GraphicBranch(),
-              private _localToWorldTransform: Transform = Transform.createIdentity(),
-              _clips?: ClipVector,
-              _viewflags?: ViewFlags) { super(iModel); }
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
-  // public push(shader: ShaderProgramExecutor): void {}
-  // public pop(shader: ShaderProgramExecutor): void {}
-  // public setUniformFeatureIndices(uint32_t)
+  public readonly branch: GraphicBranch;
+  public readonly localToWorldTransform: Transform;
+  public readonly clips?: Clip.Volume;
+
+  public constructor(iModel: IModelConnection, branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipVector, viewFlags?: ViewFlags) {
+    super(iModel);
+    this.branch = branch;
+    this.localToWorldTransform = localToWorld;
+    this.clips = Clip.getClipVolume(clips, iModel);
+    if (undefined !== viewFlags) {
+      // ###TODO: Avoid useless `new` below...
+      branch.viewFlagOverrides = new ViewFlag.Overrides(viewFlags);
+    }
+  }
+
+  public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
+  public assignUniformFeatureIndices(index: number): void {
+    for (const entry of this.branch.entries) {
+      (entry as Graphic).assignUniformFeatureIndices(index);
+    }
+  }
+}
+
+export class WorldDecorations extends Branch {
+  public readonly overrides: Array<FeatureSymbology.Appearance | undefined> = [];
+
+  public constructor(iModel: IModelConnection, viewFlags: ViewFlags) { super(iModel, new GraphicBranch(), Transform.createIdentity(), undefined, viewFlags); }
+
+  public init(decs: DecorationList): void {
+    this.branch.clear();
+    this.overrides.length = 0;
+    for (const dec of decs) {
+      this.branch.add(dec.graphic);
+      this.overrides.push(dec.overrides);
+    }
+  }
 }
 
 export class GraphicsList extends Graphic {
   constructor(public graphics: RenderGraphic[], iModel: IModelConnection) { super(iModel); }
-  // public addCommands(commands: RenderCommands) { commands.addBatch(this); }
-  // public addHilitCommands(commands: DrawCommands, batch: Batch): void { assert(false); }
-  // public setUniformFeatureIndices(uint32_t)
+
+  public addCommands(commands: RenderCommands): void {
+    for (const graphic of this.graphics) {
+      (graphic as Graphic).addCommands(commands);
+    }
+  }
+
+  public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
+    for (const graphic of this.graphics) {
+      (graphic as Graphic).addHiliteCommands(commands, batch);
+    }
+  }
+
+  public assignUniformFeatureIndices(index: number): void {
+    for (const gf of this.graphics) {
+      (gf as Graphic).assignUniformFeatureIndices(index);
+    }
+  }
 }

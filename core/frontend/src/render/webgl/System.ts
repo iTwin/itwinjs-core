@@ -1,16 +1,23 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RenderGraphic, GraphicBranch, IModelError } from "@bentley/imodeljs-common";
+import { IModelError } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { RenderSystem, RenderTarget } from "../System";
-import { OnScreenTarget } from "./Target";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
+import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/Geometry";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
+import { IModelApp } from "../../IModelApp";
+import { ViewRect } from "../../Viewport";
+import { RenderState } from "./RenderState";
+import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
+import { RenderBuffer } from "./RenderBuffer";
+import { TextureHandle } from "./Texture";
+import { GL } from "./GL";
 
 export const enum ContextState {
   Uninitialized,
@@ -165,12 +172,18 @@ export class Capabilities {
 
 export class System extends RenderSystem {
   private readonly _canvas: HTMLCanvasElement;
-  private readonly _context: WebGLRenderingContext;
+  private readonly _currentRenderState = new RenderState();
+  public readonly context: WebGLRenderingContext;
+  public readonly frameBufferStack = new FrameBufferStack();
 
   public readonly techniques: Techniques;
   public readonly capabilities: Capabilities;
 
-  public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
+  public readonly drawBuffersExtension?: WEBGL_draw_buffers;
+
+  public static get instance() { return IModelApp.renderSystem as System; }
+
+  public static identityTransform = Transform.createIdentity();
 
   public static create(canvas?: HTMLCanvasElement): System | undefined {
     if (undefined === canvas) {
@@ -198,19 +211,45 @@ export class System extends RenderSystem {
     return new System(canvas, context, techniques, capabilities);
   }
 
-  public createTarget(): RenderTarget { return new OnScreenTarget(this, this._context); }
+  public createTarget(): RenderTarget { return new OnScreenTarget(this._canvas); }
+  public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
-  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+
+  public get canvas(): HTMLCanvasElement { return this._canvas; }
+
+  public applyRenderState(newState: RenderState) {
+    newState.apply(this._currentRenderState);
+    this._currentRenderState.copyFrom(newState);
+  }
+
+  public createDepthBuffer(width: number, height: number): DepthBuffer | undefined {
+    switch (this.capabilities.maxDepthType) {
+      case DepthType.RenderBufferUnsignedShort16: {
+        return RenderBuffer.create(width, height);
+      }
+      case DepthType.TextureUnsignedInt32: {
+        return TextureHandle.createForColor(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
+      }
+      default: {
+        assert(false);
+        return undefined;
+      }
+    }
+  }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
     this._canvas = canvas;
-    this._context = context;
+    this.context = context;
     this.techniques = techniques;
     this.capabilities = capabilities;
+    this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     // Silence unused variable warnings...
     assert(undefined !== this._canvas);
-    assert(undefined !== this._context);
+    assert(undefined !== this.context);
   }
 }
+
+Object.freeze(System.identityTransform);

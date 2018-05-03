@@ -28,7 +28,7 @@ export class ElementPropertyFormatter {
 
     // *** NEEDS WORK: We want to format the element's properties right here, using presentation rules.
     // ***             *For now* we must fall back on some hard-coded formatting logic in the native code library.
-    // ***             This is a very bad work-around, as it formats the properties of the persistent element in the BIM, not the element passed in!
+    // ***             This is a very bad work-around, as it formats the properties of the persistent element in the iModel, not the element passed in!
     const propsJson: string = this._iModel.getElementPropertiesForDisplay(elem.id.toString());
     const propsObj = JSON.parse(propsJson);
     if (!propsObj) {

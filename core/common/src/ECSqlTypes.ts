@@ -84,6 +84,36 @@ export interface NavigationBindingValue {
   relClassTableSpace?: string;
 }
 
+/** Equivalent of the ECEnumeration OpCode in the **ECDbChange** ECSchema.
+ *
+ * The enum can be used when programmatically binding values to the InstanceChange.OpCode property of
+ * the ECDbChange ECSchema.
+ *
+ *  See also
+ *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
+ */
+export enum ChangeOpCode {
+  Insert = 1,
+  Update = 2,
+  Delete = 4,
+}
+
+/** The enum represents the values for the ChangedValueState argument of the ECSQL function
+ *  **Changes**.
+ *
+ * The enum can be used when programmatically binding values to the ChangedValueState argument
+ * in an ECSQL using the **Changes** ECSQL function.
+ *
+ *  See also
+ *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
+ */
+export enum ChangedValueState {
+  AfterInsert = 1,
+  BeforeUpdate = 2,
+  AfterUpdate = 3,
+  BeforeDelete = 4,
+}
+
 /** Defines the ECSQL system properties.
  *
  * See also [ECSQL]($docs/learning/learning/ECSQL).

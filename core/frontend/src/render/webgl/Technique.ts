@@ -2,17 +2,21 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert, using } from "@bentley/bentleyjs-core";
+import { assert, using, IDisposable } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "./ShaderBuilder";
-import { DrawParams } from "./DrawCommand";
-import { GLDisposable } from "./GLDisposable";
+import { DrawParams, DrawCommands } from "./DrawCommand";
+import { Target } from "./Target";
+import { RenderPass } from "./RenderFlags";
 
 // Defines a rendering technique implemented using one or more shader programs.
-export interface Technique extends GLDisposable {
+export interface Technique extends IDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
+
+  // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
+  compileShaders(): boolean;
 }
 
 // A rendering technique implemented using a single shader program, typically for some specialized purpose.
@@ -22,12 +26,13 @@ export class SingularTechnique implements Technique {
   public constructor(program: ShaderProgram) { this.program = program; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
+  public compileShaders(): boolean { return this.program.compile(); }
 
-  public dispose(gl: WebGLRenderingContext): void { this.program.dispose(gl); }
+  public dispose(): void { this.program.dispose(); }
 }
 
 // A collection of rendering techniques accessed by ID.
-export class Techniques implements GLDisposable {
+export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
@@ -53,25 +58,69 @@ export class Techniques implements GLDisposable {
     return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length - 1;
   }
 
-  // ###TODO: public draw(target: Target, commands: DrawCommands, pass: RenderPass): void { }
+  private readonly _scratchTechniqueFlags = new TechniqueFlags();
+
+  /** Execute each command in the list */
+  public execute(target: Target, commands: DrawCommands, renderPass: RenderPass) {
+    assert(RenderPass.None !== renderPass);
+
+    const flags = this._scratchTechniqueFlags;
+    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+      for (const command of commands) {
+        command.preExecute(executor);
+
+        const techniqueId = command.getTechniqueId(target);
+        if (TechniqueId.Invalid !== techniqueId) {
+          // A primitive command.
+          assert(command.isPrimitiveCommand);
+          flags.init(target, renderPass);
+          const tech = this.getTechnique(techniqueId);
+          const program = tech.getShader(flags);
+          if (executor.setProgram(program)) {
+            command.execute(executor);
+          }
+        } else {
+          // A branch command.
+          assert(!command.isPrimitiveCommand);
+          command.execute(executor);
+        }
+
+        command.postExecute(executor);
+      }
+    });
+  }
+
+  /** Draw a single primitive. Usually used for special-purpose rendering techniques. */
   public draw(params: DrawParams): void {
     const tech = this.getTechnique(params.geometry.getTechniqueId(params.target));
     const program = tech.getShader(TechniqueFlags.defaults);
-    const executor = new ShaderProgramExecutor(params.target, params.renderPass, program);
-    assert(executor.isValid);
-    using(executor, () => {
+    using(new ShaderProgramExecutor(params.target, params.renderPass, program), (executor: ShaderProgramExecutor) => {
+      assert(executor.isValid);
       if (executor.isValid) {
         executor.draw(params);
       }
     });
   }
 
-  public dispose(gl: WebGLRenderingContext): void {
+  public dispose(): void {
     for (const tech of this._list) {
-      tech.dispose(gl);
+      tech.dispose();
     }
 
     this._list.length = 0;
+  }
+
+  // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
+  public compileShaders(): boolean {
+    let allCompiled = true;
+
+    for (const tech of this._list) {
+      if (!tech.compileShaders()) {
+        allCompiled = false;
+      }
+    }
+
+    return allCompiled;
   }
 
   private constructor() { }

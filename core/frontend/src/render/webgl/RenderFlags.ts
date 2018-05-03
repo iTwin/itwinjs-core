@@ -24,6 +24,13 @@ export const enum GeometryType {
     ArrayedPoints,
 }
 
+export const enum SurfaceType {
+    Unlit,
+    Lit,
+    Textured,
+    TexturedLit,
+}
+
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures. */
 export const enum TextureUnit {
     // For shaders which know exactly which textures will be used

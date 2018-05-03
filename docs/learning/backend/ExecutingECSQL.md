@@ -21,6 +21,10 @@ There are two ways to execute an ECSQL statement:
 
 # Code Examples
 
+> The code examples do not explicitly show examples using the [ECDb]($imodeljs-backend.ECDb) class. However, the code examples work likewise for
+> ECDb. Just replace [IModelDb.withPreparedStatement]($imodeljs-backend.IModelDb.withPreparedStatement) in the code examples
+> with [ECDb.withPreparedStatement]($imodeljs-backend.ECDb.withPreparedStatement).
+
 ## Parameter Bindings
 
 ### Binding per parameter

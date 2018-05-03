@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { IModelApp } from "../../IModelApp";
+import { System } from "./System";
 
 /** Describes the dimensionality of a texture used as a look-up table. */
 export const enum LUTDimension {
@@ -11,37 +11,18 @@ export const enum LUTDimension {
   NonUniform, // 1- or 2-dimensional lookup table
 }
 
+/** Describes the dimensions of a texture used as a look-up table */
 export class LUTDimensions {
-  private _width: number = 0;
-  private _height: number = 0;
+  public readonly width: number;
+  public readonly height: number;
 
-  public get width(): number { return this._width; }
-  public get height(): number { return this._height; }
+  public constructor(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1) {
+    const maxSize = System.instance.capabilities.maxTextureSize;
+    const nRgba = nEntries * nRgbaPerEntry * nTables + nExtraRgba;
 
-  public static create(nEntries: number, nRgbaPerEntry: number): LUTDimensions {
-    const dims = new LUTDimensions();
-    dims.init(nEntries, nRgbaPerEntry);
-    return dims;
-  }
-
-  /**
-   * Constraints:
-   *    - Dimensions < max texture size
-   *        - Dimensions < max texture size
-   *        - in practice expect at least 2048 and most tablets/phones at least 4096 (96.3% of all browsers according to webglstats.com)
-   *    - Roughly square to reduce unused bytes at end of last row
-   *    - No extra unused bytes at end of each row
-   */
-  public init(nEntries: number, nRgbaPerEntry: number): void {
-    const sMaxWidth = 8192;
-    const nRgba = nEntries * nRgbaPerEntry;
-    let maxWidth = IModelApp.renderSystem.maxTextureSize;
-    if (maxWidth > sMaxWidth)
-      maxWidth = sMaxWidth;
-
-    if (nRgba < maxWidth) {
-      this._width = nRgba;
-      this._height = 1;
+    if (nRgba < maxSize) {
+      this.width = nRgba;
+      this.height = 1;
       return;
     }
 
@@ -50,167 +31,54 @@ export class LUTDimensions {
 
     // Ensure a given entry's RGBA values all fit on the same row.
     const remainder = width % nRgbaPerEntry;
-    width += nRgbaPerEntry - remainder;
+    if (0 !== remainder) {
+      width += nRgbaPerEntry - remainder;
+    }
 
     // Compute height
     let height = nRgba / width;
-    if (width * height < nRgba)
+    if (width * height < nRgba) {
       ++height;
+    }
 
-    assert(height <= maxWidth);
-    assert(width <= maxWidth);
+    assert(height <= maxSize);
+    assert(width <= maxSize);
     assert(width * height >= nRgba);
 
     // Row padding should never be necessary...
     assert(0 === width % nRgbaPerEntry);
 
-    this._width  = width;
-    this._height = height;
-  }
-
-  public toParams(): LUTParams { return LUTParams.create(this.width, this.height); }
-}
-
-/** Parameters passed to shader programs describing the structure of a lookup table.
- * m_texWidth = width of the texture
- * m_texStep = { stepX, centerX, stepY, centerY }, where 'center' refers to the center
- * point of the top-left texel, and 'step' indicates the distance from the center of
- * one texel to the next.
- * Note that for 1-dimensional lookup tables, we could skip the center/stepY and width,
- * but this produces far too many shader variants so we always send all the params.
- */
-export class LUTParams {
-  public texStep: [number, number, number, number] = [0, 0, 0, 0];
-  public texWidth: number = 0;
-
-  public init(width: number, height: number): void {
-    assert(0 < width && 0 < height);
-
-    // NB: We used to create separate shader variations for 1d and 2d look-up tables. 1d doesn't require stepY, centerY, or width.
-    // But we were approaching 1000 shaders...so now we combine 1d and 2d to reduce that.
-    const stepX: number = 1.0 / width;
-    const stepY: number = 1.0 / height;
-
-    this.texWidth = width;
-    this.texStep[0] = stepX;
-    this.texStep[1] = stepX * 0.5;
-    this.texStep[2] = stepY;
-    this.texStep[3] = stepY * 0.5;
-  }
-
-  public static create(width: number, height: number): LUTParams {
-    const params = new LUTParams();
-    params.init(width, height);
-    return params;
-  }
-
-  public equals(rhs: LUTParams): boolean {
-    return this.texStep[0] === rhs.texStep[0]
-      && this.texStep[1] === rhs.texStep[1]
-      && this.texStep[2] === rhs.texStep[2]
-      && this.texStep[3] === rhs.texStep[3]
-      && this.texWidth === rhs.texWidth;
+    this.width = width;
+    this.height = height;
   }
 }
 
 export const enum FeatureDimension {
-  kEmpty,
-  kSingleUniform,
-  kSingleNonUniform,
-  kMultiple,
-  kCOUNT,
+  Empty,
+  SingleUniform,
+  SingleNonUniform,
+  Multiple,
+  COUNT,
 }
 
-export function getFeatureName(dim: FeatureDimension): string | undefined {
+export function getFeatureName(dim: FeatureDimension): string {
   switch (dim) {
-    case FeatureDimension.kEmpty: return "Empty";
-    case FeatureDimension.kSingleUniform: return "Single/Uniform";
-    case FeatureDimension.kSingleNonUniform: return "Single/Non-uniform";
-    case FeatureDimension.kMultiple: return "Multiple";
-    default: return undefined;
+    case FeatureDimension.Empty: return "Empty";
+    case FeatureDimension.SingleUniform: return "Single/Uniform";
+    case FeatureDimension.SingleNonUniform: return "Single/Non-uniform";
+    case FeatureDimension.Multiple: return "Multiple";
+    default: assert(false); return "Invalid";
   }
 }
 
-/** Describes the dimensionality of feature lookup based on the combination of:
- * - number of features contained in Primitive (0, 1, or multiple); and
- * - dimensionality of FeatureTable (uniform, 1d, or 2d).
- * Note if Primitive contains multiple features, FeatureTable by definition is not uniform.
- */
-export class FeatureDimensions {
-  private value: FeatureDimension;
-
-  public constructor(val?: FeatureDimension) {
-    if (val === undefined) {
-      this.value = FeatureDimension.kEmpty;
-    } else {
-      assert((val as number) < (FeatureDimension.kCOUNT as number));
-      this.value = val;
-    }
-  }
-
-  public copyFrom(src: FeatureDimensions): void {
-    this.value = src.value;
-  }
-
-  public clone(result?: FeatureDimensions): FeatureDimensions {
-    if (!result) {
-      return new FeatureDimensions();
-    } else {
-      result.copyFrom(this);
-      return result;
-    }
-  }
-
-  public init(dim: LUTDimension, type: FeatureIndexType): void {
-    if (type === FeatureIndexType.kEmpty) {
-      this.value = FeatureDimension.kEmpty;
-    } else if (type === FeatureIndexType.kNonUniform) {
+export function computeFeatureDimension(dim: LUTDimension, type: FeatureIndexType) {
+  switch (type) {
+    case FeatureIndexType.Empty:
+      return FeatureDimension.Empty;
+    case FeatureIndexType.NonUniform:
       assert(LUTDimension.Uniform !== dim);
-      this.value = FeatureDimension.kMultiple;
-    } else {
-      if (LUTDimension.Uniform === dim) {
-        this.value = FeatureDimension.kSingleUniform;
-      } else {
-        this.value = FeatureDimension.kSingleNonUniform;
-      }
-    }
+      return FeatureDimension.Multiple;
+    default:
+      return LUTDimension.Uniform === dim ? FeatureDimension.SingleUniform : FeatureDimension.SingleNonUniform;
   }
-
-  public static empty(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kEmpty); }
-  public static singleUniform(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kSingleUniform); }
-  public static singleNonUniform(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kSingleNonUniform); }
-  public static multiple(): FeatureDimensions { return new FeatureDimensions(FeatureDimension.kMultiple); }
-
-  public getValue(): number { return this.value as number; }
-
-  public equals(rhs: FeatureDimensions): boolean { return this.value === rhs.value; }
-  public lessThan(rhs: FeatureDimensions): boolean { return this.value < rhs.value; }
-
-  public isEmpty() { return FeatureDimension.kEmpty === this.value; }
-  public isSingle() { return FeatureDimension.kSingleUniform === this.value || FeatureDimension.kSingleNonUniform === this.value; }
-  public isMultiple() { return FeatureDimension.kMultiple === this.value; }
-  public isUniform() { return FeatureDimension.kSingleUniform === this.value; }
-  public isNonUniform() { return FeatureDimension.kSingleNonUniform === this.value || FeatureDimension.kMultiple === this.value; }
-
-  public getFeatureIndexType(): FeatureIndexType {
-    if (this.isEmpty()) {
-      return FeatureIndexType.kEmpty;
-    } else if (this.isMultiple()) {
-      return FeatureIndexType.kNonUniform;
-    } else {
-      return FeatureIndexType.kUniform;
-    }
-  }
-}
-
-export class FeatureDimensionsIterator {
-  private current: FeatureDimension;
-  public constructor(value: FeatureDimension) { this.current = value; }
-  public static begin(): FeatureDimensionsIterator { return new FeatureDimensionsIterator(FeatureDimension.kEmpty); }
-  public static end(): FeatureDimensionsIterator { return new FeatureDimensionsIterator(FeatureDimension.kCOUNT); }
-  public equals(rhs: FeatureDimensionsIterator): boolean { return this.current === rhs.current; }
-  public next(): void {
-    this.current = (this.current.valueOf() + 1) as FeatureDimension;
-  }
-  public get(): FeatureDimensions { return new FeatureDimensions(this.current); }
 }

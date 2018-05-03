@@ -13,29 +13,29 @@ export namespace LineStyle {
    * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
    */
   export interface ModifierProps {
-    /** Optional scale to apply to all length values */
+    /** Optional scale to apply to all length values, 1.0 if undefined */
     scale?: number;
-    /** Optional scale to apply to scalable dashes */
+    /** Optional scale to apply to scalable dashes, 1.0 if undefined */
     dashScale?: number;
-    /** Optional scale to apply to scalable gaps */
+    /** Optional scale to apply to scalable gaps, 1.0 if undefined */
     gapScale?: number;
-    /** Optional start width in meters to apply to dashes */
+    /** Optional start width in meters to apply to dashes, no width if undefined */
     startWidth?: number;
-    /** Optional end width in meters to apply to dashes */
+    /** Optional end width in meters to apply to dashes, same as startWidth if undefined */
     endWidth?: number;
-    /** Optional shift by distance in meters */
+    /** Optional shift by distance in meters, 0.0 if undefined */
     distPhase?: number;
-    /** Optional shift by fraction */
+    /** Optional shift by fraction, 0.0 if undefined */
     fractPhase?: number;
-    /** Optional flag to center stroke pattern and stretch ends */
+    /** Optional flag to center stroke pattern and stretch ends, false if undefined */
     centerPhase?: boolean;
     /** Optional flag to enable or disable single segment mode */
     segmentMode?: boolean;
-    /** Optional flag that denotes startWidth and endWidth represent physical widths that should not be affected by scale */
+    /** Optional flag that denotes startWidth and endWidth represent physical widths that should not be affected by scale, false if undefined */
     physicalWidth?: boolean;
-    /** Optional up vector for style (applicable to 3d only) */
+    /** Optional up vector for style (applicable to 3d only), 0.0,0.0,1.0 if undefined */
     normal?: XYZProps;
-    /** Optional orientation for style (applicable to 3d only) */
+    /** Optional orientation for style (applicable to 3d only), 0.0,0.0,0.0 if undefined */
     rotation?: YawPitchRollProps;
   }
 

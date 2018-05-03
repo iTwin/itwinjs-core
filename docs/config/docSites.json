@@ -1,0 +1,49 @@
+{
+  "getting-started": {
+    "docSiteId": 1,
+    "displayName": "Getting Started"
+  },
+  "overview": {
+    "docSiteId": 2,
+    "displayName": "Overview"
+  },
+  "reference": {
+    "docSiteId": 3,
+    "displayName": "Reference Documentation"
+  },
+  "bis": {
+    "docSiteId": 4,
+    "displayName": "BIS"
+  },
+  "learning": {
+    "docSiteId": 5,
+    "displayName": "Learning"
+  },
+  "metadata": {
+    "home": "overview",
+    "docSiteOrder": [
+      "overview",
+      "getting-started",
+      "learning",
+      "bis",
+      "reference"
+    ],
+    "headerTabs": {
+      "Overview": {
+        "docSite": "overview"
+      },
+      "Getting Started": {
+        "docSite": "getting-started"
+      },
+      "BIS": {
+        "docSite": "bis"
+      },
+      "Learning": {
+        "docSite": "learning"
+      },
+      "Reference": {
+        "docSite": "reference"
+      }
+    }
+  }
+}

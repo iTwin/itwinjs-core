@@ -4,15 +4,16 @@
 /** @module Geometry */
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, LowAndHighXYZ,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Id64, Id64Props } from "@bentley/bentleyjs-core";
+import { Id64, Id64Props, IModelStatus } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
 import { LineStyle } from "./LineStyle";
 import { AreaPattern } from "./AreaPattern";
+import { GeometricElement3dProps, GeometricElement2dProps, GeometryPartProps, IModelError } from "../common";
 
 /** GeometryStream entry to establish a non-default subCategory or to override the subCategory appearance for the geometry that follows.
  *  GeometryAppearanceProps always signifies a reset to the subCategory appearance for all values without an override.
@@ -26,11 +27,11 @@ export interface GeometryAppearanceProps {
   weight?: number;
   /** Optional style to override the subCategory appearance style for subsequent geometry */
   style?: Id64Props;
-  /** Optional transparency, default is 0. Effective transparency is a combination of this value and that from the subCategory appearance */
+  /** Optional transparency, 0.0 if undefined. Effective transparency is a combination of this value and that from the subCategory appearance */
   transparency?: number;
-  /** Optional display priority (2d only), default is 0. Effective display priority is a combination of this value and that from the subCategory appearance */
+  /** Optional display priority (2d only), 0 if undefined. Effective display priority is a combination of this value and that from the subCategory appearance */
   displayPriority?: number;
-  /** Optional GeometryClass (for DGN compatibility, subCategories preferred), default is Primary */
+  /** Optional GeometryClass (for DGN compatibility, subCategories preferred), GeometryClass.Primary if undefined */
   geometryClass?: GeometryClass;
 }
 
@@ -40,11 +41,11 @@ export interface GeometryAppearanceProps {
 export interface AreaFillProps {
   /** Fill display type, must be set to something other than [[FillDisplay.Never]] in order to display fill */
   display: FillDisplay;
-  /** Optional fill transparency. Allows for different fill and outline transparencies */
+  /** Optional fill transparency, 0.0 if undefined. Allows for different fill and outline transparencies */
   transparency?: number;
   /** Set fill color to view background color. Use [[BackgroundFill.Solid]] for an opaque fill and [[BackgroundFill.Outline]] to display an outline using the line color */
   backgroundFill?: BackgroundFill;
-  /** Set fill color to a specific color. If the fill color is undefined or the same as the line color, it's an opaque fill, otherwise it's an outline fill */
+  /** Set fill color to a specific color. If the fill color the same as the line color, it's an opaque fill, otherwise it's an outline fill */
   color?: ColorDef;
   /** Set fill using gradient properties */
   gradient?: Gradient.SymbProps;
@@ -67,11 +68,11 @@ export interface MaterialProps {
 export interface GeometryPartInstanceProps {
   /** GeometryPart id */
   part: Id64Props;
-  /** Optional translation relative to element's placement. Default is 0,0,0. For a 2d element/translation, supply non-zero x and y only */
+  /** Optional translation relative to element's placement, 0.0,0.0,0.0 if undefined. For a 2d element/translation, supply non-zero x and y only */
   origin?: XYZProps;
-  /** Optional rotation relative to element's placement. Default is 0,0,0. For a 2d element/rotation, supply a non-zero yaw angle only */
+  /** Optional rotation relative to element's placement, 0.0,0.0,0.0 if undefined. For a 2d element/rotation, supply a non-zero yaw angle only */
   rotation?: YawPitchRollProps;
-  /** Optional scale to apply to part, default scale is 1 */
+  /** Optional scale to apply to part, 1.0 if undefined */
   scale?: number;
 }
 
@@ -114,6 +115,14 @@ export class GeometryStreamBuilder {
     this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), angle)!));
   }
 
+  /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of locate and range testing for elements with a GeometryStream
+   * containing more than one GeometryQuery differentiable by range. Not useful for a single GeometryQuery, it's range and that of the GeometricElement are the same.
+   * Ignored when defining a GeometryPart, and not needed when only appending GeometryPart instances to a GeometricElement as these store their own range.
+   */
+  public appendGeometryRanges() {
+    this.geometryStream.push({ subRange: Range3d.createNull() });
+  }
+
   /** Change sub-category or reset to sub-category appearance for subsequent geometry.
    *  An invalid sub-category id can be supplied to force a reset to the current sub-category appearance.
    *  It is not valid to change the sub-category when defining a GeometryPart. GeometryParts inherit the symbology of their instance for anything not explicitly overridden.
@@ -147,7 +156,7 @@ export class GeometryStreamBuilder {
         transparency: geomParams.fillTransparency,
       };
       if (undefined !== geomParams.gradient && Gradient.Mode.None !== geomParams.gradient.mode)
-        fill.gradient = geomParams.gradient;
+        fill.gradient = geomParams.gradient.clone();
       else if (undefined !== geomParams.backgroundFill && BackgroundFill.None !== geomParams.backgroundFill)
         fill.backgroundFill = geomParams.backgroundFill;
       else if (undefined !== geomParams.fillColor)
@@ -156,25 +165,17 @@ export class GeometryStreamBuilder {
     }
 
     if (undefined !== geomParams.pattern) {
-      if (undefined === this.worldToLocal) {
-        this.geometryStream.push({ pattern: geomParams.pattern });
-      } else {
-        const localPattern = geomParams.pattern.clone();
-        if (!localPattern.applyTransform(this.worldToLocal))
-          return false;
-        this.geometryStream.push({ pattern: localPattern });
-      }
+      const localPattern = geomParams.pattern.clone();
+      if (undefined !== this.worldToLocal && !localPattern.applyTransform(this.worldToLocal))
+        return false;
+      this.geometryStream.push({ pattern: localPattern });
     }
 
     if (undefined !== geomParams.styleInfo && undefined !== geomParams.styleInfo.styleMod) {
-      if (undefined === this.worldToLocal) {
-        this.geometryStream.push({ styleMod: geomParams.styleInfo.styleMod });
-      } else {
-        const localStyleMod = new LineStyle.Modifier(geomParams.styleInfo.styleMod);
-        if (!localStyleMod.applyTransform(this.worldToLocal))
-          return false;
-        this.geometryStream.push({ styleMod: localStyleMod });
-      }
+      const localStyleMod = new LineStyle.Modifier(geomParams.styleInfo.styleMod);
+      if (undefined !== this.worldToLocal && !localStyleMod.applyTransform(this.worldToLocal))
+        return false;
+      this.geometryStream.push({ styleMod: localStyleMod });
     }
 
     return true;
@@ -239,5 +240,179 @@ export class GeometryStreamBuilder {
       return false;
     this.geometryStream.push(localGeomData);
     return true;
+  }
+}
+
+/** GeometryStreamParser is a helper class for iterating a GeometryStreamProps */
+export class GeometryStreamParser {
+  /** GeometryStream entries */
+  public geometryStream: GeometryStreamProps;
+  /** Current entry position */
+  private current = 0;
+  /** GeometryParams affecting the appearance of the current geometric entry */
+  public geomParams: GeometryParams;
+  /** Placement transform, used for converting placement relative, local coordinate entries to world */
+  public localToWorld?: Transform;
+  /** Optional stored local range for the current geometric entry */
+  public localRange?: Range3d;
+  /** Optional GeometryPart instance transform when current entry is for a GeometryPart */
+  public partToLocal?: Transform;
+  /** Current entry is a GeometryPart instance when advanceToNextGeometry returns true and partId is not undefined */
+  public partId?: Id64;
+  /** Current entry is a GeometryQuery when advanceToNextGeometry returns true and geometryQuery is not undefined */
+  public geometryQuery?: GeometryQuery;
+  /** Current entry is a TextString when advanceToNextGeometry returns true and textString is not undefined */
+  public textString?: TextString;
+
+  /** Construct a new GeometryStreamParser given a GeometryStreamProps from either a GeometricElement3d, GeometricElement3d, or GeometryPart.
+   * Supply the GeometricElement's category to initialize the appearance information for each geometric entry.
+   */
+  public constructor(geometryStream: GeometryStreamProps, category?: Id64Props) {
+    this.geometryStream = geometryStream;
+    this.geomParams = new GeometryParams(category !== undefined ? new Id64(category) : Id64.invalidId);
+  }
+
+  /** Supply optional local to world transform. Used to transform entries that are stored relative to the element placement and return them in world coordinates. */
+  public setLocalToWorld(localToWorld?: Transform) {
+    this.localToWorld = (undefined === localToWorld || localToWorld.isIdentity() ? undefined : localToWorld.clone());
+  }
+
+  /** Supply local to world transform from Point3d and YawPitchRollAngles of Placement3d */
+  public setLocalToWorld3d(origin: Point3d, angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)) {
+    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toRotMatrix()));
+  }
+
+  /** Supply local to world transform from Point2d and Angle of Placement2d */
+  public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
+    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), RotMatrix.createRotationAroundVector(Vector3d.unitZ(), angle)!));
+  }
+
+  /** Create a new GeometryStream parser for a GeometricElement3d.
+   * If GeometricElement3dProps.placement is not undefined, placement relative entries will be returned transformed to world coordinates.
+   * @throws [[IModelError]] if element.geom is undefined.
+   */
+  public static fromGeometricElement3d(element: GeometricElement3dProps) {
+    if (element.geom === undefined)
+      throw new IModelError(IModelStatus.NoGeometry, "GeometricElement has no geometry or geometry wasn't requested");
+    const result = new GeometryStreamParser(element.geom, element.category);
+    if (element.placement !== undefined)
+      result.setLocalToWorld3d(Point3d.fromJSON(element.placement.origin), YawPitchRollAngles.fromJSON(element.placement.angles));
+    return result;
+  }
+
+  /** Create a new GeometryStream parser for a GeometricElement2d.
+   * If GeometricElement2dProps.placement is not undefined, placement relative entries will be returned transformed to world coordinates.
+   * @throws [[IModelError]] if element.geom is undefined.
+   */
+  public static fromGeometricElement2d(element: GeometricElement2dProps) {
+    if (element.geom === undefined)
+      throw new IModelError(IModelStatus.NoGeometry, "GeometricElement has no geometry or geometry wasn't requested");
+    const result = new GeometryStreamParser(element.geom, element.category);
+    if (element.placement !== undefined)
+      result.setLocalToWorld2d(Point2d.fromJSON(element.placement.origin), Angle.fromJSON(element.placement.angle));
+    return result;
+  }
+
+  /** Create a new GeometryStream parser for a GeometryPart.
+   * To iterate a part's GeometryStream in the context of a part instance found for a GeometricElement, provide the optional GeometryParams and Transform from the GeometricElement's GeometryStreamParser.
+   * Supply the GeometryParams to return appearance information as inherited from the GeometricElement.
+   * Supply the partToWorld transform to return the part geometry in world coordintates.
+   * Supply the partToLocal transform to return the part geometry relative to the GeometricElement's placement.
+   * @throws [[IModelError]] if geomPart.geom is undefined.
+   */
+  public static fromGeometryPart(geomPart: GeometryPartProps, geomParams?: GeometryParams, partTransform?: Transform) {
+    if (geomPart.geom === undefined)
+      throw new IModelError(IModelStatus.NoGeometry, "GeometryPart has no geometry or geometry wasn't requested");
+    const result = new GeometryStreamParser(geomPart.geom);
+    if (geomParams !== undefined)
+      result.geomParams = geomParams.clone();
+    if (partTransform !== undefined)
+      result.setLocalToWorld(partTransform);
+    return result;
+  }
+
+  /** Get the transform that if applied to a GeometryPart's GeometryStream entries that would return them in world coordinates. */
+  public partToWorld(): Transform | undefined {
+    if (this.localToWorld === undefined || this.partToLocal === undefined)
+      return this.localToWorld;
+    return this.partToLocal.multiplyTransformTransform(this.localToWorld);
+  }
+
+  /** Advance to next displayable geometric entry while updating the current [[GeometryParams]] from appearance related entries.
+   * Geometric entries are [[TextString]], [[GeometryQuery]], and [[GeometryPart]].
+   */
+  public advanceToNextGeometry(): boolean {
+    this.partToLocal = this.partId = this.geometryQuery = this.textString = undefined; // NOTE: localRange remains valid until new subRange entry is encountered
+    while (this.current < this.geometryStream.length) {
+      const entry = this.geometryStream[this.current++];
+      if (entry.appearance) {
+        this.geomParams.resetAppearance();
+        if (entry.appearance.subCategory)
+          this.geomParams.subCategoryId = new Id64(entry.appearance.subCategory);
+        if (entry.appearance.color)
+          this.geomParams.lineColor = new ColorDef(entry.appearance.color);
+        if (entry.appearance.weight)
+          this.geomParams.weight = entry.appearance.weight;
+        if (entry.appearance.style)
+          this.geomParams.styleInfo = new LineStyle.Info(new Id64(entry.appearance.style));
+        if (entry.appearance.transparency)
+          this.geomParams.elmTransparency = entry.appearance.transparency;
+        if (entry.appearance.displayPriority)
+          this.geomParams.elmPriority = entry.appearance.displayPriority;
+        if (entry.appearance.geometryClass)
+          this.geomParams.geometryClass = entry.appearance.geometryClass;
+      } else if (entry.styleMod) {
+        if (this.geomParams.styleInfo === undefined)
+          continue;
+        const styleMod = new LineStyle.Modifier(entry.styleMod);
+        if (this.localToWorld !== undefined)
+          styleMod.applyTransform(this.localToWorld);
+        this.geomParams.styleInfo = new LineStyle.Info(this.geomParams.styleInfo.styleId, styleMod);
+      } else if (entry.fill) {
+        if (entry.fill.display)
+          this.geomParams.fillDisplay = entry.fill.display;
+        if (entry.fill.transparency)
+          this.geomParams.fillTransparency = entry.fill.transparency;
+        if (entry.fill.gradient)
+          this.geomParams.gradient = Gradient.Symb.fromJSON(entry.fill.gradient);
+        else if (entry.fill.backgroundFill)
+          this.geomParams.backgroundFill = entry.fill.backgroundFill;
+        else if (entry.fill.color)
+          this.geomParams.fillColor = new ColorDef(entry.fill.color);
+      } else if (entry.pattern) {
+        const params = AreaPattern.Params.fromJSON(entry.pattern);
+        if (this.localToWorld !== undefined)
+          params.applyTransform(this.localToWorld);
+        this.geomParams.pattern = params;
+      } else if (entry.material) {
+        if (entry.material.materialId)
+          this.geomParams.materialId = new Id64(entry.material.materialId);
+      } else if (entry.subRange) {
+        this.localRange = Range3d.fromJSON(entry.subRange);
+      } else if (entry.geomPart) {
+        this.partId = new Id64(entry.geomPart.part);
+        if (entry.geomPart.origin !== undefined || entry.geomPart.rotation !== undefined || entry.geomPart.scale !== undefined) {
+          const origin = entry.geomPart.origin ? Point3d.fromJSON(entry.geomPart.origin) : Point3d.createZero();
+          const rotation = entry.geomPart.rotation ? YawPitchRollAngles.fromJSON(entry.geomPart.rotation).toRotMatrix() : RotMatrix.createIdentity();
+          this.partToLocal = Transform.createRefs(origin, rotation);
+          if (entry.geomPart.scale)
+            this.partToLocal.multiplyTransformTransform(Transform.createRefs(Point3d.createZero(), RotMatrix.createUniformScale(entry.geomPart.scale)), this.partToLocal);
+        }
+        return true;
+      } else if (entry.textString) {
+        this.textString = new TextString(entry.textString);
+        if (this.localToWorld !== undefined)
+          this.textString.transformInPlace(this.localToWorld);
+        return true;
+      } else {
+        this.geometryQuery = GeomJson.Reader.parse(entry);
+        if (this.geometryQuery === undefined)
+          continue;
+        if (this.localToWorld !== undefined)
+          this.geometryQuery.tryTransformInPlace(this.localToWorld);
+        return true;
+      }
+    }
+    return false;
   }
 }

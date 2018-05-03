@@ -22,19 +22,16 @@ import { Transform,
          BSplineSurface3d,
          SolidPrimitive,
          Polyface } from "@bentley/geometry-core";
-import { RenderGraphic,
-         GraphicParams,
+import { GraphicParams,
          GeometryParams,
          AsThickenedLine,
          TextString,
-         QParams3d,
-         // Feature,
-         GraphicBranch } from "@bentley/imodeljs-common";
+         QParams3d } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
-import { RenderSystem } from "../System";
+import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
 import { DisplayParams, DisplayParamsType } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 
@@ -343,9 +340,11 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   public addSubGraphic(gf: RenderGraphic, subToGf: Transform, _gfParams: GraphicParams, clips?: ClipVector): void {
     // ###TODO_ELEMENT_TILE: Overriding GraphicParams?
     // ###TODO_ELEMENT_TILE: Clip...
-    if (!clips || !subToGf.isIdentity()) {
-      const branch = new GraphicBranch([ gf ]);
-      const graphic = this.system.createBranch(branch, this.iModel, subToGf, clips!);
+    if (undefined !== clips || !subToGf.isIdentity()) {
+      const branch = new GraphicBranch();
+      const tf = this.localToWorldTransform.multiplyTransformTransform(subToGf);
+      branch.add(gf);
+      const graphic = this.system.createBranch(branch, this.iModel, tf, clips);
       this.primitives.push(graphic);
     } else this.primitives.push(gf);
   }

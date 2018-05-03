@@ -48,7 +48,7 @@ export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDb
   InvalidName = IMODEL_ERROR_BASE + 24,
   InvalidParent = IMODEL_ERROR_BASE + 25,
   InvalidProfileVersion = IMODEL_ERROR_BASE + 26,
-  IsCreatingRevision = IMODEL_ERROR_BASE + 27,
+  IsCreatingChangeSet = IMODEL_ERROR_BASE + 27,
   LockNotHeld = IMODEL_ERROR_BASE + 28,
   Mismatch2d3d = IMODEL_ERROR_BASE + 29,
   MismatchGcs = IMODEL_ERROR_BASE + 30,  // The Geographic Coordinate Systems of the source and target are not based on equivalent projections
@@ -91,12 +91,44 @@ export const enum IModelStatus { // NOTE: values must be kept in sync with DgnDb
 /** Error status from various briefcase operations */
 export const enum BriefcaseStatus {
   CannotAcquire = 0x20000,
-  CannotDownload,
-  CannotUpload,
-  CannotCopy,
-  CannotDelete,
-  VersionNotFound,
-  CannotApplyChanges,
+  CannotDownload = 0x20001,
+  CannotUpload = 0x20002,
+  CannotCopy = 0x20003,
+  CannotDelete = 0x20004,
+  VersionNotFound = 0x20005,
+  CannotApplyChanges = 0x20006,
+}
+
+/** Error status from various ChangeSet operations */
+export const enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
+  Success = 0,
+  CHANGESET_ERROR_BASE = 0x16000,
+  ApplyError = CHANGESET_ERROR_BASE + 1,                /** Error applying a change set when reversing or reinstating it */
+  ChangeTrackingNotEnabled = CHANGESET_ERROR_BASE + 2,  /** Change tracking has not been enabled. The ChangeSet API mandates this. */
+  CorruptedChangeStream = CHANGESET_ERROR_BASE + 3,     /** Contents of the change stream are corrupted and does not match the ChangeSet */
+  FileNotFound = CHANGESET_ERROR_BASE + 4,              /** File containing the changes to the change set is not found */
+  FileWriteError = CHANGESET_ERROR_BASE + 5,            /** Error writing the contents of the change set to the backing change stream file */
+  HasLocalChanges = CHANGESET_ERROR_BASE + 6,           /**  Cannot perform the operation since the Db has local changes */
+  HasUncommittedChanges = CHANGESET_ERROR_BASE + 7,     /**  Cannot perform the operation since current transaction has uncommitted changes */
+  InvalidId = CHANGESET_ERROR_BASE + 8,                 /**  Invalid ChangeSet Id */
+  InvalidVersion = CHANGESET_ERROR_BASE + 9,            /**  Invalid version of the change set */
+  InDynamicTransaction = CHANGESET_ERROR_BASE + 10,     /** Cannot perform the operation since system is in the middle of a dynamic transaction */
+  IsCreatingChangeSet = CHANGESET_ERROR_BASE + 11,      /** Cannot perform operation since system is in the middle of a creating a change set */
+  IsNotCreatingChangeSet = CHANGESET_ERROR_BASE + 12,   /** Cannot perform operation since the system is not creating a change set */
+  MergeError = CHANGESET_ERROR_BASE + 13,               /**  (TO BE REMOVED) */
+  MergePropagationError = CHANGESET_ERROR_BASE + 14,    /** Error propagating the changes after the merge */
+  NothingToMerge = CHANGESET_ERROR_BASE + 15,           /** No change sets to merge */
+  NoTransactions = CHANGESET_ERROR_BASE + 16,           /** No transactions are available to create a change set */
+  ParentMismatch = CHANGESET_ERROR_BASE + 17,           /** Parent change set of the Db does not match the parent id of the change set */
+  SQLiteError = CHANGESET_ERROR_BASE + 18,              /** Error performing a SQLite operation on the Db */
+  WrongDgnDb = CHANGESET_ERROR_BASE + 19,               /** ChangeSet originated in a different Db */
+  CouldNotOpenDgnDb = CHANGESET_ERROR_BASE + 20,        /** Could not open the DgnDb to merge change set */
+  MergeSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 21, /** Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  ReverseOrReinstateSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 22,  /** Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  ProcessSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 23,             /** Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  CannotMergeIntoReadonly = CHANGESET_ERROR_BASE + 24,                /** Cannot merge changes into a Readonly DgnDb. */
+  CannotMergeIntoMaster = CHANGESET_ERROR_BASE + 25,                  /**  Cannot merge changes into a Master DgnDb. */
+  CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 26,                /** Cannot merge changes into a DgnDb that has reversed change sets. */
 }
 
 /** Return codes for methods which perform repository management operations */
@@ -108,9 +140,9 @@ export const enum RepositoryStatus {
   InvalidResponse = 0x15004, /**  Response from server not understood */
   PendingTransactions = 0x15005, /**  An operation requires local changes to be committed or abandoned */
   LockUsed = 0x15006, /**  A lock cannot be relinquished because the associated object has been modified */
-  CannotCreateRevision = 0x15007, /**  An operation required creation of a DgnRevision, which failed */
+  CannotCreateChangeSet = 0x15007, /**  An operation required creation of a ChangeSet, which failed */
   InvalidRequest = 0x15008, /**  Request to server not understood */
-  RevisionRequired = 0x15009, /**  A revision committed to the server must be integrated into the briefcase before the operation can be completed */
+  ChangeSetRequired = 0x15009, /**  A change set committed to the server must be integrated into the briefcase before the operation can be completed */
   CodeUnavailable = 0x1500A, /**  A requested DgnCode is reserved by another briefcase or in use */
   CodeNotReserved = 0x1500B, /**  A DgnCode cannot be released because it has not been reserved by the requesting briefcase */
   CodeUsed = 0x1500C, /**  A DgnCode cannot be relinquished because it has been used locally */
@@ -134,7 +166,7 @@ export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
   public errorNumber: number;
 
-  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
@@ -179,7 +211,7 @@ export class BentleyError extends Error {
       case IModelStatus.InvalidName: return "Invalid Name";
       case IModelStatus.InvalidParent: return "Invalid Parent";
       case IModelStatus.InvalidProfileVersion: return "Invalid Profile Version";
-      case IModelStatus.IsCreatingRevision: return "IsCreatingRevision";
+      case IModelStatus.IsCreatingChangeSet: return "IsCreatingChangeSet";
       case IModelStatus.LockNotHeld: return "Lock Not Held";
       case IModelStatus.Mismatch2d3d: return "Mismatch 2d3d";
       case IModelStatus.MismatchGcs: return "Mismatch Gcs";
@@ -280,7 +312,7 @@ export class BentleyError extends Error {
       case DbResult.BE_SQLITE_ERROR_ProfileTooNewForReadWrite: return "Profile Too New For ReadWrite";
       case DbResult.BE_SQLITE_ERROR_ProfileTooNew: return "Profile Too New";
       case DbResult.BE_SQLITE_ERROR_ChangeTrackError: return "ChangeTrack Error";
-      case DbResult.BE_SQLITE_ERROR_InvalidRevisionVersion: return "Invalid Revision Version";
+      case DbResult.BE_SQLITE_ERROR_InvalidChangeSetVersion: return "Invalid ChangeSet Version";
       case DbResult.BE_SQLITE_ERROR_SchemaUpgradeRequired: return "Schema Upgrade Required";
       case DbResult.BE_SQLITE_ERROR_SchemaTooNew: return "Schema Too New";
       case DbResult.BE_SQLITE_ERROR_SchemaTooOld: return "Schema Too Old";
@@ -318,6 +350,34 @@ export class BentleyError extends Error {
       case BriefcaseStatus.CannotDelete: return "CannotDelete";
       case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
 
+      // ChangeSetStatus
+      case ChangeSetStatus.ApplyError: return "Error applying a change set when reversing or reinstating it";
+      case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";
+      case ChangeSetStatus.CorruptedChangeStream: return "Contents of the change stream are corrupted and does not match the ChangeSet";
+      case ChangeSetStatus.FileNotFound: return "File containing the changes to the change set is not found";
+      case ChangeSetStatus.FileWriteError: return "Error writing the contents of the change set to the backing change stream file";
+      case ChangeSetStatus.HasLocalChanges: return "Cannot perform the operation since the Db has local changes";
+      case ChangeSetStatus.HasUncommittedChanges: return "Cannot perform the operation since current transaction has uncommitted changes";
+      case ChangeSetStatus.InvalidId: return "Invalid ChangeSet Id";
+      case ChangeSetStatus.InvalidVersion: return "Invalid version of the change set";
+      case ChangeSetStatus.InDynamicTransaction: return "Cannot perform the operation since system is in the middle of a dynamic transaction";
+      case ChangeSetStatus.IsCreatingChangeSet: return "Cannot perform operation since system is in the middle of a creating a change set";
+      case ChangeSetStatus.IsNotCreatingChangeSet: return "Cannot perform operation since the system is not creating a change set";
+      case ChangeSetStatus.MergeError: return "Error merging changes from the change set to the Db";
+      case ChangeSetStatus.MergePropagationError: return "Error propagating the changes after the merge";
+      case ChangeSetStatus.NothingToMerge: return "No change sets to merge";
+      case ChangeSetStatus.NoTransactions: return "No transactions are available to create a change set";
+      case ChangeSetStatus.ParentMismatch: return "Parent change set of the Db does not match the parent id of the change set";
+      case ChangeSetStatus.SQLiteError: return "Error performing a SQLite operation on the Db";
+      case ChangeSetStatus.WrongDgnDb: return "ChangeSet originated in a different Db";
+      case ChangeSetStatus.CouldNotOpenDgnDb: return "Could not open the DgnDb to merge change set";
+      case ChangeSetStatus.MergeSchemaChangesOnOpen: return "Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened";
+      case ChangeSetStatus.ReverseOrReinstateSchemaChangesOnOpen: return "Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened";
+      case ChangeSetStatus.ProcessSchemaChangesOnOpen: return "Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened";
+      case ChangeSetStatus.CannotMergeIntoReadonly: return "Cannot merge changes into a Readonly DgnDb";
+      case ChangeSetStatus.CannotMergeIntoMaster: return "Cannot merge changes into a Master DgnDb";
+      case ChangeSetStatus.CannotMergeIntoReversed: return "Cannot merge changes into a DgnDb that has reversed change sets";
+
       // RepositoryStatus
       case RepositoryStatus.ServerUnavailable: return "ServerUnavailable";
       case RepositoryStatus.LockAlreadyHeld: return "LockAlreadyHeld";
@@ -325,9 +385,9 @@ export class BentleyError extends Error {
       case RepositoryStatus.InvalidResponse: return "InvalidResponse";
       case RepositoryStatus.PendingTransactions: return "PendingTransactions";
       case RepositoryStatus.LockUsed: return "LockUsed";
-      case RepositoryStatus.CannotCreateRevision: return "CannotCreateRevision";
+      case RepositoryStatus.CannotCreateChangeSet: return "CannotCreateChangeSet";
       case RepositoryStatus.InvalidRequest: return "InvalidRequest";
-      case RepositoryStatus.RevisionRequired: return "RevisionRequired";
+      case RepositoryStatus.ChangeSetRequired: return "ChangeSetRequired";
       case RepositoryStatus.CodeUnavailable: return "CodeUnavailable";
       case RepositoryStatus.CodeNotReserved: return "CodeNotReserved";
       case RepositoryStatus.CodeUsed: return "CodeUsed";

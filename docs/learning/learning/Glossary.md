@@ -3,7 +3,7 @@
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information in a different orientation and units.
-|**Backend**|The part of an app that is concerned with accessing data in a [briefcase](#Briefcase). See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends)
+|**Backend**|The part of an app that is concerned with accessing data in a [briefcase](#Briefcase). See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App backends](./App.md)
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS can have relevance outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The base BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](../../learning/backend/IModelDb.md).
@@ -11,7 +11,7 @@
 |**Category**|A property of a GeometricElement that "categorizes" its geometry. That is, every GeometricElement is "in" one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. Note that Categories are not relevant for Elements that are not GeometricElements. Category is a subclass of DefinitionElement.
 |**CategorySelector**|A named group of Categories displayed in a View. Many ViewDefinitions may refer to the same CategorySelector.
 |**ChangeSet**|A group of changes to an iModel. Changesets are created whenever an Briefcase is modified and reflect the union of all Additions, Deletions, and Modifications over a period of time. ChangeSet are assigned an identifier when they are uploaded to iModelHub and every ChangeSet stores the identifier of its parent ChangeSet. In this way the chain of ChangeSets for an iModel in iModelHub forms its "timeline of changes".
-|**ChangeSummary**|A summary of the changes in a ChangeSet in the form of ECClasses and ECProperties.
+|**ChangeSummary**|A summary of the changes in a ChangeSet in the form of ECClasses and ECProperties. See [Change Summary Overview](./ChangeSummaries) for details.
 |**Class Registry**|A registry of known JavaScript classes that handle ECClasses. The JavaScript class **must** have the same name as the ECClass. When an Entity is loaded from an iModel, a JavaScript instance of the registered class will be created. If no JavaScript class is registered for the ECClass, one is created dynamically.
 |**Code**|An optional three part *human readable* identifier for an Element. A code consists of a CodeSpec, CodeScope, and CodeValue. The combination of all three parts must be unique within an iModel.
 |**CodeScope**|A Code Scope determines a *scope for uniqueness* for the code value. For example, a scope may specify the whole iModel, only within a certain Model, within an assembly, etc. For a given CodeSpec and CodeScope, all CodeValues must be unique.
@@ -39,9 +39,9 @@
 |**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature.
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
-|**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends)
+|**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](./App.md#app-frontend)
 |**Frustum**|An 8-point [truncated pyramid](https://en.wikipedia.org/wiki/Viewing_frustum) that defines the volume of space visible in a View. The front and back planes must be parallel and their centers must align at right angles.
-|**Gateway**|A channel of communication between a client and a service. To the iModelJs app programmer, a gateway is just a TypeScript class, and using a gateway just a method call. Call marshalling varies, depending on app configuration. For example, gateways run over HTTP in Web apps and using pipes withing desktop apps. See [gateways](../../overview/overview/App.md#gateways) for more information.
+|**Gateway**|A set of operations exposed by a service that a client can call. To the iModelJs app programmer, a gateway is just a TypeScript class, and using a gateway is just a method call. Call marshalling mechanisms vary, depending on app configuration. For example, gateways run over HTTP in Web apps but use pipes in desktop apps. See [gateways](../../overview/overview/App.md#gateways) for more information.
 |**GeometricElement**|A subclass of Element that can include geometry (in its GeometryStream.) Only GeometricElements are visible in Views.
 |**GeometricModel**|A subclass of Model that can hold GeometricElements.
 |**GeometryPart**|A named GeometryStream that can be shared by many GeometricElements.

@@ -8,11 +8,12 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 import { OctEncodedNormal } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
+import { Frustum } from "./Frustum";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
@@ -176,13 +177,6 @@ export class PolylineEdgeArgs {
 }
 
 /**
- * A renderer-specific object that can be placed into a display list.
- */
-export abstract class RenderGraphic {
-  constructor(public readonly iModel: IModel) { }
-}
-
-/**
  * The "cooked" material and symbology for a RenderGraphic. This determines the appearance
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
  */
@@ -247,43 +241,6 @@ export const enum RenderMode {
   SmoothShade = 6,
 }
 
-export class GraphicList {
-  public list: RenderGraphic[] = [];
-  public isEmpty(): boolean { return this.list.length === 0; }
-  public clear() { this.list.length = 0; }
-  public add(graphic: RenderGraphic) { this.list.push(graphic); }
-  public getCount(): number { return this.list.length; }
-  public at(index: number): RenderGraphic | undefined { return this.list[index]; }
-  public get length(): number { return this.list.length; }
-  constructor(...graphics: RenderGraphic[]) { graphics.forEach(this.add.bind(this)); }
-}
-
-export class DecorationList extends GraphicList {
-}
-
-/**
- * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
- * in addition to the Scene.
- */
-export class Decorations {
-  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
-  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
-  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
-}
-
-export class GraphicBranch {
-  public get entries(): RenderGraphic[] { return this._entries; }
-  constructor(private _entries: RenderGraphic[] = [],
-              private _viewFlagOverrides: ViewFlag.Overrides = new ViewFlag.Overrides()) {}
-  public add(graphic: RenderGraphic): void { this._entries.push(graphic); }
-  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
-  public setViewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides = ovr; }
-  public getViewFlags(flags: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags); }
-  public clear() { this._entries = []; }
-}
-
 /**
  * The current position (eyepoint), lens angle, and focus distance of a camera.
  */
@@ -344,9 +301,9 @@ export class ViewFlags {
   public noGeometryMap: boolean = false;        // ignore geometry maps
   public hLineMaterialColors: boolean = false;  // use material colors for hidden lines
   public edgeMask: number = 0;                  // 0=none, 1=generate mask, 2=use mask
-  public clone(): ViewFlags { return ViewFlags.createFrom(this); }
-  public static createFrom(other?: ViewFlags): ViewFlags {
-    const val = new ViewFlags();
+  public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
+  public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
+    const val = undefined !== out ? out : new ViewFlags();
     if (other) {
       val.renderMode = other.renderMode;
       val.dimensions = other.dimensions;
@@ -538,6 +495,16 @@ export namespace ViewFlag {
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags */
     constructor(flags?: ViewFlags) { this.values = ViewFlags.createFrom(flags); this.present = 0xffffffff; }
 
+    public clone(out?: Overrides) {
+      const result = undefined !== out ? out : new Overrides();
+      result.copyFrom(this);
+      return result;
+    }
+    public copyFrom(other: Overrides): void {
+      this.values.clone(other.values);
+      this.present = other.present;
+    }
+
     public setShowDimensions(val: boolean) { this.values.setShowDimensions(val); this.setPresent(PresenceFlag.kDimensions); }
     public setShowPatterns(val: boolean) { this.values.setShowPatterns(val); this.setPresent(PresenceFlag.kPatterns); }
     public setShowWeights(val: boolean) { this.values.setShowWeights(val); this.setPresent(PresenceFlag.kWeights); }
@@ -608,6 +575,108 @@ export const enum LinePixels {
   Invalid = 0xffffffff,
 }
 
+/** Represents a frustum as 6 planes and provides containment and intersection testing */
+export class FrustumPlanes {
+  private _planes?: ClipPlane[];
+
+  public constructor(frustum?: Frustum) {
+    if (undefined !== frustum) {
+      this.init(frustum);
+    }
+  }
+
+  public get isValid(): boolean { return undefined !== this._planes; }
+
+  public init(frustum: Frustum) {
+    if (undefined === this._planes) {
+      this._planes = [];
+    } else {
+      this._planes.length = 0;
+    }
+
+    FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 1, 3, 5);  // right
+    FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 0, 4, 2);  // left
+    FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 2, 6, 3);  // top
+    FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 0, 1, 4);  // bottom
+    FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 0, 2, 1);  // back
+    FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 4, 5, 6);  // front
+  }
+
+  public computeFrustumContainment(box: Frustum): FrustumPlanes.Containment { return this.computeContainment(box.points); }
+  public intersectsFrustum(box: Frustum): boolean { return FrustumPlanes.Containment.Outside !== this.computeFrustumContainment(box); }
+  public containsPoint(point: Point3d, tolerance: number = 1.0e-8): boolean { return FrustumPlanes.Containment.Outside !== this.computeContainment([point], tolerance); }
+
+  public computeContainment(points: Point3d[], tolerance: number = 1.0e-8): FrustumPlanes.Containment {
+    assert(this.isValid);
+    if (undefined === this._planes) {
+      return FrustumPlanes.Containment.Outside;
+    }
+
+    let allInside = true;
+    for (const plane of this._planes) {
+      let nOutside = 0;
+      for (const point of points) {
+        if (plane.evaluatePoint(point) + tolerance < 0.0) {
+          ++nOutside;
+          allInside = false;
+        }
+      }
+
+      if (nOutside === points.length) {
+        return FrustumPlanes.Containment.Outside;
+      }
+    }
+
+    return allInside ? FrustumPlanes.Containment.Inside : FrustumPlanes.Containment.Partial;
+  }
+
+  public intersectsRay(origin: Point3d, direction: Vector3d): boolean {
+    assert(this.isValid);
+    if (undefined === this._planes) {
+      return false;
+    }
+
+    let tFar = 1e37;
+    let tNear = -tFar;
+
+    for (const plane of this._planes) {
+      const vD = plane.dotProductVector(direction);
+      const vN = plane.evaluatePoint(origin);
+      if (0.0 === vD) {
+        // ray is parallel... no need to continue testing if outside halfspace.
+        if (vN < 0.0) {
+          return false;
+        }
+      } else {
+        const rayDistance = -vN / vD;
+        if (vD < 0.0) {
+          tFar = Math.min(rayDistance, tFar);
+        } else {
+          tNear = Math.max(rayDistance, tNear);
+        }
+      }
+    }
+
+    return tNear <= tFar;
+  }
+}
+
+export namespace FrustumPlanes {
+  export const enum Containment {
+    Outside = 0,
+    Partial = 1,
+    Inside = 2,
+  }
+
+  export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance: number = 1.0e-6): void {
+    const normal = Vector3d.createCrossProductToPoints(points[i2], points[i1], points[i0]);
+    const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[i0]) - expandPlaneDistance);
+    if (undefined !== plane) {
+      planes.push(plane);
+    }
+  }
+}
+
 /** parameters for displaying hidden lines */
 export namespace HiddenLine {
 
@@ -624,6 +693,19 @@ export namespace HiddenLine {
     }
     public equals(other: Style): boolean {
       return this.ovrColor === other.ovrColor && this.color === other.color && this.pattern === other.pattern && this.width === other.width;
+    }
+
+    public clone(out?: Style): Style {
+      const result = undefined !== out ? out : new Style({});
+      result.copyFrom(this);
+      return result;
+    }
+
+    public copyFrom(other: Style): void {
+      this.ovrColor = other.ovrColor;
+      this.color.setFrom(other.color);
+      this.pattern = other.pattern;
+      this.width = other.width;
     }
   }
 
@@ -689,13 +771,13 @@ export namespace Gradient {
   export interface SymbProps {
     /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
     mode: Mode;
-    /** Gradient flags to enable outline display and invert color fractions */
+    /** Gradient flags to enable outline display and invert color fractions, Flags.None if undefined */
     flags?: Flags;
-    /** Gradient rotation angle */
+    /** Gradient rotation angle, 0.0 if undefined */
     angle?: AngleProps;
-    /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1 */
+    /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1, 0.0 if undefined */
     tint?: number;
-    /** Gradient shift value from 0.0 to 1.0 */
+    /** Gradient shift value from 0.0 to 1.0, 0.0 if undefined */
     shift?: number;
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
     keys: KeyColorProps[];
@@ -792,13 +874,13 @@ export class Material {
 export class GeometryParams {
   public materialId?: Id64; // render material Id.
   public elmPriority?: number; // display priority (applies to 2d only)
-  public weight?: number;
+  public weight?: number; // integer value from 0 to 32
   public lineColor?: ColorDef;
   public fillColor?: ColorDef; // fill color (applicable only if filled)
   public backgroundFill?: BackgroundFill; // support for fill using the view's background color, default BackgroundFill.None
   public fillDisplay?: FillDisplay; // whether or not the element should be displayed filled, default FillDisplay.Never
-  public elmTransparency?: number; // transparency, 1.0 == completely transparent
-  public fillTransparency?: number;  // fill transparency, 1.0 == completely transparent
+  public elmTransparency?: number; // line transparency, 0.0 for completely opaque, 1.0 for completely transparent
+  public fillTransparency?: number;  // fill transparency, 0.0 for completely opaque, 1.0 for completely transparent
   public geometryClass?: GeometryClass; // geometry class, default GeometryClass.Primary
   public styleInfo?: LineStyle.Info; // line style id plus modifiers.
   public gradient?: Gradient.Symb; // gradient fill settings.
@@ -957,6 +1039,22 @@ export namespace Hilite {
     }
     /** Change the color, preserving all other settings */
     public setColor(color: ColorDef) { this.color.setFrom(color); }
+
+    public clone(out?: Settings): Settings {
+      if (undefined !== out) {
+        out.copyFrom(this);
+        return out;
+      } else {
+        return new Settings(this.color, this.visibleRatio, this.hiddenRatio, this.silhouette);
+      }
+    }
+
+    public copyFrom(other: Settings): void {
+      this.color.setFrom(other.color);
+      this.visibleRatio = other.visibleRatio;
+      this.hiddenRatio = other.hiddenRatio;
+      this.silhouette = other.silhouette;
+    }
   }
 }
 

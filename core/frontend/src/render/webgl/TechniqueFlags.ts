@@ -1,61 +1,70 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { LUTDimension, getFeatureName, FeatureDimensions, FeatureDimension } from "./FeatureDimensions";
-import { FeatureIndexType } from "@bentley/imodeljs-common";
 
-// Specifies whether an 'active clip volume' has been applied to the view.
-export const enum WithClipVolume { No, Yes }
+import { Target } from "./Target";
+import { RenderPass } from "./RenderFlags";
 
-export const enum Mode {
-  kMode_Normal = 0,
-  kMode_Hilite = 1,
+export const enum WithClipVolume {
+  No,
+  Yes,
 }
 
+/** Specifies how a TechniqueFlags handles feature table/overrides. */
+export const enum FeatureMode {
+  None,       // no features
+  Pick,       // feature table only
+  Overrides,  // feature table with symbology overrides
+}
+
+/** Flags used to control which shader program is used by a rendering Technique. */
 export class TechniqueFlags {
-  public featureDimensions!: FeatureDimensions;
-  public mode!: Mode;
-  public monochrome!: boolean;
-  public clipVolume!: boolean;
-  public featureOverrides?: boolean;
-  public translucent!: boolean;
-  public colorDimension!: LUTDimension;
+  public featureMode: FeatureMode;
+  public isTranslucent: boolean;
+  public hasClipVolume: boolean;
+  private _isHilite: boolean;
 
-  public get featureDimensionType(): FeatureDimension { return this.featureDimensions.getValue(); }
-  public get isMonochrome(): boolean { return this.monochrome; }
-  public get isTranslucent(): boolean { return this.translucent; }
-  public get hasClipVolume(): boolean { return this.clipVolume; }
-  public get isUniformColor(): boolean { return this.colorDimension === LUTDimension.Uniform; }
-  public get isHilite(): boolean { return this.mode === Mode.kMode_Hilite; }
-  public get hasFeatureDimensions(): boolean { return !this.featureDimensions.isEmpty(); }
-  public get colorStr(): string { return `${this.isUniformColor ? "Uniform" : "Non-uniform"} color`; }
-  public get monochromeStr(): string | undefined { return this.isMonochrome ? "monochrome" : undefined; }
-  public get translucentStr(): string | undefined { return this.isTranslucent ? "translucent" : undefined; }
-  public get hiliteStr(): string | undefined { return this.isHilite ? "hilite" : undefined; }
-  public get clipVolumeStr(): string | undefined { return this.hasClipVolume ? "clip" : undefined; }
-  public get featureOverrideStr(): string { return getFeatureName(this.featureDimensionType) + " feature overrides"; }
-  public get descriptors(): Array<string | undefined> { return [this.colorStr, this.translucentStr, this.monochromeStr, this.hiliteStr, this.clipVolumeStr, this.featureOverrideStr].filter(Boolean); }
-  public get description(): string { return this.descriptors.join("; "); }
-
-  constructor(colorDimension?: LUTDimension, translucent?: boolean) { this.init(undefined, undefined, undefined, colorDimension, translucent); }
-
-  private init(dims?: FeatureDimensions, mode?: Mode, clipVolume?: WithClipVolume, colorDimension?: LUTDimension, translucent?: boolean) {
-    this.colorDimension = !!colorDimension ? colorDimension : LUTDimension.Uniform;
-    this.featureDimensions = !!dims ? dims : FeatureDimensions.empty();
-    this.translucent = !!translucent ? translucent : false;
-    this.monochrome = this.featureOverrides = false;
-    this.clipVolume = !!clipVolume ? clipVolume === WithClipVolume.Yes : false;
-    this.mode = !!mode ? mode : Mode.kMode_Normal;
+  public constructor(translucent: boolean = false) {
+    this.isTranslucent = translucent;
+    this.hasClipVolume = this._isHilite = false;
+    this.featureMode = FeatureMode.None;
   }
 
-  public setFeatureDimensions(type: FeatureIndexType, dim: LUTDimension): void { this.featureDimensions.init(dim, type); }
-  public setHilite(): void { this.init(this.featureDimensions, Mode.kMode_Hilite, this.clipVolume ? WithClipVolume.Yes : WithClipVolume.No); }
-  public static forHilite(dims: FeatureDimensions, withClipVolume: WithClipVolume, techniqueFlags: TechniqueFlags = new TechniqueFlags()): TechniqueFlags {
-    // The hilite shader simply generates a silhouette...the other flags are superfluous.
-    techniqueFlags.featureDimensions = dims;
-    techniqueFlags.mode = Mode.kMode_Hilite;
-    techniqueFlags.clipVolume = withClipVolume === WithClipVolume.Yes;
-    return techniqueFlags;
+  public init(target: Target, pass: RenderPass): void {
+    const hasClip = target.hasClipVolume || target.hasClipMask;
+    if (RenderPass.Hilite === pass) {
+      this.initForHilite(hasClip ? WithClipVolume.Yes : WithClipVolume.No);
+    } else {
+      this._isHilite = false;
+      this.hasClipVolume = hasClip;
+      this.isTranslucent = RenderPass.Translucent === pass;
+
+      if (undefined !== target.currentOverrides) {
+        this.featureMode = FeatureMode.Overrides;
+      } else if (undefined !== target.currentPickTable) {
+        this.featureMode = FeatureMode.Pick;
+      } else {
+        this.featureMode = FeatureMode.None;
+      }
+    }
+  }
+
+  public get hasFeatures() { return FeatureMode.None !== this.featureMode; }
+
+  public get isHilite() { return this._isHilite; }
+  public initForHilite(withClip: WithClipVolume) {
+    this.featureMode = FeatureMode.Overrides;
+    this._isHilite = true;
+    this.hasClipVolume = WithClipVolume.Yes === withClip;
+    this.isTranslucent = false;
+  }
+
+  public buildDescription(): string {
+    const parts = [this.isTranslucent ? "Translucent" : "Opaque"];
+    if (this.isHilite)      parts.push("hilite");
+    if (this.hasClipVolume) parts.push("clip");
+    if (this.hasFeatures)   parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
+    return parts.join("; ");
   }
 
   public static readonly defaults = new TechniqueFlags();

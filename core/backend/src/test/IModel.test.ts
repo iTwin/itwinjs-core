@@ -42,9 +42,7 @@ describe("iModel", () => {
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
   const testCopyAndJson = (entity: Entity) => {
-    assert.isTrue(entity.isPersistent());
-    const copyOf = entity.copyForEdit();
-    assert.isFalse(copyOf.isPersistent());
+    const copyOf = entity.clone();
     const s1 = JSON.stringify(entity); let s2 = JSON.stringify(copyOf);
     assert.equal(s1, s2);
 
@@ -154,7 +152,7 @@ describe("iModel", () => {
     assert.isTrue(a2.id.equals(el3.id));
     testCopyAndJson(el3);
 
-    const newEl = el3.copyForEdit<Element>();
+    const newEl = el3;
     newEl.federationGuid = undefined;
     const newId: Id64 = imodel2.elements.insertElement(newEl);
     assert.isTrue(newId.isValid(), "insert worked");
@@ -409,7 +407,7 @@ describe("iModel", () => {
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.integerProperty1);
 
-    const newTestElem = testElem.copyForEdit<Element>();
+    const newTestElem = testElem.clone<Element>();
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.integerProperty1 = 999;
     assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
@@ -442,7 +440,7 @@ describe("iModel", () => {
 
     // ----------- updates ----------------
     const wasp3d = newTestElemFetched.p3d;
-    const editElem = newTestElemFetched.copyForEdit<Element>();
+    const editElem = newTestElemFetched;
     editElem.location = loc2;
     try {
       imodel4.elements.updateElement(editElem);
@@ -834,8 +832,7 @@ describe("iModel", () => {
 
     if (true) {
       // Change el2 to point to itself.
-      const el2 = testImodel.elements.getElement(id2);
-      const el2Modified = el2.copyForEdit<Element>();
+      const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.relatedElement = { id: id2, relClassName: trelClassName };
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 points to itself.
@@ -846,8 +843,7 @@ describe("iModel", () => {
 
     if (true) {
       // Test that we can null out the navigation property
-      const el2 = testImodel.elements.getElement(id2);
-      const el2Modified = el2.copyForEdit<Element>();
+      const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.relatedElement = null;
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 has no relatedElement property value

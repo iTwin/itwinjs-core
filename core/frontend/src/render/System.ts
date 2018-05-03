@@ -2,18 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ClipVector, Transform } from "@bentley/geometry-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { AntiAliasPref,
          SceneLights,
          ViewFlags,
+         ViewFlag,
          Frustum,
          Hilite,
          HiddenLine,
-         ColorDef,
-         RenderGraphic,
-         Decorations,
-         GraphicBranch } from "@bentley/imodeljs-common";
-import { Viewport } from "../Viewport";
+         ColorDef } from "@bentley/imodeljs-common";
+import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { HilitedSet } from "../SelectionSet";
@@ -56,31 +54,83 @@ export class RenderPlan {
 }
 
 /**
+ * A renderer-specific object that can be placed into a display list.
+ */
+export abstract class RenderGraphic {
+  public readonly iModel: IModelConnection;
+
+  constructor(iModel: IModelConnection) { this.iModel = iModel; }
+}
+
+export type GraphicList = RenderGraphic[];
+
+/** A graphic used for decorations, optionally with symbology overrides. */
+export class Decoration {
+  public readonly graphic: RenderGraphic;
+  public readonly overrides?: FeatureSymbology.Appearance;
+
+  public constructor(graphic: RenderGraphic, overrides?: FeatureSymbology.Appearance) {
+    this.graphic = graphic;
+    this.overrides = overrides;
+  }
+}
+
+export class DecorationList extends Array<Decoration> {
+  public add(graphic: RenderGraphic, ovrs?: FeatureSymbology.Appearance) { this.push(new Decoration(graphic, ovrs)); }
+}
+
+/**
+ * A set of GraphicLists of various types of RenderGraphics that are "decorated" into the Render::Target,
+ * in addition to the Scene.
+ */
+export class Decorations {
+  public viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
+  public normal?: GraphicList;       // drawn with zbuffer, with scene lighting
+  public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
+  public worldOverlay?: DecorationList; // drawn in overlay mode, world units
+  public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
+}
+
+export class GraphicBranch {
+  public readonly entries: RenderGraphic[] = [];
+  private _viewFlagOverrides = new ViewFlag.Overrides();
+  public symbologyOverrides?: FeatureSymbology.Overrides;
+
+  public constructor() { }
+
+  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
+  public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
+
+  public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
+  public set viewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides.copyFrom(ovr); }
+
+  public clear() { this.entries.length = 0; }
+}
+
+/**
  * A RenderTarget holds the current scene, the current set of dynamic RenderGraphics, and the current decorators.
  * When frames are composed, all of those RenderGraphics are rendered, as appropriate.
  * A RenderTarget holds a reference to a Render::Device, and a Render::System
  * Every DgnViewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget {
-  public decorations = new Decorations();
+  public static get frustumDepth2d(): number { return 1.0; } // one meter
 
   public abstract get renderSystem(): RenderSystem;
+  public abstract get cameraFrustumNearScaleLimit(): number;
+  public abstract get viewRect(): ViewRect;
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
-  public changeDecorations(decorations: Decorations) { this.decorations = decorations; }
-  public abstract setHiliteSet(hilited: HilitedSet): void;
-  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
-  /**
-   * #TODO: update with logic to determine the device type running application
-   */
-  public static isMobile(): boolean { return false; }
 
-  /**
-   * [WIP] - we are trying to predict the likely graphics performance of the box.
-   * 1.0 => Plan for the best on Windows (desktop) computers.
-   * 2.5 => Plan for the worst on mobile devices
-   */
-  public static defaultTileSizeModifier(): number { return RenderTarget.isMobile() ? 2.5 : 1.0; }
+  public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
+  public abstract changeDecorations(decorations: Decorations): void;
+  public abstract changeDynamics(dynamics?: DecorationList): void;
+  public abstract changeRenderPlan(plan: RenderPlan): void;
+  public abstract drawFrame(): void;
+  public abstract setHiliteSet(hilited: HilitedSet): void;
+  public abstract setFlashed(elementId: Id64, intensity: number): void;
+  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
+  public abstract onResized(): void;
 }
 
 /**
@@ -92,15 +142,15 @@ export abstract class RenderSystem {
   public get isPainting(): boolean { return !!this._nowPainting; }
   public checkPainting(target?: RenderTarget): boolean { return target === this._nowPainting; }
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
-  public notPainting() { this._nowPainting = undefined; }
+  public nowPainting() { this._nowPainting = undefined; }
 
-  public abstract get maxTextureSize(): number;
+  public abstract get canvas(): HTMLCanvasElement;
 
   /** Create a render target. */
   public abstract createTarget(): RenderTarget;
 
   // /** Create an offscreen render target. */
-  // public abstract createOffscreenTarget(tileSizeModifier: number): RenderTarget;
+  public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   // /** Find a previously-created Material by key. Returns null if no such material exists. */
   // public abstract findMaterial(key: MaterialKey, imodel: IModel): Material;
@@ -145,7 +195,7 @@ export abstract class RenderSystem {
   public abstract createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic;
 
   /** Create a Graphic consisting of a list of Graphics, with optional transform, clip, and view flag overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips: ClipVector): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic;
 
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;

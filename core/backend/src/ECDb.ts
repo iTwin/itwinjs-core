@@ -102,6 +102,11 @@ export class ECDb implements IDisposable {
    *
    * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
    * the already prepared statement from the cache will be reused.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   *
    * @param ecsql The ECSQL statement to execute
    * @param cb The callback to invoke on the prepared statement
    * @returns Returns the value returned by cb

@@ -10,7 +10,11 @@ import {expect} from "chai";
 
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
-Logger.initializeToConsole();
+// Logger.initializeToConsole();
+// Note: Turn this off unless really necessary - it causes Error messages on the
+// console with the existing suite of tests, and this is quite misleading,
+// especially when diagnosing CI job failures.
+
 Logger.setLevelDefault(LogLevel.Error);
 
 /** Credentials for test users */
@@ -21,7 +25,7 @@ export interface UserCredentials {
 
 function isOfflineSet(): boolean {
   const index = process.argv.indexOf("--offline");
-  return process.argv[index + 1] === "true";
+  return process.argv[index + 1] === "mock";
 }
 
 /** Basic configuration used by all tests

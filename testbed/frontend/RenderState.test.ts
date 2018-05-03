@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { GL, RenderState } from "@bentley/imodeljs-frontend/lib/rendering";
-import { getWebGLContext } from "./WebGLTestContext";
+import { GL, RenderState, System } from "@bentley/imodeljs-frontend/lib/rendering";
+import { WebGLTestContext } from "./WebGLTestContext";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -97,24 +98,24 @@ describe("RenderState API", () => {
     b.blend.setBlendFunc(GL.BlendFactor.DefaultSrc, GL.BlendFactor.Zero);
     assert.isTrue(a.equals(b), "expected same blend function dst to compare as equal");
 
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
     assert.isFalse(a.equals(b), "expected different blend function src rgb to compare as !equal");
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.One, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
     assert.isTrue(a.equals(b), "expected same blend function src rgb to compare as equal");
 
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
     assert.isFalse(a.equals(b), "expected different blend function dst rgb to compare as !equal");
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.One, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.One, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
     assert.isTrue(a.equals(b), "expected same blend function dst rgb to compare as equal");
 
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
     assert.isFalse(a.equals(b), "expected different blend function src alpha to compare as !equal");
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.Zero, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.Zero, GL.BlendFactor.DefaultDst);
     assert.isTrue(a.equals(b), "expected same blend function src alpha to compare as equal");
 
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.AlphaSaturate);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.AlphaSaturate);
     assert.isFalse(a.equals(b), "expected different blend function dst alpha to compare as !equal");
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.Zero);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.Zero);
     assert.isTrue(a.equals(b), "expected same blend function dst alpha to compare as !equal");
 
     // Test Stencil
@@ -212,10 +213,10 @@ describe("RenderState API", () => {
     b.blend.equationAlpha = GL.BlendEquation.Subtract;
     b.blend.setBlendFunc(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
     b.blend.setBlendFunc(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate);
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
-    b.blend.setBlendFuncSeperate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.AlphaSaturate);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
+    b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.AlphaSaturate);
     b.stencilMask = 0xF0;
     /* Stenciling commented out for now since it is not used */
     // b.stencil.frontFunction = GL.StencilFunction.Greater;
@@ -241,11 +242,15 @@ describe("RenderState API", () => {
 });
 
 describe("RenderState.apply()", () => {
+  before(() => WebGLTestContext.startup());
+  after(() => WebGLTestContext.shutdown());
+
   it("should apply state", () => {
-    const gl = getWebGLContext();
-    if (undefined === gl) {
+    if (!IModelApp.hasRenderSystem) {
       return;
     }
+
+    const gl: WebGLRenderingContext = System.instance.context;
 
     // Test default state of WebGL.
     assert.isTrue(gl.getParameter(GL.Capability.FrontFace) === GL.FrontFace.CounterClockwise, "FrontFace should be CounterClockwise by default");
@@ -291,17 +296,17 @@ describe("RenderState.apply()", () => {
 
     prevState.copyFrom(newState);
     newState.flags.cull = true;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.CullFace) === true, "cull flag should now be enabled");
 
     prevState.copyFrom(newState);
     newState.flags.depthTest = true;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.DepthTest) === true, "depthTest flag should now be enabled");
 
     prevState.copyFrom(newState);
     newState.flags.blend = true;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.Blend) === true, "blend flag should now be enabled");
 
     /* Stenciling commented out for now since it is not used */
@@ -312,32 +317,32 @@ describe("RenderState.apply()", () => {
     // assert.isTrue(gl.getParameter(GL.Capability.StencilTest) === true, "stencilTest flag should now be enabled");
 
     newState.frontFace = GL.FrontFace.Clockwise;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.FrontFace) === GL.FrontFace.Clockwise, "frontFace should now be Clockwise");
 
     prevState.copyFrom(newState);
     newState.cullFace = GL.CullFace.Front;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.CullFaceMode) === GL.CullFace.Front, "cullFace should now be Front");
 
     prevState.copyFrom(newState);
     newState.depthFunc = GL.DepthFunc.GreaterOrEqual;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.DepthFunc) === GL.DepthFunc.GreaterOrEqual, "depthFunc should now be GreaterOrEqual");
 
     prevState.copyFrom(newState);
     newState.flags.depthMask = false;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.DepthWriteMask) === false, "depthMask flag should now be disabled");
 
     prevState.copyFrom(newState);
     newState.stencilMask = 0x03;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.StencilWriteMask) === 0x03, "stencilMask should now be 0x03");
 
     prevState.copyFrom(newState);
     newState.blend.setColor([0.1, 0.2, 0.3, 0.4]);
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     blendColor = gl.getParameter(GL.Capability.BlendColor);
     assert.isTrue(withinTolerance(blendColor[0], 0.1), "blendColor[0] should now be 0.1");
     assert.isTrue(withinTolerance(blendColor[1], 0.2), "blendColor[1] should now be 0.2");
@@ -346,32 +351,32 @@ describe("RenderState.apply()", () => {
 
     prevState.copyFrom(newState);
     newState.blend.equationRgb = GL.BlendEquation.ReverseSubtract;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.BlendEquationRGB) === GL.BlendEquation.ReverseSubtract, "blend.equationRgb should now be ReverseSubtract");
 
     prevState.copyFrom(newState);
     newState.blend.equationAlpha = GL.BlendEquation.Subtract;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.BlendEquationAlpha) === GL.BlendEquation.Subtract, "blend.equationAlpha should now be Subtract");
 
     prevState.copyFrom(newState);
     newState.blend.functionSourceRgb = GL.BlendFactor.OneMinusSrcColor;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.BlendSrcRgb) === GL.BlendFactor.OneMinusSrcColor, "blend.functionSourceRgb should now be OneMinusSrcColor");
 
     prevState.copyFrom(newState);
     newState.blend.functionSourceAlpha = GL.BlendFactor.OneMinusSrcAlpha;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.BlendSrcAlpha) === GL.BlendFactor.OneMinusSrcAlpha, "blend.functionSourceAlpha should now be OneMinusSrcAlpha");
 
     prevState.copyFrom(newState);
     newState.blend.functionDestRgb = GL.BlendFactor.OneMinusDstColor;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.BlendDstRgb) === GL.BlendFactor.OneMinusDstColor, "blend.functionDestRgb should now be OneMinusDstColor");
 
     prevState.copyFrom(newState);
     newState.blend.functionDestAlpha = GL.BlendFactor.OneMinusDstAlpha;
-    newState.apply(gl, prevState);
+    newState.apply(prevState);
     assert.isTrue(gl.getParameter(GL.Capability.BlendDstAlpha) === GL.BlendFactor.OneMinusDstAlpha, "blend.functionDestAlpha should now be OneMinusDstAlpha");
   });
 });

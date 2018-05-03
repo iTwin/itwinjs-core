@@ -3,14 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderGraphic, IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { RenderGraphic, GraphicList, IModel, FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
 
 export class FakeGraphic extends RenderGraphic {
-  constructor(iModel: IModel) { super(iModel); }
+  constructor(iModel: IModelConnection) { super(iModel); }
 }
 
 function withinTol(x: number, y: number): boolean {
@@ -35,51 +35,41 @@ describe("RenderGraphic", () => {
     assert.isTrue(g.iModel instanceof IModelConnection, "can access IModelConnection");
   });
 
-  it("GraphicList works as expected", () => {
-    const g1 = new FakeGraphic(iModel);
-    const g2 = new FakeGraphic(iModel);
-    const g3 = new FakeGraphic(iModel);
-    const g4 = new FakeGraphic(iModel);
-    const glist = new GraphicList(g1, g2, g3, g4);
-    assert.isTrue(glist.length === 4, "graphics loaded into array");
-    assert.isTrue(glist.at(0) instanceof RenderGraphic, "graphics can be accessed by index");
-  });
-
   it("IndexedPrimitiveParamsFeatures works as expected", () => {
     // Test constructor with no params
     let ippFeatures: IndexedPrimitiveParamsFeatures = new IndexedPrimitiveParamsFeatures();
-    assert.isTrue(FeatureIndexType.kEmpty === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with no parameters should have type kEmpty");
+    assert.isTrue(FeatureIndexType.Empty === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with no parameters should have type kEmpty");
     assert.isTrue(ippFeatures.isEmpty(), "IndexedPrimitiveParamsFeatures constructed with no parameters should return true for isEmpty()");
     assert.isFalse(ippFeatures.isUniform(), "IndexedPrimitiveParamsFeatures constructed with no parameters should return false for isUniform()");
     assert.isTrue(undefined === ippFeatures.nonUniform, "nonUniform of empty IndexedPrimitiveParamsFeatures should be undefined");
     let fIndex: FeatureIndex = ippFeatures.toFeatureIndex();
-    assert.isTrue(FeatureIndexType.kEmpty === fIndex.type, "FeatureIndex created with toFeatureIndex() of empty IndexedPrimitiveParamsFeatures should have type kEmpty");
+    assert.isTrue(FeatureIndexType.Empty === fIndex.type, "FeatureIndex created with toFeatureIndex() of empty IndexedPrimitiveParamsFeatures should have type kEmpty");
     assert.isTrue(fIndex.isEmpty(), "Empty IndexedPrimitiveParamsFeatures should return empty FeatureIndex from toFeatureIndex()");
     assert.isFalse(fIndex.isUniform(), "Empty IndexedPrimitiveParamsFeatures should not return uniform FeatureIndex from toFeatureIndex()");
     assert.isTrue(undefined === fIndex.featureIDs, "featureIDs of FeatureIndex created with toFeatureIndex() of empty IndexedPrimitiveParamsFeatures should be undefined");
     // Test using constructor with empty FeatureIndex
     fIndex.reset();
     ippFeatures = new IndexedPrimitiveParamsFeatures(fIndex);
-    assert.isTrue(FeatureIndexType.kEmpty === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with empty FeatureIndex should have type kEmpty");
+    assert.isTrue(FeatureIndexType.Empty === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with empty FeatureIndex should have type kEmpty");
     assert.isTrue(ippFeatures.isEmpty(), "IndexedPrimitiveParamsFeatures constructed with empty FeatureIndex should return true for isEmpty()");
     assert.isFalse(ippFeatures.isUniform(), "IndexedPrimitiveParamsFeatures constructed with empty FeatureIndex should return false for isUniform()");
     assert.isTrue(undefined === ippFeatures.nonUniform, "nonUniform of empty IndexedPrimitiveParamsFeatures should be undefined");
     fIndex = ippFeatures.toFeatureIndex();
-    assert.isTrue(FeatureIndexType.kEmpty === fIndex.type, "FeatureIndex created with toFeatureIndex() of empty IndexedPrimitiveParamsFeatures should have type kEmpty");
+    assert.isTrue(FeatureIndexType.Empty === fIndex.type, "FeatureIndex created with toFeatureIndex() of empty IndexedPrimitiveParamsFeatures should have type kEmpty");
     assert.isTrue(fIndex.isEmpty(), "Empty IndexedPrimitiveParamsFeatures should return empty FeatureIndex from toFeatureIndex()");
     assert.isFalse(fIndex.isUniform(), "Empty IndexedPrimitiveParamsFeatures should not return uniform FeatureIndex from toFeatureIndex()");
     assert.isTrue(undefined === fIndex.featureIDs, "featureIDs of FeatureIndex created with toFeatureIndex() of empty IndexedPrimitiveParamsFeatures should be undefined");
     // Test using constructor with uniform FeatureIndex
     fIndex.reset();
-    fIndex.type = FeatureIndexType.kUniform;
+    fIndex.type = FeatureIndexType.Uniform;
     fIndex.featureID = 42;
     ippFeatures = new IndexedPrimitiveParamsFeatures(fIndex);
-    assert.isTrue(FeatureIndexType.kUniform === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with uniform FeatureIndex should have type kUniform");
+    assert.isTrue(FeatureIndexType.Uniform === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with uniform FeatureIndex should have type kUniform");
     assert.isFalse(ippFeatures.isEmpty(), "IndexedPrimitiveParamsFeatures constructed with uniform FeatureIndex should return false for isEmpty()");
     assert.isTrue(ippFeatures.isUniform(), "IndexedPrimitiveParamsFeatures constructed with uniform FeatureIndex should return true for isUniform()");
     assert.isTrue(undefined === ippFeatures.nonUniform, "nonUniform of uniform IndexedPrimitiveParamsFeatures should be undefined");
     fIndex = ippFeatures.toFeatureIndex();
-    assert.isTrue(FeatureIndexType.kUniform === fIndex.type, "FeatureIndex created with toFeatureIndex() of uniform IndexedPrimitiveParamsFeatures should have type kUniform");
+    assert.isTrue(FeatureIndexType.Uniform === fIndex.type, "FeatureIndex created with toFeatureIndex() of uniform IndexedPrimitiveParamsFeatures should have type kUniform");
     assert.isFalse(fIndex.isEmpty(), "Uniform IndexedPrimitiveParamsFeatures should not return empty FeatureIndex from toFeatureIndex()");
     assert.isTrue(fIndex.isUniform(), "Uniform IndexedPrimitiveParamsFeatures should not return uniform FeatureIndex from toFeatureIndex()");
     assert.isTrue(undefined === fIndex.featureIDs, "featureIDs of FeatureIndex created with toFeatureIndex() of uniform IndexedPrimitiveParamsFeatures should be undefined");
@@ -90,10 +80,10 @@ describe("RenderGraphic", () => {
       nonUniformData[i] = i + 1;
     }
     fIndex.reset();
-    fIndex.type = FeatureIndexType.kNonUniform;
+    fIndex.type = FeatureIndexType.NonUniform;
     fIndex.featureIDs = new Uint32Array(nonUniformData);
     ippFeatures = new IndexedPrimitiveParamsFeatures(fIndex, numVerts);
-    assert.isTrue(FeatureIndexType.kNonUniform === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with nonUniform FeatureIndex should have type kNonUniform");
+    assert.isTrue(FeatureIndexType.NonUniform === ippFeatures.type, "IndexedPrimitiveParamsFeatures constructed with nonUniform FeatureIndex should have type kNonUniform");
     assert.isFalse(ippFeatures.isEmpty(), "IndexedPrimitiveParamsFeatures constructed with nonUniform FeatureIndex should return false for isEmpty()");
     assert.isFalse(ippFeatures.isUniform(), "IndexedPrimitiveParamsFeatures constructed with nonUniform FeatureIndex should return true for isUniform()");
     assert.isTrue(undefined !== ippFeatures.nonUniform, "nonUniform of nonUniform IndexedPrimitiveParamsFeatures should not be undefined");
@@ -103,7 +93,7 @@ describe("RenderGraphic", () => {
       }
     }
     fIndex = ippFeatures.toFeatureIndex();
-    assert.isTrue(FeatureIndexType.kNonUniform === fIndex.type, "FeatureIndex created with toFeatureIndex() of nonUniform IndexedPrimitiveParamsFeatures should have type kNonUniform");
+    assert.isTrue(FeatureIndexType.NonUniform === fIndex.type, "FeatureIndex created with toFeatureIndex() of nonUniform IndexedPrimitiveParamsFeatures should have type kNonUniform");
     assert.isFalse(fIndex.isEmpty(), "nonUniform IndexedPrimitiveParamsFeatures should not return empty FeatureIndex from toFeatureIndex()");
     assert.isFalse(fIndex.isUniform(), "nonUniform IndexedPrimitiveParamsFeatures should not return uniform FeatureIndex from toFeatureIndex()");
     assert.isTrue(undefined !== fIndex.featureIDs, "featureIDs of FeatureIndex created with toFeatureIndex() of uniform IndexedPrimitiveParamsFeatures should not be undefined");

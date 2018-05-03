@@ -24,24 +24,21 @@ function createPurpleQuadTechnique(target: Target): TechniqueId {
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
   builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
 
-  const prog = builder.buildProgram(target.context);
+  const prog = builder.buildProgram(System.instance.context);
   const technique = new SingularTechnique(prog);
   return target.techniques.addDynamicTechnique(technique, "PurpleQuad");
 }
 
 function createTarget(): Target | undefined {
-  const canvas = WebGLTestContext.createCanvas();
-  assert(undefined !== canvas);
-
-  const system = System.create(canvas);
-  assert(undefined !== system);
-
-  return system!.createTarget() as Target;
+  return System.instance!.createTarget() as Target;
 }
 
 describe("Technique tests", () => {
+  before(() => WebGLTestContext.startup());
+  after(() => WebGLTestContext.shutdown());
+
   it("should produce a simple dynamic rendering technique", () => {
-    if (!WebGLTestContext.isEnabled) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -53,7 +50,7 @@ describe("Technique tests", () => {
   });
 
   it("should render a purple quad", () => {
-    if (!WebGLTestContext.isEnabled) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -64,10 +61,16 @@ describe("Technique tests", () => {
     }
 
     const techId = createPurpleQuadTechnique(target);
-    const geom = ViewportQuadGeometry.create(target.context, techId);
+    const geom = ViewportQuadGeometry.create(techId);
     assert.isDefined(geom);
 
     const drawParams = new DrawParams(target, geom!, Transform.createIdentity(), RenderPass.OpaqueGeneral);
     target.techniques.draw(drawParams);
+  });
+
+  it("should successfully compile all shader programs", () => {
+    if (WebGLTestContext.isInitialized) {
+      expect(System.instance.techniques.compileShaders()).to.be.true;
+    }
   });
 });

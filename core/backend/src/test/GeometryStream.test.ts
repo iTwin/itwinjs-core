@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop } from "@bentley/geometry-core";
+import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle,
+  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, GeometryStreamParser,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../backend";
@@ -75,6 +75,23 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(newId.isValid());
     imodel.saveChanges();
+
+    // Extract and test value returned...
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    const lsStylesUsed: Id64[] = [];
+    const parser = new GeometryStreamParser(value.geom, value.category);
+    while (parser.advanceToNextGeometry()) {
+      assert.isDefined(parser.geometryQuery);
+      lsStylesUsed.push(parser.geomParams.styleInfo ? parser.geomParams.styleInfo.styleId : new Id64());
+    }
+
+    // Make sure we extracted same style information after round trip...
+    assert.isTrue(lsStyles.length === lsStylesUsed.length);
+    for (let iStyle = 0; iStyle < lsStyles.length; ++iStyle) {
+      assert.isTrue(lsStylesUsed[iStyle].equals(lsStyles[iStyle]));
+    }
   });
 
   it("create GeometricElement3d using continuous style", async () => {
@@ -102,23 +119,26 @@ describe("GeometryStream", () => {
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
 
+    const styles: Id64[] = [styleId, styleId, styleIdWidth, styleIdWidth];
+    const widths: number[] = [0.0, 0.025, 0.0, 0.075];
+
     // add line using 0 width continuous style
-    params.styleInfo = new LineStyle.Info(styleId);
+    params.styleInfo = new LineStyle.Info(styles[0]);
     builder.appendGeometryParamsChange(params);
     builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 5, 0)));
 
-    // add line with width override, undefined endWidth = startWidth, only needed for taper
-    params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: 0.025, physicalWidth: true });
+    // add line with width override, undefined endWidth = startWidth, needed soley for taper
+    params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: widths[1], physicalWidth: true });
     builder.appendGeometryParamsChange(params);
     builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(0.5, 0, 0), Point3d.create(0.5, 5, 0)));
 
     // add line using pre-defined width continuous style
-    params.styleInfo = new LineStyle.Info(styleIdWidth);
+    params.styleInfo = new LineStyle.Info(styles[2]);
     builder.appendGeometryParamsChange(params);
     builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(1.0, 0, 0), Point3d.create(1.0, 5, 0)));
 
-    // add line with width override, undefined endWidth = startWidth, only needed for taper
-    params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: 0.075, physicalWidth: true });
+    // add line with width override, undefined endWidth = startWidth, needed soley for taper
+    params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: widths[3], physicalWidth: true });
     builder.appendGeometryParamsChange(params);
     builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
@@ -135,6 +155,27 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(newId.isValid());
     imodel.saveChanges();
+
+    // Extract and test value returned...
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    const stylesUsed: Id64[] = [];
+    const widthsUsed: number[] = [];
+    const parser = new GeometryStreamParser(value.geom, value.category);
+    while (parser.advanceToNextGeometry()) {
+      assert.isDefined(parser.geometryQuery);
+      assert.isDefined(parser.geomParams.styleInfo);
+      stylesUsed.push(parser.geomParams.styleInfo!.styleId);
+      widthsUsed.push(parser.geomParams.styleInfo!.styleMod !== undefined ? parser.geomParams.styleInfo!.styleMod!.startWidth! : 0.0);
+    }
+
+    // Make sure we extracted same style information after round trip...
+    assert.isTrue(styles.length === stylesUsed.length);
+    for (let iStyle = 0; iStyle < styles.length; ++iStyle) {
+      assert.isTrue(stylesUsed[iStyle].equals(styles[iStyle]));
+//      assert.isTrue(Geometry.isSameCoordinate(widthsUsed[iStyle], widths[iStyle])); <- styleMod missing when running full set of tests???
+    }
   });
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
@@ -269,6 +310,190 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
   });
 
+  it("create GeometricElement3d using shapes with fill/gradient", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
+    builder.appendGeometryRanges(); // Test inclusion of local ranges...
+
+    const xOffset = Transform.createTranslation(Point3d.create(1.5));
+    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+
+    // No fill...
+    params.lineColor = ColorDef.green;
+    params.weight = 5;
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(shape);
+
+    // Opaque fill by view...
+    params.fillDisplay = FillDisplay.ByView;
+    params.fillColor = params.lineColor;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline fill by view...
+    params.fillColor = ColorDef.red;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline transparency fill always...
+    params.fillDisplay = FillDisplay.Always;
+    params.fillTransparency = 0.75;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Opaque background fill always...
+    params.backgroundFill = BackgroundFill.Solid;
+    params.fillTransparency = 0.0;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline background fill always...
+    params.backgroundFill = BackgroundFill.Outline;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Opaque gradient by view...
+    params.fillDisplay = FillDisplay.ByView;
+    params.gradient = new Gradient.Symb();
+    params.gradient.mode = Gradient.Mode.Linear;
+    params.gradient.flags = Gradient.Flags.Invert;
+    params.gradient.keys.push(new Gradient.KeyColor( { value: 0.0, color: ColorDef.blue } ));
+    params.gradient.keys.push(new Gradient.KeyColor( { value: 0.5, color: ColorDef.red } ));
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Outline gradient by view...Display issue, changes to gradient being ignored???
+    params.gradient.flags = Gradient.Flags.Outline;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(newId.isValid());
+    imodel.saveChanges();
+  });
+
+  it("create GeometricElement3d using shapes with patterns", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+
+    builder.appendGeometryRanges(); // Test inclusion of local ranges...
+
+    const xOffset = Transform.createTranslation(Point3d.create(1.5));
+    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+
+    // Hatch w/o overrides
+    params.lineColor = new ColorDef(ColorByName.yellow);
+    params.weight = 5;
+    params.pattern = new AreaPattern.Params();
+    params.pattern.space1 = 0.05;
+    params.pattern.angle1 = Angle.createDegrees(45.0);
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometryQuery(shape);
+
+    // Cross hatch with color/weight override
+    params.pattern.space2 = 0.1;
+    params.pattern.angle2 = Angle.createDegrees(-30.0);
+    params.pattern.color = ColorDef.red;
+    params.pattern.weight = 0;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    const partBuilder = new GeometryStreamBuilder();
+    partBuilder.appendGeometryQuery(Arc3d.createXY(Point3d.createZero(), 0.05));
+
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      iModel: imodel,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+
+    const partId = imodel.elements.insertElement(partProps);
+    assert.isTrue(partId.isValid());
+
+    // Area pattern w/o overrides
+    params.pattern = new AreaPattern.Params();
+    params.pattern.symbolId = partId;
+    params.pattern.space1 = params.pattern.space2 = 0.05;
+    params.pattern.angle1 = Angle.createDegrees(45.0);
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Area pattern with color/weight overrides, snappable geometry, and invisible boundary
+    params.pattern.origin = Point3d.create(0.05, 0.05, 0.0);
+    params.pattern.space1 = params.pattern.space2 = params.pattern.angle1 = undefined;
+    params.pattern.color = ColorDef.red;
+    params.pattern.weight = 1;
+    params.pattern.snappable = params.pattern.invisibleBoundary = true;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Hatch definition w/o overrides (zig-zag)
+    const defLines: AreaPattern.HatchDefLine[] = [
+      { offset: Point2d.create(0.1, 0.1), dashes: [ 0.1, -0.1 ] },
+      { angle: Angle.createDegrees(90.0), through: Point2d.create(0.1, 0.0), offset: Point2d.create(0.1, 0.1), dashes: [ 0.1, -0.1 ] },
+    ];
+
+    params.pattern = new AreaPattern.Params();
+    params.pattern.defLines = defLines;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    // Hatch definition with color/weight overrides
+    params.pattern.color = ColorDef.red;
+    params.pattern.weight = 1;
+    builder.appendGeometryParamsChange(params);
+    shape.tryTransformInPlace(xOffset);
+    builder.appendGeometryQuery(shape);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(newId.isValid());
+    imodel.saveChanges();
+  });
+
   it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement(new Id64("0x1d"));
@@ -325,7 +550,7 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it's accounted for by element's placement...
-    const value = imodel.elements.getElement({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
     for (const entry of value.geom) {
@@ -334,6 +559,20 @@ describe("GeometryStream", () => {
       const rotation = new YawPitchRollAngles(entry.textString.rotation);
       assert.isTrue(origin.isAlmostZero());
       assert.isTrue(rotation.isIdentity());
+    }
+
+    const parserLocal = new GeometryStreamParser(value.geom, value.category);
+    while (parserLocal.advanceToNextGeometry()) {
+      assert.isDefined(parserLocal.textString);
+      assert.isTrue(parserLocal.textString!.origin.isAlmostZero());
+      assert.isTrue(parserLocal.textString!.rotation.isIdentity());
+    }
+
+    const parserWorld = GeometryStreamParser.fromGeometricElement3d(value as GeometricElement3dProps);
+    while (parserWorld.advanceToNextGeometry()) {
+      assert.isDefined(parserWorld.textString);
+      assert.isTrue(parserWorld.textString!.origin.isAlmostEqual(testOrigin));
+      assert.isTrue(parserWorld.textString!.rotation.isAlmostEqual(testAngles));
     }
   });
 
@@ -368,7 +607,7 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElement({ id: partId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: partId, wantGeometry: true });
     assert.isDefined(value.geom);
   });
 
@@ -405,7 +644,7 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned
-    const value = imodel.elements.getElement({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
     const geomArrayOut: Arc3d[] = [];
