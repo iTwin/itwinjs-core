@@ -2,73 +2,33 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
-import * as chaiAsPromised from "chai-as-promised";
 import * as utils from "./TestUtils";
 
 import { TestConfig } from "../TestConfig";
 
-import { IModel, CodeState, Code, MultiCode, IModelQuery, AggregateResponseError, ConflictingCodesError } from "../../imodelhub";
+import { CodeState, Code, AggregateResponseError, ConflictingCodesError } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
-import { AuthorizationToken, AccessToken } from "../../Token";
-import { ConnectClient, Project } from "../../ConnectClients";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
+import { AccessToken } from "../../Token";
+import { ResponseBuilder } from "../ResponseBuilder";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
-chai.use(chaiString);
-chai.use(chaiAsPromised);
 chai.should();
 
 describe("iModelHub CodeHandler", () => {
   let accessToken: AccessToken;
-  let projectId: string;
   let iModelId: string;
-  // let seedFileId: string;
   let briefcaseId: number;
   let briefcaseId2: number;
-  const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    accessToken = await connectClient.getAccessToken(authToken);
+    accessToken = await utils.login();
+    iModelId = await utils.getIModelId(accessToken);
 
-    const project: Project | undefined = await connectClient.getProject(accessToken, {
-      $select: "*",
-      $filter: "Name+eq+'" + TestConfig.projectName + "'",
-    });
-    chai.expect(project);
-
-    projectId = project.wsgId;
-    chai.expect(projectId);
-
-    const requestPath = responseBuilder.createRequestUrl(ScopeType.Project, projectId, "iModel",
-                                              "?$filter=Name+eq+%27" + TestConfig.iModelName + "%27");
-    const requestResponse = responseBuilder.generateGetResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
-                                            new Map<string, any>([
-                                              ["wsgId", "b74b6451-cca3-40f1-9890-42c769a28f3e"],
-                                              ["name", TestConfig.iModelName],
-                                            ])));
-    responseBuilder.MockResponse(RequestType.Get, requestPath, requestResponse);
-    const iModels = await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(TestConfig.iModelName));
-
-    if (!iModels[0].wsgId) {
-      chai.assert(false);
-      return;
-    }
-
-    iModelId = iModels[0].wsgId;
-
-    // TODO: Should acquire here if not enough briefcases
-    if (TestConfig.enableNock) {
-      briefcaseId = 2;
-      briefcaseId2 = 3;
-    } else {
-      const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
-      briefcaseId = parseInt(briefcases[0].wsgId, undefined);
-      briefcaseId2 = parseInt(briefcases[1].wsgId, undefined);
-    }
+    const briefcases = await utils.getBriefcases(accessToken, iModelId, 2);
+    briefcaseId = briefcases[0];
+    briefcaseId2 = briefcases[1];
   });
 
   afterEach(() => {
@@ -155,27 +115,8 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should update code multiple times", async () => {
-    let code = new Code();
-    code.briefcaseId = briefcaseId;
-    code.codeScope = "TestScope";
-    code.codeSpecId = "0XA";
-    code.state = CodeState.Reserved;
-    code.changeState = "new";
-    code.value = utils.randomCodeValue("TestCode");
-
-    const multiCode = new MultiCode();
-    multiCode.briefcaseId = code.briefcaseId;
-    multiCode.codeScope = code.codeScope;
-    multiCode.codeSpecId = code.codeSpecId;
-    multiCode.state = code.state;
-    multiCode.values = [code.value];
-    multiCode.changeState = "new";
-
-    const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
-    let requestResponse = responseBuilder.generateChangesetResponse<MultiCode>([multiCode]);
-    let postBody = responseBuilder.generateChangesetBody<MultiCode>([multiCode]);
-    responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody);
-
+    let code = utils.randomCode(briefcaseId);
+    utils.mockUpdateCodes(responseBuilder, iModelId, code);
     let result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
 
     chai.expect(result);
@@ -186,12 +127,7 @@ describe("iModelHub CodeHandler", () => {
     code.state = CodeState.Used;
     code.briefcaseId = briefcaseId;
     code.changeState = "new";
-
-    multiCode.state = code.state;
-    requestResponse = responseBuilder.generateChangesetResponse<MultiCode>([multiCode]);
-    postBody = responseBuilder.generateChangesetBody<MultiCode>([multiCode]);
-    responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody);
-
+    utils.mockUpdateCodes(responseBuilder, iModelId, code);
     result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
 
     chai.expect(result);
@@ -202,12 +138,7 @@ describe("iModelHub CodeHandler", () => {
     code.state = CodeState.Retired;
     code.briefcaseId = briefcaseId;
     code.changeState = "new";
-
-    multiCode.state = code.state;
-    requestResponse = responseBuilder.generateChangesetResponse<MultiCode>([multiCode]);
-    postBody = responseBuilder.generateChangesetBody<MultiCode>([multiCode]);
-    responseBuilder.MockResponse(RequestType.Post, requestPath, requestResponse, 1, postBody);
-
+    utils.mockUpdateCodes(responseBuilder, iModelId, code);
     result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
 
     chai.expect(result);

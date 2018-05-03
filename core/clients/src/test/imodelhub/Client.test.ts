@@ -4,8 +4,14 @@
 import * as chai from "chai";
 
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
+import { TestConfig } from "../TestConfig";
 
 describe("iModelHub Client", () => {
+  before(function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+  });
+
   it("should setup its URLs correctly", async () => {
     let url = await new IModelHubBaseHandler("DEV").getUrl();
     chai.expect(url).equals("https://dev-imodelhubapi.bentley.com/v2.5");
