@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+// a hack to get imodeljs-frontend import working
+(global as any).WebGLRenderingContext = require("gl"); // tslint:disable-line:no-var-requires
 // common includes
 import GatewayConfiguration from "@helpers/TestGatewayConfiguration";
 // backend includes
