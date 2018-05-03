@@ -2,19 +2,23 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Point2d, Range2d } from "@bentley/geometry-core";
-import { MaterialData  } from "./CachedGeometry";
+import { MaterialData } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/Mesh";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
 import { SurfaceType } from "./RenderFlags";
-import { Graphic, wantJointTriangles } from "./Graphic";
+import { Graphic, wantJointTriangles/*, Batch*/ } from "./Graphic";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
-import { QParams3d,
-         QParams2d,
-         Material,
-         FillFlags } from "@bentley/imodeljs-common";
+// import { Primitive } from "./Primitive";
+// import { RenderCommands, DrawCommands } from "./DrawCommand";
+import {
+  QParams3d,
+  QParams2d,
+  Material,
+  FillFlags,
+} from "@bentley/imodeljs-common";
 
 export class MeshInfo {
   public vertexParams?: QParams3d;
@@ -121,7 +125,7 @@ export const enum MeshGraphicType {
 }
 export class MeshGraphic extends Graphic {
   public meshData: MeshData;
-  public primitives: [any, any, any, any] = [undefined, undefined, undefined, undefined]; // [Primitive, Primitive, Primitive, Primitive];
+  public primitives = [undefined, undefined, undefined, undefined]; // [Primitive, Primitive, Primitive, Primitive];
 
   public constructor(args: MeshArgs, iModel: IModelConnection) {
     super(iModel);
@@ -141,22 +145,22 @@ export class MeshGraphic extends Graphic {
 
   // public addCommands(cmds: RenderCommands): void {
   //   this.primitives.forEach((prim) => {
-  //     if (prim.isValid()) { prim.addCommands(cmds); }
+  //     if (true /*prim.isValid()*/) { prim.addCommands(cmds); }
   //   });
   // }
   // public addHiliteCommands(cmds: DrawCommands, batch: Batch): void {
   //   this.primitives.forEach((prim) => {
-  //     if (prim.isValid()) { prim.addHiliteCommands(cmds, batch); }
+  //     if (true /*prim.isValid()*/) { prim.addHiliteCommands(cmds, batch); }
   //   });
   // }
   public setUniformFeatureIndices(id: number): void {
     this.meshData.features = FeaturesInfo.createUniform(id);
   }
-  // public setIsPixelMode(): void {
-  //   this.primitives.forEach((prim) => {
-  //     if (prim.isValid()) { prim.setIsPixelMode(); }
-  //   });
-  // }
+  public setIsPixelMode(): void {
+    // this.primitives.forEach((prim) => {
+    //   if (true /*prim.isValid()*/) { prim.setIsPixelMode(); } // TODO: setIsPixelMode() has not been implemented yet
+    // });
+  }
   public get meshInfo(): MeshInfo { return this.meshData; }
   public get surfaceType(): SurfaceType { return this.meshInfo.type; }
 }
