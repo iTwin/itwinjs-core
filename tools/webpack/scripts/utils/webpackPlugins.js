@@ -93,10 +93,11 @@ class CopyNativeAddonsPlugin {
         copiedPackages.add(pkgName);
 
         const packageJson = require(packageJsonPath);
-        if (!packageJson.dependencies)
+        if (!packageJson.dependencies && !packageJson.optionalDependencies)
           continue;
 
-        for (const dep of Object.keys(packageJson.dependencies)) {
+        const dependencies = [...Object.keys(packageJson.dependencies || {}), ...Object.keys(packageJson.optionalDependencies || {})];
+        for (const dep of dependencies) {
           if (!copiedPackages.has(dep)) {
             copyPackage(dep, path.dirname(packageJsonPath));
             copiedPackages.add(dep);
