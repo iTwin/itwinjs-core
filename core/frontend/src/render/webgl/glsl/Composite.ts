@@ -41,7 +41,7 @@ bool isOutlined() {
     || isEdgePixel(-2.0, 2.0) || isEdgePixel(-1.0, 2.0) || isEdgePixel(0.0, 2.0) || isEdgePixel(1.0, 2.0) || isEdgePixel(2.0, 2.0);
 }`;
 
-const isInHiliteRegion = `bool isInHiliteRegion() { return 0.0 !== TEXTURE(u_hilite, v_texCoord).r; }`;
+const isInHiliteRegion = `bool isInHiliteRegion() { return 0.0 != TEXTURE(u_hilite, v_texCoord).r; }`;
 
 const computeHiliteColor = `vec4 computeColor() { return TEXTURE(u_opaque, v_texCoord); }`;
 

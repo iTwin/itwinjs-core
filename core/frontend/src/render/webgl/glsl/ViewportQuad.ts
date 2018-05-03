@@ -7,7 +7,7 @@ import { GLSLVertex } from "./Vertex";
 import { GL } from "../GL";
 import { TexturedViewportQuadGeometry } from "../CachedGeometry";
 
-const computePosition = `return rawPos`;
+const computePosition = `return rawPos;`;
 const computeTexCoord = `v_texCoord = unquantize2d(a_texCoord, u_qTexCoordParams);`;
 
 function addTexture(prog: ProgramBuilder) {
@@ -27,7 +27,7 @@ function addTexture(prog: ProgramBuilder) {
     });
   });
 
-  vert.addComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
+  prog.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
 }
 
 export function createViewportQuadBuilder(textured: boolean): ProgramBuilder {

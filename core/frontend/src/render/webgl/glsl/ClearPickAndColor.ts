@@ -25,7 +25,7 @@ export function createClearPickAndColorProgram(context: WebGLRenderingContext): 
     });
   });
 
-  frag.addExtension("WEBGL_ext_draw_buffers");
+  frag.addExtension("GL_EXT_draw_buffers");
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 
