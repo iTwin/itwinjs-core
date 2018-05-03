@@ -43,15 +43,15 @@ class Textures {
 
     // NB: All 3 of these must be of the same type, because they are borrowed by pingpong and bound to the same frame buffer.
     // Otherwise there would be no reason to use FLOAT for hilite texture.
-    this.accumulation = TextureHandle.createForColor(width, height, GL.Texture.Format.Rgba, pixelDataType);
-    this.revealage = TextureHandle.createForColor(width, height, GL.Texture.Format.Rgba, pixelDataType);
-    this.hilite = TextureHandle.createForColor(width, height, GL.Texture.Format.Rgba, pixelDataType);
+    this.accumulation = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, pixelDataType);
+    this.revealage = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, pixelDataType);
+    this.hilite = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, pixelDataType);
 
-    this.color = TextureHandle.createForColor(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.color = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
-    this.idLow = TextureHandle.createForColor(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.idHigh = TextureHandle.createForColor(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.depthAndOrder = TextureHandle.createForColor(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.idLow = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.idHigh = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     return undefined !== this.accumulation
       && undefined !== this.revealage

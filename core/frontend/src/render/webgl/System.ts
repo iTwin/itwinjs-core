@@ -230,7 +230,7 @@ export class System extends RenderSystem {
         return RenderBuffer.create(width, height);
       }
       case DepthType.TextureUnsignedInt32: {
-        return TextureHandle.createForColor(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
+        return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
       }
       default: {
         assert(false);
