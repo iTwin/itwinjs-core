@@ -10,6 +10,8 @@ import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
+import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
+import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -141,6 +143,10 @@ export class Techniques implements IDisposable {
     for (let i = 0; i < TechniqueId.NumBuiltIn; i++) {
       this._list.push(tech);
     }
+
+    // Replace dummy techniques with the real techniques implemented thus far...
+    this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
+    this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
 
     assert(this._list.length === TechniqueId.NumBuiltIn);
     return true;
