@@ -256,7 +256,7 @@ export class ShaderProgram implements IDisposable {
       attribute.bind(params);
     }
 
-    // ###TODO params.geometry.draw(params.context);
+    params.geometry.draw();
   }
 
   public addProgramUniform(name: string, binding: BindProgramUniform) {
