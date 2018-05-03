@@ -200,11 +200,6 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
   public readonly uvParams: QBufferHandle2d;
   protected readonly _textures: WebGLTexture[];
 
-  public getTexture(index: number): WebGLTexture {
-    assert(index < this._textures.length);
-    return this._textures[index];
-  }
-
   protected static createUVParams(): QBufferHandle2d | undefined {
     return QBufferHandle2d.create(_viewportQuad.textureParams, _viewportQuad.textureUV);
   }
@@ -267,6 +262,24 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
 
   private constructor(params: IndexedGeometryParams, uv: QBufferHandle2d, textures: WebGLTexture[]) {
     super(params, TechniqueId.CopyPickBuffers, uv, textures);
+  }
+}
+
+export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(texture: WebGLTexture, techId: TechniqueId) {
+    const params = _viewportQuad.createParams();
+    const uvBuf = this.createUVParams();
+    if (undefined === params || undefined === uvBuf) {
+      return undefined;
+    }
+
+    return new SingleTexturedViewportQuadGeometry(params, uvBuf, texture, techId);
+  }
+
+  public get texture(): WebGLTexture { return this._textures[0]; }
+
+  protected constructor(params: IndexedGeometryParams, uv: QBufferHandle2d, texture: WebGLTexture, techId: TechniqueId) {
+    super(params, techId, uv, [texture]);
   }
 }
 

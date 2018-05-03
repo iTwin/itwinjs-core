@@ -10,8 +10,10 @@ import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
-// ###TODO WIP import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
-// ###TODO WIP import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
+import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
+import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
+import { createCopyColorProgram } from "./glsl/CopyColor";
+import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -145,8 +147,10 @@ export class Techniques implements IDisposable {
     }
 
     // Replace dummy techniques with the real techniques implemented thus far...
-    // ###TODO WIP this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
-    // ###TODO WIP this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
+    this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
+    this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
+    this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
+    this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
 
     assert(this._list.length === TechniqueId.NumBuiltIn);
     return true;
