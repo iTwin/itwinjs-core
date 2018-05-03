@@ -26,7 +26,7 @@
       "name": "Tests: Common",
       "protocol": "inspector",
       "program": "${workspaceFolder}/scripts/run-tests.js",
-      "cwd": "${workspaceFolder}/src/common",
+      "cwd": "${workspaceFolder}/packages/common",
       "args": [
         "--noTimeouts"
       ],
@@ -41,7 +41,7 @@
       "name": "Tests: Backend",
       "protocol": "inspector",
       "program": "${workspaceFolder}/scripts/run-tests.js",
-      "cwd": "${workspaceFolder}/src/backend",
+      "cwd": "${workspaceFolder}/packages/backend",
       "args": [
         "--noTimeouts"
       ],
@@ -56,7 +56,7 @@
       "name": "Tests: Frontend",
       "protocol": "inspector",
       "program": "${workspaceFolder}/scripts/run-tests.js",
-      "cwd": "${workspaceFolder}/src/frontend",
+      "cwd": "${workspaceFolder}/packages/frontend",
       "args": [
         "--noTimeouts"
       ],
@@ -71,7 +71,7 @@
       "name": "Tests: Controls",
       "protocol": "inspector",
       "program": "${workspaceFolder}/scripts/run-tests.js",
-      "cwd": "${workspaceFolder}/src/controls",
+      "cwd": "${workspaceFolder}/packages/controls",
       "args": [
         "--noTimeouts"
       ],
@@ -86,7 +86,7 @@
       "name": "Tests: Integration",
       "protocol": "inspector",
       "program": "${workspaceFolder}/scripts/run-tests.js",
-      "cwd": "${workspaceFolder}/src/test",
+      "cwd": "${workspaceFolder}/packages/test",
       "args": [
         "--noTimeouts"
       ],
@@ -100,36 +100,31 @@
       "request": "launch",
       "name": "Web: Server (backend)",
       "protocol": "inspector",
-      "program": "${workspaceFolder}/src/sample/node_modules/@bentley/imodeljs-react-scripts/bin/imodeljs-react-scripts",
-      "cwd": "${workspaceFolder}/src/sample",
+      "program": "${workspaceFolder}/packages/sample/node_modules/@bentley/imodeljs-react-scripts/bin/imodeljs-react-scripts",
+      "cwd": "${workspaceFolder}/packages/sample",
       "args": [
         "start",
-        "--noElectron",
-        "--debug=41016"
+        "--noElectron"
       ],
-      "runtimeArgs": [
-        "--preserve-symlinks"
-      ],
-      "port": 41016,
       "env": {
         "BROWSER": "none"
       },
-      "timeout": 30000
+      "timeout": 60000
     },
     {
       "name": "Web: Chrome (frontend)",
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000/",
-      "webRoot": "${workspaceFolder}/src/sample",
+      "webRoot": "${workspaceFolder}/packages/sample",
       "sourceMapPathOverrides": {
         // map sources from node_modules to our source directory
-        "webpack:///../frontend/*": "${workspaceFolder}/src/frontend/*",
+        "webpack:///../frontend/*": "${workspaceFolder}/packages/frontend/*",
         // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
         "webpack:///./~/*": "${webRoot}/node_modules/*",
         "webpack:///./*":   "${webRoot}/*",
         "webpack:///*":     "*",
-        "webpack:///src/*": "${webRoot}/*",
+        "webpack:///packages/*": "${webRoot}/*",
       },
     },
     {
@@ -138,9 +133,9 @@
       "name": "Electron: Main (backend)",
       "protocol": "legacy",
       "runtimeExecutable": "node",
-      "cwd": "${workspaceFolder}/src/sample",
+      "cwd": "${workspaceFolder}/packages/sample",
       "args": [
-        "${workspaceFolder}/src/sample/node_modules/@bentley/imodeljs-react-scripts/scripts/start",
+        "${workspaceFolder}/packages/sample/node_modules/@bentley/imodeljs-react-scripts/scripts/start",
         "--noWeb",
         "--electronDebug=5858",
         "--electronRemoteDebug=9223"
@@ -156,15 +151,15 @@
       "type": "chrome",
       "request": "attach",
       "port": 9223,
-      "webRoot": "${workspaceFolder}/src/sample",
+      "webRoot": "${workspaceFolder}/packages/sample",
       "sourceMapPathOverrides": {
         // map sources from node_modules to our source directory
-        "webpack:///./~/@bentley/ecpresentation-frontend/*": "${workspaceFolder}/src/frontend/*",
+        "webpack:///./~/@bentley/ecpresentation-frontend/*": "${workspaceFolder}/packages/frontend/*",
         // below are default values taken from https://github.com/Microsoft/vscode-chrome-debug
         "webpack:///./~/*": "${webRoot}/node_modules/*",
         "webpack:///./*": "${webRoot}/*",
         "webpack:///*": "*",
-        "webpack:///src/*": "${webRoot}/*",
+        "webpack:///packages/*": "${webRoot}/*",
       },
       "timeout": 30000
     }
