@@ -324,6 +324,7 @@ export class BeWheelEvent extends BeButtonEvent {
 
 /**
  * Base Tool class for handling user input events from Viewports.
+ * @see [Tools]($docs/learning/frontend/tools.md)
  */
 export class Tool {
   public static hidden = false;

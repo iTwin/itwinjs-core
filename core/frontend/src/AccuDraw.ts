@@ -1280,11 +1280,11 @@ export class AccuDraw {
     if (allViews && vp.view.isSpatialView()) {
       for (const otherVp of IModelApp.viewManager.viewports) {
         if (otherVp !== vp && otherVp.view.isSpatialView())
-          otherVp.setAuxCoordSystem(acs);
+          otherVp.view.setAuxiliaryCoordinateSystem(acs);
       }
     }
 
-    vp.setAuxCoordSystem(acs);
+    vp.view.setAuxiliaryCoordinateSystem(acs);
 
     // NOTE: Change AccuDraw's base rotation to ACS.
     IModelApp.accuDraw.setContext(AccuDrawFlags.OrientACS);
