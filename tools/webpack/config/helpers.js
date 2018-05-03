@@ -28,10 +28,6 @@ const createBentleySourceMapsIncludePaths = (resource) => {
     if (resource.startsWith(knownDir))
       return true;
   }
-  
-  const bentleyIncludesPath = path.resolve(paths.appNodeModules, "@bentley");
-  if (!resource.startsWith(bentleyIncludesPath))
-    return false;
 
   const dir = path.dirname(resource);
   const matches = glob.sync(path.resolve(dir, "**/*.map"));
