@@ -344,8 +344,6 @@ export class IModelHandler {
       return Promise.reject(new Error(`Local iModel file not found`));
     }
 
-    //Open with gateway???
-
     const iModel = await this.createIModelInstance(token, projectId, name, description);
 
     await this._seedFileHandler.uploadSeedFile(token, iModel.wsgId, pathName, description)
