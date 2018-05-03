@@ -138,8 +138,7 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Creates a texture for a framebuffer attachment (no data specified). */
-  public static createForColor(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType /* , isTranslucent: boolean */ ) {
-    // ###TODO: rename createForAttachment
+  public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType /* , isTranslucent: boolean */ ) {
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
@@ -234,6 +233,8 @@ export class TextureHandle implements IDisposable {
     // ###TODO: would writing our own Uint8Array resize routine be faster than routing it through HTML canvas?
     if (srcWidth !== dstWidth || srcHeight !== dstHeight) {
       const canvas = document.createElement("canvas");
+      canvas.width = srcWidth;
+      canvas.height = srcHeight;
       const ctx = canvas.getContext("2d");
       const imageData = ctx !== null ? ctx.createImageData(srcWidth, srcHeight) : undefined;
 
@@ -252,7 +253,7 @@ export class TextureHandle implements IDisposable {
             imageData.data[i + 0] = imageBytes[ii + 0];
             imageData.data[i + 1] = imageBytes[ii + 1];
             imageData.data[i + 2] = imageBytes[ii + 2];
-            imageData.data[i + 3] = 0;
+            imageData.data[i + 3] = 255;
           }
         }
         ctx.putImageData(imageData, 0, 0);
@@ -263,7 +264,7 @@ export class TextureHandle implements IDisposable {
         resizedCanvas.height = dstHeight;
         const resizedCtx = resizedCanvas.getContext("2d");
         if (resizedCtx !== null) {
-          resizedCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+          resizedCtx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
           return resizedCanvas;
         }
       }

@@ -14,9 +14,7 @@ import { VertexLUT } from "./VertexLUT";
 import { QParams3d,
          QParams2d,
          Material,
-         FillFlags,
-         FeatureIndex,
-         FeatureIndexType } from "@bentley/imodeljs-common";
+         FillFlags } from "@bentley/imodeljs-common";
 
 export class MeshInfo {
   public vertexParams?: QParams3d;
@@ -152,10 +150,7 @@ export class MeshGraphic extends Graphic {
   //   });
   // }
   public setUniformFeatureIndices(id: number): void {
-    const fi = new FeatureIndex();
-    fi.type = FeatureIndexType.Uniform;
-    fi.featureID = id;
-    this.meshData.features = FeaturesInfo.create(fi);
+    this.meshData.features = FeaturesInfo.createUniform(id);
   }
   // public setIsPixelMode(): void {
   //   this.primitives.forEach((prim) => {

@@ -99,7 +99,7 @@ export class MarginPercent {
   }
 }
 
-export class SpecialElements {
+class SpecialElements {
   public always: Id64Set = new Set<string>();
   public never: Id64Set = new Set<string>();
   public get isEmpty(): boolean { return this.always.size === 0 && this.never.size === 0; }
@@ -110,17 +110,14 @@ export class SpecialElements {
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  */
 export abstract class ViewState extends ElementState {
-  protected _noQuery: boolean = false;
-  protected _featureOverridesDirty: boolean = false;
-  protected _selectionSetDirty: boolean = false;
-  protected _gridOrientation: GridOrientationType = GridOrientationType.WorldXY;
-  protected _gridsPerRef: number = 10;
+  protected _featureOverridesDirty = false;
+  protected _selectionSetDirty = false;
+  private _auxCoordSystem?: AuxCoordSystemState;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
-  public readonly gridSpacing: Point2d = new Point2d(1.0, 1.0);
   /** Get the set of special elements for this ViewState. */
-  public readonly specialElements: SpecialElements = new SpecialElements();
+  private specialElements?: SpecialElements;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
@@ -143,7 +140,14 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
-  public abstract load(): Promise<void>;
+  public async load(): Promise<void> {
+    this._auxCoordSystem = undefined;
+    const acsId = this.getAuxiliaryCoordinateSystemId();
+    if (acsId.isValid()) {
+      const props = await this.iModel.elements.getProps(acsId);
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+    }
+  }
 
   /** Get the name of this ViewDefinition */
   public get name(): string { return this.code.getValue(); }
@@ -151,15 +155,12 @@ export abstract class ViewState extends ElementState {
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
   /** Get the list of elements that are never drawn */
-  public get neverDrawn(): Id64Set { return this.specialElements.never; }
+  public get neverDrawn(): Id64Set | undefined { return this.specialElements ? this.specialElements.never : undefined; }
 
   /** Get the list of elements that are always drawn */
-  public get alwaysDrawn(): Id64Set { return this.specialElements.always; }
+  public get alwaysDrawn(): Id64Set | undefined { return this.specialElements ? this.specialElements.always : undefined; }
 
-  /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
-  public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
-  public get gridsPerRef(): number { return this._gridsPerRef; }
-  public get gridOrientation(): number { return this._gridOrientation; }
+  /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
   public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
 
@@ -175,7 +176,7 @@ export abstract class ViewState extends ElementState {
   public abstract onRenderFrame(): void;
 
   /** WIP: should be abstract, but for now leave unimplemented  */
-  public drawDecorations(_context: DecorateContext): void {}
+  public drawDecorations(_context: DecorateContext): void { }
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
@@ -194,14 +195,6 @@ export abstract class ViewState extends ElementState {
 
   /** Set the extents of this view */
   public abstract setExtents(viewDelta: Vector3d): void;
-
-  public async drawGridFromAuxSystem(acsId: Id64, context: DecorateContext): Promise<void> {
-    if (acsId.isValid()) {
-      const props     = await this.iModel.elements.getProps(acsId),
-            auxSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
-      auxSystem.drawGrid(context);
-    }
-  }
 
   /** Change the rotation of the view.
    *  <em>note:</em> rot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
@@ -227,10 +220,10 @@ export abstract class ViewState extends ElementState {
     if (!vp.isGridOn)
       return;
 
-    const orientation = this.gridOrientation;
+    const orientation = this.getGridOrientation();
 
     if (GridOrientationType.AuxCoord === orientation) {
-      this.drawGridFromAuxSystem(this.getAuxiliaryCoordinateSystemId(), context);
+      this.auxiliaryCoordinateSystem.drawGrid(context);
       return;
     } else if (GridOrientationType.GeoCoord === orientation) {
       // NEEDSWORK...
@@ -250,7 +243,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /**
-   * Initialize the origin, extents, and rotation of this ViewDefinition from an existing Frustum
+   * Initialize the origin, extents, and rotation from an existing Frustum
    * @param frustum the input Frustum.
    */
   public setupFromFrustum(inFrustum: Frustum): ViewStatus {
@@ -373,13 +366,21 @@ export abstract class ViewState extends ElementState {
   /** Set the CategorySelector for this view. */
   public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
+  /** get the auxiliary coordinate system state object for this ViewState, if present */
+  public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
+    if (!this._auxCoordSystem)
+      this._auxCoordSystem = this.createAuxCoordSystem("");
+    return this._auxCoordSystem;
+  }
+
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
   public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set the AuxiliaryCoordinateSystem for this view. */
-  public setAuxiliaryCoordinateSystemId(acsId: Id64) {
-    if (acsId.isValid())
-      this.setDetail("acs", acsId.value);
+  public setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState) {
+    this._auxCoordSystem = acs;
+    if (acs)
+      this.setDetail("acs", acs.id.value);
     else
       this.removeDetail("acs");
   }
@@ -447,9 +448,9 @@ export abstract class ViewState extends ElementState {
   /** Get the grid settings for this view */
   public getGridOrientation(): GridOrientationType { return JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY); }
   public getGridsPerRef(): number { return JsonUtils.asInt(this.getDetail("gridPerRef"), 10); }
-  public getGridSpacing(pt: Point2d) {
-    pt.x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
-    pt.y = JsonUtils.asInt(this.getDetail("gridSpaceY"), pt.x);
+  public getGridSpacing(): XAndY {
+    const x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
+    return { x, y: JsonUtils.asInt(this.getDetail("gridSpaceY"), x) };
   }
   /**
    * Change the volume that this view displays, keeping its current rotation.
@@ -622,7 +623,7 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;         // The camera used for this view.
   public forceMinFrontDist = 0.0;         // minimum distance for front plane
   public static get className() { return "ViewDefinition3d"; }
-  public onRenderFrame(): void {}
+  public onRenderFrame(): void { }
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
@@ -1025,7 +1026,7 @@ export class SpatialViewState extends ViewState3d {
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
-  public load(): Promise<void> { return this.modelSelector.load(); }
+  public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
 }
 
@@ -1061,7 +1062,7 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
-  public onRenderFrame(): void {}
+  public onRenderFrame(): void { }
   public load(): Promise<void> { return Promise.resolve(); }
   public allow3dManipulations(): boolean { return false; }
   public getViewedExtents() { return new AxisAlignedBox3d(); } // NEEDS_WORK

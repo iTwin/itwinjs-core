@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { LinePixels, ColorDef, RgbColor, Cloneable } from "@bentley/imodeljs-common";
-import { Id64, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64Set } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 import { IModelConnection } from "../IModelConnection";
 
@@ -21,11 +21,11 @@ export namespace FeatureSymbology {
     public get overridesWeight() { return undefined !== this.weight; }
 
     public extend(app: Appearance): Appearance {
-      if (!app.overridesRgb)        app.rgb = this.rgb;
-      if (!app.overridesAlpha)      app.alpha = this.alpha;
-      if (!app.overridesWeight)     app.weight = this.weight;
+      if (!app.overridesRgb) app.rgb = this.rgb;
+      if (!app.overridesAlpha) app.alpha = this.alpha;
+      if (!app.overridesWeight) app.weight = this.weight;
       if (!app.overridesLinePixels) app.linePixels = this.linePixels;
-      if (!app.ignoresMaterial)     app.ignoresMaterial = this.ignoresMaterial;
+      if (!app.ignoresMaterial) app.ignoresMaterial = this.ignoresMaterial;
       return app;
     }
 
@@ -35,7 +35,7 @@ export namespace FeatureSymbology {
       return app;
     }
 
-    public static fromRgb(rgb: ColorDef) {
+    public static fromRgb(rgb: ColorDef): Appearance {
       const app = new Appearance();
       app.rgb = RgbColor.fromColorDef(rgb);
       return app;
@@ -52,18 +52,18 @@ export namespace FeatureSymbology {
   }
 
   export class Overrides {
-    public alwaysDrawn: Id64Set = new Set<string>();
-    public neverDrawn: Id64Set = new Set<string>();
-    public modelOverrides: Map<Id64, Appearance> = new Map<Id64, Appearance>();
-    public elementOverrides: Map<Id64, Appearance> = new Map<Id64, Appearance>();
-    public visibleSubCategories: Id64Set = new Set<string>();
-    public subcategoryOverrides: Map<Id64, Appearance> = new Map<Id64, Appearance>();
-    public defaultOverrides: Appearance = new Appearance();
-    public constructions: boolean = false;
-    public dimensions: boolean = false;
-    public patterns: boolean = false;
-    public alwaysDrawnExclusive: boolean = false;
-    public lineWeights: boolean = true;
+    public alwaysDrawn?: Id64Set;
+    public neverDrawn?: Id64Set;
+    public readonly modelOverrides = new Map<string, Appearance>();
+    public readonly elementOverrides = new Map<string, Appearance>();
+    public readonly visibleSubCategories = new Set<string>();
+    public readonly subcategoryOverrides = new Map<string, Appearance>();
+    public defaultOverrides = new Appearance();
+    public constructions = false;
+    public dimensions = false;
+    public patterns = false;
+    public alwaysDrawnExclusive = false;
+    public lineWeights = true;
 
     // DGNPLATFORM_EXPORT explicit FeatureSymbologyOverrides(ViewControllerCR view);
     // // Returns false if the feature is invisible.
@@ -97,7 +97,6 @@ export namespace FeatureSymbology {
     public async initFromView(view: ViewState): Promise<void> {
       this.alwaysDrawn = view.alwaysDrawn;
       this.neverDrawn = view.neverDrawn;
-      this.alwaysDrawnExclusive = view.isAlwaysDrawnExclusive;
 
       const vf = view.viewFlags;
       this.constructions = vf.constructions;

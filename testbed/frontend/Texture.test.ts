@@ -33,7 +33,7 @@ describe("Texture tests", () => {
       return;
     }
 
-    const texture: TextureHandle | undefined = TextureHandle.createForColor(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
+    const texture: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
     assert(undefined !== texture);
     if (undefined === texture) {
       return;
@@ -48,8 +48,9 @@ describe("Texture tests", () => {
     }
 
     const pixels: Uint8Array = new Uint8Array(3 * 3 * 3);
-    for (let i = 0; i < 3 * 3 * 3; i++) {
-      pixels[i] = 0;
+    for (let i = 0; i < 3 * 3 * 3; i += 3) { // image is all red
+      pixels[i] = 255;
+      pixels[i + 1] = pixels[i + 2] = 0;
     }
     // create texture with isGlyph=true, wantPreserveData=true
     const texture: TextureHandle | undefined = TextureHandle.createForImage(3, pixels, false, false, true, false, true);
@@ -59,10 +60,22 @@ describe("Texture tests", () => {
     }
 
     expect(texture.getHandle()).to.not.be.undefined;
+
+    // test the resizing of the image - was it succesful?
     expect(texture.resizedCanvas).to.not.be.undefined;
     if (texture.resizedCanvas !== undefined) {
       expect(texture.resizedCanvas.width).to.equal(4);
       expect(texture.resizedCanvas.height).to.equal(4);
+
+      const ctx = texture.resizedCanvas.getContext("2d");
+      expect(ctx).to.be.not.null;
+      if (ctx !== null) {
+        const pixel: Uint8ClampedArray = ctx.getImageData(0, 0, 1, 1).data; // get 0,0 pixel
+        // should be red pixel:
+        expect(pixel[0] > 0).to.be.true;
+        expect(pixel[1] > 0).to.be.false;
+        expect(pixel[2] > 0).to.be.false;
+      }
     }
   });
 });
