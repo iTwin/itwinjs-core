@@ -1,6 +1,7 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "editor.tabSize": 2,
+  "editor.formatOnSave": true,
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
