@@ -8,6 +8,7 @@ import { IModelDb } from "../backend";
 import { ConcurrencyControl } from "../ConcurrencyControl";
 import { IModel as HubIModel, IModelQuery, AccessToken } from "@bentley/imodeljs-clients";
 import { HubTestUtils } from "./HubTestUtils";
+import * as utils from "./../../../clients/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../clients/lib/test/ResponseBuilder";
 import { createNewModelAndCategory } from "./BriefcaseManager.test";
 import { TestConfig } from "./TestConfig";
@@ -55,8 +56,8 @@ describe.skip("PushRetry", () => {
       }
     };
 
-    responseBuilder.MockResponse(RequestType.Get,
-      responseBuilder.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
+    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
+      utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       responseFunction, 5, undefined, undefined, 409);
 
     await pushRetryIModel.pushChanges(accessToken);
@@ -80,8 +81,8 @@ describe.skip("PushRetry", () => {
     pushRetryIModel.saveChanges("User created model, category, and two elements");
 
     const response = responseBuilder.generateError("UnknownPushError");
-    responseBuilder.MockResponse(RequestType.Get,
-      responseBuilder.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
+    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
+      utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       response, 5, undefined, undefined, 409);
 
     try {
