@@ -46,7 +46,7 @@ describe("FloatRgb", () => {
     expectRgb(bFloatRgb, 0, 0, 0);
 
     bFloatRgb = FloatRgb.fromColorDef(ColorDef.from(51, 102, 255));
-    aFloatRgb = new FloatRgb(51/255, 102/255, 255/255);
+    aFloatRgb = new FloatRgb(51 / 255, 102 / 255, 255 / 255);
     expectEqualRgb(bFloatRgb, aFloatRgb);
   });
 });
@@ -76,7 +76,7 @@ describe("FloatRgba", () => {
     // Test fromRgb function
     const aFloatRgb: FloatRgb = FloatRgb.fromColorDef(ColorDef.from(51, 102, 255));
     bFloatRgba = FloatRgba.fromRgb(aFloatRgb);
-    expectRgba(bFloatRgba, 51/255, 102/255, 255/255, 1);
+    expectRgba(bFloatRgba, 51 / 255, 102 / 255, 255 / 255, 1);
     const bFloatRgb: FloatRgb = FloatRgb.fromColorDef(ColorDef.from(0, 255, 0));
     bFloatRgba = FloatRgba.fromRgb(bFloatRgb, 0.7);
     expectRgba(bFloatRgba, 0, 1, 0, 0.7);

@@ -6,6 +6,8 @@ import { assert, IDisposable } from "@bentley/bentleyjs-core";
 // import { Texture, TextureCreateParams } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System, Capabilities } from "./System";
+import { UniformHandle } from "./Handle";
+import { TextureUnit } from "./RenderFlags";
 
 /** A private enum used to track certain desired texture creation parameters. */
 const enum TextureFlags {
@@ -57,7 +59,7 @@ export class TextureHandle implements IDisposable {
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }
 
   /** Binds texture handle (if available) associated with an instantiation of this class to specified texture unit. */
-  public bind(texUnit: GL.Texture.Unit): boolean {
+  public bind(texUnit: TextureUnit): boolean {
     if (undefined === this._glTexture)
       return false;
     TextureHandle.bindTexture(texUnit, this._glTexture);
@@ -65,10 +67,16 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Binds specified texture handle to specified texture unit. */
-  public static bindTexture(texUnit: GL.Texture.Unit, glTex: WebGLTexture | undefined) {
+  public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
     const gl: WebGLRenderingContext = System.instance.context;
     gl.activeTexture(texUnit);
-    gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null); // ###TODO: might need to set the shader sampler handler here
+    gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null);
+  }
+
+  /** Binds this texture to a uniform sampler2D */
+  public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
+    this.bindTexture(unit, tex);
+    uniform.setUniform1i(unit);
   }
 
   /** Creates a texture for an image based on certain parameters. */
