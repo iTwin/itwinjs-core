@@ -8,7 +8,10 @@ describe("TileDataAccessClient", () => {
   let accessToken: AccessToken;
   const tileDataAccessClient = new TileDataAccessClient("QA");
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login(TestUsers.user3);
     accessToken = await tileDataAccessClient.getAccessToken(authToken);
