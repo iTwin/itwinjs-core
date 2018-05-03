@@ -27,8 +27,8 @@ describe("iModelHub CodeHandler", () => {
     iModelId = await utils.getIModelId(accessToken);
 
     const briefcases = await utils.getBriefcases(accessToken, iModelId, 2);
-    briefcaseId = briefcases[0];
-    briefcaseId2 = briefcases[1];
+    briefcaseId = briefcases[0].briefcaseId!;
+    briefcaseId2 = briefcases[1].briefcaseId!;
   });
 
   afterEach(() => {

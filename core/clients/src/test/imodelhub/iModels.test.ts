@@ -73,7 +73,7 @@ describe("iModelHub iModelHandler", () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
       const requestResponse = responseBuilder.generateGetResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
-                                              new Map<string, any>([["name", TestConfig.iModelName]])));
+        new Map<string, any>([["name", TestConfig.iModelName]])));
       responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
 
