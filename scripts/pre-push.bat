@@ -9,6 +9,18 @@ if errorlevel 1 (
   exit /b %errorlevel%
 )
 
+call rush check
+if errorlevel 1 (
+  echo Rush check failed
+  exit /b %errorlevel%
+)
+
+call rush change -v
+if errorlevel 1 (
+  echo Missing Rush change files
+  exit /b %errorlevel%
+)
+
 call rush clean
 if errorlevel 1 (
   echo Clean failed
