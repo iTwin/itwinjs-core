@@ -2,19 +2,20 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
 import { ConnectClient, RbacClient, Project, ConnectRequestQueryOptions, IModelHubPermissions } from "../ConnectClients";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 
-chai.use(chaiString);
 chai.should();
 
 describe("ConnectClient", () => {
   let accessToken: AccessToken;
   const connectClient: ConnectClient = new ConnectClient(TestConfig.deploymentEnv);
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(authToken);
   });
@@ -86,7 +87,10 @@ describe("RbacClient", () => {
   const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const rbacClient = new RbacClient(TestConfig.deploymentEnv);
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(authToken);
   });

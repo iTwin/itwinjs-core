@@ -14,6 +14,9 @@ import { RenderPass } from "./RenderFlags";
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
+
+  // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
+  compileShaders(): boolean;
 }
 
 // A rendering technique implemented using a single shader program, typically for some specialized purpose.
@@ -23,6 +26,7 @@ export class SingularTechnique implements Technique {
   public constructor(program: ShaderProgram) { this.program = program; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
+  public compileShaders(): boolean { return this.program.compile(); }
 
   public dispose(): void { this.program.dispose(); }
 }
@@ -104,6 +108,19 @@ export class Techniques implements IDisposable {
     }
 
     this._list.length = 0;
+  }
+
+  // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
+  public compileShaders(): boolean {
+    let allCompiled = true;
+
+    for (const tech of this._list) {
+      if (!tech.compileShaders()) {
+        allCompiled = false;
+      }
+    }
+
+    return allCompiled;
   }
 
   private constructor() { }

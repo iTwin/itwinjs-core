@@ -13,34 +13,33 @@ export namespace WebGLTestContext {
   const isEnabled = false;
   const canvasId = "WebGLTestCanvas";
 
-  function createCanvas(): HTMLCanvasElement | undefined {
+  function createCanvas(width: number, height: number): HTMLCanvasElement | undefined {
     let canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-    if (null !== canvas) {
-      return canvas;
-    }
-
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas) {
-      return undefined;
+      canvas = document.createElement("canvas") as HTMLCanvasElement;
+      if (null === canvas) {
+        return undefined;
+      }
+
+      canvas.id = canvasId;
+      document.body.appendChild(document.createTextNode("WebGL tests"));
+      document.body.appendChild(canvas);
     }
 
-    canvas.width = 300;
-    canvas.height = 150;
-    canvas.id = canvasId;
+    canvas.width = width;
+    canvas.height = height;
 
-    document.body.appendChild(document.createTextNode("WebGL tests"));
-    document.body.appendChild(canvas);
     return canvas;
   }
 
   export let isInitialized = false;
 
-  export function startup() {
+  export function startup(canvasWidth: number = 300, canvasHeight: number = 150) {
     if (!isEnabled) {
       return;
     }
 
-    const canvas = createCanvas();
+    const canvas = createCanvas(canvasWidth, canvasHeight);
     assert(undefined !== canvas);
     if (undefined !== canvas) {
       IModelApp.startup("QA", canvas);

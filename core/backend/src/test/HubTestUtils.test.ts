@@ -8,6 +8,8 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelDb } from "../backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { HubTestUtils } from "./HubTestUtils";
+import { IModelJsFs } from "../IModelJsFs";
+import { BriefcaseManager } from "../BriefcaseManager";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("HubTestUtils", () => {
@@ -50,6 +52,17 @@ describe.skip("HubTestUtils", () => {
     assert(iModel.iModelToken.openMode === OpenMode.Readonly);
 
     iModel.close(accessToken);
+  });
+
+  it("should be able to create a change set from a standalone iModel", async () => {
+    const dbName = "D:\\temp\\Defects\\879278\\DPIntegrationTestProj79.bim";
+    const iModel: IModelDb = IModelDb.openStandalone(dbName, OpenMode.ReadWrite, true); // could throw Error
+    assert.exists(iModel);
+
+    const changeSetToken = BriefcaseManager.createStandaloneChangeSet(iModel.briefcase);
+    assert(IModelJsFs.existsSync(changeSetToken.pathname));
+
+    BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSetToken);
   });
 
 });

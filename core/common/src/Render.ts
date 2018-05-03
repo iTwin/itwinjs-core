@@ -771,13 +771,13 @@ export namespace Gradient {
   export interface SymbProps {
     /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
     mode: Mode;
-    /** Gradient flags to enable outline display and invert color fractions */
+    /** Gradient flags to enable outline display and invert color fractions, Flags.None if undefined */
     flags?: Flags;
-    /** Gradient rotation angle */
+    /** Gradient rotation angle, 0.0 if undefined */
     angle?: AngleProps;
-    /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1 */
+    /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1, 0.0 if undefined */
     tint?: number;
-    /** Gradient shift value from 0.0 to 1.0 */
+    /** Gradient shift value from 0.0 to 1.0, 0.0 if undefined */
     shift?: number;
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
     keys: KeyColorProps[];

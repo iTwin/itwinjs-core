@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
 import { IModelHubClient, Version } from "../imodelhub";
 import { TilesGeneratorClient, Job } from "../TilesGeneratorClient";
 import { AuthorizationToken, AccessToken } from "../Token";
@@ -10,7 +9,6 @@ import { TestConfig } from "./TestConfig";
 import { RequestQueryOptions } from "../Request";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
 
-chai.use(chaiString);
 chai.should();
 
 describe("RealityDataServicesClient", () => {
@@ -24,7 +22,10 @@ describe("RealityDataServicesClient", () => {
   let versionId: string;
   let tilesId: string;
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await realityDataServiceClient.getAccessToken(authToken);

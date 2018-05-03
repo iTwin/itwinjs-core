@@ -8,7 +8,7 @@ import {
   ContainsSchemaChanges, Briefcase, Code, IModelHubResponseError, IModelHubResponseErrorId,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, AzureFileHandler, ConflictingCodesError,
 } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
@@ -270,6 +270,7 @@ export class BriefcaseManager {
 
   private static onIModelHostShutdown() {
     BriefcaseManager.clearCache();
+    IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.onIModelHostShutdown);
   }
 
   /** Create a directory, recursively setting up the path as necessary */
@@ -288,7 +289,7 @@ export class BriefcaseManager {
     if (!IModelHost.configuration)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
 
-    IModelHost.onAfterStartup.addListener(BriefcaseManager.onIModelHostShutdown);
+    IModelHost.onBeforeShutdown.addListener(BriefcaseManager.onIModelHostShutdown);
 
     const startTime = new Date().getTime();
 
@@ -341,8 +342,13 @@ export class BriefcaseManager {
           }
 
           briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
-          if (briefcase.reversedChangeSetId !== undefined)
-            briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.reversedChangeSetId);
+          if (briefcase.reversedChangeSetId !== undefined) {
+            // briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.reversedChangeSetId);
+            // NEEDS_WORK: We don't re-use briefcases with reversedChangeSets at the moment (so we simply delete them from the cache for now)
+            await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+            continue;
+          }
+
         } catch (error) {
           // The iModel is unreachable on the hub - deployment configuration is different, imodel was removed, the current user does not have access
           Logger.logWarning(loggingCategory, `Unable to find briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} on the Hub. Deleting it`);
@@ -1065,6 +1071,25 @@ export class BriefcaseManager {
     // Remove ChangeSet id if it succeeded or failed with conflicts
     if (!failedUpdating)
       BriefcaseManager.removePendingChangeSet(briefcase, changeSet.id!);
+  }
+
+  /** Creates a change set file from the changes in a standalone iModel
+   * @return Path to the standalone change set file
+   * @hidden
+   */
+  public static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
+    if (!briefcase.isStandalone)
+      throw new IModelError(BentleyStatus.ERROR);
+
+    const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
+    BriefcaseManager.finishCreateChangeSet(briefcase);
+
+    return changeSetToken;
+  }
+
+  /** Dumps a change set */
+  public static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken) {
+    briefcase.nativeDb!.dumpChangeSet(JSON.stringify(changeSetToken));
   }
 
   /** Attempt to push a ChangeSet to iModel Hub */

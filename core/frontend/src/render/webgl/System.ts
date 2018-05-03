@@ -14,7 +14,10 @@ import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
 import { RenderState } from "./RenderState";
-import { FrameBufferStack } from "./FrameBuffer";
+import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
+import { RenderBuffer } from "./RenderBuffer";
+import { TextureHandle } from "./Texture";
+import { GL } from "./GL";
 
 export const enum ContextState {
   Uninitialized,
@@ -180,6 +183,8 @@ export class System extends RenderSystem {
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
+  public static identityTransform = Transform.createIdentity();
+
   public static create(canvas?: HTMLCanvasElement): System | undefined {
     if (undefined === canvas) {
       return undefined;
@@ -219,6 +224,21 @@ export class System extends RenderSystem {
     this._currentRenderState.copyFrom(newState);
   }
 
+  public createDepthBuffer(width: number, height: number): DepthBuffer | undefined {
+    switch (this.capabilities.maxDepthType) {
+      case DepthType.RenderBufferUnsignedShort16: {
+        return RenderBuffer.create(width, height);
+      }
+      case DepthType.TextureUnsignedInt32: {
+        return TextureHandle.createForColor(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
+      }
+      default: {
+        assert(false);
+        return undefined;
+      }
+    }
+  }
+
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
     this._canvas = canvas;
@@ -231,3 +251,5 @@ export class System extends RenderSystem {
     assert(undefined !== this.context);
   }
 }
+
+Object.freeze(System.identityTransform);

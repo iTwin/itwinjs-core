@@ -11,6 +11,12 @@ import { Clip } from "./ClipVolume";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 
+export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
+    // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
+    const jointWidthThreshold = 5;
+    return is2d || lineWeight > jointWidthThreshold;
+  }
+
 export abstract class Graphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
   public /* TODO abstract */ addCommands(_commands: RenderCommands): void { assert(false); } // ###TODO: Implement for Primitive

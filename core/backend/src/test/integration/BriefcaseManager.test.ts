@@ -42,7 +42,7 @@ function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
   assert.equal(status, ChangeSetStatus.Success);
 }
 
-async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
+export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
   // Create a new physical model.
   let modelId: Id64;
   [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);

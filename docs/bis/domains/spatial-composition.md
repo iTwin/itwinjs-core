@@ -1,13 +1,13 @@
 # Spatial Composition
 
-This schema describes the breakdown of `SpatialLocationElement`. It is intended to be used across disciplines. For instance it should allow to make a single composition hierarchy composing instances of `BuildableVolume` into a `Site`.The composition relationship can be applied in a recursive manner, i.e. a composed element can be composed into another composition. Cyclic references are prevented by rules in the `domain handler`. Semantically composition means that composer and composed elements describe the same thing and therefore sharing geometric location is not a conflict, it is actually expected.
+This schema describes the breakdown of `SpatialLocationElement`. It is intended to be used across disciplines. For instance it should allow to make a single composition hierarchy composing instances of `BuildableVolume` into a `Site`.The composition relationship can be applied in a recursive manner, i.e. a composed element can be composed into another composition. Cyclic references are prevented by rules in the `domain handler`. Semantically composition means that composer and composed elements describe the same thing and therefore sharing geometric location is not a conflict, it is actually expected. Compositions imply a dependency, i.e. the definition of the whole depends on the definition of the parts and the parts depend on the existence of the whole. The behavior that is implied from the dependency has to be established inside applications.
 
 ![SpatialComposition](./media/composite-element.png)
 
 ## Design considerations
 
-- This schema does not specialize any of the two available breakdown mechanisms in `BIS` (`IParent` and models). The direct reason are legacy data uploaded by [iModel bridges](./../intro/imodel-bridges.md). Reusing a `BIS` breakdown mechanism is desired but not currently available.
-- Modeled and named after IFC.
+- This schema does not specialize any of the two available breakdown mechanisms in `BIS` (`IParent` and models). The direct reason is legacy data uploaded by [iModel bridges](./../intro/imodel-bridges.md). Reusing a `BIS` breakdown mechanism is desired but not currently available.
+- Modeled after IFC.
 
 ## Naming considerations
 
@@ -74,7 +74,7 @@ Naming :
 *TODO like to derive from `IElementOwnsChildElements`.*
 
 Naming :
-1 - Equivalent of : `IfcSpatialStructureElement.IsDecomposedBy`.
+1 - Equivalent of : `IfcRelAggregates`.
 
 Relates the Composer with its' composees
 
