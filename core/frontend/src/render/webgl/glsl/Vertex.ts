@@ -2,6 +2,21 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
+import { Matrix4 } from "../Matrix";
+
+const scratchMVPMatrix = new Matrix4();
+
+export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_mvp", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_mvp", (uniform, params) => {
+      const mvp = params.projectionMatrix.clone(scratchMVPMatrix);
+      mvp.multiplyBy(params.modelViewMatrix);
+      uniform.setMatrix4(mvp);
+    });
+  });
+}
+
 export namespace GLSLVertex {
   export const unquantizePosition =
     `vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) {
