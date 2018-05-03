@@ -37,6 +37,8 @@ export enum SeedFileInitState {
   Scheduled = 2,
   Failed = 3,
   OutdatedFile = 4,
+  CodeTooLong = 5,
+  SeedFileIsBriefcase = 6,
 }
 
 /** SeedFile */
@@ -341,6 +343,8 @@ export class IModelHandler {
     if (!this._fileHandler.exists(pathName)) {
       return Promise.reject(new Error(`Local iModel file not found`));
     }
+
+    //Open with gateway???
 
     const iModel = await this.createIModelInstance(token, projectId, name, description);
 
