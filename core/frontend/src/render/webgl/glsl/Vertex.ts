@@ -4,7 +4,11 @@
 
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";
+import { TextureHandle } from "../Texture";
+import { LUTGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
+import { addLookupTable } from "./LookupTable";
 
 const initializeVertLUTCoords = `
 g_vertexLUTIndex = decodeUInt32(a_pos);
@@ -58,11 +62,25 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_featureIndexCoords", VariableType.Vec2);
 
   vert.addFunction(GLSLDecode.uint32);
-  vert.addFunction(GLSLDecode.uint32);
+  vert.addFunction(GLSLDecode.uint16);
   vert.addFunction(unquantizeVertexPositionFromLUT);
 
-  // ###TODO: u_vertLUT, u_vertParams, LookupTable.AddToBuilder()
+  vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
+      TextureHandle.bindSampler(uniform, (params.geometry as LUTGeometry).lut, TextureUnit.VertexLUT);
+    });
+  });
 
+  vert.addUniform("u_vertParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_vertParams", (uniform, params) => {
+      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
+      const lutTex: TextureHandle = lutGeom.lut;
+      const values: Float32Array = new Float32Array([lutTex.width, lutTex.height, lutGeom.numRgbaPerVertex, lutGeom.numVertices]);
+      uniform.setUniform4fv(values);
+    });
+  });
+
+  addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
 }
 
