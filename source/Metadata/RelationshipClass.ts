@@ -9,7 +9,7 @@ import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { NavigationProperty } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import EntityClass from "./EntityClass";
+import EntityClass, { createNavigationProperty } from "./EntityClass";
 import Mixin from "./Mixin";
 import Schema from "./Schema";
 
@@ -47,28 +47,8 @@ export default class RelationshipClass extends ECClass {
    * @param relationship
    * @param direction
    */
-  public async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
-    if (await this.getProperty(name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
-
-    let resolvedRelationship: RelationshipClass | undefined;
-    if (typeof(relationship) === "string")
-      resolvedRelationship = await this.schema.getItem<RelationshipClass>(relationship, true);
-    else
-      resolvedRelationship = relationship;
-
-    if (!resolvedRelationship)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
-
-    if (typeof(direction) === "string") {
-      const tmpDirection = parseStrengthDirection(direction);
-      if (undefined === tmpDirection)
-        throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
-      direction = tmpDirection;
-    }
-
-    const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
-    return this.addProperty(new NavigationProperty(this, name, lazyRelationship, direction));
+  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
+    return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
   /**

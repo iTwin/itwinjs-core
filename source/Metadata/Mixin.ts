@@ -3,12 +3,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import ECClass from "./Class";
-import EntityClass from "./EntityClass";
+import EntityClass, { createNavigationProperty } from "./EntityClass";
 import { LazyLoadedEntityClass } from "../Interfaces";
-import { ECClassModifier, SchemaItemType } from "../ECObjects";
+import { ECClassModifier, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
+import RelationshipClass from "./RelationshipClass";
+import { NavigationProperty } from "./Property";
 
 /**
  * A Typescript class representation of a Mixin.
@@ -23,6 +25,16 @@ export default class Mixin extends ECClass {
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaItemType.Mixin, ECClassModifier.Abstract);
+  }
+
+  /**
+   *
+   * @param name
+   * @param relationship
+   * @param direction
+   */
+  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
+    return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
   public async fromJson(jsonObj: any): Promise<void> {

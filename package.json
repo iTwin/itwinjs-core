@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecjs",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "ECObjects core concepts in typescript",
   "license": "UNLICENSED",
   "main": "lib/index.js",
