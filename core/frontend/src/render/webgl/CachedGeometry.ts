@@ -15,6 +15,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { ColorInfo } from "./ColorInfo";
 import { TextureHandle } from "./Texture";
+import { FeaturesInfo } from "./FeaturesInfo";
 
 // Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
@@ -311,5 +312,4 @@ export abstract class PointStringGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
 export abstract class MaterialData { /* ###TODO */ }
 export abstract class PolylineBuffers { /* ###TODO */ }
-export abstract class FeaturesInfo { /* ###TODO */ }
 export abstract class PolylineGeometry extends LUTGeometry { /* ###TODO */ }
