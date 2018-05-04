@@ -52,7 +52,7 @@ export class IModelApp {
 
   /**
    * Gets the instance of the RenderSystem which provides display capabilities. Display capabilities must be explicitly requested by
-   * passing an HTMLCanvasElement to startup().
+   * passing 'true' as the second argument to startup().
    * @return the instance of the RenderSystem.
    * @throws [[IModelError]] if display capabilities are not enabled.
    */
@@ -77,9 +77,9 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    *
-   * If display capabilities are desired, an HTMLCanvasElement must be supplied as the canvas to which to render.
+   * If display capabilities are desired, this must be specified at startup time.
    */
-  public static startup(deploymentEnv: DeploymentEnv = "QA", canvas?: HTMLCanvasElement) {
+  public static startup(deploymentEnv: DeploymentEnv = "QA", wantDisplayCapabilities: boolean = false) {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
@@ -98,7 +98,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem(canvas);
+    if (!IModelApp._renderSystem && wantDisplayCapabilities) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.renderQueue) IModelApp.renderQueue = new RenderQueue();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
@@ -137,5 +137,5 @@ export class IModelApp {
   /**
    * Implement this method to supply the RenderSystem which provides display capabilities.
    */
-  protected static supplyRenderSystem(canvas?: HTMLCanvasElement): RenderSystem | undefined { return System.create(canvas); }
+  protected static supplyRenderSystem(): RenderSystem | undefined { return System.create(); }
 }
