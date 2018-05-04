@@ -6,7 +6,7 @@ import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { IModelHubClient, Version, IModel, VersionQuery, IModelQuery } from "../imodelhub";
 import { ConnectClient, Project } from "../ConnectClients";
-import {expect} from "chai";
+import { expect } from "chai";
 
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
@@ -23,6 +23,11 @@ export interface UserCredentials {
   password: string;
 }
 
+function isOfflineSet(): boolean {
+  const index = process.argv.indexOf("--offline");
+  return process.argv[index + 1] === "mock";
+}
+
 /** Basic configuration used by all tests
  * Note: Setup test cases at both the DEV and QA environments, so that
  * the tests can be run at either place.
@@ -36,7 +41,7 @@ export class TestConfig {
   /** Name of project used by most tests */
   public static readonly projectName: string = "NodeJsTestProject";
   public static readonly iModelName: string = "TestModel";
-  public static readonly enableNock: boolean = true;
+  public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
   public static async login(user: UserCredentials = TestUsers.user1): Promise<AuthorizationToken> {
@@ -50,7 +55,7 @@ export class TestConfig {
   }
 
   /** Query for the test file from connect/hub */
-  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{project: Project, iModel?: IModel, version?: Version}> {
+  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModel, version?: Version }> {
     const connectClient = new ConnectClient(deploymentEnv);
     const imodelHubClient: IModelHubClient = new IModelHubClient(deploymentEnv);
 
@@ -60,8 +65,8 @@ export class TestConfig {
     });
     expect(project);
 
-    let iModel: IModel|undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
-    let version: Version|undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let iModel: IModel | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let version: Version | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     if (iModelName) {
       const iModels = await imodelHubClient.IModels().get(accessToken, project.wsgId, new IModelQuery().byName(iModelName));
       expect(iModels.length === 1);
@@ -73,8 +78,8 @@ export class TestConfig {
       }
     }
 
-    return {project, iModel, version};
- }
+    return { project, iModel, version };
+  }
 }
 
 /** Test users with various permissions */

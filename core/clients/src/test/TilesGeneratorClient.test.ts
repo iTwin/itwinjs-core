@@ -2,14 +2,12 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import chaiString = require("chai-string");
 import { ConnectClient } from "../ConnectClients";
 import { TilesGeneratorClient, Job } from "../TilesGeneratorClient";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { RequestQueryOptions } from "../Request";
 
-chai.use(chaiString);
 chai.should();
 
 describe("TilesGeneratorClient", () => {
@@ -20,11 +18,14 @@ describe("TilesGeneratorClient", () => {
   let iModelId: string;
   let versionId: string;
 
-  before(async () => {
+  before(async function(this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(authToken);
 
-    const {project, iModel, version} = await TestConfig.queryTestCase(accessToken, TestConfig.deploymentEnv, "Hackathon", "Demo - ChangeSets", "First stage");
+    const { project, iModel, version } = await TestConfig.queryTestCase(accessToken, TestConfig.deploymentEnv, "Hackathon", "Demo - ChangeSets", "First stage");
 
     projectId = project.wsgId;
     chai.expect(projectId);

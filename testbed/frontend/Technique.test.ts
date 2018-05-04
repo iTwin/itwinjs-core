@@ -5,7 +5,6 @@
 import { expect, assert } from "chai";
 import { Transform } from "@bentley/geometry-core";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
   ProgramBuilder,
   VertexShaderComponent,
@@ -31,7 +30,9 @@ function createPurpleQuadTechnique(target: Target): TechniqueId {
 }
 
 function createTarget(): Target | undefined {
-  return System.instance!.createTarget() as Target;
+  const canvas = WebGLTestContext.createCanvas();
+  assert(undefined !== canvas);
+  return System.instance!.createTarget(canvas!) as Target;
 }
 
 describe("Technique tests", () => {
@@ -39,7 +40,7 @@ describe("Technique tests", () => {
   after(() => WebGLTestContext.shutdown());
 
   it("should produce a simple dynamic rendering technique", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -51,7 +52,7 @@ describe("Technique tests", () => {
   });
 
   it("should render a purple quad", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -67,5 +68,11 @@ describe("Technique tests", () => {
 
     const drawParams = new DrawParams(target, geom!, Transform.createIdentity(), RenderPass.OpaqueGeneral);
     target.techniques.draw(drawParams);
+  });
+
+  it("should successfully compile all shader programs", () => {
+    if (WebGLTestContext.isInitialized) {
+      expect(System.instance.techniques.compileShaders()).to.be.true;
+    }
   });
 });

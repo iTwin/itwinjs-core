@@ -16,6 +16,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { HilitedSet } from "../SelectionSet";
 import { FeatureSymbology } from "./FeatureSymbology";
+import { PolylineArgs } from "./primitives/Mesh";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
@@ -144,10 +145,8 @@ export abstract class RenderSystem {
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
   public nowPainting() { this._nowPainting = undefined; }
 
-  public abstract get canvas(): HTMLCanvasElement;
-
-  /** Create a render target. */
-  public abstract createTarget(): RenderTarget;
+  /** Create a render target which will render to the supplied canvas element. */
+  public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
 
   // /** Create an offscreen render target. */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
@@ -177,7 +176,7 @@ export abstract class RenderSystem {
   // public abstract createTriMesh(args: TriMeshArgs, imodel: IModel): Graphic;
 
   // /** Create an indexed polyline primitive */
-  // public abstract createIndexedPolylines(args: IndexPolylineArgs, imodel: IModel): Graphic;
+  public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic;
 
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;

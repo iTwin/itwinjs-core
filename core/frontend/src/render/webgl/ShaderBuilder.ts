@@ -4,8 +4,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
-import { GLSLVertex } from "./glsl/Vertex";
-import { GLSLDecode } from "./glsl/Decode";
+import { GLSLVertex, addPosition } from "./glsl/Vertex";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
@@ -402,7 +401,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   public constructor(positionFromLUT: boolean) {
     super(VertexShaderComponent.COUNT);
-    this.addPosition(positionFromLUT);
+    addPosition(this, positionFromLUT);
   }
 
   public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
@@ -469,42 +468,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     prelude.addMain(main.source);
     return prelude.source;
-  }
-
-  private addPosition(positionFromLUT: boolean): void {
-    this.addFunction(GLSLVertex.unquantizePosition);
-
-    this.addAttribute("a_pos", VariableType.Vec3, (prog) => {
-      prog.addAttribute("a_pos", (attr, params) => { params.geometry.bindVertexArray(attr); });
-    });
-    this.addUniform("u_qScale", VariableType.Vec3, (prog) => {
-      prog.addGraphicUniform("u_qScale", (uniform, params) => {
-        uniform.setUniform3fv(params.geometry.qScale);
-      });
-    });
-    this.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
-      prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
-        uniform.setUniform3fv(params.geometry.qOrigin);
-      });
-    });
-
-    if (!positionFromLUT) {
-      this.addFunction(GLSLVertex.unquantizeVertexPosition);
-      return;
-    }
-
-    this.addGlobal("g_vertexLUTIndex", VariableType.Float);
-    this.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
-    this.addGlobal("g_vertexData2", VariableType.Vec2);
-    this.addGlobal("g_featureIndexCoords", VariableType.Vec2);
-
-    this.addFunction(GLSLDecode.uint32);
-    this.addFunction(GLSLDecode.uint32);
-    this.addFunction(GLSLVertex.unquantizeVertexPositionFromLUT);
-
-    // ###TODO: u_vertLUT, u_vertParams, LookupTable.AddToBuilder()
-
-    this.addInitializer(GLSLVertex.initializeVertLUTCoords);
   }
 }
 

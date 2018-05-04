@@ -6,8 +6,8 @@
 import { Gateway, GatewayImplementation, GatewayDefinition } from "../../Gateway";
 import { GatewayDirectProtocol } from "./GatewayConfiguration";
 import { GatewayOperation, GatewayOperationPolicy } from "./GatewayOperation";
-import { IModelError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { IModelError, ServerError } from "../../IModelError";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
 // tslint:disable:ban-types
 
@@ -22,6 +22,12 @@ export const POLICY = Symbol.for("@bentley/imodeljs-common/GatewayOperationPolic
 
 /** @hidden @internal */
 export const INSTANCE = Symbol.for("@bentley/imodeljs-common/Gateway/__instance__");
+
+/** @hidden @internal */
+export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/GatewayRequest/__current__");
+
+/** @hidden @internal */
+export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/GatewayInvocation/__current__");
 
 /** @hidden @internal */
 export class GatewayRegistry {
@@ -111,12 +117,12 @@ export class GatewayRegistry {
     });
 
     definition.types().forEach((type) => {
-      const name = `${definition.name}_${type.name}`;
-      if (this.types.has(name))
-        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is already registered for gateway type marshaling.`);
-
-      this.types.set(name, type);
+      this.registerType(definition, type, true);
     });
+
+    for (const type of [Error, EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError, BentleyError, IModelError, ServerError]) {
+      this.registerType(definition, type, false);
+    }
 
     const registeredImplementation = this.implementationClasses.get(definition.name) as GatewayImplementation<T>;
     if (registeredImplementation) {
@@ -153,4 +159,16 @@ export class GatewayRegistry {
     let i = 0;
     return () => ++i;
   })();
+
+  private registerType(definition: GatewayDefinition, type: Function, throwIfRegistered: boolean) {
+    const name = `${definition.name}_${type.name}`;
+    if (this.types.has(name)) {
+      if (throwIfRegistered)
+        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is already registered for gateway type marshaling.`);
+      else
+        return;
+    }
+
+    this.types.set(name, type);
+  }
 }

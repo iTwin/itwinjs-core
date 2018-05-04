@@ -15,9 +15,9 @@ import { DecorateContext } from "./ViewContext";
 
 /** The ViewManager holds the list of opened views, plus the "selected view" */
 export class ViewManager {
-  public readonly viewports: Viewport[] = [];
   public inDynamicsMode = false;
   public cursor?: BeCursor;
+  private readonly _viewports: Viewport[] = [];
   private _selectedView?: Viewport;
   private _newTilesReady: boolean = false;
   private _skipSceneCreation: boolean = false;
@@ -58,7 +58,7 @@ export class ViewManager {
     if (cursorVp)
       cursorVp.changeDynamics(undefined, priority);
 
-    for (const vp of this.viewports) {
+    for (const vp of this._viewports) {
       if (vp !== cursorVp)
         vp.changeDynamics(undefined, ++priority);
     }
@@ -88,7 +88,7 @@ export class ViewManager {
   }
 
   /** Get the first opened view. */
-  public getFirstOpenView(): Viewport | undefined { return this.viewports.length > 0 ? this.viewports[0] : undefined; }
+  public getFirstOpenView(): Viewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
   /**
    * Add a new Viewport to the list of opened views and create an EventController for it.
@@ -97,9 +97,12 @@ export class ViewManager {
    * <em>note:</em> Does nothing if newVp is already present in the list.
    */
   public addViewport(newVp: Viewport): void {
-    for (const vp of this.viewports) { if (vp === newVp) return; } // make sure its not already in view array
+    for (const vp of this._viewports) { if (vp === newVp) return; } // make sure its not already in view array
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
-    this.viewports.push(newVp);
+    this._viewports.push(newVp);
+
+    // Start up the render loop if necessary.
+    if (1 === this._viewports.length) requestAnimationFrame(() => { this.renderLoop(); });
     this.onViewOpen.raiseEvent(newVp);
   }
 
@@ -114,7 +117,7 @@ export class ViewManager {
     IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
 
     let didDrop = false;
-    const vpList = this.viewports;
+    const vpList = this._viewports;
     for (let i = 0; i < vpList.length; ++i) {
       if (vpList[i] === vp) {
         vp.setEventController(undefined);
@@ -133,18 +136,23 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  public invalidateDecorationsAllViews(): void { this.viewports.forEach((vp) => vp.invalidateDecorations()); }
+  public forEachViewport(func: (vp: Viewport) => void) { this._viewports.forEach((vp) => func(vp)); }
+
+  public invalidateDecorationsAllViews(): void { this._viewports.forEach((vp) => vp.invalidateDecorations()); }
   public onSelectionSetChanged(_iModel: IModelConnection) {
     // for (auto & vp : m_viewports)
     // if (& vp -> GetViewController().GetDgnDb() == & db)
     //   vp -> GetViewControllerR().SetSelectionSetDirty();
   }
 
-  public invalidateViewportScenes(): void { this.viewports.forEach((vp: Viewport) => vp.sync.invalidateScene()); }
+  public invalidateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.invalidateScene()); }
 
-  public validateViewportScenes(): void { this.viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
+  public validateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
 
-  public renderLoop(): void {
+  // Invoked by requestAnimationFrame() whenever we have at least one viewport
+  private renderLoop(): void {
+    if (0 === this._viewports.length) return;
+
     if (this._skipSceneCreation)
       this.validateViewportScenes();
     else if (this._newTilesReady || this._doContinuousRendering)
@@ -157,7 +165,7 @@ export class ViewManager {
     const priority = new TaskPriority(1);
 
     if (undefined === cursorVp || cursorVp.renderFrame(priority, plan))
-      for (const vp of this.viewports)
+      for (const vp of this._viewports)
         if (vp !== cursorVp && !vp.renderFrame(priority.increment(), plan))
           break;
 
@@ -165,11 +173,13 @@ export class ViewManager {
     // requests.requestMissing(BeDuration.fromSeconds(tileGenerationSeconds));
 
     this.processIdle();
+
+    requestAnimationFrame(() => { this.renderLoop(); });
   }
 
-  public processIdle(): void {
+  private processIdle(): void {
     if (this._wantIdle && IModelApp.renderQueue.isIdle) {
-      assert(this.viewports.length === 0);
+      assert(this._viewports.length === 0);
       IModelApp.renderQueue.addTask(new IdleTask(IModelApp.renderSystem));
     }
   }

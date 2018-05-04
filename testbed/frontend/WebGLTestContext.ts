@@ -8,45 +8,19 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 export namespace WebGLTestContext {
   // When executing on the continuous integration server, we fail to obtain a WebGLRenderingContext.
   // Need to determine why, and how to fix.
-  // For now, all tests requiring WebGL are disabled by default; enable in developer builds by setting
-  // isEnabled to true.
-  const isEnabled = false;
-  const canvasId = "WebGLTestCanvas";
-
-  function createCanvas(): HTMLCanvasElement | undefined {
-    let canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-    if (null !== canvas) {
-      return canvas;
-    }
-
-    canvas = document.createElement("canvas") as HTMLCanvasElement;
-    if (null === canvas) {
-      return undefined;
-    }
-
-    canvas.width = 300;
-    canvas.height = 150;
-    canvas.id = canvasId;
-
-    document.body.appendChild(document.createTextNode("WebGL tests"));
-    document.body.appendChild(canvas);
-    return canvas;
-  }
+  // Bill Goehrig claims one or both of these env vars will be defined when executing on the CI server.
+  function isEnabled(): boolean { return undefined === process.env.CI && undefined === process.env.TF_BUILD; }
 
   export let isInitialized = false;
 
   export function startup() {
-    if (!isEnabled) {
+    if (!isEnabled()) {
       return;
     }
 
-    const canvas = createCanvas();
-    assert(undefined !== canvas);
-    if (undefined !== canvas) {
-      IModelApp.startup("QA", canvas);
-      isInitialized = IModelApp.hasRenderSystem;
-      assert(isInitialized);
-    }
+    IModelApp.startup("QA", true);
+    isInitialized = IModelApp.hasRenderSystem;
+    assert(isInitialized);
   }
 
   export function shutdown() {
@@ -54,5 +28,24 @@ export namespace WebGLTestContext {
     if (IModelApp.initialized) {
       IModelApp.shutdown();
     }
+  }
+
+  const canvasId = "WebGLTestCanvas";
+
+  export function createCanvas(width: number = 300, height: number = 150): HTMLCanvasElement | undefined {
+    let canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (null === canvas) {
+      canvas = document.createElement("canvas") as HTMLCanvasElement;
+      if (null === canvas) return undefined;
+
+      canvas.id = canvasId;
+      document.body.appendChild(document.createTextNode("WebGL tests"));
+      document.body.appendChild(canvas);
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+
+    return canvas;
   }
 }

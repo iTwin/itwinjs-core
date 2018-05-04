@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ColorDef } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { UniformHandle } from "./Handle";
 
 function assertComponent(c: number) { assert(1.0 >= c && 0.0 <= c); }
 function assertRgb(rgb: FloatRgb) {
@@ -10,22 +11,22 @@ function assertRgb(rgb: FloatRgb) {
   assertComponent(rgb.green);
   assertComponent(rgb.blue);
 }
-function assertRgba(rgba: FloatRgba) {
-  assertRgb(rgba);
+function assertRgba(rgba: Rgba) {
+  assertComponent(rgba.red);
+  assertComponent(rgba.green);
+  assertComponent(rgba.blue);
   assertComponent(rgba.alpha);
 }
 
 /** An RGB color with components in the range [0, 1]. */
 export class FloatRgb {
-  public readonly red: number;
-  public readonly green: number;
-  public readonly blue: number;
+  private readonly _value = new Float32Array(3);
 
   /** Construct from red, green, and blue components. */
   public constructor(red: number, green: number, blue: number) {
-    this.red = red;
-    this.green = green;
-    this.blue = blue;
+    this._value[0] = red;
+    this._value[1] = green;
+    this._value[2] = blue;
 
     assertRgb(this);
   }
@@ -35,29 +36,46 @@ export class FloatRgb {
     const c = def.colors;
     return new FloatRgb(c.r / 255.0, c.g / 255.0, c.b / 255.0);
   }
+
+  public get red() { return this._value[0]; }
+  public get green() { return this._value[1]; }
+  public get blue() { return this._value[2]; }
+
+  public bind(uniform: UniformHandle): void { uniform.setUniform3fv(this._value); }
 }
 
-/** An RGBA color with components in the range [0, 1]. */
-export class FloatRgba {
-  public readonly red: number;
-  public readonly green: number;
-  public readonly blue: number;
-  public readonly alpha: number;
+export class Rgba {
+  private readonly _value = new Float32Array(4);
 
-  /** Construct a FloatRgba from red, green, blue, and alpha components */
-  public constructor(red: number, green: number, blue: number, alpha: number) {
-    this.red = red;
-    this.green = green;
-    this.blue = blue;
-    this.alpha = alpha;
+  public get red() { return this._value[0]; }
+  public get green() { return this._value[1]; }
+  public get blue() { return this._value[2]; }
+  public get alpha() { return this._value[3]; }
+
+  public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
+
+  public equals(rhs: Rgba): boolean {
+    return this.red === rhs.red && this.green === rhs.green && this.blue === rhs.blue && this.alpha === rhs.alpha;
+  }
+
+  public bind(uniform: UniformHandle): void { uniform.setUniform4fv(this._value); }
+
+  protected constructor(r: number, g: number, b: number, a: number) {
+    this._value[0] = r;
+    this._value[1] = g;
+    this._value[2] = b;
+    this._value[3] = a;
 
     assertRgba(this);
   }
+}
 
-  /** Return whether or not the FloatRgba is translucent.
-   * @returns if the FloatRgba has translucency.
-   */
-  public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
+/** An RGBA color with components in the range [0, 1]. */
+export class FloatRgba extends Rgba {
+  /** Construct a FloatRgba from red, green, blue, and alpha components */
+  public constructor(red: number, green: number, blue: number, alpha: number) {
+    super(red, green, blue, alpha);
+  }
 
   /** Produce a FloatRgba from a FloatPreMulRgba by reversing the pre-multiplication */
   public static fromPreMulRgba(src: FloatPreMulRgba): FloatRgba {
@@ -76,33 +94,21 @@ export class FloatRgba {
 
   /** Create a FloatRgba using a ColorDef.
    * @param def A ColorDef used to create a new FloatRgba.
+   * @param transparency Optionally overrides the transparency value (0-255) specified by the ColorDef.
    * @returns Returns the newly created FloatRgba
    */
-  public static fromColorDef(def: ColorDef): FloatRgba {
+  public static fromColorDef(def: ColorDef, transparency?: number): FloatRgba {
     const c = def.colors;
-    return new FloatRgba(c.r / 255.0, c.g / 255.0, c.b / 255.0, (255.0 - c.t) / 255.0);
-  }
+    if (undefined !== transparency) {
+      c.t = transparency;
+    }
 
-  /** Return whether or not the two FloatRgbas are equal.
-   * @returns a boolean indicating if the two FloatRgbas are equal.
-   */
-  public equals(rhs: FloatRgba): boolean {
-    return this.red === rhs.red && this.green === rhs.green && this.blue === rhs.blue && this.alpha === rhs.alpha;
+    return new FloatRgba(c.r / 255.0, c.g / 255.0, c.b / 255.0, (255.0 - c.t) / 255.0);
   }
 }
 
 /** An RGBA color with  with components in the range [0, 1], wherein the red, green, and blue components are pre-multiplied by the alpha component. */
-export class FloatPreMulRgba {
-  public readonly red: number;
-  public readonly green: number;
-  public readonly blue: number;
-  public readonly alpha: number;
-
-  /** Return whether or not the FloatPreMulRgba is translucent.
-   * @returns if the FloatPreMulRgba has translucency.
-   */
-  public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
-
+export class FloatPreMulRgba extends Rgba {
   /** Create a FloatPreMulRgba using a ColorDef.
    * @param src A FloatRgba used to create a new FloatPreMulRgba.
    * @returns Returns the newly created FloatPreMulRgba
@@ -121,19 +127,7 @@ export class FloatPreMulRgba {
     return new FloatPreMulRgba(c.r * a / 255.0, c.g * a / 255.0, c.b * a / 255.0, a);
   }
 
-  /** Return whether or not the two FloatPreMulRgbas are equal.
-   * @returns a boolean indicating if the two FloatPreMulRgbas are equal.
-   */
-  public equals(rhs: FloatPreMulRgba): boolean {
-    return this.red === rhs.red && this.green === rhs.green && this.blue === rhs.blue && this.alpha === rhs.alpha;
-  }
-
   private constructor(r: number, g: number, b: number, a: number) {
-    this.red = r;
-    this.green = g;
-    this.blue = b;
-    this.alpha = a;
-
-    assertRgba(this);
+    super(r, g, b, a);
   }
 }

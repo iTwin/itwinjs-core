@@ -19,6 +19,7 @@ export const enum TechniqueId {
   CopyPickBuffers,
   CopyColor,
   ClearPickAndColor,
+  ClipMask,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,

@@ -215,7 +215,7 @@ export class QParams3d {
   public setFromRange(range: Range3d) {
     if (!range.isNull()) {
       this.setFrom(range.low.x, range.low.y, range.low.z,
-      Quantization.computeScale(range.high.x - range.low.x), Quantization.computeScale(range.high.y - range.low.y), Quantization.computeScale(range.high.z - range.low.z));
+        Quantization.computeScale(range.high.x - range.low.x), Quantization.computeScale(range.high.y - range.low.y), Quantization.computeScale(range.high.z - range.low.z));
     } else {
       this.origin.x = this.origin.y = this.origin.z = 0;
       this.scale.x = this.scale.y = this.scale.z = 0;
@@ -310,30 +310,30 @@ export class QPoint3d {
 /** A list of 3d points all quantized to the same range. */
 export class QPoint3dList {
   public readonly params: QParams3d;
-  private readonly _list = new Array<QPoint3d>();
+  public readonly list = new Array<QPoint3d>();
 
   public constructor(params: QParams3d) {
     this.params = params.clone();
   }
 
   /** Clears out the contents of the list */
-  public clear() { this._list.length = 0; }
+  public clear() { this.list.length = 0; }
   /** Clears out the contents of the list and changes the quantization parameters. */
   public reset(params: QParams3d) { this.clear(); this.params.copyFrom(params); }
 
   /** Quantizes the supplied Point3d to this list's range and appends it to the list. */
-  public add(pt: Point3d) { this._list.push(QPoint3d.create(pt, this.params)); }
+  public add(pt: Point3d) { this.list.push(QPoint3d.create(pt, this.params)); }
   /** Adds a previously-quantized point to this list. */
-  public push(qpt: QPoint3d) { this._list.push(qpt.clone()); }
+  public push(qpt: QPoint3d) { this.list.push(qpt.clone()); }
 
   /** Returns the number of points in the list. */
-  public get length() { return this._list.length; }
+  public get length() { return this.list.length; }
 
   /** Returns the unquantized value of the point at the specified index in the list. */
   public unquantize(index: number, out?: Point3d): Point3d {
     assert(index < this.length);
     if (index < this.length) {
-      return this._list[index].unquantize(this.params, out);
+      return this.list[index].unquantize(this.params, out);
     } else {
       return undefined !== out ? out : new Point3d();
     }
@@ -343,7 +343,7 @@ export class QPoint3dList {
   public requantize(params: QParams3d) {
     for (let i = 0; i < this.length; i++) {
       const pt = this.unquantize(i);
-      this._list[i].init(pt, params);
+      this.list[i].init(pt, params);
     }
 
     this.params.copyFrom(params);
@@ -352,7 +352,7 @@ export class QPoint3dList {
   /** Extracts the current contents of the list as a Uint16Array. */
   public toTypedArray(): Uint16Array {
     const array = new Uint16Array(this.length * 3);
-    const pts = this._list;
+    const pts = this.list;
     for (let i = 0; i < this.length; i++) {
       const pt = pts[i];
       array[i * 3 + 0] = pt.x;

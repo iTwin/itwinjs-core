@@ -8,7 +8,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Gateway } from "../../Gateway";
 import { GatewayOperation } from "./GatewayOperation";
-import { GatewayRegistry } from "./GatewayRegistry";
+import { GatewayRegistry, CURRENT_INVOCATION } from "./GatewayRegistry";
 import { GatewayRequestStatus } from "./GatewayRequest";
 import { GatewayProtocol, GatewayProtocolEvent, SerializedGatewayRequest, GatewayRequestFulfillment } from "./GatewayProtocol";
 import { GatewayMarshaling } from "./GatewayMarshaling";
@@ -49,6 +49,14 @@ export class GatewayInvocation {
     }
   }
 
+  /**
+   * The invocation for the current gateway operation.
+   * @note The return value of this function is only reliable in a gateway member function where program control was received from the GatewayInvocation constructor function.
+   */
+  public static current(context: Gateway): GatewayInvocation {
+    return (context as any)[CURRENT_INVOCATION];
+  }
+
   /** Constructs an invocation. */
   public constructor(protocol: GatewayProtocol, request: SerializedGatewayRequest) {
     this.protocol = protocol;
@@ -62,6 +70,7 @@ export class GatewayInvocation {
       const parameters = GatewayMarshaling.deserialize(this.operation, protocol, request.parameters);
       const impl = GatewayRegistry.instance.getImplementationForGateway(this.operation.gateway);
       const op = this.lookupOperationFunction(impl);
+      (impl as any)[CURRENT_INVOCATION] = this;
       this.result = op.call(impl, ...parameters);
     } catch (error) {
       this._threw = true;
@@ -73,34 +82,24 @@ export class GatewayInvocation {
       const result = GatewayMarshaling.serialize(this.operation, protocol, value);
       const status = protocol.getCode(this.status);
       protocol.events.raiseEvent(GatewayProtocolEvent.BackendResponseCreated, this);
-      return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
+      return this.createFulfillment(result, status);
     }, (reason) => {
       if (reason instanceof GatewayPendingResponse) {
         this._pending = true;
         protocol.events.raiseEvent(GatewayProtocolEvent.BackendReportedPending, this);
-        return { result: reason.message, status: protocol.getCode(this.status), id: this.request.id, gateway: this.operation.gateway.name };
+        return this.createFulfillment(reason.message, protocol.getCode(this.status));
       }
 
       this._threw = true;
-      const result = this.supplyErrorMessage(reason);
+      const result = GatewayMarshaling.serialize(this.operation, protocol, reason);
       const status = protocol.getCode(this.status);
       protocol.events.raiseEvent(GatewayProtocolEvent.BackendErrorOccurred, this);
-      return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
+      return this.createFulfillment(result, status);
     });
   }
 
-  /** Supplies the error message for an invocation result. */
-  protected supplyErrorMessage(error: any): string {
-    let message = "";
-    if (error instanceof Error) {
-      message = `${error.toString()} ${error.stack}`;
-    } else if (error.hasOwnProperty("message")) {
-      message = error.message;
-    } else {
-      message = JSON.stringify(error);
-    }
-
-    return message;
+  private createFulfillment(result: string, status: number): GatewayRequestFulfillment {
+    return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
   }
 
   private lookupOperationFunction(implementation: Gateway): (...args: any[]) => any {

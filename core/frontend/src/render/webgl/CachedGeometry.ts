@@ -13,6 +13,9 @@ import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
+import { ColorInfo } from "./ColorInfo";
+import { TextureHandle } from "./Texture";
+import { FeaturesInfo } from "./FeaturesInfo";
 
 // Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
@@ -75,6 +78,27 @@ export abstract class CachedGeometry {
     weight = Math.min(weight, 31.0);
     assert(Math.floor(weight) === weight);
     return weight;
+  }
+}
+
+// Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
+export abstract class LUTGeometry extends CachedGeometry {
+  // The number of indices into the vertex data to be drawn.
+  public readonly numIndices: number;
+  // The number of vertices contained in the vertex data.
+  public readonly numVertices: number;
+
+  // The texture containing the vertex data.
+  public abstract get lut(): TextureHandle;
+
+  // The number of RGBA values per vertex in the vertex data.
+  public abstract get numRgbaPerVertex(): number;
+  public abstract getColor(target: Target): ColorInfo;
+
+  protected constructor(numIndices: number, numVertices: number) {
+    super();
+    this.numIndices = numIndices;
+    this.numVertices = numVertices;
   }
 }
 
@@ -265,10 +289,28 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
   }
 }
 
+export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(texture: WebGLTexture, techId: TechniqueId) {
+    const params = _viewportQuad.createParams();
+    const uvBuf = this.createUVParams();
+    if (undefined === params || undefined === uvBuf) {
+      return undefined;
+    }
+
+    return new SingleTexturedViewportQuadGeometry(params, uvBuf, texture, techId);
+  }
+
+  public get texture(): WebGLTexture { return this._textures[0]; }
+  public set texture(texture: WebGLTexture) { this._textures[0] = texture; }
+
+  protected constructor(params: IndexedGeometryParams, uv: QBufferHandle2d, texture: WebGLTexture, techId: TechniqueId) {
+    super(params, techId, uv, [texture]);
+  }
+}
+
 export abstract class EdgeGeometry { /* ###TODO */ }
 export abstract class PointStringGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
-export abstract class LUTGeometry { /* ###TODO */ }
 export abstract class MaterialData { /* ###TODO */ }
 export abstract class PolylineBuffers { /* ###TODO */ }
-export abstract class FeaturesInfo { /* ###TODO */ }
+export abstract class PolylineGeometry extends LUTGeometry { /* ###TODO */ }

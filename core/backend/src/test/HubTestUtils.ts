@@ -7,6 +7,10 @@ import {
 } from "@bentley/imodeljs-clients";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
+import { ChangeSetToken, BriefcaseManager, BriefcaseId } from "../BriefcaseManager";
+import { IModelDb } from "../IModelDb";
+import { ChangeSetApplyOption, OpenMode, ChangeSetStatus } from "@bentley/bentleyjs-core";
+
 import * as path from "path";
 
 export class HubTestUtils {
@@ -134,6 +138,17 @@ export class HubTestUtils {
     await HubTestUtils.hubClient!.IModels().delete(accessToken, projectId, iModelId);
   }
 
+  private static getSeedPathname (iModelDir: string) {
+    const seedFileDir = path.join(iModelDir, "seed");
+    const seedFileNames = IModelJsFs.readdirSync(seedFileDir);
+    if (seedFileNames.length !== 1) {
+      throw new Error (`Expected to find one and only one seed file in: ${seedFileDir}`);
+    }
+    const seedFileName = seedFileNames[0];
+    const seedPathname = path.join(seedFileDir, seedFileName);
+    return seedPathname;
+  }
+
   /** Internal debug utility to upload an IModel's seed files and change sets to the hub
    *  @hidden
    */
@@ -142,13 +157,7 @@ export class HubTestUtils {
 
     const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
 
-    const seedFileDir = path.join(uploadDir, "seed");
-    const seedFileNames = IModelJsFs.readdirSync(seedFileDir);
-    if (seedFileNames.length !== 1) {
-      return Promise.reject("Didn't find a single seed file in the seed sub folder of " + uploadDir);
-    }
-    const seedFileName = seedFileNames[0];
-    const seedPathname = path.join(seedFileDir, seedFileName);
+    const seedPathname = HubTestUtils.getSeedPathname(uploadDir);
 
     // Delete any existing iModels with the same name as the required iModel
     const iModelName = path.basename(seedPathname, ".bim");
@@ -208,6 +217,43 @@ export class HubTestUtils {
         promises.push(HubTestUtils.hubClient!.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
+    }
+  }
+
+  /** Internal debug utility to upload an IModel's seed files and change sets to the hub
+   *  @hidden
+   */
+  public static mergeIModel(iModelDir: string) {
+    HubTestUtils.initialize();
+
+    const seedPathname = HubTestUtils.getSeedPathname(iModelDir);
+    const seedFileName = path.basename(seedPathname);
+    const briefcasePathname = path.join(iModelDir, seedFileName);
+    IModelJsFs.copySync(seedPathname, briefcasePathname);
+
+    const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
+    if (!IModelJsFs.existsSync(changeSetJsonPathname))
+      return;
+
+    const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
+    const changeSetsJson = JSON.parse(jsonStr);
+
+    const iModel = IModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
+    iModel.briefcase.nativeDb.setBriefcaseId(BriefcaseId.Standalone);
+    iModel.briefcase.briefcaseId = BriefcaseId.Standalone;
+
+    for (const changeSetJson of changeSetsJson) {
+      const changeSetPathname = path.join(iModelDir, "changeSets", changeSetJson.fileName);
+      if (!IModelJsFs.existsSync(changeSetPathname)) {
+        throw new Error("Cannot find the ChangeSet file: " + changeSetPathname);
+      }
+
+      const changeSetTokens = [new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, changeSetJson.index, changeSetPathname, changeSetJson.containsSchemaChanges)];
+      const status: ChangeSetStatus = BriefcaseManager.applyStandaloneChangeSet(iModel.briefcase, changeSetTokens, ChangeSetApplyOption.Merge, !!changeSetJson.containsSchemaChanges);
+      if (status !== ChangeSetStatus.Success)
+        throw new Error(`Error merging change set ${changeSetJson.id}`);
+      else
+        console.log(`Successfully merged change set ${changeSetJson.id}`); // tslint:disable-line:no-console
     }
   }
 

@@ -1,19 +1,22 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { FeatureIndexType,
-         FeatureIndex } from "@bentley/imodeljs-common";
+import {
+  FeatureIndexType,
+  FeatureIndex,
+} from "@bentley/imodeljs-common";
 
 export class FeaturesInfo {
   public readonly uniform?: number;
 
   public static create(featureIndex: FeatureIndex): FeaturesInfo | undefined {
     switch (featureIndex.type) {
-      case FeatureIndexType.Empty:      return undefined;
-      case FeatureIndexType.Uniform:    return new FeaturesInfo(featureIndex.featureID);
-      default:                          return FeaturesInfo.nonUniform;
+      case FeatureIndexType.Empty: return undefined;
+      case FeatureIndexType.Uniform: return new FeaturesInfo(featureIndex.featureID);
+      default: return FeaturesInfo.nonUniform;
     }
   }
+  public static createUniform(id: number): FeaturesInfo { return new FeaturesInfo(id); }
 
   public get type(): FeatureIndexType { return undefined !== this.uniform ? FeatureIndexType.Uniform : FeatureIndexType.NonUniform; }
   public get isUniform() { return FeatureIndexType.Uniform === this.type; }

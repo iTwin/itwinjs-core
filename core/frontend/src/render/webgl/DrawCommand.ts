@@ -383,7 +383,6 @@ export class RenderCommands {
     assert(undefined === this._curOvrParams);
   }
 
-  // #TODO: implement overlayDecorationsState on target
   public init(scene: GraphicList, dec: Decorations, dynamics?: DecorationList, initForReadPixels: boolean = false): void {
     this.clear();
 

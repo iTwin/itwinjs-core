@@ -371,31 +371,40 @@ export class IModelConnectionViews {
     const viewStateData: any = await IModelReadGateway.getProxy().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
     const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
+    let viewState: ViewState;
     switch (viewStateData.viewDefinitionProps.classFullName) {
       case SpatialViewState.getClassFullName(): {
         const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
         const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
-        return new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+        viewState = new SpatialViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+        break;
       }
       case OrthographicViewState.getClassFullName(): {
         const displayStyleState = new DisplayStyle3dState(viewStateData.displayStyleProps, this._iModel);
         const modelSelectorState = new ModelSelectorState(viewStateData.modelSelectorProps, this._iModel);
-        return new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+        viewState = new OrthographicViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, modelSelectorState);
+        break;
       }
       case ViewState2d.getClassFullName(): {
         const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        return new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
+        viewState = new ViewState2d(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
+        break;
       }
       case DrawingViewState.getClassFullName(): {
         const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        return new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
+        viewState = new DrawingViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
+        break;
       }
       case SheetViewState.getClassFullName(): {
         const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-        return new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
+        viewState = new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
+        break;
       }
       default:
-        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState subclass", Logger.logError, loggingCategory, () => viewStateData));
+        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggingCategory, () => viewStateData));
     }
+
+    await viewState.load(); // loads models for ModelSelector
+    return viewState;
   }
 }

@@ -37,7 +37,7 @@ function testVertexLUTParams() {
 
   // Test simple unlit vertices (no normals or uv params; uniform colors + features)
   const args = new MeshArgs();
-  args.points = positions.toTypedArray();
+  args.points = positions;
   args.pointParams = positions.params;
 
   const expected = [
@@ -111,6 +111,13 @@ function testVertexLUTParams() {
   ];
 
   expectLUTParams(new VertexLUT.MeshBuilder(args), args.colors, expected, expectedColors);
+
+  // Confirm we can create a texture from a VertexLUT.Params
+  const params = new VertexLUT.Params(new VertexLUT.MeshBuilder(args), args.colors);
+  const texture = params.toTexture();
+  expect(texture).not.to.be.undefined;
+  expect(texture!.width).to.equal(params.dimensions.width);
+  expect(texture!.height).to.equal(params.dimensions.height);
 }
 
 describe("VertexLUT", () => {

@@ -45,6 +45,7 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
 * [Git](https://git-scm.com/)
 * [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 8.9.x. The Node installation also includes the **npm** package manager.
 * [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
+* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 2.7.2
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
 ## (Bentley Developers only) Authentication

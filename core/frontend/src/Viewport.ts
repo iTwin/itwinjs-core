@@ -11,7 +11,6 @@ import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
-import { Id64 } from "@bentley/bentleyjs-core";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
@@ -32,12 +31,12 @@ export class SyncFlags {
   public get isFirstDrawComplete(): boolean { return this.firstDrawComplete; }
   public get isRedrawPending(): boolean { return this.redrawPending; }
   constructor(private decorations: boolean = false,
-              private scene: boolean = false,
-              private renderPlan: boolean = false,
-              private controller: boolean = false,
-              private rotatePoint: boolean = false,
-              private firstDrawComplete: boolean = false,
-              private redrawPending: boolean = false) {}
+    private scene: boolean = false,
+    private renderPlan: boolean = false,
+    private controller: boolean = false,
+    private rotatePoint: boolean = false,
+    private firstDrawComplete: boolean = false,
+    private redrawPending: boolean = false) { }
   public invalidateDecorations(): void { this.decorations = false; }
   public invalidateScene(): void { this.scene = false; this.invalidateDecorations(); }
   public invalidateRenderPlan(): void { this.renderPlan = false; this.invalidateScene(); }
@@ -210,21 +209,7 @@ export class DecorationAnimator implements ViewportAnimator {
 export class Viewport {
   private iModel?: IModelConnection;
   /** Called whenever this viewport is synchronized with its ViewState */
-  public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
-  public readonly hilite = new Hilite.Settings();
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
-  /** view origin, potentially expanded */
-  public readonly viewOrg = new Point3d();
-  /** view delta, potentially expanded */
-  public readonly viewDelta = new Vector3d();
-  /** view origin (from ViewState, un-expanded) */
-  public readonly viewOrgUnexpanded = new Point3d();
-  /** view delta (from ViewState, un-expanded) */
-  public readonly viewDeltaUnexpanded = new Vector3d();
-  /** View rotation matrix (copied from ViewState) */
-  public readonly rotMatrix = new RotMatrix();
-  public readonly rootToView = Map4d.createIdentity();
-  public readonly rootToNpc = Map4d.createIdentity();
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
   public flashUpdateTime?: BeTimePoint;  // time the current flash started
@@ -235,17 +220,28 @@ export class Viewport {
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
-  private _auxCoordSystem?: AuxCoordSystemState;
-  public gridOrientation = GridOrientationType.WorldXY;
-  public readonly gridSpacing = new Point2d(1.0, 1.0);
-  public gridsPerRef = 10;
   private readonly forwardStack: ViewState[] = [];
   private readonly backStack: ViewState[] = [];
   private currentBaseline?: ViewState;
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
   private _evController?: EventController;
+  private _view!: ViewState;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   public readonly sync: SyncFlags = new SyncFlags();
+  /** view origin, potentially expanded */
+  public readonly viewOrigin = new Point3d();
+  /** view delta, potentially expanded */
+  public readonly viewDelta = new Vector3d();
+  /** view origin (from ViewState, un-expanded) */
+  public readonly viewOriginUnexpanded = new Point3d();
+  /** view delta (from ViewState, un-expanded) */
+  public readonly viewDeltaUnexpanded = new Vector3d();
+  /** View rotation matrix (copied from ViewState) */
+  public readonly rotMatrix = new RotMatrix();
+  public readonly rootToView = Map4d.createIdentity();
+  public readonly rootToNpc = Map4d.createIdentity();
+  public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
+  public readonly hilite = new Hilite.Settings();
 
   /**
    * Determine whether this Viewport is currently active. Viewports become "active" after they have
@@ -267,7 +263,11 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  constructor(public canvas: HTMLCanvasElement, private _view?: ViewState, private _target?: RenderTarget) { this.setCursor(); this.saveViewUndo(); }
+  /** construct a new ViewPort
+   * @param canvas The HTML canvas
+   * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
+   */
+  constructor(public canvas: HTMLCanvasElement, viewState: ViewState, private _target?: RenderTarget) { this.changeView(viewState); this.setCursor(); this.saveViewUndo(); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
@@ -276,7 +276,7 @@ export class Viewport {
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
   /** the current ViewState controlling this Viewport */
-  public get view(): ViewState { return this._view!; }
+  public get view(): ViewState { return this._view; }
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
@@ -299,10 +299,9 @@ export class Viewport {
     this.flashDuration = duration;
   }
 
-  public getAuxCoordSystem(): AuxCoordSystemState { if (!this._auxCoordSystem) this._auxCoordSystem = this.view.createAuxCoordSystem(""); return this._auxCoordSystem; }
-  public setAuxCoordSystem(val: AuxCoordSystemState | undefined) { this._auxCoordSystem = val; this.view.setAuxiliaryCoordinateSystemId(Id64.fromJSON(val ? val.id : undefined)); }
-  public getAuxCoordRotation(result?: RotMatrix) { return this._auxCoordSystem ? this._auxCoordSystem.getRotation(result) : RotMatrix.createIdentity(result); }
-  public getAuxCoordOrigin(result?: Point3d) { return this._auxCoordSystem ? this._auxCoordSystem.getOrigin(result) : Point3d.createZero(result); }
+  public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
+  public getAuxCoordRotation(result?: RotMatrix) { return this.auxCoordSystem.getRotation(result); }
+  public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
 
   private static copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
   public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(Viewport.copyOutput(from, to)); }
@@ -376,23 +375,15 @@ export class Viewport {
     camera.setFocusDistance(focusDistance);
   }
 
-  public async changeView(view: ViewState) {
+  /** Change the ViewState that this ViewPort
+   * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
+   */
+  public changeView(view: ViewState) {
     this.clearUndo();
     this._view = view;
     this.iModel = view.iModel;
     this.setupFromView();
     this.saveViewUndo();
-
-    const auxCoordSysId = view.getAuxiliaryCoordinateSystemId();
-    if (auxCoordSysId.isValid()) {
-      const props = await this.iModel.elements.getProps(auxCoordSysId);
-      this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
-    } else { this._auxCoordSystem = undefined; }
-
-    this.gridOrientation = view.getGridOrientation();
-    this.gridsPerRef = view.getGridsPerRef();
-    view.getGridSpacing(this.gridSpacing);
-    return view.load(); // load the view's state, if necessary
   }
 
   private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
@@ -566,15 +557,15 @@ export class Viewport {
     delta.z = Math.abs(delta.z);
 
     const limits = this.view.getExtentLimits();
-    const clampRange = (val: number) => Math.min(Math.max(limits.minExtent, val), limits.maxExtent);
+    const clampRange = (val: number) => Math.min(Math.max(limits.min, val), limits.max);
     delta.x = clampRange(delta.x);
     delta.y = clampRange(delta.y);
 
     this.adjustAspectRatio(origin, delta);
 
-    this.viewOrgUnexpanded.setFrom(origin);
+    this.viewOriginUnexpanded.setFrom(origin);
     this.viewDeltaUnexpanded.setFrom(delta);
-    this.viewOrg.setFrom(origin);
+    this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
     this.zClipAdjusted = false;
 
@@ -617,7 +608,7 @@ export class Viewport {
         }
 
         // if we moved the z planes, set the "zClipAdjusted" flag.
-        if (!origin.isExactEqual(this.viewOrgUnexpanded) || !delta.isExactEqual(this.viewDeltaUnexpanded))
+        if (!origin.isExactEqual(this.viewOriginUnexpanded) || !delta.isExactEqual(this.viewDeltaUnexpanded))
           this.zClipAdjusted = true;
       }
     } else { // 2d viewport
@@ -626,7 +617,7 @@ export class Viewport {
       origin.z = -Viewport.get2dFrustumDepth();
     }
 
-    this.viewOrg.setFrom(origin);
+    this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
     const frustFraction = this.rootToNpcFromViewDef(this.rootToNpc, origin, delta);
@@ -857,7 +848,7 @@ export class Viewport {
     if (!adjustedBox && this.zClipAdjusted) {
       // to get unexpanded box, we have to go recompute rootToNpc from original View.
       const ueRootToNpc = Map4d.createIdentity();
-      const compression = this.rootToNpcFromViewDef(ueRootToNpc, this.viewOrgUnexpanded, this.viewDeltaUnexpanded);
+      const compression = this.rootToNpcFromViewDef(ueRootToNpc, this.viewOriginUnexpanded, this.viewDeltaUnexpanded);
       if (!compression)
         return box;
 
@@ -1170,7 +1161,7 @@ export class Viewport {
     if (this.view.isSpatialView())
       origin.setFrom(this.iModel!.globalOrigin);
 
-    switch (this.gridOrientation) {
+    switch (this.view.getGridOrientation()) {
       case GridOrientationType.View: {
         const center = this.view.getCenter();
         this.toView(center);
@@ -1218,8 +1209,9 @@ export class Viewport {
     pointView.x -= originView.x;
 
     // round off the remainder to the grid distances
-    pointView.x = Viewport.roundGrid(pointView.x, this.gridSpacing.x);
-    pointView.y = Viewport.roundGrid(pointView.y, this.gridSpacing.y);
+    const gridSpacing = this.view.getGridSpacing();
+    pointView.x = Viewport.roundGrid(pointView.x, gridSpacing.x);
+    pointView.y = Viewport.roundGrid(pointView.y, gridSpacing.y);
 
     // add the origin back in
     pointView.x += originView.x;
@@ -1231,7 +1223,7 @@ export class Viewport {
   }
 
   public pointToGrid(point: Point3d): void {
-    if (GridOrientationType.AuxCoord === this.gridOrientation) {
+    if (GridOrientationType.AuxCoord === this.view.getGridOrientation()) {
       this.pointToStandardGrid(point, this.getAuxCoordRotation(), this.getAuxCoordOrigin());
       return;
     }

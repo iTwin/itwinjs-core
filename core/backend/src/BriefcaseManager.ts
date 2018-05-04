@@ -342,8 +342,13 @@ export class BriefcaseManager {
           }
 
           briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.changeSetId);
-          if (briefcase.reversedChangeSetId !== undefined)
-            briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.reversedChangeSetId);
+          if (briefcase.reversedChangeSetId !== undefined) {
+            // briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(accessToken, iModelId, briefcase.reversedChangeSetId);
+            // NEEDS_WORK: We don't re-use briefcases with reversedChangeSets at the moment (so we simply delete them from the cache for now)
+            await BriefcaseManager.deleteBriefcase(accessToken, briefcase);
+            continue;
+          }
+
         } catch (error) {
           // The iModel is unreachable on the hub - deployment configuration is different, imodel was removed, the current user does not have access
           Logger.logWarning(loggingCategory, `Unable to find briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} on the Hub. Deleting it`);
@@ -1080,6 +1085,14 @@ export class BriefcaseManager {
     BriefcaseManager.finishCreateChangeSet(briefcase);
 
     return changeSetToken;
+  }
+
+  /** Applies a change set to a standalone iModel */
+  public static applyStandaloneChangeSet(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption, containsSchemaChanges: boolean): ChangeSetStatus {
+    if (!briefcase.isStandalone)
+      throw new IModelError(BentleyStatus.ERROR);
+
+    return briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption, containsSchemaChanges);
   }
 
   /** Dumps a change set */

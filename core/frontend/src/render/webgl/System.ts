@@ -7,6 +7,7 @@ import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../Sys
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/Geometry";
+import { PolylineArgs } from "../primitives/Mesh";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
@@ -18,6 +19,9 @@ import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
 import { TextureHandle } from "./Texture";
 import { GL } from "./GL";
+import { CachedGeometry } from "./CachedGeometry";
+import { PolylinePrimitive } from "./Polyline";
+import { PointStringPrimitive, PointStringParams } from "./PointString";
 
 export const enum ContextState {
   Uninitialized,
@@ -60,7 +64,7 @@ export class Capabilities {
   private _maxVaryingVectors: number = 0;
   private _maxFragUniformVectors: number = 0;
 
-  private _extensionMap: {[key: string]: any} = {}; // Use this map to store actual extension objects retrieved from GL.
+  private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
@@ -102,8 +106,8 @@ export class Capabilities {
     if (extensions) {
       for (const ext of extensions) {
         if (ext === "WEBGL_draw_buffers" || ext === "OES_element_index_uint" || ext === "OES_texture_float" ||
-            ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
-            ext === "EXT_shader_texture_lod") {
+          ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
+          ext === "EXT_shader_texture_lod") {
           const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
           if (null !== extObj)
             this._extensionMap[ext] = extObj;
@@ -171,9 +175,9 @@ export class Capabilities {
 }
 
 export class System extends RenderSystem {
-  private readonly _canvas: HTMLCanvasElement;
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
+  public readonly canvas: HTMLCanvasElement;
   public readonly frameBufferStack = new FrameBufferStack();
 
   public readonly techniques: Techniques;
@@ -185,8 +189,9 @@ export class System extends RenderSystem {
 
   public static identityTransform = Transform.createIdentity();
 
-  public static create(canvas?: HTMLCanvasElement): System | undefined {
-    if (undefined === canvas) {
+  public static create(): System | undefined {
+    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    if (null === canvas) {
       return undefined;
     }
 
@@ -211,13 +216,19 @@ export class System extends RenderSystem {
     return new System(canvas, context, techniques, capabilities);
   }
 
-  public createTarget(): RenderTarget { return new OnScreenTarget(this._canvas); }
+  public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
+  public createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic {
+    if (args.flags.isDisjoint) {
+      const pointStringParams: PointStringParams = new PointStringParams(args);
+      const cachedGeom: CachedGeometry = pointStringParams.createGeometry();
+      return new PointStringPrimitive(cachedGeom, imodel);
+    } else
+      return PolylinePrimitive.create(args, imodel);
+  }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
-
-  public get canvas(): HTMLCanvasElement { return this._canvas; }
 
   public applyRenderState(newState: RenderState) {
     newState.apply(this._currentRenderState);
@@ -230,7 +241,7 @@ export class System extends RenderSystem {
         return RenderBuffer.create(width, height);
       }
       case DepthType.TextureUnsignedInt32: {
-        return TextureHandle.createForColor(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
+        return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
       }
       default: {
         assert(false);
@@ -241,14 +252,11 @@ export class System extends RenderSystem {
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
-    this._canvas = canvas;
+    this.canvas = canvas;
     this.context = context;
     this.techniques = techniques;
     this.capabilities = capabilities;
     this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-    // Silence unused variable warnings...
-    assert(undefined !== this._canvas);
-    assert(undefined !== this.context);
   }
 }
 

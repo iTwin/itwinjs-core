@@ -1,6 +1,6 @@
 # Executing ECSQL with the iModelJs Frontend
 
-ECSQL by itself is described in detail here: [ECSQL](../learning/ECSQL)
+ECSQL by itself is described in detail here: [ECSQL](../ECSQL)
 
 A frontend ECSQL query is executed by calling [IModelConnection.executeQuery]($imodeljs-frontend.IModelConnection.executeQuery).
 
@@ -16,7 +16,7 @@ If multiple queries are required to build up the desired result, consider moving
 
 ## Parameter Bindings
 
-See section "[ECSQL parameter types in iModelJs](../learning/ECSQLParameterTypes)" to learn which types to use for the parameters when binding all
+See section "[ECSQL parameter types in iModelJs](../ECSQLParameterTypes)" to learn which types to use for the parameters when binding all
 parameters at once.
 
 ### Positional parameters
@@ -33,7 +33,7 @@ parameters at once.
 
 ### Navigation properties
 
-[Navigation properties](../learning/ECSQL#navigation-properties) are structs made up of the Id of the related instance and the backing
+[Navigation properties](../ECSQL#navigation-properties) are structs made up of the Id of the related instance and the backing
 ECRelationshipClass. The [NavigationBindingValue]($imodeljs-common.NavigationBindingValue) interface is used to bind values to navigation property parameters.
 
 ```ts
@@ -49,9 +49,9 @@ this by specifying the **Id** member of a navigation property.
 
 ### Struct properties
 
-You can either parameterize a struct property as a whole or parameterize individual members of the struct. See "[Struct properties in ECSQL](../learning/ECSQL#structs)" for the ECSQL background.
+You can either parameterize a struct property as a whole or parameterize individual members of the struct. See "[Struct properties in ECSQL](../ECSQL#structs)" for the ECSQL background.
 
-> The ECSQL examples used in this section refer to the sample ECSchema in "[Struct properties in ECSQL](../learning/ECSQL#structs)".
+> The ECSQL examples used in this section refer to the sample ECSchema in "[Struct properties in ECSQL](../ECSQL#structs)".
 
 #### Binding structs as a whole
 
@@ -69,9 +69,9 @@ You can either parameterize a struct property as a whole or parameterize individ
 
 ### Array properties
 
-See "[Array properties in ECSQL](../learning/ECSQL#arrays)" for the ECSQL background.
+See "[Array properties in ECSQL](../ECSQL#arrays)" for the ECSQL background.
 
-> The ECSQL examples used in this section refer to the sample ECSchema in "[Array properties in ECSQL](../learning/ECSQL#arrays)".
+> The ECSQL examples used in this section refer to the sample ECSchema in "[Array properties in ECSQL](../ECSQL#arrays)".
 
 ```ts
 [[include:ExecuteECSql_Binding_Array]]
@@ -80,9 +80,9 @@ See "[Array properties in ECSQL](../learning/ECSQL#arrays)" for the ECSQL backgr
 ## Working with the query result
 
 ECSQL query results are returned as array of JavaScript literals, where each literal represents an ECSQL row in the
-[ECSQL row format](../learning/ECSQLRowFormat)).
+[ECSQL row format](../ECSQLRowFormat)).
 
-The following example is intended to illustrate the [ECSQL row format](../learning/ECSQLRowFormat):
+The following example is intended to illustrate the [ECSQL row format](../ECSQLRowFormat):
 
 ```ts
 [[include:ExecuteECSql_IllustrateRowFormat]]
@@ -99,7 +99,7 @@ The following example is intended to illustrate the [ECSQL row format](../learni
 ```
 
 > Note how the ECProperties used in the ECSQL are converted to members of the JavaScript literal and how their names are
-> transformed according to the rules described in the [ECSQL row format](../learning/ECSQLRowFormat#property-names).
+> transformed according to the rules described in the [ECSQL row format](../ECSQLRowFormat#property-names).
 
 The following example illustrates how to work with the ECSQL row JavaScript literal:
 

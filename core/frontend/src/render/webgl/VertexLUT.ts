@@ -7,6 +7,7 @@ import { ColorDef, ColorIndex, QPoint2d, QParams2d } from "@bentley/imodeljs-com
 import { LUTDimensions } from "./FeatureDimensions";
 import { ColorInfo } from "./ColorInfo";
 import { MeshArgs, PolylineArgs } from "../Primitives/Mesh";
+import { TextureHandle } from "./Texture";
 
 export namespace VertexLUT {
   /**
@@ -40,6 +41,10 @@ export namespace VertexLUT {
       builder.appendColorTable(colorIndex);
 
       builder.params = undefined;
+    }
+
+    public toTexture(): TextureHandle | undefined {
+      return TextureHandle.createForData(this.dimensions.width, this.dimensions.height, this.data);
     }
   }
 
@@ -135,7 +140,7 @@ export namespace VertexLUT {
       assert(undefined !== this.args.points);
     }
 
-    public get numVertices() { return this.args.points!.length / 3; }
+    public get numVertices() { return this.args.points!.length; }
     public get numRgbaPerVertex() { return 3; }
 
     public appendVertex(vertIndex: number): void {
@@ -145,11 +150,10 @@ export namespace VertexLUT {
     }
 
     protected appendPosition(vertIndex: number) {
-      const posIndex = vertIndex * 3;
       const points = this.args.points!;
-      this.append16(points[posIndex]);
-      this.append16(points[posIndex + 1]);
-      this.append16(points[posIndex + 2]);
+      this.append16(points.list[vertIndex].x);
+      this.append16(points.list[vertIndex].y);
+      this.append16(points.list[vertIndex].z);
     }
 
     protected appendColorIndex(vertIndex: number) {

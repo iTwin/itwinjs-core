@@ -24,17 +24,24 @@ export const enum GeometryType {
     ArrayedPoints,
 }
 
+export const enum SurfaceType {
+    Unlit,
+    Lit,
+    Textured,
+    TexturedLit,
+}
+
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures. */
-export const enum TextureUnit {
+export enum TextureUnit {
     // For shaders which know exactly which textures will be used
-    Zero = 0,
-    One = 1,
-    Two = 2,
-    Three = 3,
-    Four = 4,
-    Five = 5,
-    Six = 6,
-    Seven = 7, // Last one available for GLES2
+    Zero = WebGLRenderingContext.TEXTURE0,
+    One = WebGLRenderingContext.TEXTURE1,
+    Two = WebGLRenderingContext.TEXTURE2,
+    Three = WebGLRenderingContext.TEXTURE3,
+    Four = WebGLRenderingContext.TEXTURE4,
+    Five = WebGLRenderingContext.TEXTURE5,
+    Six = WebGLRenderingContext.TEXTURE6,
+    Seven = WebGLRenderingContext.TEXTURE7, // Last one available for GLES2
 
     ClipMask = Zero,
     FeatureSymbology = One,
@@ -46,12 +53,14 @@ export const enum TextureUnit {
     PickElementId1 = Five,
     PickDepthAndOrder = Six,
 
+    VertexLUT = Seven,
+
     // WIP - Image lighting (won't work if device limited to 8 textures).
-    DiffuseMap = 8,
-    IBLSpecular = 9,
-    BRDFLUT = 10,
-    EnvironmentMap = 11,
-    AnimationLUT = 12,
+    DiffuseMap = WebGLRenderingContext.TEXTURE8,
+    IBLSpecular = WebGLRenderingContext.TEXTURE9,
+    BRDFLUT = WebGLRenderingContext.TEXTURE10,
+    EnvironmentMap = WebGLRenderingContext.TEXTURE11,
+    AnimationLUT = WebGLRenderingContext.TEXTURE12,
 }
 
 /**

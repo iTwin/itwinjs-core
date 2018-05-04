@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap,  ECInstance, WsgInstance, ChangeState } from "../index";
-import { TestConfig } from "./TestConfig";
 import nock = require("nock");
 
 export enum RequestType {
@@ -182,37 +181,6 @@ export class ResponseBuilder {
   }
 
   /**
-   * Generates request URL.
-   * @param scope Specifies scope.
-   * @param id Specifies scope id.
-   * @param className Class name that request is sent to.
-   * @param query Request query.
-   * @returns Created URL.
-   */
-  public createRequestUrl(scope: ScopeType, id: string, className: string, query?: string): string {
-    let requestUrl: string = "/v2.5/Repositories/";
-
-    switch (scope) {
-      case ScopeType.iModel:
-        requestUrl += "iModel--" + id + "/iModelScope/";
-        break;
-      case ScopeType.Project:
-        requestUrl += "Project--" + id + "/ProjectScope/";
-        break;
-      case ScopeType.Global:
-        requestUrl += "Global--Global/GlobalScope/";
-        break;
-    }
-
-    requestUrl += className + "/";
-    if (query !== undefined) {
-      requestUrl += query;
-    }
-
-    return requestUrl;
-  }
-
-  /**
    * Mocks response to a request.
    * @param requestType Specifies request type.
    * @param requestPath Specifies request path.
@@ -222,11 +190,8 @@ export class ResponseBuilder {
    * @param headers Specifies response headers.
    * @param responseCode Specifies response code.
    */
-  public MockResponse(requestType: RequestType, requestPath: string, requestResponse: string | (() => string), times = 1, postBody?: string,
+  public mockResponse(url: string, requestType: RequestType, requestPath: string, requestResponse: string | (() => string), times = 1, postBody?: string,
     headers?: any, responseCode = 200): void {
-    if (!TestConfig.enableNock)
-      return;
-    const url = "https://qa-imodelhubapi.bentley.com";
     switch (requestType) {
       case RequestType.Get:
         nock(url)
@@ -235,20 +200,20 @@ export class ResponseBuilder {
           .reply(responseCode, requestResponse);
         break;
       case RequestType.Post:
-          nock(url)
+        nock(url)
           .post(requestPath, postBody)
           .reply(responseCode, requestResponse);
-          break;
+        break;
       case RequestType.Delete:
         nock(url)
-        .delete(requestPath)
-        .times(times)
-        .reply(responseCode, requestResponse, headers);
+          .delete(requestPath)
+          .times(times)
+          .reply(responseCode, requestResponse, headers);
         break;
       case RequestType.Put:
         nock(url)
-        .put(requestPath)
-        .reply(responseCode, requestResponse);
+          .put(requestPath)
+          .reply(responseCode, requestResponse);
         break;
     }
   }
@@ -258,13 +223,13 @@ export class ResponseBuilder {
    * @param host Host name of the request.
    * @param requestPath Request path.
    * @param file Path to the file that will be sent as a response.
+   * @param times How many times to repeat the same response.
    */
-  public mockFileResponse(host: string, requestPath: string, file: string): void {
-    if (!TestConfig.enableNock)
-      return;
+  public mockFileResponse(host: string, requestPath: string, file: string, times = 1): void {
     nock(host)
-        .get(requestPath)
-        .replyWithFile(200, file);
+      .get(requestPath)
+      .times(times)
+      .replyWithFile(200, file);
   }
 
   /**
@@ -289,8 +254,6 @@ export class ResponseBuilder {
    * Clears all mocked objects.
    */
   public clearMocks(): void {
-    if (!TestConfig.enableNock)
-      return;
     nock.cleanAll();
   }
 }

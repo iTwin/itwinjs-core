@@ -2,9 +2,40 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { expect } from "chai";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { FloatRgb, FloatRgba, FloatPreMulRgba } from "@bentley/imodeljs-frontend/lib/rendering";
+import { FloatRgb, FloatRgba, FloatPreMulRgba, Rgba } from "@bentley/imodeljs-frontend/lib/rendering";
+
+interface Rgb {
+  red: number;
+  green: number;
+  blue: number;
+}
+
+function expectComponent(actual: number, expected: number) {
+  // Floating-point color types store components as 32-bit floats. Expect precision issues when comparing to 64-bit floats.
+  const epsilon = 0.00001;
+  expect(Math.abs(expected - actual)).to.be.lessThan(epsilon);
+}
+
+function expectRgb<T extends Rgb>(rgb: T, r: number, g: number, b: number) {
+  expectComponent(rgb.red, r);
+  expectComponent(rgb.green, g);
+  expectComponent(rgb.blue, b);
+}
+
+function expectEqualRgb<T extends Rgb>(a: T, b: T) {
+  expectRgb(a, b.red, b.green, b.blue);
+}
+
+function expectRgba(rgba: Rgba, r: number, g: number, b: number, a: number) {
+  expectRgb(rgba, r, g, b);
+  expectComponent(rgba.alpha, a);
+}
+
+function expectEqualRgba(a: Rgba, b: Rgba) {
+  expectRgba(a, b.red, b.green, b.blue, b.alpha);
+}
 
 describe("FloatRgb", () => {
   it("should create and store rgb from ColorDef", () => {
@@ -12,12 +43,11 @@ describe("FloatRgb", () => {
 
     // Test fromColorDef function
     let bFloatRgb: FloatRgb = FloatRgb.fromColorDef(ColorDef.from(0, 0, 0));
-    assert.isTrue(bFloatRgb.red === 0 && bFloatRgb.green === 0 && bFloatRgb.blue === 0,
-      "fromColorDef test 1 failed\nred=" + bFloatRgb.red + "\ngreen=" + bFloatRgb.green + "\nblue=" + bFloatRgb.blue);
+    expectRgb(bFloatRgb, 0, 0, 0);
+
     bFloatRgb = FloatRgb.fromColorDef(ColorDef.from(51, 102, 255));
-    aFloatRgb = new FloatRgb(0.2, 0.4, 1.0);
-    assert.isTrue(aFloatRgb.red === bFloatRgb.red && aFloatRgb.green === bFloatRgb.green && aFloatRgb.blue === bFloatRgb.blue,
-      "fromColorDef test 2 failed\nred=" + aFloatRgb.red + "\ngreen=" + aFloatRgb.green + "\nblue=" + aFloatRgb.blue);
+    aFloatRgb = new FloatRgb(51 / 255, 102 / 255, 255 / 255);
+    expectEqualRgb(bFloatRgb, aFloatRgb);
   });
 });
 
@@ -25,74 +55,55 @@ describe("FloatRgba", () => {
   it("should create and store rgba in a variety of ways", () => {
     let aFloatRgba: FloatRgba = new FloatRgba(0, 0, 0, 0);
     let bFloatRgba: FloatRgba = new FloatRgba(0, 0, 0, 0);
+    expectEqualRgba(aFloatRgba, bFloatRgba);
 
     // Test hasTranslucency function
     aFloatRgba = new FloatRgba(0, 0, 0, 0);
-    assert.isTrue(aFloatRgba.hasTranslucency,
-      "hasTranslucency test 1 failed\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue + "\nalpha=" + aFloatRgba.alpha);
+    expect(aFloatRgba.hasTranslucency).to.be.true;
     aFloatRgba = new FloatRgba(0, 0, 0, 0.5);
-    assert.isTrue(aFloatRgba.hasTranslucency,
-      "hasTranslucency test 2 failed\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue + "\nalpha=" + aFloatRgba.alpha);
+    expect(aFloatRgba.hasTranslucency).to.be.true;
     aFloatRgba = new FloatRgba(0, 0, 0, 1.0);
-    assert.isFalse(aFloatRgba.hasTranslucency,
-      "hasTranslucency test 3 failed\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue + "\nalpha=" + aFloatRgba.alpha);
+    expect(aFloatRgba.hasTranslucency).to.be.false;
 
     // Test fromPreMulRgba function
     const aPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(1.0, 0.4, 0.6, 0.5));
     const bPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.0, 1.0, 0.0, 1.0));
     bFloatRgba = FloatRgba.fromPreMulRgba(aPreMulRgba);
-    assert.exists(bFloatRgba);
-    assert.isTrue(bFloatRgba.red === 1.0 && bFloatRgba.green === 0.4 && bFloatRgba.blue === 0.6 && bFloatRgba.alpha === 0.5,
-      "fromPreMulRgba test 1 failed\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expectRgba(bFloatRgba, 1, 0.4, 0.6, 0.5);
     bFloatRgba = FloatRgba.fromPreMulRgba(bPreMulRgba);
-    assert.isTrue(bFloatRgba.red === 0.0 && bFloatRgba.green === 1.0 && bFloatRgba.blue === 0.0 && bFloatRgba.alpha === 1.0,
-      "fromPreMulRgba test 2 failed\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expectEqualRgba(bFloatRgba, bPreMulRgba);
 
     // Test fromRgb function
     const aFloatRgb: FloatRgb = FloatRgb.fromColorDef(ColorDef.from(51, 102, 255));
     bFloatRgba = FloatRgba.fromRgb(aFloatRgb);
-    assert.isTrue(bFloatRgba.red === 0.2 && bFloatRgba.green === 0.4 && bFloatRgba.blue === 1.0 && bFloatRgba.alpha === 1.0,
-      "fromRgb test 1 failed\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expectRgba(bFloatRgba, 51 / 255, 102 / 255, 255 / 255, 1);
     const bFloatRgb: FloatRgb = FloatRgb.fromColorDef(ColorDef.from(0, 255, 0));
     bFloatRgba = FloatRgba.fromRgb(bFloatRgb, 0.7);
-    assert.isTrue(bFloatRgba.red === 0.0 && bFloatRgba.green === 1.0 && bFloatRgba.blue === 0.0 && bFloatRgba.alpha === 0.7,
-      "fromRgb test 2 failed\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expectRgba(bFloatRgba, 0, 1, 0, 0.7);
 
     // Test fromColorDef function
     bFloatRgba = FloatRgba.fromColorDef(ColorDef.from(0, 0, 0));
-    assert.isTrue(bFloatRgba.red === 0 && bFloatRgba.green === 0 && bFloatRgba.blue === 0,
-      "fromColorDef test 1 failed\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expectRgba(bFloatRgba, 0, 0, 0, 1);
     bFloatRgba = FloatRgba.fromColorDef(ColorDef.from(51, 102, 255));
-    aFloatRgba = new FloatRgba(0.2, 0.4, 1.0, 0);
-    assert.isTrue(aFloatRgba.red === bFloatRgba.red && aFloatRgba.green === bFloatRgba.green && aFloatRgba.blue === bFloatRgba.blue,
-      "fromColorDef test 2 failed\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue + "\nalpha=" + aFloatRgba.alpha);
+    aFloatRgba = new FloatRgba(0.2, 0.4, 1.0, 1.0);
+    expectEqualRgba(aFloatRgba, bFloatRgba);
 
     // Test equals function
     aFloatRgba = new FloatRgba(0.2, 0.4, 1.0, 0.2);
     bFloatRgba = new FloatRgba(0.2, 0.4, 1.0, 0.2);
-    assert.isTrue(aFloatRgba.equals(bFloatRgba),
-      "equals test 1 failed\naFloatRgba:\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue
-      + "\nbFloatRgba:\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.true;
     bFloatRgba = new FloatRgba(0.201, 0.4, 1.0, 0.2);
-    assert.isFalse(aFloatRgba.equals(bFloatRgba),
-      "equals test 2 failed\naFloatRgba:\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue
-      + "\nbFloatRgba:\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.false;
     bFloatRgba = new FloatRgba(0.2, 0.401, 1.0, 0.2);
-    assert.isFalse(aFloatRgba.equals(bFloatRgba),
-      "equals test 3 failed\naFloatRgba:\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue
-      + "\nbFloatRgba:\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.false;
     bFloatRgba = new FloatRgba(0.2, 0.4, 0.999, 0.2);
-    assert.isFalse(aFloatRgba.equals(bFloatRgba),
-      "equals test 4 failed\naFloatRgba:\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue
-      + "\nbFloatRgba:\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.false;
     bFloatRgba = new FloatRgba(0.2, 0.4, 1.0, 0.5);
-    assert.isFalse(aFloatRgba.equals(bFloatRgba),
-      "equals test 5 failed\naFloatRgba:\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue
-      + "\nbFloatRgba:\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.false;
     bFloatRgba = new FloatRgba(0.2, 0.4, 1.0, 0.2);
-    assert.isTrue(aFloatRgba.equals(bFloatRgba),
-      "equals test 6 failed\naFloatRgba:\nred=" + aFloatRgba.red + "\ngreen=" + aFloatRgba.green + "\nblue=" + aFloatRgba.blue
-      + "\nbFloatRgba:\nred=" + bFloatRgba.red + "\ngreen=" + bFloatRgba.green + "\nblue=" + bFloatRgba.blue + "\nalpha=" + bFloatRgba.alpha);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.true;
+    bFloatRgba = new FloatRgba(0.200000000000001, 0.4, 1.0, 0.2);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.true;
   });
 });
 
@@ -103,59 +114,40 @@ describe("FloatPreMulRgba", () => {
 
     // Test hasTranslucency function
     aFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.0, 1.0, 0.0, 0.0));
-    assert.isTrue(aFloatPreMulRgba.hasTranslucency,
-      "hasTranslucency test 1 failed\nalpha=" + aFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.hasTranslucency).to.be.true;
     aFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.0, 1.0, 0.0, 0.5));
-    assert.isTrue(aFloatPreMulRgba.hasTranslucency,
-      "hasTranslucency test 2 failed\nalpha=" + aFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.hasTranslucency).to.be.true;
     aFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.0, 1.0, 0.0, 1.0));
-    assert.isFalse(aFloatPreMulRgba.hasTranslucency,
-      "hasTranslucency test 3 failed\nalpha=" + aFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.hasTranslucency).to.be.false;
 
     // Test fromRgba function
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.0, 1.0, 0.0, 0.0));
     const aFloatRgba: FloatRgba = new FloatRgba(0.2, 0.4, 1.0, 1.0);
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(aFloatRgba);
-    assert.isTrue(bFloatPreMulRgba.red === 0.2 && bFloatPreMulRgba.green === 0.4 && bFloatPreMulRgba.blue === 1.0 && bFloatPreMulRgba.alpha === 1.0,
-      "fromRgba test 1 failed\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expectEqualRgba(bFloatPreMulRgba, aFloatRgba);
     const bFloatRgba: FloatRgba = new FloatRgba(0.0, 1.0, 0.0, 0.7);
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(bFloatRgba);
-    assert.isTrue(bFloatPreMulRgba.red === 0.0 && bFloatPreMulRgba.green === 0.7 && bFloatPreMulRgba.blue === 0.0 && bFloatPreMulRgba.alpha === 0.7,
-      "fromRgba test 2 failed\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expectRgba(bFloatPreMulRgba, 0, 0.7, 0, 0.7);
 
     // Test fromColorDef function
     bFloatPreMulRgba = FloatPreMulRgba.fromColorDef(ColorDef.from(0, 0, 0, 0));
-    assert.isTrue(bFloatPreMulRgba.red === 0 && bFloatPreMulRgba.green === 0 && bFloatPreMulRgba.blue === 0 && bFloatPreMulRgba.alpha === 1.0,
-      "fromColorDef test 1 failed\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expectRgba(bFloatPreMulRgba, 0, 0, 0, 1);
     bFloatPreMulRgba = FloatPreMulRgba.fromColorDef(ColorDef.from(51, 102, 255, 51));
-    assert.isTrue(bFloatPreMulRgba.red === 0.16 && bFloatPreMulRgba.green === 0.32 && bFloatPreMulRgba.blue === 0.8 && bFloatPreMulRgba.alpha === 0.8,
-      "fromColorDef test 2 failed\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expectRgba(bFloatPreMulRgba, 0.16, 0.32, 0.8, 0.8);
 
     // Test equals function
     aFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.2, 0.4, 1.0, 0.2));
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.2, 0.4, 1.0, 0.2));
-    assert.isTrue(aFloatPreMulRgba.equals(bFloatPreMulRgba),
-      "equals test 1 failed\naFloatPreMulRgba:\nred=" + aFloatPreMulRgba.red + "\ngreen=" + aFloatPreMulRgba.green + "\nblue=" + aFloatPreMulRgba.blue + "\nalpha=" + aFloatPreMulRgba.alpha
-      + "\nbFloatPreMulRgba:\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.true;
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.199, 0.4, 1.0, 0.2));
-    assert.isFalse(aFloatPreMulRgba.equals(bFloatPreMulRgba),
-      "equals test 2 failed\naFloatPreMulRgba:\nred=" + aFloatPreMulRgba.red + "\ngreen=" + aFloatPreMulRgba.green + "\nblue=" + aFloatPreMulRgba.blue + "\nalpha=" + aFloatPreMulRgba.alpha
-      + "\nbFloatPreMulRgba:\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.false;
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.2, 0.399, 1.0, 0.2));
-    assert.isFalse(aFloatPreMulRgba.equals(bFloatPreMulRgba),
-      "equals test 3 failed\naFloatPreMulRgba:\nred=" + aFloatPreMulRgba.red + "\ngreen=" + aFloatPreMulRgba.green + "\nblue=" + aFloatPreMulRgba.blue + "\nalpha=" + aFloatPreMulRgba.alpha
-      + "\nbFloatPreMulRgba:\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.false;
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.2, 0.4, 0.999, 0.2));
-    assert.isFalse(aFloatPreMulRgba.equals(bFloatPreMulRgba),
-      "equals test 4 failed\naFloatPreMulRgba:\nred=" + aFloatPreMulRgba.red + "\ngreen=" + aFloatPreMulRgba.green + "\nblue=" + aFloatPreMulRgba.blue + "\nalpha=" + aFloatPreMulRgba.alpha
-      + "\nbFloatPreMulRgba:\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.false;
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.2, 0.4, 1.0, 0.5));
-    assert.isFalse(aFloatPreMulRgba.equals(bFloatPreMulRgba),
-      "equals test 5 failed\naFloatPreMulRgba:\nred=" + aFloatPreMulRgba.red + "\ngreen=" + aFloatPreMulRgba.green + "\nblue=" + aFloatPreMulRgba.blue + "\nalpha=" + aFloatPreMulRgba.alpha
-      + "\nbFloatPreMulRgba:\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.false;
     bFloatPreMulRgba = FloatPreMulRgba.fromRgba(new FloatRgba(0.2, 0.4, 1.0, 0.2));
-    assert.isTrue(aFloatPreMulRgba.equals(bFloatPreMulRgba),
-      "equals test 6 failed\naFloatPreMulRgba:\nred=" + aFloatPreMulRgba.red + "\ngreen=" + aFloatPreMulRgba.green + "\nblue=" + aFloatPreMulRgba.blue + "\nalpha=" + aFloatPreMulRgba.alpha
-      + "\nbFloatPreMulRgba:\nred=" + bFloatPreMulRgba.red + "\ngreen=" + bFloatPreMulRgba.green + "\nblue=" + bFloatPreMulRgba.blue + "\nalpha=" + bFloatPreMulRgba.alpha);
+    expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.true;
   });
 });
