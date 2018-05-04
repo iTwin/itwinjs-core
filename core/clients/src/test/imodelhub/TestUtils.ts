@@ -7,6 +7,7 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { ECJsonTypeMap } from "../../ECJsonTypeMap";
 import { TestConfig, UserCredentials } from "../TestConfig";
 import { Guid } from "@bentley/bentleyjs-core";
+import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ChangeSet } from "../../imodelhub/ChangeSets";
 import { Version } from "../../imodelhub/Versions";
@@ -15,6 +16,9 @@ import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { UserProfile } from "../../UserProfile";
 import { ConnectClient, Project } from "../../ConnectClients";
+
+import * as fs from "fs";
+import * as path from "path";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
@@ -25,6 +29,7 @@ class MockAccessToken extends AccessToken {
 }
 
 export const defaultUrl = "https://qa-imodelhubapi.bentley.com";
+export const assetsPath = __dirname + "/../assets/";
 /**
  * Generates request URL.
  * @param scope Specifies scope.
@@ -38,10 +43,10 @@ export function createRequestUrl(scope: ScopeType, id: string, className: string
 
   switch (scope) {
     case ScopeType.iModel:
-      requestUrl += "iModel--" + id + "/iModelScope/";
+      requestUrl += `iModel--${id}/iModelScope/`;
       break;
     case ScopeType.Project:
-      requestUrl += "Project--" + id + "/ProjectScope/";
+      requestUrl += `Project--${id}/ProjectScope/`;
       break;
     case ScopeType.Global:
       requestUrl += "Global--Global/GlobalScope/";
@@ -115,10 +120,16 @@ export async function getIModelId(accessToken: AccessToken, imodelName?: string)
 }
 
 /** Briefcases */
-export async function getBriefcases(accessToken: AccessToken, imodelId: string, count: number): Promise<number[]> {
+export async function getBriefcases(accessToken: AccessToken, imodelId: string, count: number): Promise<Briefcase[]> {
   if (TestConfig.enableMocks) {
     let briefcaseId = 2;
-    return Array(count).fill(0).map(() => briefcaseId++);
+    const fileId = Guid.createValue();
+    return Array(count).fill(0).map(() => {
+      const briefcase = new Briefcase();
+      briefcase.briefcaseId = briefcaseId++;
+      briefcase.fileId = fileId;
+      return briefcase;
+    });
   }
 
   const client = new IModelHubClient(TestConfig.deploymentEnv);
@@ -129,7 +140,7 @@ export async function getBriefcases(accessToken: AccessToken, imodelId: string, 
     }
     briefcases = await client.Briefcases().get(accessToken, imodelId);
   }
-  return briefcases.map((value) => value.briefcaseId!);
+  return briefcases;
 }
 
 export function generateBriefcase(id: number): Briefcase {
@@ -301,4 +312,76 @@ export function mockUpdateVersion(responseBuilder: ResponseBuilder, iModelId: st
 export function mockFileResponse(responseBuilder: ResponseBuilder, downloadToPath: string, times = 1) {
   if (TestConfig.enableMocks)
     responseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
+}
+
+export async function createNewIModel(client: IModelHubClient, accessToken: AccessToken, name: string, projectId: string) {
+  if (TestConfig.enableMocks)
+    return;
+
+  const dir = path.join(assetsPath, "SeedFile");
+  const imodelPath = path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
+  await client.IModels().create(accessToken, projectId, name, imodelPath);
+}
+
+export async function createIModel(accessToken: AccessToken, name: string, projectId?: string, deleteIfExists = false) {
+  if (TestConfig.enableMocks)
+    return;
+
+  projectId = projectId || await getProjectId(TestConfig.projectName);
+
+  const client = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  const imodels = await client.IModels().get(accessToken, projectId, new IModelQuery().byName(name));
+
+  if (imodels.length > 0) {
+    if (deleteIfExists) {
+      await client.IModels().delete(accessToken, projectId, imodels[0].wsgId);
+    } else {
+      return;
+    }
+  }
+
+  await createNewIModel(client, accessToken, name, projectId);
+}
+
+export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
+  const dir = path.join(assetsPath, "SeedFile");
+  const files = fs.readdirSync(dir);
+  let parentId = "";
+  return files.filter((value) => value.endsWith(".cs") && value.length === 45).map((file) => {
+    const result = new ChangeSet();
+    const fileName = path.basename(file, ".cs");
+    result.id = fileName.substr(2);
+    result.fileSize = fs.statSync(path.join(dir, file)).size.toString();
+    result.briefcaseId = briefcase.briefcaseId;
+    result.seedFileId = briefcase.fileId;
+    result.parentId = parentId;
+    parentId = result.id;
+    return result;
+  });
+}
+
+export function getMockChangeSetPath(index: number, changeSetId: string) {
+  return path.join(assetsPath, "SeedFile", `${index}_${changeSetId!}.cs`);
+}
+
+export async function createChangeSets(accessToken: AccessToken, imodelId: string, briefcase: Briefcase, startingId = 0, count = 1) {
+  if (TestConfig.enableMocks)
+    return;
+
+  const maxCount = 10;
+
+  if (startingId + count > maxCount)
+    throw Error(`Only have ${maxCount} changesets generated`);
+
+  const client = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+
+  if (startingId + count >= (await client.ChangeSets().get(accessToken, imodelId)).length)
+    return;
+
+  const changeSets = getMockChangeSets(briefcase);
+
+  for (let i = startingId; i < startingId + count; ++i) {
+    const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
+    await client.ChangeSets().create(accessToken, imodelId, changeSets[i], changeSetPath);
+  }
 }
