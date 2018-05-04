@@ -9,7 +9,7 @@ vec2 computeLUTCoords(float index, vec2 dimensions, vec2 center, float mult) {
   float baseIndex = index*mult;
 
   // Fix precision issues wherein mod(x,y) => y instead of 0 when x is multiple of y...
-  const float epsilon = 0.0001;
+  float epsilon = 0.5 / dimensions.x;
   float yId = floor(baseIndex / dimensions.x + epsilon);
   float xId = baseIndex - dimensions.x * yId; // replaces mod()...
 
