@@ -18,8 +18,8 @@ import { ConnectClient, Project } from "../../ConnectClients";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
-  public getUserProfile(): UserProfile|undefined {
-    return new UserProfile ("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley");
+  public getUserProfile(): UserProfile | undefined {
+    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley");
   }
   public toTokenString() { return ""; }
 }
@@ -192,7 +192,7 @@ export function mockGetChangeSet(responseBuilder: ResponseBuilder, iModelId: str
 
 /** Codes */
 export function randomCodeValue(prefix: string): string {
-  return (prefix +  Math.floor(Math.random() * Math.pow(2, 30)).toString());
+  return (prefix + Math.floor(Math.random() * Math.pow(2, 30)).toString());
 }
 
 export function randomCode(briefcase: number): Code {
@@ -274,6 +274,28 @@ export function mockGetVersionById(responseBuilder: ResponseBuilder, imodelId: s
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Version", version.wsgId);
   const requestResponse = responseBuilder.generateGetResponse<Version>(version);
   responseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
+export function mockCreateVersion(responseBuilder: ResponseBuilder, iModelId: string, name?: string, changesetId?: string) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Version");
+  const postBodyObject = generateVersion(name, changesetId);
+  delete (postBodyObject.wsgId);
+  const postBody = responseBuilder.generatePostBody<Version>(postBodyObject);
+  const requestResponse = responseBuilder.generatePostResponse<Version>(generateVersion(name, changesetId));
+  responseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+}
+
+export function mockUpdateVersion(responseBuilder: ResponseBuilder, iModelId: string, version: Version) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Version", version.wsgId);
+  const postBody = responseBuilder.generatePostBody<Version>(version);
+  const requestResponse = responseBuilder.generatePostResponse<Version>(version);
+  responseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 export function mockFileResponse(responseBuilder: ResponseBuilder, downloadToPath: string, times = 1) {
