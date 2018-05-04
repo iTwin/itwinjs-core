@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Gateway */
 
-import { GatewayRegistry } from "./gateway/core/GatewayRegistry";
+import { GatewayRegistry, CURRENT_REQUEST } from "./gateway/core/GatewayRegistry";
 import { GatewayConfiguration, GatewayConfigurationSupplier } from "./gateway/core/GatewayConfiguration";
 
 // tslint:disable-next-line:ban-types
@@ -44,6 +44,7 @@ export abstract class Gateway {
   public forward<T>(operation: string, ...parameters: any[]): Promise<T> {
     const request = new (this.configuration.protocol.requestType)<T>(this, operation, parameters);
     request.submit();
+    (this as any)[CURRENT_REQUEST] = request;
     return request.response;
   }
 

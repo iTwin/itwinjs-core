@@ -8,7 +8,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Gateway } from "../../Gateway";
 import { GatewayOperation } from "./GatewayOperation";
-import { GatewayRegistry } from "./GatewayRegistry";
+import { GatewayRegistry, CURRENT_INVOCATION } from "./GatewayRegistry";
 import { GatewayRequestStatus } from "./GatewayRequest";
 import { GatewayProtocol, GatewayProtocolEvent, SerializedGatewayRequest, GatewayRequestFulfillment } from "./GatewayProtocol";
 import { GatewayMarshaling } from "./GatewayMarshaling";
@@ -49,6 +49,14 @@ export class GatewayInvocation {
     }
   }
 
+  /**
+   * The invocation for the current gateway operation.
+   * @note The return value of this function is only reliable in a gateway member function where program control was received from the GatewayInvocation constructor function.
+   */
+  public static current(context: Gateway): GatewayInvocation {
+    return (context as any)[CURRENT_INVOCATION];
+  }
+
   /** Constructs an invocation. */
   public constructor(protocol: GatewayProtocol, request: SerializedGatewayRequest) {
     this.protocol = protocol;
@@ -62,6 +70,7 @@ export class GatewayInvocation {
       const parameters = GatewayMarshaling.deserialize(this.operation, protocol, request.parameters);
       const impl = GatewayRegistry.instance.getImplementationForGateway(this.operation.gateway);
       const op = this.lookupOperationFunction(impl);
+      (impl as any)[CURRENT_INVOCATION] = this;
       this.result = op.call(impl, ...parameters);
     } catch (error) {
       this._threw = true;

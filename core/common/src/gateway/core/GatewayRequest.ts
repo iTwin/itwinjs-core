@@ -9,7 +9,7 @@ import { GatewayOperation } from "./GatewayOperation";
 import { GatewayInvocation } from "./GatewayInvocation";
 import { GatewayProtocol, GatewayProtocolEvent } from "./GatewayProtocol";
 import { GatewayMarshaling } from "./GatewayMarshaling";
-import { OPERATION } from "./GatewayRegistry";
+import { OPERATION, CURRENT_REQUEST } from "./GatewayRegistry";
 import { aggregateLoad } from "./GatewayControl";
 import { IModelToken } from "../../IModel";
 
@@ -64,6 +64,14 @@ export class GatewayRequest<TResponse = any> {
 
   /** The aggregate operations profile of all active gateways. */
   public static get aggregateLoad(): GatewayOperationsProfile { return aggregateLoad; }
+
+  /**
+   * The request for the current gateway operation.
+   * @note The return value of this function is only reliable if program control was received from a gateway member function that directly returns the result of calling Gateway.forward.
+   */
+  public static current(context: Gateway): GatewayRequest {
+    return (context as any)[CURRENT_REQUEST];
+  }
 
   /** The unique identifier of this request. */
   public readonly id: string;

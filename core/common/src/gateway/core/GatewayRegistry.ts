@@ -24,6 +24,12 @@ export const POLICY = Symbol.for("@bentley/imodeljs-common/GatewayOperationPolic
 export const INSTANCE = Symbol.for("@bentley/imodeljs-common/Gateway/__instance__");
 
 /** @hidden @internal */
+export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/GatewayRequest/__current__");
+
+/** @hidden @internal */
+export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/GatewayInvocation/__current__");
+
+/** @hidden @internal */
 export class GatewayRegistry {
   private static _instance: GatewayRegistry;
 
