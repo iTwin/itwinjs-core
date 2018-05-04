@@ -1278,10 +1278,10 @@ export class AccuDraw {
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
-      for (const otherVp of IModelApp.viewManager.viewports) {
+      IModelApp.viewManager.forEachViewport((otherVp) => {
         if (otherVp !== vp && otherVp.view.isSpatialView())
           otherVp.view.setAuxiliaryCoordinateSystem(acs);
-      }
+      });
     }
 
     vp.view.setAuxiliaryCoordinateSystem(acs);

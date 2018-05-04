@@ -135,7 +135,7 @@ export namespace VertexLUT {
       assert(undefined !== this.args.points);
     }
 
-    public get numVertices() { return this.args.points!.length / 3; }
+    public get numVertices() { return this.args.points!.length; }
     public get numRgbaPerVertex() { return 3; }
 
     public appendVertex(vertIndex: number): void {
