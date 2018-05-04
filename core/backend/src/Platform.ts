@@ -29,24 +29,24 @@ export class Platform {
     }
   }
 
-  /** Query if this is the Electron environment. */
-  public static getElectron(): any {
+  /** The Electron info object, if this is running in Electron. */
+  public static get electron(): any {
     return ((typeof (process) !== "undefined") && ("electron" in process.versions)) ? require("electron") : undefined;
   }
 
   /** Query if this is a desktop configuration */
   public static isDesktop(): boolean {
-    return Platform.getElectron() !== undefined;
+    return Platform.electron !== undefined;
   }
 
   /** Query if this is a mobile configuration */
   public static isMobile(): boolean {
-    return Platform.imodeljsMobile() !== undefined;
+    return Platform.imodeljsMobile !== undefined;
   }
 
-  /** Query if this is running in a Web browser or embedded Web view */
-  public static isWebView(): boolean {
-    return !Platform.isDesktop() && !Platform.isMobile();
+  /** Query if this is running in nodejs  */
+  public static isNodeJs(): boolean {
+    return !Platform.isMobile(); // currently we use nodejs for all non-mobile backend apps
   }
 }
 
