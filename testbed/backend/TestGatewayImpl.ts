@@ -2,8 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params, TestGateway2, TestGateway3 } from "../common/TestGateway";
-import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse, IModelToken } from "@bentley/imodeljs-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse, IModelToken, GatewayInvocation } from "@bentley/imodeljs-common";
+import { BentleyError, BentleyStatus, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
 
 let op8Initializer = 0;
@@ -63,6 +63,18 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
     const changesPath: string = BriefcaseManager.getChangeSummaryPathname(iModelToken.iModelId);
     if (IModelJsFs.existsSync(changesPath))
       IModelJsFs.unlinkSync(changesPath);
+  }
+
+  public async op9(requestId: string): Promise<string> {
+    const invocation = GatewayInvocation.current(this);
+    if (!invocation || invocation.request.id !== requestId)
+      throw new Error();
+
+    return requestId;
+  }
+
+  public async op10(): Promise<void> {
+    throw new BentleyError(BentleyStatus.ERROR);
   }
 }
 

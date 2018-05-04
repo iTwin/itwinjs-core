@@ -7,8 +7,10 @@ import * as path from "path";
 
 import { TestConfig } from "../TestConfig";
 
-import { Briefcase, IModelHubRequestError,
-  IModelHubRequestErrorId, BriefcaseQuery } from "../../imodelhub";
+import {
+  Briefcase, IModelHubRequestError,
+  IModelHubRequestErrorId, BriefcaseQuery,
+} from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -141,7 +143,7 @@ describe("iModelHub BriefcaseHandler", () => {
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 
-  it("should get error 400 and retry to get briefcase", async function(this: Mocha.ITestCallbackContext) {
+  it("should get error 400 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -154,7 +156,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(briefcase);
   });
 
-  it("should get error 409 and retry to get briefcase", async function(this: Mocha.ITestCallbackContext) {
+  it("should get error 409 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -168,7 +170,7 @@ describe("iModelHub BriefcaseHandler", () => {
     }
   });
 
-  it("should get error 500 and retry to get briefcase", async function(this: Mocha.ITestCallbackContext) {
+  it("should get error 500 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 

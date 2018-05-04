@@ -30,7 +30,9 @@ function createPurpleQuadTechnique(target: Target): TechniqueId {
 }
 
 function createTarget(): Target | undefined {
-  return System.instance!.createTarget() as Target;
+  const canvas = WebGLTestContext.createCanvas();
+  assert(undefined !== canvas);
+  return System.instance!.createTarget(canvas!) as Target;
 }
 
 describe("Technique tests", () => {

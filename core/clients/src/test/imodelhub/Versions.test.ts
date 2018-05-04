@@ -29,7 +29,7 @@ describe("iModelHub VersionHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  it("should get named versions",  async function(this: Mocha.ITestCallbackContext) {
+  it("should get named versions", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -46,5 +46,43 @@ describe("iModelHub VersionHandler", () => {
       chai.expect(!!actualVersion);
       chai.expect(actualVersion.changeSetId).to.be.equal(expectedVersion.changeSetId);
     }
+  });
+
+  it("should create named version", async function (this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    const versionName = "Version name";
+    const changeSetId = utils.generateChangeSetId();
+    utils.mockCreateVersion(responseBuilder, iModelId, versionName, changeSetId);
+    const version: Version = await imodelHubClient.Versions().create(accessToken, iModelId, changeSetId, versionName);
+
+    chai.expect(!!version);
+    chai.expect(version.wsgId).to.have.length.above(0);
+    chai.expect(version.changeSetId).to.be.equal(changeSetId);
+    chai.expect(version.name).to.be.equal(versionName);
+  });
+
+  it("should update named version", async function (this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    const mockedVersion = utils.generateVersion();
+    utils.mockGetVersions(responseBuilder, iModelId, mockedVersion);
+    let version: Version = (await imodelHubClient.Versions().get(accessToken, iModelId))[0];
+
+    chai.expect(!!version);
+    chai.expect(version.wsgId).to.have.length.above(0);
+    chai.expect(version.changeSetId).to.be.equal(mockedVersion.changeSetId!);
+    chai.expect(version.name).to.be.equal(mockedVersion.name!);
+
+    mockedVersion.name = "Updated name";
+    utils.mockUpdateVersion(responseBuilder, iModelId, mockedVersion);
+    version = await imodelHubClient.Versions().update(accessToken, iModelId, mockedVersion);
+
+    chai.expect(!!version);
+    chai.expect(version.wsgId).to.have.length.above(0);
+    chai.expect(version.changeSetId).to.be.equal(mockedVersion.changeSetId!);
+    chai.expect(version.name).to.be.equal(mockedVersion.name!);
   });
 });

@@ -22,7 +22,7 @@ describe("RealityDataServicesClient", () => {
   let versionId: string;
   let tilesId: string;
 
-  before(async function(this: Mocha.IHookCallbackContext) {
+  before(async function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 

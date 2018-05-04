@@ -11,15 +11,32 @@ export namespace WebGLTestContext {
   // Bill Goehrig claims one or both of these env vars will be defined when executing on the CI server.
   function isEnabled(): boolean { return undefined === process.env.CI && undefined === process.env.TF_BUILD; }
 
+  export let isInitialized = false;
+
+  export function startup() {
+    if (!isEnabled()) {
+      return;
+    }
+
+    IModelApp.startup("QA", true);
+    isInitialized = IModelApp.hasRenderSystem;
+    assert(isInitialized);
+  }
+
+  export function shutdown() {
+    isInitialized = false;
+    if (IModelApp.initialized) {
+      IModelApp.shutdown();
+    }
+  }
+
   const canvasId = "WebGLTestCanvas";
 
-  function createCanvas(width: number, height: number): HTMLCanvasElement | undefined {
+  export function createCanvas(width: number = 300, height: number = 150): HTMLCanvasElement | undefined {
     let canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     if (null === canvas) {
       canvas = document.createElement("canvas") as HTMLCanvasElement;
-      if (null === canvas) {
-        return undefined;
-      }
+      if (null === canvas) return undefined;
 
       canvas.id = canvasId;
       document.body.appendChild(document.createTextNode("WebGL tests"));
@@ -30,28 +47,5 @@ export namespace WebGLTestContext {
     canvas.height = height;
 
     return canvas;
-  }
-
-  export let isInitialized = false;
-
-  export function startup(canvasWidth: number = 300, canvasHeight: number = 150) {
-    if (!isEnabled()) {
-      return;
-    }
-
-    const canvas = createCanvas(canvasWidth, canvasHeight);
-    assert(undefined !== canvas);
-    if (undefined !== canvas) {
-      IModelApp.startup("QA", canvas);
-      isInitialized = IModelApp.hasRenderSystem;
-      assert(isInitialized);
-    }
-  }
-
-  export function shutdown() {
-    isInitialized = false;
-    if (IModelApp.initialized) {
-      IModelApp.shutdown();
-    }
   }
 }

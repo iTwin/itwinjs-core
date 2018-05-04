@@ -175,9 +175,9 @@ export class Capabilities {
 }
 
 export class System extends RenderSystem {
-  private readonly _canvas: HTMLCanvasElement;
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
+  public readonly canvas: HTMLCanvasElement;
   public readonly frameBufferStack = new FrameBufferStack();
 
   public readonly techniques: Techniques;
@@ -189,8 +189,9 @@ export class System extends RenderSystem {
 
   public static identityTransform = Transform.createIdentity();
 
-  public static create(canvas?: HTMLCanvasElement): System | undefined {
-    if (undefined === canvas) {
+  public static create(): System | undefined {
+    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    if (null === canvas) {
       return undefined;
     }
 
@@ -215,7 +216,7 @@ export class System extends RenderSystem {
     return new System(canvas, context, techniques, capabilities);
   }
 
-  public createTarget(): RenderTarget { return new OnScreenTarget(this._canvas); }
+  public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic {
@@ -228,8 +229,6 @@ export class System extends RenderSystem {
   }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
-
-  public get canvas(): HTMLCanvasElement { return this._canvas; }
 
   public applyRenderState(newState: RenderState) {
     newState.apply(this._currentRenderState);
@@ -253,14 +252,11 @@ export class System extends RenderSystem {
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
-    this._canvas = canvas;
+    this.canvas = canvas;
     this.context = context;
     this.techniques = techniques;
     this.capabilities = capabilities;
     this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-    // Silence unused variable warnings...
-    assert(undefined !== this._canvas);
-    assert(undefined !== this.context);
   }
 }
 

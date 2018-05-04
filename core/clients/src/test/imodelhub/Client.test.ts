@@ -7,7 +7,7 @@ import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
 import { TestConfig } from "../TestConfig";
 
 describe("iModelHub Client", () => {
-  before(function(this: Mocha.IHookCallbackContext) {
+  before(function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
   });

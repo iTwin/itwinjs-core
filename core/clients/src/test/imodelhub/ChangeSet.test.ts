@@ -7,7 +7,7 @@ import * as path from "path";
 
 import { TestConfig } from "../TestConfig";
 
-import { ChangeSet, Lock, UserInfo, ChangeSetQuery, UserInfoQuery } from "../../imodelhub";
+import { Briefcase, ChangeSet, Lock, UserInfo, ChangeSetQuery, UserInfoQuery } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { RequestQueryOptions } from "../../Request";
@@ -31,14 +31,31 @@ function mockGetChangeSetById(responseBuilder: ResponseBuilder, imodelId: string
 describe("iModelHub ChangeSetHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
+  let briefcase: Briefcase;
+  const imodelName = "imodeljs-clients ChangeSets test";
   // let seedFileId: string;
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   const downloadToPath: string = __dirname + "/../assets/";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
+    if (TestConfig.enableMocks) {
+      responseBuilder.mockResponse("https://buddi.bentley.com", RequestType.Get, "/WebService/GetUrl/?url=iModelHubApi&region=103", JSON.stringify({ result: { url: "https://dev-imodelhubapi.bentley.com" } }));
+    }
     accessToken = await utils.login();
-    iModelId = await utils.getIModelId(accessToken);
+    await utils.createIModel(accessToken, imodelName);
+    iModelId = await utils.getIModelId(accessToken, imodelName);
+    if (!TestConfig.enableMocks) {
+      const changeSetCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
+      if (changeSetCount > 9) {
+        // Recreate iModel if can't create any new changesets
+        await utils.createIModel(accessToken, imodelName, undefined, true);
+      }
+    }
+    briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
+
+    // Ensure that at least two exist
+    await utils.createChangeSets(accessToken, iModelId, briefcase, 2, 0);
 
     if (!fs.existsSync(downloadToPath)) {
       fs.mkdirSync(downloadToPath);
@@ -49,12 +66,24 @@ describe("iModelHub ChangeSetHandler", () => {
     responseBuilder.clearMocks();
   });
 
+  it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    const mockChangeSets = utils.getMockChangeSets(briefcase);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId);
+    const index = changeSets.length;
+    const filePath = utils.getMockChangeSetPath(index, mockChangeSets[index].id!);
+    const newChangeSet = await imodelHubClient.ChangeSets().create(accessToken, iModelId, mockChangeSets[index], filePath);
+    chai.expect(newChangeSet);
+  });
+
   it("should get information on ChangeSets", async () => {
     const mockedChangeSets = Array(3).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(responseBuilder, iModelId, ...mockedChangeSets);
 
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
-    chai.expect(changeSets.length).to.be.greaterThan(2);
+    chai.expect(changeSets.length >= 2);
 
     let i = 0;
     for (const changeSet of changeSets) {
@@ -100,7 +129,7 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   // TODO: Requires locks management to have this working as integration test
-  it("should find information on the ChangeSet a specific Element was last modified in", async function(this: Mocha.ITestCallbackContext) {
+  it("should find information on the ChangeSet a specific Element was last modified in", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 

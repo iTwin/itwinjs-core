@@ -145,10 +145,8 @@ export abstract class RenderSystem {
   public startPainting(target?: RenderTarget): void { assert(!this.isPainting); this._nowPainting = target; }
   public nowPainting() { this._nowPainting = undefined; }
 
-  public abstract get canvas(): HTMLCanvasElement;
-
-  /** Create a render target. */
-  public abstract createTarget(): RenderTarget;
+  /** Create a render target which will render to the supplied canvas element. */
+  public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
 
   // /** Create an offscreen render target. */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;

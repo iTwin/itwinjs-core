@@ -557,7 +557,7 @@ export class Viewport {
     delta.z = Math.abs(delta.z);
 
     const limits = this.view.getExtentLimits();
-    const clampRange = (val: number) => Math.min(Math.max(limits.minExtent, val), limits.maxExtent);
+    const clampRange = (val: number) => Math.min(Math.max(limits.min, val), limits.max);
     delta.x = clampRange(delta.x);
     delta.y = clampRange(delta.y);
 

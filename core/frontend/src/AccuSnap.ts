@@ -10,7 +10,6 @@ import { DecorateContext } from "./ViewContext";
 import { HitDetail, HitList, SnapMode, SnapDetail, SubSelectionMode, HitSource, HitDetailType, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 
-// tslint:disable:no-conditional-assignment
 // tslint:disable:variable-name
 
 const s_unfocused: any = {};
@@ -91,7 +90,6 @@ export class AccuSnap {
   private getStickyFactor() { return this.settings.stickyFactor; }
   private doLocateTesting() { return this.isLocateEnabled(); }
   private getSearchDistance() { return this.doLocateTesting() ? 1.0 : this.settings.searchDistance; }
-  private getPopupDelay() { return this.settings.popupDelay; }
   private getHotDistanceInches() { return IModelApp.locateManager.getApertureInches() * this.settings.hotDistanceFactor; }
   public isLocateEnabled() { return this.toolState.locate; }
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
@@ -256,7 +254,7 @@ export class AccuSnap {
     if (!accuSnapHit && !tpHit && !this.errorIcon.isActive())
       return;
 
-    let timeout = this.getPopupDelay();
+    let timeout = this.settings.popupDelay;
     let theHit: HitDetail | undefined;
 
     // determine which type of hit and how long to wait, and the detail level
