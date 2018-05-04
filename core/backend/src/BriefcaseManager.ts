@@ -1087,6 +1087,14 @@ export class BriefcaseManager {
     return changeSetToken;
   }
 
+  /** Applies a change set to a standalone iModel */
+  public static applyStandaloneChangeSet(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption, containsSchemaChanges: boolean): ChangeSetStatus {
+    if (!briefcase.isStandalone)
+      throw new IModelError(BentleyStatus.ERROR);
+
+    return briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption, containsSchemaChanges);
+  }
+
   /** Dumps a change set */
   public static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken) {
     briefcase.nativeDb!.dumpChangeSet(JSON.stringify(changeSetToken));
