@@ -37,7 +37,7 @@ function testVertexLUTParams() {
 
   // Test simple unlit vertices (no normals or uv params; uniform colors + features)
   const args = new MeshArgs();
-  args.points = positions.toTypedArray();
+  args.points = positions;
   args.pointParams = positions.params;
 
   const expected = [

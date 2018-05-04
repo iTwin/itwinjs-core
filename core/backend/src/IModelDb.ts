@@ -29,31 +29,10 @@ const loggingCategory = "imodeljs-backend.IModelDb";
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
 export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 
-/** Represents a physical copy (briefcase) of an iModel that can be accessed as a file on the local computer.
- *
- * An IModelDb is used by a service or by the backend of an app.
- * Frontend code uses an [[IModelConnection]] to access an iModel indirectly, via a service or backend.
- *
- * Use [[IModelDb.open]] to obtain and open an IModelDb from iModelHub.
- *
- * An IModelDb provides access to the content of the iModel through the following collections:
- *  * [[IModelDb.elements]] for Elements
- *  * [[IModelDb.models]] for Models
- *
- * An IModelDb is a full-featured database.
- * Use [[ECSqlStatement]] to write custom queries on the contents of an IModelDb.
- *
- * As a local copy, an IModelDb represents a version of an iModel.
- * Use [[IModelDb.pullAndMergeChanges]] to update a local IModelDb to incorporate recent changes made by others.
- *
- * An IModelDb also serves as a staging area where an app can change the content of an iModel and then later submit the changes to iModelHub.
- * Use [[IModelDb.saveChanges]] to commit changes locally. [[IModelDb.txns]] manages local transactions, and it supports local undo/redo.
- * Use [[IModelDb.pushChanges]] to push local changes to iModelHub as a changeset, so that others can see them. After
- * being pushed to iModelHub, a changeset becomes part of the iModel's permanent history.
- * An app that modifies models, elements or codes in an IModelDb must use [[ConcurrencyControl]] to coordinate with other users.
- *
+/**
+ * Represents a physical copy (a briefcase) of an iModel that can be accessed as a file on the local computer.
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
- *
+ * @see []($docs/learning/backend/ImodelDb.md)
  */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000; // default limit for batching queries

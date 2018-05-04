@@ -177,7 +177,8 @@ export class ShaderProgram implements IDisposable {
     gl.shaderSource(shader, src);
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
-    assert(succeeded);
+    const compileLog = succeeded ? "" : (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " compilation errors: " + gl.getShaderInfoLog(shader) + "\n" + src;
+    assert(succeeded, compileLog);
     return succeeded ? shader : undefined;
   }
   private linkProgram(vert: WebGLShader, frag: WebGLShader): boolean {

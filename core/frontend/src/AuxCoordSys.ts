@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel } from "@bentley/imodeljs-common";
-import { Angle, Point3d, Point2d, Vector2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
+import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -86,14 +86,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
   public drawGrid(context: DecorateContext): void {
     // Called for active ACS when grid orientation is GridOrientationType::ACS.
-    const view        = context.viewport.view,
-          spacing     = Vector2d.createFrom(view.gridSpacing),
-          gridReps    = new Point2d(),
-          gridsPerRef = view.gridsPerRef,
-          origin      = this.getOrigin(),
-          rMatrix     = this.getRotation();
-
-    context.drawStandardGrid(origin, rMatrix, spacing, gridsPerRef, false, gridReps);
+    const view = context.viewport.view;
+    context.drawStandardGrid(this.getOrigin(), this.getRotation(), view.getGridSpacing(), view.getGridsPerRef(), false, undefined);
   }
 }
 

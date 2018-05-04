@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
@@ -132,10 +132,10 @@ export class DecorateContext extends RenderContext {
   }
 
   /** wrapped nRepetitions and min in object to preserve changes */
-  public static getGridDimension(props: { nRepetitions: number, min: number },  gridSize: number , org: Point3d, dir: Point3d, points: Point3d[]): boolean {
+  public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
     // initialized only to avoid warning.
-    let distLow  = 0.0,
-        distHigh = 0.0;
+    let distLow = 0.0,
+      distHigh = 0.0;
 
     for (let i = 0, n = points.length; i < n; ++i) {
       const distance = points[i].dotVectorsToTargets(org, dir);
@@ -173,21 +173,21 @@ export class DecorateContext extends RenderContext {
     }
 
     const index = new Array<[number, number]>(
-                    // lines connecting front to back
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    // around front face
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    // around back face.
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001],
-                    [Npc._000, Npc._001]);
+      // lines connecting front to back
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      // around front face
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      // around back face.
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001],
+      [Npc._000, Npc._001]);
 
     const frust = vp.getFrustum();
 
@@ -200,7 +200,7 @@ export class DecorateContext extends RenderContext {
 
     for (let i = 0, n = index.length; i < n; ++i) {
       const corner1 = frust.getCorner(index[i][0]),
-            corner2 = frust.getCorner(index[i][1]);
+        corner2 = frust.getCorner(index[i][1]);
       const lineSegment = LineSegment3d.create(corner1, corner2);
       lineSegment.appendPlaneIntersectionPoints(plane, intersections);
     }
@@ -242,37 +242,37 @@ export class DecorateContext extends RenderContext {
   }
 
   /** @private */
-  public drawStandardGrid(gridOrigin: Point3d, rMatrix: RotMatrix, spacing: Vector2d, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
+  public drawStandardGrid(gridOrigin: Point3d, rMatrix: RotMatrix, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
 
     // rotMatrix returns new Vectors instead of references
-    const xVec  = rMatrix.rowX(),
-          yVec  = rMatrix.rowY(),
-          zVec  = rMatrix.rowZ(),
-          viewZ = vp.rotMatrix.getRow(2);
+    const xVec = rMatrix.rowX(),
+      yVec = rMatrix.rowY(),
+      zVec = rMatrix.rowZ(),
+      viewZ = vp.rotMatrix.getRow(2);
 
     if (!vp.isCameraOn() && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
       return;
 
-    const refScale   = (0 === gridsPerRef) ? 1.0 : gridsPerRef,
-          refSpacing = spacing.scale(refScale).clone();
+    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef,
+      refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
 
-    let gridOrg     = new Point3d(),
-        repetitions = new Point2d();
+    let gridOrg = new Point3d();
+    let repetitions = new Point2d();
 
     if (undefined === fixedRepetitions || 0 === fixedRepetitions.x || 0 === fixedRepetitions.y) {
       // expect gridOrigin and zVec to be modified from this call
-      const intersections  = DecorateContext.getGridPlaneViewIntersections(gridOrigin, zVec, vp, undefined !== fixedRepetitions);
+      const intersections = DecorateContext.getGridPlaneViewIntersections(gridOrigin, zVec, vp, undefined !== fixedRepetitions);
 
       if (intersections.length < 3)
         return;
 
-      const min    = new Point2d(),
-            xProps = { nRepetitions: repetitions.x, min: min.x },
-            yProps = { nRepetitions: repetitions.y, min: min.y };
+      const min = new Point2d(),
+        xProps = { nRepetitions: repetitions.x, min: min.x },
+        yProps = { nRepetitions: repetitions.y, min: min.y };
       if (!DecorateContext.getGridDimension(xProps, refSpacing.x, gridOrigin, Point3d.createFrom(xVec), intersections) ||
-          !DecorateContext.getGridDimension(yProps, refSpacing.y, gridOrigin, Point3d.createFrom(yVec), intersections))
-          return;
+        !DecorateContext.getGridDimension(yProps, refSpacing.y, gridOrigin, Point3d.createFrom(yVec), intersections))
+        return;
 
       // update vectors. (workaround for native passing primitives by reference)
       repetitions.x = xProps.nRepetitions; min.x = xProps.min;
@@ -288,12 +288,12 @@ export class DecorateContext extends RenderContext {
       return;
 
     const gridX = xVec.scale(refSpacing.x),
-          gridY = yVec.scale(refSpacing.y);
+      gridY = yVec.scale(refSpacing.y);
 
     const testPt = gridOrg.plus2Scaled(gridX, repetitions.x / 2.0, gridY, repetitions.y / 2.0);
 
-    let maxGridPts  = gridConstants.maxGridPoints,
-        maxGridRefs = gridConstants.maxGridRefs;
+    let maxGridPts = gridConstants.maxGridPoints,
+      maxGridRefs = gridConstants.maxGridRefs;
 
     if (maxGridPts < 10)
       maxGridPts = 10;
@@ -302,7 +302,7 @@ export class DecorateContext extends RenderContext {
 
     // values are "per 1000 pixels"
     const minGridSeperationPixels = 1000 / maxGridPts,
-          minRefSeperation        = 1000 / maxGridRefs;
+      minRefSeperation = 1000 / maxGridRefs;
     let uorPerPixel = vp.getPixelSizeAtPoint(testPt);
 
     if ((refSpacing.x / uorPerPixel) < minRefSeperation || (refSpacing.y / uorPerPixel) < minRefSeperation)
@@ -313,13 +313,13 @@ export class DecorateContext extends RenderContext {
     uorPerPixel *= refScale;
 
     const drawDots = ((refSpacing.x / uorPerPixel) > minGridSeperationPixels) && ((refSpacing.y / uorPerPixel) > minGridSeperationPixels);
-    const graphic  = this.createWorldDecoration();
+    const graphic = this.createWorldDecoration();
 
     DecorateContext.drawGrid(graphic, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
     this.addWorldDecoration(graphic.finish()!);
   }
 
-  public static drawGrid(_graphic: RenderGraphic, _doIsogrid: boolean, _drawDots: boolean, _gridOrigin: Point3d, _xVec: Vector3d, _yVec: Vector3d, _gridsPerRef: number, _repetitions: Point2d, _vp: Viewport): void {}
+  public static drawGrid(_graphic: RenderGraphic, _doIsogrid: boolean, _drawDots: boolean, _gridOrigin: Point3d, _xVec: Vector3d, _yVec: Vector3d, _gridsPerRef: number, _repetitions: Point2d, _vp: Viewport): void { }
 
   /** Display view coordinate graphic as background with smooth shading, default lighting, and z testing disabled. e.g., a sky box. */
   public setViewBackground(graphic: RenderGraphic) { this.decorations.viewBackground = graphic; }

@@ -22,7 +22,7 @@ export enum CodeState {
   Available = 0,
   /** Code is reserved by the briefcase, no one else is allowed to change it's state */
   Reserved = 1,
-  /** Code is used in the changeSet commited to the server */
+  /** Code is used in the changeSet committed to the server */
   Used = 2,
   /** Retired code can't be reserved or used. It can only be deleted and then reserved again */
   Retired = 3,

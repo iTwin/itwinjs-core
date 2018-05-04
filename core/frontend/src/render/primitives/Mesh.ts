@@ -3,8 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d, /*QPoint3d,*/ EdgeArgs, SilhouetteEdgeArgs, PolylineEdgeArgs, FillFlags,
-         FeatureTable, FeatureIndex, FeatureIndexType, ColorIndex, PolylineFlags, LinePixels, OctEncodedNormal, Texture, Material } from "@bentley/imodeljs-common";
+import {
+  PolylineData, OctEncodedNormalList, QPoint3dList, MeshPolyline, MeshEdges, QParams3d, /*QPoint3d,*/ EdgeArgs, SilhouetteEdgeArgs, PolylineEdgeArgs, FillFlags,
+  FeatureTable, FeatureIndex, FeatureIndexType, ColorIndex, PolylineFlags, LinePixels, OctEncodedNormal, Texture, Material,
+} from "@bentley/imodeljs-common";
 import { DisplayParams, DisplayParamsRegionEdgeType } from "./DisplayParams";
 // import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
@@ -19,22 +21,26 @@ export class PolylineArgs {
   public width = 0;
   public linePixels = LinePixels.Solid;
   public flags: PolylineFlags;
-  public points: Uint16Array;
+  public points: QPoint3dList;
   public polylines: PolylineData[];
-  public pointParams?: QParams3d;
+  public pointParams: QParams3d;
 
-  public constructor(points: Uint16Array = new Uint16Array(), polylines: PolylineData[] = [], pointParams?: QParams3d,
-                     is2d = false, isPlanar = false) {
+  public constructor(points: QPoint3dList = new QPoint3dList(QParams3d.fromRange(Range3d.createNull())),
+    polylines: PolylineData[] = [], pointParams?: QParams3d, is2d = false, isPlanar = false) {
     this.points = points;
     this.polylines = polylines;
-    this.pointParams = pointParams;
+    if (undefined === pointParams) {
+      this.pointParams = QParams3d.fromRange(Range3d.createNull());
+    } else {
+      this.pointParams = pointParams;
+    }
     this.flags = new PolylineFlags(is2d, isPlanar);
   }
 
   public get isValid(): boolean { return this.polylines.length !== 0; }
   public reset(): void {
     this.flags.initDefaults();
-    this.points = new Uint16Array();
+    this.points = new QPoint3dList(QParams3d.fromRange(Range3d.createNull()));
     this.polylines = [];
     this.colors.reset();
     this.features.reset();
@@ -52,7 +58,7 @@ export class PolylineArgs {
       // if (mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined())
       //   this.flags.setIsNormalEdge();
       // else
-        this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
+      this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
     }
 
     mesh.polylines.forEach((polyline) => {
@@ -65,7 +71,7 @@ export class PolylineArgs {
   }
   public finishInit(mesh: Mesh) {
     this.pointParams = mesh.points.params;
-    this.points = mesh.points.toTypedArray();
+    this.points = mesh.points;
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
     mesh.toFeatureIndex(this.features);
   }
@@ -93,7 +99,7 @@ export class MeshArgsEdges {
 export class MeshArgs {
   public edges = new MeshArgsEdges();
   public vertIndices: number[] = [];
-  public points = new Uint16Array();
+  public points = new QPoint3dList(QParams3d.fromRange(Range3d.createNull()));
   public normals: OctEncodedNormal[] = [];
   public textureUv: Point2d[] = [];
   public texture?: Texture;
@@ -115,7 +121,7 @@ export class MeshArgs {
 
   public clear() {
     this.vertIndices = [];
-    this.points = new Uint16Array();
+    this.points = new QPoint3dList(QParams3d.fromRange(Range3d.createNull()));
     this.normals = [];
     this.textureUv = [];
     this.texture = undefined;
@@ -131,7 +137,7 @@ export class MeshArgs {
     if (mesh.triangles.empty) { return false; }
     this.pointParams = mesh.points.params;
     this.vertIndices = mesh.triangles.indices;
-    this.points = mesh.points.toTypedArray();
+    this.points = mesh.points;
     this.textureUv = mesh.uvParams;
     if (!mesh.displayParams.ignoreLighting) { this.normals = mesh.normals.slice(); }
 
@@ -218,7 +224,7 @@ export class Mesh {
 
   public get points(): QPoint3dList { return this.verts; }
   public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
-  public getGraphics(args: MeshGraphicArgs/*, system: System, iModel: IModelConnection*/ ): Graphic | undefined {
+  public getGraphics(args: MeshGraphicArgs/*, system: System, iModel: IModelConnection*/): Graphic | undefined {
     const graphic = undefined;
     if (this.triangles.count() !== 0) {
       // if (args.meshArgs.init(this)) { graphic = system.createTriMesh(args.meshArgs, iModel); }

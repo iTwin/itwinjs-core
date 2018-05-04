@@ -6,6 +6,8 @@ import { assert, IDisposable } from "@bentley/bentleyjs-core";
 // import { Texture, TextureCreateParams } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System, Capabilities } from "./System";
+import { UniformHandle } from "./Handle";
+import { TextureUnit } from "./RenderFlags";
 
 /** A private enum used to track certain desired texture creation parameters. */
 const enum TextureFlags {
@@ -57,7 +59,7 @@ export class TextureHandle implements IDisposable {
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }
 
   /** Binds texture handle (if available) associated with an instantiation of this class to specified texture unit. */
-  public bind(texUnit: GL.Texture.Unit): boolean {
+  public bind(texUnit: TextureUnit): boolean {
     if (undefined === this._glTexture)
       return false;
     TextureHandle.bindTexture(texUnit, this._glTexture);
@@ -65,10 +67,16 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Binds specified texture handle to specified texture unit. */
-  public static bindTexture(texUnit: GL.Texture.Unit, glTex: WebGLTexture | undefined) {
+  public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
     const gl: WebGLRenderingContext = System.instance.context;
     gl.activeTexture(texUnit);
-    gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null); // ###TODO: might need to set the shader sampler handler here
+    gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null);
+  }
+
+  /** Binds this texture to a uniform sampler2D */
+  public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
+    this.bindTexture(unit, tex);
+    uniform.setUniform1i(unit);
   }
 
   /** Creates a texture for an image based on certain parameters. */
@@ -130,8 +138,7 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Creates a texture for a framebuffer attachment (no data specified). */
-  public static createForColor(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType /* , isTranslucent: boolean */ ) {
-    // ###TODO: rename createForAttachment
+  public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
@@ -144,12 +151,27 @@ export class TextureHandle implements IDisposable {
     params.height = height;
     params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
     params.wantInterpolate = true;
-    // ###TODO: isTranslucent flag - shouldn't this just be determined based on format?
 
     return new TextureHandle(glTex, params);
   }
 
-  // ###TODO: lookup table textures: createForVertexLookup, createForAnimationLookup
+  /** Creates a texture for storing data accessed by shaders. */
+  public static createForData(width: number, height: number, data: Uint8Array) {
+    const glTex: WebGLTexture | undefined = this.createTextureHandle();
+    if (undefined === glTex) {
+      return undefined;
+    }
+
+    const params: TextureCreateParams = new TextureCreateParams();
+    params.format = GL.Texture.Format.Rgba;
+    params.dataType = GL.Texture.DataType.UnsignedByte;
+    params.width = width;
+    params.height = height;
+    params.rawData = data;
+    params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
+
+    return new TextureHandle(glTex, params);
+  }
 
   public dispose() {
     if (undefined !== this._glTexture) {
@@ -159,49 +181,49 @@ export class TextureHandle implements IDisposable {
   }
 
   private constructor(glTex: WebGLTexture, params: TextureCreateParams) {
-      const gl: WebGLRenderingContext = System.instance.context;
+    const gl: WebGLRenderingContext = System.instance.context;
 
-      this.width = params.width;
-      this.height = params.height;
-      this.format = params.format;
-      this.dataType = params.dataType;
-      if (params.wantPreserveData) {
-        this.data = params.rawData;
-        this.resizedCanvas = params.resizedCanvas;
-      }
-
-      this._glTexture = glTex;
-
-      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1); // use tightly packed data
-
-      gl.activeTexture(gl.TEXTURE0); // bind the texture object; make sure we do not interfere with other active textures
-      gl.bindTexture(gl.TEXTURE_2D, glTex);
-      assert(this.width > 0 && this.height > 0);
-
-      // send the texture data
-      if (params.resizedCanvas !== undefined) {
-        // use HTMLCanvasElement version of texImage2D
-        gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, params.resizedCanvas);
-      } else {
-        // use regular (raw bytes) version of texImage2D
-        const pixels: ArrayBufferView | null = params.rawData !== undefined ? params.rawData as ArrayBufferView : null;
-        gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixels);
-      }
-
-      if (params.wantUseMipMaps) {
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      } else {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.wantInterpolate ? gl.LINEAR : gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.wantInterpolate ? gl.LINEAR : gl.NEAREST);
-      }
-
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, params.wrapMode);
-
-      gl.bindTexture(gl.TEXTURE_2D, null);
+    this.width = params.width;
+    this.height = params.height;
+    this.format = params.format;
+    this.dataType = params.dataType;
+    if (params.wantPreserveData) {
+      this.data = params.rawData;
+      this.resizedCanvas = params.resizedCanvas;
     }
+
+    this._glTexture = glTex;
+
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1); // use tightly packed data
+
+    gl.activeTexture(gl.TEXTURE0); // bind the texture object; make sure we do not interfere with other active textures
+    gl.bindTexture(gl.TEXTURE_2D, glTex);
+    assert(this.width > 0 && this.height > 0);
+
+    // send the texture data
+    if (params.resizedCanvas !== undefined) {
+      // use HTMLCanvasElement version of texImage2D
+      gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, params.resizedCanvas);
+    } else {
+      // use regular (raw bytes) version of texImage2D
+      const pixels: ArrayBufferView | null = params.rawData !== undefined ? params.rawData as ArrayBufferView : null;
+      gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixels);
+    }
+
+    if (params.wantUseMipMaps) {
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    } else {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.wantInterpolate ? gl.LINEAR : gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.wantInterpolate ? gl.LINEAR : gl.NEAREST);
+    }
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, params.wrapMode);
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
 
   private static createTextureHandle(): WebGLTexture | undefined {
     const glTex: WebGLTexture | null = System.instance.context.createTexture();
@@ -213,19 +235,21 @@ export class TextureHandle implements IDisposable {
   private static nextHighestPowerOfTwo(num: number): number {
     --num;
     for (let i = 1; i < 32; i <<= 1) {
-        num = num | num >> i;
+      num = num | num >> i;
     }
     return num + 1;
   }
 
   private static isPowerOfTwo(num: number): boolean {
-      return (num & (num - 1)) === 0;
+    return (num & (num - 1)) === 0;
   }
 
   private static resizeImageBytesToCanvas(imageBytes: Uint8Array, hasAlpha: boolean, srcWidth: number, srcHeight: number, dstWidth: number, dstHeight: number): HTMLCanvasElement | undefined {
     // ###TODO: would writing our own Uint8Array resize routine be faster than routing it through HTML canvas?
     if (srcWidth !== dstWidth || srcHeight !== dstHeight) {
       const canvas = document.createElement("canvas");
+      canvas.width = srcWidth;
+      canvas.height = srcHeight;
       const ctx = canvas.getContext("2d");
       const imageData = ctx !== null ? ctx.createImageData(srcWidth, srcHeight) : undefined;
 
@@ -244,7 +268,7 @@ export class TextureHandle implements IDisposable {
             imageData.data[i + 0] = imageBytes[ii + 0];
             imageData.data[i + 1] = imageBytes[ii + 1];
             imageData.data[i + 2] = imageBytes[ii + 2];
-            imageData.data[i + 3] = 0;
+            imageData.data[i + 3] = 255;
           }
         }
         ctx.putImageData(imageData, 0, 0);
@@ -255,7 +279,7 @@ export class TextureHandle implements IDisposable {
         resizedCanvas.height = dstHeight;
         const resizedCtx = resizedCanvas.getContext("2d");
         if (resizedCtx !== null) {
-          resizedCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+          resizedCtx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
           return resizedCanvas;
         }
       }

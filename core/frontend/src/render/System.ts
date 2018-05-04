@@ -16,6 +16,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { HilitedSet } from "../SelectionSet";
 import { FeatureSymbology } from "./FeatureSymbology";
+import { PolylineArgs } from "./primitives/Mesh";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
@@ -177,7 +178,7 @@ export abstract class RenderSystem {
   // public abstract createTriMesh(args: TriMeshArgs, imodel: IModel): Graphic;
 
   // /** Create an indexed polyline primitive */
-  // public abstract createIndexedPolylines(args: IndexPolylineArgs, imodel: IModel): Graphic;
+  public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic;
 
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;

@@ -14,6 +14,7 @@ export class FeaturesInfo {
       default:                          return FeaturesInfo.nonUniform;
     }
   }
+  public static createUniform(id: number): FeaturesInfo { return new FeaturesInfo(id); }
 
   public get type(): FeatureIndexType { return undefined !== this.uniform ? FeatureIndexType.Uniform : FeatureIndexType.NonUniform; }
   public get isUniform() { return FeatureIndexType.Uniform === this.type; }

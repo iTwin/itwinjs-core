@@ -48,7 +48,9 @@ TypeScript does not support:
 * destructors
 * overloaded constructors
 
-You can only have one constructor, though often in JavaScript constructors test their argument types at runtime to allow more than one calling permutation. This happens every time the constructor is called, so be aware of performance implications. TypeScript attempts to simulate the idea of multiple constructors, but since it compiles to JavaScript, that's not really possible. It is best to avoid using multiple constructors in TypeScript.
+You can only have one constructor, though often in JavaScript constructors test their argument types at runtime to allow more than one calling permutation. This happens every time the constructor is called, so be aware of performance implications.
+
+TypeScript attempts to simulate the idea of multiple constructors, but since it compiles to JavaScript, that's not really possible. **Avoid using multiple constructors in TypeScript.**
 
 If there is any cleanup work in the C++ destructor, other than freeing memory, you need to create a `destroy`-like method on the TypeScript side and explicitly call it where appropriate. This is very unfamiliar to a Javascript programmer, since there is no way to actually delete an object in JavaScript
 

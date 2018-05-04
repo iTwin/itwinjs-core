@@ -508,7 +508,7 @@ export class OnScreenTarget extends Target {
     assert(undefined === this._fbo);
 
     const rect = this.viewRect;
-    const color = TextureHandle.createForColor(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     if (undefined === color) {
       return false;
     }

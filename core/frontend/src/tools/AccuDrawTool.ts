@@ -1012,7 +1012,7 @@ export class AccuDrawShortcuts {
       //   AccuDraw:: UpdateAuxCoordinateSystem(* acsPtr, * vp);
     }
 
-    const currentACS = vp.getAuxCoordSystem();
+    const currentACS = vp.view.auxiliaryCoordinateSystem;
 
     if (useOrigin) {
       accudraw.origin.setFrom(currentACS.getOrigin());
@@ -1031,7 +1031,7 @@ export class AccuDrawShortcuts {
       accudraw.axes.setFrom(axes);
 
       if (RotationMode.ACS === accudraw.flags.baseRotation) {
-        const acs = vp.getAuxCoordSystem().clone<AuxCoordSystemState>();
+        const acs = currentACS.clone<AuxCoordSystemState>();
 
         const rMatrix = accudraw.getRotation();
         acs.setRotation(rMatrix);
@@ -1271,7 +1271,7 @@ class RotateElementTool extends AccuDrawTool {
     const accudraw = IModelApp.accuDraw;
     const origin = accudraw.origin;
     const rMatrix = accudraw.getRotation();
-    const acs = context.viewport!.getAuxCoordSystem().clone<AuxCoordSystemState>();
+    const acs = context.viewport!.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
     acs.setOrigin(origin);
     acs.setRotation(rMatrix);
     // acsPtr -> Display(context, ACSDisplayOptions:: Active | ACSDisplayOptions:: Dynamics);
@@ -1312,7 +1312,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
 
     const vp = ev.viewport;
     if (!this.acs)
-      this.acs = vp.getAuxCoordSystem().clone<AuxCoordSystemState>();
+      this.acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
 
     if (AccuDrawShortcuts.updateACSByPoints(this.acs, vp, this.points, false)) {
       AccuDraw.updateAuxCoordinateSystem(this.acs, vp);
@@ -1334,7 +1334,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
 
     const vp = context.viewport!;
     if (!this.acs)
-      this.acs = vp.getAuxCoordSystem().clone<AuxCoordSystemState>();
+      this.acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
 
     AccuDrawShortcuts.updateACSByPoints(this.acs, vp, tmpPoints, true);
     // this.acs -> Display(context, ACSDisplayOptions:: Active | ACSDisplayOptions:: Dynamics);

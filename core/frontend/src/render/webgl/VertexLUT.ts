@@ -145,11 +145,10 @@ export namespace VertexLUT {
     }
 
     protected appendPosition(vertIndex: number) {
-      const posIndex = vertIndex * 3;
       const points = this.args.points!;
-      this.append16(points[posIndex]);
-      this.append16(points[posIndex + 1]);
-      this.append16(points[posIndex + 2]);
+      this.append16(points.list[vertIndex].x);
+      this.append16(points.list[vertIndex].y);
+      this.append16(points.list[vertIndex].z);
     }
 
     protected appendColorIndex(vertIndex: number) {

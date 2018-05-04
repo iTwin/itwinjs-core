@@ -9,7 +9,13 @@ import { TechniqueFlags } from "./TechniqueFlags";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "./ShaderBuilder";
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
+import { RenderPass, CompositeFlags } from "./RenderFlags";
+import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
+import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
+import { createCopyColorProgram } from "./glsl/CopyColor";
+import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
+import { createCompositeProgram } from "./glsl/Composite";
+import { createClipMaskProgram } from "./glsl/ClipMask";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -31,6 +37,75 @@ export class SingularTechnique implements Technique {
   public dispose(): void { this.program.dispose(); }
 }
 
+// A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
+export abstract class VariedTechnique implements Technique {
+  private readonly _programs: ShaderProgram[] = [];
+
+  public getShader(flags: TechniqueFlags): ShaderProgram { return this._programs[this.getShaderIndex(flags)]; }
+  public compileShaders(): boolean {
+    let allCompiled = true;
+    for (const program of this._programs) {
+      if (!program.compile()) allCompiled = false;
+    }
+
+    return allCompiled;
+  }
+
+  public dispose(): void {
+    for (const program of this._programs) {
+      program.dispose();
+    }
+  }
+
+  protected constructor(numPrograms: number) {
+    this._programs.length = numPrograms;
+  }
+
+  protected abstract computeShaderIndex(flags: TechniqueFlags): number;
+
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void { this.addProgram(flags, builder.buildProgram(gl)); }
+  protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
+    const index = this.getShaderIndex(flags);
+    assert(undefined === this._programs[index], "program already exists");
+    this._programs[index] = program;
+  }
+
+  // ###TODO createHiliter() for convenience
+
+  // ###TODO setFeatureSymbology - need FeatureOverrides
+
+  // ###TODO addElementId
+
+  // ###TODO addTranslucentShader() for convenience
+
+  private getShaderIndex(flags: TechniqueFlags) {
+    assert(!flags.isHilite || (!flags.isTranslucent && !flags.hasFeatures), "invalid technique flags");
+    const index = this.computeShaderIndex(flags);
+    assert(index < this._programs.length, "shader index out of bounds");
+    return index;
+  }
+}
+
+// A placeholder for techniques which have not yet been implemented.
+class DummyTechnique extends VariedTechnique {
+  public constructor(gl: WebGLRenderingContext) {
+    super(2);
+
+    const builder = new ProgramBuilder(false);
+    builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
+    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
+    builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
+
+    const prog = builder.buildProgram(gl);
+    const flags = new TechniqueFlags();
+    this.addProgram(flags, prog);
+    flags.isTranslucent = true;
+    this.addProgram(flags, prog);
+  }
+
+  protected computeShaderIndex(flags: TechniqueFlags): number { return flags.isTranslucent ? 0 : 1; }
+}
+
 // A collection of rendering techniques accessed by ID.
 export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
@@ -42,7 +117,7 @@ export class Techniques implements IDisposable {
   }
 
   public getTechnique(id: TechniqueId): Technique {
-    assert(id < this._list.length);
+    assert(id < this._list.length, "technique index out of bounds");
     return this._list[id];
   }
 
@@ -62,7 +137,7 @@ export class Techniques implements IDisposable {
 
   /** Execute each command in the list */
   public execute(target: Target, commands: DrawCommands, renderPass: RenderPass) {
-    assert(RenderPass.None !== renderPass);
+    assert(RenderPass.None !== renderPass, "invalid render pass");
 
     const flags = this._scratchTechniqueFlags;
     using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
@@ -72,7 +147,7 @@ export class Techniques implements IDisposable {
         const techniqueId = command.getTechniqueId(target);
         if (TechniqueId.Invalid !== techniqueId) {
           // A primitive command.
-          assert(command.isPrimitiveCommand);
+          assert(command.isPrimitiveCommand, "expected primitive command");
           flags.init(target, renderPass);
           const tech = this.getTechnique(techniqueId);
           const program = tech.getShader(flags);
@@ -81,7 +156,7 @@ export class Techniques implements IDisposable {
           }
         } else {
           // A branch command.
-          assert(!command.isPrimitiveCommand);
+          assert(!command.isPrimitiveCommand, "expected non-primitive command");
           command.execute(executor);
         }
 
@@ -127,22 +202,22 @@ export class Techniques implements IDisposable {
 
   private initializeBuiltIns(gl: WebGLRenderingContext): boolean {
     // ###TODO: For now, use a dummy placeholder for each unimplemented built-in technique...
-    const builder = new ProgramBuilder(false);
-    builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
-    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
-    builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
-
-    const prog = builder.buildProgram(gl);
-    if (undefined === prog) {
-      return false;
-    }
-
-    const tech = new SingularTechnique(prog);
+    const tech = new DummyTechnique(gl);
     for (let i = 0; i < TechniqueId.NumBuiltIn; i++) {
       this._list.push(tech);
     }
 
-    assert(this._list.length === TechniqueId.NumBuiltIn);
+    // Replace dummy techniques with the real techniques implemented thus far...
+    this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
+    this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
+    this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
+    this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
+    this._list[TechniqueId.CompositeHilite] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite, gl));
+    this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
+    this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
+    this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
+
+    assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;
   }
 }

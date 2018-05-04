@@ -3,7 +3,7 @@
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information in a different orientation and units.
-|**Backend**|The part of an app that is concerned with accessing data in a [briefcase](#Briefcase). See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App backends](./App.md)
+|**Backend**|The part of an iModelJs application that runs on a computer with a Briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App backends](./App.md)
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS can have relevance outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The base BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](../../learning/backend/IModelDb.md).
@@ -39,7 +39,7 @@
 |**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature.
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
-|**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](./App.md#app-frontend)
+|**Frontend**|The part of an iModelJs application that runs inside a web browser. The frontend handles displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](./App.md#app-frontend)
 |**Frustum**|An 8-point [truncated pyramid](https://en.wikipedia.org/wiki/Viewing_frustum) that defines the volume of space visible in a View. The front and back planes must be parallel and their centers must align at right angles.
 |**Gateway**|A set of operations exposed by a service that a client can call. To the iModelJs app programmer, a gateway is just a TypeScript class, and using a gateway is just a method call. Call marshalling mechanisms vary, depending on app configuration. For example, gateways run over HTTP in Web apps but use pipes in desktop apps. See [gateways](../../overview/overview/App.md#gateways) for more information.
 |**GeometricElement**|A subclass of Element that can include geometry (in its GeometryStream.) Only GeometricElements are visible in Views.
@@ -83,4 +83,4 @@
 |**ViewState**|A TypeScript class in the frontend that holds a copy of the *state* of a ViewDefinition. A ViewState is modified by viewing operations (e.g. pan, zoom, rotate, etc.). There are a parallel set of subclasses of ViewState for the subclasses of ViewDefinition.
 |**WebGL**|A [JavaScript API](https://www.khronos.org/webgl/) for rendering into an HTML document via OpenGL.
 |**Webpack**|A tool for [bundling JavaScript applications](https://webpack.js.org/)
-|**Wire format**|The JSON representation of objects that must be used when transferring data to/from an iModelJs app. See [Props](#Props)
+|**Wire format**|The JSON representation of objects that must be used when transferring data to/from an iModelJs app. See Props.
