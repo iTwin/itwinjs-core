@@ -83,6 +83,10 @@ export abstract class TestGateway extends Gateway {
   public async op9(_requestId: string): Promise<string> {
     return this.forward.apply(this, arguments);
   }
+
+  public async op10(): Promise<void> {
+    return this.forward.apply(this, arguments);
+  }
 }
 
 export abstract class TestGateway2 extends Gateway {

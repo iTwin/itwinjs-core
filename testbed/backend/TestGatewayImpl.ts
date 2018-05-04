@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { TestGateway, TestOp1Params, TestGateway2, TestGateway3 } from "../common/TestGateway";
 import { Gateway, GatewayRequest, GatewayOperationsProfile, GatewayPendingResponse, IModelToken, GatewayInvocation } from "@bentley/imodeljs-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
 
 let op8Initializer = 0;
@@ -71,6 +71,10 @@ export class TestGatewayImpl extends Gateway implements TestGateway {
       throw new Error();
 
     return requestId;
+  }
+
+  public async op10(): Promise<void> {
+    throw new BentleyError(BentleyStatus.ERROR);
   }
 }
 

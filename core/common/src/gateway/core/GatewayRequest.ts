@@ -224,10 +224,17 @@ export class GatewayRequest<TResponse = any> {
       }
 
       case GatewayRequestStatus.Rejected: {
-        const event = GatewayProtocolEvent.BackendErrorReceived;
-        this.protocol.events.raiseEvent(event, this);
-        const error = this.protocol.supplyErrorForEvent(event, this);
-        error.message = this.getResponseText();
+        this.protocol.events.raiseEvent(GatewayProtocolEvent.BackendErrorReceived, this);
+
+        const localError = new Error();
+        const error = GatewayMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+        localError.name = error.name;
+        localError.message = error.message;
+
+        const localStack = localError.stack;
+        const remoteStack = error.stack;
+        error.stack = `${localStack}\n${remoteStack}`;
+
         return this.reject(error);
       }
 

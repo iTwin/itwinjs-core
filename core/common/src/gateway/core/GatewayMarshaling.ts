@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Gateway */
 
+// tslint:disable:no-string-literal
+
 import { GatewayRegistry } from "./GatewayRegistry";
 import { GatewayOperation } from "./GatewayOperation";
 import { GatewayProtocol } from "./GatewayProtocol";
@@ -17,6 +19,10 @@ export enum GatewayMarshalingDirective {
   Map = "__map__",
   Set = "__set__",
   Unregistered = "__unregistered__",
+  Error = "__error__",
+  ErrorName = "__error_name__",
+  ErrorMessage = "__error_message__",
+  ErrorStack = "__error_stack__",
 }
 
 /** @hidden @internal */
@@ -80,6 +86,23 @@ export class GatewayMarshaling {
           value[GatewayMarshalingDirective.Name] = name;
           value[GatewayMarshalingDirective.Unregistered] = unregistered;
 
+          if (value instanceof Error) {
+            (value as any)[GatewayMarshalingDirective.Error] = true;
+
+            const errorName = value.name;
+            value.name = "";
+
+            const errorMessage = value.message;
+            value.message = "[Backend to Frontend Transition]";
+            (value as any)[GatewayMarshalingDirective.ErrorStack] = value.stack;
+
+            value.message = errorMessage;
+            (value as any)[GatewayMarshalingDirective.ErrorMessage] = value.message;
+
+            value.name = errorName;
+            (value as any)[GatewayMarshalingDirective.ErrorName] = value.name;
+          }
+
           const undefineds = [];
           for (const prop in value) {
             if (value.hasOwnProperty(prop) && value[prop] === undefined)
@@ -128,10 +151,36 @@ export class GatewayMarshaling {
           if (undefineds)
             delete value[GatewayMarshalingDirective.Undefined];
 
+          const isError = value[GatewayMarshalingDirective.Error];
+          delete value[GatewayMarshalingDirective.Error];
+
+          const errorName = value[GatewayMarshalingDirective.ErrorName];
+          delete value[GatewayMarshalingDirective.ErrorName];
+
+          const errorMessage = value[GatewayMarshalingDirective.ErrorMessage];
+          delete value[GatewayMarshalingDirective.ErrorMessage];
+
+          const errorStack = value[GatewayMarshalingDirective.ErrorStack];
+          delete value[GatewayMarshalingDirective.ErrorStack];
+
           const descriptors: { [index: string]: PropertyDescriptor } = {};
           const props = Object.keys(value);
           for (const prop of props)
             descriptors[prop] = Object.getOwnPropertyDescriptor(value, prop) as PropertyDescriptor;
+
+          if (isError) {
+            if (!descriptors.hasOwnProperty("name")) {
+              descriptors["name"] = { configurable: true, enumerable: true, writable: true, value: errorName };
+            }
+
+            if (!descriptors.hasOwnProperty("message")) {
+              descriptors["message"] = { configurable: true, enumerable: true, writable: true, value: errorMessage };
+            }
+
+            if (!descriptors.hasOwnProperty("stack")) {
+              descriptors["stack"] = { configurable: true, enumerable: true, writable: true, value: errorStack };
+            }
+          }
 
           if (undefineds) {
             for (const prop of undefineds)

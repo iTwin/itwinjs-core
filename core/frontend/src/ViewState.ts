@@ -99,6 +99,7 @@ export class MarginPercent {
   }
 }
 
+/** A set of elements that are always drawn, and a set that are never drawn in a view. */
 class SpecialElements {
   public always: Id64Set = new Set<string>();
   public never: Id64Set = new Set<string>();
@@ -106,8 +107,9 @@ class SpecialElements {
 }
 
 /**
- * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
+ * The state of a ViewDefinition element, loaded in the frontend. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  * Subclasses of ViewDefinition determine which model(s) are viewed.
+ * @see ($docs/learning/frontend/Views.md)
  */
 export abstract class ViewState extends ElementState {
   protected _featureOverridesDirty = false;
@@ -116,7 +118,6 @@ export abstract class ViewState extends ElementState {
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
-  /** Get the set of special elements for this ViewState. */
   private specialElements?: SpecialElements;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
@@ -128,7 +129,11 @@ export abstract class ViewState extends ElementState {
       this.displayStyle = categorySelector.displayStyle.clone();
     }
   }
+
+  /** get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
+
+  /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   public toJSON(): ViewDefinitionProps {
@@ -140,6 +145,10 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
+  /** Asynchronously load any required data for this ViewState from the backend.
+   * @note callers should await the Promise returned by this method before using this ViewState.
+   * @see ($docs/learning/frontend/Views.md)
+   */
   public async load(): Promise<void> {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
@@ -149,12 +158,13 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** Get the name of this ViewDefinition */
+  /** Get the name of the ViewDefinition of this ViewState */
   public get name(): string { return this.code.getValue(); }
 
+  /** Get the background color */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
-  /** Get the list of elements that are never drawn */
+  /** Get a list of elements that are never drawn, if any */
   public get neverDrawn(): Id64Set | undefined { return this.specialElements ? this.specialElements.never : undefined; }
 
   /** Get the list of elements that are always drawn */
@@ -164,8 +174,8 @@ export abstract class ViewState extends ElementState {
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
   public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
 
-  public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
-  public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
+  public setFeatureOverridesDirty(dirty = true): void { this._featureOverridesDirty = dirty; }
+  public setSelectionSetDirty(dirty = true): void { this._selectionSetDirty = dirty; }
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;
@@ -197,7 +207,7 @@ export abstract class ViewState extends ElementState {
   public abstract setExtents(viewDelta: Vector3d): void;
 
   /** Change the rotation of the view.
-   *  <em>note:</em> rot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
+   * @note viewRot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
    */
   public abstract setRotation(viewRot: RotMatrix): void;
 
@@ -298,7 +308,10 @@ export abstract class ViewState extends ElementState {
     return ViewStatus.Success;
   }
 
-  public getExtentLimits() { return { minExtent: Constant.oneMillimeter, maxExtent: 2.0 * Constant.diameterOfEarth }; }
+  /** get the largest and smallest values allowed for the extents for this ViewState
+   * @returns an object with members {min, max}
+   */
+  public getExtentLimits() { return { min: Constant.oneMillimeter, max: 2.0 * Constant.diameterOfEarth }; }
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
@@ -333,11 +346,11 @@ export abstract class ViewState extends ElementState {
     let error = ViewStatus.Success;
 
     const limitWindowSize = (v: number) => {
-      if (v < limit.minExtent) {
-        v = limit.minExtent;
+      if (v < limit.min) {
+        v = limit.min;
         error = ViewStatus.MinWindow;
-      } else if (v > limit.maxExtent) {
-        v = limit.maxExtent;
+      } else if (v > limit.max) {
+        v = limit.max;
         error = ViewStatus.MaxWindow;
       }
       return v;

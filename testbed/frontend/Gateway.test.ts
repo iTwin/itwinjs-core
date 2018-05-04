@@ -4,7 +4,7 @@
 import { GatewayRequest, Gateway, GatewayOperation, GatewayRequestEvent } from "@bentley/imodeljs-common";
 import { TestGateway, TestOp1Params, TestGateway2 } from "../common/TestGateway";
 import { assert } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
 
@@ -163,7 +163,7 @@ describe("Gateway", () => {
     assert.equal(response2, 2);
   });
 
-  it.only("should allow access to request and invocation objects and allow a custom request id", () => {
+  it("should allow access to request and invocation objects and allow a custom request id", () => {
     const op9 = GatewayOperation.lookup(TestGateway, "op9");
 
     const customId = "customId";
@@ -184,5 +184,14 @@ describe("Gateway", () => {
     return response.then((value) => {
       assert.equal(value, customId);
     }, (reason) => assert(false, reason));
+  });
+
+  it("should marshal errors over the wire", async () => {
+    try {
+      await TestGateway.getProxy().op10();
+      assert(false);
+    } catch (err) {
+      assert(err instanceof BentleyError);
+    }
   });
 });

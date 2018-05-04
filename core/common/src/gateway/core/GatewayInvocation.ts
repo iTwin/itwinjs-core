@@ -82,34 +82,24 @@ export class GatewayInvocation {
       const result = GatewayMarshaling.serialize(this.operation, protocol, value);
       const status = protocol.getCode(this.status);
       protocol.events.raiseEvent(GatewayProtocolEvent.BackendResponseCreated, this);
-      return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
+      return this.createFulfillment(result, status);
     }, (reason) => {
       if (reason instanceof GatewayPendingResponse) {
         this._pending = true;
         protocol.events.raiseEvent(GatewayProtocolEvent.BackendReportedPending, this);
-        return { result: reason.message, status: protocol.getCode(this.status), id: this.request.id, gateway: this.operation.gateway.name };
+        return this.createFulfillment(reason.message, protocol.getCode(this.status));
       }
 
       this._threw = true;
-      const result = this.supplyErrorMessage(reason);
+      const result = GatewayMarshaling.serialize(this.operation, protocol, reason);
       const status = protocol.getCode(this.status);
       protocol.events.raiseEvent(GatewayProtocolEvent.BackendErrorOccurred, this);
-      return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
+      return this.createFulfillment(result, status);
     });
   }
 
-  /** Supplies the error message for an invocation result. */
-  protected supplyErrorMessage(error: any): string {
-    let message = "";
-    if (error instanceof Error) {
-      message = `${error.toString()} ${error.stack}`;
-    } else if (error.hasOwnProperty("message")) {
-      message = error.message;
-    } else {
-      message = JSON.stringify(error);
-    }
-
-    return message;
+  private createFulfillment(result: string, status: number): GatewayRequestFulfillment {
+    return { result, status, id: this.request.id, gateway: this.operation.gateway.name };
   }
 
   private lookupOperationFunction(implementation: Gateway): (...args: any[]) => any {

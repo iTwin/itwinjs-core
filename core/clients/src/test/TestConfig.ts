@@ -6,7 +6,7 @@ import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { IModelHubClient, Version, IModel, VersionQuery, IModelQuery } from "../imodelhub";
 import { ConnectClient, Project } from "../ConnectClients";
-import {expect} from "chai";
+import { expect } from "chai";
 
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
@@ -55,7 +55,7 @@ export class TestConfig {
   }
 
   /** Query for the test file from connect/hub */
-  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{project: Project, iModel?: IModel, version?: Version}> {
+  public static async queryTestCase(accessToken: AccessToken, deploymentEnv: DeploymentEnv, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: IModel, version?: Version }> {
     const connectClient = new ConnectClient(deploymentEnv);
     const imodelHubClient: IModelHubClient = new IModelHubClient(deploymentEnv);
 
@@ -65,8 +65,8 @@ export class TestConfig {
     });
     expect(project);
 
-    let iModel: IModel|undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
-    let version: Version|undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let iModel: IModel | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let version: Version | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
     if (iModelName) {
       const iModels = await imodelHubClient.IModels().get(accessToken, project.wsgId, new IModelQuery().byName(iModelName));
       expect(iModels.length === 1);
@@ -78,8 +78,8 @@ export class TestConfig {
       }
     }
 
-    return {project, iModel, version};
- }
+    return { project, iModel, version };
+  }
 }
 
 /** Test users with various permissions */
