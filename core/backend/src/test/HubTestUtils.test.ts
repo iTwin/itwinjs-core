@@ -87,7 +87,7 @@ describe.skip("HubTestUtils", () => {
     await HubTestUtils.downloadIModel(accessToken, projectName, iModelName, iModelDir);
   });
 
-  it("should merge standalone change sets with a standalone iModel", async() => {
+  it("should merge standalone change sets with a standalone iModel", async () => {
     const iModelName = "ATP_2018050310145994_scenario22";
     const iModelDir = path.join(iModelRootDir, iModelName);
     HubTestUtils.mergeIModel(iModelDir);

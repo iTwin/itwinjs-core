@@ -67,7 +67,7 @@ describe.skip("iModelHub ChangeSetHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
+  it("should create a new ChangeSet", async function(this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -130,7 +130,7 @@ describe.skip("iModelHub ChangeSetHandler", () => {
   });
 
   // TODO: Requires locks management to have this working as integration test
-  it("should find information on the ChangeSet a specific Element was last modified in", async function (this: Mocha.ITestCallbackContext) {
+  it("should find information on the ChangeSet a specific Element was last modified in", async function(this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 

@@ -33,7 +33,7 @@ export class HubTestUtils {
     IModelJsFs.mkdirSync(dirPath);
   }
 
-  private static async queryProjectByName(accessToken: AccessToken, projectName: string): Promise<Project|undefined> {
+  private static async queryProjectByName(accessToken: AccessToken, projectName: string): Promise<Project | undefined> {
     const project: Project = await HubTestUtils.connectClient!.getProject(accessToken, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
@@ -41,7 +41,7 @@ export class HubTestUtils {
     return project;
   }
 
-  private static async queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel|undefined> {
+  private static async queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
     const iModels = await HubTestUtils.hubClient!.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
     if (iModels.length === 0)
       return undefined;
@@ -58,7 +58,7 @@ export class HubTestUtils {
    */
   public static async queryProjectIdByName(accessToken: AccessToken, projectName: string): Promise<string> {
     HubTestUtils.initialize();
-    const project: Project|undefined = await HubTestUtils.queryProjectByName(accessToken, projectName);
+    const project: Project | undefined = await HubTestUtils.queryProjectByName(accessToken, projectName);
     if (!project)
       return Promise.reject(`Project ${projectName} not found`);
     return project.wsgId;
@@ -73,7 +73,7 @@ export class HubTestUtils {
    */
   public static async queryIModelIdByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
     HubTestUtils.initialize();
-    const iModel: HubIModel|undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
+    const iModel: HubIModel | undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
     if (!iModel)
       return Promise.reject(`IModel ${iModelName} not found`);
     return iModel.wsgId;
@@ -98,7 +98,7 @@ export class HubTestUtils {
 
     const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
 
-    const iModel: HubIModel|undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
+    const iModel: HubIModel | undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
     if (!iModel)
       return Promise.reject(`IModel ${iModelName} not found`);
     const iModelId = iModel.wsgId;
@@ -138,11 +138,11 @@ export class HubTestUtils {
     await HubTestUtils.hubClient!.IModels().delete(accessToken, projectId, iModelId);
   }
 
-  private static getSeedPathname (iModelDir: string) {
+  private static getSeedPathname(iModelDir: string) {
     const seedFileDir = path.join(iModelDir, "seed");
     const seedFileNames = IModelJsFs.readdirSync(seedFileDir);
     if (seedFileNames.length !== 1) {
-      throw new Error (`Expected to find one and only one seed file in: ${seedFileDir}`);
+      throw new Error(`Expected to find one and only one seed file in: ${seedFileDir}`);
     }
     const seedFileName = seedFileNames[0];
     const seedPathname = path.join(seedFileDir, seedFileName);
@@ -161,7 +161,7 @@ export class HubTestUtils {
 
     // Delete any existing iModels with the same name as the required iModel
     const iModelName = path.basename(seedPathname, ".bim");
-    let iModel: HubIModel|undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
+    let iModel: HubIModel | undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel)
       await HubTestUtils.hubClient!.IModels().delete(accessToken, projectId, iModel.wsgId);
 
@@ -204,7 +204,7 @@ export class HubTestUtils {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async purgeAcquiredBriefcases(accessToken: AccessToken, projectName: string, iModelName: string, acquireThreshold: number = 16 ): Promise<void> {
+  public static async purgeAcquiredBriefcases(accessToken: AccessToken, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubTestUtils.queryIModelIdByName(accessToken, projectId, iModelName);
 
