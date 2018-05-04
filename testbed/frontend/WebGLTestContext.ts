@@ -8,9 +8,9 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 export namespace WebGLTestContext {
   // When executing on the continuous integration server, we fail to obtain a WebGLRenderingContext.
   // Need to determine why, and how to fix.
-  // For now, all tests requiring WebGL are disabled by default; enable in developer builds by setting
-  // isEnabled to true.
-  const isEnabled = false;
+  // Bill Goehrig claims one or both of these env vars will be defined when executing on the CI server.
+  function isEnabled(): boolean { return undefined === process.env.CI && undefined === process.env.TF_BUILD; }
+
   const canvasId = "WebGLTestCanvas";
 
   function createCanvas(width: number, height: number): HTMLCanvasElement | undefined {
@@ -35,7 +35,7 @@ export namespace WebGLTestContext {
   export let isInitialized = false;
 
   export function startup(canvasWidth: number = 300, canvasHeight: number = 150) {
-    if (!isEnabled) {
+    if (!isEnabled()) {
       return;
     }
 
