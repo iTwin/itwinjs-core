@@ -11,7 +11,7 @@ import { InstanceIdQuery } from "./Query";
 const loggingCategory = "imodeljs-clients.imodelhub";
 
 /** Version */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
@@ -82,5 +82,46 @@ export class VersionHandler {
     Logger.logTrace(loggingCategory, `Queried named versions for iModel ${imodelId}`);
 
     return versions;
+  }
+
+  /**
+   * Creates named version of an iModel.
+   * @param token Delegation token of the authorized user.
+   * @param imodelId Id of the iModel.
+   * @param changeSetId Id of the ChangeSet.
+   * @param name Version name.
+   * @param description Version description.
+   * @returns Created Version instance.
+   */
+  public async create(token: AccessToken, imodelId: string, changeSetId: string, name: string, description?: string): Promise<Version> {
+    Logger.logInfo(loggingCategory, `Creating named version for iModel ${imodelId}, changeSet id: ${changeSetId}`);
+
+    let version = new Version();
+    version.changeSetId = changeSetId;
+    version.name = name;
+    version.description = description;
+
+    version = await this._handler.postInstance<Version>(Version, token, this.getRelativeUrl(imodelId), version);
+
+    Logger.logTrace(loggingCategory, `Created named version for iModel ${imodelId}, changeSet id: ${changeSetId}`);
+
+    return version;
+  }
+
+  /**
+   * Updates named version of an iModel.
+   * @param token Delegation token of the authorized user.
+   * @param imodelId Id of the iModel.
+   * @param version Named version.
+   * @returns Updated Version instance.
+   */
+  public async update(token: AccessToken, imodelId: string, version: Version): Promise<Version> {
+    Logger.logInfo(loggingCategory, `Updating named version for iModel ${imodelId}, changeSet id: ${version.changeSetId}`);
+
+    const updatedVersion = await this._handler.postInstance<Version>(Version, token, this.getRelativeUrl(imodelId, version.wsgId), version);
+
+    Logger.logTrace(loggingCategory, `Updated named version for iModel ${imodelId}, changeSet id: ${version.changeSetId}`);
+
+    return updatedVersion;
   }
 }
