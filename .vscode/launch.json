@@ -40,21 +40,6 @@
       "protocol": "inspector",
       "outputCapture": "std"
     },
-    // {
-    //   "type": "node",
-    //   "request": "launch",
-    //   "name": "Run Backend Tests (Online)",
-    //   "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
-    //   "cwd": "${workspaceFolder}/core/backend",
-    //   "args": [
-    //     "--packageRoot=${workspaceFolder}",
-    //     "--testDir=${workspaceFolder}/core/backend/lib/test/offline",
-    //     "--debug",
-    //   ],
-    //   "port": 9229,
-    //   "protocol": "inspector",
-    //   "outputCapture": "std"
-    // },
     {
       "type": "node",
       "request": "launch",
