@@ -19,6 +19,7 @@
     "**/out": true,
     "**/lib": true
   },
+  "files.trimTrailingWhitespace": true,
   "cSpell.words": [
     "Accu",
     "BENTLEYCONFIG",
@@ -119,7 +120,5 @@
     "viewports",
     "zbuffer"
   ],
-  "typescript.autoImportSuggestions.enabled": false,
   "typescript.tsdk": "node_modules\\typescript\\lib",
-  "files.trimTrailingWhitespace": true,
 }
