@@ -75,7 +75,7 @@ export class IModelDb extends IModel {
   private _briefcase?: BriefcaseEntry;
 
   /** @hidden */
-  public get briefcase(): BriefcaseEntry {return this._briefcase!; }
+  public get briefcase(): BriefcaseEntry { return this._briefcase!; }
 
   /** Get the mode used to open this iModel */
   public get openMode(): OpenMode | undefined { return this.briefcase ? this.briefcase.openMode : undefined; }
@@ -618,7 +618,7 @@ export class IModelDb extends IModel {
    * @returns true if the iModel contains the class definition or false if not.
    * @see importSchema
    */
-  public containsClass(classFullName: string) : boolean {
+  public containsClass(classFullName: string): boolean {
     const className = classFullName.split(":");
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
