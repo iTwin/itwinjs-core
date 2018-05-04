@@ -394,8 +394,8 @@ export default class SchemaReadHelper {
         return this.loadProperty(structArrProp, propertyJson);
 
       case "NavigationProperty":
-        if (classObj.type !== SchemaItemType.EntityClass && classObj.type !== SchemaItemType.RelationshipClass)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses and RelationshipClasses can have NavigationProperties.`);
+        if (classObj.type !== SchemaItemType.EntityClass && classObj.type !== SchemaItemType.RelationshipClass && classObj.type !== SchemaItemType.Mixin)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
 
         if (undefined === propertyJson.relationshipName)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is missing the required 'relationshipName' property.`);

@@ -7,6 +7,8 @@ import Schema, { MutableSchema } from "../../source/Metadata/Schema";
 import EntityClass from "../../source/Metadata/EntityClass";
 import Mixin from "../../source/Metadata/Mixin";
 import { ECObjectsError } from "../../source/Exception";
+import { NavigationProperty } from "../../source/Metadata/Property";
+import { StrengthDirection } from "../../source/ECObjects";
 
 describe("Mixin", () => {
   describe("deserialization", () => {
@@ -28,6 +30,24 @@ describe("Mixin", () => {
         },
         TestEntity: {
           schemaItemType: "EntityClass",
+        },
+        NavPropRelationship: {
+          schemaItemType: "RelationshipClass",
+          strength: "Embedding",
+          strengthDirection: "Forward",
+          modifier: "Sealed",
+          source: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Source RoleLabel",
+            constraintClasses: [ "TestSchema.TestEntity" ],
+          },
+          target: {
+            polymorphic: true,
+            multiplicity: "(0..*)",
+            roleLabel: "Target RoleLabel",
+            constraintClasses: [ "TestSchema.TestEntity" ],
+          },
         },
       });
     }
@@ -62,12 +82,29 @@ describe("Mixin", () => {
       assert.isTrue(await mixin!.baseClass === baseMixin);
     });
 
-    it("should throw for NavigationProperty", async () => {
+    it("should succeed with NavigationProperty", async () => {
       const json = createSchemaJson({
         appliesTo: "TestSchema.TestEntity",
-        properties: [{ name: "navProp", propertyType: "NavigationProperty" }],
+        properties: [
+          {
+            propertyType: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+        ],
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestMixin.navProp is invalid, because only EntityClasses and RelationshipClasses can have NavigationProperties.`);
+
+      const schema = await Schema.fromJson(json);
+      expect(schema).to.exist;
+
+      const mixin = await schema.getItem<Mixin>("TestMixin");
+      expect(mixin).to.exist;
+
+      const navProp = await mixin!.getProperty("testNavProp", false) as NavigationProperty;
+      expect(navProp).to.exist;
+      expect(navProp.isNavigation()).to.be.true;
+      expect(navProp.direction).to.equal(StrengthDirection.Forward);
     });
 
     it("should throw for invalid appliesTo", async () => {
