@@ -8,7 +8,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Backend Tests",
+      "name": "Run Backend Tests (Integration)",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
@@ -28,10 +28,13 @@
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--packageRoot=${workspaceFolder}",
-        "--testDir=${workspaceFolder}/core/backend/lib/test",
+        "--testDir=${workspaceFolder}/core/backend/lib/test/",
         "--debug",
-        "--offline",
-        "mock"
+        "--recursive",
+        "--offline=mock",
+        "--grep",
+        "#online-required",
+        "--invert"
       ],
       "port": 9229,
       "protocol": "inspector",

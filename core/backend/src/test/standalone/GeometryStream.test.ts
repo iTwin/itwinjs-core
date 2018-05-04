@@ -7,8 +7,8 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import {
   Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, GeometryStreamParser,
 } from "@bentley/imodeljs-common";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../backend";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../../backend";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
