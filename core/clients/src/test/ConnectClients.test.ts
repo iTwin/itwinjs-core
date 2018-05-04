@@ -12,7 +12,7 @@ describe("ConnectClient", () => {
   let accessToken: AccessToken;
   const connectClient: ConnectClient = new ConnectClient(TestConfig.deploymentEnv);
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function(this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -87,7 +87,7 @@ describe("RbacClient", () => {
   const connectClient = new ConnectClient(TestConfig.deploymentEnv);
   const rbacClient = new RbacClient(TestConfig.deploymentEnv);
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function(this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 

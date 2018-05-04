@@ -8,7 +8,7 @@ describe("TileDataAccessClient", () => {
   let accessToken: AccessToken;
   const tileDataAccessClient = new TileDataAccessClient("QA");
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function(this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 

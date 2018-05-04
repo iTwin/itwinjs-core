@@ -7,6 +7,7 @@ import { ColorDef, ColorIndex, QPoint2d, QParams2d } from "@bentley/imodeljs-com
 import { LUTDimensions } from "./FeatureDimensions";
 import { ColorInfo } from "./ColorInfo";
 import { MeshArgs, PolylineArgs } from "../Primitives/Mesh";
+import { TextureHandle } from "./Texture";
 
 export namespace VertexLUT {
   /**
@@ -40,6 +41,10 @@ export namespace VertexLUT {
       builder.appendColorTable(colorIndex);
 
       builder.params = undefined;
+    }
+
+    public toTexture(): TextureHandle | undefined {
+      return TextureHandle.createForData(this.dimensions.width, this.dimensions.height, this.data);
     }
   }
 

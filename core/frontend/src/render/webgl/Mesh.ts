@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { MaterialData } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/Mesh";
@@ -11,7 +12,8 @@ import { SurfaceType } from "./RenderFlags";
 import { Graphic, wantJointTriangles/*, Batch*/ } from "./Graphic";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
-// import { Primitive } from "./Primitive";
+import { TextureHandle } from "./Texture";
+import { Primitive } from "./Primitive";
 // import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
@@ -56,20 +58,22 @@ export class MeshInfo {
 }
 
 export class MeshData extends MeshInfo {
-  public vertices: any; // should be a VertexLookupTexture;
-  public colorInfo: ColorInfo;
-  public material: MaterialData;
-  public animation: any; // should be a AnimationLookupTexture;
+  public readonly vertices: TextureHandle;
+  public readonly colorInfo: ColorInfo;
+  public readonly material: MaterialData;
+  public readonly animation: any; // should be a AnimationLookupTexture;
 
-  public constructor(params: MeshParams) {
+  public static create(params: MeshParams): MeshData | undefined {
+    const verts = params.lutParams.toTexture();
+    return undefined !== verts ? new MeshData(verts, params) : undefined;
+  }
+
+  private constructor(vertices: TextureHandle, params: MeshParams) {
     super(params);
-    this.vertices = params.lutParams; // should be = new VertexLookupTexture(params.lutParams);
+    this.vertices = vertices;
     this.colorInfo = params.lutParams.colorInfo;
     this.material = params.material;
-    if (params.animationLUTParams.isValid()) {
-      // this.animation = new AnimationLookupTexture(params.animationLUTParams);
-      params.animationLUTParams = undefined;
-    }
+    this.animation = undefined;
   }
 }
 
@@ -116,21 +120,20 @@ export class MeshParams extends MeshInfo {
   }
 }
 
-export const enum MeshGraphicType {
-  kSurface,
-  kEdge,
-  kSilhouette,
-  kPolyline,
-  kCOUNT,
-}
 export class MeshGraphic extends Graphic {
-  public meshData: MeshData;
-  public primitives = [undefined, undefined, undefined, undefined]; // [Primitive, Primitive, Primitive, Primitive];
+  public readonly meshData: MeshData;
+  private readonly _primitives: Primitive[] = [];
 
-  public constructor(args: MeshArgs, iModel: IModelConnection) {
+  public static create(args: MeshArgs, iModel: IModelConnection) {
+    const data = MeshData.create(new MeshParams(args));
+    return undefined !== data ? new MeshGraphic(data, args, iModel) : undefined;
+  }
+
+  private constructor(data: MeshData, args: MeshArgs, iModel: IModelConnection) {
     super(iModel);
-    this.meshData = new MeshData(new MeshParams(args));
-    // this.primitives[MeshGraphicType.kSurface] = new SurfacePrimitive(args, this);
+    this.meshData = data;
+
+    assert(undefined !== this._primitives); // silence unused variable warnings...
 
     // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
     const convertPolylineEdges = args.edges.polylines.isValid() && !wantJointTriangles(args.edges.width, args.is2d);

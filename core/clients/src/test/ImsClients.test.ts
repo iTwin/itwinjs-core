@@ -10,7 +10,7 @@ import { TestConfig, TestUsers } from "./TestConfig";
 chai.should();
 
 describe("ImsFederatedAuthentiationClient", () => {
-  before(function (this: Mocha.IHookCallbackContext) {
+  before(function(this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
   });
@@ -31,7 +31,7 @@ describe("ImsFederatedAuthentiationClient", () => {
 });
 
 describe("ImsActiveSecureTokenClient", () => {
-  before(function (this: Mocha.IHookCallbackContext) {
+  before(function(this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
   });
@@ -89,7 +89,7 @@ describe("ImsActiveSecureTokenClient", () => {
 describe("ImsDelegationSecureTokenClient", () => {
   const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient(TestConfig.deploymentEnv);
 
-  before(function (this: Mocha.IHookCallbackContext) {
+  before(function(this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
   });
