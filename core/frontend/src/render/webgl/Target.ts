@@ -8,19 +8,21 @@ import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine } fro
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
+import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
 import { Branch, WorldDecorations } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
-import { RenderCommands } from "./DrawCommand";
+import { RenderCommands, DrawParams } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { GL } from "./GL";
 import { SceneCompositor } from "./SceneCompositor";
 import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
+import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -492,6 +494,7 @@ export class OnScreenTarget extends Target {
   private readonly _viewRect = new ViewRect();
   private readonly _canvas: HTMLCanvasElement;
   private _fbo?: FrameBuffer;
+  private _blitGeom?: SingleTexturedViewportQuadGeometry;
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -514,15 +517,43 @@ export class OnScreenTarget extends Target {
     }
 
     this._fbo = FrameBuffer.create([color]);
-    return undefined !== this._fbo;
+    if (undefined === this._fbo) {
+      return false;
+    }
+
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(this._fbo.getColor(0), TechniqueId.CopyColor);
+    return undefined !== this._blitGeom;
   }
   protected _beginPaint(): void {
     assert(undefined !== this._fbo);
-    System.instance.frameBufferStack.push(this._fbo!, true);
+
+    // Render to our framebuffer
+    const system = System.instance;
+    system.frameBufferStack.push(this._fbo!, true);
+
+    // Ensure off-screen canvas dimensions match on-screen canvas dimensions
+    const viewRect = this.viewRect;
+    system.canvas.width = viewRect.width;
+    system.canvas.height = viewRect.height;
   }
   protected _endPaint(): void {
-    System.instance.frameBufferStack.pop();
-    // ###TODO this.blitSceneToScreen(this._fbo!.getColor(0));
+    const onscreenContext = this._canvas.getContext("2d");
+    assert(null !== onscreenContext);
+    assert(undefined !== this._blitGeom);
+    if (undefined === this._blitGeom || null === onscreenContext) {
+      return;
+    }
+
+    const system = System.instance;
+    system.frameBufferStack.pop();
+
+    // Copy framebuffer contents to off-screen canvas
+    system.applyRenderState(RenderState.defaults);
+    const params = new DrawParams(this, this._blitGeom);
+    system.techniques.draw(params);
+
+    // Copy off-screen canvas contents to on-screen canvas
+    onscreenContext.drawImage(system.canvas, 0, 0);
   }
   public onResized(): void {
     this._dcAssigned = false;

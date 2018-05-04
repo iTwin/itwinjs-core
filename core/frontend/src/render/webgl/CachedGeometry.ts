@@ -300,6 +300,7 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
   }
 
   public get texture(): WebGLTexture { return this._textures[0]; }
+  public set texture(texture: WebGLTexture) { this._textures[0] = texture; }
 
   protected constructor(params: IndexedGeometryParams, uv: QBufferHandle2d, texture: WebGLTexture, techId: TechniqueId) {
     super(params, techId, uv, [texture]);
