@@ -22,8 +22,7 @@ function setupTest(iModelId: string): void {
     IModelJsFs.removeSync(cacheFilePath);
 }
 
-// NEEDS_WORk Currently causing CI jobs to fail, but tests pass locally
-describe.skip("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let accessToken: AccessToken = new MockAccessToken();
