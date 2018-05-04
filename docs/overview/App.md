@@ -11,7 +11,7 @@ From the same JavaScript codebase, it is possible to create:
 
 iModel agents and services are apps that have no interactive user interface. They are generally deployed on servers, often in the cloud using containers (e.g. Docker) and managed using a cloud orchestration framework (e.g. Kubernetes.) Agents and services are always hosted by NodeJs.
 
-Agents and services are [backend](../../learning/Glossary.md#Backend) code. Their main concern is to access and process the content of iModels. They use [briefcases](../../learning/Glossary.md#Briefcase) to access iModels.
+Agents and services are [backend](../learning/Glossary.md#Backend) code. Their main concern is to access and process the content of iModels. They use [briefcases](../learning/Glossary.md#Briefcase) to access iModels.
 
 Agents and services are written in TypeScript/JavaScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
 
@@ -25,7 +25,7 @@ As an example, consider an iModelJs Agent that receives notifications from iMode
 
 An *iModel Service* is a program that responds to requests from other apps. A service runs on a server and waits for requests. A service may receive requests from [Web Apps](./WebApps) (frontend or backend) or from other services.
 
-A true service is a stand-alone program that is never bundled with the clients that use it. An [app-specific backend](#app-backend) is a special kind of service that is logically part of an app and is often bundled with it. This distinction is important for [portability reasons](../../learning/learning/Portability.md#backend-portability).
+A true service is a stand-alone program that is never bundled with the clients that use it. An [app-specific backend](#app-backend) is a special kind of service that is logically part of an app and is often bundled with it. This distinction is important for [portability reasons](../learning/Portability.md#backend-portability).
 
 An example of a service is a program that serves out spatial tiles that it extracts from a specified area of an iModel upon request.
 
@@ -45,7 +45,7 @@ An app can use a pre-existing or general-purpose [service](#imodel-services) as 
 
 An app may require data-access services that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using [gateways](#gateways) and are encouraged.
 
-App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. See [backend portability](../../learning/learning/Portability.md#backend-portability).
+App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
 
 An app can use many services, both general-purpose and app-specific.
 
@@ -143,4 +143,4 @@ An app's UI is contained within its frontend. And, the look and feel of the GUI 
 
 ### Platform-specific Modules
 
-An interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. Mobile platforms such as iOS and Android, provide JavaScript classes for services that are specific to mobile apps. The Electron desktop platform provides all of the features of nodejs. Platform-specific modules must be used in [guarded code](../../learning/Portability.md).
+An interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. Mobile platforms such as iOS and Android, provide JavaScript classes for services that are specific to mobile apps. The Electron desktop platform provides all of the features of nodejs. Platform-specific modules must be used in [guarded code](../learning/Portability.md).

@@ -2,7 +2,7 @@
 
 This article describes the technologies and best practices that make iModelJs apps portable. An well-written iModelJs app will run on many platforms without modification.
 
-In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../../overview/overview/App.md#making-interactive-apps-fit-the-platform).
+In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../overview/App.md#making-interactive-apps-fit-the-platform).
 
 This degree of portability and configurability is possible because of the technologies used by iModelJs apps and the iModelJs app architecture.
 
@@ -18,27 +18,27 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 ## Frontend Portability
 
-Since an iModelJs app [frontend](../overview/overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
+Since an iModelJs app [frontend](../overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
 The frontend's main script must check the app's configuration to decide what gateway configuration to use for its app-specific backend(s):
-* Mobile app - [in-process gateway configuration](../../overview/overview/App.md#in-process-gateway-configuration).
-* Desktop app - [desktop gateway configuration](../../overview/overview/App.md#desktop-gateway-configuration).
-* Web app - [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration).
+* Mobile app - [in-process gateway configuration](../overview/App.md#in-process-gateway-configuration).
+* Desktop app - [desktop gateway configuration](../overview/App.md#desktop-gateway-configuration).
+* Web app - [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration).
 
-The frontend will always use the [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration) for gateways to services.
+The frontend will always use the [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration) for gateways to services.
 
 ## Backend Portability
 
 ### Services and Agents
-Services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use the [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
+Services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use the [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
 
 ### App Backends
 App-specific backends do not always run in nodejs, and they do not always run on a server. This section describes how to make an app-specific backend portable and adaptable to multiple app configurations.
 
 An app-specific backend's main script must check the app's configuration to decide how it should initialize and run:
-* Mobile app - the backend should run the in-process gateway request processor and use the [in-process gateway configuration](../../overview/overview/App.md#in-process-gateway-configuration).
-* Desktop app - the backend should run a Web server and use the [desktop gateway configuration](../../overview/overview/App.md#desktop-gateway-configuration).
-* Web app - the backend should run a Web server and use the [cloud gateway configuration](../../overview/overview/App.md#cloud-gateway-configuration).
+* Mobile app - the backend should run the in-process gateway request processor and use the [in-process gateway configuration](../overview/App.md#in-process-gateway-configuration).
+* Desktop app - the backend should run a Web server and use the [desktop gateway configuration](../overview/App.md#desktop-gateway-configuration).
+* Web app - the backend should run a Web server and use the [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration).
 
 *TBD: Sample Code*
 
