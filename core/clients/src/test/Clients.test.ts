@@ -17,7 +17,7 @@ chai.should();
 describe("UrlDiscoveryClient", () => {
   const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient("PROD"); // TODO: QA or DEV don't seem to work.
 
-  before(function(this: Mocha.IHookCallbackContext) {
+  before(function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
   });
