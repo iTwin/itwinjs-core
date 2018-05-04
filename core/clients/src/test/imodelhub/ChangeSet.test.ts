@@ -28,7 +28,8 @@ function mockGetChangeSetById(responseBuilder: ResponseBuilder, imodelId: string
   responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-describe("iModelHub ChangeSetHandler", () => {
+// NEEDS_WORK: The seed file (and folder) is missing causing createImodel to fail below.
+describe.skip("iModelHub ChangeSetHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   let briefcase: Briefcase;
@@ -66,7 +67,7 @@ describe("iModelHub ChangeSetHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  it.skip("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
+  it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
