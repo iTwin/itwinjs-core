@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import {
   FeatureIndexType,
-  FeatureIndex
+  FeatureIndex,
 } from "@bentley/imodeljs-common";
 
 export class FeaturesInfo {
