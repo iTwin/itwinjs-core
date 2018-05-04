@@ -11,6 +11,7 @@ export * from "./FeatureIndex";
 export * from "./Frustum";
 export * from "./Fonts";
 export * from "./Gateway";
+export * from "./Image";
 export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
