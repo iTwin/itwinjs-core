@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-/** @module Schemas */
+/** @module Schema */
 
 import { Id64Props } from "@bentley/bentleyjs-core";
 

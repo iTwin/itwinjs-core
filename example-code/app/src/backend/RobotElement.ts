@@ -5,7 +5,7 @@
 import { SpatialLocationElement, IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
 import { GeometricElement3dProps, GeometryStreamBuilder } from "@bentley/imodeljs-common";
 import { Point3d, Arc3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { RobotWorldSchema } from "./RobotWorldSchema";
+import { RobotWorld } from "./RobotWorldSchema";
 
 /**
  * An example of defining a subclass of SpatialLocationElement.
@@ -29,9 +29,9 @@ export class Robot extends SpatialLocationElement {
     builder.appendGeometryQuery(circle);
 
     const props: GeometricElement3dProps = {      // I know what class and category to use.
-      model,
-      classFullName: RobotWorldSchema.Class.Robot,
-      category: RobotWorldSchema.getCategory(iModel, RobotWorldSchema.Class.Robot).id,
+      model: model.id,
+      classFullName: RobotWorld.Class.Robot,
+      category: RobotWorld.getCategory(iModel, RobotWorld.Class.Robot).id,
       geom: builder.geometryStream,
       placement: { origin: location, angles: new YawPitchRollAngles()},
     };

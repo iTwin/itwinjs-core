@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-/** @module Schemas */
+/** @module Schema */
 
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -28,7 +28,21 @@ import { Entity } from "./Entity";
  * The ECClass must be defined in an ECSchema.
  * The same is true of subclassing [[ElementAspect]].
  *
+ * <h2>Importing the Schema</h2>
+ *
  * An ECSchema must be imported into an iModel before apps can insert and query instances of the ECClasses that it defines.
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:IModelDb.importSchema]]
+ * ```
+ *
+ * ECSchema.xml files must be in the app backend's install set, as part of its assets.
+ *
+ * The app can ensure that the underlying schema is imported by registering an onOpened event handler:
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:Schema.importSchema]]
+ * ```
  *
  * <h2>TypeScript and ECSchemas and ECClasses</h2>
  *
@@ -38,21 +52,23 @@ import { Entity } from "./Entity";
  *
  * You <em>may</em> write a TypeScript [[Schema]] class to represent an ECSchema and TypeScript [[Element]]-based or [[ElementAspect]]-based classes to represent some or all of its ECClasses.
  * The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods and type-safe constructors for it, to
- * provide and centralize the business logic that applications can use when working with that specific class.
+ * provide and centralize the business logic that applications can use when working with that specific class. Note you still have to import
+ * the underlying ECSchema.
  *
  * <h2>Schema Registration</h2>
  *
- * If you do choose to write a Schema to represent an ECSchema in TypeScript, then apps must register it before using it. That is, and app must call [[Schemas.registerSchema]] for each Schema that it plans to use.
+ * If an app backend wants to use a TypeScript Schema class, it must register it first.
+ * <p><em>Example:</em>
+ * ``` ts
+ * [[include:Schema.registerSchema]]
+ * ```
  *
- * Since an ECSchema must be imported into an iModel before apps can work with it, a hand-written Schema must ensure that its underlying ECSchema has been imported into each IModelDb.
- * This means that the supporting ECSchema.xml file must be accessible at run time. In practice, that means that ECSchema.xml files must be delivered as part of a package that defines a
- * Schema, and apps must include these assets in their deliverables.
- *
+ * The TypeScript Schema class itself must register all of the classes that it defines. The best practice is for the Schema class to do that in its constructor.
  * <p><em>Example:</em>
  * ``` ts
  * [[include:ClassRegistry.registerModule]]
  * ```
- * where TestPartitionElement.ts might look like this:
+ * where RobotElement.ts might look like this:
  * ``` ts
  * [[include:Element.subclass]]
  * ```
