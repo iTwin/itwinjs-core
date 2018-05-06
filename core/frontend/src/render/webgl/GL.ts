@@ -209,4 +209,6 @@ export namespace GL {
     Depth = WebGLRenderingContext.DEPTH_BUFFER_BIT,
     Stencil = WebGLRenderingContext.STENCIL_BUFFER_BIT,
   }
+
+  export const POLYGON_OFFSET_FILL = WebGLRenderingContext.POLYGON_OFFSET_FILL;
 }

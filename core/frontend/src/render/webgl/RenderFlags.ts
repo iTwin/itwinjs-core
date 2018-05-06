@@ -95,42 +95,51 @@ export function isSurface(order: RenderOrder): boolean { return order <= RenderO
 
 /** Flags indicating operations to be performed by the post-process composite step. */
 export const enum CompositeFlags {
-    None = 0,
-    Translucent = 1 << 0,
-    Hilite = 1 << 1,
-    All = Translucent | Hilite,
+  None = 0,
+  Translucent = 1 << 0,
+  Hilite = 1 << 1,
+  All = Translucent | Hilite,
 }
 
 /** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs. */
 export const enum SurfaceFlags {
-    None = 0,
-    HasTexture = 1 << 0,
-    ApplyLighting = 1 << 1,
-    HasNormals = 1 << 2,
+  None = 0,
+  HasTexture = 1 << 0,
+  ApplyLighting = 1 << 1,
+  HasNormals = 1 << 2,
 
-    // NB: In u_surfaceFlags provided to shader, indicates material color/specular/alpha should be ignored. Has no effect on texture.
-    // If a given feature has the 'ignore material' override set, v_surfaceFlags will be modified to turn on IgnoreMaterial and turn off HasTexture.
-    IgnoreMaterial = 1 << 3,
+  // NB: In u_surfaceFlags provided to shader, indicates material color/specular/alpha should be ignored. Has no effect on texture.
+  // If a given feature has the 'ignore material' override set, v_surfaceFlags will be modified to turn on IgnoreMaterial and turn off HasTexture.
+  IgnoreMaterial = 1 << 3,
 
-    // In HiddenLine and SolidFill modes, a transparency threshold is supplied; surfaces that are more transparent than the threshold are not rendered.
-    TransparencyThreshold = 1 << 4,
+  // In HiddenLine and SolidFill modes, a transparency threshold is supplied; surfaces that are more transparent than the threshold are not rendered.
+  TransparencyThreshold = 1 << 4,
 
-    // For HiddenLine mode
-    BackgroundFill = 1 << 5,
+  // For HiddenLine mode
+  BackgroundFill = 1 << 5,
+
+  // For textured meshes, the color index in the vertex LUT is unused - we place the normal there instead.
+  // For untextured lit meshes, the normal is placed after the feature ID.
+  HasColorAndNormal = 1 << 6,
+
+  // For materials with reflectivity.
+  EnvironmentMap = 1 << 7,
+
+  // NB: No more available unless we increase size of SurfaceFlags
 }
 
 export const enum OvrFlags {
-    None = 0,
-    Visibility = 1 << 0,
-    Rgb = 1 << 1,
-    Alpha = 1 << 2,
-    Weight = 1 << 3,
-    Flashed = 1 << 4,
-    Hilited = 1 << 5,
-    LineCode = 1 << 6,
-    IgnoreMaterial = 1 << 7, // ignore material color, specular properties, and texture
+  None = 0,
+  Visibility = 1 << 0,
+  Rgb = 1 << 1,
+  Alpha = 1 << 2,
+  Weight = 1 << 3,
+  Flashed = 1 << 4,
+  Hilited = 1 << 5,
+  LineCode = 1 << 6,
+  IgnoreMaterial = 1 << 7, // ignore material color, specular properties, and texture
 
-    Rgba = Rgb | Alpha,
+  Rgba = Rgb | Alpha,
 }
 
 export const enum IsTranslucent { No, Yes, Maybe }
