@@ -75,7 +75,7 @@ export class IModelDb extends IModel {
   private _briefcase?: BriefcaseEntry;
 
   /** @hidden */
-  public get briefcase(): BriefcaseEntry {return this._briefcase!; }
+  public get briefcase(): BriefcaseEntry { return this._briefcase!; }
 
   /** Get the mode used to open this iModel */
   public get openMode(): OpenMode | undefined { return this.briefcase ? this.briefcase.openMode : undefined; }
@@ -480,6 +480,11 @@ export class IModelDb extends IModel {
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
+   * @see containsClass
+   * <p><em>Example:</em>
+   * ``` ts
+   * [[include:IModelDb.importSchema]]
+   * ```
    */
   public importSchema(schemaFileName: string) {
     if (!this.briefcase) throw this._newNotOpenError();
@@ -606,6 +611,19 @@ export class IModelDb extends IModel {
         this.loadMetaData(baseClassName);
       });
     }
+  }
+
+  /** Query if this iModel contains the definition of the specified class.
+   * @param classFullName The full name of the class, for example, SomeSchema:SomeClass
+   * @returns true if the iModel contains the class definition or false if not.
+   * @see importSchema
+   */
+  public containsClass(classFullName: string): boolean {
+    const className = classFullName.split(":");
+    if (className.length !== 2)
+      throw new IModelError(IModelStatus.BadArg, undefined, Logger.logError, loggingCategory, () => ({ iModelId: this.token.iModelId, classFullName }));
+    const { error } = this.briefcase.nativeDb.getECClassMetaData(className[0], className[1]);
+    return (error === undefined);
   }
 
   /** query a "file property" from this iModel, as a string.

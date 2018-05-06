@@ -65,4 +65,31 @@ describe.skip("HubTestUtils", () => {
     BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSetToken);
   });
 
+  it("should be able to open any iModel on the Hub", async () => {
+    const projectName = "AbdTestProject";
+    const iModelName = "ATP_2018050310145994_scenario22";
+
+    const myProjectId = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubTestUtils.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenMode.Readonly);
+    assert.exists(iModel);
+    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+
+    iModel.close(accessToken);
+  });
+
+  it("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
+    const projectName = "AbdTestProject";
+    const iModelName = "ATP_2018050310145994_scenario22";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubTestUtils.downloadIModel(accessToken, projectName, iModelName, iModelDir);
+  });
+
+  it("should merge standalone change sets with a standalone iModel", async () => {
+    const iModelName = "ATP_2018050310145994_scenario22";
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    HubTestUtils.mergeIModel(iModelDir);
+  });
 });

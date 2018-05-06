@@ -12,6 +12,7 @@ export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
   enableTransactions?: boolean;
   openMode?: OpenMode;
+  deleteFirst?: boolean;
 }
 
 /** Credentials for test users */
@@ -66,6 +67,14 @@ export class IModelTestUtils {
 
     const srcName = path.join(KnownTestLocations.assetsDir, filename);
     const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
+
+    if ("deleteFirst" in opts) {
+      try {
+        IModelJsFs.removeSync(dbName);
+      } catch (err) {
+      }
+    }
+
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
     if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {

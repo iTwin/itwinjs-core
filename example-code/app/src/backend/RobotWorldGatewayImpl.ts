@@ -4,10 +4,11 @@
 // __PUBLISH_EXTRACT_START__ Gateway.implementation
 import { Gateway, IModelToken, GatewayDefinition, IModelReadGateway, IModelWriteGateway, BentleyCloudGatewayConfiguration, GatewayElectronConfiguration } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 import { Platform, IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadGateway, RobotWorldWriteGateway } from "../common/RobotWorldGatewayDefinition";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Angle } from "@bentley/geometry-core";
 
 // RobotWorldEngine Gateway Implementations
 
@@ -24,20 +25,20 @@ class RobotWorldWriteGatewayImpl extends Gateway implements RobotWorldWriteGatew
   public static register() {
     Gateway.registerImplementation(RobotWorldWriteGateway, RobotWorldWriteGatewayImpl);
   }
-  public async insertRobot(iModelToken: IModelToken, name: string, location: Point3d): Promise<Id64> {
-    return RobotWorldEngine.insertRobot(IModelDb.find(iModelToken), name, location);
+  public async insertRobot(iModelToken: IModelToken, modelId: Id64, name: string, location: Point3d): Promise<Id64> {
+    return RobotWorldEngine.insertRobot(IModelDb.find(iModelToken), modelId, name, location);
   }
 
   public async moveRobot(iModelToken: IModelToken, id: Id64, location: Point3d): Promise<void> {
     RobotWorldEngine.moveRobot(IModelDb.find(iModelToken), id, location);
   }
 
-  public async fuseRobots(iModelToken: IModelToken, r1: Id64, r2: Id64, location: Point3d): Promise<void> {
-    RobotWorldEngine.fuseRobots(IModelDb.find(iModelToken), r1, r2, location);
+  public async fuseRobots(iModelToken: IModelToken, r1: Id64, r2: Id64): Promise<void> {
+    RobotWorldEngine.fuseRobots(IModelDb.find(iModelToken), r1, r2);
   }
 
-  public async insertObstacle(iModelToken: IModelToken, location: Point3d): Promise<Id64> {
-    return RobotWorldEngine.insertObstacle(IModelDb.find(iModelToken), location);
+  public async insertBarrier(iModelToken: IModelToken, modelId: Id64, location: Point3d, angle: Angle, length: number): Promise<Id64> {
+    return RobotWorldEngine.insertBarrier(IModelDb.find(iModelToken), modelId, location, angle, length);
   }
 }
 
@@ -56,9 +57,9 @@ class RobotWorldReadGatewayImpl extends Gateway implements RobotWorldReadGateway
     return RobotWorldEngine.countRobots(iModelDb);
   }
 
-  public async queryRobotsHittingObstacles(iModelToken: IModelToken): Promise<Id64[]> {
+  public async queryObstaclesHitByRobot(iModelToken: IModelToken, rid: Id64): Promise<Id64[]> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    return RobotWorldEngine.queryRobotsHittingObstacles(iModelDb);
+    return RobotWorldEngine.queryObstaclesHitByRobot(iModelDb, rid);
   }
 
 }
@@ -67,9 +68,9 @@ class RobotWorldReadGatewayImpl extends Gateway implements RobotWorldReadGateway
 // __PUBLISH_EXTRACT_START__ Gateway.configure
 /* Configure the gateways exposed by this service. */
 function configureGateways(gateways: GatewayDefinition[], uriPrefix?: string) {
-  if (Platform.imodeljsMobile !== undefined) {
-    // TBD: InAppConfiguration.initialize({}, gateways);
-  } else if (Platform.getElectron() !== undefined) {
+  if (Platform.isMobile()) {
+    assert(false, "TBD: mobile gateway config");
+  } else if (Platform.electron !== undefined) {
     GatewayElectronConfiguration.initialize({}, gateways);
   } else {
     BentleyCloudGatewayConfiguration.initialize({ info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix }, gateways);

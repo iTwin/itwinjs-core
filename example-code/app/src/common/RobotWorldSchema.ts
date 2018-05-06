@@ -3,7 +3,7 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Schema.schemaNames
 
-/** Constants associated with RobotWorldSchema. */
+/** Constants associated with RobotWorld schema. */
 /** The "class full names" (SchemaName:ClassName) for the classes associated with RobotWorld. */
 export enum Class {
   Robot = "RobotWorld:Robot",

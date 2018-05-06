@@ -19,6 +19,8 @@ underlying database’s *persistence* schema.
 
 ![ECSQL versus SQL](./ecsql_vs_sql.png "ECSQL versus SQL")
 
+ECSQL can also be used to run [Spatial queries](./SpatialQueries.md)
+
 ## ECSQL in detail
 
 This is not a comprehensive documentation of the SQL subset of ECSQL. This document only describes the exceptions

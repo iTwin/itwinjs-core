@@ -4,7 +4,7 @@
 // __PUBLISH_EXTRACT_START__ Gateway.definition
 import { Gateway, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Angle } from "@bentley/geometry-core";
 
 // RobotWorldEngine Gateway Definitions
 // These classes are common to RobotWorldEngine and its clients.
@@ -22,7 +22,7 @@ export abstract class RobotWorldWriteGateway extends Gateway {
   public static types = () => [IModelToken, Id64, Point3d];
 
   // The gateway operations:
-  public async insertRobot(_iModelToken: IModelToken, _name: string, _location: Point3d): Promise<Id64> {
+  public async insertRobot(_iModelToken: IModelToken, _modelId: Id64, _name: string, _location: Point3d): Promise<Id64> {
     return this.forward.apply(this, arguments);
   }
 
@@ -30,11 +30,11 @@ export abstract class RobotWorldWriteGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  public async fuseRobots(_iModelToken: IModelToken, _r1: Id64, _r2: Id64, _location: Point3d): Promise<void> {
+  public async fuseRobots(_iModelToken: IModelToken, _r1: Id64, _r2: Id64): Promise<void> {
     return this.forward.apply(this, arguments);
   }
 
-  public async insertObstacle(_iModelToken: IModelToken, _location: Point3d): Promise<Id64> {
+  public async insertBarrier(_iModelToken: IModelToken, _modelId: Id64, _location: Point3d, _angle: Angle, _length: number): Promise<Id64> {
     return this.forward.apply(this, arguments);
   }
 }
@@ -55,7 +55,7 @@ export abstract class RobotWorldReadGateway extends Gateway {
     return this.forward.apply(this, arguments);
   }
 
-  public async queryRobotsHittingObstacles(_iModelToken: IModelToken): Promise<Id64[]> {
+  public async queryObstaclesHitByRobot(_iModelToken: IModelToken, _rid: Id64): Promise<Id64[]> {
     return this.forward.apply(this, arguments);
   }
 
