@@ -6,6 +6,7 @@ import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { System } from "./System";
+import { Point3d } from "@bentley/geometry-core";
 
 export type BufferData = ArrayBufferView | ArrayBuffer;
 
@@ -75,25 +76,58 @@ export class BufferHandle implements IDisposable {
   public isBound(binding: GL.Buffer.Binding) { return System.instance.context.getParameter(binding) === this._glBuffer; }
 }
 
+function setScale(index: number, value: number, array: Float32Array) {
+  array[index] = 0.0 !== value ? 1.0 / value : value;
+}
+
+/**
+ * Converts 2d quantization parameters to a format appropriate for submittal to the GPU.
+ * params[0] = origin.x
+ * params[1] = origin.y
+ * params[2] = scale.x
+ * params[3] = scale.y
+ */
+export function qparams2dToArray(params: QParams2d): Float32Array {
+  const arr = new Float32Array(4);
+
+  arr[0] = params.origin.x;
+  arr[1] = params.origin.y;
+  setScale(2, params.scale.x, arr);
+  setScale(3, params.scale.y, arr);
+
+  return arr;
+}
+
+export function qorigin3dToArray(qorigin: Point3d): Float32Array {
+  const origin = new Float32Array(3);
+  origin[0] = qorigin.x;
+  origin[1] = qorigin.y;
+  origin[2] = qorigin.z;
+  return origin;
+}
+
+export function qscale3dToArray(qscale: Point3d): Float32Array {
+  const scale = new Float32Array(3);
+  setScale(0, qscale.x, scale);
+  setScale(1, qscale.y, scale);
+  setScale(2, qscale.z, scale);
+  return scale;
+}
+
+/** Converts 3d quantization params to a pair of Float32Arrays */
+export function qparams3dToArray(params: QParams3d): { origin: Float32Array, scale: Float32Array } {
+  const origin = qorigin3dToArray(params.origin);
+  const scale = qscale3dToArray(params.scale);
+  return { origin, scale };
+}
+
 /** A handle to a WebGLBuffer intended to hold quantized 2d points */
 export class QBufferHandle2d extends BufferHandle {
-  /**
-   * The quantization parameters, in a format appropriate for submittal to the GPU.
-   * params[0] = origin.x
-   * params[1] = origin.y
-   * params[2] = scale.x
-   * params[3] = scale.y
-   */
-  public readonly params = new Float32Array(4);
-
-  private setScale(index: number, value: number) { this.params[index] = 0 !== value ? 1.0 / value : value; }
+  public readonly params: Float32Array;
 
   public constructor(params: QParams2d) {
     super();
-    this.params[0] = params.origin.x;
-    this.params[1] = params.origin.y;
-    this.setScale(2, params.scale.x);
-    this.setScale(3, params.scale.y);
+    this.params = qparams2dToArray(params);
   }
 
   public static create(params: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
@@ -110,20 +144,14 @@ export class QBufferHandle2d extends BufferHandle {
 /* A handle to a WebGLBuffer intended to hold quantized 3d points */
 export class QBufferHandle3d extends BufferHandle {
   /** The quantization origin in x, y, and z */
-  public readonly origin = new Float32Array(3);
+  public readonly origin: Float32Array;
   /** The quantization scale in x, y, and z */
-  public readonly scale = new Float32Array(3);
-
-  private setScale(index: number, value: number) { this.scale[index] = 0 !== value ? 1.0 / value : value; }
+  public readonly scale: Float32Array;
 
   public constructor(params: QParams3d) {
     super();
-    this.origin[0] = params.origin.x;
-    this.origin[1] = params.origin.y;
-    this.origin[2] = params.origin.z;
-    this.setScale(0, params.scale.x);
-    this.setScale(1, params.scale.y);
-    this.setScale(2, params.scale.z);
+    this.origin = qorigin3dToArray(params.origin);
+    this.scale = qscale3dToArray(params.scale);
   }
 
   public static create(params: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {

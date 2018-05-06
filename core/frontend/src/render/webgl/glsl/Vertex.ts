@@ -55,6 +55,7 @@ export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
   });
 }
 
+const scratchLutParams = new Float32Array(4);
 function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
@@ -67,16 +68,20 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
-      TextureHandle.bindSampler(uniform, (params.geometry as LUTGeometry).lut, TextureUnit.VertexLUT);
+      TextureHandle.bindSampler(uniform, (params.geometry as LUTGeometry).lut.texture, TextureUnit.VertexLUT);
     });
   });
 
   vert.addUniform("u_vertParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_vertParams", (uniform, params) => {
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      const lutTex: TextureHandle = lutGeom.lut;
-      const values: Float32Array = new Float32Array([lutTex.width, lutTex.height, lutGeom.numRgbaPerVertex, lutGeom.numVertices]);
-      uniform.setUniform4fv(values);
+      const lut = lutGeom.lut;
+      const lutParams = scratchLutParams;
+      lutParams[0] = lut.texture.width;
+      lutParams[1] = lut.texture.height;
+      lutParams[2] = lut.numRgbaPerVertex;
+      lutParams[3] = lut.numVertices;
+      uniform.setUniform4fv(lutParams);
     });
   });
 

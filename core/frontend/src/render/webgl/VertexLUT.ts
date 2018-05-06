@@ -3,11 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorIndex, QPoint2d, QParams2d } from "@bentley/imodeljs-common";
+import { ColorDef, ColorIndex, QPoint2d, QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { LUTDimensions } from "./FeatureDimensions";
 import { ColorInfo } from "./ColorInfo";
 import { MeshArgs, PolylineArgs } from "../Primitives/Mesh";
 import { TextureHandle } from "./Texture";
+import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
 
 export namespace VertexLUT {
   /**
@@ -21,15 +22,16 @@ export namespace VertexLUT {
     public readonly dimensions: LUTDimensions;
     public readonly colorInfo: ColorInfo;
     public readonly numVertices: number;
+    public readonly numRgbaPerVertex: number;
 
     /** Construct a VertexLUT.Params using the vertex data supplied by the Builder */
     public constructor(builder: Builder, colorIndex: ColorIndex) {
       this.numVertices = builder.numVertices;
-      const numRgbaPerVertex = builder.numRgbaPerVertex;
+      this.numRgbaPerVertex = builder.numRgbaPerVertex;
       const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
       this.colorInfo = new ColorInfo(colorIndex);
-      this.dimensions = new LUTDimensions(this.numVertices, numRgbaPerVertex, numColors);
-      assert(0 === this.dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === this.dimensions.height));
+      this.dimensions = new LUTDimensions(this.numVertices, this.numRgbaPerVertex, numColors);
+      assert(0 === this.dimensions.width % this.numRgbaPerVertex || (0 < numColors && 1 === this.dimensions.height));
 
       this.data = new Uint8Array(this.dimensions.width * this.dimensions.height * 4);
 
@@ -45,6 +47,38 @@ export namespace VertexLUT {
 
     public toTexture(): TextureHandle | undefined {
       return TextureHandle.createForData(this.dimensions.width, this.dimensions.height, this.data);
+    }
+
+    public toData(qparams: QParams3d, uvParams?: QParams2d): Data | undefined {
+      return Data.create(this, qparams, uvParams);
+    }
+  }
+
+  /** Represents the finished lookup table ready for submittal to GPU. */
+  export class Data {
+    public readonly texture: TextureHandle; // Texture containing vertex data
+    public readonly numVertices: number;
+    public readonly numRgbaPerVertex: number;
+    public readonly colorInfo: ColorInfo;
+    public readonly qOrigin: Float32Array;  // Origin of quantized positions
+    public readonly qScale: Float32Array;   // Scale of quantized positions
+    public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
+
+    public static create(params: Params, qparams: QParams3d, uvParams?: QParams2d) {
+      const texture = params.toTexture();
+      return undefined !== texture ? new Data(texture, params, qparams, uvParams) : undefined;
+    }
+
+    private constructor(texture: TextureHandle, params: Params, qparams: QParams3d, uvParams?: QParams2d) {
+      this.texture = texture;
+      this.numVertices = params.numVertices;
+      this.numRgbaPerVertex = params.numRgbaPerVertex;
+      this.colorInfo = params.colorInfo;
+      this.qOrigin = qorigin3dToArray(qparams.origin);
+      this.qScale = qscale3dToArray(qparams.scale);
+      if (undefined !== uvParams) {
+        this.uvQParams = qparams2dToArray(uvParams);
+      }
     }
   }
 

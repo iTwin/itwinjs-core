@@ -14,8 +14,8 @@ import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ColorInfo } from "./ColorInfo";
-import { TextureHandle } from "./Texture";
 import { FeaturesInfo } from "./FeaturesInfo";
+import { VertexLUT } from "./VertexLUT";
 
 // Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
@@ -85,20 +85,17 @@ export abstract class CachedGeometry {
 export abstract class LUTGeometry extends CachedGeometry {
   // The number of indices into the vertex data to be drawn.
   public readonly numIndices: number;
-  // The number of vertices contained in the vertex data.
-  public readonly numVertices: number;
 
   // The texture containing the vertex data.
-  public abstract get lut(): TextureHandle;
-
-  // The number of RGBA values per vertex in the vertex data.
-  public abstract get numRgbaPerVertex(): number;
+  public abstract get lut(): VertexLUT.Data;
   public abstract getColor(target: Target): ColorInfo;
 
-  protected constructor(numIndices: number, numVertices: number) {
+  public get qOrigin(): Float32Array { return this.lut.qOrigin; }
+  public get qScale(): Float32Array { return this.lut.qScale; }
+
+  protected constructor(numIndices: number) {
     super();
     this.numIndices = numIndices;
-    this.numVertices = numVertices;
   }
 }
 

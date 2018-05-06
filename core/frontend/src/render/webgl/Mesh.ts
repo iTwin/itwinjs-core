@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { Point2d, Range2d } from "@bentley/geometry-core";
-import { MaterialData } from "./CachedGeometry";
+import { MaterialData, LUTGeometry } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/Mesh";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
@@ -12,111 +12,99 @@ import { SurfaceType } from "./RenderFlags";
 import { Graphic, wantJointTriangles/*, Batch*/ } from "./Graphic";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
-import { TextureHandle } from "./Texture";
 import { Primitive } from "./Primitive";
+import { FloatPreMulRgba } from "./FloatRGBA";
 // import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
   QParams2d,
   Material,
   FillFlags,
+  Texture,
 } from "@bentley/imodeljs-common";
 
 export class MeshInfo {
-  public vertexParams?: QParams3d;
-  public uvParams: QParams2d;
-  public edgeWidth = 0;
+  public readonly edgeWidth: number;
   public features?: FeaturesInfo;
-  public texture = new WebGLTexture();
-  public type: SurfaceType;
-  public fillFlags = FillFlags.None;
-  public edgeLineCode = 0; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
-  public isPlanar = false;
+  public readonly texture?: Texture; // ###TODO...
+  public readonly type: SurfaceType;
+  public readonly fillFlags: FillFlags;
+  public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
+  public readonly isPlanar: boolean;
 
-  public constructor(args?: MeshArgs | MeshInfo) {
-    if (args instanceof MeshArgs) {
-      this.vertexParams = args.pointParams;
-      this.edgeWidth = args.edges.width;
-      this.features = FeaturesInfo.create(args.features);
-      this.texture = args.texture as WebGLTexture;
-      this.fillFlags = args.fillFlags;
-      this.edgeLineCode = LineCode.valueFromLinePixels(args.edges.linePixels);
-      this.isPlanar = args.isPlanar;
-      const textured = args.texture !== undefined;
-      const normals = args.normals !== undefined;
-      if (textured) {
-        this.type = normals ? SurfaceType.TexturedLit : SurfaceType.Textured;
-      } else {
-        this.type = normals ? SurfaceType.Lit : SurfaceType.Unlit;
-      }
-    } else {
-      this.type = SurfaceType.Unlit;
-    }
-    const range: Range2d = Range2d.createNull();
-    this.uvParams = QParams2d.fromRange(range);
+  protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: Texture) {
+    this.edgeWidth = edgeWidth;
+    this.features = features;
+    this.texture = texture;
+    this.type = type;
+    this.fillFlags = fillFlags;
+    this.edgeLineCode = lineCode;
+    this.isPlanar = isPlanar;
   }
 }
 
 export class MeshData extends MeshInfo {
-  public readonly vertices: TextureHandle;
-  public readonly colorInfo: ColorInfo;
+  public readonly lut: VertexLUT.Data;
   public readonly material: MaterialData;
   public readonly animation: any; // should be a AnimationLookupTexture;
 
   public static create(params: MeshParams): MeshData | undefined {
-    const verts = params.lutParams.toTexture();
-    return undefined !== verts ? new MeshData(verts, params) : undefined;
+    const lut = params.lutParams.toData(params.vertexParams, params.uvParams);
+    return undefined !== lut ? new MeshData(lut, params) : undefined;
   }
 
-  private constructor(vertices: TextureHandle, params: MeshParams) {
-    super(params);
-    this.vertices = vertices;
-    this.colorInfo = params.lutParams.colorInfo;
+  private constructor(lut: VertexLUT.Data, params: MeshParams) {
+    super(params.type, params.edgeWidth, params.edgeLineCode, params.fillFlags, params.isPlanar, params.features, params.texture);
+    this.lut = lut;
     this.material = params.material;
     this.animation = undefined;
   }
 }
 
 export class MeshParams extends MeshInfo {
-  public lutParams: VertexLUT.Params;
-  public material: Material;
-  public animationLUTParams: any; // TODO: should be a AnimationLUTParams;
+  public readonly vertexParams: QParams3d;
+  public readonly uvParams?: QParams2d;
+  public readonly lutParams: VertexLUT.Params;
+  public readonly material: Material;
+  public readonly animationLUTParams: any; // TODO: should be a AnimationLUTParams;
 
   public constructor(args: MeshArgs) {
-    super(args);
+    // ###TODO: MeshArgs.normals should be undefined unless it's non-empty
+    const isLit = undefined !== args.normals && 0 < args.normals.length;
+    const isTextured = undefined !== args.texture;
+    const surfaceType = isTextured ? (isLit ? SurfaceType.TexturedLit : SurfaceType.Textured) : isLit ? SurfaceType.Lit : SurfaceType.Unlit;
+
+    super(surfaceType, args.edges.width, LineCode.valueFromLinePixels(args.edges.linePixels), args.fillFlags, args.isPlanar, FeaturesInfo.create(args.features), args.texture);
+
+    // ###TODO: MeshArgs should quantize texture UV for us...
+    // ###TODO: MeshArgs.textureUV should be undefined unless it's non-empty
+    const uvRange = Range2d.createNull();
+    const fpts = args.textureUv;
+    if (fpts.length !== 0) {
+      for (let i = 0; i < args.points.length; i++) {
+        uvRange.extendPoint(Point2d.createFrom({ x: fpts[i].x, y: fpts[i].y }));
+      }
+    }
+
+    this.uvParams = uvRange.isNull() ? undefined : QParams2d.fromRange(uvRange);
+    this.vertexParams = args.points.params;
     this.material = args.material;
     switch (this.type) {
       case SurfaceType.Lit:
-        this.initUVParams(args);
         this.lutParams = new VertexLUT.Params(new VertexLUT.LitMeshBuilder(args), args.colors);
         break;
       case SurfaceType.Textured:
-        this.initUVParams(args);
-        this.lutParams = new VertexLUT.Params(new VertexLUT.TexturedMeshBuilder(args, this.uvParams), args.colors);
+        this.lutParams = new VertexLUT.Params(new VertexLUT.TexturedMeshBuilder(args, this.uvParams!), args.colors);
         break;
       case SurfaceType.TexturedLit:
-        this.initUVParams(args);
-        this.lutParams = new VertexLUT.Params(new VertexLUT.TexturedLitMeshBuilder(args, this.uvParams), args.colors);
+        this.lutParams = new VertexLUT.Params(new VertexLUT.TexturedLitMeshBuilder(args, this.uvParams!), args.colors);
         break;
       case SurfaceType.Unlit:
       default:
-        this.initUVParams(args);
         this.lutParams = new VertexLUT.Params(new VertexLUT.MeshBuilder(args), args.colors);
         break;
     }
     // if (args.auxData.isAnimatable()) { this.animationLUTParams = new AnimationLUTParams(args); }
-  }
-
-  public initUVParams(args: MeshArgs): void {
-    // ###TODO: MeshArgs should quantize texture UV for us...
-    const range: Range2d = Range2d.createNull();
-    const fpts = args.textureUv;
-    if (fpts.length !== 0 && undefined !== args.points) {
-      for (let i = 0; i < args.points.length; i++) {
-        range.extendPoint(Point2d.createFrom({ x: fpts[i].x, y: fpts[i].y }));
-      }
-    }
-    this.uvParams = QParams2d.fromRange(range);
   }
 }
 
@@ -166,4 +154,28 @@ export class MeshGraphic extends Graphic {
   }
   public get meshInfo(): MeshInfo { return this.meshData; }
   public get surfaceType(): SurfaceType { return this.meshInfo.type; }
+}
+
+// Defines one aspect of the geometry of a mesh (surface or edges)
+export abstract class MeshGeometry extends LUTGeometry {
+  protected readonly mesh: MeshData;
+
+  // Convenience accessors...
+  public get edgeWidth() { return this.mesh.edgeWidth; }
+  public get edgeLineCode() { return this.mesh.edgeLineCode; }
+  public get features() { return this.mesh.features; }
+  public get surfaceType() { return this.mesh.type; }
+  public get fillFlags() { return this.mesh.fillFlags; }
+  public get isPlanar() { return this.mesh.isPlanar; }
+  public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
+  public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
+  public get materialData() { return this.mesh.material; }
+  public get texture() { return this.mesh.texture; }
+
+  public get lut() { return this.mesh.lut; }
+
+  protected constructor(mesh: MeshData, numIndices: number) {
+    super(numIndices);
+    this.mesh = mesh;
+  }
 }

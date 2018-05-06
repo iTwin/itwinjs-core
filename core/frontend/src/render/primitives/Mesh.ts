@@ -105,7 +105,6 @@ export class MeshArgs {
   public texture?: Texture;
   public colors = new ColorIndex();
   public features = new FeatureIndex();
-  public pointParams?: QParams3d;
   public material = new Material();
   public fillFlags = FillFlags.None;
   public isPlanar = false;
@@ -135,7 +134,6 @@ export class MeshArgs {
   public init(mesh: Mesh): boolean {
     this.clear();
     if (mesh.triangles.empty) { return false; }
-    this.pointParams = mesh.points.params;
     this.vertIndices = mesh.triangles.indices;
     this.points = mesh.points;
     this.textureUv = mesh.uvParams;
