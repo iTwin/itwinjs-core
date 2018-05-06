@@ -15,7 +15,8 @@ import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
 import { Branch, WorldDecorations } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
-import { RenderCommands, DrawParams } from "./DrawCommand";
+import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { ColorInfo } from "./ColorInfo";
 import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { GL } from "./GL";
@@ -163,8 +164,8 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  public readonly visibleEdgeOverrides = new EdgeOverrides();
-  public readonly hiddenEdgeOverrides = new EdgeOverrides();
+  private readonly _visibleEdgeOverrides = new EdgeOverrides();
+  private readonly _hiddenEdgeOverrides = new EdgeOverrides();
 
   protected constructor() {
     super();
@@ -357,8 +358,8 @@ export abstract class Target extends RenderTarget {
       }
     }
 
-    this.visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
-    this.hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
+    this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
+    this._hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
 
     this._stack.setViewFlags(vf);
 
@@ -435,6 +436,42 @@ export abstract class Target extends RenderTarget {
 
     this.paintScene();
     assert(System.instance.frameBufferStack.isEmpty);
+  }
+
+  public get visibleEdgeOverrides(): EdgeOverrides | undefined { return this.getEdgeOverrides(RenderPass.OpaqueLinear); }
+  public get hiddenEdgeOverrides(): EdgeOverrides | undefined { return this.getEdgeOverrides(RenderPass.HiddenEdge); }
+  public get isEdgeColorOverridden(): boolean {
+    const ovrs = this.visibleEdgeOverrides;
+    return undefined !== ovrs && ovrs.overridesColor;
+  }
+  public get isEdgeWeightOverridden(): boolean {
+    const ovrs = this.visibleEdgeOverrides;
+    return undefined !== ovrs && ovrs.overridesWeight;
+  }
+  public getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined {
+    let ovrs: EdgeOverrides | undefined;
+    let enabled = false;
+    if (RenderPass.HiddenEdge === pass) {
+      ovrs = this._hiddenEdgeOverrides;
+      enabled = this.currentViewFlags.showHiddenEdges();
+    } else {
+      ovrs = this._visibleEdgeOverrides;
+      enabled = this.currentViewFlags.showVisibleEdges();
+    }
+
+    return enabled ? ovrs : undefined;
+  }
+  public getEdgeWeight(params: ShaderProgramParams, baseWeight: number): number {
+    const ovrs = this.getEdgeOverrides(params.renderPass);
+    return undefined !== ovrs && undefined !== ovrs.weight ? ovrs.weight : baseWeight;
+  }
+  public getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number {
+    const ovrs = this.getEdgeOverrides(params.renderPass);
+    return undefined !== ovrs && undefined !== ovrs.lineCode ? ovrs.lineCode : baseCode;
+  }
+  public get edgeColor(): ColorInfo {
+    assert(this.isEdgeColorOverridden);
+    return new ColorInfo(this._visibleEdgeOverrides.color!);
   }
 
   private paintScene(): void {

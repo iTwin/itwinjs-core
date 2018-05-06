@@ -8,12 +8,14 @@ import { MeshArgs } from "../primitives/Mesh";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
-import { SurfaceType } from "./RenderFlags";
+import { SurfaceType, RenderPass } from "./RenderFlags";
 import { Graphic, wantJointTriangles/*, Batch*/ } from "./Graphic";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
 import { FloatPreMulRgba } from "./FloatRGBA";
+import { ShaderProgramParams } from "./DrawCommand";
+import { Target } from "./Target";
 // import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
@@ -21,6 +23,7 @@ import {
   Material,
   FillFlags,
   Texture,
+  RenderMode,
 } from "@bentley/imodeljs-common";
 
 export class MeshInfo {
@@ -177,5 +180,19 @@ export abstract class MeshGeometry extends LUTGeometry {
   protected constructor(mesh: MeshData, numIndices: number) {
     super(numIndices);
     this.mesh = mesh;
+  }
+
+  protected computeEdgeWeight(params: ShaderProgramParams): number { return params.target.getEdgeWeight(params, this.edgeWidth); }
+  protected computeEdgeLineCode(params: ShaderProgramParams): number { return params.target.getEdgeLineCode(params, this.edgeLineCode); }
+  protected computeEdgeColor(target: Target): ColorInfo { return target.isEdgeColorOverridden ? target.edgeColor : this.colorInfo; }
+  protected computeEdgePass(target: Target): RenderPass {
+    const vf = target.currentViewFlags;
+    if (RenderMode.SmoothShade === vf.renderMode && !vf.showVisibleEdges()) {
+      return RenderPass.None;
+    }
+
+    // Only want translucent edges in wireframe mode.
+    const isTranslucent = RenderMode.Wireframe === vf.renderMode && vf.showTransparency() && this.colorInfo.hasTranslucency;
+    return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
 }
