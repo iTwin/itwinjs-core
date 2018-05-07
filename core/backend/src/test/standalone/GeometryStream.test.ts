@@ -80,11 +80,22 @@ describe("GeometryStream", () => {
     const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
+    const itNextCheck = new GeometryStreamParser.Iterator(value.geom, value.category);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isFalse(itNextCheck.next().done);
+    assert.isTrue(itNextCheck.next().done);
+
     const lsStylesUsed: Id64[] = [];
-    const parser = new GeometryStreamParser(value.geom, value.category);
-    while (parser.advanceToNextGeometry()) {
-      assert.isDefined(parser.geometryQuery);
-      lsStylesUsed.push(parser.geomParams.styleInfo ? parser.geomParams.styleInfo.styleId : new Id64());
+    const it = new GeometryStreamParser.Iterator(value.geom, value.category);
+    for (const entry of it) {
+      assert.isDefined(entry.geometryQuery);
+      lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : new Id64());
     }
 
     // Make sure we extracted same style information after round trip...
@@ -162,19 +173,19 @@ describe("GeometryStream", () => {
 
     const stylesUsed: Id64[] = [];
     const widthsUsed: number[] = [];
-    const parser = new GeometryStreamParser(value.geom, value.category);
-    while (parser.advanceToNextGeometry()) {
-      assert.isDefined(parser.geometryQuery);
-      assert.isDefined(parser.geomParams.styleInfo);
-      stylesUsed.push(parser.geomParams.styleInfo!.styleId);
-      widthsUsed.push(parser.geomParams.styleInfo!.styleMod !== undefined ? parser.geomParams.styleInfo!.styleMod!.startWidth! : 0.0);
+    const it = new GeometryStreamParser.Iterator(value.geom, value.category);
+    for (const entry of it) {
+      assert.isDefined(entry.geometryQuery);
+      assert.isDefined(entry.geomParams.styleInfo);
+      stylesUsed.push(entry.geomParams.styleInfo!.styleId);
+      widthsUsed.push(entry.geomParams.styleInfo!.styleMod !== undefined ? entry.geomParams.styleInfo!.styleMod!.startWidth! : 0.0);
     }
 
     // Make sure we extracted same style information after round trip...
     assert.isTrue(styles.length === stylesUsed.length);
     for (let iStyle = 0; iStyle < styles.length; ++iStyle) {
       assert.isTrue(stylesUsed[iStyle].equals(styles[iStyle]));
-//      assert.isTrue(Geometry.isSameCoordinate(widthsUsed[iStyle], widths[iStyle])); <- styleMod missing when running full set of tests???
+      //      assert.isTrue(Geometry.isSameCoordinate(widthsUsed[iStyle], widths[iStyle])); <- styleMod missing when running full set of tests???
     }
   });
 
@@ -202,7 +213,7 @@ describe("GeometryStream", () => {
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(partId.isValid());
 
-    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId } ); // base and size will be set automatically...
+    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
 
     // Use internal default instead of creating a stroke component for a solid line
@@ -251,7 +262,7 @@ describe("GeometryStream", () => {
     lsStrokes.push({ length: 0.25, orgWidth: 0.025, endWidth: 0.0, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Right });
     lsStrokes.push({ length: 0.1 });
 
-    const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes } );
+    const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes });
     assert.isTrue(undefined !== strokePatternData);
 
     const partBuilder = new GeometryStreamBuilder();
@@ -268,21 +279,21 @@ describe("GeometryStream", () => {
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(partId.isValid());
 
-    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId } ); // base and size will be set automatically...
+    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
 
     const lsSymbols: LineStyleDefinition.Symbols = [];
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
 
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData!.compId, symbols: lsSymbols } );
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData!.compId, symbols: lsSymbols });
     assert.isTrue(undefined !== strokePointData);
 
     const lsComponents: LineStyleDefinition.Components = [];
     lsComponents.push({ id: strokePointData!.compId, type: strokePointData!.compType });
     lsComponents.push({ id: strokePatternData!.compId, type: strokePatternData!.compType });
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents } );
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData!);
@@ -368,8 +379,8 @@ describe("GeometryStream", () => {
     params.gradient = new Gradient.Symb();
     params.gradient.mode = Gradient.Mode.Linear;
     params.gradient.flags = Gradient.Flags.Invert;
-    params.gradient.keys.push(new Gradient.KeyColor( { value: 0.0, color: ColorDef.blue } ));
-    params.gradient.keys.push(new Gradient.KeyColor( { value: 0.5, color: ColorDef.red } ));
+    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.0, color: ColorDef.blue }));
+    params.gradient.keys.push(new Gradient.KeyColor({ value: 0.5, color: ColorDef.red }));
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometryQuery(shape);
@@ -462,8 +473,8 @@ describe("GeometryStream", () => {
 
     // Hatch definition w/o overrides (zig-zag)
     const defLines: AreaPattern.HatchDefLine[] = [
-      { offset: Point2d.create(0.1, 0.1), dashes: [ 0.1, -0.1 ] },
-      { angle: Angle.createDegrees(90.0), through: Point2d.create(0.1, 0.0), offset: Point2d.create(0.1, 0.1), dashes: [ 0.1, -0.1 ] },
+      { offset: Point2d.create(0.1, 0.1), dashes: [0.1, -0.1] },
+      { angle: Angle.createDegrees(90.0), through: Point2d.create(0.1, 0.0), offset: Point2d.create(0.1, 0.1), dashes: [0.1, -0.1] },
     ];
 
     params.pattern = new AreaPattern.Params();
@@ -561,18 +572,18 @@ describe("GeometryStream", () => {
       assert.isTrue(rotation.isIdentity());
     }
 
-    const parserLocal = new GeometryStreamParser(value.geom, value.category);
-    while (parserLocal.advanceToNextGeometry()) {
-      assert.isDefined(parserLocal.textString);
-      assert.isTrue(parserLocal.textString!.origin.isAlmostZero());
-      assert.isTrue(parserLocal.textString!.rotation.isIdentity());
+    const itLocal = new GeometryStreamParser.Iterator(value.geom, value.category);
+    for (const entry of itLocal) {
+      assert.isDefined(entry.textString);
+      assert.isTrue(entry.textString!.origin.isAlmostZero());
+      assert.isTrue(entry.textString!.rotation.isIdentity());
     }
 
-    const parserWorld = GeometryStreamParser.fromGeometricElement3d(value as GeometricElement3dProps);
-    while (parserWorld.advanceToNextGeometry()) {
-      assert.isDefined(parserWorld.textString);
-      assert.isTrue(parserWorld.textString!.origin.isAlmostEqual(testOrigin));
-      assert.isTrue(parserWorld.textString!.rotation.isAlmostEqual(testAngles));
+    const itWorld = GeometryStreamParser.Iterator.fromGeometricElement3d(value as GeometricElement3dProps);
+    for (const entry of itWorld) {
+      assert.isDefined(entry.textString);
+      assert.isTrue(entry.textString!.origin.isAlmostEqual(testOrigin));
+      assert.isTrue(entry.textString!.rotation.isAlmostEqual(testAngles));
     }
   });
 
