@@ -8,7 +8,7 @@ import { IModelError } from "./IModelError";
 
 /** Describes the different data types an ECSQL value can be of.
  *
- * See also [ECSQL]($docs/learning/learning/ECSQL).
+ * See also [ECSQL]($docs/learning/ECSQL).
  */
 export enum ECSqlValueType {
   // do not change the values of the enum as it must match its counterpart in the addon
@@ -34,7 +34,7 @@ export enum ECSqlValueType {
  *
  * It is returned from ECSQL SELECT statements for navigation properties.
  *
- * See also [ECSQL]($docs/learning/learning/ECSQL).
+ * See also [ECSQL]($docs/learning/ECSQL).
  */
 export interface NavigationValue {
   /** ECInstanceId of the related instance */
@@ -47,14 +47,14 @@ export interface NavigationValue {
  *  This is necessary, when binding parameters to an ECSQL statement so that
  *  iModelJs can figure out the right EC type from the string value.
  *
- *  See also [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes).
+ *  See also [iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes).
  */
 export interface ECSqlTypedString {
   type: ECSqlStringType;
   value: string;
 }
 
-/** Type of an [ECSqlTypedString]($imodeljs-common.ECSqlTypedString) */
+/** Type of an [ECSqlTypedString]($common/ECSqlTypedString) */
 export enum ECSqlStringType {
   /** The string represents a BLOB value, formatted as Base64 string. */
   Blob,
@@ -70,7 +70,7 @@ export enum ECSqlStringType {
 
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
  *
- * See also [ECSQL]($docs/learning/learning/ECSQL).
+ * See also [ECSQL]($docs/learning/ECSQL).
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */
@@ -90,7 +90,7 @@ export interface NavigationBindingValue {
  * the ECDbChange ECSchema.
  *
  *  See also
- *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
+ *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export enum ChangeOpCode {
   Insert = 1,
@@ -105,7 +105,7 @@ export enum ChangeOpCode {
  * in an ECSQL using the **Changes** ECSQL function.
  *
  *  See also
- *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
+ *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -116,7 +116,7 @@ export enum ChangedValueState {
 
 /** Defines the ECSQL system properties.
  *
- * See also [ECSQL]($docs/learning/learning/ECSQL).
+ * See also [ECSQL]($docs/learning/ECSQL).
  */
 export enum ECSqlSystemProperty {
   ECInstanceId,
@@ -139,21 +139,21 @@ export class ECJsNames {
    * #### Rules
    *
    * - System properties:
-   *    - [ECSqlSystemProperty.ECInstanceId]($imodeljs-common.ECSqlSystemProperty.ECInstanceId): id
-   *    - [ECSqlSystemProperty.ECClassId]($imodeljs-common.ECSqlSystemProperty.ECClassId): className
-   *    - [ECSqlSystemProperty.SourceECInstanceId]($imodeljs-common.ECSqlSystemProperty.SourceECInstanceId): sourceId
-   *    - [ECSqlSystemProperty.SourceECClassId]($imodeljs-common.ECSqlSystemProperty.SourceECClassId): sourceClassName
-   *    - [ECSqlSystemProperty.TargetECInstanceId]($imodeljs-common.ECSqlSystemProperty.TargetECInstanceId): targetId
-   *    - [ECSqlSystemProperty.TargetECClassId]($imodeljs-common.ECSqlSystemProperty.TargetECClassId): targetClassName
-   *    - [ECSqlSystemProperty.NavigationId]($imodeljs-common.ECSqlSystemProperty.NavigationId): id
-   *    - [ECSqlSystemProperty.NavigationRelClassId]($imodeljs-common.ECSqlSystemProperty.NavigationRelClassId): relClassName
-   *    - [ECSqlSystemProperty.PointX]($imodeljs-common.ECSqlSystemProperty.PointX): x
-   *    - [ECSqlSystemProperty.PointY]($imodeljs-common.ECSqlSystemProperty.PointY): y
-   *    - [ECSqlSystemProperty.PointZ]($imodeljs-common.ECSqlSystemProperty.PointZ): z
+   *    - [ECSqlSystemProperty.ECInstanceId]($common/ECSqlSystemProperty.ECInstanceId): id
+   *    - [ECSqlSystemProperty.ECClassId]($common/ECSqlSystemProperty.ECClassId): className
+   *    - [ECSqlSystemProperty.SourceECInstanceId]($common/ECSqlSystemProperty.SourceECInstanceId): sourceId
+   *    - [ECSqlSystemProperty.SourceECClassId]($common/ECSqlSystemProperty.SourceECClassId): sourceClassName
+   *    - [ECSqlSystemProperty.TargetECInstanceId]($common/ECSqlSystemProperty.TargetECInstanceId): targetId
+   *    - [ECSqlSystemProperty.TargetECClassId]($common/ECSqlSystemProperty.TargetECClassId): targetClassName
+   *    - [ECSqlSystemProperty.NavigationId]($common/ECSqlSystemProperty.NavigationId): id
+   *    - [ECSqlSystemProperty.NavigationRelClassId]($common/ECSqlSystemProperty.NavigationRelClassId): relClassName
+   *    - [ECSqlSystemProperty.PointX]($common/ECSqlSystemProperty.PointX): x
+   *    - [ECSqlSystemProperty.PointY]($common/ECSqlSystemProperty.PointY): y
+   *    - [ECSqlSystemProperty.PointZ]($common/ECSqlSystemProperty.PointZ): z
    *  - Ordinary properties: first character is lowered.
    *
    * @param ecProperty Either the property name as defined in the ECSchema for regular ECProperties.
-   *         Or an [ECSqlSystemProperty]($imodeljs-common.ECSqlSystemProperty) value for ECSQL system properties
+   *         Or an [ECSqlSystemProperty]($common/ECSqlSystemProperty) value for ECSQL system properties
    */
   public static toJsName(ecProperty: ECSqlSystemProperty | string): string {
     if (typeof (ecProperty) === "string")

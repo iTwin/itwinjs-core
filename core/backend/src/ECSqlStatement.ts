@@ -10,7 +10,7 @@ import { ECDb } from "./ECDb";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlValueIterator, NativeECDb, NativeDgnDb } from "@bentley/imodeljs-native-platform-api";
 
-/** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($imodeljs-backend.ECSqlStatement.stepForInsert).
+/** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend/ECSqlStatement.stepForInsert).
  *
  * If the step was successful, the ECSqlInsertResult contains
  * [DbResult.BE_SQLITE_DONE]($bentleyjs-core.DbResult.BE_SQLITE_DONE)
@@ -26,15 +26,15 @@ export class ECSqlInsertResult {
 /** Executes ECSQL statements.
  *
  * A statement must be prepared before it can be executed, and it must be released when no longer needed.
- * See [IModelDb.withPreparedStatement]($imodeljs-backend.IModelDb.withPreparedStatement) or
- * [ECDb.withPreparedStatement]($imodeljs-backend.ECDb.withPreparedStatement) for a convenient and
+ * See [IModelDb.withPreparedStatement]($backend/IModelDb.withPreparedStatement) or
+ * [ECDb.withPreparedStatement]($backend/ECDb.withPreparedStatement) for a convenient and
  * reliable way to prepare, execute, and then release a statement.
  *
  * A statement may contain parameters that must be filled in before use by the **bind** methods.
  *
- * Once prepared (and parameters are bound, if any), the statement is executed by calling [ECSqlStatement.step]($imodeljs-backend.ECSqlStatement.step).
- * In case of an **ECSQL SELECT** statement, the current row can be retrieved with [ECSqlStatement.getRow]($imodeljs-backend.ECSqlStatement.getRow) as
- * a whole, or with [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue) when individual values are needed.
+ * Once prepared (and parameters are bound, if any), the statement is executed by calling [ECSqlStatement.step]($backend/ECSqlStatement.step).
+ * In case of an **ECSQL SELECT** statement, the current row can be retrieved with [ECSqlStatement.getRow]($backend/ECSqlStatement.getRow) as
+ * a whole, or with [ECSqlStatement.getValue]($backend/ECSqlStatement.getValue) when individual values are needed.
  * Alternatively, query results of an **ECSQL SELECT** statement can be stepped through by using
  * standard iteration syntax, such as `for of`.
  *
@@ -63,7 +63,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
-   * @throws [IModelError]($imodeljs-common.IModelError) if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
+   * @throws [IModelError]($common/IModelError) if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
   public prepare(db: NativeDgnDb | NativeECDb, ecsql: string): void {
@@ -190,7 +190,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /**
    * Gets a binder to bind a value for an ECSQL parameter
    * > This is the most low-level API to bind a value to a specific parameter. Alternatively you can use the ECSqlStatement.bindXX methods
-   * > or [ECSqlStatement.bindValues]()$imodeljs-backend.ECSqlStatement.bindValues).
+   * > or [ECSqlStatement.bindValues]()$backend/ECSqlStatement.bindValues).
    * @param parameter Index (1-based) or name of the parameter
    */
   public getBinder(parameter: string | number): ECSqlBinder { return new ECSqlBinder(this._stmt!.getBinder(parameter)); }
@@ -201,7 +201,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
    *
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes)" describes the
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
    *
    * See also these [Code Samples]($docs/learning/backend/ExecutingECSQL#binding-to-all-parameters-at-once)
@@ -230,7 +230,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Clear any bindings that were previously set on this statement.
-   * @throws [IModelError]($imodeljs-common.IModelError) in case of errors
+   * @throws [IModelError]($common/IModelError) in case of errors
    */
   public clearBindings(): void {
     const stat: DbResult = this._stmt!.clearBindings();
@@ -299,7 +299,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** Calls step when called as an iterator.
    *
    *  Each iteration returns an [ECSQL row format]($docs/learning/ECSQLRowFormat) as returned
-   *  from [ECSqlStatement.getRow]($imodeljs-backend.ECSqlStatement.getRow).
+   *  from [ECSqlStatement.getRow]($backend/ECSqlStatement.getRow).
    */
   public next(): IteratorResult<any> {
     if (DbResult.BE_SQLITE_ROW === this.step()) {
@@ -330,8 +330,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
  *
  * See also:
  *
- * - [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
- * - [ECSqlStatement.getBinder]($imodeljs-backend.ECSqlStatement.getBinder)
+ * - [ECSqlStatement]($backend/ECSqlStatement)
+ * - [ECSqlStatement.getBinder]($backend/ECSqlStatement.getBinder)
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL)
  */
 export class ECSqlBinder {
@@ -343,7 +343,7 @@ export class ECSqlBinder {
   public bindNull(): void {
     const stat: DbResult = this._binder.bindNull();
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds a BLOB value to the ECSQL parameter.
@@ -352,7 +352,7 @@ export class ECSqlBinder {
   public bindBlob(blob: string | ArrayBuffer | SharedArrayBuffer): void {
     const stat: DbResult = this._binder.bindBlob(blob);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds a boolean value to the ECSQL parameter.
@@ -361,7 +361,7 @@ export class ECSqlBinder {
   public bindBoolean(val: boolean): void {
     const stat: DbResult = this._binder.bindBoolean(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds a DateTime value to the ECSQL parameter.
@@ -370,7 +370,7 @@ export class ECSqlBinder {
   public bindDateTime(isoDateTimeString: string): void {
     const stat: DbResult = this._binder.bindDateTime(isoDateTimeString);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds a double value to the ECSQL parameter.
@@ -379,7 +379,7 @@ export class ECSqlBinder {
   public bindDouble(val: number): void {
     const stat: DbResult = this._binder.bindDouble(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds an GUID value to the ECSQL parameter.
@@ -388,7 +388,7 @@ export class ECSqlBinder {
   public bindGuid(val: GuidProps | ECSqlTypedString): void {
     const stat: DbResult = this._binder.bindGuid(ECSqlTypeHelper.toGuidString(val));
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds an Id value to the ECSQL parameter.
@@ -397,7 +397,7 @@ export class ECSqlBinder {
   public bindId(val: Id64Props | ECSqlTypedString): void {
     const stat: DbResult = this._binder.bindId(ECSqlTypeHelper.toIdString(val));
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds an integer value to the ECSQL parameter.
@@ -406,7 +406,7 @@ export class ECSqlBinder {
   public bindInteger(val: number | string): void {
     const stat: DbResult = this._binder.bindInteger(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds an Point2d value to the ECSQL parameter.
@@ -415,7 +415,7 @@ export class ECSqlBinder {
   public bindPoint2d(val: XAndY): void {
     const stat: DbResult = this._binder.bindPoint2d(val.x, val.y);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds an Point3d value to the ECSQL parameter.
@@ -424,7 +424,7 @@ export class ECSqlBinder {
   public bindPoint3d(val: XYAndZ): void {
     const stat: DbResult = this._binder.bindPoint3d(val.x, val.y, val.z);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds a Range3d as a blob to the ECSQL parameter.
@@ -433,7 +433,7 @@ export class ECSqlBinder {
   public bindRange3d(val: LowAndHighXYZ): void {
     const stat: DbResult = this._binder.bindBlob(Range3d.toFloat64Array(val).buffer);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds an string to the ECSQL parameter.
@@ -442,7 +442,7 @@ export class ECSqlBinder {
   public bindString(val: string): void {
     const stat: DbResult = this._binder.bindString(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds a navigation property value to the ECSQL parameter.
@@ -451,7 +451,7 @@ export class ECSqlBinder {
   public bindNavigation(val: NavigationBindingValue): void {
     const stat: DbResult = this._binder.bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace);
     if (stat !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(stat);
+      throw new IModelError(stat);
   }
 
   /** Binds a struct property value to the ECSQL parameter.
@@ -463,7 +463,7 @@ export class ECSqlBinder {
   /** Gets the binder for the specified member of a struct parameter
    *
    * > This is the most low-level way to bind struct parameters with most flexibility. A simpler alternative is
-   * > to just call [bindStruct]($imodeljs-backend.ECSqlBinder.bindStruct).
+   * > to just call [bindStruct]($backend/ECSqlBinder.bindStruct).
    */
   public bindMember(memberName: string): ECSqlBinder { return new ECSqlBinder(this._binder.bindMember(memberName)); }
 
@@ -475,7 +475,7 @@ export class ECSqlBinder {
   /** Adds a new array element to the array parameter and returns the binder for the new array element
    *
    * > This is the most low-level way to bind array parameters with most flexibility. A simpler alternative is
-   * > to just call [bindArray]($imodeljs-backend.ECSqlBinder.bindArray).
+   * > to just call [bindArray]($backend/ECSqlBinder.bindArray).
    */
   public addArrayElement(): ECSqlBinder { return new ECSqlBinder(this._binder.addArrayElement()); }
 }
@@ -484,8 +484,8 @@ export class ECSqlBinder {
  *
  * See also:
  *
- * - [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
- * - [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue)
+ * - [ECSqlStatement]($backend/ECSqlStatement)
+ * - [ECSqlStatement.getValue]($backend/ECSqlStatement.getValue)
  * - [Code Samples]($docs/learning/backend/ExecutingECSQL#working-with-the-query-result)
  */
 export class ECSqlValue {
@@ -528,7 +528,7 @@ export class ECSqlValue {
   /** Get the value as [XYAndZ]($geometry-core.XYAndZ) */
   public getXYAndZ(): XYAndZ { return this._val.getPoint3d(); }
 
-  /** Get the value as [NavigationValue]($imodeljs-common.NavigationValue) */
+  /** Get the value as [NavigationValue]($common/NavigationValue) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }
 
   /** Get an iterator for iterating the struct members of this struct value. */
@@ -544,10 +544,10 @@ export class ECSqlValue {
   public getArray(): any[] { return ECSqlValueHelper.getArray(this); }
 }
 
-/** Iterator over members of a struct [ECSqlValue]($imodeljs-backend.ECSqlValue) or the elements of an array [ECSqlValue]($imodeljs-backend.ECSqlValue).
+/** Iterator over members of a struct [ECSqlValue]($backend/ECSqlValue) or the elements of an array [ECSqlValue]($backend/ECSqlValue).
  *
- *  See [ECSqlValue.getStructIterator]($imodeljs-backend.ECSqlValue.getStructIterator) or
- *  [ECSqlValue.getArrayIterator]($imodeljs-backend.ECSqlValue.getArrayIterator).
+ *  See [ECSqlValue.getStructIterator]($backend/ECSqlValue.getStructIterator) or
+ *  [ECSqlValue.getArrayIterator]($backend/ECSqlValue.getArrayIterator).
  */
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: NativeECSqlValueIterator;
@@ -568,9 +568,9 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 
 /** Information about an ECSQL column in an ECSQL query result.
  *
- * See [ECSqlValue.columnInfo]($imodeljs-backend.ECSqlValue.columnInfo),
- * [ECSqlStatement.getValue]($imodeljs-backend.ECSqlStatement.getValue),
- * [ECSqlStatement]($imodeljs-backend.ECSqlStatement)
+ * See [ECSqlValue.columnInfo]($backend/ECSqlValue.columnInfo),
+ * [ECSqlStatement.getValue]($backend/ECSqlStatement.getValue),
+ * [ECSqlStatement]($backend/ECSqlStatement)
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.
@@ -695,7 +695,7 @@ class ECSqlBindingHelper {
       if (Number.isInteger(val))
         binder.bindInteger(val);
       else
-       binder.bindDouble(val);
+        binder.bindDouble(val);
 
       return true;
     }
@@ -965,7 +965,7 @@ class ECSqlTypeHelper {
 }
 
 /** A cached ECSqlStatement.
- *  See [ECSqlStatementCache]($imodeljs-backend.ECSqlStatementCache) for details.
+ *  See [ECSqlStatementCache]($backend/ECSqlStatementCache) for details.
  */
 export class CachedECSqlStatement {
   public statement: ECSqlStatement;
@@ -980,10 +980,10 @@ export class CachedECSqlStatement {
 
 /** A cache for ECSqlStatements.
  *
- * Preparing [ECSqlStatements]($imodeljs-backend.ECSqlStatement) can be costly. This class provides a way to
+ * Preparing [ECSqlStatements]($backend/ECSqlStatement) can be costly. This class provides a way to
  * save previously prepared ECSqlStatements for reuse.
  *
- * > Both [IModelDbs]($imodeljs-backend.IModelDb) and [ECDbs]($imodeljs-backend.ECDb) have a built-in ECSqlStatementCache.
+ * > Both [IModelDbs]($backend/IModelDb) and [ECDbs]($backend/ECDb) have a built-in ECSqlStatementCache.
  * > So normally you do not have to maintain your own cache.
  */
 export class ECSqlStatementCache {
