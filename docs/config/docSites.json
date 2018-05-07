@@ -44,6 +44,14 @@
       "Reference": {
         "docSite": "reference"
       }
+    },
+    "packageAliases": {
+      "common": "imodeljs-common",
+      "frontend": "imodeljs-frontend",
+      "backend": "imodeljs-backend",
+      "clients": "imodeljs-clients",
+      "geometry": "geometry-core",
+      "bentley": "bentleyjs-core"
     }
   }
 }

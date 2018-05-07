@@ -17,8 +17,8 @@ export const enum ShaderFlags {
   None = 0,
   Monochrome = 1 << 0,
   NonUniformColor = 1 << 1,
-  FlatAlphaWeight = 1 << 2,
-  ScaleAlphaWeight = 1 << 3,
+  OITFlatAlphaWeight = 1 << 2,
+  OITScaleOutput = 1 << 3,
 }
 
 /** Describes the location of a uniform variable within a shader program. */
