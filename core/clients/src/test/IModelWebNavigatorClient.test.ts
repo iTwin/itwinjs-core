@@ -8,7 +8,7 @@ import { TestConfig } from "./TestConfig";
 chai.should();
 
 describe("IModelWebNavigatorClient", () => {
-  before(function(this: Mocha.IHookCallbackContext) {
+  before(function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
   });

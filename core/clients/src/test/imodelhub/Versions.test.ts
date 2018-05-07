@@ -29,7 +29,7 @@ describe("iModelHub VersionHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  it("should get named versions", async function(this: Mocha.ITestCallbackContext) {
+  it("should get named versions", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -48,7 +48,7 @@ describe("iModelHub VersionHandler", () => {
     }
   });
 
-  it("should create named version", async function(this: Mocha.ITestCallbackContext) {
+  it("should create named version", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -63,7 +63,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(version.name).to.be.equal(versionName);
   });
 
-  it("should update named version", async function(this: Mocha.ITestCallbackContext) {
+  it("should update named version", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 

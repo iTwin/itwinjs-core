@@ -87,7 +87,7 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(iModel.name).equals(TestConfig.iModelName);
   });
 
-  it("should be able to delete iModels", async function(this: Mocha.ITestCallbackContext) {
+  it("should be able to delete iModels", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -243,7 +243,7 @@ describe.skip("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(error!.id === IModelHubResponseErrorId.ProjectIdIsNotSpecified);
   });
 
-  it("should fail creating existing and initialized iModel", async function(this: Mocha.ITestCallbackContext) {
+  it("should fail creating existing and initialized iModel", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
       const requestResponse = responseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
@@ -263,7 +263,7 @@ describe.skip("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(error!.id === IModelHubResponseErrorId.iModelAlreadyExists);
   });
 
-  it("should create iModel and upload SeedFile", async function(this: Mocha.ITestCallbackContext) {
+  it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -276,7 +276,7 @@ describe.skip("iModelHub iModelHandler for a specific iModel", () => {
     chai.expect(iModel.initialized).equals(true);
   });
 
-  it("should continue creating not initialized iModel", async function(this: Mocha.ITestCallbackContext) {
+  it("should continue creating not initialized iModel", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
