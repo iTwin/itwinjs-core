@@ -10,7 +10,7 @@ import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../Chang
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { HubTestUtils } from "../HubTestUtils";
+import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsFs } from "../../IModelJsFs";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
