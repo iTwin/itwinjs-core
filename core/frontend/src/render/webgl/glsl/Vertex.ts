@@ -6,7 +6,7 @@ import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";
 import { TextureHandle } from "../Texture";
 import { LUTGeometry } from "../CachedGeometry";
-import { TextureUnit } from "../RenderFlags";
+import { TextureUnit, RenderPass } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 
@@ -129,6 +129,14 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   }
 }
 
+export function addAlpha(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_hasAlpha", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_hasAlpha", (uniform, params) => {
+      uniform.setUniform1f(RenderPass.Translucent === params.geometry.getRenderPass(params.target) ? 1.0 : 0.0);
+    });
+  });
+}
+
 export namespace GLSLVertex {
   export const earlyDiscard =
     `if (checkForEarlyDiscard(rawPosition)) {
@@ -145,4 +153,7 @@ export namespace GLSLVertex {
       gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
       return;
     }`;
+
+  export const computeLineWeight = `float ComputeLineWeight() { return u_lineWeight; }`;
+  export const computeLineCode = `float ComputeLineCode() { return u_lineCode; }`;
 }

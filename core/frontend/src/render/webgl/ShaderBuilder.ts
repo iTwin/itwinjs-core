@@ -190,6 +190,10 @@ export class ShaderVariables {
     this.addVariable(ShaderVariable.createGlobal(name, type, value, isConst));
   }
 
+  public addConstant(name: string, type: VariableType, value: string) {
+    this.addGlobal(name, type, value, true);
+  }
+
   /** Constructs the lines of glsl code declaring all of the variables. */
   public buildDeclarations(): string {
     let decls = "";

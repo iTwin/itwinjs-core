@@ -12,7 +12,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations } from "./Graphic";
+import { Branch, WorldDecorations, FeatureOverrides, PickTable } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
 import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -168,6 +168,8 @@ export abstract class Target extends RenderTarget {
   public readonly environmentMap = undefined; // ###TODO...
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
+  private _currentOverrides?: FeatureOverrides;
+  private _currentPickTable?: PickTable;
 
   protected constructor() {
     super();
@@ -189,6 +191,9 @@ export abstract class Target extends RenderTarget {
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
+  public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
+  public get areDecorationOverridesActive(): boolean { return false; } // ###TODO
+  public get currentPickTable(): PickTable | undefined { return this._currentPickTable; }
 
   public get scene(): GraphicList { return this._scene; }
   public get decorations(): Decorations { return this._decorations; }
@@ -216,6 +221,7 @@ export abstract class Target extends RenderTarget {
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
+  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
 
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
@@ -225,10 +231,6 @@ export abstract class Target extends RenderTarget {
     assert(this.is2d);
     this._clipMask = mask;
   }
-
-  public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
-  public get currentOverrides(): any { return undefined; } // ###TODO
-  public get currentPickTable(): any { return undefined; } // ###TODO
 
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }

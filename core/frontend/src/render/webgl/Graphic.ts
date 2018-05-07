@@ -10,6 +10,24 @@ import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
 import { Clip } from "./ClipVolume";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
+import { TextureHandle } from "./Texture";
+import { LUTDimension } from "./FeatureDimensions";
+
+export class FeatureOverrides {
+  // ###TODO this is just a placeholder
+  public readonly texture?: TextureHandle;
+  public readonly uniform1 = new Float32Array(4);
+  public readonly uniform2 = new Float32Array(4);
+  public readonly dimension = LUTDimension.Uniform;
+
+  public get isNonUniform(): boolean { return LUTDimension.Uniform === this.dimension; }
+  public get isUniform(): boolean { return !this.isNonUniform; }
+}
+
+export class PickTable {
+  // ###TODO this is just a placeholder
+  public readonly dimension = LUTDimension.Uniform;
+}
 
 export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
     // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.

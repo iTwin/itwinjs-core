@@ -8,6 +8,7 @@ import { GLSLFragment } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix } from "./Vertex";
 import { addClipping } from "./Clipping";
 import { FloatRgba } from "../FloatRGBA";
+import { addHiliter } from "./FeatureSymbology";
 
 const applyMaterialOverrides = `
 bool isTextured = isSurfaceBitSet(kSurfaceBit_HasTexture);
@@ -85,7 +86,9 @@ function createCommon(clip: WithClipVolume): ProgramBuilder {
 }
 
 export function createSurfaceHiliter(clip: WithClipVolume): ProgramBuilder {
-  return createCommon(clip); // ###TODO
+  const builder = createCommon(clip);
+  addHiliter(builder);
+  return builder;
 }
 
 export function createSurfaceBuilder(_featureMode: FeatureMode, clip: WithClipVolume): ProgramBuilder {
