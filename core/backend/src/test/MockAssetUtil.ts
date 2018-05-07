@@ -3,7 +3,6 @@ import * as path from "path";
 import { assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
 import { BriefcaseManager, IModelHost } from "../backend";
-import { HubTestUtils } from "./HubTestUtils";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, IModel as HubIModel, Briefcase, SeedFile, SeedFileInitState,
@@ -24,7 +23,7 @@ const getTypedInstance = <T extends WsgInstance>(typedConstructor: new () => T, 
 const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T, jsonBody: any): T[] => {
   const instances: T[] = new Array<T>();
   for (const ecJsonInstance of jsonBody) {
-    const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg",  ecJsonInstance);
+    const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
     if (typedInstance) { instances.push(typedInstance); }
   }
   return instances;
@@ -33,8 +32,8 @@ const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T,
 /** Class to allow mocking of accessToken needed for various client operations */
 export class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
-  public getUserProfile(): UserProfile|undefined {
-    return new UserProfile ("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley");
+  public getUserProfile(): UserProfile | undefined {
+    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley");
   }
   public toTokenString() { return ""; }
 }
@@ -120,10 +119,10 @@ export class MockAssetUtil {
   }
 
   public static async setupOfflineFixture(accessToken: AccessToken,
-                                          iModelHubClientMock: TypeMoq.IMock<IModelHubClient>,
-                                          connectClientMock: TypeMoq.IMock<ConnectClient>,
-                                          assetDir: string, cacheDir: string,
-                                          testIModels: TestIModelInfo[]): Promise<string> {
+    iModelHubClientMock: TypeMoq.IMock<IModelHubClient>,
+    connectClientMock: TypeMoq.IMock<ConnectClient>,
+    assetDir: string, cacheDir: string,
+    testIModels: TestIModelInfo[]): Promise<string> {
 
     cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/iModels/"));
     IModelHost.configuration!.briefcaseCacheDir = cacheDir;
@@ -133,7 +132,6 @@ export class MockAssetUtil {
 
     (BriefcaseManager as any).hubClient = iModelHubClientMock.object;
     (BriefcaseManager as any).deploymentEnv = IModelHost.configuration!.iModelHubDeployConfig;
-    HubTestUtils.hubClient = iModelHubClientMock.object;
 
     // Get test projectId from the mocked connection client
     const project: Project = await connectClientMock.object.getProject(accessToken as any, {
@@ -197,13 +195,13 @@ export class MockAssetUtil {
 
     // For any call with the specified iModel name, grab that iModel's json file and parse it into an instance
     iModelHandlerMock.setup((f: IModelHandler) => f.create(TypeMoq.It.isAny(),
-                                                           TypeMoq.It.isAnyString(),
-                                                           TypeMoq.It.isAnyString(),
-                                                           TypeMoq.It.isAnyString(),
-                                                           TypeMoq.It.isAny(),
-                                                           TypeMoq.It.isAnyNumber()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAny(),
+      TypeMoq.It.isAnyNumber()))
       .returns((_tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string, _timeOut: number) => {
-        setTimeout(() => {}, 100);
+        setTimeout(() => { }, 100);
         for (const pair of this.iModelMap) {
           if (hubName === pair[1]) {
             const sampleIModelPath = path.join(assetDir, pair[1], `${pair[1]}.json`);
@@ -218,8 +216,8 @@ export class MockAssetUtil {
     // For any call with request parameters contianing the iModel name, grab that iModel's json file
     // and parse it into an instance
     iModelHandlerMock.setup((f: IModelHandler) => f.get(TypeMoq.It.isAny(),
-                                                        TypeMoq.It.isAnyString(),
-                                                        TypeMoq.It.isAny()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAny()))
       .returns((_tok: AccessToken, _projId: string, query: IModelQuery) => {
         let iModelPath: string = "";
         if (query.getId()) {
@@ -247,8 +245,8 @@ export class MockAssetUtil {
     // For any call with a specified iModelId, remove the specified iModel from the cache if it currently
     // resides there
     iModelHandlerMock.setup((f: IModelHandler) => f.delete(TypeMoq.It.isAny(),
-                                                                  TypeMoq.It.isAnyString(),
-                                                                  TypeMoq.It.isAnyString()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, _projId: string, iModelId: string) => {
         const testCaseName = this.iModelMap.get(iModelId);
         if (testCaseName) {
@@ -263,8 +261,8 @@ export class MockAssetUtil {
     // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
     // into the provided cache location
     iModelHandlerMock.setup((f: IModelHandler) => f.download(TypeMoq.It.isAny(),
-                                                             TypeMoq.It.isAnyString(),
-                                                             TypeMoq.It.isAnyString()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, iModelId: string, seedPathname: string) => {
         const iModelName = this.iModelMap.get(iModelId);
         if (iModelName) {
@@ -276,13 +274,13 @@ export class MockAssetUtil {
             body: undefined,
           };
           return Promise.resolve(retResponse)
-          .then(() => Promise.resolve());
+            .then(() => Promise.resolve());
         }
         return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(),
-                                                                            TypeMoq.It.isAnyString()))
+      TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, iModelId: string) => {
         const iModelName = this.iModelMap.get(iModelId);
         if (iModelName) {
@@ -295,7 +293,7 @@ export class MockAssetUtil {
       });
 
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(),
-                                                              TypeMoq.It.isAnyString()))
+      TypeMoq.It.isAnyString()))
       .returns((_tok: AccessToken, iModelId: string) => {
         const iModelName = this.iModelMap.get(iModelId);
         if (iModelName) {
@@ -310,7 +308,7 @@ export class MockAssetUtil {
     // For any call with a specified iModelId, return a dummy briefcaseId. If future test cases demand so, we may
     // need to change this to return specific briefcaseIds
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.download(TypeMoq.It.isAny(),
-                                                                   TypeMoq.It.isAnyString()))
+      TypeMoq.It.isAnyString()))
       .returns((briefcase: Briefcase, outPath: string) => {
         const briefcaseName = briefcase.fileName!.slice(0, briefcase.fileName!.lastIndexOf(".bim"));
         let iModelName = "";
@@ -330,8 +328,8 @@ export class MockAssetUtil {
 
     // Since the Hub is being mocked away, no action is necessary when deleting a briefacse
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.delete(TypeMoq.It.isAny(),
-                                                                 TypeMoq.It.isAnyString(),
-                                                                 TypeMoq.It.isAnyNumber()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAnyNumber()))
       .returns((_tok: AccessToken, _iModelId: string, _briefcaseId: number) => {
         return Promise.resolve();
       });
@@ -339,8 +337,8 @@ export class MockAssetUtil {
     // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
     // and parse them into instances
     changeSetHandlerMock.setup((f: ChangeSetHandler) => f.get(TypeMoq.It.isAny(),
-                                                                          TypeMoq.It.isAnyString(),
-                                                                          TypeMoq.It.isAny()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAny()))
       .returns((_tok: AccessToken, iModelId: string, query: ChangeSetQuery) => {
         const iModelName = this.iModelMap.get(iModelId);
         if (iModelName) {
@@ -374,7 +372,7 @@ export class MockAssetUtil {
     // For any call with a path containing a specified iModel name, grab the associated change set files and copy them
     // into the provided cache location
     changeSetHandlerMock.setup((f: ChangeSetHandler) => f.download(TypeMoq.It.isAny(),
-                                                                              TypeMoq.It.isAnyString()))
+      TypeMoq.It.isAnyString()))
       .returns((csets: ChangeSet[], outPath: string) => {
         for (const cset of csets) {
           const csetPath = path.join(outPath, cset.fileName!);
@@ -387,12 +385,12 @@ export class MockAssetUtil {
           body: undefined,
         };
         return Promise.resolve(retResponse)
-        .then(() => Promise.resolve());
+          .then(() => Promise.resolve());
       });
 
     versionHandlerMock.setup((f: VersionHandler) => f.get(TypeMoq.It.isAny(),
-                                                          TypeMoq.It.isAnyString(),
-                                                          TypeMoq.It.isAny()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAny()))
       .returns((_tok: AccessToken, iModelId: string, query: VersionQuery) => {
         const iModelName = this.iModelMap.get(iModelId);
         if (iModelName) {
@@ -410,8 +408,8 @@ export class MockAssetUtil {
       });
 
     userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(),
-                                                            TypeMoq.It.isAnyString(),
-                                                            TypeMoq.It.isAny()))
+      TypeMoq.It.isAnyString(),
+      TypeMoq.It.isAny()))
       .returns((_tok: AccessToken, _iModelId: string, _query: UserInfoQuery) => {
         const user = new UserInfo();
         user.firstName = "test";
