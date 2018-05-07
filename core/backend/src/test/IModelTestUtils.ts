@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
-import {AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient} from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { Appearance, Code, CreateIModelProps, ElementProps, Gateway, GeometricElementProps, IModel, IModelReadGateway } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
@@ -11,7 +11,7 @@ import {
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestIModelInfo } from "./MockAssetUtil";
-import { HubTestUtils } from "./HubTestUtils";
+import { HubTestUtils } from "./integration/HubTestUtils";
 import { TestConfig } from "./TestConfig";
 import * as path from "path";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
@@ -115,7 +115,7 @@ export class IModelTestUtils {
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
+      iModelInfo.changeSets = await HubTestUtils.hubClient.ChangeSets().get(accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
@@ -130,7 +130,7 @@ export class IModelTestUtils {
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)
-    userCredentials = TestUsers.regular;
+      userCredentials = TestUsers.regular;
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
 

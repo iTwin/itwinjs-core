@@ -5,11 +5,12 @@ import {
   ConnectClient, IModelHubClient, IModel as HubIModel, AccessToken, Project, IModelQuery, AzureFileHandler,
   ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase,
 } from "@bentley/imodeljs-clients";
-import { IModelHost } from "../IModelHost";
-import { IModelJsFs } from "../IModelJsFs";
-import { ChangeSetToken, BriefcaseManager, BriefcaseId } from "../BriefcaseManager";
-import { IModelDb } from "../IModelDb";
+import { IModelHost } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
+import { ChangeSetToken, BriefcaseManager, BriefcaseId } from "../../BriefcaseManager";
+import { IModelDb } from "../../IModelDb";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 
 import * as path from "path";
 
@@ -34,6 +35,8 @@ export class HubTestUtils {
     }
     return HubTestUtils._connectClient;
   }
+
+  public static logCategory = "HubTest";
 
   private static makeDirectoryRecursive(dirPath: string) {
     if (IModelJsFs.existsSync(dirPath))
@@ -230,7 +233,7 @@ export class HubTestUtils {
 
     const briefcases: HubBriefcase[] = await HubTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
-      console.log(`Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`); // tslint:disable-line
+      Logger.logInfo(HubTestUtils.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
@@ -288,7 +291,7 @@ export class HubTestUtils {
 
       let msg: string = `Applying change set ${changeSet.index}:${changeSet.id}: `;
       msg = (status === ChangeSetStatus.Success) ? msg.concat("Success") : msg.concat("ERROR!!");
-      console.log(msg); // tslint:disable-line:no-console
+      Logger.logInfo(HubTestUtils.logCategory, msg);
 
       if (status !== ChangeSetStatus.Success)
         return status;
