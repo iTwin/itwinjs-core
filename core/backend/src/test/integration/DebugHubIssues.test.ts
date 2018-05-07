@@ -5,14 +5,14 @@ import * as path from "path";
 import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelDb } from "../backend";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { IModelDb } from "../../backend";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { HubTestUtils } from "./HubTestUtils";
-import { IModelJsFs } from "../IModelJsFs";
-import { BriefcaseManager } from "../BriefcaseManager";
+import { IModelJsFs } from "../../IModelJsFs";
+import { BriefcaseManager } from "../../BriefcaseManager";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
-describe.skip("HubTestUtils", () => {
+describe.skip("DebugHubIssues (#online-required)", () => {
   let accessToken: AccessToken;
   const iModelRootDir = "d:\\temp\\IModelDumps\\";
 
@@ -54,7 +54,7 @@ describe.skip("HubTestUtils", () => {
     iModel.close(accessToken);
   });
 
-  it("should be able to create a change set from a standalone iModel", async () => {
+  it("should be able to create a change set from a standalone iModel)", async () => {
     const dbName = "D:\\temp\\Defects\\879278\\DPIntegrationTestProj79.bim";
     const iModel: IModelDb = IModelDb.openStandalone(dbName, OpenMode.ReadWrite, true); // could throw Error
     assert.exists(iModel);
@@ -79,17 +79,4 @@ describe.skip("HubTestUtils", () => {
     iModel.close(accessToken);
   });
 
-  it("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
-    const projectName = "AbdTestProject";
-    const iModelName = "ATP_2018050310145994_scenario22";
-
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.downloadIModel(accessToken, projectName, iModelName, iModelDir);
-  });
-
-  it("should merge standalone change sets with a standalone iModel", async () => {
-    const iModelName = "ATP_2018050310145994_scenario22";
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    HubTestUtils.mergeIModel(iModelDir);
-  });
 });

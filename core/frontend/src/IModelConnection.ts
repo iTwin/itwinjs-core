@@ -124,7 +124,7 @@ export class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes)" describes the
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
@@ -167,7 +167,7 @@ export class IModelConnection extends IModel {
   /**
    * Determines whether the *Changes Cache File* is attached to this iModel or not.
    *
-   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
    */
   public async isChangeCacheAttached(): Promise<boolean> { return await IModelReadGateway.getProxy().isChangeCacheAttached(this.iModelToken); }
@@ -177,7 +177,7 @@ export class IModelConnection extends IModel {
    *
    * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
    *
-   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    */
   public async attachChangeCache(): Promise<void> { await IModelReadGateway.getProxy().attachChangeCache(this.iModelToken); }
 

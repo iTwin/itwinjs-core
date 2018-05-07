@@ -9,7 +9,7 @@ import { ChangeSetToken, KeepBriefcase, IModelDb, Element, DictionaryModel, Spat
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
-import { HubTestUtils } from "../HubTestUtils";
+import { HubTestUtils } from "./HubTestUtils";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { TestConfig } from "../TestConfig";
 import { AccessToken, CodeState, ChangeSet, ConnectClient, ContainsSchemaChanges, IModel as HubIModel, Code as HubCode, IModelHubClient, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";

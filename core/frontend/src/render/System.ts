@@ -3,14 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { assert, Id64 } from "@bentley/bentleyjs-core";
-import { AntiAliasPref,
-         SceneLights,
-         ViewFlags,
-         ViewFlag,
-         Frustum,
-         Hilite,
-         HiddenLine,
-         ColorDef } from "@bentley/imodeljs-common";
+import {
+  AntiAliasPref,
+  SceneLights,
+  ViewFlags,
+  ViewFlag,
+  Frustum,
+  Hilite,
+  HiddenLine,
+  ColorDef,
+} from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
@@ -90,6 +92,12 @@ export class Decorations {
   public world?: DecorationList;        // drawn with zbuffer, with default lighting, smooth shading
   public worldOverlay?: DecorationList; // drawn in overlay mode, world units
   public viewOverlay?: DecorationList;  // drawn in overlay mode, view units
+
+  public reset(): void {
+    this.viewBackground = undefined;
+    this.normal = undefined;
+    this.world = this.worldOverlay = this.viewOverlay = undefined;
+  }
 }
 
 export class GraphicBranch {
@@ -120,18 +128,27 @@ export abstract class RenderTarget {
   public abstract get renderSystem(): RenderSystem;
   public abstract get cameraFrustumNearScaleLimit(): number;
   public abstract get viewRect(): ViewRect;
+  public abstract get wantInvertBlackBackground(): boolean;
 
   public createGraphic(params: GraphicBuilderCreateParams) { return this.renderSystem.createGraphic(params); }
 
+  public abstract onDestroy(): void;
+  public abstract reset(): void;
   public abstract changeScene(scene: GraphicList, activeVolume?: ClipVector): void;
-  public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeDynamics(dynamics?: DecorationList): void;
+  public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
   public abstract drawFrame(): void;
+  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
   public abstract setHiliteSet(hilited: HilitedSet): void;
   public abstract setFlashed(elementId: Id64, intensity: number): void;
-  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
+  public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
+  public abstract queueReset(): void;
   public abstract onResized(): void;
+
+  // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
+  // ###TODO public abstract setMinimumFrameRate(minimumFrameRate: number): number;
+  // ###TODO public abstract readPixels(rect: ViewRect, selector: PixelDataSelector): PixelDataBuffer;
 }
 
 /**
@@ -176,7 +193,7 @@ export abstract class RenderSystem {
   // public abstract createTriMesh(args: TriMeshArgs, imodel: IModel): Graphic;
 
   // /** Create an indexed polyline primitive */
-  public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic;
+  public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined;
 
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
@@ -232,7 +249,7 @@ export abstract class RenderSystem {
    * Perform some small unit of work (or do nothing) during an idle frame.
    * An idle frame is classified one tick of the render loop during which no viewports are open and the render queue is empty.
    */
-  public idle(): void {}
+  public idle(): void { }
 
   public onInitialized(): void { }
 }

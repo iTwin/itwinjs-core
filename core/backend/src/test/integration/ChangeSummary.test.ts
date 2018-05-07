@@ -10,7 +10,7 @@ import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../Chang
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { HubTestUtils } from "../HubTestUtils";
+import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsFs } from "../../IModelJsFs";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
@@ -22,7 +22,7 @@ function setupTest(iModelId: string): void {
     IModelJsFs.removeSync(cacheFilePath);
 }
 
-describe.skip("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let accessToken: AccessToken = new MockAccessToken();

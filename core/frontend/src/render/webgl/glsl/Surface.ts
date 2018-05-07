@@ -9,7 +9,7 @@ import {
   VariableType,
   FragmentShaderComponent,
   VertexShaderComponent,
-  ShaderBuilder
+  ShaderBuilder,
 } from "../ShaderBuilder";
 import { FeatureMode, WithClipVolume } from "../TechniqueFlags";
 import { GLSLFragment } from "./Fragment";
@@ -19,7 +19,7 @@ import { addClipping } from "./Clipping";
 import { FloatRgba, FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
-import { SurfaceGeometry } from "../Mesh";
+import { SurfaceGeometry } from "../Surface";
 import { SurfaceFlags } from "../RenderFlags";
 import { assert } from "@bentley/bentleyjs-core";
 

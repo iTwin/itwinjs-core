@@ -66,6 +66,17 @@ export class ViewRect {
   public init(left = 0, bottom = 0, right = 1, top = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
+
+  public equals(rhs: ViewRect): boolean { return this.left === rhs.left && this.right === rhs.right && this.bottom === rhs.bottom && this.top === rhs.top; }
+  public copyFrom(other: ViewRect): void { this.init(other.left, other.bottom, other.right, other.top); }
+  public clone(out?: ViewRect): ViewRect {
+    if (undefined !== out) {
+      out.copyFrom(this);
+      return out;
+    } else {
+      return new ViewRect(this.left, this.bottom, this.right, this.top);
+    }
+  }
 }
 
 /** the minimum and maximum values for the "depth" of a rectangle of screen space. Values are in "npc" so they will be between 0 and 1.0 */
@@ -384,6 +395,16 @@ export class Viewport {
     this.iModel = view.iModel;
     this.setupFromView();
     this.saveViewUndo();
+
+    this.invalidateScene();
+    this.sync.invalidateController();
+    if (undefined !== this._target)
+      this._target.queueReset();
+  }
+
+  private invalidateScene(): void {
+    this.sync.invalidateScene();
+    this.view.invalidateScene();
   }
 
   private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
@@ -626,6 +647,9 @@ export class Viewport {
 
     this.frustFraction = frustFraction;
     this.rootToView.setFrom(this.calcNpcToView().multiplyMapMap(this.rootToNpc));
+
+    this.sync.invalidateRenderPlan();
+    this.sync.setValidController;
 
     this.onViewChanged.raiseEvent(this);
     return ViewStatus.Success;

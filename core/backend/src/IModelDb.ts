@@ -316,7 +316,7 @@ export class IModelDb extends IModel {
    * See "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($imodeljs-common.IModelError) If the statement is invalid
+   * @throws [IModelError]($common/IModelError) If the statement is invalid
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -673,10 +673,9 @@ export class IModelDbModels {
    * @param modelId The Model identifier.
    * @throws [[IModelError]]
    */
-  public getModel(modelId: Id64): Model {
-    const json = this.getModelJson(JSON.stringify({ id: modelId }));
+  public getModel(modelId: Id64Props): Model {
+    const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
     const props = JSON.parse(json!) as ModelProps;
-    props.iModel = this._iModel;
     return this._iModel.constructEntity(props) as Model;
   }
 
