@@ -18,6 +18,8 @@ You can create links into the TypeDoc generated documentation using the same syn
 | A class|`($package/Class)`| links to the documentation for *Class* in *package*
 | A method|`($package/Class.method)`|links to the documentation for *Class.method* in *package*
 
+> Package aliases can be added to config/docSites.json to allow for shorter names to be used as the package variable. Ex: common -> imodeljs-common.
+
 > Note: It is possible to include a `[label]` prefix when linking to a Class or method. That should rarely be necessary, and is discouraged since it can be wrong and misleading.
 
 ## Linking Markdown -> Markdown
