@@ -55,8 +55,9 @@ describe("iModelHub VersionHandler", () => {
   it("should create named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(responseBuilder, iModelId, ...mockedChangeSets);
-
     const changeSetsCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl())).length;
+
+    // creating changeset for new named version
     const changeSet = (await utils.createChangeSets(accessToken, iModelId, briefcase, changeSetsCount, 1))[0];
 
     const versionName = `Version ${changeSetsCount}`;
