@@ -1,3 +1,5 @@
+# Gateways
+
 A gateway is a set of operations exposed by a service that a client can call, using configurable protocols, in a platform-independent way.
 
 A gateway consists of:
