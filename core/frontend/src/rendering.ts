@@ -26,6 +26,7 @@ export * from "./render/webgl/Mesh";
 export * from "./render/webgl/PointString";
 export * from "./render/webgl/Polyline";
 export * from "./render/webgl/Primitive";
+export * from "./render/webgl/RenderBuffer";
 export * from "./render/webgl/RenderFlags";
 export * from "./render/webgl/RenderState";
 export * from "./render/webgl/ShaderBuilder";
