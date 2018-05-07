@@ -25,7 +25,7 @@ export class FrameBuffer implements IDisposable {
   public readonly depthBuffer?: DepthBuffer;
 
   public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
-  public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState; }
+  public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
   public getColor(ndx: number): TextureHandle {
     assert(ndx < this.colorTextures.length);
@@ -54,9 +54,9 @@ export class FrameBuffer implements IDisposable {
       const dbHandle = depthBuffer.getHandle();
       if (undefined !== dbHandle) {
         if (depthBuffer instanceof RenderBuffer) {
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
-        } else {
           gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, dbHandle);
+        } else {
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
         }
       }
     }
@@ -90,8 +90,6 @@ export class FrameBuffer implements IDisposable {
     const gl: WebGLRenderingContext = System.instance.context;
 
     gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
-    if (!this.isBound || !this.isValid)
-      return false;
 
     if (bindAttachments) {
       const dbExt: WEBGL_draw_buffers | undefined = System.instance.drawBuffersExtension;
@@ -105,9 +103,12 @@ export class FrameBuffer implements IDisposable {
     return true;
   }
 
-  public unbind() { assert(this.isBound);  System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null); }
-  public suspend() { assert(this.isBound);  this._bindState = FrameBufferBindState.Suspended; }
-  public checkStatus(): GLenum { return System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET); }
+  public unbind() { assert(this.isBound); System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null); this._bindState = FrameBufferBindState.Unbound; }
+  public suspend() { assert(this.isBound); this._bindState = FrameBufferBindState.Suspended; }
+  public checkStatus(): GLenum {
+    const status: GLenum = System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET);
+    return status;
+  }
 }
 
 interface Binding {
