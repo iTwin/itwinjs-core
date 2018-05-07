@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { Primitive } from "./Primitive";
@@ -19,16 +20,10 @@ export class PointStringInfo {
   public features: FeaturesInfo | undefined;
   public weight: number;
 
-  public constructor(args: PolylineArgs | PointStringParams) {
-    if (args instanceof PolylineArgs) {
-      this.vertexParams = args.pointParams;
-      this.features = FeaturesInfo.create(args.features);
-      this.weight = args.width;
-    } else {
-      this.vertexParams = args.vertexParams;
-      this.features = args.features;
-      this.weight = args.weight;
-    }
+  public constructor(args: PolylineArgs) {
+    this.vertexParams = args.pointParams;
+    this.features = FeaturesInfo.create(args.features);
+    this.weight = args.width;
   }
 }
 
@@ -51,39 +46,18 @@ export class PointStringGeometry extends LUTGeometry {
   public draw(): void { }
   public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
-}
 
-export class PointStringParams extends PointStringInfo {
-  public lutParams: VertexLUT.Params;
-  public vertexIndices: Uint8Array;
-
-  public constructor(args: PolylineArgs) {
-    super(args);
-    this.lutParams = new VertexLUT.Params(new VertexLUT.SimpleBuilder(args), args.colors);
-
-    // NB: We should never get a point string with more than one 'polyline' in it...
-    let nVerts = 0;
-    for (const polyline of args.polylines) {
-      nVerts += polyline.numIndices;
-    }
-
-    this.vertexIndices = new Uint8Array(nVerts * 3);
-    for (const polyline of args.polylines) {
-      let indexByte = 0;
-      for (const vIndex of polyline.vertIndices) {
-        this.vertexIndices[indexByte++] = vIndex & 0x000000ff;
-        this.vertexIndices[indexByte++] = (vIndex & 0x0000ff00) >> 8;
-        this.vertexIndices[indexByte++] = (vIndex & 0x00ff0000) >> 16;
-      }
-    }
-  }
-
-  public createGeometry(): CachedGeometry | undefined {
-    const indices = BufferHandle.createArrayBuffer(this.vertexIndices);
+  public static createGeometry(args: PolylineArgs): PointStringGeometry | undefined {
+    assert(args.polylines.length === 1);
+    const vertexIndices = VertexLUT.convertIndicesToTriplets(args.polylines[0].vertIndices);
+    const indices = BufferHandle.createArrayBuffer(vertexIndices);
     if (undefined !== indices) {
-      const lut = this.lutParams.toData(this.vertexParams);
-      if (undefined !== lut)
-        return new PointStringGeometry(indices, this.vertexIndices.length / 3, lut, this);
+      const lutParams: VertexLUT.Params = new VertexLUT.Params(new VertexLUT.SimpleBuilder(args), args.colors);
+      const info = new PointStringInfo(args);
+      const lut = lutParams.toData(info.vertexParams);
+      if (undefined !== lut) {
+        return new PointStringGeometry(indices, lut.numVertices, lut, info);
+      }
     }
     return undefined;
   }
