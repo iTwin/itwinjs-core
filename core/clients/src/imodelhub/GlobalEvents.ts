@@ -23,7 +23,7 @@ export type GlobalEventType =
   /** Sent when a new Named Version is created */
   "NamedVersionCreatedEvent";
 
-  /** Base type for all iModelHub global events */
+/** Base type for all iModelHub global events */
 export abstract class IModelHubGlobalEvent {
   public eventTopic?: string;
   public iModelId?: string;
@@ -99,15 +99,15 @@ function ConstructorFromEventType(type: GlobalEventType): GlobalEventConstructor
     case "SoftiModelDeleteEvent":
       return SoftiModelDeleteEvent;
     case "HardiModelDeleteEvent":
-     return HardiModelDeleteEvent;
+      return HardiModelDeleteEvent;
     case "iModelCreatedEvent":
       return IModelCreatedEvent;
     case "ChangeSetCreatedEvent":
       return ChangeSetCreatedEvent;
     case "NamedVersionCreatedEvent":
-     return NamedVersionCreatedEvent;
-    }
+      return NamedVersionCreatedEvent;
   }
+}
 
 /**
  * Parse @see IModelHubGlobalEvent from response object.
@@ -165,7 +165,7 @@ export class GlobalEventSubscriptionHandler {
 
   /**
    * Creates global event subscription.
-   * @param token Delegation token of the authorized user.
+   * @param token Delegation token of the authorized Service Account.
    * @param subscriptionId Id of the global event subscription.
    * @param globalEvents Array of GlobalEventTypes to subscribe to.
    * @return Created GlobalEventSubscription instance.
@@ -186,7 +186,7 @@ export class GlobalEventSubscriptionHandler {
 
   /**
    * Updates global event subscription.
-   * @param token Delegation token of the authorized user.
+   * @param token Delegation token of the authorized Service Account.
    * @param subscription Updated global events subscription.
    * @return Updated GlobalEventSubscription instance.
    */
@@ -202,7 +202,7 @@ export class GlobalEventSubscriptionHandler {
 
   /**
    * Deletes global event subscription.
-   * @param token Delegation token of the authorized user.
+   * @param token Delegation token of the authorized Service Account.
    * @param eventSubscriptionInstanceId Id of the global event subscription instance.
    * @returns Resolves if the GlobalEventSubscription has been successfully deleted.
    */
@@ -212,8 +212,8 @@ export class GlobalEventSubscriptionHandler {
     await this._handler.delete(token, this.getRelativeUrl(eventSubscriptionInstanceId));
 
     Logger.logTrace(loggingCategory, `Deleted global event subscription with instance id: ${eventSubscriptionInstanceId}`);
-    }
   }
+}
 
 /**
  * Handler for all methods related to iModel Hub global events.
@@ -251,7 +251,7 @@ export class GlobalEventHandler extends EventBaseHandler {
 
   /**
    * Gets global event SAS Token.
-   * @param token Delegation token of the authorized user.
+   * @param token Delegation token of the authorized Service Account.
    * @return SAS Token to connect to the topic.
    */
   public async getSASToken(token: AccessToken): Promise<GlobalEventSAS> {
