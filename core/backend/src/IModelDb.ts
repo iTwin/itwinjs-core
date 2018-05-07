@@ -673,10 +673,9 @@ export class IModelDbModels {
    * @param modelId The Model identifier.
    * @throws [[IModelError]]
    */
-  public getModel(modelId: Id64): Model {
-    const json = this.getModelJson(JSON.stringify({ id: modelId }));
+  public getModel(modelId: Id64Props): Model {
+    const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
     const props = JSON.parse(json!) as ModelProps;
-    props.iModel = this._iModel;
     return this._iModel.constructEntity(props) as Model;
   }
 
