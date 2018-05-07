@@ -16,7 +16,7 @@ import { addClipping } from "./Clipping";
 import { FloatRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
-import { SurfaceGeometry } from "../Mesh";
+import { SurfaceGeometry } from "../Surface";
 import { assert } from "@bentley/bentleyjs-core";
 
 const applyMaterialOverrides = `

@@ -306,8 +306,6 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
 }
 
 export abstract class EdgeGeometry { /* ###TODO */ }
-export abstract class PointStringGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
 export abstract class MaterialData { /* ###TODO */ }
 export abstract class PolylineBuffers { /* ###TODO */ }
-export abstract class PolylineGeometry extends LUTGeometry { /* ###TODO */ }

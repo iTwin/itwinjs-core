@@ -19,7 +19,9 @@ underlying database’s *persistence* schema.
 
 ![ECSQL versus SQL](./ecsql_vs_sql.png "ECSQL versus SQL")
 
-ECSQL can also be used to run [Spatial queries](./SpatialQueries.md)
+ECSQL can also be used to run [spatial queries](./SpatialQueries.md).
+
+ECSQL has a number of [built-in geometry functions](./SqlFuncs.md)
 
 ## ECSQL in detail
 
