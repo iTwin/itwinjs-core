@@ -1,38 +1,15 @@
 # ECSQL Built-in Geometry Functions
+Types: 
+[iModel_placement](#iModel_spatial_overlap_aabb), [iModel_bbox](#iModel_spatial_overlap_aabb), [iModel_angles](#iModel_spatial_overlap_aabb), [iModel_point](#iModel_spatial_overlap_aabb)
 
-iModel define types and built-in functions that you can use in SQL statements.
+Functions: 
+[iModel_angles](#iModel_angles), [iModel_angles_maxdiff](#iModel_angles_maxdiff), [iModel_angles_value](#iModel_angles_value), [iModel_bbox](#iModel_bbox), [iModel_bbox_areaxy](#iModel_bbox_areaxy), [iModel_bbox_contains](#iModel_bbox_contains), [iModel_bbox_depth](#iModel_bbox_depth), [iModel_bbox_height](#iModel_bbox_height), [iModel_bbox_overlaps](#iModel_bbox_overlaps), [iModel_bbox_union](#iModel_bbox_union), [iModel_bbox_value](#iModel_bbox_value), [iModel_bbox_volume](#iModel_bbox_volume), [iModel_bbox_width](#iModel_bbox_width), [iModel_placement_aabb](#iModel_placement_aabb), [iModel_placement_angles](#iModel_placement_angles), [iModel_placement_eabb](#iModel_placement_eabb), [iModel_placement_origin](#iModel_placement_origin), [iModel_point_distance](#iModel_point_distance), [iModel_point_min_distance_to_bbox](#iModel_point_min_distance_to_bbox), [iModel_point_value](#iModel_point_value), [iModel_spatial_overlap_aabb](#iModel_spatial_overlap_aabb)
 
-Types: [iModel_placement](#iModel_placement), [iModel_angles](#iModel_angles), [iModel_bbox](#iModel_bbox), [iModel_point](#iModel_point)
 
 
-Functions:
-* [iModel_angles](#iModel_angles)
-* [iModel_angles_maxdiff](#iModel_angles_maxdiff)
-* [iModel_angles_value](#iModel_angles_value)
-* [iModel_bbox](#iModel_bbox)
-* [iModel_bbox_areaxy](#iModel_bbox_areaxy)
-* [iModel_bbox_contains](#iModel_bbox_contains)
-* [iModel_bbox_depth](#iModel_bbox_depth)
-* [iModel_bbox_height](#iModel_bbox_height)
-* [iModel_bbox_overlaps](#iModel_bbox_overlaps)
-* [iModel_bbox_union](#iModel_bbox_union)
-* [iModel_bbox_value](#iModel_bbox_value)
-* [iModel_bbox_volume](#iModel_bbox_volume)
-* [iModel_bbox_width](#iModel_bbox_width)
-* [iModel_placement_aabb](#iModel_placement_aabb)
-* [iModel_placement_angles](#iModel_placement_angles)
-* [iModel_placement_eabb](#iModel_placement_eabb)
-* [iModel_placement_origin](#iModel_placement_origin)
-* [iModel_point_distance](#iModel_point_distance)
-* [iModel_point_min_distance_to_bbox](#iModel_point_min_distance_to_bbox)
-* [iModel_point_value](#iModel_point_value)
-* [iModel_spatial_overlap_aabb](#iModel_spatial_overlap_aabb)
-
-# Types
-
+# iModel_point
 A point in the iModel's Cartesian coordinate system. All coordinates are in meters. If the point represents a location in a 2D model, then the z-coordinate will be zero.
 @see [iModel_point_value](#iModel_point_value), [iModel_point_distance](#iModel_point_distance), [iModel_point_min_distance_to_bbox](#iModel_point_min_distance_to_bbox)
-## iModel_point
 ```
 struct iModel_point
 {
@@ -42,10 +19,9 @@ double z;   //!< The z-coordinate
 };
 
 ```
-
+# iModel_angles
 An object that contains Yaw, Pitch, and Roll angles in degrees. If this object represents a rotation in a 2D model, then the pitch and roll members will be zero.
 @see [iModel_angles_value](#iModel_angles_value), [iModel_angles_maxdiff](#iModel_angles_maxdiff)
-## iModel_angles
 ```
 struct iModel_angles
 {
@@ -55,13 +31,12 @@ double roll; //!< The Yaw angle in degrees
 };
 
 ```
-
+# iModel_bbox
 An object that defines a range.
 If the box represents a range in a 3-D model, then the box will have 8 corners and will have width(X), depth(Y), and height(Z).
 If the box represents a range in a 2-D model, then the box will still have 8 corners but the z-coordinates will be all be zero, and the height will be zero.
 All coordinates are in meters.
 @see [iModel_bbox_value](#iModel_bbox_value), [iModel_bbox_width](#iModel_bbox_width), [iModel_bbox_height](#iModel_bbox_height), [iModel_bbox_depth](#iModel_bbox_depth), [iModel_bbox_volume](#iModel_bbox_volume), [iModel_bbox_areaxy](#iModel_bbox_areaxy), [iModel_bbox_overlaps](#iModel_bbox_overlaps), [iModel_bbox_contains](#iModel_bbox_contains), [iModel_bbox_union](#iModel_bbox_union), [iModel_point_min_distance_to_bbox](#iModel_point_min_distance_to_bbox)
-## iModel_bbox
 ```
 struct iModel_bbox
 {
@@ -74,11 +49,10 @@ double ZHigh; //!< The high Z coordinate of the bounding box
 };
 
 ```
-
+# iModel_placement
 An object that contains an origin and rotation angles, plus a bounding box.
 You can obtain an element's placement by selecting the placement column of the ElementGeom table.
 @see [iModel_placement_origin](#iModel_placement_origin), [iModel_placement_angles](#iModel_placement_angles), [iModel_placement_eabb](#iModel_placement_eabb), [iModel_placement_aabb](#iModel_placement_aabb)
-## iModel_placement
 ```
 struct iModel_placement
 {
@@ -88,65 +62,77 @@ iModel_bbox bbox;      //!< Element-aligned bounding box
 };
 ```
 
+
 # iModel_placement_aabb
-Get the axis-aligned bounding box from a placement
 
 ```
 iModel_placement_aabb(placement)
 ```
-
+Get the axis-aligned bounding box from a placement
 
 |Parameter|Type|Description
 |---|---|---
 |placement|[iModel_placement](#iModel_placement)|iModel_placement object to query
-Returns the bounding box
+
+
+|Return Type|Description
+|---|---
+|[iModel_bbox](#iModel_bbox)| the bounding box
 
 # iModel_placement_eabb
-Get the element-aligned bounding box from a placement
 
 ```
 iModel_placement_eabb(placement)
 ```
-
+Get the element-aligned bounding box from a placement
 
 |Parameter|Type|Description
 |---|---|---
 |placement|[iModel_placement](#iModel_placement)|iModel_placement object to query
-Returns the bounding box
+
+
+|Return Type|Description
+|---|---
+|[iModel_bbox](#iModel_bbox)| the bounding box
 
 # iModel_placement_origin
-Get the placement origin
 
 ```
 iModel_placement_origin(placement)
 ```
-
+Get the placement origin
 
 |Parameter|Type|Description
 |---|---|---
 |placement|[iModel_placement](#iModel_placement)|iModel_placement object to query
-Returns the origin in world coordinates
+
+
+|Return Type|Description
+|---|---
+|[iModel_point](#iModel_point)| the origin in world coordinates
 
 # iModel_placement_angles
-Get the placement angles
 
 ```
 iModel_placement_angles(placement)
 ```
-
+Get the placement angles
 
 |Parameter|Type|Description
 |---|---|---
 |placement|[iModel_placement](#iModel_placement)|iModel_placement object to query
-Returns the placement angles
+
+
+|Return Type|Description
+|---|---
+|[iModel_angles](#iModel_angles)| the placement angles
 
 # iModel_angles
-Construct a iModel_angles from 3 values
 
 ```
 iModel_angles(yaw,pitch,roll)
 ```
-
+Construct a iModel_angles from 3 values
 
 |Parameter|Type|Description
 |---|---|---
@@ -154,46 +140,51 @@ iModel_angles(yaw,pitch,roll)
 |pitch|double|Pitch angle in degrees
 |roll|double|Roll angle in degrees
 
-Returns a iModel_angles object
+
+|Return Type|Description
+|---|---
+|[iModel_angles](#iModel_angles)| a iModel_angles object
 
 # iModel_angles_value
-Get a member of a iModel_angles object
 
 ```
 iModel_angles_value(angles,member)
 ```
-
+Get a member of a iModel_angles object
 
 |Parameter|Type|Description
 |---|---|---
 |angles|[iModel_angles](#iModel_angles)|iModel_angles object to query
 |member|int|index of the member to get: Yaw=0, Pitch=1, Roll=2
 
-Returns the selected angle (in degrees); or an error if member is out of range or if \a angles is not a iModel_angles object
+
+|Return Type|Description
+|---|---
+|double| the selected angle (in degrees); or an error if member is out of range or if \a angles is not a iModel_angles object
 
 # iModel_angles_maxdiff
-Return the maximum absolute difference among the angles in degrees.
 
 ```
 iModel_angles_maxdiff(angle1,angle2)
 ```
-
+Return the maximum absolute difference among the angles in degrees.
 
 |Parameter|Type|Description
 |---|---|---
 |angle1|[iModel_angles](#iModel_angles)|iModel_angles object
 |angle2|[iModel_angles](#iModel_angles)|iModel_angles object
 
-Returns the maximum absolute difference among the angles in degrees.
+
+|Return Type|Description
+|---|---
+|double| the maximum absolute difference among the angles in degrees.
 
 # iModel_bbox
-Create a bounding box from 6 values
-All coordinates are in meters.
 
 ```
 iModel_bbox(XLow,YLow,Zlow,XHigh,YHigh,ZHigh)
 ```
-
+Create a bounding box from 6 valuesAll coordinates are in meters.
 
 |Parameter|Type|Description
 |---|---|---
@@ -204,178 +195,218 @@ iModel_bbox(XLow,YLow,Zlow,XHigh,YHigh,ZHigh)
 |YHigh|double|high Y coordinate of the bounding box
 |ZHigh|double|high Z coordinate of the bounding box
 
-Returns a iModel_bbox object
+
+|Return Type|Description
+|---|---
+|[iModel_bbox](#iModel_bbox)| a iModel_bbox object
 
 # iModel_bbox_width
-Compute the "width" of a bounding box
 
 ```
 iModel_bbox_width(bb)
 ```
-
+Compute the "width" of a bounding box
 
 |Parameter|Type|Description
 |---|---|---
 |bb|[iModel_bbox](#iModel_bbox)|bounding box
-Returns the difference between the high and low X coordinates of the box, in meters.
-@see [iModel_bbox_areaxy](#iModel_bbox_areaxy)
 
+
+|Return Type|Description
+|---|---
+|double| the difference between the high and low X coordinates of the box, in meters.
+@see  [iModel_bbox_areaxy](#iModel_bbox_areaxy)
 # iModel_bbox_height
-Compute the "height" of a bounding box
 
 ```
 iModel_bbox_height(bb)
 ```
-
+Compute the "height" of a bounding box
 
 |Parameter|Type|Description
 |---|---|---
 |bb|[iModel_bbox](#iModel_bbox)|bounding box
-Returns the difference between the high and low Z coordinates of the box, in meters.
+
+
+|Return Type|Description
+|---|---
+|double| the difference between the high and low Z coordinates of the box, in meters.
 
 # iModel_bbox_depth
-Compute the "depth" of a bounding box
 
 ```
 iModel_bbox_depth(bb)
 ```
-
+Compute the "depth" of a bounding box
 
 |Parameter|Type|Description
 |---|---|---
 |bb|[iModel_bbox](#iModel_bbox)|bounding box
-Returns the difference between the high and low Y coordinates of the box, in meters.
-@see [iModel_bbox_areaxy](#iModel_bbox_areaxy)
 
+
+|Return Type|Description
+|---|---
+|double| the difference between the high and low Y coordinates of the box, in meters.
+@see  [iModel_bbox_areaxy](#iModel_bbox_areaxy)
 # iModel_bbox_volume
-Compute the volume of the bounding box
 
 ```
 iModel_bbox_volume(bb)
 ```
-
+Compute the volume of the bounding box
 
 |Parameter|Type|Description
 |---|---|---
 |bb|[iModel_bbox](#iModel_bbox)|bounding box
-Returns Its volume in cubic meters
-@see [iModel_bbox_areaxy](#iModel_bbox_areaxy)
 
+
+|Return Type|Description
+|---|---
+|double| Its volume in cubic meters
+@see  [iModel_bbox_areaxy](#iModel_bbox_areaxy)
 # iModel_bbox_areaxy
-Compute the depth times the width of a bounding box
 
 ```
 iModel_bbox_areaxy(bb)
 ```
-
+Compute the depth times the width of a bounding box
 
 |Parameter|Type|Description
 |---|---|---
 |bb|[iModel_bbox](#iModel_bbox)|bounding box
-Returns the depth of \a bb times its width; or, an error if the input object is not a iModel_bbox
-@see [iModel_bbox_volume](#iModel_bbox_volume)
-@see [iModel_bbox_depth](#iModel_bbox_depth), [iModel_bbox_width](#iModel_bbox_width)
 
+
+|Return Type|Description
+|---|---
+|double| the depth of \a bb times its width; or, an error if the input object is not a iModel_bbox
+@see  [iModel_bbox_volume](#iModel_bbox_volume),  [iModel_bbox_depth](#iModel_bbox_depth), [iModel_bbox_width](#iModel_bbox_width)
 # iModel_bbox_overlaps
-Determine if the areas enclosed by two 3-D bounding boxes overlap
 
 ```
 iModel_bbox_overlaps(bb1,bb2)
 ```
-
+Determine if the areas enclosed by two 3-D bounding boxes overlap
 
 |Parameter|Type|Description
 |---|---|---
 |bb1|[iModel_bbox](#iModel_bbox)|first bounding box
 |bb2|[iModel_bbox](#iModel_bbox)|second bounding box
 
-Returns 1 if the boxes overlap or 0 if not.
-@see [iModel_bbox_contains](#iModel_bbox_contains)
 
+|Return Type|Description
+|---|---
+|int| 1 if the boxes overlap or 0 if not.
+@see  [iModel_bbox_contains](#iModel_bbox_contains)
 # iModel_bbox_contains
-Determine of the first bounding box contains the second bounding box
 
 ```
 iModel_bbox_contains(bb_outer,bb_inner)
 ```
-
+Determine of the first bounding box contains the second bounding box
 
 |Parameter|Type|Description
 |---|---|---
 |bb_outer|[iModel_bbox](#iModel_bbox)|containing bounding box
 |bb_inner|[iModel_bbox](#iModel_bbox)|contained bounding box
 
-Returns 1 if bb_outer contains bb_inner or 0 if not.
-@see [iModel_bbox_overlaps](#iModel_bbox_overlaps)
 
+|Return Type|Description
+|---|---
+|int| 1 if bb_outer contains bb_inner or 0 if not.
+@see  [iModel_bbox_overlaps](#iModel_bbox_overlaps)
 # iModel_bbox_value
-Get a member of a iModel_bbox object
 
 ```
 iModel_bbox_value(bb,member)
 ```
-
+Get a member of a iModel_bbox object
 
 |Parameter|Type|Description
 |---|---|---
 |bb|[iModel_bbox](#iModel_bbox)|bounding box
 |member|int|index of the member to get: XLow=0, YLow=1, Zlow=2, XHigh=3, YHigh=4, ZHigh=5
 
-Returns the requested member of the bounding box; or an error if member is out of range or bb is not a iModel_bbox object.
+
+|Return Type|Description
+|---|---
+|double| the requested member of the bounding box; or an error if member is out of range or bb is not a iModel_bbox object.
 
 # iModel_bbox_union
-\em Aggregate function that computes the union of a series of bounding boxes
 
 ```
 iModel_bbox_union(X1)
 ```
+ Aggregate function that computes the union of a series of bounding boxes
 
-Returns a bounding box that contains the aggregated range.
+|Parameter|Type|Description
+|---|---|---
+|X1|[iModel_bbox](#iModel_bbox)
+
+|Return Type|Description
+|---|---
+|[iModel_bbox](#iModel_bbox)| a bounding box that contains the aggregated range.
 
 # iModel_point_distance
-Compute the distance between two iModel_Points, in meters.
 
 ```
 iModel_point_distance(point1,point2)
 ```
-
+Compute the distance between two iModel_Points, in meters.
 
 |Parameter|Type|Description
 |---|---|---
 |point1|[iModel_point](#iModel_point)|point
 |point2|[iModel_point](#iModel_point)|second point
 
-Returns the distance between the two points; or an error if either input is not a iModel_point object
+
+|Return Type|Description
+|---|---
+|double| the distance between the two points; or an error if either input is not a iModel_point object
 
 # iModel_point_min_distance_to_bbox
-Compute the minimum distance from a point to a bounding box, in meters.
 
 ```
 iModel_point_min_distance_to_bbox(point,bbox)
 ```
-
+Compute the minimum distance from a point to a bounding box, in meters.
 
 |Parameter|Type|Description
 |---|---|---
 |point|[iModel_point](#iModel_point)|point
 |bbox|[iModel_bbox](#iModel_bbox)|bounding box
 
-Returns the distance from \a point to the closest point on \a bbox; or an error if either input is of the wrong type.
+
+|Return Type|Description
+|---|---
+|double| the distance from \a point to the closest point on \a bbox; or an error if either input is of the wrong type.
 
 # iModel_point_value
-Get a member of a iModel_Point object.
 
 ```
 iModel_point_value(point,member)
 ```
-
+Get a member of a iModel_Point object.
 
 |Parameter|Type|Description
 |---|---|---
 |point|[iModel_point](#iModel_point)|point to query
 |member|int|index of the coordinate to get: X=0, Y=1, Z=2
 
-Returns a coordindate of the point in meters; or an error if \a member is out of range or \a point is not a point object
+
+|Return Type|Description
+|---|---
+|double| a coordindate of the point in meters; or an error if \a member is out of range or \a point is not a point object
 
 # iModel_spatial_overlap_aabb
+
+```
+iModel_spatial_overlap_aabb(X1)
+```
 An rtree MATCH function that only accepts objects from the spatial index whose range overlap an aabb (axis-aligned bounding box).
+
+|Parameter|Type|Description
+|---|---|---
+|X1|[iModel_bbox](#iModel_bbox)
+
+
+
