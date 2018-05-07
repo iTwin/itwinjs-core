@@ -450,6 +450,16 @@ export abstract class Target extends RenderTarget {
     assert(System.instance.frameBufferStack.isEmpty);
   }
 
+  public onDestroy(): void { } // ###TODO
+  public queueReset(): void { } // ###TODO
+  public reset(): void {
+    this._scene.length = 0;
+    this._decorations.reset();
+    this._dynamics = undefined;
+    // ###TODO this._activeVolume = undefined;
+  }
+  public get wantInvertBlackBackground(): boolean { return false; }
+
   public get visibleEdgeOverrides(): EdgeOverrides | undefined { return this.getEdgeOverrides(RenderPass.OpaqueLinear); }
   public get hiddenEdgeOverrides(): EdgeOverrides | undefined { return this.getEdgeOverrides(RenderPass.HiddenEdge); }
   public get isEdgeColorOverridden(): boolean {
@@ -556,6 +566,8 @@ export class OnScreenTarget extends Target {
     return this._viewRect;
   }
 
+  public setViewRect(_rect: ViewRect, _temporary: boolean): void { assert(false); }
+
   protected _assignDC(): boolean {
     assert(undefined === this._fbo);
 
@@ -619,6 +631,22 @@ export class OffScreenTarget extends Target {
   }
 
   public get viewRect(): ViewRect { return this._viewRect; }
+
+  public setViewRect(rect: ViewRect, temporary: boolean): void {
+    if (this._viewRect.equals(rect))
+      return;
+
+    this._viewRect.copyFrom(rect);
+    if (temporary) {
+      // Temporarily adjust view rect in order to create scene for a view attachment.
+      // Will be reset before attachment is rendered - so don't blow away our framebuffers + textures
+      return;
+    }
+
+    this._dcAssigned = false;
+    // ###TODO this._fbo = undefined;
+    this.compositor.reset();
+  }
 
   // ###TODO...
   protected _assignDC(): boolean { return false; }

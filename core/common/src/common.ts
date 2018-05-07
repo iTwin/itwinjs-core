@@ -89,12 +89,12 @@ export * from "./gateway/StandaloneIModelGateway";
 /**
  * @docs-group-description SqlFuncs
  * Functions that you can call in ECSQL statements. These are not TypeScript functions -- you can only call them in ECSQL statements.
- * For more information: [Spatial Queries]($docs/learning/learning/SpatialQueries.md)
+ * For more information: [Spatial Queries]($docs/learning/SpatialQueries.md)
  */
 /**
  * @docs-group-description Schemas
  * Classes for working with ECSchemas.
- * For more information: [Executing ECSQL]($docs/learning/learning/ECSQL.md)
+ * For more information: [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Views

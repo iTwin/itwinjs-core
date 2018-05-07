@@ -4,7 +4,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { System } from "./System";
 import { Point2d, Range2d } from "@bentley/geometry-core";
-import { MaterialData, LUTGeometry } from "./CachedGeometry";
+import { CachedGeometry, MaterialData, LUTGeometry } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/Mesh";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
@@ -20,6 +20,7 @@ import { Target } from "./Target";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
+// import { SurfacePrimitive } from "./Surface";
 // import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
@@ -130,6 +131,8 @@ export class MeshGraphic extends Graphic {
     this.meshData = data;
 
     assert(undefined !== this._primitives); // silence unused variable warnings...
+
+    // this._primitives[0] = new SurfacePrimitive(new SurfaceGeometry(....), args, this);
 
     // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
     const convertPolylineEdges = args.edges.polylines.isValid() && !wantJointTriangles(args.edges.width, args.is2d);
@@ -272,15 +275,15 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     // ###TODO if (undefined !== tex && this.wantTextures(target)) {
-      // ###TODO if (tex.hasTranslucency) {
-      // ###TODO   return RenderPass.Translucent;
-      // ###TODO }
+    // ###TODO if (tex.hasTranslucency) {
+    // ###TODO   return RenderPass.Translucent;
+    // ###TODO }
 
-      // material may have texture weight < 1 - if so must account for material or element alpha below
-      // ###TODO if (undefined === mat || mat.textureWeight >= 1) {
-      // ###TODO   return opaquePass;
-      // ###TODO }
-      // ###TODO }
+    // material may have texture weight < 1 - if so must account for material or element alpha below
+    // ###TODO if (undefined === mat || mat.textureWeight >= 1) {
+    // ###TODO   return opaquePass;
+    // ###TODO }
+    // ###TODO }
 
     let hasAlpha = false;
     if (undefined !== mat && wantMaterials(vf) /* && ###TODO material stuff */)
@@ -377,4 +380,19 @@ export class SurfaceGeometry extends MeshGeometry {
       default: return FillFlags.Always === (fill & FillFlags.Always);
     }
   }
+}
+
+export abstract class MeshPrimitive<Params> extends Primitive {
+  public readonly mesh: MeshGraphic;
+  public readonly params: Params;
+
+  public constructor(cachedGeom: CachedGeometry, mesh: MeshGraphic, params: Params) {
+    super(cachedGeom, mesh.iModel);
+    this.mesh = mesh;
+    this.params = params;
+  }
+
+  public assignUniformFeatureIndices(_index: number) { assert(false); } // handled by MeshGraphic...
+  public get meshData(): MeshData { return this.mesh.meshData; }
+  public get meshInfo(): MeshInfo { return this.mesh.meshInfo; }
 }

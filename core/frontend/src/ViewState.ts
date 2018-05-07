@@ -18,6 +18,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
+import { GraphicList } from "./Render/System";
 
 export const enum GridOrientationType {
   View = 0,
@@ -114,6 +115,7 @@ class SpecialElements {
 export abstract class ViewState extends ElementState {
   protected _featureOverridesDirty = false;
   protected _selectionSetDirty = false;
+  protected _scene?: GraphicList;
   private _auxCoordSystem?: AuxCoordSystemState;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
@@ -132,6 +134,10 @@ export abstract class ViewState extends ElementState {
 
   /** get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
+
+  public get scene(): GraphicList | undefined { return this._scene; }
+  public get isSceneReady(): boolean { return undefined !== this.scene; }
+  public invalidateScene(): void { this._scene = undefined; }
 
   /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }

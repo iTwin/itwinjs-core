@@ -6,7 +6,7 @@ A row returned from an [ECSQL](./ECSQL) SELECT query is formatted as JavaScript 
 
 If the ECSQL select clause item
 
-- is an [ECSQL system property]($imodeljs-common.ECSqlSystemProperty), the property name is as described here: [ECJsNames.toJsName]($imodeljs-common.ECJsNames.toJsName)
+- is an [ECSQL system property]($common/ECSqlSystemProperty), the property name is as described here: [ECJsNames.toJsName]($common/ECJsNames.toJsName)
 - has a column alias, the alias, with the first character lowered, becomes the property name.
 - has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
 
@@ -29,7 +29,7 @@ Int64      | Id            | hexadecimal string
 Point2d    | -             | [XAndY]($geometry-core.XAndY)
 Point3d    | -             | [XYAndZ]($geometry-core.XYAndZ)
 String     | -             | string
-Navigation | n/a           | [NavigationValue]($imodeljs-common.NavigationValue)
+Navigation | n/a           | [NavigationValue]($common/NavigationValue)
 Struct     | n/a           | JavaScript object with properties of the types in this table
 Array      | n/a           | array of the types in this table
 
