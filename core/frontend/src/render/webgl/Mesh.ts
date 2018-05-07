@@ -16,7 +16,7 @@ import { Primitive } from "./Primitive";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Target } from "./Target";
-// import { SurfacePrimitive } from "./Surface";
+import { SurfacePrimitive } from "./Surface";
 // import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
@@ -114,7 +114,7 @@ export class MeshParams extends MeshInfo {
 
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
-  private readonly _primitives: Primitive[] = [];
+  private readonly _primitives = Array<Primitive | undefined>(4); // [surfaces, silhouettes, edges, polylines]
 
   public static create(args: MeshArgs, iModel: IModelConnection) {
     const data = MeshData.create(new MeshParams(args));
@@ -126,8 +126,7 @@ export class MeshGraphic extends Graphic {
     this.meshData = data;
 
     assert(undefined !== this._primitives); // silence unused variable warnings...
-
-    // this._primitives[0] = new SurfacePrimitive(new SurfaceGeometry(....), args, this);
+    this._primitives[0] = SurfacePrimitive.create(args, this);
 
     // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
     const convertPolylineEdges = args.edges.polylines.isValid() && !wantJointTriangles(args.edges.width, args.is2d);
