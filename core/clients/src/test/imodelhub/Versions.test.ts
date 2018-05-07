@@ -5,7 +5,7 @@ import * as chai from "chai";
 
 import { TestConfig } from "../TestConfig";
 
-import { Version, VersionQuery } from "../../imodelhub";
+import { Version, VersionQuery, Briefcase, ChangeSetQuery, ChangeSet } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder } from "../ResponseBuilder";
@@ -17,27 +17,63 @@ chai.should();
 describe("iModelHub VersionHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
+  let briefcase: Briefcase;
   const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  const imodelName = "imodeljs-clients Versions test";
 
   before(async () => {
     accessToken = await utils.login();
-    iModelId = await utils.getIModelId(accessToken);
+    await utils.createIModel(accessToken, imodelName);
+    iModelId = await utils.getIModelId(accessToken, imodelName);
+    if (!TestConfig.enableMocks) {
+      const changeSetCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
+      if (changeSetCount > 9) {
+        // Recreate iModel if can't create any new changesets
+        await utils.createIModel(accessToken, imodelName, undefined, true);
+        iModelId = await utils.getIModelId(accessToken, imodelName);
+      }
+      const versionsCount = (await imodelHubClient.Versions().get(accessToken, iModelId)).length;
+      if (versionsCount === 0) {
+        // Create at least 1 named version
+        let changeSet: ChangeSet;
+        if (changeSetCount === 0 || changeSetCount > 9) {
+          changeSet = (await utils.createChangeSets(accessToken, iModelId, briefcase, 0, 1))[0];
+        } else {
+          changeSet = (await imodelHubClient.ChangeSets().get(accessToken, iModelId))[0];
+        }
+        await imodelHubClient.Versions().create(accessToken, iModelId, changeSet.id!, "Version 1");
+      }
+    }
+    briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
   });
 
   afterEach(() => {
     responseBuilder.clearMocks();
   });
 
-  it("should get named versions", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
+  it("should create named version", async function (this: Mocha.ITestCallbackContext) {
+    const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
+    utils.mockGetChangeSet(responseBuilder, iModelId, ...mockedChangeSets);
 
+    const changeSetsCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl())).length;
+    const changeSet = (await utils.createChangeSets(accessToken, iModelId, briefcase, changeSetsCount, 1))[0];
+
+    const versionName = `Version ${changeSetsCount}`;
+    utils.mockCreateVersion(responseBuilder, iModelId, versionName, changeSet.id);
+    const version: Version = await imodelHubClient.Versions().create(accessToken, iModelId, changeSet.id!, versionName);
+
+    chai.assert(!!version);
+    chai.expect(version.wsgId).to.have.length.above(0);
+    chai.expect(version.changeSetId).to.be.equal(changeSet.id);
+    chai.expect(version.name).to.be.equal(versionName);
+  });
+
+  it("should get named versions", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(responseBuilder, iModelId, ...mockedVersions);
     // Needs to create before expecting more than 0
     const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
-    chai.expect(versions.length).equals(3);
 
     let i = 0;
     for (const expectedVersion of versions) {
@@ -48,41 +84,23 @@ describe("iModelHub VersionHandler", () => {
     }
   });
 
-  it("should create named version", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
-    const versionName = "Version name";
-    const changeSetId = utils.generateChangeSetId();
-    utils.mockCreateVersion(responseBuilder, iModelId, versionName, changeSetId);
-    const version: Version = await imodelHubClient.Versions().create(accessToken, iModelId, changeSetId, versionName);
-
-    chai.expect(!!version);
-    chai.expect(version.wsgId).to.have.length.above(0);
-    chai.expect(version.changeSetId).to.be.equal(changeSetId);
-    chai.expect(version.name).to.be.equal(versionName);
-  });
-
   it("should update named version", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
+    const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
+    utils.mockGetVersions(responseBuilder, iModelId, ...mockedVersions);
 
-    const mockedVersion = utils.generateVersion();
-    utils.mockGetVersions(responseBuilder, iModelId, mockedVersion);
     let version: Version = (await imodelHubClient.Versions().get(accessToken, iModelId))[0];
-
-    chai.expect(!!version);
+    chai.assert(!!version);
     chai.expect(version.wsgId).to.have.length.above(0);
-    chai.expect(version.changeSetId).to.be.equal(mockedVersion.changeSetId!);
-    chai.expect(version.name).to.be.equal(mockedVersion.name!);
+    chai.expect(version.changeSetId).to.be.equal(version.changeSetId!);
+    chai.expect(version.name).to.be.equal(version.name!);
 
-    mockedVersion.name = "Updated name";
-    utils.mockUpdateVersion(responseBuilder, iModelId, mockedVersion);
-    version = await imodelHubClient.Versions().update(accessToken, iModelId, mockedVersion);
+    version.name += "+";
+    utils.mockUpdateVersion(responseBuilder, iModelId, version);
+    version = await imodelHubClient.Versions().update(accessToken, iModelId, version);
 
-    chai.expect(!!version);
+    chai.assert(!!version);
     chai.expect(version.wsgId).to.have.length.above(0);
-    chai.expect(version.changeSetId).to.be.equal(mockedVersion.changeSetId!);
-    chai.expect(version.name).to.be.equal(mockedVersion.name!);
+    chai.expect(version.changeSetId).to.be.equal(version.changeSetId!);
+    chai.expect(version.name).to.be.equal(version.name!);
   });
 });
