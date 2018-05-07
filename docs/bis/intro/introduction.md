@@ -1,6 +1,6 @@
 # Introduction to BIS
 
-The Base Infrastructure Schemas ([BIS](./glossary#bis)) are a family of schemas covering all lifecycle phases and all disciplines relevant to built infrastructure. BIS defines the semantics and data structures of business concepts for iModels and for Bentley cloud service APIs.
+The Base Infrastructure Schemas ([BIS](./glossary.md#bis)) are a family of schemas covering all lifecycle phases and all disciplines relevant to built infrastructure. BIS defines the semantics and data structures of business concepts for iModels and for Bentley cloud service APIs.
 
 ## Digital World
 
