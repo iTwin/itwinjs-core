@@ -4,13 +4,10 @@
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
-import { TestConfig } from "../TestConfig";
-
 import { CodeState, Code, AggregateResponseError, ConflictingCodesError } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 chai.should();
 
@@ -19,12 +16,14 @@ describe("iModelHub CodeHandler", () => {
   let iModelId: string;
   let briefcaseId: number;
   let briefcaseId2: number;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  const imodelName = "imodeljs-clients Codes test";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient(responseBuilder);
 
   before(async () => {
     accessToken = await utils.login();
-    iModelId = await utils.getIModelId(accessToken);
+    await utils.createIModel(accessToken, imodelName);
+    iModelId = await utils.getIModelId(accessToken, imodelName);
 
     const briefcases = await utils.getBriefcases(accessToken, iModelId, 2);
     briefcaseId = briefcases[0].briefcaseId!;

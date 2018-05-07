@@ -7,6 +7,7 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { ECJsonTypeMap } from "../../ECJsonTypeMap";
 import { TestConfig, UserCredentials } from "../TestConfig";
 import { Guid } from "@bentley/bentleyjs-core";
+import { UrlDescriptor } from "../../Client";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ChangeSet } from "../../imodelhub/ChangeSets";
@@ -19,6 +20,7 @@ import { ConnectClient, Project } from "../../ConnectClients";
 
 import * as fs from "fs";
 import * as path from "path";
+import { DeploymentEnv } from "../..";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
@@ -28,7 +30,28 @@ class MockAccessToken extends AccessToken {
   public toTokenString() { return ""; }
 }
 
-export const defaultUrl = "https://qa-imodelhubapi.bentley.com";
+const imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+
+const defaultUrlDescriptor: UrlDescriptor = {
+  DEV: "https://dev-imodelhubapi.bentley.com",
+  QA: "https://qa-imodelhubapi.bentley.com",
+  PROD: "https://imodelhubapi.bentley.com",
+  PERF: "https://perf-imodelhubapi.bentley.com",
+};
+
+export function getUrl(env: DeploymentEnv): string {
+  return defaultUrlDescriptor[env];
+}
+
+export const defaultUrl: string = getUrl(TestConfig.deploymentEnv);
+
+export function getDefaultClient(responseBuilder: ResponseBuilder) {
+  if (TestConfig.enableMocks) {
+    responseBuilder.mockResponse("https://buddi.bentley.com", RequestType.Get, "/WebService/GetUrl/?url=iModelHubApi&region=102", { result: { url: "https://qa-imodelhubapi.bentley.com" } });
+  }
+  return imodelHubClient;
+}
+
 export const assetsPath = __dirname + "/../assets/";
 /**
  * Generates request URL.
@@ -102,7 +125,7 @@ export async function deleteIModelByName(accessToken: AccessToken, projectId: st
   }
 }
 
-export async function getIModelId(accessToken: AccessToken, imodelName?: string): Promise<string> {
+export async function getIModelId(accessToken: AccessToken, imodelName: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
@@ -110,11 +133,10 @@ export async function getIModelId(accessToken: AccessToken, imodelName?: string)
 
   const client = new IModelHubClient(TestConfig.deploymentEnv);
 
-  imodelName = imodelName || TestConfig.iModelName;
   const imodels = await client.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].wsgId)
-    return Promise.reject(`iModel with name ${TestConfig.iModelName} doesn't exist.`);
+    return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
 
   return imodels[0].wsgId;
 }
@@ -186,17 +208,18 @@ export function generateChangeSet(id?: string): ChangeSet {
   return changeSet;
 }
 
-export function mockGetChangeSet(responseBuilder: ResponseBuilder, iModelId: string, ...changeSets: ChangeSet[]) {
+export function mockGetChangeSet(responseBuilder: ResponseBuilder, iModelId: string, getDownloadUrl: boolean, ...changeSets: ChangeSet[]) {
   if (!TestConfig.enableMocks)
     return;
 
   let i = 1;
   changeSets.forEach((value) => {
-    value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
+    if (getDownloadUrl)
+      value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
     value.index = `${i++}`;
   });
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-    `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`);
+    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : undefined);
   const requestResponse = responseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
   responseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
@@ -314,12 +337,16 @@ export function mockFileResponse(responseBuilder: ResponseBuilder, downloadToPat
     responseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
 }
 
+export function getMockSeedFilePath() {
+  const dir = path.join(assetsPath, "SeedFile");
+  return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
+}
+
 export async function createNewIModel(client: IModelHubClient, accessToken: AccessToken, name: string, projectId: string) {
   if (TestConfig.enableMocks)
     return;
 
-  const dir = path.join(assetsPath, "SeedFile");
-  const imodelPath = path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
+  const imodelPath = getMockSeedFilePath();
   await client.IModels().create(accessToken, projectId, name, imodelPath);
 }
 

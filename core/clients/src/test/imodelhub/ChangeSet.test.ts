@@ -4,6 +4,7 @@
 import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
+import * as deepAssign from "deep-assign";
 
 import { TestConfig } from "../TestConfig";
 
@@ -12,7 +13,6 @@ import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { RequestQueryOptions } from "../../Request";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
 declare const __dirname: string;
@@ -33,10 +33,9 @@ describe("iModelHub ChangeSetHandler", () => {
   let iModelId: string;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients ChangeSets test";
-  // let seedFileId: string;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
-  const downloadToPath: string = __dirname + "/../assets/";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient(responseBuilder);
+  const downloadToPath: string = __dirname + "/../assets/";
 
   before(async () => {
     accessToken = await utils.login();
@@ -64,21 +63,65 @@ describe("iModelHub ChangeSetHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
+  function mockPostNewChangeSet(imodelId: string, changeSet: ChangeSet) {
+    const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet");
 
+    const postBody = responseBuilder.generatePostBody(changeSet);
+
+    const cs = new ChangeSet();
+    deepAssign(cs, changeSet);
+    cs.wsgId = cs.id!;
+    cs.uploadUrl = `https://qa-imodelhubapi.bentley.com/imodelhub-${imodelId}/123456`;
+    const requestResponse = responseBuilder.generatePostResponse(cs);
+
+    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  }
+
+  function mockUploadChangeSet(imodelId: string) {
+    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456`);
+  }
+
+  function mockPostUpdatedChangeSet(imodelId: string, changeSet: ChangeSet) {
+    const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet", changeSet.id!);
+
+    const cs = new ChangeSet();
+    deepAssign(cs, changeSet);
+    cs.isUploaded = true;
+    cs.wsgId = changeSet.id!;
+    const postBody = responseBuilder.generatePostBody(cs);
+
+    const requestResponse = responseBuilder.generatePostResponse(cs);
+
+    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  }
+
+  function mockCreateChangeSet(imodelId: string, changeSet: ChangeSet) {
+    if (!TestConfig.enableMocks)
+      return;
+
+    mockPostNewChangeSet(imodelId, changeSet);
+    mockUploadChangeSet(imodelId);
+    mockPostUpdatedChangeSet(imodelId, changeSet);
+  }
+
+  it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
+
+    utils.mockGetChangeSet(responseBuilder, iModelId, false, mockChangeSets[0], mockChangeSets[1]);
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId);
+
     const index = changeSets.length;
     const filePath = utils.getMockChangeSetPath(index, mockChangeSets[index].id!);
+
+    mockCreateChangeSet(iModelId, mockChangeSets[2]);
     const newChangeSet = await imodelHubClient.ChangeSets().create(accessToken, iModelId, mockChangeSets[index], filePath);
+
     chai.expect(newChangeSet);
   });
 
   it("should get information on ChangeSets", async () => {
     const mockedChangeSets = Array(3).fill(0).map(() => utils.generateChangeSet());
-    utils.mockGetChangeSet(responseBuilder, iModelId, ...mockedChangeSets);
+    utils.mockGetChangeSet(responseBuilder, iModelId, true, ...mockedChangeSets);
 
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length >= 2);
@@ -110,10 +153,10 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should download ChangeSets", async () => {
-    utils.mockGetChangeSet(responseBuilder, iModelId, utils.generateChangeSet(), utils.generateChangeSet());
+    utils.mockGetChangeSet(responseBuilder, iModelId, true, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
 
-    const downloadChangeSetsToPath: string = path.join(downloadToPath, TestConfig.iModelName);
+    const downloadChangeSetsToPath: string = path.join(downloadToPath, iModelId);
 
     utils.mockFileResponse(responseBuilder, downloadToPath, 2);
     await imodelHubClient.ChangeSets().download(changeSets, downloadChangeSetsToPath);

@@ -13,7 +13,7 @@ import { FileHandler } from "./FileHandler";
 const loggingCategory = "imodeljs-clients.imodelhub";
 
 /** IModel */
-@ECJsonTypeMap.classToJson("wsg", "ProjectScope.iModel", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "ProjectScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class IModel extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
@@ -42,7 +42,7 @@ export enum SeedFileInitState {
 }
 
 /** SeedFile */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.SeedFile", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.SeedFile", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SeedFile extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileName")
   public fileName?: string;
@@ -260,13 +260,13 @@ export class IModelHandler {
     return imodels;
   }
 
-/**
- * Delete an iModel
- * @param token Delegation token of the authorized user.
- * @param projectId Id of the connect project.
- * @param imodelId Id of the iModel to be deleted.
- * @returns Resolves if the iModels have been successfully deleted.
- */
+  /**
+   * Delete an iModel
+   * @param token Delegation token of the authorized user.
+   * @param projectId Id of the connect project.
+   * @param imodelId Id of the iModel to be deleted.
+   * @returns Resolves if the iModels have been successfully deleted.
+   */
   public async delete(token: AccessToken, projectId: string, imodelId: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting iModel with id ${imodelId} from project ${projectId}`);
 
@@ -315,7 +315,7 @@ export class IModelHandler {
       Logger.logTrace(loggingCategory, `Queried iModel by name ${iModelName} in project ${projectId}`);
 
       if (imodels.length > 0) {
-        imodel =  imodels[0];
+        imodel = imodels[0];
       } else {
         Logger.logTrace(loggingCategory, `iModel by name: iModel ${iModelName} not found`);
 
@@ -366,25 +366,26 @@ export class IModelHandler {
         }
 
         this._seedFileHandler.get(token, iModel.wsgId)
-        .then((confirmUploadSeedFiles: SeedFile[]) => {
-          const initState = confirmUploadSeedFiles[0].initializationState;
+          .then((confirmUploadSeedFiles: SeedFile[]) => {
+            const initState = confirmUploadSeedFiles[0].initializationState;
 
-          if (initState === SeedFileInitState.Successful) {
-            Logger.logTrace(loggingCategory, `Created iModel with id ${iModel.wsgId} in project ${projectId}`);
-            return resolve(iModel);
-          }
+            if (initState === SeedFileInitState.Successful) {
+              Logger.logTrace(loggingCategory, `Created iModel with id ${iModel.wsgId} in project ${projectId}`);
+              iModel.initialized = true;
+              return resolve(iModel);
+            }
 
-          if (initState !== SeedFileInitState.NotStarted && initState !== SeedFileInitState.Scheduled) {
+            if (initState !== SeedFileInitState.NotStarted && initState !== SeedFileInitState.Scheduled) {
+              Logger.logWarning(loggingCategory, errorMessage);
+              return reject(new Error(errorMessage));
+            }
+
+            setTimeout(() => attempt(), retryDelay);
+          })
+          .catch(() => {
             Logger.logWarning(loggingCategory, errorMessage);
             return reject(new Error(errorMessage));
-          }
-
-          setTimeout(() => attempt(), retryDelay);
-        })
-        .catch(() => {
-          Logger.logWarning(loggingCategory, errorMessage);
-          return reject(new Error(errorMessage));
-        });
+          });
       };
       attempt();
     });

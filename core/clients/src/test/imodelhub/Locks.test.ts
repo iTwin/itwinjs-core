@@ -9,7 +9,6 @@ import { Lock } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
 chai.should();
@@ -26,12 +25,18 @@ function mockGetLocks(responseBuilder: ResponseBuilder, imodelId: string, ...loc
 describe("iModelHubClient LockHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  const imodelName = "imodeljs-clients Locks test";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient(responseBuilder);
 
-  before(async () => {
+  before(async function (this: Mocha.IHookCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
     accessToken = await utils.login();
-    iModelId = await utils.getIModelId(accessToken);
+    // Doesn't create an imodel right now, but should in the future
+    await utils.createIModel(accessToken, imodelName);
+    iModelId = await utils.getIModelId(accessToken, imodelName);
   });
 
   afterEach(() => {
@@ -39,8 +44,6 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should get information on Locks", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
 
     mockGetLocks(responseBuilder, iModelId, responseBuilder.generateObject<Lock>(Lock));
     // Needs to acquire before expecting more than 0.

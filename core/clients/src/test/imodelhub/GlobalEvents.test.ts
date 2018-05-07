@@ -9,18 +9,17 @@ import { IModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType, Softi
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 import { Guid } from "@bentley/bentleyjs-core";
 
 chai.should();
 
-function mockGetGlobalEvent(responseBuilder: ResponseBuilder, subscriptionId: string, eventType: string, eventBody: string) {
+function mockGetGlobalEvent(responseBuilder: ResponseBuilder, subscriptionId: string, eventType: string, eventBody: object) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "Subscriptions", subscriptionId + "/messages/head");
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, "", { "content-type": eventType });
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, {}, { "content-type": eventType });
 }
 
 function mockCreateGlobalEventsSubscription(responseBuilder: ResponseBuilder, subscriptionId: string, eventTypes: GlobalEventType[]) {
@@ -65,7 +64,7 @@ function mockDeleteGlobalEventsSubscription(responseBuilder: ResponseBuilder, ws
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "GlobalEventSubscription", wsgId);
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, "");
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
 }
 
 function mockGetGlobalEventSASToken(responseBuilder: ResponseBuilder) {
@@ -87,9 +86,9 @@ describe("iModelHub GlobalEventHandler", () => {
   let globalEventSubscription: GlobalEventSubscription;
   let globalEventSas: GlobalEventSAS;
   let projectId: string;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
-  const downloadToPath: string = __dirname + "/../assets/";
+  const imodelName = "imodeljs-clients GlobalEvents test";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient(responseBuilder);
 
   function shouldRun(): boolean {
     return (TestConfig.enableMocks || TestConfig.deploymentEnv === "DEV");
@@ -102,12 +101,12 @@ describe("iModelHub GlobalEventHandler", () => {
     projectId = await utils.getProjectId();
     serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
     accessToken = await utils.login();
-    await utils.deleteIModelByName(accessToken, projectId, "GlobalEventTestModel");
+    await utils.deleteIModelByName(accessToken, projectId, imodelName);
   });
 
   after(async () => {
     if (shouldRun())
-      await utils.deleteIModelByName(accessToken, projectId, "GlobalEventTestModel");
+      await utils.deleteIModelByName(accessToken, projectId, imodelName);
   });
 
   afterEach(() => {
@@ -132,12 +131,11 @@ describe("iModelHub GlobalEventHandler", () => {
   it("should receive Global Event iModelCreatedEvent", async () => {
     if (!TestConfig.enableMocks) {
       // Actual iModel create event
-      const iModel = await imodelHubClient.IModels().create(accessToken, projectId, "GlobalEventTestModel", downloadToPath + "TestModel/iModelHubTestSeedFile.bim");
-      await imodelHubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
+      utils.createIModel(accessToken, imodelName, projectId);
     }
 
     const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
-    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "iModelCreatedEvent", eventBody);
+    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "iModelCreatedEvent", JSON.parse(eventBody));
     const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
 
     chai.expect(event).instanceof(IModelCreatedEvent);
@@ -148,7 +146,7 @@ describe("iModelHub GlobalEventHandler", () => {
       this.skip();
 
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
-    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "SoftiModelDeleteEvent", eventBody);
+    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "SoftiModelDeleteEvent", JSON.parse(eventBody));
 
     const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
 
@@ -160,7 +158,7 @@ describe("iModelHub GlobalEventHandler", () => {
       this.skip();
 
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
-    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "HardiModelDeleteEvent", eventBody);
+    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "HardiModelDeleteEvent", JSON.parse(eventBody));
 
     const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
 
@@ -172,7 +170,7 @@ describe("iModelHub GlobalEventHandler", () => {
       this.skip();
 
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","BriefcaseId":2,"ChangeSetId":"369","ChangeSetIndex":"1"}';
-    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "ChangeSetCreatedEvent", eventBody);
+    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "ChangeSetCreatedEvent", JSON.parse(eventBody));
 
     const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
 
@@ -193,7 +191,7 @@ describe("iModelHub GlobalEventHandler", () => {
       this.skip();
 
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","ChangeSetId":"369","VersionId":"159","VersionName":"357"}';
-    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "NamedVersionCreatedEvent", eventBody);
+    mockGetGlobalEvent(responseBuilder, globalEventSubscription.wsgId, "NamedVersionCreatedEvent", JSON.parse(eventBody));
 
     const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
 

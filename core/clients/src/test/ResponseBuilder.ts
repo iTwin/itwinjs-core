@@ -25,7 +25,7 @@ export class ResponseBuilder {
    * @param count How many times to repeat the same instance in a response.
    * @returns Created response in JSON.
    */
-  public generateGetResponse<T extends ECInstance>(classObject: T, count = 1): string {
+  public generateGetResponse<T extends ECInstance>(classObject: T, count = 1): object {
     let response: string;
     let responseEnd: string = "";
     response = '{"instances":[';
@@ -43,7 +43,7 @@ export class ResponseBuilder {
    * @param classObjects Class objects from which response will be generated.
    * @returns Created response in JSON.
    */
-  public generateGetArrayResponse<T extends ECInstance>(classObjects: T[]): string {
+  public generateGetArrayResponse<T extends ECInstance>(classObjects: T[]): object {
     let response: string;
     let responseEnd: string = "";
     response = '{"instances":[';
@@ -81,7 +81,7 @@ export class ResponseBuilder {
    * @param classObject Class object from which response will be generated.
    * @returns Created response in JSON.
    */
-  public generatePostResponse<T extends WsgInstance>(classObject: T): string {
+  public generatePostResponse<T extends WsgInstance>(classObject: T): object {
     const change: string = this.getChangeFromState(classObject.changeState);
     const response = `{"changedInstance":{"change":"${change}","instanceAfterChange":${this.convertToJson(classObject, 1)}}}`;
     return JSON.parse(response);
@@ -92,7 +92,7 @@ export class ResponseBuilder {
    * @param classObjects Class objects from which response will be generated.
    * @returns Created response in JSON.
    */
-  public generateChangesetResponse<T extends WsgInstance>(classObjects: T[]): string {
+  public generateChangesetResponse<T extends WsgInstance>(classObjects: T[]): object {
     let response: string = '{"changedInstances":[';
 
     let i = 0;
@@ -116,7 +116,7 @@ export class ResponseBuilder {
    * @param otherProperties Additional error properties.
    * @returns Created error in JSON.
    */
-  public generateError(id?: string, message?: string, description?: string, otherProperties?: Map<string, any>): string {
+  public generateError(id?: string, message?: string, description?: string, otherProperties?: Map<string, any>): object {
     let error = "{";
 
     error += `"errorId": "${id || "null"}",`;
@@ -138,7 +138,7 @@ export class ResponseBuilder {
    * @param classObject Class object from which body will be generated.
    * @returns Created POST body in JSON.
    */
-  public generatePostBody<T extends ECInstance>(classObject: T) {
+  public generatePostBody<T extends ECInstance>(classObject: T): object {
     return JSON.parse(`{"instance":${this.convertToJson(classObject, 1)}}`);
   }
 
@@ -147,7 +147,7 @@ export class ResponseBuilder {
    * @param classObjects Class objects from which body will be generated.
    * @returns Created POST body in JSON.
    */
-  public generateChangesetBody<T extends ECInstance>(classObjects: T[]) {
+  public generateChangesetBody<T extends ECInstance>(classObjects: T[]): object {
     let body: string = '{"instances":[';
     let i = 0;
     for (const obj of classObjects) {
@@ -190,30 +190,31 @@ export class ResponseBuilder {
    * @param headers Specifies response headers.
    * @param responseCode Specifies response code.
    */
-  public mockResponse(url: string, requestType: RequestType, requestPath: string, requestResponse: string | (() => string), times = 1, postBody?: string,
-    headers?: any, responseCode = 200): void {
+  public mockResponse(url: string, requestType: RequestType, requestPath: string, requestResponse?: object | (() => object),
+    times = 1, postBody?: object, headers?: any, responseCode = 200): void {
+    const response: any = requestResponse || "";
     switch (requestType) {
       case RequestType.Get:
         nock(url)
           .get(requestPath)
           .times(times)
-          .reply(responseCode, requestResponse);
+          .reply(responseCode, response);
         break;
       case RequestType.Post:
         nock(url)
           .post(requestPath, postBody)
-          .reply(responseCode, requestResponse);
+          .reply(responseCode, response);
         break;
       case RequestType.Delete:
         nock(url)
           .delete(requestPath)
           .times(times)
-          .reply(responseCode, requestResponse, headers);
+          .reply(responseCode, response, headers);
         break;
       case RequestType.Put:
         nock(url)
           .put(requestPath)
-          .reply(responseCode, requestResponse);
+          .reply(responseCode, response);
         break;
     }
   }
@@ -238,7 +239,7 @@ export class ResponseBuilder {
    * @param values Object properties.
    * @returns Created object.
    */
-  public generateObject<T extends ECInstance>(type: new  ()  =>  T, values?: Map<string, any>): T {
+  public generateObject<T extends ECInstance>(type: new () => T, values?: Map<string, any>): T {
     const generatedObject = new type();
 
     if (values !== undefined) {

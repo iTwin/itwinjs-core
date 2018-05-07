@@ -11,7 +11,6 @@ import { EventSubscription, CodeEvent, EventSAS, EventType } from "../../imodelh
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 chai.should();
 
@@ -47,12 +46,12 @@ function mockGetEventSASToken(responseBuilder: ResponseBuilder, imodelId: string
   responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockGetEvent(responseBuilder: ResponseBuilder, imodelId: string, subscriptionId: string, eventBody: string) {
+function mockGetEvent(responseBuilder: ResponseBuilder, imodelId: string, subscriptionId: string, eventBody: object) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Subscriptions", subscriptionId + "/messages/head");
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, "", { "content-type": "CodeEvent" });
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, {}, { "content-type": "CodeEvent" });
 }
 
 function mockDeleteEventSubscription(responseBuilder: ResponseBuilder, imodelId: string, subscriptionId: string) {
@@ -60,19 +59,23 @@ function mockDeleteEventSubscription(responseBuilder: ResponseBuilder, imodelId:
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "EventSubscription", subscriptionId);
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, "");
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
 }
 
 describe("iModelHub EventHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   let subscription: EventSubscription;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  let briefcaseId: number;
+  const imodelName = "imodeljs-clients Events test";
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient(responseBuilder);
 
   before(async () => {
     accessToken = await utils.login();
-    iModelId = await utils.getIModelId(accessToken);
+    await utils.createIModel(accessToken, imodelName);
+    iModelId = await utils.getIModelId(accessToken, imodelName);
+    briefcaseId = (await utils.getBriefcases(accessToken, iModelId, 1))[0].briefcaseId!;
   });
 
   afterEach(() => {
@@ -93,13 +96,11 @@ describe("iModelHub EventHandler", () => {
     const sas = await imodelHubClient.Events().getSASToken(accessToken, iModelId);
 
     if (!TestConfig.enableMocks) {
-      const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
-      const briefcaseId = parseInt(briefcases[0].wsgId, undefined);
       await imodelHubClient.Codes().update(accessToken, iModelId, [utils.randomCode(briefcaseId)]);
     }
 
     const requestResponse = '{"EventTopic":"123","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","BriefcaseId":1,"CodeScope":"0X100000000FF","CodeSpecId":"0xff","State":1,"Values":["TestCode143678383"]}';
-    mockGetEvent(responseBuilder, iModelId, subscription.wsgId, requestResponse);
+    mockGetEvent(responseBuilder, iModelId, subscription.wsgId, JSON.parse(requestResponse));
     const event = await imodelHubClient.Events().getEvent(sas.sasToken!, sas.baseAddres!, subscription.wsgId);
 
     mockDeleteEventSubscription(responseBuilder, iModelId, subscription.wsgId);

@@ -9,7 +9,6 @@ import { Version, VersionQuery, Briefcase, ChangeSetQuery, ChangeSet } from "../
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
 chai.should();
@@ -18,9 +17,9 @@ describe("iModelHub VersionHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   let briefcase: Briefcase;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
-  const responseBuilder: ResponseBuilder = new ResponseBuilder();
   const imodelName = "imodeljs-clients Versions test";
+  const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient(responseBuilder);
 
   before(async () => {
     accessToken = await utils.login();
