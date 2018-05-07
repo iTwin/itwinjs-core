@@ -28,10 +28,10 @@ export class FeatureOverrides {
 export type PickTable = FeatureOverrides;
 
 export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
-    // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
-    const jointWidthThreshold = 5;
-    return is2d || lineWeight > jointWidthThreshold;
-  }
+  // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
+  const jointWidthThreshold = 5;
+  return is2d || lineWeight > jointWidthThreshold;
+}
 
 export abstract class Graphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
@@ -48,10 +48,10 @@ export class Batch extends Graphic {
   // public get overrides(): FeatureOverrides[] { return this._overrides; }
   // public get pickTable(): PickTable { return this._pickTable; }
   constructor(private _graphic: Graphic,
-              private _features: FeatureTable,
-              // private _overrides: FeatureOverrides[] = [],
-              // private _pickTable: PickTable
-              ) { super(_graphic.iModel); }
+    private _features: FeatureTable,
+    // private _overrides: FeatureOverrides[] = [],
+    // private _pickTable: PickTable
+  ) { super(_graphic.iModel); }
   // public onTargetDestroyed(target: Target): void {
   //   this._overrides.erase(target);
   // }
