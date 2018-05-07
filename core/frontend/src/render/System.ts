@@ -3,14 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { assert, Id64 } from "@bentley/bentleyjs-core";
-import { AntiAliasPref,
-         SceneLights,
-         ViewFlags,
-         ViewFlag,
-         Frustum,
-         Hilite,
-         HiddenLine,
-         ColorDef } from "@bentley/imodeljs-common";
+import {
+  AntiAliasPref,
+  SceneLights,
+  ViewFlags,
+  ViewFlag,
+  Frustum,
+  Hilite,
+  HiddenLine,
+  ColorDef,
+} from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
@@ -191,7 +193,7 @@ export abstract class RenderSystem {
   // public abstract createTriMesh(args: TriMeshArgs, imodel: IModel): Graphic;
 
   // /** Create an indexed polyline primitive */
-  public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic;
+  public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined;
 
   // /** Create a point cloud primitive */
   // public abstract createPointCloud(args: PointCloudArgs, imodel: IModel): Graphic;
@@ -247,7 +249,7 @@ export abstract class RenderSystem {
    * Perform some small unit of work (or do nothing) during an idle frame.
    * An idle frame is classified one tick of the render loop during which no viewports are open and the render queue is empty.
    */
-  public idle(): void {}
+  public idle(): void { }
 
   public onInitialized(): void { }
 }
