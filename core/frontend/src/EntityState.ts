@@ -5,7 +5,7 @@ import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { EntityProps, Code, ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
-/** The "state" of a BSI Entity as represented in a web browser. */
+/** The "state" of an Entity as represented in a web browser. */
 export class EntityState implements EntityProps {
   public readonly id: Id64;
   public readonly iModel: IModelConnection;
@@ -15,7 +15,7 @@ export class EntityState implements EntityProps {
 
   /**
    * constructor for EntityState
-   * @param props the properties of the Entity to be represented by this EntityState
+   * @param props the properties of the Entity for this EntityState
    * @param iModel the iModel from which this EntityState is to be constructed
    * @param _state source EntityState for clone
    */

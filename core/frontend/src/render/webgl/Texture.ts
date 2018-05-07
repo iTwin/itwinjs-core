@@ -222,6 +222,7 @@ export class TextureHandle implements IDisposable {
 
   private loadImageCanvas(params: TextureCreateParams) {
     // create an HTMLImageElement from a Blob created from the encoded bytes (jpeg or png)
+    // ###TODO: Add support for Alpha image formats
     const blob = new Blob([params.imageBytes], params.imageFormat === ImageSourceFormat.Jpeg ? { type: "image/jpeg" } : { type: "image/png" });
     const url = URL.createObjectURL(blob);
     const img = new Image();

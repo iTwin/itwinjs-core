@@ -52,7 +52,7 @@ function mockGetEvent(responseBuilder: ResponseBuilder, imodelId: string, subscr
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Subscriptions", subscriptionId + "/messages/head");
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, "", {"content-type": "CodeEvent"});
+  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, eventBody, 1, "", { "content-type": "CodeEvent" });
 }
 
 function mockDeleteEventSubscription(responseBuilder: ResponseBuilder, imodelId: string, subscriptionId: string) {

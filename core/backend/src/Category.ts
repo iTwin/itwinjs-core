@@ -4,16 +4,10 @@
 /** @module BisCore */
 
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, Code, ElementProps, Appearance, Rank, AppearanceProps } from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, ElementProps, Appearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
-
-/** Parameters to create a SubCategory element */
-export interface SubCategoryProps extends ElementProps {
-  appearance?: AppearanceProps;
-  description?: string;
-}
 
 /** a SubCategory defines the appearance for graphics in Geometric elements */
 export class SubCategory extends DefinitionElement {
@@ -47,12 +41,6 @@ export class SubCategory extends DefinitionElement {
   public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
   /** Query if this is the default SubCategory of its parent Category. */
   public isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
-}
-
-/** Parameters to create a Category element */
-export interface CategoryProps extends ElementProps {
-  rank?: Rank;
-  description?: string;
 }
 
 /** a Category for a Geometric element */

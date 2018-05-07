@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ECJsonTypeMap,  ECInstance, WsgInstance, ChangeState } from "../index";
+import { ECJsonTypeMap, ECInstance, WsgInstance, ChangeState } from "../index";
 import nock = require("nock");
 
 export enum RequestType {
@@ -238,7 +238,7 @@ export class ResponseBuilder {
    * @param values Object properties.
    * @returns Created object.
    */
-  public generateObject<T extends ECInstance>(type: new () => T, values?: Map<string, any>): T {
+  public generateObject<T extends ECInstance>(type: new  ()  =>  T, values?: Map<string, any>): T {
     const generatedObject = new type();
 
     if (values !== undefined) {

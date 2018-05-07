@@ -18,7 +18,7 @@ describe("TilesGeneratorClient", () => {
   let iModelId: string;
   let versionId: string;
 
-  before(async function(this: Mocha.IHookCallbackContext) {
+  before(async function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 

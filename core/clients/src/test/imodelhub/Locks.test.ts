@@ -38,7 +38,7 @@ describe("iModelHubClient LockHandler", () => {
     responseBuilder.clearMocks();
   });
 
-  it("should get information on Locks", async function(this: Mocha.ITestCallbackContext) {
+  it("should get information on Locks", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 

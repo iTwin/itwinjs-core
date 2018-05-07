@@ -95,7 +95,7 @@ describe("iModelHub GlobalEventHandler", () => {
     return (TestConfig.enableMocks || TestConfig.deploymentEnv === "DEV");
   }
 
-  before(async function(this: Mocha.IHookCallbackContext) {
+  before(async function (this: Mocha.IHookCallbackContext) {
     if (!shouldRun())
       this.skip();
 
@@ -143,7 +143,7 @@ describe("iModelHub GlobalEventHandler", () => {
     chai.expect(event).instanceof(IModelCreatedEvent);
   });
 
-  it("should receive Global Event SoftiModelDeleteEvent", async function(this: Mocha.ITestCallbackContext) {
+  it("should receive Global Event SoftiModelDeleteEvent", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -155,7 +155,7 @@ describe("iModelHub GlobalEventHandler", () => {
     chai.expect(event).instanceof(SoftiModelDeleteEvent);
   });
 
-  it("should receive Global Event HardiModelDeleteEvent", async function(this: Mocha.ITestCallbackContext) {
+  it("should receive Global Event HardiModelDeleteEvent", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -167,7 +167,7 @@ describe("iModelHub GlobalEventHandler", () => {
     chai.expect(event).instanceof(HardiModelDeleteEvent);
   });
 
-  it("should receive Global Event ChangeSetCreatedEvent", async function(this: Mocha.ITestCallbackContext) {
+  it("should receive Global Event ChangeSetCreatedEvent", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 
@@ -188,7 +188,7 @@ describe("iModelHub GlobalEventHandler", () => {
     chai.expect(globalEventSubscription.eventTypes!).to.deep.equal(newEventTypesList);
   });
 
-  it("should receive Global Event NamedVersionCreatedEvent", async function(this: Mocha.ITestCallbackContext) {
+  it("should receive Global Event NamedVersionCreatedEvent", async function (this: Mocha.ITestCallbackContext) {
     if (!TestConfig.enableMocks)
       this.skip();
 

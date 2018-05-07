@@ -8,7 +8,8 @@ import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
 import { IModelError, IModelStatus } from "./IModelError";
-import { GeometryStreamProps } from "./common";
+import { GeometryStreamProps } from "./geometry/GeometryStream";
+import { Rank, AppearanceProps } from "./SubCategoryAppearance";
 
 /** The iModelJson properties of an ECNavigationProperty in a BIS schema. */
 export interface RelatedElementProps {
@@ -144,4 +145,16 @@ export interface LineStyleProps extends ElementProps {
 
 export interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;
+}
+
+/** Parameters to create a Category element */
+export interface CategoryProps extends ElementProps {
+  rank?: Rank;
+  description?: string;
+}
+
+/** Parameters to create a SubCategory element */
+export interface SubCategoryProps extends ElementProps {
+  appearance?: AppearanceProps;
+  description?: string;
 }

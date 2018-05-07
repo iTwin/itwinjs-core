@@ -62,7 +62,7 @@ export * from "./gateway/StandaloneIModelGateway";
 /**
  * @docs-group-description ECSQL
  * Classes for working with ECSQL.
- * For more information: [ECSQL]($docs/learning/learning/ECSQL.md) and [Spatial Queries]($docs/learning/learning/SpatialQueries.md)
+ * For more information: [ECSQL]($docs/learning/ECSQL.md) and [Spatial Queries]($docs/learning/SpatialQueries.md)
  */
 /**
  * @docs-group-description Errors
@@ -74,6 +74,7 @@ export * from "./gateway/StandaloneIModelGateway";
  */
 /**
  * @docs-group-description Gateway
+ * Classes for working with Gateways, the communication channel between clients and services.
  * [[include:GatewayTopic.md]]
  */
 /**
