@@ -43,4 +43,13 @@ export namespace GLSLFragment {
       rgba.a = new Alpha;
       return rgba;
     }`;
+
+  export const computeLinearDepth = `
+    float computeLinearDepth(float eyeSpaceZ) {
+      float eyeZ = -eyeSpaceZ;
+      float near = u_frustum.x, far = u_frustum.y;
+      float depthRange = far - near;
+      float linearDepth = (eyeZ - near) / depthRange;
+      return 1.0 - linearDepth;
+    }`;
 }

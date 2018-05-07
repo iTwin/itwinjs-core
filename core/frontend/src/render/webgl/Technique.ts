@@ -99,48 +99,45 @@ export abstract class VariedTechnique implements Technique {
   }
 }
 
-namespace Surface {
-  enum Index {
-    Opaque = 0,
-    Translucent = 1,
-    Feature = 2,
-    Hilite = numFeatureVariants(Feature),
-    Clip = Hilite + 1,
+// ###TODO this doesn't need to be exported - only exporting temporarily because otherwise compiler complains it's unused otherwise.
+export class SurfaceTechnique extends VariedTechnique {
+  private static readonly kOpaque = 0;
+  private static readonly kTranslucent = 1;
+  private static readonly kFeature = 2;
+  private static readonly kHilite = numFeatureVariants(SurfaceTechnique.kFeature);
+  private static readonly kClip = SurfaceTechnique.kHilite + 1;
+
+  public constructor(gl: WebGLRenderingContext) {
+    super((numFeatureVariants(2) + numHiliteVariants) * 2);
+
+    const flags = scratchTechniqueFlags;
+    for (const clip of clips) {
+      this.addHiliteShader(clip, gl, createSurfaceHiliter);
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode, clip);
+        const builder = createSurfaceBuilder(featureMode, clip);
+        addMonochrome(builder.frag);
+        addMaterial(builder.frag);
+
+        this.addShader(builder, flags, gl);
+        this.addTranslucentShader(builder, flags, gl);
+      }
+    }
   }
 
-  export class Technique extends VariedTechnique {
-    public constructor(gl: WebGLRenderingContext) {
-      super((numFeatureVariants(2) + numHiliteVariants) * 2);
-
-      const flags = scratchTechniqueFlags;
-      for (const clip of clips) {
-        this.addHiliteShader(clip, gl, createSurfaceHiliter);
-        for (const featureMode of featureModes) {
-          flags.reset(featureMode, clip);
-          const builder = createSurfaceBuilder(featureMode, clip);
-          addMonochrome(builder.frag);
-          addMaterial(builder.frag);
-
-          this.addShader(builder, flags, gl);
-          this.addTranslucentShader(builder, flags, gl);
-        }
-      }
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    if (flags.isHilite) {
+      assert(flags.hasFeatures);
+      return SurfaceTechnique.kHilite;
     }
 
-    public computeShaderIndex(flags: TechniqueFlags): number {
-      if (flags.isHilite) {
-        assert(flags.hasFeatures);
-        return Index.Hilite;
-      }
-
-      let index = flags.isTranslucent ? Index.Translucent : Index.Opaque;
-      index += Index.Feature * flags.featureMode;
-      if (flags.hasClipVolume) {
-        index += Index.Clip;
-      }
-
-      return index;
+    let index = flags.isTranslucent ? SurfaceTechnique.kTranslucent : SurfaceTechnique.kOpaque;
+    index += SurfaceTechnique.kFeature * flags.featureMode;
+    if (flags.hasClipVolume) {
+      index += SurfaceTechnique.kClip;
     }
+
+    return index;
   }
 }
 
@@ -274,7 +271,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
-    this._list[TechniqueId.Surface] = new Surface.Technique(gl);
+    // WIP_SURFACE this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;

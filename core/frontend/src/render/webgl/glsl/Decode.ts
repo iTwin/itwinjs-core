@@ -20,4 +20,9 @@ export namespace GLSLDecode {
   export const unquantize2d = `
   // params.xy = origin. params.zw = scale.
   vec2 unquantize2d(vec2 qpos, vec4 params) { return params.xy + params.zw * qpos; }`;
+
+  export const depthRgb = `
+    float decodeDepthRgb(vec3 rgb) {
+      return dot(rgb, vec3(1.0, 1.0 / 255.0, 1.0 / 65025.0));
+    }`;
 }

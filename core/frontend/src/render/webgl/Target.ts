@@ -152,7 +152,7 @@ export abstract class Target extends RenderTarget {
   private _transparencyThreshold: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
-  private _compositor: SceneCompositor;
+  public readonly compositor: SceneCompositor;
   private _clipMask?: TextureHandle;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
@@ -177,7 +177,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this._compositor = new SceneCompositor(this);
+    this.compositor = new SceneCompositor(this);
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
@@ -501,7 +501,7 @@ export abstract class Target extends RenderTarget {
 
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
-    this._compositor.draw(this._renderCommands);
+    this.compositor.draw(this._renderCommands);
 
     this._stack.pushState(this.decorationState);
     this.drawPass(RenderPass.WorldOverlay);

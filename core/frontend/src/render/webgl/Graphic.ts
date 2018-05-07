@@ -24,10 +24,8 @@ export class FeatureOverrides {
   public get isUniform(): boolean { return !this.isNonUniform; }
 }
 
-export class PickTable {
-  // ###TODO this is just a placeholder
-  public readonly dimension = LUTDimension.Uniform;
-}
+// ###TODO this is just a placeholder
+export type PickTable = FeatureOverrides;
 
 export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
     // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
