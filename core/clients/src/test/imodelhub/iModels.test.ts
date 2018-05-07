@@ -166,7 +166,7 @@ function mockCreateiModel(responseBuilder: ResponseBuilder, projectId: string, i
   mockGetSeedFile(responseBuilder, imodelId);
 }
 
-describe.skip("iModelHub iModelHandler for a specific iModel", () => {
+describe("iModelHub iModelHandler for a specific iModel", () => {
   let accessToken: AccessToken;
   let projectId: string;
   let iModelId: string;

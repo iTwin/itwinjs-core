@@ -28,8 +28,7 @@ function mockGetChangeSetById(responseBuilder: ResponseBuilder, imodelId: string
   responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-// NEEDS_WORK: The seed file (and folder) is missing causing createImodel to fail below.
-describe.skip("iModelHub ChangeSetHandler", () => {
+describe("iModelHub ChangeSetHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   let briefcase: Briefcase;
@@ -40,9 +39,6 @@ describe.skip("iModelHub ChangeSetHandler", () => {
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
-    if (TestConfig.enableMocks) {
-      responseBuilder.mockResponse("https://buddi.bentley.com", RequestType.Get, "/WebService/GetUrl/?url=iModelHubApi&region=103", JSON.stringify({ result: { url: "https://dev-imodelhubapi.bentley.com" } }));
-    }
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
@@ -51,12 +47,13 @@ describe.skip("iModelHub ChangeSetHandler", () => {
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
         await utils.createIModel(accessToken, imodelName, undefined, true);
+        iModelId = await utils.getIModelId(accessToken, imodelName);
       }
     }
     briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
 
     // Ensure that at least two exist
-    await utils.createChangeSets(accessToken, iModelId, briefcase, 2, 0);
+    await utils.createChangeSets(accessToken, iModelId, briefcase, 0, 2);
 
     if (!fs.existsSync(downloadToPath)) {
       fs.mkdirSync(downloadToPath);
@@ -68,7 +65,7 @@ describe.skip("iModelHub ChangeSetHandler", () => {
   });
 
   it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
+    if (TestConfig.enableMocks)
       this.skip();
 
     const mockChangeSets = utils.getMockChangeSets(briefcase);
@@ -108,8 +105,8 @@ describe.skip("iModelHub ChangeSetHandler", () => {
         `?$filter=FollowingChangeSet-backward-ChangeSet.Id+eq+%27${lastButOneId}%27`);
       responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, responseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
     }
-    const lastChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().fromId(lastButOneId));
-    chai.expect(lastChangeSets.length).to.be.equal(1);
+    const followingChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().fromId(lastButOneId));
+    chai.expect(followingChangeSets.length).to.be.equal(1);
   });
 
   it("should download ChangeSets", async () => {

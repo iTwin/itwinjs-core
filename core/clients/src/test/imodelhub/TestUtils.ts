@@ -364,9 +364,10 @@ export function getMockChangeSetPath(index: number, changeSetId: string) {
   return path.join(assetsPath, "SeedFile", `${index}_${changeSetId!}.cs`);
 }
 
-export async function createChangeSets(accessToken: AccessToken, imodelId: string, briefcase: Briefcase, startingId = 0, count = 1) {
+export async function createChangeSets(accessToken: AccessToken, imodelId: string, briefcase: Briefcase,
+  startingId = 0, count = 1): Promise<ChangeSet[]> {
   if (TestConfig.enableMocks)
-    return;
+    return getMockChangeSets(briefcase).slice(startingId, startingId + count);
 
   const maxCount = 10;
 
@@ -375,13 +376,15 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: strin
 
   const client = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
 
-  if (startingId + count >= (await client.ChangeSets().get(accessToken, imodelId)).length)
-    return;
+  const currentCount = (await client.ChangeSets().get(accessToken, imodelId)).length;
 
   const changeSets = getMockChangeSets(briefcase);
 
-  for (let i = startingId; i < startingId + count; ++i) {
+  const result: ChangeSet[] = [];
+  for (let i = currentCount; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
-    await client.ChangeSets().create(accessToken, imodelId, changeSets[i], changeSetPath);
+    const changeSet = await client.ChangeSets().create(accessToken, imodelId, changeSets[i], changeSetPath);
+    result.push(changeSet);
   }
+  return result;
 }

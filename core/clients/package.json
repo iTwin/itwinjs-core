@@ -18,7 +18,7 @@
     "lint": "tslint --config tslint.json --project ./",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-clients",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline=\"mock\"",
-    "test:online": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" ",
+    "test:online": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" ",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {},
