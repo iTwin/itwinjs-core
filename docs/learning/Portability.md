@@ -64,7 +64,7 @@ An app backend must not *never* depend on node-specific packages, including any 
 
 ## Gateway Portability
 
-Since frontends talk to backends via a [gateways](../../overview/overview/App.md#gateways) and gateways are TypeScript classes, and since gateway transport configuration does not affect the frontend or the backend code, frontend-backend communication is inherently portable.
+Since frontends talk to backends via a [gateways](../../overview/App.md#gateways) and gateways are TypeScript classes, and since gateway transport configuration does not affect the frontend or the backend code, frontend-backend communication is inherently portable.
 
 That said, the initialization logic of both frontend and backend must choose the correct gateway configurations, based on the app's configuration.
 

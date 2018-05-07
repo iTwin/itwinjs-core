@@ -12,7 +12,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
 import { BranchStack, BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations } from "./Graphic";
+import { Branch, WorldDecorations, FeatureOverrides, PickTable } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
 import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -152,7 +152,8 @@ export abstract class Target extends RenderTarget {
   private _transparencyThreshold: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
-  private _compositor: SceneCompositor;
+  public readonly compositor: SceneCompositor;
+  private _clipMask?: TextureHandle;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -167,6 +168,8 @@ export abstract class Target extends RenderTarget {
   public readonly environmentMap = undefined; // ###TODO...
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
+  private _currentOverrides?: FeatureOverrides;
+  private _currentPickTable?: PickTable;
 
   protected constructor() {
     super();
@@ -174,7 +177,7 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this._compositor = new SceneCompositor(this);
+    this.compositor = new SceneCompositor(this);
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
@@ -188,6 +191,9 @@ export abstract class Target extends RenderTarget {
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
+  public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
+  public get areDecorationOverridesActive(): boolean { return false; } // ###TODO
+  public get currentPickTable(): PickTable | undefined { return this._currentPickTable; }
 
   public get scene(): GraphicList { return this._scene; }
   public get decorations(): Decorations { return this._decorations; }
@@ -215,11 +221,16 @@ export abstract class Target extends RenderTarget {
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
-  public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
-  public get hasClipMask(): boolean { return false; } // ###TODO
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
-  public get currentOverrides(): any { return undefined; } // ###TODO
-  public get currentPickTable(): any { return undefined; } // ###TODO
+
+  public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
+  public get hasClipMask(): boolean { return undefined !== this.clipMask; }
+  public get clipMask(): TextureHandle | undefined { return this._clipMask; }
+  public set clipMask(mask: TextureHandle | undefined) {
+    assert(!this.hasClipMask);
+    assert(this.is2d);
+    this._clipMask = mask;
+  }
 
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
@@ -490,7 +501,7 @@ export abstract class Target extends RenderTarget {
 
     this._renderCommands.init(this._scene, this._decorations, this._dynamics);
 
-    this._compositor.draw(this._renderCommands);
+    this.compositor.draw(this._renderCommands);
 
     this._stack.pushState(this.decorationState);
     this.drawPass(RenderPass.WorldOverlay);

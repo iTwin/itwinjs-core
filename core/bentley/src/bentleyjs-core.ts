@@ -21,7 +21,7 @@ export * from "./Time";
 /**
  * @docs-group-description BeSQLite
  * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb.
- * For more information on iModels, see [Executing ECSQL]($docs/learning/learning/ECSQL.md)
+ * For more information on iModels, see [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Errors

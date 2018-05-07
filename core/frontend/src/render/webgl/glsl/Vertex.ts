@@ -6,7 +6,7 @@ import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";
 import { TextureHandle } from "../Texture";
 import { LUTGeometry } from "../CachedGeometry";
-import { TextureUnit } from "../RenderFlags";
+import { TextureUnit, RenderPass } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 
@@ -51,6 +51,22 @@ export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
       const mvp = params.projectionMatrix.clone(scratchMVPMatrix);
       mvp.multiplyBy(params.modelViewMatrix);
       uniform.setMatrix4(mvp);
+    });
+  });
+}
+
+export function addProjectionMatrix(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_proj", VariableType.Mat4, (prog) => {
+    prog.addProgramUniform("u_proj", (uniform, params) => {
+      uniform.setMatrix4(params.projectionMatrix);
+    });
+  });
+}
+
+export function addModelViewMatrix(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_mv", (uniform, params) => {
+      uniform.setMatrix4(params.modelViewMatrix);
     });
   });
 }
@@ -113,6 +129,14 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   }
 }
 
+export function addAlpha(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_hasAlpha", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_hasAlpha", (uniform, params) => {
+      uniform.setUniform1f(RenderPass.Translucent === params.geometry.getRenderPass(params.target) ? 1.0 : 0.0);
+    });
+  });
+}
+
 export namespace GLSLVertex {
   export const earlyDiscard =
     `if (checkForEarlyDiscard(rawPosition)) {
@@ -129,4 +153,7 @@ export namespace GLSLVertex {
       gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
       return;
     }`;
+
+  export const computeLineWeight = `float ComputeLineWeight() { return u_lineWeight; }`;
+  export const computeLineCode = `float ComputeLineCode() { return u_lineCode; }`;
 }

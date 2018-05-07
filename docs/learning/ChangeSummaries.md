@@ -9,7 +9,7 @@ to the Changeset it was generated from.
 
 iModelJs persists the generated Change Summaries in a local ECDb file called **Changes Cache File** next to the briefcase it belongs to.
 
-> Change Summaries can only be generated from the iModelJs backend. See the [ChangeSummaryManager]($imodeljs-backend.ChangeSummaryManager) API for how to do it.
+> Change Summaries can only be generated from the iModelJs backend. See the [ChangeSummaryManager]($backend/ChangeSummaryManager) API for how to do it.
 
 ## Working with Change Summaries
 
@@ -44,7 +44,7 @@ This is achieved by executing ECSQL queries against the **ECDbChange** and **IMo
 ECSQL | Description
 --- | ---
 `SELECT Summary.Id,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the date when the changeset was pushed and by who
-`SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [OpCode]($imodeljs-common.OpCode) (e.g. whether the instance was inserted, updated or deleted)
+`SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [OpCode]($common/OpCode) (e.g. whether the instance was inserted, updated or deleted)
 
 ### Find out *how* values have changed
 
@@ -55,7 +55,7 @@ Querying for the changed values is done with the ECSQL function **Changes**.
 `SELECT ... FROM MySchema.MyClass.Changes(ChangeSummaryId, ChangedValueState) ...`
 
 - `ChangeSummaryId`: The ECInstanceId of the Change Summary.
-- `ChangedValueState`: corresponds to the values of the enum [ChangedValueState]($imodeljs-common.ChangedValueState).
+- `ChangedValueState`: corresponds to the values of the enum [ChangedValueState]($common/ChangedValueState).
 
  > You can format the *ChangedValueState* in the ECSQL either by the enum's integral values or by the enum value's name.
  > The following two ECSQL statements are equivalent:
@@ -64,7 +64,7 @@ Querying for the changed values is done with the ECSQL function **Changes**.
 
 `SELECT ... FROM MySchema.MyClass.Changes(12, 'AfterInsert')`
 
-> Notes when specifying [ChangedValueState.BeforeUpdate]($imodeljs-common.ChangedValueState.BeforeUpdate) or [ChangedValueState.AfterUpdate]($imodeljs-common.ChangedValueState.AfterUpdate):
+> Notes when specifying [ChangedValueState.BeforeUpdate]($common/ChangedValueState.BeforeUpdate) or [ChangedValueState.AfterUpdate]($common/ChangedValueState.AfterUpdate):
 >
 > For any property in the ECSQL select clause the value of which has not changed in the specified change summary,
 > the **value of the current state of the file** is returned. The function does **NOT** return the value it was at the
@@ -140,7 +140,7 @@ After having extracting Change Summaries for each of the three Changesets the fo
 3            | 1                    | 4 (Delete)
 
 > - `ChangedInstance.Id` is the ECInstanceId of the changed instance, i.e. the changed `Person` instance in this example.
-> - The `OpCode` values refer to the [OpCode]($imodeljs-common.ChangeOpCode) enumeration as defined in the **ECDbChange** ECSchema.
+> - The `OpCode` values refer to the [OpCode]($common/ChangeOpCode) enumeration as defined in the **ECDbChange** ECSchema.
 
 #### Example
 

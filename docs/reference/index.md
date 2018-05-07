@@ -6,10 +6,10 @@ The iModelJs APIs are organized into the following separately downloadable [NPM]
 
 - [geometry-core]($geometry-core)
 
-- [imodeljs-backend]($imodeljs-backend)
+- [imodeljs-backend]($backend)
 
 - [imodeljs-frontend]($imodeljs-frontend)
 
-- [imodeljs-common]($imodeljs-common)
+- [imodeljs-common]($common)
 
 - [imodeljs-clients]($imodeljs-clients)
