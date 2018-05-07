@@ -23,7 +23,7 @@ import { addLookupTable } from "./LookupTable";
 import { LUTDimension, FeatureDimension, computeFeatureDimension } from "../FeatureDimensions";
 import { assert } from "@bentley/bentleyjs-core";
 import { addRenderPass } from "./RenderPass";
-import { SurfaceGeometry } from "../Mesh";
+import { SurfaceGeometry } from "../Surface";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
 

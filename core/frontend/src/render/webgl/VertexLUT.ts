@@ -269,4 +269,20 @@ export namespace VertexLUT {
       this.advance(2); // 2 unused bytes
     }
   }
+
+  // Given 32-bit unsigned integer vertex indices, convert each to a vec3 in which each component is one byte of the index.
+  // Requires the high 8 bits of the indices are unused.
+  // These are decoded in the vertex shader to obtain the index as a float (hence the 24-bit restriction).
+  export function convertIndicesToTriplets(indices: number[]): Uint8Array {
+    const bytes = new Uint8Array(indices.length * 3);
+    for (let i = 0; i < indices.length; i++) {
+      const index = indices[i];
+      const j = i * 3;
+      bytes[j + 0] = index & 0x000000ff;
+      bytes[j + 1] = (index & 0x0000ff00) >> 8;
+      bytes[j + 2] = (index & 0x00ff0000) >> 16;
+    }
+
+    return bytes;
+  }
 }
