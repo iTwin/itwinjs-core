@@ -5,8 +5,8 @@ Array [
   Object {
     "key": Object {
       "instanceKey": Object {
-        "className": "Customer",
-        "id": "0x8cd0000000a1cc",
+        "className": "turquoise",
+        "id": "0x350d0000005955",
       },
       "pathFromRoot": Array [
         "p1",
@@ -33,52 +33,52 @@ Content {
   "contentSet": Array [
     Item {
       "classInfo": Object {
-        "id": "0xee80000001146a",
-        "label": "Cambridgeshire US Dollar",
-        "name": "Books",
+        "id": "0xc43000000143f2",
+        "label": "input",
+        "name": "cross-platform",
       },
       "displayValues": Object {
-        "Buckinghamshire": "Zloty",
+        "Bedfordshire": "monetize",
       },
-      "imageId": "5cdcd21a-97d2-4b67-98a2-383bcf93ea85",
-      "label": "Regional",
+      "imageId": "54b67b0d-e045-4ff9-a03b-a818ce3470a8",
+      "label": "Checking Account Checking Account",
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "e-commerce",
-          "id": "0xa9530000014fb2",
+          "className": "transform",
+          "id": "0x1283800000109f2",
         },
       ],
       "values": Object {
-        "Buckinghamshire": "Gibraltar Pound Practical Plastic Table",
+        "Bedfordshire": "quantify Auto Loan Account withdrawal",
       },
     },
   ],
   "descriptor": Descriptor {
     "contentFlags": 0,
-    "displayType": "ut nobis aut",
+    "displayType": "et neque tempora",
     "fields": Array [
       PropertiesField {
         "category": Object {
-          "description": "Quae vel minima.",
-          "expand": true,
-          "label": "Division incremental",
-          "name": "Martinique",
-          "priority": 87557,
+          "description": "Libero est ullam ea.",
+          "expand": false,
+          "label": "Gibraltar Pound Practical Plastic Table",
+          "name": "Bedfordshire",
+          "priority": 73717,
         },
-        "isReadonly": false,
-        "label": "PNG",
-        "name": "Buckinghamshire",
-        "priority": 15181,
+        "isReadonly": true,
+        "label": "circuit didactic world-class",
+        "name": "Bedfordshire",
+        "priority": 83206,
         "properties": Array [
           Object {
             "property": Object {
               "classInfo": Object {
-                "id": "0x899e0000007249",
-                "label": "AGP Assurance fuchsia",
-                "name": "Supervisor",
+                "id": "0x135fe0000000de6",
+                "label": "web services workforce",
+                "name": "cutting-edge",
               },
-              "name": "deposit",
+              "name": "back-end",
               "type": "string",
             },
             "relatedClassPath": Array [],
@@ -96,9 +96,9 @@ Content {
         "pathToPrimaryClass": Array [],
         "relatedPropertyPaths": Array [],
         "selectClassInfo": Object {
-          "id": "0x16ff100000085a2",
-          "label": "Markets orchestration Buckinghamshire",
-          "name": "technologies",
+          "id": "0x1267300000112a0",
+          "label": "Dynamic",
+          "name": "Intranet",
         },
       },
     ],
@@ -108,51 +108,51 @@ Content {
 
 exports[`ECPresentationManager addon results conversion to ECPresentation objects returns content descriptor 1`] = `
 Descriptor {
-  "connectionId": "62f97876-034f-4c02-9895-de2f90308556",
+  "connectionId": "e2c09f34-d82e-4329-8080-456e4e17ea03",
   "contentFlags": 0,
-  "contentOptions": "car",
-  "displayType": "methodologies",
+  "contentOptions": "bar",
+  "displayType": "orchestrate",
   "fields": Array [
     PropertiesField {
       "category": Object {
-        "description": "Ut rem impedit sapiente architecto dicta.",
-        "expand": false,
-        "label": "Berkshire portals",
-        "name": "Rubber",
-        "priority": 82386,
+        "description": "Odio a dolorem quibusdam alias repudiandae quo.",
+        "expand": true,
+        "label": "Hong Kong Dollar withdrawal",
+        "name": "Outdoors",
+        "priority": 61251,
       },
       "editor": Object {
-        "name": "District",
+        "name": "transmitting",
         "params": Object {
-          "some_param": 2933,
+          "some_param": 34574,
         },
       },
       "isReadonly": false,
-      "label": "Tasty Plastic Ball",
+      "label": "efficient",
       "name": "Primitive property field with editor",
-      "priority": 16864,
+      "priority": 6480,
       "properties": Array [
         Object {
           "property": Object {
             "classInfo": Object {
-              "id": "0x767f0000003d30",
-              "label": "Chair New York Incredible",
-              "name": "Money Market Account",
+              "id": "0x5d0700000020dd",
+              "label": "Slovenia open-source Consultant",
+              "name": "Cheese",
             },
             "enumerationInfo": Object {
               "choices": Array [
                 Object {
-                  "label": "Avon New Leu",
-                  "value": "1956d4fb-4125-4b60-9851-3475ab656983",
+                  "label": "Frozen XSS",
+                  "value": "c7170cee-ef8a-4fb4-b728-bb37d1bf458b",
                 },
                 Object {
-                  "label": "Handcrafted Frozen Ball Granite Outdoors",
-                  "value": "9b5a787f-2c0e-4d9f-8585-1dd5132ce8dc",
+                  "label": "redundant Wallis and Futuna SSL",
+                  "value": "17c48398-56ad-4be5-b3cf-86f92475c6b0",
                 },
               ],
               "isStrict": false,
             },
-            "name": "Program",
+            "name": "Diverse",
             "type": "string",
           },
           "relatedClassPath": Array [],
@@ -165,31 +165,31 @@ Descriptor {
     },
     PropertiesField {
       "category": Object {
-        "description": "Ut aut rerum temporibus.",
+        "description": "Ea voluptas aut qui alias non.",
         "expand": false,
-        "label": "pink",
-        "name": "Consultant",
-        "priority": 45200,
+        "label": "repurpose Customer Ethiopia",
+        "name": "SCSI",
+        "priority": 65472,
       },
       "isReadonly": false,
-      "label": "Licensed Frozen Sausages JBOD",
+      "label": "orchid",
       "name": "Complex array of structs property field",
-      "priority": 70362,
+      "priority": 1165,
       "properties": Array [
         Object {
           "property": Object {
             "classInfo": Object {
-              "id": "0x77d00000017b6c",
-              "label": "neural deliver Agent",
-              "name": "instruction set",
+              "id": "0x1f2300000064bf",
+              "label": "Dynamic Tunisian Dinar",
+              "name": "methodical",
             },
             "kindOfQuantity": Object {
-              "currentFusId": "56adbe53-3cf8-46f9-a475-c6b04eee6be8",
-              "label": "Dominican Republic",
-              "name": "Spur",
-              "persistenceUnit": "Nevada",
+              "currentFusId": "ba46d444-1f16-4db7-b17b-4b6e06d99b6e",
+              "label": "cross-platform Alabama Inverse",
+              "name": "mobile",
+              "persistenceUnit": "system",
             },
-            "name": "Business-focused",
+            "name": "redundant",
             "type": "double",
           },
           "relatedClassPath": Array [],
@@ -199,16 +199,16 @@ Descriptor {
         "memberType": Object {
           "members": Array [
             Object {
-              "label": "port Lodge Rubber",
-              "name": "Borders",
+              "label": "bypass",
+              "name": "migration",
               "type": Object {
                 "typeName": "string",
                 "valueFormat": "Primitive",
               },
             },
             Object {
-              "label": "Cambridgeshire",
-              "name": "Singapore Dollar",
+              "label": "heuristic",
+              "name": "demand-driven",
               "type": Object {
                 "memberType": Object {
                   "typeName": "string",
@@ -228,33 +228,33 @@ Descriptor {
     },
     NestedContentField {
       "category": Object {
-        "description": "Non expedita ipsa.",
+        "description": "Dignissimos voluptas repellat et nihil perferendis.",
         "expand": false,
-        "label": "unleash Awesome",
-        "name": "Ethiopia",
-        "priority": 25668,
+        "label": "Dynamic Gloves",
+        "name": "ADP",
+        "priority": 59704,
       },
       "contentClassInfo": Object {
-        "id": "0x64bf000000048d",
-        "label": "Personal Loan Account Solomon Islands Dollar",
-        "name": "Gorgeous",
+        "id": "0xf0560000014c3b",
+        "label": "Adaptive Cotton indexing",
+        "name": "intranet",
       },
-      "isReadonly": true,
-      "label": "migration pricing structure",
+      "isReadonly": false,
+      "label": "vertical Savings Account",
       "name": "Nested content field",
       "nestedFields": Array [
         Field {
           "category": Object {
-            "description": "Aut autem qui est et optio autem voluptates at iusto.",
+            "description": "Sit neque beatae quos dolor repellendus omnis nulla consequuntur nemo.",
             "expand": true,
-            "label": "Practical copy Jamaican Dollar",
-            "name": "sensor",
-            "priority": 33713,
+            "label": "pixel Handmade",
+            "name": "bypass",
+            "priority": 69370,
           },
-          "isReadonly": false,
-          "label": "Gloves Lock",
+          "isReadonly": true,
+          "label": "Pakistan demand-driven Sleek",
           "name": "Simple property field",
-          "priority": 99954,
+          "priority": 37505,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -266,40 +266,40 @@ Descriptor {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
           "relationshipInfo": Object {
-            "id": "0x74bf0000006222",
-            "label": "metrics",
-            "name": "Tasty",
+            "id": "0x6779000000e2f7",
+            "label": "Falls",
+            "name": "Fresh",
           },
           "sourceClassInfo": Object {
-            "id": "0x13bc500000134fa",
-            "label": "Consultant front-end Computers",
-            "name": "users",
+            "id": "0xd17000000083c5",
+            "label": "Virginia eco-centric",
+            "name": "Handmade",
           },
           "targetClassInfo": Object {
-            "id": "0x11fcc000000a072",
-            "label": "Graphic Interface compressing",
-            "name": "mindshare",
+            "id": "0x42980000013f78",
+            "label": "SCSI Texas white",
+            "name": "synthesizing",
           },
         },
       ],
-      "priority": 70304,
+      "priority": 80148,
       "type": Object {
         "members": Array [
           Object {
-            "label": "Ferry",
-            "name": "Enterprise-wide",
+            "label": "Plastic Chief",
+            "name": "extensible",
             "type": Object {
               "typeName": "string",
               "valueFormat": "Primitive",
             },
           },
         ],
-        "typeName": "Gorgeous",
+        "typeName": "XML",
         "valueFormat": "Struct",
       },
     },
   ],
-  "inputKeysHash": "14e24754-8184-4a21-89f3-647b33bbee54",
+  "inputKeysHash": "0ba6d478-7921-4998-9666-e7bf11d320f5",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": true,
@@ -308,19 +308,19 @@ Descriptor {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
           "relationshipInfo": Object {
-            "id": "0x161d20000004740",
-            "label": "Books Antarctica (the territory South of 60 deg S)",
-            "name": "Cross-platform",
+            "id": "0xf0c50000002e40",
+            "label": "website port Intelligent Plastic Chicken",
+            "name": "help-desk",
           },
           "sourceClassInfo": Object {
-            "id": "0x58100000008b03",
-            "label": "content Factors Cheese",
-            "name": "convergence",
+            "id": "0x8dd4000000eea4",
+            "label": "New York",
+            "name": "Marketing",
           },
           "targetClassInfo": Object {
-            "id": "0xdf960000001415",
-            "label": "XML",
-            "name": "Manager",
+            "id": "0x7a830000002b0b",
+            "label": "Avon New Leu",
+            "name": "Program",
           },
         },
       ],
@@ -330,27 +330,27 @@ Descriptor {
             "isForwardRelationship": true,
             "isPolymorphicRelationship": false,
             "relationshipInfo": Object {
-              "id": "0x9c10000000fe7e",
-              "label": "Lebanon Savings Account",
-              "name": "compressing",
+              "id": "0x1c870000014fac",
+              "label": "Granite",
+              "name": "invoice",
             },
             "sourceClassInfo": Object {
-              "id": "0x821e0000006be3",
-              "label": "Security",
-              "name": "functionalities",
+              "id": "0x1170000000a60c",
+              "label": "Intelligent",
+              "name": "Nevada",
             },
             "targetClassInfo": Object {
-              "id": "0x16e14000000c092",
-              "label": "Clothing",
-              "name": "deposit",
+              "id": "0xaea500000069ea",
+              "label": "monetize interfaces Croatia",
+              "name": "open-source",
             },
           },
         ],
       ],
       "selectClassInfo": Object {
-        "id": "0x57f9000000c48d",
-        "label": "engage",
-        "name": "application",
+        "id": "0x41e00000005d5b",
+        "label": "Gloves",
+        "name": "District",
       },
     },
   ],
@@ -397,8 +397,8 @@ Array [
     "isSelectable": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "Bedfordshire",
-        "id": "0x5b510000000e73",
+        "className": "Legacy",
+        "id": "0xde620000016aad",
       },
       "pathFromRoot": Array [
         "p1",

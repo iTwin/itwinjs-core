@@ -133,4 +133,13 @@ export default class Descriptor {
     for (const field of this.fields)
       field.rebuildParentship();
   }
+
+  /** @hidden */
+  public createStrippedDescriptor(): Descriptor {
+    const stripped = Object.create(Descriptor.prototype);
+    return Object.assign(stripped, this, {
+      fields: [],
+      selectClasses: [],
+    });
+  }
 }

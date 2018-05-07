@@ -10,6 +10,7 @@ let manager: ECPresentationManager | undefined;
 
 export default class ECPresentation {
 
+  /* istanbul ignore next */
   private constructor() { }
 
   public static initialize(props?: ECPresentationManagerProps): void {

@@ -8,6 +8,7 @@ let presentationManager: ECPresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 
 export default class ECPresentation {
+  /* istanbul ignore next */
   private constructor() { }
 
   public static initialize(): void {

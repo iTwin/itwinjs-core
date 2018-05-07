@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
 import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
@@ -121,20 +120,20 @@ export interface NodeAddonDefinition {
 }
 
 const createAddonImpl = () => {
-  const nativeAddon = (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager;
   // note the implementation is constructed here to make ECPresentationManager
   // usable without loading the actual addon (if addon is set to something other)
-  return class extends nativeAddon implements NodeAddonDefinition {
+  return class implements NodeAddonDefinition {
+    private _nativeAddon = new (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager();
     public handleRequest(db: any, options: string): string {
-      return super.handleRequest(db, options);
+      return this._nativeAddon.handleRequest(db, options);
     }
     public setupRulesetDirectories(directories: string[]): void {
-      return super.setupRulesetDirectories(directories);
+      return this._nativeAddon.setupRulesetDirectories(directories);
     }
     public getImodelAddon(token: IModelToken): any {
       const imodel = IModelDb.find(token);
       if (!imodel || !imodel.nativeDb)
-        throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, undefined, () => ({ iModelId: token.iModelId }));
+        throw new IModelError(IModelStatus.NotOpen, "IModelDb not open");
       return imodel.nativeDb;
     }
   };

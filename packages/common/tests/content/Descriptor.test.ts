@@ -75,4 +75,26 @@ describe("Descriptor", () => {
 
   });
 
+  describe("createStrippedDescriptor", () => {
+
+    it("creates a descriptor copy with empty fields and selectClasses member arrays", () => {
+      // create original and verify it's valid for testing
+      const descriptor = createRandomDescriptor();
+      expect(descriptor.fields.length).to.be.above(0);
+      expect(descriptor.selectClasses.length).to.be.above(0);
+
+      // create a stripped descriptor and verify it's a different object 
+      // and doesn't contain stripped data
+      const stripped = descriptor.createStrippedDescriptor();
+      expect(stripped).to.not.eq(descriptor);
+      expect(stripped.fields.length).to.eq(0);
+      expect(stripped.selectClasses.length).to.eq(0);
+
+      // verify original wasn't changed
+      expect(descriptor.fields.length).to.be.above(0);
+      expect(descriptor.selectClasses.length).to.be.above(0);
+    });
+
+  });
+
 });

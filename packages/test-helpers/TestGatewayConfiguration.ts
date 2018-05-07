@@ -14,7 +14,12 @@ export default class TestGatewayConfiguration extends GatewayDefaultConfiguratio
       GatewayConfiguration.assign(gateway, () => config);
 
     const instance = GatewayConfiguration.obtain(config);
-    GatewayConfiguration.initializeGateways(instance);
+    try {
+      GatewayConfiguration.initializeGateways(instance);
+    } catch (_e) {
+      // this may fail with "Error: Gateway "xxx" is already initialized." because
+      // multiple different tests want to set up the gateway
+    }
 
     return instance;
   }

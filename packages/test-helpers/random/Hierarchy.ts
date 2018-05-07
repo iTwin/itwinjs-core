@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as h from "../../common/src/Hierarchy";
+import * as h from "@common/hierarchy";
 import { nullable } from "./Misc";
-import { createRandomECInstanceKey } from "@helpers/random/EC";
+import { createRandomECInstanceKey } from "./EC";
 
 export const createRandomECInstanceNodeKey = (): h.ECInstanceNodeKey => {
   return {

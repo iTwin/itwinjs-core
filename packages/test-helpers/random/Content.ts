@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as c from "../../common/src/content";
+import * as c from "@common/content";
 import { createRandomECClassInfo, createRandomRelationshipPath } from "./EC";
 import { nullable } from "./Misc";
 

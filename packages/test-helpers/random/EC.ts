@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import { Id64 } from "@bentley/bentleyjs-core";
-import * as ec from "../../common/src/EC";
+import * as ec from "@common/EC";
 import { createRandomId } from "./Misc";
 
 export const createRandomECInstanceId = (): ec.InstanceId => {

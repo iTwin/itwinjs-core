@@ -5,8 +5,9 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelToken } from "@bentley/imodeljs-common";
-import { NativePlatformRegistry, IModelHost } from "@bentley/imodeljs-backend";
+import { IModelToken, IModelError } from "@bentley/imodeljs-common";
+import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
+import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
 import { PageOptions, SelectionInfo, KeySet } from "@bentley/ecpresentation-common";
 import { Node, NodeKey, ECInstanceNodeKey } from "@bentley/ecpresentation-common";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@src/ECPresentationManager";
@@ -16,22 +17,25 @@ import { createRandomDescriptor, createRandomCategory } from "@helpers/random/Co
 import { RelatedClassInfo, SelectClassInfo } from "@bentley/ecpresentation-common";
 import { Property, PropertyInfo, KindOfQuantityInfo } from "@bentley/ecpresentation-common";
 import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@bentley/ecpresentation-common";
-import { ContentJSON } from "@bentley/ecpresentation-common/src/content/Content";
-import { DescriptorJSON } from "@bentley/ecpresentation-common/src/content/Descriptor";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/ecpresentation-common/src/content/Fields";
-import { ItemJSON } from "@bentley/ecpresentation-common/src/content/Item";
+import { ContentJSON } from "@bentley/ecpresentation-common/lib/content/Content";
+import { DescriptorJSON } from "@bentley/ecpresentation-common/lib/content/Descriptor";
+import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/ecpresentation-common/lib/content/Fields";
+import { ItemJSON } from "@bentley/ecpresentation-common/lib/content/Item";
 import "@helpers/Snapshots";
+import "@helpers/Promises";
 
 describe("ECPresentationManager", () => {
 
   beforeEach(() => {
     IModelHost.shutdown();
+    try {
+      IModelHost.startup();
+    } catch (_e) {}
   });
 
   it("uses default native library implementation if not overridden", () => {
-    IModelHost.startup();
     const manager = new ECPresentationManager();
-    expect(manager.getNativePlatform()).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
+    expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
   });
 
   it("uses addon implementation supplied through props", () => {
@@ -56,26 +60,65 @@ describe("ECPresentationManager", () => {
 
   });
 
+  describe("calling default addon implementation", () => {
+
+    const manager = new ECPresentationManager();
+    const addonMock = moq.Mock.ofType<NativeECPresentationManager>();
+    beforeEach(() => {
+      addonMock.reset();
+      (manager.getNativePlatform() as any)._nativeAddon = addonMock.object;
+    });
+
+    it("calls addon's handleRequest", async () => {
+      addonMock.setup((x) => x.handleRequest(moq.It.isAny(), "")).returns(() => "0").verifiable();
+      manager.getNativePlatform().handleRequest(undefined, "");
+      addonMock.verifyAll();
+    });
+
+    it("calls addon's setupRulesetDirectories", async () => {
+      addonMock.setup((x) => x.setupRulesetDirectories(moq.It.isAny())).verifiable();
+      manager.getNativePlatform().setupRulesetDirectories([]);
+      addonMock.verifyAll();
+    });
+
+    it("returns imodel addon from IModelDb", () => {
+      const mock = moq.Mock.ofType<IModelDb>();
+      mock.setup((x) => x.nativeDb).returns(() => ({})).verifiable(moq.Times.atLeastOnce());
+      IModelDb.find = (_token: IModelToken) => mock.object;
+      expect(manager.getNativePlatform().getImodelAddon(new IModelToken())).be.instanceOf(Object);
+      mock.verifyAll();
+    });
+
+    it("throws when fails to find imodel using IModelDb", () => {
+      const mock = moq.Mock.ofType<IModelDb>();
+      mock.setup((x) => x.nativeDb).returns(() => undefined).verifiable(moq.Times.atLeastOnce());
+      IModelDb.find = (_token: IModelToken) => mock.object;
+      expect(() => manager.getNativePlatform().getImodelAddon(new IModelToken())).to.throw(IModelError);
+      mock.verifyAll();
+    });
+
+  });
+
   describe("addon results conversion to ECPresentation objects", () => {
 
-    const testData = {
-      imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.Readonly, "user id"),
-      pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
-      displayType: faker.random.word(),
-      keys: (new KeySet([createRandomECInstanceNodeKey()])).add(createRandomECInstanceKey()),
-      selectionInfo: {
-        providerName: faker.random.word(),
-        level: faker.random.number(),
-      } as SelectionInfo,
-      extendedOptions: {
-        rulesetId: faker.random.word(),
-        someOtherOption: faker.random.number(),
-      },
-    };
-
+    let testData: any;
     const mock = moq.Mock.ofType<NodeAddonDefinition>();
     const manager = new ECPresentationManager({ addon: mock.object });
     beforeEach(() => {
+      testData = {
+        imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.Readonly, "user id"),
+        pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
+        displayType: faker.random.word(),
+        keys: (new KeySet([createRandomECInstanceNodeKey()])).add(createRandomECInstanceKey()),
+        selectionInfo: {
+          providerName: faker.random.word(),
+          level: faker.random.number(),
+        } as SelectionInfo,
+        extendedOptions: {
+          rulesetId: faker.random.word(),
+          someOtherOption: faker.random.number(),
+        },
+      };
       mock.reset();
       mock.setup((x) => x.getImodelAddon(testData.imodelToken)).verifiable(moq.Times.atLeastOnce());
     });
@@ -471,6 +514,11 @@ describe("ECPresentationManager", () => {
       const result = await manager.getContent(testData.imodelToken, descriptor,
         testData.keys, testData.pageOptions, testData.extendedOptions);
       verifyWithSnapshot(result, expectedParams);
+    });
+
+    it("throws on invalid addon response", async () => {
+      mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
+      expect(manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions)).to.eventually.be.rejectedWith(Error);
     });
 
   });

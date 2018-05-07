@@ -125,9 +125,8 @@ class SelectionContainer {
     const keys = this._selectedItemsSetMap.keys();
     for (const key of keys) {
       if (key >= level) {
-        const selectedItemsSet = this._selectedItemsSetMap.get(key);
-        if (selectedItemsSet)
-          selectedItemsSet.clear();
+        const selectedItemsSet = this._selectedItemsSetMap.get(key)!;
+        selectedItemsSet.clear();
       }
     }
   }

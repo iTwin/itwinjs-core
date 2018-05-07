@@ -14,19 +14,19 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
   }
 
   public async getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    return this.forward.apply(this, arguments);
+    return await this.forward.apply(this, arguments);
   }
 
   public async getRootNodesCount(_token: Readonly<IModelToken>, _options: object): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return await this.forward.apply(this, arguments);
   }
 
   public async getChildren(_token: Readonly<IModelToken>, _parentKey: Readonly<NodeKey>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    return this.forward.apply(this, arguments);
+    return await this.forward.apply(this, arguments);
   }
 
   public async getChildrenCount(_token: Readonly<IModelToken>, _parentKey: Readonly<NodeKey>, _options: object): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return await this.forward.apply(this, arguments);
   }
 
   public async getContentDescriptor(_token: Readonly<IModelToken>, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined, _options: object): Promise<Readonly<Descriptor>> {
@@ -34,7 +34,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
   }
 
   public async getContentSetSize(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _options: object): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return await this.forward.apply(this, arguments);
   }
 
   public async getContent(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<Readonly<Content>> {

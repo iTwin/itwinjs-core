@@ -6,6 +6,7 @@
     "baseUrl": "../node_modules/",
     "paths": {
       "@src/*": ["../src/*"],
+      "@common/*": ["../src/*"],
       "@helpers/*": ["../../test-helpers/*"],
       "*": ["../../../node_modules/*", "*"]
     }

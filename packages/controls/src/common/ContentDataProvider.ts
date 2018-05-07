@@ -86,7 +86,10 @@ export default abstract class ContentDataProvider {
       if (this.shouldExcludeFromDescriptor(field))
         fields.splice(i, 1);
     }
-    return { ...descriptor, fields };
+    const customDescriptor = Object.create(content.Descriptor.prototype);
+    return Object.assign(customDescriptor, descriptor, content.Descriptor, {
+      fields,
+    });
   }
 
   /** Called to check whether the field should be excluded from the descriptor. */

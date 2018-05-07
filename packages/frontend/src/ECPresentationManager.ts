@@ -27,27 +27,16 @@ export default class ECPresentationManager implements ECPInterface {
 
   public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
     const descriptor = await ECPresentationGateway.getProxy().getContentDescriptor(token, displayType, keys, selection, options);
-    if (descriptor)
-      descriptor.rebuildParentship();
+    descriptor.rebuildParentship();
     return descriptor;
   }
 
-  private getStrippedDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
-    // strips unnecessary data from the descriptor so it's less heavy for transportation
-    // over the gateway
-    const stripped = Object.create(Descriptor.prototype);
-    return Object.assign(stripped, descriptor, {
-      fields: [],
-      selectClasses: [],
-    });
-  }
-
   public async getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
-    return await ECPresentationGateway.getProxy().getContentSetSize(token, this.getStrippedDescriptor(descriptor), keys, options);
+    return await ECPresentationGateway.getProxy().getContentSetSize(token, descriptor.createStrippedDescriptor(), keys, options);
   }
 
   public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
-    const content = await ECPresentationGateway.getProxy().getContent(token, this.getStrippedDescriptor(descriptor), keys, pageOptions, options);
+    const content = await ECPresentationGateway.getProxy().getContent(token, descriptor.createStrippedDescriptor(), keys, pageOptions, options);
     content.descriptor.rebuildParentship();
     return content;
   }

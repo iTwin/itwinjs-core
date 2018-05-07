@@ -34,8 +34,7 @@ export default class ECPresentationGateway extends ECPresentationGatewayDefiniti
 
   public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
     const descriptor = await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
-    if (descriptor)
-      descriptor.resetParentship();
+    descriptor.resetParentship();
     return descriptor;
   }
 

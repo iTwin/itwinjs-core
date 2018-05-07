@@ -1,15 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { expect, spy, use } from "chai";
-import * as spies from "chai-spies";
+import { expect } from "chai";
+import { spy } from "@helpers/Spies";
 import * as moq from "typemoq";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { InstanceKey } from "@bentley/ecpresentation-common";
 import { SelectionManager } from "@src/selection";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
-
-use(spies);
 
 const generateSelection = (): InstanceKey[] => {
   return [
