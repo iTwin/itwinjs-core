@@ -34,7 +34,7 @@ parameters at once.
 ### Navigation properties
 
 [Navigation properties](../ECSQL#navigation-properties) are structs made up of the Id of the related instance and the backing
-ECRelationshipClass. The [NavigationBindingValue]($imodeljs-common.NavigationBindingValue) interface is used to bind values to navigation property parameters.
+ECRelationshipClass. The [NavigationBindingValue]($common/NavigationBindingValue) interface is used to bind values to navigation property parameters.
 
 ```ts
 [[include:ExecuteECSql_Binding_Navigation]]

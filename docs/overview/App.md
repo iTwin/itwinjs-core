@@ -19,7 +19,7 @@ Agents and services are written in TypeScript/JavaScript and depend on the `@ben
 
 An *iModel Agent* is a program that performs an unattended action upon being invoked by an event from iModelHub.
 
-As an example, consider an iModelJs Agent that receives notifications from iModelHub for every ChangeSet to a specific iModel. The Agent could inspect every changeset using the [ChangeSummary]($imodeljs-backend.ChangeSummaryManager) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
+As an example, consider an iModelJs Agent that receives notifications from iModelHub for every ChangeSet to a specific iModel. The Agent could inspect every changeset using the [ChangeSummary]($backend/ChangeSummaryManager) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
 
 ### iModel Services
 
@@ -77,7 +77,7 @@ A gateway is unidirectional. It allows a client to make a request on a service a
 
 Gateway methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
 
-The key API class is [Gateway]($imodeljs-common/Gateway).
+The key API class is [Gateway]($common/Gateway).
 
 ### Gateway Configurations
 
@@ -89,7 +89,7 @@ Transforms client calls on the gateway into HTTP requests. Provides endpoint-pro
 
 The iModelJs cloud gateway configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure.
 
-See [BentleyCloudGatewayConfiguration]($imodeljs-common/gateway/http/BentleyCloudGatewayConfiguration).
+See [BentleyCloudGatewayConfiguration]($common/gateway/http/BentleyCloudGatewayConfiguration).
 
 #### Desktop gateway configuration
 
@@ -97,7 +97,7 @@ Marshalls calls on the gateway through high-bandwidth, low-latency pipes between
 
 The iModelJs desktop gateway configuration is specific to Electron.
 
-See [GatewayElectronConfiguration]($imodeljs-common/gateway/electron/GatewayElectronConfiguration).
+See [GatewayElectronConfiguration]($common/gateway/electron/GatewayElectronConfiguration).
 
 #### In-process gateway configuration
 

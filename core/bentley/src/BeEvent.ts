@@ -106,7 +106,7 @@ export class BeEvent<T extends Listener> {
 
       // if we had dropped listeners, remove them now
       if (dropped) {
-        this._listeners = [];
+        this._listeners.length = 0;
         listeners.forEach((c) => { if (c.listener) this._listeners.push(c); });
       }
 
