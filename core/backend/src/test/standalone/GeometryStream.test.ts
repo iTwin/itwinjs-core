@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, GeometryStreamParser,
+  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../../backend";
@@ -80,7 +80,7 @@ describe("GeometryStream", () => {
     const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
-    const itNextCheck = new GeometryStreamParser.Iterator(value.geom, value.category);
+    const itNextCheck = new GeometryStreamIterator(value.geom, value.category);
     assert.isFalse(itNextCheck.next().done);
     assert.isFalse(itNextCheck.next().done);
     assert.isFalse(itNextCheck.next().done);
@@ -92,7 +92,7 @@ describe("GeometryStream", () => {
     assert.isTrue(itNextCheck.next().done);
 
     const lsStylesUsed: Id64[] = [];
-    const it = new GeometryStreamParser.Iterator(value.geom, value.category);
+    const it = new GeometryStreamIterator(value.geom, value.category);
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
       lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : new Id64());
@@ -173,7 +173,7 @@ describe("GeometryStream", () => {
 
     const stylesUsed: Id64[] = [];
     const widthsUsed: number[] = [];
-    const it = new GeometryStreamParser.Iterator(value.geom, value.category);
+    const it = new GeometryStreamIterator(value.geom, value.category);
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
       assert.isDefined(entry.geomParams.styleInfo);
@@ -572,14 +572,14 @@ describe("GeometryStream", () => {
       assert.isTrue(rotation.isIdentity());
     }
 
-    const itLocal = new GeometryStreamParser.Iterator(value.geom, value.category);
+    const itLocal = new GeometryStreamIterator(value.geom, value.category);
     for (const entry of itLocal) {
       assert.isDefined(entry.textString);
       assert.isTrue(entry.textString!.origin.isAlmostZero());
       assert.isTrue(entry.textString!.rotation.isIdentity());
     }
 
-    const itWorld = GeometryStreamParser.Iterator.fromGeometricElement3d(value as GeometricElement3dProps);
+    const itWorld = GeometryStreamIterator.fromGeometricElement3d(value as GeometricElement3dProps);
     for (const entry of itWorld) {
       assert.isDefined(entry.textString);
       assert.isTrue(entry.textString!.origin.isAlmostEqual(testOrigin));
