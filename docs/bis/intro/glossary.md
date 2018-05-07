@@ -9,13 +9,11 @@ Key BIS terms used in this documentation set are defined in this page.
 - How long is too long for a definition?
 - Is it ok to refer from the glossary to other pages (for more details....)?
 - Should any references to iModel exist in this glossary? (some items have little relevance outside an iModel-like implementation)
-
-**TODO - Other Questions**
-- There does not appear to be a way to reference a particular definition from another MD file. So...how and when should we refer to this Glossary page?
 -->
 
 <!-- NOTE: Need to use HTML named anchors because markdown doesn't have that concept yet. -->
 <!-- NOTE: The named anchor should be the glossary term in lowercase with words separated by "-" -->
+
 <!-- markdownlint-disable MD033 -->
 
 | Term | Description |

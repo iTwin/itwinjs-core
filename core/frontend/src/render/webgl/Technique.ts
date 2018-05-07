@@ -42,8 +42,8 @@ export class SingularTechnique implements Technique {
 
 function numFeatureVariants(numBaseShaders: number) { return numBaseShaders * 3; }
 const numHiliteVariants = 1;
-const clips = [ WithClipVolume.No, WithClipVolume.Yes ];
-const featureModes = [ FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides ];
+const clips = [WithClipVolume.No, WithClipVolume.Yes];
+const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides];
 const scratchTechniqueFlags = new TechniqueFlags();
 
 // A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
@@ -272,6 +272,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     // WIP_SURFACE this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
+    // this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;

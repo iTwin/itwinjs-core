@@ -10,7 +10,7 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
   frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
     prog.addProgramUniform("u_invScreenSize", (uniform, params) => {
       const rect = params.target.viewRect;
-      const invScreenSize = [ 1.0 / rect.width, 1.0 / rect.height ];
+      const invScreenSize = [1.0 / rect.width, 1.0 / rect.height];
       uniform.setUniform2fv(invScreenSize);
     });
   });

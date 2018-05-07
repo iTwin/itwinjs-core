@@ -2,21 +2,25 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
+import { ColorDef } from "@bentley/imodeljs-common";
 import {
   ProgramBuilder,
   FragmentShaderBuilder,
   VariableType,
   FragmentShaderComponent,
   VertexShaderComponent,
-  ShaderBuilder } from "../ShaderBuilder";
+  ShaderBuilder,
+} from "../ShaderBuilder";
 import { FeatureMode, WithClipVolume } from "../TechniqueFlags";
 import { GLSLFragment } from "./Fragment";
-import { addProjectionMatrix, addModelViewMatrix } from "./Vertex";
+import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
+import { GLSLDecode } from "./Decode";
 import { addClipping } from "./Clipping";
-import { FloatRgba } from "../FloatRGBA";
+import { FloatRgba, FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
+import { SurfaceFlags } from "../RenderFlags";
 import { assert } from "@bentley/bentleyjs-core";
 
 const applyMaterialOverrides = `
@@ -58,7 +62,7 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_matAlpha", (uniform, _params) => {
       // ###TODO Materials...
-      const matAlpha = [ 1, 1 ];
+      const matAlpha = [1, 1];
       uniform.setUniform2fv(matAlpha);
     });
   });
@@ -144,6 +148,49 @@ if (feature_ignore_material) {
 return flags;
 `;
 
+const octDecodeNormal = `
+vec3 octDecodeNormal(vec2 e) {
+  e = e / 255.0 * 2.0 - 1.0;
+  vec3 n = vec3(e.x, e.y, 1.0 - abs(e.x) - abs(e.y));
+  if (n.z < 0.0) {
+    vec2 signNotZero = vec2(n.x >= 0.0 ? 1.0 : -1.0, n.y >= 0.0 ? 1.0 : -1.0);
+    n.xy = (1.0 - abs(n.yx)) * signNotZero;
+  }
+
+return normalize(n);
+}`;
+
+const computeNormal = `
+if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
+  return vec3(0.0);
+
+vec2 normal = g_vertexData2;
+if (isSurfaceBitSet(kSurfaceBit_HasColorAndNormal)) {
+  vec2 tc = g_vertexBaseCoords;
+  tc.x += 3.0 * g_vert_stepX;
+  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  normal = enc.xy;
+}
+
+return normalize(u_nmx * octDecodeNormal(normal));`;
+
+const isBelowTransparencyThreshold = `
+return alpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);`;
+
+const applyBackgroundColor = `
+if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
+  baseColor.rgb = u_bgColor.rgb;
+
+return baseColor;`;
+
+const computeTexCoord = `
+if (isSurfaceBitSet(kSurfaceBit_HasTexture))
+  return unquantize2d(a_texCoord, u_qTexCoordParams);
+else
+  return vec2(0.0);`;
+
+const getSurfaceColor = `vec4 getSurfaceColor() { return v_color; }`;
+
 function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean) {
   builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", withFeatureOverrides ? computeSurfaceFlags : getSurfaceFlags);
 
@@ -159,14 +206,93 @@ function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean)
   });
 }
 
+function addNormal(builder: ProgramBuilder) {
+  addNormalMatrix(builder.vert);
+
+  builder.vert.addFunction(octDecodeNormal);
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
+}
+
+function addTransparencyThreshold(frag: FragmentShaderBuilder) {
+  frag.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
+    prog.addProgramUniform("u_transparencyThreshold", (uniform, params) => {
+      uniform.setUniform1f(params.target.transparencyThreshold);
+    });
+  });
+
+  frag.set(FragmentShaderComponent.DiscardByAlpha, isBelowTransparencyThreshold);
+}
+
 export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): ProgramBuilder {
   const builder = createCommon(clip);
   addShaderFlags(builder);
 
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
+  addNormal(builder);
+
+  // NB: We need the transparency threshold in translucent *and* opaque passes.
+  // Opaque because we must compute the alpha in order to decide whether to discard or render opaque.
+  addTransparencyThreshold(builder.frag);
+
+  // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
+  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
+  builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
+    prog.addProgramUniform("u_bgColor", (uniform, params) => {
+      const bgColor: ColorDef = params.target.bgColor;
+      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
+      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
+    });
+  });
+
+  // Vertex
+  builder.vert.addFunction(GLSLDecode.unquantize2d);
+  // ###TODO: Animation.addTextureParam(builder.vert);
+  builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
+  /*
+  builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
+      const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        // ###TODO: uniform.setUniform4fv(surfGeom.meshData.uvParams.paramsPtr());
+        // ###TODO: add uvParams to MeshData as an optional member (not throw away)
+      }
+    });
+  });
+  builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("s_texture", (uniform, params) => {
+      const surfGeom = params.geometry as SurfaceGeometry;
+      assert(undefined !== surfGeom.texture);
+      // ###TODO: bind surfGeom.texture; must also be a TextureHandle!
+    });
+  });
+  */
+  builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
+    prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
+      const surfGeom = params.geometry as SurfaceGeometry;
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        uniform.setUniform1i(surfGeom.isGlyph ? 1 : 0);
+      }
+    });
+  });
+
+  // Fragment and Vertex
+  // ###TODO: ShaderSource.Color.AddToBuilder(builder);
+
+  // Fragment
+  builder.frag.addFunction(getSurfaceColor);
+  // ###TODO: ShaderSource.Lighting.AddToBuidler(builder);
+  // ###TODO: ShaderSource.Fragment.AddWhiteOnWhiteReversal(frag);
+
+  if (FeatureMode.None === feat) {
+    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  } else {
+    builder.frag.addExtension("GL_EXT_draw_buffers");
+    // builder.frag.addFunction(GLSLDecode.)
+  }
 
   // ###TODO: Finish this function...
-
   return builder;
 }

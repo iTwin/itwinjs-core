@@ -6,7 +6,12 @@ import sys, os, re, string, re
 allFdecls = []
 allTypes = {}
 
-def reformatSee(line):
+def reformatDoxygenMarkup(line):
+    # Formatting markup -- TODO
+    line = line.replace("\a", "")
+    line = line.replace("\em", "")
+
+    # @see -> links
     i = line.find("@see")
     if i == -1:
         return line
@@ -22,60 +27,75 @@ def reformatSee(line):
     line = line + repl
     return line
 
+def formatLinkToType(t):
+    if t == "iModel_aabb":
+        t = "iModel_bbox"
+
+    if not allTypes.has_key(t):
+        return t
+
+    return "[" + t + "](#" + t + ")"
+
+def getParamsTableHeader():
+    return "\n|Parameter|Type|Description\n|---|---|---\n"
+
+def getReturnTableHeader():
+    return "\n|Return Type|Description\n|---|---\n"
+
 def processOverview(o):
-    foundFirstComment = False
-    nCode = 0
+    overview = ""
+    typeDesc = ""
+    wasEmittingDecl = False
+    inPreamble = True
+
     for l in o:
         l = l.strip()
-        if l.find("@addtogroup") != -1 or l.find("@{") != -1:
-            continue
-        if l.startswith("// ") or l.startswith("*/"):
+
+        if l.startswith("// "):
             continue
 
-        l = reformatSee(l)
+        if inPreamble:
+            if l.startswith("*/"):
+                inPreamble = False
+            continue
+
+        l = reformatDoxygenMarkup(l)
 
         if l.startswith("//! "):
-            if nCode != 0:
-                print "```\n"
-            l = l[4:]
-            foundFirstComment = True
-            nCode = 0
-            print l
+            # All comments are type comments
+            typeDesc = typeDesc + l[4:] + "\n"
         else:
-            if not foundFirstComment:
-                print l
-                continue
-
             decls = l.split()
-            if len(decls) > 1 and decls[0] == "struct":     # the name of the struct should be a heading, so that we can link to it
-                print "## " + decls[1]
+            if len(decls) > 1 and decls[0] == "struct":
+                # Found definition of a type
+                typeName = decls[1]
+                if wasEmittingDecl:
+                    overview = overview + "```\n"
+                overview = overview + "# " + typeName + "\n"
+                overview = overview + typeDesc
+                overview = overview + "```\n"
+                typeDesc = ""
                 allTypes[decls[1]] = ""
+                wasEmittingDecl = True
 
-            nCode = nCode + 1
+            # Everything between comments is a type definition
+            overview = overview + l + "\n"
 
-            if nCode == 1:
-                print "```"
+    if wasEmittingDecl:
+        overview = overview + "```\n"
 
-            print l
+    return overview
 
-    if nCode != 0:
-        print "```\n"
-
-    # print "# Functions"
-
-def processDoc(doc):
-    if not doc[0].find("@addtogroup") == -1:
-        processOverview(doc)
-        return
+def processFunction(doc):
 
     # The last line is the function declaration:
     # iModel_bbox iModel_placement_eabb(iModel_placement placement);
     # iModel_angles iModel_angles(double yaw, double pitch, double roll);
     o = re.match(r'(\w+)\s*(\w+)\s*[(]\s*(.*)[)]', doc[len(doc)-1]);
     if o == None:
-        return
+        return ""
 
-    # rt = o.group(1)
+    returnType = o.group(1)
     fname = o.group(2)
     args = o.group(3)
 
@@ -86,7 +106,7 @@ def processDoc(doc):
     sep = ""
     argPlaceHolderNames = ["X1", "X2", "X3", "X4", "X5"]
     iNextArgPlaceHolderName = 0;
-    argAndType = {}
+    argsAndTypes = {}
     for a in args.split(','):
         tn = a.strip().split();
 
@@ -96,7 +116,7 @@ def processDoc(doc):
             aname = argPlaceHolderNames[iNextArgPlaceHolderName]
             iNextArgPlaceHolderName = iNextArgPlaceHolderName + 1
 
-        argAndType[aname] = tn[0]
+        argsAndTypes[aname] = tn[0]
 
         fdecl = fdecl + sep + aname
 
@@ -107,67 +127,81 @@ def processDoc(doc):
 
     allFdecls.append(fname)
 
-    print "# " + fname
-
-    printedFdecl = False
-
-    # The preceding lines document the function, the args, and the return value
+    # The rest of the lines are the function comment, the args, and the return value. For example:
     # Construct a iModel_angles from 3 values
     # @param yaw The Yaw angle in degrees
     # @param pitch The Pitch angle in degrees
     # @param roll The Roll angle in degrees
     # @return a iModel_angles object
-
-    nParams = 0
-    justPrintedBullet = False
+    docParams = ""
+    returnDesc = ""
+    docRefs = ""
+    functionComment = ""
     for l in doc:
         l = l.strip();
         if l.find("/**") != -1 or l.find("*/") != -1 or l.find("<p>") != -1 or l.find("__PUBLISH_INSERT_FILE__") != -1:
             continue
 
-        l = reformatSee(l)
-
-        if l.startswith("@") and not printedFdecl:
-            print "\n```\n" + fdecl + "\n```\n"
-            printedFdecl = True
+        l = reformatDoxygenMarkup(l)
 
         if l.startswith("@param"):
             paramDoc = l.split()
             paramDoc = paramDoc[1:] # drop @param keyword
 
-            if nParams == 0:
-                l = "\n"
-                l = l + "|Parameter|Type|Description\n"
-                l = l + "|---|---|---\n"
-            else:
-                l = ""
+            if len(docParams) == 0:
+                docParams = getParamsTableHeader()
 
             paramName = paramDoc[0].strip()
-            paramType = argAndType[paramName].strip()
+            paramType = formatLinkToType(argsAndTypes[paramName].strip())
             paramDesc = ""
             if len(paramDoc) >= 2:
                 paramDesc = " ".join(paramDoc[2:])
-            if allTypes.has_key(paramType):
-                paramType = "[" + paramType + "](#" + paramType + ")"
-            l = l + "|" + paramName + "|" + paramType + "|" + paramDesc
-            nParams = nParams + 1
+
+            docParams = docParams + "|" + paramName + "|" + paramType + "|" + paramDesc + "\n"
+
         else:
             if l.startswith("@return"):
-                l = l.replace("@return", "Returns")
+                returnDesc = l[7:]
+                continue
+            else:
+                if l.startswith("@see"):
+                    docRefs = docRefs + l
+                    continue
+                else:
+                    # This is part of the function comment
+                    functionComment = functionComment + l
 
-        if justPrintedBullet and not l.startswith("*") and not l.startswith("|"):
-            print ""
+    if len(docParams) == 0 and len(argsAndTypes) != 0:
+        # Missing parameter docs.
+        docParams = getParamsTableHeader()
+        for argName in argsAndTypes:
+            docParams = docParams + "|" + argName + "|" + formatLinkToType(argsAndTypes[argName])
 
-        print l
+    docReturn = ""
+    if returnType != "" and returnType != "void":
+        docReturn = getReturnTableHeader() + "|" + formatLinkToType(returnType) + "|"
+        if returnDesc != "":
+            docReturn = docReturn + returnDesc
 
-        justPrintedBullet = l.startswith("*") or l.startswith("|")
+    if len(docRefs) != 0:
+        docRefs = docRefs.replace("@see", ", ")   # hack to get rid of @see in the middle of the list
+        docRefs = "@see " + docRefs[2:]
 
-    print ""
+    fdoc = "# " + fname + "\n"
+    fdoc = fdoc + "\n```\n" + fdecl + "\n```\n"
+    fdoc = fdoc + functionComment + "\n"
+    fdoc = fdoc + docParams + "\n"
+    fdoc = fdoc + docReturn  + "\n"
+    fdoc = fdoc + docRefs + "\n"
+
+    return fdoc
 
 def main(sourceFile):
     with open(sourceFile, 'r') as f:
         lines = f.readlines()
 
+    overview = ""
+    fdocs = ""
     indoc = False
     doc = [];
     for line in lines:
@@ -175,15 +209,39 @@ def main(sourceFile):
             indoc = line.startswith("// __PUBLISH_SECTION_START__")
         else:
             if line.startswith("// __PUBLISH_SECTION_END__"):
-                processDoc(doc)
+                if not doc[0].find("@addtogroup") == -1:
+                    overview = processOverview(doc)
+                else:
+                    fdocs = fdocs + processFunction(doc)
                 doc = []
                 indoc = False
             else:
                 doc.append(line)
 
+    flinks = ""
     allFdecls.sort()
+    sep = ""
     for f in allFdecls:
-        print '* [' + f + '](#' + f + ')'
+        flinks = flinks + sep + '[' + f + '](#' + f + ')'
+        sep = ", "
+
+    tlinks = ""
+    allFdecls.sort()
+    sep = ""
+    for t in allTypes:
+        tlinks = tlinks + sep + '[' + t + '](#' + f + ')'
+        sep = ", "
+
+    print "# ECSQL Built-in Geometry Functions"
+    print "Types: "
+    print tlinks
+    print ""
+    print "Functions: "
+    print flinks
+    print ""
+    print overview
+    print ""
+    print fdocs
 
 if __name__ == '__main__':
     main(sys.argv[1])
