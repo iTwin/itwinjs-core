@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module SqlFuncs */
 
-import { Range3dProps, Point3d } from "@bentley/geometry-core";
+import { Range3dProps, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Placement3d } from "./geometry/Primitives";
 
 /** Get a member of a iModel_Point object.
@@ -39,16 +39,16 @@ export function iModel_placement_origin(placement: Placement3d): Point3d { place
  * @param placement   The iModel_placement object to query
  * @return the placement angles
  */
-export function iModel_placement_angles(placement: Placement3d): YawPitchRoll { placement; return {} as any; }
+export function iModel_placement_angles(placement: Placement3d): YawPitchRollAngles { placement; return {} as any; }
 
 /**
- * Construct a YawPitchRoll object from 3 values
+ * Construct a YawPitchRollAngles object from 3 values
  * @param yaw The Yaw angle in degrees
  * @param pitch The Pitch angle in degrees
  * @param roll The Roll angle in degrees
  * @return a iModel_angles object
  */
-export function iModel_angles(yaw: number, pitch: number, roll: number): YawPitchRoll { yaw; pitch; roll; return {} as any; }
+export function iModel_angles(yaw: number, pitch: number, roll: number): YawPitchRollAngles { yaw; pitch; roll; return {} as any; }
 
 /**
  * Get a member of a iModel_angles object
@@ -56,7 +56,7 @@ export function iModel_angles(yaw: number, pitch: number, roll: number): YawPitc
  * @param member   The index of the member to get: Yaw=0, Pitch=1, Roll=2
  * @return the selected angle (in degrees); or an error if member is out of range or if `angles` is not a iModel_angles object
  */
-export function iModel_angles_value(angles: YawPitchRoll, member: number): number { angles; member; return 0; }
+export function iModel_angles_value(angles: YawPitchRollAngles, member: number): number { angles; member; return 0; }
 
 /**
  * Return the maximum absolute difference among the angles in degrees.
