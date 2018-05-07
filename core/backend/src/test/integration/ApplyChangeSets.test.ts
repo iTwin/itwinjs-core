@@ -67,8 +67,8 @@ describe("ApplyChangeSets (#online-required)", () => {
     await testAllChangeSetOperations("NodeJsTestProject", "TestModel");
     await testAllChangeSetOperations("iModelJsTest", "ReadOnlyTest");
     await testAllChangeSetOperations("iModelHubTest", "Office Building4");
+    await testAllChangeSetOperations("SampleBisPlant", "samplePlant20");
     // await testAllChangeSetOperations("AbdTestProject", "ATP_2018050310145994_scenario22");
-    // await testAllChangeSetOperations("SampleBisPlant", "samplePlant20");
   });
 
 });
