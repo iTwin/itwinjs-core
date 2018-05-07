@@ -5,7 +5,7 @@
 import { assert, using, IDisposable } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
-import { TechniqueFlags } from "./TechniqueFlags";
+import { TechniqueFlags, WithClipVolume, FeatureMode } from "./TechniqueFlags";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "./ShaderBuilder";
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
@@ -16,6 +16,9 @@ import { createCopyColorProgram } from "./glsl/CopyColor";
 import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
 import { createCompositeProgram } from "./glsl/Composite";
 import { createClipMaskProgram } from "./glsl/ClipMask";
+import { addTranslucency } from "./glsl/Translucency";
+import { addMonochrome } from "./glsl/Monochrome";
+import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -36,6 +39,12 @@ export class SingularTechnique implements Technique {
 
   public dispose(): void { this.program.dispose(); }
 }
+
+function numFeatureVariants(numBaseShaders: number) { return numBaseShaders * 3; }
+const numHiliteVariants = 1;
+const clips = [ WithClipVolume.No, WithClipVolume.Yes ];
+const featureModes = [ FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides ];
+const scratchTechniqueFlags = new TechniqueFlags();
 
 // A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
 export abstract class VariedTechnique implements Technique {
@@ -70,19 +79,68 @@ export abstract class VariedTechnique implements Technique {
     this._programs[index] = program;
   }
 
-  // ###TODO createHiliter() for convenience
+  protected addHiliteShader(clip: WithClipVolume, gl: WebGLRenderingContext, create: (clip: WithClipVolume) => ProgramBuilder): void {
+    const builder = create(clip);
+    scratchTechniqueFlags.initForHilite(clip);
+    this.addShader(builder, scratchTechniqueFlags, gl);
+  }
 
-  // ###TODO setFeatureSymbology - need FeatureOverrides
-
-  // ###TODO addElementId
-
-  // ###TODO addTranslucentShader() for convenience
+  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
+    flags.isTranslucent = true;
+    addTranslucency(builder);
+    this.addShader(builder, flags, gl);
+  }
 
   private getShaderIndex(flags: TechniqueFlags) {
     assert(!flags.isHilite || (!flags.isTranslucent && !flags.hasFeatures), "invalid technique flags");
     const index = this.computeShaderIndex(flags);
     assert(index < this._programs.length, "shader index out of bounds");
     return index;
+  }
+}
+
+namespace Surface {
+  enum Index {
+    Opaque = 0,
+    Translucent = 1,
+    Feature = 2,
+    Hilite = numFeatureVariants(Feature),
+    Clip = Hilite + 1,
+  }
+
+  export class Technique extends VariedTechnique {
+    public constructor(gl: WebGLRenderingContext) {
+      super((numFeatureVariants(2) + numHiliteVariants) * 2);
+
+      const flags = scratchTechniqueFlags;
+      for (const clip of clips) {
+        this.addHiliteShader(clip, gl, createSurfaceHiliter);
+        for (const featureMode of featureModes) {
+          flags.reset(featureMode, clip);
+          const builder = createSurfaceBuilder(featureMode, clip);
+          addMonochrome(builder.frag);
+          addMaterial(builder.frag);
+
+          this.addShader(builder, flags, gl);
+          this.addTranslucentShader(builder, flags, gl);
+        }
+      }
+    }
+
+    public computeShaderIndex(flags: TechniqueFlags): number {
+      if (flags.isHilite) {
+        assert(flags.hasFeatures);
+        return Index.Hilite;
+      }
+
+      let index = flags.isTranslucent ? Index.Translucent : Index.Opaque;
+      index += Index.Feature * flags.featureMode;
+      if (flags.hasClipVolume) {
+        index += Index.Clip;
+      }
+
+      return index;
+    }
   }
 }
 
@@ -216,6 +274,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
+    this._list[TechniqueId.Surface] = new Surface.Technique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;

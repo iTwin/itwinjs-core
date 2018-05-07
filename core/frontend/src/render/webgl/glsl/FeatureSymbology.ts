@@ -6,6 +6,18 @@ import { FragmentShaderBuilder, VariableType } from "../ShaderBuilder";
 import { RenderMode, Hilite } from "@bentley/imodeljs-common";
 import { FloatRgba } from "../FloatRGBA";
 
+export const enum FeatureSymbologyOptions {
+  None = 0,
+  Weight = 1 << 0,
+  LineCode = 1 << 1,
+  HasOverrides = 1 << 2,
+  Color = 1 << 3,
+
+  Surface = HasOverrides | Color,
+  Point = HasOverrides | Color | Weight,
+  Linear = HasOverrides | Color | Weight | LineCode,
+}
+
 export function addHiliteSettings(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
