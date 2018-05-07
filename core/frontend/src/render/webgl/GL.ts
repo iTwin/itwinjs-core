@@ -161,7 +161,7 @@ export namespace GL {
     export enum DataType { // tslint:disable-line:no-shadowed-variable
       Float = WebGLRenderingContext.FLOAT,
       UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
-  //    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
+      //    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,
       UnsignedInt = WebGLRenderingContext.UNSIGNED_INT,
     }
 
@@ -195,7 +195,7 @@ export namespace GL {
     export const TARGET = WebGLRenderingContext.RENDERBUFFER;
 
     export enum Format {
-      DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+      DepthComponent16 = WebGLRenderingContext.DEPTH_COMPONENT16,
       // Currently this is the only supported format
     }
   }
