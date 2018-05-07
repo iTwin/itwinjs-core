@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { Matrix4 } from "../Matrix";
+import { Matrix3, Matrix4 } from "../Matrix";
 import { TextureHandle } from "../Texture";
 import { LUTGeometry } from "../CachedGeometry";
 import { TextureUnit, RenderPass } from "../RenderFlags";
@@ -67,6 +67,16 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_mv", (uniform, params) => {
       uniform.setMatrix4(params.modelViewMatrix);
+    });
+  });
+}
+
+export function addNormalMatrix(vert: VertexShaderBuilder) {
+  vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
+    prog.addGraphicUniform("u_nmx", (uniform, params) => {
+      const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
+      if (undefined !== rotMat)
+        uniform.setMatrix3(rotMat);
     });
   });
 }
