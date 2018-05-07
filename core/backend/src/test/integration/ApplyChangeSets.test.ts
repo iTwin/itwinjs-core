@@ -19,9 +19,11 @@ describe("ApplyChangeSets (#online-required)", () => {
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    Logger.setLevel(HubTestUtils.logCategory, LogLevel.Info);
-    // Logger.setLevel("DgnCore", LogLevel.Info);
-    // Logger.setLevel("BeSQLite", LogLevel.Info);
+
+    // Note: Change to LogLevel.Info for useful debug information
+    Logger.setLevel(HubTestUtils.logCategory, LogLevel.Error);
+    Logger.setLevel("DgnCore", LogLevel.Error);
+    Logger.setLevel("BeSQLite", LogLevel.Error);
   });
 
   const testAllChangeSetOperations = async (projectName: string, iModelName: string) => {

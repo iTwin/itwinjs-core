@@ -97,4 +97,5 @@ export class IModelHost {
   public static get appAssetsDir(): string | undefined {
     return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }
+
 }

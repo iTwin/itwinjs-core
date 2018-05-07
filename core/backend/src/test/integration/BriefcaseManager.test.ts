@@ -5,7 +5,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { Id64, OpenMode, DbOpcode, BeEvent, ChangeSetApplyOption, ChangeSetStatus } from "@bentley/bentleyjs-core";
 import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
-import { ChangeSetToken, KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, IModelHostConfiguration, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType } from "../../backend";
+import { ChangeSetToken, KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, IModelHostConfiguration, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType, BriefcaseManager } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
@@ -81,7 +81,6 @@ describe("BriefcaseManager", () => {
   const assetDir = "./src/test/assets/_mocks_";
   let cacheDir: string = "";
   let accessToken: AccessToken = new MockAccessToken();
-  let startTime = new Date().getTime();
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
   const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
 
@@ -92,25 +91,17 @@ describe("BriefcaseManager", () => {
   };
 
   before(async () => {
-    startTime = new Date().getTime();
-
     if (offline) {
-      console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
-      startTime = new Date().getTime();
-
       MockAssetUtil.setupMockAssets(assetDir);
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
-
-      console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
-      console.log(`    ...getting user access token from IMS: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
-      startTime = new Date().getTime();
-
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
-
-      console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
+  });
 
+  after(() => {
+    if (offline)
+      MockAssetUtil.tearDownOfflineFixture();
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {
@@ -131,7 +122,7 @@ describe("BriefcaseManager", () => {
     assert.equal(callbackcount, 2);
   });
 
-  it.skip("test change-merging scenarios in optimistic concurrency mode #online-required", async () => {
+  it.skip("test change-merging scenarios in optimistic concurrency mode (#online-required)", async () => {
     const firstUser = accessToken;
     const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.user2);
@@ -260,7 +251,7 @@ describe("BriefcaseManager", () => {
 
   });
 
-  it.skip("should merge changes so that two branches of an iModel converge #online-required", () => {
+  it.skip("should merge changes so that two branches of an iModel converge (#online-required)", () => {
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
     const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
@@ -434,7 +425,7 @@ describe("BriefcaseManager", () => {
     assert(devProjectId);
     const devIModelId = await HubTestUtils.queryIModelIdByName(accessToken, devProjectId, TestConfig.iModelName);
     assert(devIModelId);
-    const devChangeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, devIModelId);
+    const devChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
     const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(devIModel);
@@ -447,7 +438,7 @@ describe("BriefcaseManager", () => {
     assert(qaProjectId);
     const qaIModelId = await HubTestUtils.queryIModelIdByName(accessToken, qaProjectId, TestConfig.iModelName);
     assert(qaIModelId);
-    const qaChangeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, qaIModelId);
+    const qaChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);
     const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(qaIModel);
@@ -506,14 +497,14 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should push changes with codes #online-required", async () => {
+  it.skip("should push changes with codes (#online-required)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await HubTestUtils.hubClient!.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
@@ -525,7 +516,7 @@ describe("BriefcaseManager", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await HubTestUtils.hubClient!.Codes().get(adminAccessToken, rwIModelId!);
+    const initialCodes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -548,19 +539,19 @@ describe("BriefcaseManager", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await HubTestUtils.hubClient!.Codes().get(adminAccessToken, rwIModelId!);
+    const codes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
     timer.end();
     expect(codes.length > initialCodes.length);
   });
 
-  it.skip("should push changes with code conflicts #online-required", async () => {
+  it.skip("should push changes with code conflicts (#online-required)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await HubTestUtils.hubClient!.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
@@ -572,17 +563,17 @@ describe("BriefcaseManager", () => {
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await HubTestUtils.hubClient!.Briefcases().create(adminAccessToken, rwIModelId!);
+    const otherBriefcase = await BriefcaseManager.hubClient.Briefcases().create(adminAccessToken, rwIModelId!);
     const hubCode = new HubCode();
     hubCode.value = code.value;
     hubCode.codeSpecId = code.spec.toString();
     hubCode.codeScope = code.scope;
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
-    await HubTestUtils.hubClient!.Codes().update(adminAccessToken, rwIModelId!, [hubCode]);
+    await BriefcaseManager.hubClient.Codes().update(adminAccessToken, rwIModelId!, [hubCode]);
 
     timer = new Timer("querying codes");
-    const initialCodes = await HubTestUtils.hubClient!.Codes().get(adminAccessToken, rwIModelId!);
+    const initialCodes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -604,19 +595,19 @@ describe("BriefcaseManager", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await HubTestUtils.hubClient!.Codes().get(accessToken, rwIModelId!);
+    const codes = await BriefcaseManager.hubClient.Codes().get(accessToken, rwIModelId!);
     timer.end();
     expect(codes.length === initialCodes.length);
     expect(codes[0].state === CodeState.Reserved);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency #online-required", async () => {
+  it.skip("should write to briefcase with optimistic concurrency (#online-required)", async () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
-    const iModels: HubIModel[] = await HubTestUtils.hubClient!.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await HubTestUtils.hubClient!.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
@@ -726,7 +717,7 @@ describe("BriefcaseManager", () => {
     roIModel.close(accessToken);
   });
 
-  it.skip("should make change sets #online-required", async () => {
+  it.skip("should make change sets (#online-required)", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite);
     assert.exists(iModel);
 
@@ -757,7 +748,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should test AutoPush #online-required", async () => {
+  it.skip("should test AutoPush (#online-required)", async () => {
     let isIdle: boolean = true;
     const activityMonitor = {
       isIdle: () => isIdle,

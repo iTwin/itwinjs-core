@@ -10,7 +10,6 @@ import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../Chang
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { HubTestUtils } from "./HubTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsFs } from "../../IModelJsFs";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
@@ -27,8 +26,6 @@ describe("ChangeSummary", () => {
   const offline: boolean = process.argv[index + 1] === "mock";
   let accessToken: AccessToken = new MockAccessToken();
   let testProjectId: string;
-  let startTime = new Date().getTime();
-
   const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
   const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
   const testIModels: TestIModelInfo[] = [
@@ -40,25 +37,17 @@ describe("ChangeSummary", () => {
   let cacheDir: string;
 
   before(async () => {
-    startTime = new Date().getTime();
-
     if (offline) {
-      console.log("    Setting up mock objects..."); // tslint:disable-line:no-console
-      startTime = new Date().getTime();
-
       await MockAssetUtil.setupMockAssets(assetDir);
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
-      (ChangeSummaryManager as any).hubClient = iModelHubClientMock.object;
-
-      console.log(`    ...getting information on Project+IModel+ChangeSets for test case from mock data: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     } else {
-      startTime = new Date().getTime();
-
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
-
-      console.log(`    ...getting information on Project+IModel+ChangeSets for test case from the Hub: ${new Date().getTime() - startTime} ms`); // tslint:disable-line:no-console
     }
+  });
 
+  after(() => {
+    if (offline)
+      MockAssetUtil.tearDownOfflineFixture();
   });
 
   it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
@@ -244,7 +233,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -287,7 +276,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
