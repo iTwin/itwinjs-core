@@ -74,6 +74,7 @@ export * from "./gateway/StandaloneIModelGateway";
  */
 /**
  * @docs-group-description Gateway
+ * Classes for working with Gateways, the communication channel between clients and services.
  * [[include:GatewayTopic.md]]
  */
 /**
