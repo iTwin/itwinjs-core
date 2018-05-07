@@ -995,7 +995,7 @@ export class BriefcaseManager {
     for (const token of changeSetTokens) {
       try {
         const codes = BriefcaseManager.extractCodesFromFile(briefcase, [token]);
-        await BriefcaseManager.hubClient!.Codes().update(accessToken, briefcase.iModelId, codes, {deniedCodes: true, continueOnConflict: true});
+        await BriefcaseManager.hubClient!.Codes().update(accessToken, briefcase.iModelId, codes, { deniedCodes: true, continueOnConflict: true });
         BriefcaseManager.removePendingChangeSet(briefcase, token.id);
       } catch (error) {
         if (error instanceof ConflictingCodesError) {
@@ -1046,7 +1046,7 @@ export class BriefcaseManager {
 
     let failedUpdating = false;
     try {
-      await BriefcaseManager.hubClient!.Codes().update(accessToken, briefcase.iModelId, BriefcaseManager.extractCodes(briefcase), {deniedCodes: true, continueOnConflict: true});
+      await BriefcaseManager.hubClient!.Codes().update(accessToken, briefcase.iModelId, BriefcaseManager.extractCodes(briefcase), { deniedCodes: true, continueOnConflict: true });
     } catch (error) {
       if (error instanceof ConflictingCodesError) {
         const msg = `Found conflicting codes when pushing briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} changes.`;
@@ -1088,7 +1088,7 @@ export class BriefcaseManager {
   }
 
   /** Applies a change set to a standalone iModel */
-  public static applyStandaloneChangeSet(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption, containsSchemaChanges: boolean): ChangeSetStatus {
+  public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption, containsSchemaChanges: boolean): ChangeSetStatus {
     if (!briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR);
 
