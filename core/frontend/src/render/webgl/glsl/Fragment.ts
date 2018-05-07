@@ -18,4 +18,29 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
 
 export namespace GLSLFragment {
   export const assignFragColor = `FragColor = baseColor;`;
+
+  export const revertPreMultipliedAlpha = `
+    vec4 revertPreMultipliedAlpha(vec4 rgba) {
+      if (0.0 < rgba.a)
+        rgba.a /= rgba.a;
+
+      return rgba;
+    }`;
+
+  export const applyPreMultipliedAlpha = `
+    vec4 applyPreMultipliedAlpha(vec4 rgba) {
+      rgba.rgb *= rgba.a;
+      return rgba;
+    }`;
+
+  export const adjustPreMultipliedAlpha = `
+    vec4 adjustPreMultipliedAlpha(vec4 rgba, float newAlpha) {
+      float oldAlpha = rgba.a;
+      if (0.0 < oldAlpha)
+        rgba.rgb /= oldAlpha;
+
+      rgba.rgb *= newAlpha;
+      rgba.a = new Alpha;
+      return rgba;
+    }`;
 }

@@ -87,7 +87,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
     flags.isTranslucent = true;
-    addTranslucency(builder);
+    addTranslucency(builder.frag);
     this.addShader(builder, flags, gl);
   }
 

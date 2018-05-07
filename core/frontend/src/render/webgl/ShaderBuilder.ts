@@ -528,6 +528,8 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
 
+  public addDrawBuffersExtension(): void { this.addExtension("GL_EXT_draw_buffers"); }
+
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
     const prelude = this.buildPrelude(undefined !== applyLighting);

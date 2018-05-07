@@ -55,6 +55,22 @@ export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
   });
 }
 
+export function addProjectionMatrix(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_proj", VariableType.Mat4, (prog) => {
+    prog.addProgramUniform("u_proj", (uniform, params) => {
+      uniform.setMatrix4(params.projectionMatrix);
+    });
+  });
+}
+
+export function addModelViewMatrix(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_mv", (uniform, params) => {
+      uniform.setMatrix4(params.modelViewMatrix);
+    });
+  });
+}
+
 const scratchLutParams = new Float32Array(4);
 function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);

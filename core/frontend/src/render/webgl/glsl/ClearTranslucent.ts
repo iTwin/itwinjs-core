@@ -13,7 +13,7 @@ export function createClearTranslucentProgram(context: WebGLRenderingContext): S
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
-  frag.addExtension("GL_EXT_draw_buffers");
+  frag.addDrawBuffersExtension();
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   return builder.buildProgram(context);
 }

@@ -153,6 +153,7 @@ export abstract class Target extends RenderTarget {
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   private _compositor: SceneCompositor;
+  private _clipMask?: TextureHandle;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -215,8 +216,16 @@ export abstract class Target extends RenderTarget {
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
+
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
-  public get hasClipMask(): boolean { return false; } // ###TODO
+  public get hasClipMask(): boolean { return undefined !== this.clipMask; }
+  public get clipMask(): TextureHandle | undefined { return this._clipMask; }
+  public set clipMask(mask: TextureHandle | undefined) {
+    assert(!this.hasClipMask);
+    assert(this.is2d);
+    this._clipMask = mask;
+  }
+
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentOverrides(): any { return undefined; } // ###TODO
   public get currentPickTable(): any { return undefined; } // ###TODO
