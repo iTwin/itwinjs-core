@@ -91,5 +91,5 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Views
  * Classes for working with views of models and elements. The key classes are:
- * * [ViewDefinition]($backend/ViewDefinition)
+ * * [ViewDefinition]($backend)
  */
