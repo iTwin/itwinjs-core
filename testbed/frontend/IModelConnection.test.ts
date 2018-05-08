@@ -6,7 +6,7 @@ import { Id64, OpenMode } from "@bentley/bentleyjs-core";
 import { XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
-import { TestGateway } from "../common/TestGateway";
+import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
@@ -136,8 +136,8 @@ describe("IModelConnection", () => {
 
   it("Change cache file generation when attaching change cache (#integration)", async () => {
     assert.exists(iModel);
-    await TestGateway.getProxy().deleteChangeCache(iModel.iModelToken);
-    await TestGateway.getProxy().attachChangeCache(iModel.iModelToken);
+    await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken);
+    await TestRpcInterface.getClient().attachChangeCache(iModel.iModelToken);
     const changeSummaryRows: any[] = await iModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
     assert.equal(changeSummaryRows.length, 1);
     assert.equal(changeSummaryRows[0].cnt, 0);
@@ -153,9 +153,9 @@ describe("IModelConnection", () => {
 
     const testIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, OpenMode.ReadWrite);
     try {
-      await TestGateway.getProxy().deleteChangeCache(testIModel.iModelToken);
-      await TestGateway.getProxy().extractChangeSummaries(testIModel.iModelToken, { currentChangeSetOnly: true });
-      await TestGateway.getProxy().attachChangeCache(testIModel.iModelToken);
+      await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken);
+      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.iModelToken, { currentChangeSetOnly: true });
+      await TestRpcInterface.getClient().attachChangeCache(testIModel.iModelToken);
 
       const changeSummaryRows: any[] = await testIModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
       assert.equal(changeSummaryRows.length, 1);

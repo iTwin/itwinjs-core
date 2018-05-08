@@ -3,8 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
 import { GraphicParams, ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
+import { LineCode, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
+LineCode; // Needs investigation! Webpack skips the rendering import without this :-(
 
 describe("DisplayParams creation tests", () => {
   it("should create mesh DisplayParams and be of type mesh", () => {
@@ -42,8 +43,8 @@ describe("DisplayParams equality tests", () => {
   });
 
   it("two DisplayParams created with different colors should be non-equal", () => {
-    const gf0: GraphicParams = new GraphicParams();  gf0.setLineColor(ColorDef.white);
-    const gf1: GraphicParams = new GraphicParams();  gf1.setLineColor(ColorDef.black);
+    const gf0: GraphicParams = new GraphicParams(); gf0.setLineColor(ColorDef.white);
+    const gf1: GraphicParams = new GraphicParams(); gf1.setLineColor(ColorDef.black);
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
     expect(dpMesh0.equals(dpMesh1)).to.be.false;
@@ -56,10 +57,10 @@ describe("DisplayParams equality tests", () => {
   });
 
   it("two DisplayParams created with different colors (same alpha) should be equal if merge-comparing", () => {
-    const cd0: ColorDef = new ColorDef(ColorByName.white);  cd0.setAlpha(64);
-    const cd1: ColorDef = new ColorDef(ColorByName.black);  cd1.setAlpha(64);
-    const gf0: GraphicParams = new GraphicParams();  gf0.setLineColor(cd0);
-    const gf1: GraphicParams = new GraphicParams();  gf1.setLineColor(cd1);
+    const cd0: ColorDef = new ColorDef(ColorByName.white); cd0.setAlpha(64);
+    const cd1: ColorDef = new ColorDef(ColorByName.black); cd1.setAlpha(64);
+    const gf0: GraphicParams = new GraphicParams(); gf0.setLineColor(cd0);
+    const gf1: GraphicParams = new GraphicParams(); gf1.setLineColor(cd1);
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
     expect(dpMesh0.equals(dpMesh1, DisplayParams.ComparePurpose.Merge)).to.be.true;

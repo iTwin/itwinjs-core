@@ -7,15 +7,15 @@
         "logLevel": "Trace"
       },
       {
-        "category": "imodeljs-gateway.BentleyCloudGatewayProtocol",
+        "category": "imodeljs-rpc.BentleyCloudRpcProtocol",
         "logLevel": "Trace"
       },
       {
-        "category": "imodeljs-gateway.GatewayHttpProtocol",
+        "category": "imodeljs-rpc.WebAppRpcProtocol",
         "logLevel": "Trace"
       },
       {
-        "category": "imodeljs-gateway",
+        "category": "imodeljs-rpc",
         "logLevel": "Trace"
       },
       {
