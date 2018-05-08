@@ -260,6 +260,7 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   const builder = createCommon(clip);
   addShaderFlags(builder);
 
+  addHiliter(builder); // ###TODO: why needed?  Needed so addSurfaceFlags can see feature_ignore_material, but calling addHiliter in here isn't like the native code.
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
   addNormal(builder);

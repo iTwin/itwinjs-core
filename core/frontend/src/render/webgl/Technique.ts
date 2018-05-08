@@ -54,7 +54,8 @@ export abstract class VariedTechnique implements Technique {
   public compileShaders(): boolean {
     let allCompiled = true;
     for (const program of this._programs) {
-      if (!program.compile()) allCompiled = false;
+      if (program !== undefined) // ###TODO: Related to 'program already exists' assert?
+        if (!program.compile()) allCompiled = false;
     }
 
     return allCompiled;
@@ -75,7 +76,7 @@ export abstract class VariedTechnique implements Technique {
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void { this.addProgram(flags, builder.buildProgram(gl)); }
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
     const index = this.getShaderIndex(flags);
-    // assert(undefined === this._programs[index], "program already exists");
+    // assert(undefined === this._programs[index], "program already exists"); // ###TODO: Why is this assert happening?
     this._programs[index] = program;
   }
 
@@ -271,8 +272,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
-    // WIP_SURFACE this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
-    // this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
+    this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;
