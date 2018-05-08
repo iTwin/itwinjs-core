@@ -87,6 +87,22 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   public static toFloat64Array(val: LowAndHighXYZ): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.low.z, val.high.x, val.high.y, val.high.z); }
   public toFloat64Array(): Float64Array { return Range3d.toFloat64Array(this); }
+  /**
+   * Construct a Range3d from an array of double-precision values
+   * @param f64 the array, which should contain exactly 6 values in this order: lowx, lowy, lowz, highx, highy, highz
+   * @return a new Range3d object
+   */
+  public static fromFloat64Array(f64: Float64Array) {
+    if (f64.length !== 6)
+      throw new Error("invalid array");
+    return new Range3d(f64[0], f64[1], f64[2], f64[3], f64[4], f64[5]);
+  }
+  /**
+   * Construct a Range3d from an un-typed array. This mostly useful when interpreting ECSQL query results of the 'blob' type, where you know that that result is a Range3d.
+   * @param buffer untyped array
+   * @return a new Range3d object
+   */
+  public static fromArrayBuffer(buffer: ArrayBuffer) {return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
   public constructor(lowx: number = RangeBase.EXTREME_POSITIVE, lowy: number = RangeBase.EXTREME_POSITIVE, lowz: number = RangeBase.EXTREME_POSITIVE,
@@ -875,6 +891,22 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   }
   public static toFloat64Array(val: LowAndHighXY): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.high.x, val.high.y); }
   public toFloat64Array(): Float64Array { return Range2d.toFloat64Array(this); }
+  /**
+   * Construct a Range2d from an array of double-precision values
+   * @param f64 the array, which should contain exactly 4 values in this order: lowx, lowy, highx, highy
+   * @return a new Range2d object
+   */
+  public static fromFloat64Array(f64: Float64Array) {
+    if (f64.length !== 6)
+      throw new Error("invalid array");
+    return new Range3d(f64[0], f64[1], f64[2], f64[3], f64[4], f64[5]);
+  }
+  /**
+   * Construct a Range2d from an un-typed array. This mostly useful when interpreting ECSQL query results of the 'blob' type, where you know that that result is a Range3d.
+   * @param buffer untyped array
+   * @return a new Range2d object
+   */
+  public static fromArrayBuffer(buffer: ArrayBuffer) {return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
   public constructor(lowx = Range2d.EXTREME_POSITIVE, lowy = Range2d.EXTREME_POSITIVE, highx = Range2d.EXTREME_NEGATIVE, highy = Range2d.EXTREME_NEGATIVE) {

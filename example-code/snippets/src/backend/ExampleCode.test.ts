@@ -7,7 +7,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, DbResult } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
-import { Range3dProps } from "@bentley/geometry-core";
+import { Range3dProps, Range3d } from "@bentley/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
@@ -165,23 +165,25 @@ describe("Example Code", () => {
   it("should look up model by code", () => {
     // __PUBLISH_EXTRACT_START__ Model.lookupByCode
     // A Model does not have a code. The element that it models might. So, we first
-    // look up the modeled element. In this example, we are looking for a PhysicalModel,
-    // and so its modeled element will be a PhysicalPartition.
-    const partitionCode = PhysicalPartition.createCode(iModel.elements.getRootSubject(), "DefaultModel");
-    const partitionId: Id64 | undefined = iModel.elements.queryElementIdByCode(partitionCode);
-    assert.isTrue(partitionId !== undefined);
-    if (partitionId === undefined)
-      return;
-    // Once we have the modeled element, we ask for its submodel -- that is that model.
-    const itsModel: Model = iModel.models.getSubModel(partitionId);
-    reportModel(itsModel);
+    // look up the modeled element.
+    // In this example, we are looking for a PhysicalModel, and so its modeled element will be a PhysicalPartition.
+    // In this particular example, the partition's CodeValue happens to be "Physical".
+    for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
+      // Once we have the modeled element, we ask for its submodel -- that is that model.
+      const itsModel: Model = iModel.models.getSubModel(new Id64(eidStr));
+      reportModel(itsModel);
+    }
     // __PUBLISH_EXTRACT_END__
   });
 
   it("should execute spatial queries", () => {
-    // in test.bim, it so happens that a bunch of PhysicalElements are in the default/root model.
-    const modelId = iModel.models.getSubModel(iModel.elements.getRootSubject().id).id;
-    assert.isTrue(modelId !== undefined);
+    let modelId: Id64 | undefined;
+    for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
+      // Once we have the modeled element, we ask for its submodel -- that is that model.
+      modelId = iModel.models.getSubModel(new Id64(eidStr)).id;
+    }
+    if (modelId === undefined)
+      return;
 
     // __PUBLISH_EXTRACT_START__ EcsqlGeometryFunctions.iModel_bbox_areaxy
     // Compute the largest element area in the X-Y plane.
@@ -212,7 +214,6 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ EcsqlGeometryFunctions.iModel_bbox_union
     // This is an example of accumlating the union of bounding boxes.
-    // Note that when computing a union, it only makes sense to use axis-aligned bounding boxes, not element-aligned bounding boxes.
     const bboxUnionStmtECSQL = `
       SELECT
         iModel_bbox_union(
@@ -230,11 +231,11 @@ describe("Example Code", () => {
 
     const rangeSum: Range3dProps = iModel.withPreparedStatement(bboxUnionStmtECSQL,
       (stmt: ECSqlStatement) => {
-        stmt.bindId(1, modelId);
+        stmt.bindId(1, modelId!);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           return {} as Range3dProps;
-        const r = stmt.getRow();
-        return r as Range3dProps;
+        // Note that the the ECSQL value is a blob. Its data must be extracted and interpreted as a Range3d.
+        return Range3d.fromArrayBuffer(stmt.getValue(0).getBlob());
       });
     reportRange(rangeSum);
     // __PUBLISH_EXTRACT_END__
