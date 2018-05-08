@@ -2,6 +2,32 @@
   "name": "@bentley/ecpresentation-controls",
   "entries": [
     {
+      "version": "0.1.3",
+      "tag": "@bentley/ecpresentation-controls_v0.1.3",
+      "date": "Tue, 08 May 2018 07:05:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix: Configured descriptor must be of Descriptor class."
+          },
+          {
+            "comment": "Update imodeljs-core dependencies to 0.80"
+          },
+          {
+            "comment": "Update bentleyjs-core dependency to 8"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.1` to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.1.1` to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@bentley/ecpresentation-controls_v0.1.2",
       "date": "Sun, 29 Apr 2018 08:07:40 GMT",

@@ -1,6 +1,15 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Sun, 29 Apr 2018 08:07:40 GMT and should not be manually modified.
+This log was last generated on Tue, 08 May 2018 07:05:52 GMT and should not be manually modified.
+
+## 0.1.2
+Tue, 08 May 2018 07:05:52 GMT
+
+### Patches
+
+- 100% unit test coverage
+- Update imodeljs-core dependencies to 0.80
+- Update bentleyjs-core dependency to 8
 
 ## 0.1.1
 Sun, 29 Apr 2018 08:07:40 GMT

@@ -2,6 +2,29 @@
   "name": "@bentley/ecpresentation-backend",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@bentley/ecpresentation-backend_v0.1.2",
+      "date": "Tue, 08 May 2018 07:05:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "100% unit test coverage"
+          },
+          {
+            "comment": "Update imodeljs-core dependencies to 0.80"
+          },
+          {
+            "comment": "Update bentleyjs-core dependency to 8"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.1` to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@bentley/ecpresentation-backend_v0.1.1",
       "date": "Sun, 29 Apr 2018 08:07:40 GMT",

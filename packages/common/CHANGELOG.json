@@ -2,6 +2,27 @@
   "name": "@bentley/ecpresentation-common",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@bentley/ecpresentation-common_v0.1.2",
+      "date": "Tue, 08 May 2018 07:05:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "100% unit test coverage"
+          },
+          {
+            "comment": "Fix Changes.js.map being included into the package."
+          },
+          {
+            "comment": "Update imodeljs-core dependencies to 0.80"
+          },
+          {
+            "comment": "Update bentleyjs-core dependency to 8"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@bentley/ecpresentation-common_v0.1.1",
       "date": "Sun, 29 Apr 2018 08:07:40 GMT",
