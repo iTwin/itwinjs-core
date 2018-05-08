@@ -76,7 +76,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
 /**
  * @docs-group-description Gateway
  * Classes for working with Gateways, the communication channel between clients and services.
- * For more information: [Gateways]]($docs/learning/Gateways.md)
+ * For more information: [Gateways]($docs/learning/Gateways.md)
  */
 /**
  * @docs-group-description Geometry
