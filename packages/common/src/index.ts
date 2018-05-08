@@ -4,7 +4,6 @@
 export * from "./EC";
 export { default as KeySet, Keys } from "./KeySet";
 export { default as PersistentKeysContainer } from "./PersistentKeysContainer";
-export * from "./Changes";
 export * from "./content";
 export * from "./hierarchy";
 export * from "./ECPresentationManager";
