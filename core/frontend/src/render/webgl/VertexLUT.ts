@@ -238,7 +238,7 @@ export namespace VertexLUT {
     protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
 
     protected appendUVParams(vertIndex: number) {
-      this.qpoint.init(this.args.textureUv[vertIndex], this.qparams);
+      this.qpoint.init(this.args.textureUv![vertIndex], this.qparams);
       this.append16(this.qpoint.x);
       this.append16(this.qpoint.y);
     }

@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
+import * as path from "path";
 
 import { TestConfig } from "../TestConfig";
 import { Guid } from "@bentley/bentleyjs-core";
@@ -12,69 +13,137 @@ import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { WsgError } from "../../WsgClient";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
 declare const __dirname: string;
 
-async function deleteiModelByName(imodelHubClient: IModelHubClient, accessToken: AccessToken, projectId: string, imodelName: string): Promise<void> {
-  const imodels = await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName));
-  if (imodels.length > 0) {
-    await imodelHubClient.IModels().delete(accessToken, projectId, imodels[0].wsgId);
-  }
-}
-
-function mockGetIModelByName(responseBuilder: ResponseBuilder, projectId: string, name: string) {
+function mockGetIModelByName(projectId: string, name: string, imodelId?: string, initialized = true) {
   if (!TestConfig.enableMocks)
     return;
 
+  imodelId = imodelId || Guid.createValue();
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId,
-    "iModel", `?$filter=Name+eq+%27${name}%27`);
-  const requestResponse = responseBuilder.generateGetResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
+    "iModel", `?$filter=Name+eq+%27${encodeURIComponent(name)}%27`);
+  const requestResponse = ResponseBuilder.generateGetResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
     new Map<string, any>([
       ["name", name],
-      ["wsgId", Guid.createValue()],
+      ["wsgId", imodelId],
+      ["initialized", initialized],
     ])));
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-function mockDeleteiModel(responseBuilder: ResponseBuilder, projectId: string, imodelId: string) {
+function mockPostiModel(projectId: string, imodelId: string, imodelName: string) {
+  const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
+  const postBody = ResponseBuilder.generatePostBody<IModel>(
+    ResponseBuilder.generateObject<IModel>(IModel, new Map<string, any>([["name", imodelName]])));
+  const requestResponse = ResponseBuilder.generatePostResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
+    new Map<string, any>([
+      ["wsgId", imodelId],
+      ["name", imodelName],
+      ["initialized", false],
+    ])));
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+}
+
+function mockPostNewSeedFile(imodelId: string, fileId: string, filePath: string) {
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
+  const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
+    new Map<string, any>([
+      ["fileName", path.basename(filePath)],
+      ["fileSize", fs.statSync(filePath).size.toString()],
+    ])));
+  const requestResponse = ResponseBuilder.generatePostResponse<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
+    new Map<string, any>([
+      ["wsgId", fileId],
+      ["fileId", fileId],
+      ["fileName", path.basename(filePath)],
+      ["uploadUrl", `${utils.defaultUrl}/imodelhub-${imodelId}/123456`],
+    ])));
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+}
+
+function mockUploadSeedFile(imodelId: string) {
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456`);
+}
+
+function mockPostUpdatedSeedFile(imodelId: string, fileId: string, filePath: string) {
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile", fileId);
+  const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
+    new Map<string, any>([["wsgId", fileId], ["fileName", path.basename(filePath)], ["fileId", fileId], ["isUploaded", true]])));
+
+  const requestResponse = ResponseBuilder.generatePostResponse<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
+    new Map<string, any>([
+      ["fileId", fileId],
+      ["wsgId", fileId],
+      ["isUploaded", true],
+    ])));
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+}
+
+function mockGetSeedFile(imodelId: string) {
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
+  const requestResponse = ResponseBuilder.generateGetResponse<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
+    new Map<string, any>([["initializationState", 0]])));
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
+function mockCreateiModel(projectId: string, imodelId: string, imodelName: string, filePath: string) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const fileId = Guid.createValue();
+  mockPostiModel(projectId, imodelId, imodelName);
+  mockPostNewSeedFile(imodelId, fileId, filePath);
+  mockUploadSeedFile(imodelId);
+  mockPostUpdatedSeedFile(imodelId, fileId, filePath);
+  mockGetSeedFile(imodelId);
+}
+
+function mockDeleteiModel(projectId: string, imodelId: string) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId,
     "iModel", imodelId);
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath, "");
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Delete, requestPath);
 }
 
 describe("iModelHub iModelHandler", () => {
   let accessToken: AccessToken;
   let projectId: string;
-  let testiModelName: string | undefined;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
-  const responseBuilder: ResponseBuilder = new ResponseBuilder();
+  let iModelId: string;
+  const imodelName = "imodeljs-clients iModels test";
+  const createIModelName = "imodeljs-client iModels Create test";
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
+  const downloadToPath: string = __dirname + "/../assets/";
 
   before(async () => {
     projectId = await utils.getProjectId();
     accessToken = await utils.login();
+    await utils.createIModel(accessToken, imodelName);
+    iModelId = await utils.getIModelId(accessToken, imodelName);
+    utils.deleteIModelByName(accessToken, projectId, createIModelName);
+
+    if (!fs.existsSync(downloadToPath)) {
+      fs.mkdirSync(downloadToPath);
+    }
   });
 
-  afterEach(async () => {
-    responseBuilder.clearMocks();
-    if (!TestConfig.enableMocks) {
-      if (testiModelName) {
-        await deleteiModelByName(imodelHubClient, accessToken, projectId, testiModelName);
-        testiModelName = undefined;
-      }
-    }
+  afterEach(() => {
+    ResponseBuilder.clearMocks();
+  });
+
+  after(() => {
+    utils.deleteIModelByName(accessToken, projectId, createIModelName);
   });
 
   it("should get list of IModels", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-      const requestResponse = responseBuilder.generateGetResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
-        new Map<string, any>([["name", TestConfig.iModelName]])));
-      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+      const requestResponse = ResponseBuilder.generateGetResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
+        new Map<string, any>([["name", imodelName]])));
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
 
     const imodels: IModel[] = await imodelHubClient.IModels().get(accessToken, projectId);
@@ -82,9 +151,9 @@ describe("iModelHub iModelHandler", () => {
   });
 
   it("should get a specific IModel", async () => {
-    mockGetIModelByName(responseBuilder, projectId, TestConfig.iModelName);
-    const iModel: IModel = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(TestConfig.iModelName)))[0];
-    chai.expect(iModel.name).equals(TestConfig.iModelName);
+    mockGetIModelByName(projectId, imodelName);
+    const iModel: IModel = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
+    chai.expect(iModel.name).equals(imodelName);
   });
 
   it("should be able to delete iModels", async function (this: Mocha.ITestCallbackContext) {
@@ -94,110 +163,20 @@ describe("iModelHub iModelHandler", () => {
     // Used only for maintenance
     const names = ["22_LargePlant.166.i"];
     for (const name of names) {
-      mockGetIModelByName(responseBuilder, projectId, name);
+      mockGetIModelByName(projectId, name);
       const iModel: IModel = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(name)))[0];
       chai.expect(iModel.name).equals(name);
-      mockDeleteiModel(responseBuilder, projectId, iModel.wsgId);
+      mockDeleteiModel(projectId, iModel.wsgId);
       await imodelHubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
     }
-  });
-});
-
-function mockPostiModel(responseBuilder: ResponseBuilder, projectId: string, imodelId: string) {
-  const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-  const postBody = responseBuilder.generatePostBody<IModel>(
-    responseBuilder.generateObject<IModel>(IModel, new Map<string, any>([["name", TestConfig.iModelName]])));
-  const requestResponse = responseBuilder.generatePostResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
-    new Map<string, any>([
-      ["wsgId", imodelId],
-      ["name", TestConfig.iModelName],
-      ["initialized", true],
-    ])));
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
-}
-
-function mockPostNewSeedFile(responseBuilder: ResponseBuilder, imodelId: string) {
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
-  const postBody = responseBuilder.generatePostBody<SeedFile>(responseBuilder.generateObject<SeedFile>(SeedFile,
-    new Map<string, any>([["fileName", "empty.bim"], ["fileSize", "0"]])));
-  const requestResponse = responseBuilder.generatePostResponse<SeedFile>(responseBuilder.generateObject<SeedFile>(SeedFile,
-    new Map<string, any>([
-      ["wsgId", "00000000-0000-0000-0000-000000000000"],
-      ["fileId", "123456"],
-      ["fileName", "empty.bim"],
-      ["uploadUrl", `https://qa-imodelhubapi.bentley.com/imodelhub-${imodelId}/123456`],
-    ])));
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
-}
-
-function mockUploadSeedFile(responseBuilder: ResponseBuilder, imodelId: string) {
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456`, "");
-}
-
-function mockPostUpdatedSeedFile(responseBuilder: ResponseBuilder, imodelId: string) {
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile", "00000000-0000-0000-0000-000000000000");
-  const postBody = responseBuilder.generatePostBody<SeedFile>(responseBuilder.generateObject<SeedFile>(SeedFile,
-    new Map<string, any>([["wsgId", "00000000-0000-0000-0000-000000000000"], ["fileName", "empty.bim"], ["fileId", "123456"], ["isUploaded", true]])));
-
-  const requestResponse = responseBuilder.generatePostResponse<SeedFile>(responseBuilder.generateObject<SeedFile>(SeedFile,
-    new Map<string, any>([
-      ["fileId", "123456"],
-      ["wsgId", "00000000-0000-0000-0000-000000000000"],
-      ["isUploaded", true],
-    ])));
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
-}
-
-function mockGetSeedFile(responseBuilder: ResponseBuilder, imodelId: string) {
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
-  const requestResponse = responseBuilder.generateGetResponse<SeedFile>(responseBuilder.generateObject<SeedFile>(SeedFile,
-    new Map<string, any>([["initializationState", 0]])));
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-}
-
-function mockCreateiModel(responseBuilder: ResponseBuilder, projectId: string, imodelId: string) {
-  if (!TestConfig.enableMocks)
-    return;
-
-  mockPostiModel(responseBuilder, projectId, imodelId);
-  mockPostNewSeedFile(responseBuilder, imodelId);
-  mockUploadSeedFile(responseBuilder, imodelId);
-  mockPostUpdatedSeedFile(responseBuilder, imodelId);
-  mockGetSeedFile(responseBuilder, imodelId);
-}
-
-describe("iModelHub iModelHandler for a specific iModel", () => {
-  let accessToken: AccessToken;
-  let projectId: string;
-  let iModelId: string;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
-  const downloadToPath: string = __dirname + "/../assets/";
-  const responseBuilder: ResponseBuilder = new ResponseBuilder();
-
-  before(async () => {
-    projectId = await utils.getProjectId();
-    accessToken = await utils.login();
-    iModelId = await utils.getIModelId(accessToken, TestConfig.iModelName);
-
-    if (!fs.existsSync(downloadToPath)) {
-      fs.mkdirSync(downloadToPath);
-    }
-  });
-
-  afterEach(() => {
-    responseBuilder.clearMocks();
-  });
-
-  it("should get the Id", async () => {
-    chai.expect(iModelId.length).equals(36); // length of a guid string
   });
 
   it("should retrieve an iModel by it's id", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", iModelId);
-      const requestResponse = responseBuilder.generateGetResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
+      const requestResponse = ResponseBuilder.generateGetResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
         new Map<string, any>([["wsgId", iModelId]])));
-      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
 
     const iModel: IModel = (await imodelHubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
@@ -208,7 +187,7 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
   it("should fail getting an invalid iModel", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", "00000000-0000-0000-0000-000000000000");
-      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, responseBuilder.generateError("InstanceNotFound"),
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError("InstanceNotFound"),
         1, undefined, undefined, 404);
     }
 
@@ -226,8 +205,8 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
   it("should fail getting an iModel without projectId", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, "", "iModel", iModelId);
-      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
-        responseBuilder.generateError("iModelHub.ProjectIdIsNotSpecified"),
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateError("iModelHub.ProjectIdIsNotSpecified"),
         1, undefined, undefined, 400);
     }
 
@@ -246,15 +225,15 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
   it("should fail creating existing and initialized iModel", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-      const requestResponse = responseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
+      const requestResponse = ResponseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
         new Map<string, any>([["iModelInitialized", true]]));
-      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, undefined, undefined, 409);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, undefined, undefined, 409);
     }
 
     let error: IModelHubResponseError | undefined;
     try {
-      await imodelHubClient.IModels().create(accessToken, projectId, TestConfig.iModelName,
-        downloadToPath + "empty-files/empty.bim");
+      await imodelHubClient.IModels().create(accessToken, projectId, imodelName,
+        utils.getMockSeedFilePath());
     } catch (err) {
       if (err instanceof IModelHubResponseError)
         error = err;
@@ -264,15 +243,11 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
   });
 
   it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
+    const filePath = utils.getMockSeedFilePath();
+    mockCreateiModel(projectId, Guid.createValue(), createIModelName, filePath);
+    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, filePath);
 
-    mockCreateiModel(responseBuilder, projectId, iModelId);
-    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, TestConfig.iModelName,
-      downloadToPath + "empty-files/empty.bim");
-
-    chai.expect(iModel.wsgId).equals(iModelId);
-    chai.expect(iModel.name).equals(TestConfig.iModelName);
+    chai.expect(iModel.name).equals(createIModelName);
     chai.expect(iModel.initialized).equals(true);
   });
 
@@ -280,35 +255,29 @@ describe("iModelHub iModelHandler for a specific iModel", () => {
     if (!TestConfig.enableMocks)
       this.skip();
 
+    const filePath = utils.getMockSeedFilePath();
     if (TestConfig.enableMocks) {
-      let requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
-      const postBody = responseBuilder.generatePostBody<IModel>(
-        responseBuilder.generateObject<IModel>(IModel,
-          new Map<string, any>([["name", TestConfig.iModelName]])));
-      let requestResponse = responseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
+      const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
+      const postBody = ResponseBuilder.generatePostBody<IModel>(
+        ResponseBuilder.generateObject<IModel>(IModel,
+          new Map<string, any>([["name", imodelName]])));
+      const requestResponse = ResponseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
         new Map<string, any>([["iModelInitialized", false]]));
-      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 
-      requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", `?$filter=Name+eq+%27${TestConfig.iModelName}%27`);
-      requestResponse = responseBuilder.generateGetResponse<IModel>(responseBuilder.generateObject<IModel>(IModel,
-        new Map<string, any>([
-          ["wsgId", iModelId],
-          ["name", TestConfig.iModelName],
-          ["initialized", true],
-        ])));
-      responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-
-      mockPostNewSeedFile(responseBuilder, iModelId);
-      mockUploadSeedFile(responseBuilder, iModelId);
-      mockPostUpdatedSeedFile(responseBuilder, iModelId);
-      mockGetSeedFile(responseBuilder, iModelId);
+      const fileId = Guid.createValue();
+      mockGetIModelByName(projectId, imodelName, iModelId, false);
+      mockPostNewSeedFile(iModelId, fileId, filePath);
+      mockUploadSeedFile(iModelId);
+      mockPostUpdatedSeedFile(iModelId, fileId, filePath);
+      mockGetSeedFile(iModelId);
     }
 
-    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, TestConfig.iModelName,
-      downloadToPath + "empty-files/empty.bim");
+    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, imodelName,
+      filePath);
 
     chai.expect(iModel.wsgId).equals(iModelId);
-    chai.expect(iModel.name).equals(TestConfig.iModelName);
+    chai.expect(iModel.name).equals(imodelName);
     chai.expect(iModel.initialized).equals(true);
   });
 });

@@ -7,10 +7,10 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { IModelReadGatewayImpl } from "./gateway-impl/IModelReadGatewayImpl";
-import { IModelWriteGatewayImpl } from "./gateway-impl/IModelWriteGatewayImpl";
-import { StandaloneIModelGatewayImpl } from "./gateway-impl/StandaloneIModelGatewayImpl";
-import { IModelUnitTestGatewayImpl } from "./gateway-impl/IModelUnitTestGatewayImpl";
+import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
+import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
+import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
+import { IModelUnitTestRpcImpl } from "./rpc-impl/IModelUnitTestRpcImpl";
 import { KnownLocations } from "./Platform";
 import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -74,10 +74,10 @@ export class IModelHost {
         NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
     }
 
-    IModelReadGatewayImpl.register();
-    IModelWriteGatewayImpl.register();
-    StandaloneIModelGatewayImpl.register();
-    IModelUnitTestGatewayImpl.register();
+    IModelReadRpcImpl.register();
+    IModelWriteRpcImpl.register();
+    StandaloneIModelRpcImpl.register();
+    IModelUnitTestRpcImpl.register();
 
     BisCore.registerSchema();
 
@@ -97,4 +97,5 @@ export class IModelHost {
   public static get appAssetsDir(): string | undefined {
     return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }
+
 }

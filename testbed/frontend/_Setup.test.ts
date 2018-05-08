@@ -15,20 +15,20 @@ import { TestbedConfig } from "../common/TestbedConfig";
 import { assert } from "chai";
 import { TestData } from "./TestData";
 
-TestbedConfig.initializeGatewayConfig();
-if (TestbedConfig.gatewayConfig)
-  TestbedConfig.gatewayConfig.protocol.pathPrefix = `http://localhost:${TestbedConfig.serverPort}`;
+TestbedConfig.initializeRpcFrontend();
+if (TestbedConfig.cloudRpc)
+  TestbedConfig.cloudRpc.protocol.pathPrefix = `http://localhost:${TestbedConfig.serverPort}`;
 
 after(() => {
-  setTimeout(() =>  {
-    common.GatewayProtocol.events.raiseEvent (common.GatewayProtocolEvent.ReleaseResources);
+  setTimeout(() => {
+    common.RpcProtocol.events.raiseEvent(common.RpcProtocolEvent.ReleaseResources);
   }, 2000);
 });
 
 describe("Testbed", function () {
-  if (TestbedConfig.gatewayConfig) {
+  if (TestbedConfig.cloudRpc) {
     it("Server should be accessible", (done) => {
-      const info = TestbedConfig.gatewayParams.info;
+      const info = TestbedConfig.cloudRpcParams.info;
 
       const req = new XMLHttpRequest();
       req.open("GET", `http://localhost:${TestbedConfig.serverPort}${TestbedConfig.swaggerURI}`);

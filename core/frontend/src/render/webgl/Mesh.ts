@@ -9,7 +9,7 @@ import { MeshArgs } from "../primitives/Mesh";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
-import { Graphic, wantJointTriangles/*, Batch*/ } from "./Graphic";
+import { Graphic, wantJointTriangles, Batch } from "./Graphic";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
@@ -17,26 +17,26 @@ import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Target } from "./Target";
 import { SurfacePrimitive } from "./Surface";
-// import { RenderCommands, DrawCommands } from "./DrawCommand";
+import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
   QParams2d,
   FillFlags,
-  Texture,
+  RenderTexture,
   RenderMode,
-  Material,
+  RenderMaterial,
 } from "@bentley/imodeljs-common";
 
 export class MeshInfo {
   public readonly edgeWidth: number;
   public features?: FeaturesInfo;
-  public readonly texture?: Texture; // ###TODO...
+  public readonly texture?: RenderTexture; // ###TODO...
   public readonly type: SurfaceType;
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
 
-  protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: Texture) {
+  protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: RenderTexture) {
     this.edgeWidth = edgeWidth;
     this.features = features;
     this.texture = texture;
@@ -49,7 +49,7 @@ export class MeshInfo {
 
 export class MeshData extends MeshInfo {
   public readonly lut: VertexLUT.Data;
-  public readonly material: MaterialData;
+  public readonly material?: MaterialData | RenderMaterial; // ###TODO implement MaterialData, remove RenderMaterial as option
   public readonly animation: any; // should be a AnimationLookupTexture;
 
   public static create(params: MeshParams): MeshData | undefined {
@@ -69,7 +69,7 @@ export class MeshParams extends MeshInfo {
   public readonly vertexParams: QParams3d;
   public readonly uvParams?: QParams2d;
   public readonly lutParams: VertexLUT.Params;
-  public readonly material: Material;
+  public readonly material?: RenderMaterial;
   public readonly animationLUTParams: any; // TODO: should be a AnimationLUTParams;
 
   public constructor(args: MeshArgs) {
@@ -84,14 +84,14 @@ export class MeshParams extends MeshInfo {
     // ###TODO: MeshArgs.textureUV should be undefined unless it's non-empty
     const uvRange = Range2d.createNull();
     const fpts = args.textureUv;
-    if (fpts.length !== 0) {
-      for (let i = 0; i < args.points.length; i++) {
+    if (undefined !== fpts && fpts.length !== 0) {
+      for (let i = 0; i < args.points!.length; i++) {
         uvRange.extendPoint(Point2d.createFrom({ x: fpts[i].x, y: fpts[i].y }));
       }
     }
 
     this.uvParams = uvRange.isNull() ? undefined : QParams2d.fromRange(uvRange);
-    this.vertexParams = args.points.params;
+    this.vertexParams = args.points!.params;
     this.material = args.material;
     switch (this.type) {
       case SurfaceType.Lit:
@@ -114,7 +114,7 @@ export class MeshParams extends MeshInfo {
 
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
-  private readonly _primitives = Array<Primitive | undefined>(4); // [surfaces, silhouettes, edges, polylines]
+  private readonly _primitives: MeshPrimitive[] = [];
 
   public static create(args: MeshArgs, iModel: IModelConnection) {
     const data = MeshData.create(new MeshParams(args));
@@ -125,11 +125,13 @@ export class MeshGraphic extends Graphic {
     super(iModel);
     this.meshData = data;
 
-    assert(undefined !== this._primitives); // silence unused variable warnings...
-    this._primitives[0] = SurfacePrimitive.create(args, this);
+    const surface = SurfacePrimitive.create(args, this);
+    if (undefined !== surface)
+      this._primitives.push(surface);
 
+    // ###TODO edges
     // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
-    const convertPolylineEdges = args.edges.polylines.isValid() && !wantJointTriangles(args.edges.width, args.is2d);
+    const convertPolylineEdges = args.edges.polylines.isValid && !wantJointTriangles(args.edges.width, args.is2d);
     if (convertPolylineEdges) {
       // const simpleEdges = new SimplePolylineEdgeArgs(args.edges.polylines, args.edges.edges);
       // this.primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
@@ -139,16 +141,9 @@ export class MeshGraphic extends Graphic {
     }
   }
 
-  // public addCommands(cmds: RenderCommands): void {
-  //   this.primitives.forEach((prim) => {
-  //     if (true /*prim.isValid()*/) { prim.addCommands(cmds); }
-  //   });
-  // }
-  // public addHiliteCommands(cmds: DrawCommands, batch: Batch): void {
-  //   this.primitives.forEach((prim) => {
-  //     if (true /*prim.isValid()*/) { prim.addHiliteCommands(cmds, batch); }
-  //   });
-  // }
+  public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
+  public addHiliteCommands(cmds: DrawCommands, batch: Batch): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch)); }
+
   public setUniformFeatureIndices(id: number): void {
     this.meshData.features = FeaturesInfo.createUniform(id);
   }

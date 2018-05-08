@@ -3,10 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { AccessToken, ChangeSet, UserInfo, IModelHubClient, UserInfoQuery, AzureFileHandler, ChangeSetQuery } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
-import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -57,12 +56,10 @@ export interface ChangeSummaryExtractOptions {
 class ChangeSummaryExtractContext {
   public readonly iModel: IModelDb;
   public readonly accessToken: AccessToken;
-  public readonly hubClient: IModelHubClient;
 
-  public constructor(iModel: IModelDb, hubclient?: IModelHubClient) {
+  public constructor(iModel: IModelDb) {
     this.iModel = iModel;
     this.accessToken = IModelDb.getAccessToken(this.iModelId);
-    this.hubClient = hubclient ? hubclient : new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
   }
 
   public get iModelId(): string { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
@@ -74,8 +71,6 @@ class ChangeSummaryExtractContext {
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
-  private static hubClient?: IModelHubClient;
-
   /** Determines whether the *Changes Cache File* is attached to the specified iModel or not
    * @param iModel iModel to check whether a *Changes Cache File* is attached
    * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
@@ -140,10 +135,7 @@ export class ChangeSummaryManager {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.briefcase.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
-    if (!ChangeSummaryManager.hubClient || ChangeSummaryManager.hubClient!.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig)
-      ChangeSummaryManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
-
-    const ctx = new ChangeSummaryExtractContext(iModel, this.hubClient);
+    const ctx = new ChangeSummaryExtractContext(iModel);
 
     const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
     assert(endChangeSetId.length !== 0);
@@ -212,7 +204,7 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (!foundUserEmail) {
-            const userInfo: UserInfo = (await ctx.hubClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
+            const userInfo: UserInfo = (await BriefcaseManager.hubClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
             userInfoCache.set(userId, userEmail !== undefined ? userEmail : "");
@@ -245,7 +237,7 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await ctx.hubClient.ChangeSets().get(ctx.accessToken, ctx.iModelId, query);
+      const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(ctx.accessToken, ctx.iModelId, query);
       if (changeSets.length === 0)
         return Promise.reject(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
 

@@ -14,23 +14,22 @@ import {
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
 declare const __dirname: string;
 
 chai.should();
 
-function mockGetBriefcaseById(responseBuilder: ResponseBuilder, imodelId: string, briefcase: Briefcase) {
+function mockGetBriefcaseById(imodelId: string, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", `${briefcase.briefcaseId!}`);
-  const requestResponse = responseBuilder.generateGetResponse(briefcase);
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  const requestResponse = ResponseBuilder.generateGetResponse(briefcase);
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-function mockGetBriefcaseWithDownloadUrl(responseBuilder: ResponseBuilder, imodelId: string, briefcase: Briefcase) {
+function mockGetBriefcaseWithDownloadUrl(imodelId: string, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -38,22 +37,38 @@ function mockGetBriefcaseWithDownloadUrl(responseBuilder: ResponseBuilder, imode
     `${briefcase.briefcaseId!}?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`);
   briefcase.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
   briefcase.fileName = "TestModel.bim";
-  const requestResponse = responseBuilder.generateGetResponse<Briefcase>(briefcase);
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  const requestResponse = ResponseBuilder.generateGetResponse<Briefcase>(briefcase);
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
 describe("iModelHub BriefcaseHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
-  // let seedFileId: string;
+  const imodelName = "imodeljs-clients Briefcases test";
   let briefcaseId: number;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
   const downloadToPath: string = __dirname + "/../assets/";
-  const responseBuilder: ResponseBuilder = new ResponseBuilder();
 
   before(async () => {
     accessToken = await utils.login();
-    iModelId = await utils.getIModelId(accessToken);
+    await utils.createIModel(accessToken, imodelName);
+    iModelId = await utils.getIModelId(accessToken, imodelName);
+    if (!TestConfig.enableMocks) {
+      const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
+      let briefcasesCount = briefcases.length;
+      if (briefcasesCount > 19) {
+        // Ensure that tests can still acquire briefcases
+        for (const briefcase of briefcases) {
+          await imodelHubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!);
+        }
+        briefcasesCount = 0;
+      }
+
+      // Ensure that at least one briefcase is available for querying
+      if (briefcasesCount === 0) {
+        await imodelHubClient.Briefcases().create(accessToken, iModelId);
+      }
+    }
 
     if (!fs.existsSync(downloadToPath)) {
       fs.mkdirSync(downloadToPath);
@@ -61,26 +76,20 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   afterEach(() => {
-    responseBuilder.clearMocks();
+    ResponseBuilder.clearMocks();
   });
 
-  it("should get all briefcases, and acquire one if necessary", async () => {
-    utils.mockGetBriefcase(responseBuilder, iModelId, utils.generateBriefcase(2));
-    let briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
+  it("should acquire a briefcase", async () => {
+    utils.mockCreateBriefcase(iModelId, 2);
+    const briefcase = await imodelHubClient.Briefcases().create(accessToken, iModelId);
+    chai.expect(briefcase.briefcaseId).greaterThan(1);
 
-    // Note: Avoiding acquiring a briefcase unless really necessary - there's only a limited amount of briefcases available
-    if (briefcases.length < 2) {
-      // Acquire 1 briefcase when using nock, to cover Briefcase.create()
-      utils.mockCreateBriefcase(responseBuilder, iModelId, 3);
-      for (let i = briefcases.length; i < 2; ++i) {
-        const briefcase = await imodelHubClient.Briefcases().create(accessToken, iModelId);
-        chai.expect(briefcase.briefcaseId).greaterThan(0);
-      }
+  });
 
-      utils.mockGetBriefcase(responseBuilder, iModelId, utils.generateBriefcase(2), utils.generateBriefcase(3));
-      briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
-      chai.expect(briefcases.length).greaterThan(0);
-    }
+  it("should get all briefcases", async () => {
+    utils.mockGetBriefcase(iModelId, utils.generateBriefcase(2), utils.generateBriefcase(3));
+    const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
+    chai.expect(briefcases.length).greaterThan(0);
 
     for (const briefcase of briefcases) {
       chai.expect(briefcase.iModelId).to.be.equal(iModelId);
@@ -101,7 +110,7 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should get information on a briefcase by id", async () => {
-    mockGetBriefcaseById(responseBuilder, iModelId, utils.generateBriefcase(briefcaseId));
+    mockGetBriefcaseById(iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId)))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.expect(briefcase.downloadUrl).to.be.equal(undefined);
@@ -121,23 +130,24 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should get the download URL for a Briefcase", async () => {
-    mockGetBriefcaseWithDownloadUrl(responseBuilder, iModelId, utils.generateBriefcase(briefcaseId));
+    mockGetBriefcaseWithDownloadUrl(iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
-    chai.expect(briefcase.fileName).to.be.equal("TestModel.bim");
+    chai.expect(briefcase.fileName);
+    chai.expect(briefcase.fileName!.length > 0);
     chai.expect(briefcase.downloadUrl);
     chai.expect(briefcase.downloadUrl!.startsWith("https://"));
   });
 
   it("should download a Briefcase", async () => {
-    mockGetBriefcaseWithDownloadUrl(responseBuilder, iModelId, utils.generateBriefcase(briefcaseId));
+    mockGetBriefcaseWithDownloadUrl(iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
     const downloadToPathname: string = path.join(downloadToPath, fileName);
 
-    utils.mockFileResponse(responseBuilder, downloadToPath);
+    utils.mockFileResponse(downloadToPath);
 
     await imodelHubClient.Briefcases().download(briefcase, downloadToPathname);
     fs.existsSync(downloadToPathname).should.be.equal(true);
@@ -148,10 +158,10 @@ describe("iModelHub BriefcaseHandler", () => {
       this.skip();
 
     const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
-    const requestResponse = responseBuilder.generateGetResponse<Briefcase>(responseBuilder.generateObject<Briefcase>(Briefcase));
+    const requestResponse = ResponseBuilder.generateGetResponse<Briefcase>(ResponseBuilder.generateObject<Briefcase>(Briefcase));
 
-    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, responseBuilder.generateError(undefined, "BadRequest"), 1, undefined, undefined, 400);
-    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "BadRequest"), 1, undefined, undefined, 400);
+    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     const briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId));
     chai.expect(briefcase);
   });
@@ -161,7 +171,7 @@ describe("iModelHub BriefcaseHandler", () => {
       this.skip();
 
     const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
-    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, responseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
+    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
     try {
       (await imodelHubClient.Briefcases().get(accessToken, iModelId));
     } catch (err) {
@@ -175,7 +185,7 @@ describe("iModelHub BriefcaseHandler", () => {
       this.skip();
 
     const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
-    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, responseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
+    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
     try {
       (await imodelHubClient.Briefcases().get(accessToken, iModelId));
     } catch (err) {

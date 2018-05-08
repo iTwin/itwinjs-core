@@ -13,15 +13,17 @@ import { KnownLocations } from "../../Platform";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
-describe("ApplyChangeSets (#online-required)", () => {
+describe("ApplyChangeSets (#integration)", () => {
   let accessToken: AccessToken;
   const iModelRootDir = path.join(KnownLocations.tmpdir, "IModelJsTest/");
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    Logger.setLevel(HubTestUtils.logCategory, LogLevel.Info);
-    // Logger.setLevel("DgnCore", LogLevel.Info);
-    // Logger.setLevel("BeSQLite", LogLevel.Info);
+
+    // Note: Change to LogLevel.Info for useful debug information
+    Logger.setLevel(HubTestUtils.logCategory, LogLevel.Error);
+    Logger.setLevel("DgnCore", LogLevel.Error);
+    Logger.setLevel("BeSQLite", LogLevel.Error);
   });
 
   const testAllChangeSetOperations = async (projectName: string, iModelName: string) => {
@@ -67,8 +69,8 @@ describe("ApplyChangeSets (#online-required)", () => {
     await testAllChangeSetOperations("NodeJsTestProject", "TestModel");
     await testAllChangeSetOperations("iModelJsTest", "ReadOnlyTest");
     await testAllChangeSetOperations("iModelHubTest", "Office Building4");
+    await testAllChangeSetOperations("SampleBisPlant", "samplePlant20");
     // await testAllChangeSetOperations("AbdTestProject", "ATP_2018050310145994_scenario22");
-    // await testAllChangeSetOperations("SampleBisPlant", "samplePlant20");
   });
 
 });

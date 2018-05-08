@@ -2,10 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import {
-  ConnectClient, IModelHubClient, IModel as HubIModel, AccessToken, Project, IModelQuery, AzureFileHandler,
+  IModel as HubIModel, AccessToken, Project, IModelQuery,
   ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase,
 } from "@bentley/imodeljs-clients";
-import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { ChangeSetToken, BriefcaseManager, BriefcaseId } from "../../BriefcaseManager";
 import { IModelDb } from "../../IModelDb";
@@ -15,26 +14,6 @@ import { Logger } from "@bentley/bentleyjs-core";
 import * as path from "path";
 
 export class HubTestUtils {
-
-  private static _hubClient?: IModelHubClient;
-  public static get hubClient(): IModelHubClient {
-    if (!HubTestUtils._hubClient) {
-      if (!IModelHost.configuration)
-        throw new Error("IModelHost.startup() should be called before any backend operations");
-      HubTestUtils._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler());
-    }
-    return HubTestUtils._hubClient;
-  }
-
-  private static _connectClient?: ConnectClient;
-  public static get connectClient(): ConnectClient {
-    if (!HubTestUtils._connectClient) {
-      if (!IModelHost.configuration)
-        throw new Error("IModelHost.startup() should be called before any backend operations");
-      HubTestUtils._connectClient = new ConnectClient(IModelHost.configuration.iModelHubDeployConfig);
-    }
-    return HubTestUtils._connectClient;
-  }
 
   public static logCategory = "HubTest";
 
@@ -65,7 +44,7 @@ export class HubTestUtils {
   }
 
   private static async queryProjectByName(accessToken: AccessToken, projectName: string): Promise<Project | undefined> {
-    const project: Project = await HubTestUtils.connectClient.getProject(accessToken, {
+    const project: Project = await BriefcaseManager.connectClient.getProject(accessToken, {
       $select: "*",
       $filter: "Name+eq+'" + projectName + "'",
     });
@@ -73,7 +52,7 @@ export class HubTestUtils {
   }
 
   private static async queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
-    const iModels = await HubTestUtils.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
+    const iModels = await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byName(iModelName));
     if (iModels.length === 0)
       return undefined;
     if (iModels.length > 1)
@@ -113,11 +92,11 @@ export class HubTestUtils {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
 
-    const changeSets: ChangeSet[] = await HubTestUtils.hubClient.ChangeSets().get(accessToken, iModelId, query);
+    const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId, query);
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
-    await HubTestUtils.hubClient.ChangeSets().download(changeSets, changeSetsPath);
+    await BriefcaseManager.hubClient.ChangeSets().download(changeSets, changeSetsPath);
     return changeSets;
   }
 
@@ -142,7 +121,7 @@ export class HubTestUtils {
 
     // Download the seed file
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
-    await HubTestUtils.hubClient.IModels().download(accessToken, iModelId, seedPathname);
+    await BriefcaseManager.hubClient.IModels().download(accessToken, iModelId, seedPathname);
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
@@ -160,7 +139,7 @@ export class HubTestUtils {
     const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubTestUtils.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    await HubTestUtils.hubClient.IModels().delete(accessToken, projectId, iModelId);
+    await BriefcaseManager.hubClient.IModels().delete(accessToken, projectId, iModelId);
   }
 
   public static getSeedPathname(iModelDir: string) {
@@ -186,13 +165,13 @@ export class HubTestUtils {
     const iModelName = path.basename(seedPathname, ".bim");
     let iModel: HubIModel | undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel)
-      await HubTestUtils.hubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
+      await BriefcaseManager.hubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
 
     // Upload a new iModel
-    iModel = await HubTestUtils.hubClient.IModels().create(accessToken, projectId, iModelName, seedPathname, "", 2 * 60 * 1000);
+    iModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, iModelName, seedPathname, "", 2 * 60 * 1000);
     const iModelId = iModel!.wsgId;
 
-    const briefcase: HubBriefcase = await HubTestUtils.hubClient.Briefcases().create(accessToken, iModelId);
+    const briefcase: HubBriefcase = await BriefcaseManager.hubClient.Briefcases().create(accessToken, iModelId);
     if (!briefcase) {
       return Promise.reject(`Could not acquire a briefcase for the iModel ${iModelName}`);
     }
@@ -218,7 +197,7 @@ export class HubTestUtils {
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await HubTestUtils.hubClient.ChangeSets().create(accessToken, iModelId, changeSet, changeSetPathname);
+      await BriefcaseManager.hubClient.ChangeSets().create(accessToken, iModelId, changeSet, changeSetPathname);
     }
 
     return iModelId;
@@ -231,13 +210,13 @@ export class HubTestUtils {
     const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
     const iModelId: string = await HubTestUtils.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    const briefcases: HubBriefcase[] = await HubTestUtils.hubClient.Briefcases().get(accessToken, iModelId);
+    const briefcases: HubBriefcase[] = await BriefcaseManager.hubClient.Briefcases().get(accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo(HubTestUtils.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(HubTestUtils.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
+        promises.push(BriefcaseManager.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }
