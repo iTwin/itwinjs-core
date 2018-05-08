@@ -7,52 +7,89 @@ import { ImsFederatedAuthentiationClient, ImsActiveSecureTokenClient, ImsDelegat
 import { UserProfile } from "../UserProfile";
 import { TestConfig, TestUsers } from "./TestConfig";
 
+import { UrlDiscoveryMock } from "./ResponseBuilder";
+import { DeploymentEnv, UrlDescriptor } from "../Client";
+
 chai.should();
 
-describe("ImsFederatedAuthentiationClient", () => {
-  before(function (this: Mocha.IHookCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-  });
+export class FederatedImsUrlMock {
+  private static readonly urlDescriptor: UrlDescriptor = {
+    DEV: "https://qa-ims.bentley.com",
+    QA: "https://qa-ims.bentley.com",
+    PROD: "https://ims.bentley.com",
+    PERF: "https://qa-ims.bentley.com",
+  };
 
+  public static getUrl(env: DeploymentEnv): string {
+    return this.urlDescriptor[env];
+  }
+
+  public static mockGetUrl(env: DeploymentEnv) {
+    UrlDiscoveryMock.mockGetUrl(ImsFederatedAuthentiationClient.searchKey, env, this.urlDescriptor[env]);
+  }
+}
+
+describe("ImsFederatedAuthentiationClient", () => {
   it("should setup its URLs correctly", async () => {
+    FederatedImsUrlMock.mockGetUrl("DEV");
     let url: string = await new ImsFederatedAuthentiationClient("DEV").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
+    FederatedImsUrlMock.mockGetUrl("QA");
     url = await new ImsFederatedAuthentiationClient("QA").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
 
+    FederatedImsUrlMock.mockGetUrl("PROD");
     url = await new ImsFederatedAuthentiationClient("PROD").getUrl();
     chai.expect(url).equals("https://ims.bentley.com");
 
+    FederatedImsUrlMock.mockGetUrl("PERF");
     url = await new ImsFederatedAuthentiationClient("PERF").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com");
   });
 });
 
-describe("ImsActiveSecureTokenClient", () => {
-  before(function (this: Mocha.IHookCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-  });
+export class ActiveImsUrlMock {
+  private static readonly urlDescriptor: UrlDescriptor = {
+    DEV: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
+    QA: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
+    PROD: "https://ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
+    PERF: "https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx",
+  };
 
+  public static getUrl(env: DeploymentEnv): string {
+    return this.urlDescriptor[env];
+  }
+
+  public static mockGetUrl(env: DeploymentEnv) {
+    UrlDiscoveryMock.mockGetUrl(ImsActiveSecureTokenClient.searchKey, env, this.urlDescriptor[env]);
+  }
+}
+
+describe("ImsActiveSecureTokenClient", () => {
   it("should setup its URLs correctly", async () => {
     const prodClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient("PROD");
 
+    ActiveImsUrlMock.mockGetUrl("DEV");
     let url: string = await (new ImsActiveSecureTokenClient("DEV")).getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
 
+    ActiveImsUrlMock.mockGetUrl("QA");
     url = await (new ImsActiveSecureTokenClient("QA")).getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
 
+    ActiveImsUrlMock.mockGetUrl("PROD");
     url = await prodClient.getUrl();
     chai.expect(url).equals("https://ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
 
+    ActiveImsUrlMock.mockGetUrl("PERF");
     url = await (new ImsActiveSecureTokenClient("PERF")).getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/ActiveSTSService/json/IssueEx");
   });
 
-  it("should find the access token with the right credentials", async () => {
+  it("should find the access token with the right credentials", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const clients: ImsActiveSecureTokenClient[] = [
       new ImsActiveSecureTokenClient("DEV"),
@@ -86,29 +123,48 @@ describe("ImsActiveSecureTokenClient", () => {
 
 });
 
+export class DelegationImsUrlMock {
+  private static readonly urlDescriptor: UrlDescriptor = {
+    DEV: "https://qa-ims.bentley.com/rest/DelegationSTSService",
+    QA: "https://qa-ims.bentley.com/rest/DelegationSTSService",
+    PROD: "https://ims.bentley.com/rest/DelegationSTSService",
+    PERF: "https://qa-ims.bentley.com/rest/DelegationSTSService",
+  };
+
+  public static getUrl(env: DeploymentEnv): string {
+    return this.urlDescriptor[env];
+  }
+
+  public static mockGetUrl(env: DeploymentEnv) {
+    UrlDiscoveryMock.mockGetUrl(ImsDelegationSecureTokenClient.searchKey, env, this.urlDescriptor[env]);
+  }
+}
+
 describe("ImsDelegationSecureTokenClient", () => {
   const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient(TestConfig.deploymentEnv);
 
-  before(function (this: Mocha.IHookCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-  });
-
   it("should setup its URLs correctly", async () => {
+    DelegationImsUrlMock.mockGetUrl("DEV");
     let url: string = await new ImsDelegationSecureTokenClient("DEV").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/DelegationSTSService");
 
+    DelegationImsUrlMock.mockGetUrl("QA");
     url = await new ImsDelegationSecureTokenClient("QA").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/DelegationSTSService");
 
+    DelegationImsUrlMock.mockGetUrl("PROD");
     url = await new ImsDelegationSecureTokenClient("PROD").getUrl();
     chai.expect(url).equals("https://ims.bentley.com/rest/DelegationSTSService");
 
+    DelegationImsUrlMock.mockGetUrl("PERF");
     url = await new ImsDelegationSecureTokenClient("PERF").getUrl();
     chai.expect(url).equals("https://qa-ims.bentley.com/rest/DelegationSTSService");
   });
 
-  it("should find the delegation token with the right credentials", async () => {
+  it("should find the delegation token with the right credentials", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const clients: ImsDelegationSecureTokenClient[] = [
       new ImsDelegationSecureTokenClient("DEV"),
       new ImsDelegationSecureTokenClient("QA"),
