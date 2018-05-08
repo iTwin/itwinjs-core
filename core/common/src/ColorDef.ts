@@ -604,7 +604,7 @@ export class RgbColor {
     this.g = Math.max(0, Math.min(this.g, 0xff));
     this.b = Math.max(0, Math.min(this.b, 0xff));
   }
-
+  public equals(other: RgbColor): boolean { return this.r === other.r && this.g === other.g && this.b === other.b; }
   /** Constructs from the red, green, and blue components of a ColorDef. The alpha component is ignored. */
   public static fromColorDef(colorDef: ColorDef): RgbColor {
     const colors = colorDef.colors;
