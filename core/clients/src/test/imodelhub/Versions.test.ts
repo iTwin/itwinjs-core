@@ -5,11 +5,10 @@ import * as chai from "chai";
 
 import { TestConfig } from "../TestConfig";
 
-import { Version, VersionQuery, Briefcase, ChangeSetQuery, ChangeSet } from "../../imodelhub";
+import { Version, VersionQuery, Briefcase, ChangeSet } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder } from "../ResponseBuilder";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import * as utils from "./TestUtils";
 
 chai.should();
@@ -18,9 +17,8 @@ describe("iModelHub VersionHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   let briefcase: Briefcase;
-  const imodelHubClient: IModelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
-  const responseBuilder: ResponseBuilder = new ResponseBuilder();
   const imodelName = "imodeljs-clients Versions test";
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
 
   before(async () => {
     accessToken = await utils.login();
@@ -49,19 +47,19 @@ describe("iModelHub VersionHandler", () => {
   });
 
   afterEach(() => {
-    responseBuilder.clearMocks();
+    ResponseBuilder.clearMocks();
   });
 
   it("should create named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
-    utils.mockGetChangeSet(responseBuilder, iModelId, ...mockedChangeSets);
-    const changeSetsCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl())).length;
+    utils.mockGetChangeSet(iModelId, false, ...mockedChangeSets);
+    const changeSetsCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
 
     // creating changeset for new named version
     const changeSet = (await utils.createChangeSets(accessToken, iModelId, briefcase, changeSetsCount, 1))[0];
 
     const versionName = `Version ${changeSetsCount}`;
-    utils.mockCreateVersion(responseBuilder, iModelId, versionName, changeSet.id);
+    utils.mockCreateVersion(iModelId, versionName, changeSet.id);
     const version: Version = await imodelHubClient.Versions().create(accessToken, iModelId, changeSet.id!, versionName);
 
     chai.assert(!!version);
@@ -72,13 +70,13 @@ describe("iModelHub VersionHandler", () => {
 
   it("should get named versions", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(responseBuilder, iModelId, ...mockedVersions);
+    utils.mockGetVersions(iModelId, ...mockedVersions);
     // Needs to create before expecting more than 0
     const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
 
     let i = 0;
     for (const expectedVersion of versions) {
-      utils.mockGetVersionById(responseBuilder, iModelId, mockedVersions[i++]);
+      utils.mockGetVersionById(iModelId, mockedVersions[i++]);
       const actualVersion: Version = (await imodelHubClient.Versions().get(accessToken, iModelId, new VersionQuery().byId(expectedVersion.wsgId)))[0];
       chai.expect(!!actualVersion);
       chai.expect(actualVersion.changeSetId).to.be.equal(expectedVersion.changeSetId);
@@ -87,7 +85,7 @@ describe("iModelHub VersionHandler", () => {
 
   it("should update named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(responseBuilder, iModelId, ...mockedVersions);
+    utils.mockGetVersions(iModelId, ...mockedVersions);
 
     let version: Version = (await imodelHubClient.Versions().get(accessToken, iModelId))[0];
     chai.assert(!!version);
@@ -96,7 +94,7 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(version.name).to.be.equal(version.name!);
 
     version.name += "+";
-    utils.mockUpdateVersion(responseBuilder, iModelId, version);
+    utils.mockUpdateVersion(iModelId, version);
     version = await imodelHubClient.Versions().update(accessToken, iModelId, version);
 
     chai.assert(!!version);

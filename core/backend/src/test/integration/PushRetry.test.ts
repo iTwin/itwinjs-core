@@ -17,7 +17,6 @@ import { TestConfig } from "../TestConfig";
 describe.skip("PushRetry", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
-  const responseBuilder: ResponseBuilder = new ResponseBuilder();
   const iModelName = "PushRetryTest";
 
   before(async () => {
@@ -46,23 +45,23 @@ describe.skip("PushRetry", () => {
     const responseFunction = () => {
       switch (retryCount++) {
         case 1:
-          return responseBuilder.generateError("iModelHub.PullIsRequired");
+          return ResponseBuilder.generateError("iModelHub.PullIsRequired");
         case 2:
-          return responseBuilder.generateError("iModelHub.DatabaseTemporarilyLocked");
+          return ResponseBuilder.generateError("iModelHub.DatabaseTemporarilyLocked");
         case 3:
-          return responseBuilder.generateError("iModelHub.AnotherUserPushing");
+          return ResponseBuilder.generateError("iModelHub.AnotherUserPushing");
         default:
-          responseBuilder.clearMocks();
-          return responseBuilder.generateError("iModelHub.iModelHubOperationFailed");
+          ResponseBuilder.clearMocks();
+          return ResponseBuilder.generateError("iModelHub.iModelHubOperationFailed");
       }
     };
 
-    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
+    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
       utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       responseFunction, 5, undefined, undefined, 409);
 
     await pushRetryIModel.pushChanges(accessToken);
-    responseBuilder.clearMocks();
+    ResponseBuilder.clearMocks();
     await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
   });
 
@@ -81,8 +80,8 @@ describe.skip("PushRetry", () => {
     pushRetryIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(pushRetryIModel, r.modelId, r.spatialCategoryId));
     pushRetryIModel.saveChanges("User created model, category, and two elements");
 
-    const response = responseBuilder.generateError("UnknownPushError");
-    responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
+    const response = ResponseBuilder.generateError("UnknownPushError");
+    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get,
       utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       response, 5, undefined, undefined, 409);
 
@@ -92,7 +91,7 @@ describe.skip("PushRetry", () => {
       assert.exists(error);
       assert.equal(error.name, "UnknownPushError");
     }
-    responseBuilder.clearMocks();
+    ResponseBuilder.clearMocks();
     await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
   });
 });
