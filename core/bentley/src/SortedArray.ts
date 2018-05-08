@@ -11,7 +11,6 @@
  *
  * This allows a SortedArray<T> to behave like a Set<T> where T is an object and equality is determined
  * by some criterion other than object identity.
- * It can also serve as a Map<T, number> where the value is the index of the value in the array.
  *
  * Because the array is always sorted, querying for the presence of an element is performed using binary
  * search, which is more efficient than a linear search for reasonably large arrays.
@@ -21,7 +20,7 @@
  * Inserting an element returns its index (or the index of an equivalent existing element, if duplicates are
  * not permitted), allowing a SortedArray<T> to behave like a Map<T, number> with more flexible comparison logic.
  *
- * The comparison function must meet the following criteria, given 'lhs' and 'rhs':
+ * The comparison function must meet the following criteria, given 'lhs' and 'rhs' of type T:
  *  - If lhs is equal to rhs, returns 0
  *  - If lhs is less than rhs, returns a negative value
  *  - If lhs is greater than rhs, returns a positive value
@@ -42,7 +41,7 @@ export class SortedArray<T> {
    * @param compare A function accepting two values of type T and returning a negative value if lhs < rhs,
    *        zero if lhs == rhs, and a positive value otherwise.
    * @param allowDuplicates If true, multiple values comparing equal may exist in the array.
-   * @param clone A function that, give a value of type T, returns an equivalent value of type T.
+   * @param clone A function that, given a value of type T, returns an equivalent value of type T.
    *        This function is invoked when a new element is inserted into the array.
    *        The default implementation simply returns its input.
    */
@@ -69,6 +68,7 @@ export class SortedArray<T> {
    * The behavior differs based on whether or not duplicate elements are permitted.
    * If duplicates are **not** permitted, then:
    *  - If an equivalent element already exists in the array, nothing will be inserted and the index of the existing element will be returned.
+   *  - Otherwise, the element is inserted and its index is returned.
    * If duplicates **are** permitted, then:
    *  - The element will be inserted in a correct position based on the sorting criterion;
    *  - The position of the element relative to other elements comparing as equal to it is unspecified; and
