@@ -14,7 +14,7 @@ import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients/l
 import { createNewModelAndCategory } from "./BriefcaseManager.test";
 import { TestConfig } from "../TestConfig";
 
-describe("PushRetry", () => {
+describe.skip("PushRetry", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
   const responseBuilder: ResponseBuilder = new ResponseBuilder();
