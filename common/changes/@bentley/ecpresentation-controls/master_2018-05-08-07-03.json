@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-controls",
+      "comment": "Update imodeljs-core dependencies to 0.80",
+      "type": "patch"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-controls",
+      "comment": "Update bentleyjs-core dependency to 8",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-controls",
+  "email": "grigas.petraitis@bentley.com"
+}

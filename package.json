@@ -20,6 +20,8 @@
   },
   "scripts": {
     "rush:install": "node ./common/rush.js install",
+    "rush:check": "node ./common/rush.js check",
+    "rush:verify-changes": "node ./common/rush.js change -v",
     "rush:build": "node ./common/rush.js rebuild -v",
     "rush:lint": "node ./common/rush.js lint -v",
     "rush:pack": "node ./common/rush.js pack -v",
