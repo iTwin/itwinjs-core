@@ -13,21 +13,20 @@ import * as utils from "./TestUtils";
 
 chai.should();
 
-function mockGetLocks(responseBuilder: ResponseBuilder, imodelId: string, ...locks: Lock[]) {
+function mockGetLocks(imodelId: string, ...locks: Lock[]) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Lock");
-  const requestResponse = responseBuilder.generateGetArrayResponse<Lock>(locks);
-  responseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<Lock>(locks);
+  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
 describe("iModelHubClient LockHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   const imodelName = "imodeljs-clients Locks test";
-  const responseBuilder: ResponseBuilder = new ResponseBuilder();
-  const imodelHubClient: IModelHubClient = utils.getDefaultClient(responseBuilder);
+  const imodelHubClient: IModelHubClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
     if (!TestConfig.enableMocks)
@@ -40,12 +39,12 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   afterEach(() => {
-    responseBuilder.clearMocks();
+    ResponseBuilder.clearMocks();
   });
 
   it("should get information on Locks", async function (this: Mocha.ITestCallbackContext) {
 
-    mockGetLocks(responseBuilder, iModelId, responseBuilder.generateObject<Lock>(Lock));
+    mockGetLocks(iModelId, ResponseBuilder.generateObject<Lock>(Lock));
     // Needs to acquire before expecting more than 0.
     const locks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId);
     chai.expect(locks.length).to.be.greaterThan(0);

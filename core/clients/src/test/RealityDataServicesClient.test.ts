@@ -8,8 +8,26 @@ import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { RequestQueryOptions } from "../Request";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
-
+import { UrlDiscoveryMock } from "./ResponseBuilder";
+import { DeploymentEnv, UrlDescriptor } from "../Client";
 chai.should();
+
+export class RealityDataUrlMock {
+  private static readonly urlDescriptor: UrlDescriptor = {
+    DEV: "https://dev-realitydataservices-eus.cloudapp.net",
+    QA: "https://qa-connect-realitydataservices.bentley.com",
+    PROD: "https://connect-realitydataservices.bentley.com",
+    PERF: "https://perf-realitydataservices-eus.cloudapp.net",
+  };
+
+  public static getUrl(env: DeploymentEnv): string {
+    return this.urlDescriptor[env];
+  }
+
+  public static mockGetUrl(env: DeploymentEnv) {
+    UrlDiscoveryMock.mockGetUrl(RealityDataServicesClient.searchKey, env, this.urlDescriptor[env]);
+  }
+}
 
 describe("RealityDataServicesClient", () => {
 
@@ -24,7 +42,7 @@ describe("RealityDataServicesClient", () => {
 
   before(async function (this: Mocha.IHookCallbackContext) {
     if (TestConfig.enableMocks)
-      this.skip();
+      return;
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login();
@@ -52,41 +70,53 @@ describe("RealityDataServicesClient", () => {
   });
 
   it("should setup its URLs", async () => {
+    RealityDataUrlMock.mockGetUrl("DEV");
     let url: string = await new RealityDataServicesClient("DEV").getUrl(true);
     chai.expect(url).equals("https://dev-realitydataservices-eus.cloudapp.net");
 
+    RealityDataUrlMock.mockGetUrl("QA");
     url = await new RealityDataServicesClient("QA").getUrl(true);
     chai.expect(url).equals("https://qa-connect-realitydataservices.bentley.com");
 
+    RealityDataUrlMock.mockGetUrl("PROD");
     url = await new RealityDataServicesClient("PROD").getUrl(true);
     chai.expect(url).equals("https://connect-realitydataservices.bentley.com");
 
+    RealityDataUrlMock.mockGetUrl("PERF");
     url = await new RealityDataServicesClient("PERF").getUrl(true);
     chai.expect(url).equals("https://perf-realitydataservices-eus.cloudapp.net");
   });
 
-  it("should be able to retrieve reality data properties", async () => {
+  it("should be able to retrieve reality data properties", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const realityData: RealityData[] = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesId);
 
     chai.assert(realityData);
   });
 
-  it("should be able to retrieve app data json blob url", async () => {
+  it("should be able to retrieve app data json blob url", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const url: string = await realityDataServiceClient.getAppDataBlobUrl(accessToken, projectId, tilesId);
 
     chai.assert(url);
   });
 
-  it("should be able to get app data json", async () => {
+  it("should be able to get app data json", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const appData: any = await realityDataServiceClient.getAppData(accessToken, projectId, tilesId);
 
     chai.assert(appData);
   });
 
-  it("should be able to get model data json", async () => {
+  it("should be able to get model data json", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const appData: any = await realityDataServiceClient.getAppData(accessToken, projectId, tilesId);
     const appDataJson = JSON.parse(appData.toString("utf8"));
@@ -101,7 +131,9 @@ describe("RealityDataServicesClient", () => {
     chai.assert(modelData);
   });
 
-  it("should be able to get model data content", async () => {
+  it("should be able to get model data content", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
 
     const appData: any = await realityDataServiceClient.getAppData(accessToken, projectId, tilesId);
     const appDataJson = JSON.parse(appData.toString("utf8"));

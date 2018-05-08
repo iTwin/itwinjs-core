@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { Code, CodeState, MultiCode } from "../../imodelhub/Codes";
 import { Briefcase } from "../../imodelhub/Briefcases";
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
+import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { ECJsonTypeMap } from "../../ECJsonTypeMap";
 import { TestConfig, UserCredentials } from "../TestConfig";
 import { Guid } from "@bentley/bentleyjs-core";
-import { UrlDescriptor } from "../../Client";
+import { UrlDescriptor, DeploymentEnv } from "../../Client";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ChangeSet } from "../../imodelhub/ChangeSets";
@@ -20,7 +20,7 @@ import { ConnectClient, Project } from "../../ConnectClients";
 
 import * as fs from "fs";
 import * as path from "path";
-import { DeploymentEnv } from "../..";
+import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
@@ -32,23 +32,27 @@ class MockAccessToken extends AccessToken {
 
 const imodelHubClient = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
 
-const defaultUrlDescriptor: UrlDescriptor = {
-  DEV: "https://dev-imodelhubapi.bentley.com",
-  QA: "https://qa-imodelhubapi.bentley.com",
-  PROD: "https://imodelhubapi.bentley.com",
-  PERF: "https://perf-imodelhubapi.bentley.com",
-};
+export class IModelHubUrlMock {
+  private static readonly urlDescriptor: UrlDescriptor = {
+    DEV: "https://dev-imodelhubapi.bentley.com",
+    QA: "https://qa-imodelhubapi.bentley.com",
+    PROD: "https://imodelhubapi.bentley.com",
+    PERF: "https://perf-imodelhubapi.bentley.com",
+  };
 
-export function getUrl(env: DeploymentEnv): string {
-  return defaultUrlDescriptor[env];
+  public static getUrl(env: DeploymentEnv): string {
+    return this.urlDescriptor[env];
+  }
+
+  public static mockGetUrl(env: DeploymentEnv) {
+    UrlDiscoveryMock.mockGetUrl(IModelHubBaseHandler.searchKey, env, this.urlDescriptor[env]);
+  }
 }
 
-export const defaultUrl: string = getUrl(TestConfig.deploymentEnv);
+export const defaultUrl: string = IModelHubUrlMock.getUrl(TestConfig.deploymentEnv);
 
-export function getDefaultClient(responseBuilder: ResponseBuilder) {
-  if (TestConfig.enableMocks) {
-    responseBuilder.mockResponse("https://buddi.bentley.com", RequestType.Get, "/WebService/GetUrl/?url=iModelHubApi&region=102", { result: { url: "https://qa-imodelhubapi.bentley.com" } });
-  }
+export function getDefaultClient() {
+  IModelHubUrlMock.mockGetUrl(TestConfig.deploymentEnv);
   return imodelHubClient;
 }
 
@@ -89,7 +93,7 @@ export async function login(user?: UserCredentials): Promise<AccessToken> {
     return new MockAccessToken();
 
   const authToken = await TestConfig.login(user);
-  const client = new IModelHubClient(TestConfig.deploymentEnv);
+  const client = getDefaultClient();
 
   return await client.getAccessToken(authToken);
 }
@@ -118,7 +122,7 @@ export async function deleteIModelByName(accessToken: AccessToken, projectId: st
   if (TestConfig.enableMocks)
     return;
 
-  const client = new IModelHubClient(TestConfig.deploymentEnv);
+  const client = getDefaultClient();
   const imodels = await client.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName));
   for (const imodel of imodels) {
     await client.IModels().delete(accessToken, projectId, imodel.wsgId);
@@ -131,7 +135,7 @@ export async function getIModelId(accessToken: AccessToken, imodelName: string):
 
   const projectId = await getProjectId();
 
-  const client = new IModelHubClient(TestConfig.deploymentEnv);
+  const client = getDefaultClient();
 
   const imodels = await client.IModels().get(accessToken, projectId, new IModelQuery().byName(imodelName));
 
@@ -154,7 +158,7 @@ export async function getBriefcases(accessToken: AccessToken, imodelId: string, 
     });
   }
 
-  const client = new IModelHubClient(TestConfig.deploymentEnv);
+  const client = getDefaultClient();
   let briefcases = await client.Briefcases().get(accessToken, imodelId);
   if (briefcases.length < count) {
     for (let i = 0; i < count - briefcases.length; ++i) {
@@ -172,23 +176,23 @@ export function generateBriefcase(id: number): Briefcase {
   return briefcase;
 }
 
-export function mockGetBriefcase(responseBuilder: ResponseBuilder, iModelId: string, ...briefcases: Briefcase[]) {
+export function mockGetBriefcase(iModelId: string, ...briefcases: Briefcase[]) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
-  const requestResponse = responseBuilder.generateGetArrayResponse<Briefcase>(briefcases);
-  responseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<Briefcase>(briefcases);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockCreateBriefcase(responseBuilder: ResponseBuilder, iModelId: string, id: number) {
+export function mockCreateBriefcase(iModelId: string, id: number) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
-  const postBody = responseBuilder.generatePostBody<Briefcase>(responseBuilder.generateObject<Briefcase>(Briefcase));
-  const requestResponse = responseBuilder.generatePostResponse<Briefcase>(generateBriefcase(id));
-  responseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  const postBody = ResponseBuilder.generatePostBody<Briefcase>(ResponseBuilder.generateObject<Briefcase>(Briefcase));
+  const requestResponse = ResponseBuilder.generatePostResponse<Briefcase>(generateBriefcase(id));
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 /** ChangeSets */
@@ -208,7 +212,7 @@ export function generateChangeSet(id?: string): ChangeSet {
   return changeSet;
 }
 
-export function mockGetChangeSet(responseBuilder: ResponseBuilder, iModelId: string, getDownloadUrl: boolean, ...changeSets: ChangeSet[]) {
+export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, ...changeSets: ChangeSet[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -220,8 +224,8 @@ export function mockGetChangeSet(responseBuilder: ResponseBuilder, iModelId: str
   });
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
     getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : undefined);
-  const requestResponse = responseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
-  responseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
 /** Codes */
@@ -239,7 +243,7 @@ export function randomCode(briefcase: number): Code {
   return code;
 }
 
-export function mockUpdateCodes(responseBuilder: ResponseBuilder, iModelId: string, ...codes: Code[]) {
+export function mockUpdateCodes(iModelId: string, ...codes: Code[]) {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -253,12 +257,12 @@ export function mockUpdateCodes(responseBuilder: ResponseBuilder, iModelId: stri
   multiCode.changeState = "new";
 
   const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
-  const requestResponse = responseBuilder.generateChangesetResponse<MultiCode>([multiCode]);
-  const postBody = responseBuilder.generateChangesetBody<MultiCode>([multiCode]);
-  responseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  const requestResponse = ResponseBuilder.generateChangesetResponse<MultiCode>([multiCode]);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiCode>([multiCode]);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeniedCodes(responseBuilder: ResponseBuilder, iModelId: string, ...codes: Code[]) {
+export function mockDeniedCodes(iModelId: string, ...codes: Code[]) {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -272,15 +276,15 @@ export function mockDeniedCodes(responseBuilder: ResponseBuilder, iModelId: stri
   multiCode.changeState = "new";
 
   const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
-  const requestResponse = responseBuilder.generateError("iModelHub.CodeReservedByAnotherBriefcase", "", "",
+  const requestResponse = ResponseBuilder.generateError("iModelHub.CodeReservedByAnotherBriefcase", "", "",
     new Map<string, any>([
       ["ConflictingCodes", JSON.stringify(codes.map((value) => {
         const obj = ECJsonTypeMap.toJson<Code>("wsg", value);
         return obj.properties;
       }))],
     ]));
-  const postBody = responseBuilder.generateChangesetBody<MultiCode>([multiCode]);
-  responseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiCode>([multiCode]);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 }
 
 /** Named versions */
@@ -292,49 +296,49 @@ export function generateVersion(name?: string, changesetId?: string): Version {
   return result;
 }
 
-export function mockGetVersions(responseBuilder: ResponseBuilder, imodelId: string, ...versions: Version[]) {
+export function mockGetVersions(imodelId: string, ...versions: Version[]) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Version");
-  const requestResponse = responseBuilder.generateGetArrayResponse<Version>(versions);
-  responseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockGetVersionById(responseBuilder: ResponseBuilder, imodelId: string, version: Version) {
+export function mockGetVersionById(imodelId: string, version: Version) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Version", version.wsgId);
-  const requestResponse = responseBuilder.generateGetResponse<Version>(version);
-  responseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+  const requestResponse = ResponseBuilder.generateGetResponse<Version>(version);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockCreateVersion(responseBuilder: ResponseBuilder, iModelId: string, name?: string, changesetId?: string) {
+export function mockCreateVersion(iModelId: string, name?: string, changesetId?: string) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Version");
   const postBodyObject = generateVersion(name, changesetId);
   delete (postBodyObject.wsgId);
-  const postBody = responseBuilder.generatePostBody<Version>(postBodyObject);
-  const requestResponse = responseBuilder.generatePostResponse<Version>(generateVersion(name, changesetId));
-  responseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  const postBody = ResponseBuilder.generatePostBody<Version>(postBodyObject);
+  const requestResponse = ResponseBuilder.generatePostResponse<Version>(generateVersion(name, changesetId));
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockUpdateVersion(responseBuilder: ResponseBuilder, iModelId: string, version: Version) {
+export function mockUpdateVersion(iModelId: string, version: Version) {
   if (!TestConfig.enableMocks)
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Version", version.wsgId);
-  const postBody = responseBuilder.generatePostBody<Version>(version);
-  const requestResponse = responseBuilder.generatePostResponse<Version>(version);
-  responseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+  const postBody = ResponseBuilder.generatePostBody<Version>(version);
+  const requestResponse = ResponseBuilder.generatePostResponse<Version>(version);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockFileResponse(responseBuilder: ResponseBuilder, downloadToPath: string, times = 1) {
+export function mockFileResponse(downloadToPath: string, times = 1) {
   if (TestConfig.enableMocks)
-    responseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
+    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
 }
 
 export function getMockSeedFilePath() {
@@ -356,7 +360,7 @@ export async function createIModel(accessToken: AccessToken, name: string, proje
 
   projectId = projectId || await getProjectId(TestConfig.projectName);
 
-  const client = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  const client = getDefaultClient();
   const imodels = await client.IModels().get(accessToken, projectId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
@@ -401,7 +405,7 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: strin
   if (startingId + count > maxCount)
     throw Error(`Only have ${maxCount} changesets generated`);
 
-  const client = new IModelHubClient(TestConfig.deploymentEnv, new AzureFileHandler());
+  const client = getDefaultClient();
 
   const currentCount = (await client.ChangeSets().get(accessToken, imodelId)).length;
 

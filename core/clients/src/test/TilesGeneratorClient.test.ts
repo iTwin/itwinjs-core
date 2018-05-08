@@ -7,8 +7,27 @@ import { TilesGeneratorClient, Job } from "../TilesGeneratorClient";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { RequestQueryOptions } from "../Request";
+import { UrlDiscoveryMock } from "./ResponseBuilder";
+import { DeploymentEnv, UrlDescriptor } from "../Client";
 
 chai.should();
+
+export class TilesGeneratorUrlMock {
+  private static readonly urlDescriptor: UrlDescriptor = {
+    DEV: "https://dev-3dtilesgenerator.bentley.com",
+    QA: "https://qa-3dtilesgenerator.bentley.com",
+    PROD: "https://3dtilesgenerator.bentley.com",
+    PERF: "https://perf-3dtilesgenerator.bentley.com",
+  };
+
+  public static getUrl(env: DeploymentEnv): string {
+    return this.urlDescriptor[env];
+  }
+
+  public static mockGetUrl(env: DeploymentEnv) {
+    UrlDiscoveryMock.mockGetUrl(TilesGeneratorClient.searchKey, env, this.urlDescriptor[env]);
+  }
+}
 
 describe("TilesGeneratorClient", () => {
   let accessToken: AccessToken;
@@ -18,9 +37,9 @@ describe("TilesGeneratorClient", () => {
   let iModelId: string;
   let versionId: string;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async () => {
     if (TestConfig.enableMocks)
-      this.skip();
+      return;
 
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await connectClient.getAccessToken(authToken);
@@ -41,20 +60,27 @@ describe("TilesGeneratorClient", () => {
   });
 
   it("should setup its URLs", async () => {
+    TilesGeneratorUrlMock.mockGetUrl("DEV");
     let url: string = await new TilesGeneratorClient("DEV").getUrl(true);
     chai.expect(url).equals("https://dev-3dtilesgenerator.bentley.com");
 
+    TilesGeneratorUrlMock.mockGetUrl("QA");
     url = await new TilesGeneratorClient("QA").getUrl(true);
     chai.expect(url).equals("https://qa-3dtilesgenerator.bentley.com");
 
+    TilesGeneratorUrlMock.mockGetUrl("PROD");
     url = await new TilesGeneratorClient("PROD").getUrl(true);
     chai.expect(url).equals("https://3dtilesgenerator.bentley.com");
 
+    TilesGeneratorUrlMock.mockGetUrl("PERF");
     url = await new TilesGeneratorClient("PERF").getUrl(true);
     chai.expect(url).equals("https://perf-3dtilesgenerator.bentley.com");
   });
 
-  it("should be able to retrieve a tile generator job", async () => {
+  it("should be able to retrieve a tile generator job", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     // The service can be queried ONLY by single instance ID filter.
     const instanceId: string = `${projectId}--${iModelId}--${versionId}`;
     const queryOptions: RequestQueryOptions = {
@@ -74,7 +100,10 @@ describe("TilesGeneratorClient", () => {
     chai.expect(job.wsgId).equals(instanceId);
   });
 
-  it("should be able to generate the URL to view an imodel in Web Navigator", async () => {
+  it("should be able to generate the URL to view an imodel in Web Navigator", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
+
     const url: string = await tilesGeneratorClient.buildWebNavigatorUrl(accessToken, projectId, iModelId, versionId);
     chai.expect(url).equals("https://qa-connect-imodelweb.bentley.com/?id=8ee4458a-53e2-46c3-af7c-e2a1cd5b08d1&projectId=52d1633d-88a1-404d-a060-98d70f777db4&dataId=6541fcb4-d1fa-4c58-8385-d73c9459d6d6");
     // https://qa-connect-imodelweb.bentley.com/?id=<tilesId>&projectId=<projectId>&dataId=<dataId>
