@@ -26,7 +26,7 @@ describe("IModelConnection", () => {
     IModelApp.shutdown();
   });
 
-  it("should be able to get elements and models from an IModelConnection #online-required", async () => {
+  it("should be able to get elements and models from an IModelConnection (#integration)", async () => {
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);
@@ -89,7 +89,7 @@ describe("IModelConnection", () => {
 
   });
 
-  it("Parameterized ECSQL #online-required", async () => {
+  it("Parameterized ECSQL (#integration)", async () => {
     assert.exists(iModel);
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
@@ -134,7 +134,7 @@ describe("IModelConnection", () => {
     assert.equal(actualRows.length, 1);
   }).timeout(99999);
 
-  it("Change cache file generation when attaching change cache #online-required", async () => {
+  it("Change cache file generation when attaching change cache (#integration)", async () => {
     assert.exists(iModel);
     await TestGateway.getProxy().deleteChangeCache(iModel.iModelToken);
     await TestGateway.getProxy().attachChangeCache(iModel.iModelToken);
@@ -146,7 +146,7 @@ describe("IModelConnection", () => {
     assert.equal(changeSetRows[0].cnt, 0);
   }).timeout(99999);
 
-  it("Change cache file generation during change summary extraction #online-required", async () => {
+  it("Change cache file generation during change summary extraction (#integration)", async () => {
     assert.exists(iModel);
     // for now, imodel must be open readwrite for changesummary extraction
     await iModel.close(TestData.accessToken);

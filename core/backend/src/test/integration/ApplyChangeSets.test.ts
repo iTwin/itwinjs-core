@@ -13,7 +13,7 @@ import { KnownLocations } from "../../Platform";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
-describe("ApplyChangeSets (#online-required)", () => {
+describe("ApplyChangeSets (#integration)", () => {
   let accessToken: AccessToken;
   const iModelRootDir = path.join(KnownLocations.tmpdir, "IModelJsTest/");
 
