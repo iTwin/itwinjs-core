@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Gateway, IModelReadGateway } from "@bentley/imodeljs-common";
+import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
@@ -10,7 +10,7 @@ import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IMode
 import * as path from "path";
 
 // Initialize the gateway classes used by tests
-Gateway.initialize(IModelReadGateway);
+RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

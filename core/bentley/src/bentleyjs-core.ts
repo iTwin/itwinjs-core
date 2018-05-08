@@ -65,9 +65,9 @@ export * from "./Time";
  *      "defaultLevel": "${ROBOT-WORLD-DEFAULT-LOG-LEVEL}",
  *      "categoryLevels": [
  *          {"category": "ROBOT-WORLD", "logLevel": "Trace"},
- *          {"category": "imodeljs-gateway.BentleyCloudGatewayProtocol", "logLevel": "Trace"},
- *          {"category": "imodeljs-gateway.GatewayHttpProtocol", "logLevel": "Trace"},
- *          {"category": "imodeljs-gateway", "logLevel": "Trace"},
+ *          {"category": "imodeljs-rpc.BentleyCloudRpcProtocol", "logLevel": "Trace"},
+ *          {"category": "imodeljs-rpc.WebAppRpcProtocol", "logLevel": "Trace"},
+ *          {"category": "imodeljs-rpc", "logLevel": "Trace"},
  *          {"category": "imodeljs-backend.AutoPush", "logLevel": "Trace"},
  *          {"category": "ECPresentation", "logLevel": "None"},
  *          {"category": "Diagnostics.ECSqlStatement", "logLevel": "None"},
