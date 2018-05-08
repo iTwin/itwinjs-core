@@ -10,6 +10,7 @@ export * from "./Id";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
+export * from "./SortedArray";
 export * from "./Time";
 
 /** @module Utils */
