@@ -99,7 +99,7 @@ export abstract class VariedTechnique implements Technique {
   }
 }
 
-// ###TODO this doesn't need to be exported - only exporting temporarily because otherwise compiler complains it's unused otherwise.
+// ###TODO this doesn't need to be exported - only exporting temporarily because otherwise compiler complains it is unused otherwise.
 export class SurfaceTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kTranslucent = 1;

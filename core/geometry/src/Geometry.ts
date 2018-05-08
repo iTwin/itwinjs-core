@@ -113,10 +113,10 @@ export class Geometry {
   public static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
   public static isSameVector2d(dataA: Vector2d, dataB: Vector2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
 
-/**
- * Lexical comparison of (a.x,a.y) (b.x,b.y) with x as first test, y second.
- */
-public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ) {
+  /**
+   * Lexical comparison of (a.x,a.y) (b.x,b.y) with x as first test, y second.
+   */
+  public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ) {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -127,9 +127,9 @@ public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ) {
       return 1;
     return 0;
   }
-/**
- * Lexical comparison of (a.x,a.y) (b.x,b.y) with y as first test, x second.
- */
+  /**
+   * Lexical comparison of (a.x,a.y) (b.x,b.y) with y as first test, x second.
+   */
   public static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ) {
     if (a.y < b.y)
       return -1;
@@ -425,7 +425,7 @@ public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ) {
   public static isIn01(x: number, apply01: boolean = true): boolean { return apply01 ? x >= 0.0 && x <= 1.0 : true; }
 }
 /**
- * * An `Angle` object carries the numeric value of an angle.
+ * Carries the numeric value of an angle.
  * * The numeric value is private, and callers should not know or care whether it is in degrees or radians.
  * * The various access method are named so that callers can specify whether untyped numbers passed in or out are degrees or radians.
  */

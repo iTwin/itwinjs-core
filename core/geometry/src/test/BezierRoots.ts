@@ -74,7 +74,7 @@ export class PascalCoefficients {
    * @param u parameter value
    * @param result optional destination array.
    * @note if the destination array is undefined or too small, a new Float64Array is allocated.
-   * @note if the destination array is larger than needed, it's leanding `row+1` values are filled,
+   * @note if the destination array is larger than needed, its leading `row+1` values are filled,
    *     and the array is returned.
    */
   public static getBezierBasisValues(order: number, u: number, result?: Float64Array): Float64Array {

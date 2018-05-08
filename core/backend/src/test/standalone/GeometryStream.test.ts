@@ -560,7 +560,7 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
-    // Extract and test value returned, text transform should now be identity as it's accounted for by element's placement...
+    // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
     const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 

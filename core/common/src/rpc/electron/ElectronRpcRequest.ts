@@ -9,7 +9,7 @@ import { ElectronRpcProtocol, CHANNEL, interop } from "./ElectronRpcProtocol";
 
 export class ElectronRpcRequest extends RpcRequest {
   /** Convenience access to the protocol of this request. */
-  public readonly protocol: ElectronRpcProtocol = this.interfaceInstance.configuration.protocol as any;
+  public readonly protocol: ElectronRpcProtocol = this.client.configuration.protocol as any;
 
   /** The fulfillment of this request. */
   public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "" };

@@ -51,7 +51,7 @@ An app can use many services, both general-purpose and app-specific.
 
 #### Backends for Frontends
 
-Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs gateway architecture encourages and supports the BFF pattern. Since a gateway is just a TypeScript class, it's easy for an app to implement its own services. And, it is easy for an app to choose a different mix of gateways at runtime, depending on its configuration.
+Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs gateway architecture encourages and supports the BFF pattern. Since a gateway is just a TypeScript class, it is easy for an app to implement its own services. And, it is easy for an app to choose a different mix of gateways at runtime, depending on its configuration.
 
 ### App Frontend
 

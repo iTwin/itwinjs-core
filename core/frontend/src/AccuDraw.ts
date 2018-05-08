@@ -276,7 +276,7 @@ export class AccuDraw {
   public grabInputFocus() { }
 
   public activate(): void {
-    // Upgrade state to inactive so OnBeginDynamics knows it's ok to move to active...
+    // Upgrade state to inactive so OnBeginDynamics knows it is ok to move to active...
     if (CurrentState.Deactivated === this.currentState)
       this.currentState = CurrentState.Inactive;
 
@@ -1399,7 +1399,7 @@ export class AccuDraw {
       return;
 
     if (RotationMode.Context === mode) {
-      // See if it's better to stay with the current base rotation (only care about z)...
+      // See if it is better to stay with the current base rotation (only care about z)...
       if (RotationMode.Context !== this.flags.baseRotation) {
         const baseRMatrix = this.getBaseRotation();
         const baseZ = baseRMatrix.getRow(2);
@@ -1635,7 +1635,7 @@ export class AccuDraw {
   }
 
   private getCompassPlanePoint(point: Point3d, vp: Viewport): boolean {
-    point.setFrom(this.origin); // Isn't this just planePt?!? Maybe at display time it's not setup yet?!?
+    point.setFrom(this.origin); // Isn't this just planePt?!? Maybe at display time it is not setup yet?!?
     if (this.fieldLocked[ItemField.Z_Item] && vp.view.is3d()) {
       if (0.0 !== this.delta.z && !(this.delta.z < Constants.SMALL_ANGLE && this.delta.z > -Constants.SMALL_ANGLE)) {
         point.addScaledInPlace(this.axes.z, this.delta.z);
@@ -2132,7 +2132,7 @@ export class AccuDraw {
   private static allowAxisIndexing(pointIsOnPlane: boolean): boolean {
     // NOTE: Normally we don't want indexing overriding a hot snap location. The
     //       exception to this is nearest snap. If the nearest snap is in the plane
-    //       of the AccuDraw compass, it's confusing not having axis indexing.
+    //       of the AccuDraw compass, it is confusing not having axis indexing.
     if (!TentativeOrAccuSnap.isHot())
       return true;
 
@@ -2593,14 +2593,14 @@ export class AccuDraw {
   }
 
   public refreshDecorationsAndDynamics(): void {
-    // Make sure AccuDraw updates it's decorations...
+    // Make sure AccuDraw updates its decorations...
     const vp = this.currentView;
     if (!vp)
       return;
 
     vp.invalidateDecorations();
 
-    // Make sure active tool updates it's dynamics. NOTE: Can't just call UpdateDynamics, need point adjusted for new locks, etc.
+    // Make sure active tool updates its dynamics. NOTE: Can't just call UpdateDynamics, need point adjusted for new locks, etc.
     const tool = IModelApp.toolAdmin.activeTool;
     if (!tool || !(tool instanceof PrimitiveTool))
       return;
@@ -2949,7 +2949,7 @@ export class AccuDraw {
 /**
  * AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
  * The tool does not directly change the current AccuDraw state; the tool's job is merely
- * to supply "hints" to AccuDraw regarding it's preferred AccuDraw configuration for the
+ * to supply "hints" to AccuDraw regarding its preferred AccuDraw configuration for the
  * current tool state. User settings such as "Context Sensitivity" and "Floating Origin"
  * affect how/which hints get applied.
  */

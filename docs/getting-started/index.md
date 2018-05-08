@@ -10,16 +10,17 @@ Writing an iModelJs application requires the following software:
 - [Google Chrome](https://www.google.com/chrome/)
   - This is the preferred tool for developing and debugging frontend JavaScript.
 - [Git](https://git-scm.com/downloads)
-  - This is the source code control system recommended for iModelJs-based applications.
-- [VS Code](https://code.visualstudio.com/)
+  - This is the source code control system for the iModelJs repositories.
+- [Visual Studio Code](https://code.visualstudio.com/)
   - This is the recommended editor and debugger for iModelJs applications.
   - VS Code also supplies a graphical user interface for working with Git.
-  - The following VS Code extensions are also recommended:
+  - The following VS Code extensions can also be quite helpful:
     - [TSLint](https://marketplace.visualstudio.com/items?itemName=eg2.tslint)
     - [Debugger for Chrome](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome)
     - [Git History](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
+    - [MarkdownLint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
 
-## Required Reading
+## Recommended Reading
 
 - [TypeScript](http://www.typescriptlang.org/)
   - iModelJs applications are written in TypeScript and then *compiled* to plain JavaScript.

@@ -174,7 +174,7 @@ export class AccuSnap {
         newSnap.subSelectionMode = SubSelectionMode.Segment;
     }
 
-    // see if it's the same point on the same element, the hot flags are the same multiple snaps, and the snap modes are the same
+    // see if it is the same point on the same element, the hot flags are the same multiple snaps, and the snap modes are the same
     if (samePt && sameType && sameBaseSnapMode) {
       // we know that nothing about the screen could change, just save the new hit and return to avoid screen flash
       this.currHit = newHit;
@@ -796,7 +796,7 @@ export class AccuSnap {
           preferred = snap;
           break;
         } else if (snap.geomDetail.viewDist < preferredDistance) {
-          // Snap is not hot, but it's the closest we've seen so far => prefer it and keep searching for a closer one or a hot one.
+          // Snap is not hot, but it is the closest we've seen so far => prefer it and keep searching for a closer one or a hot one.
           preferred = snap;
           preferredDistance = snap.geomDetail.viewDist;
         }

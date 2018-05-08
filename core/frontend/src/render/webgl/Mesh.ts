@@ -73,7 +73,7 @@ export class MeshParams extends MeshInfo {
   public readonly animationLUTParams: any; // TODO: should be a AnimationLUTParams;
 
   public constructor(args: MeshArgs) {
-    // ###TODO: MeshArgs.normals should be undefined unless it's non-empty
+    // ###TODO: MeshArgs.normals should be undefined unless it is non-empty
     const isLit = undefined !== args.normals && 0 < args.normals.length;
     const isTextured = undefined !== args.texture;
     const surfaceType = isTextured ? (isLit ? SurfaceType.TexturedLit : SurfaceType.Textured) : isLit ? SurfaceType.Lit : SurfaceType.Unlit;
@@ -81,7 +81,7 @@ export class MeshParams extends MeshInfo {
     super(surfaceType, args.edges.width, LineCode.valueFromLinePixels(args.edges.linePixels), args.fillFlags, args.isPlanar, FeaturesInfo.create(args.features), args.texture);
 
     // ###TODO: MeshArgs should quantize texture UV for us...
-    // ###TODO: MeshArgs.textureUV should be undefined unless it's non-empty
+    // ###TODO: MeshArgs.textureUV should be undefined unless it is non-empty
     const uvRange = Range2d.createNull();
     const fpts = args.textureUv;
     if (undefined !== fpts && fpts.length !== 0) {

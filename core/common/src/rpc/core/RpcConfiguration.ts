@@ -58,13 +58,13 @@ export abstract class RpcConfiguration {
   }
 
   /** @hidden @internal */
-  public onRpcClientInitialized(definition: RpcInterfaceDefinition, instance: RpcInterface): void {
-    this.protocol.onRpcClientInitialized(definition, instance);
+  public onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void {
+    this.protocol.onRpcClientInitialized(definition, client);
   }
 
   /** @hidden @internal */
-  public onRpcImplInitialized(definition: RpcInterfaceDefinition, instance: RpcInterface): void {
-    this.protocol.onRpcImplInitialized(definition, instance);
+  public onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
+    this.protocol.onRpcImplInitialized(definition, impl);
   }
 }
 

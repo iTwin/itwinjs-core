@@ -171,7 +171,7 @@ describe("iModelHub iModelHandler", () => {
     }
   });
 
-  it("should retrieve an iModel by it's id", async () => {
+  it("should retrieve an iModel by its id", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", iModelId);
       const requestResponse = ResponseBuilder.generateGetResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
