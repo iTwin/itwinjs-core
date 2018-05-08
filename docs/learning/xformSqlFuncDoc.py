@@ -6,10 +6,21 @@ import sys, os, re, string, re
 allFdecls = []
 allTypes = {}
 
+exampleCode = {
+    'iModel_bbox_areaxy':           'EcsqlGeometryFunctions.iModel_bbox_areaxy',
+    'iModel_bbox':                  'EcsqlGeometryFunctions.iModel_bbox_areaxy',
+    'iModel_spatial_overlap_aabb':  'ECSqlStatement.spatialQuery',
+    'iModel_bbox_union':            'EcsqlGeometryFunctions.iModel_bbox_union',
+    'iModel_placement':             'EcsqlGeometryFunctions.iModel_bbox_union',
+    'iModel_point':                 'EcsqlGeometryFunctions.iModel_bbox_union',
+    'iModel_angles':                'EcsqlGeometryFunctions.iModel_bbox_union',
+    'iModel_bbox':                  'EcsqlGeometryFunctions.iModel_bbox_union',
+}
+
 def reformatDoxygenMarkup(line):
     # Formatting markup -- TODO
-    line = line.replace("\a", "")
-    line = line.replace("\em", "")
+    line = line.replace("\\a", "")
+    line = line.replace("\\em", "")
 
     # @see -> links
     i = line.find("@see")
@@ -42,8 +53,8 @@ def getParamsTableHeader():
 def getReturnTableHeader():
     return "\n|Return Type|Description\n|---|---\n"
 
-def processOverview(o):
-    overview = ""
+def processTypes(o):
+    docTypes = ""
     typeDesc = ""
     wasEmittingDecl = False
     inPreamble = True
@@ -70,28 +81,31 @@ def processOverview(o):
                 # Found definition of a type
                 typeName = decls[1]
                 if wasEmittingDecl:
-                    overview = overview + "```\n"
-                overview = overview + "# " + typeName + "\n"
-                overview = overview + typeDesc
-                overview = overview + "```\n"
+                    docTypes = docTypes + "```\n"
+                docTypes = docTypes + "\n-------------\n"
+                docTypes = docTypes + "## " + typeName + "\n"
+                docTypes = docTypes + typeDesc
+                docTypes = docTypes + "```\n"
+                docTypes = docTypes + "\n"
                 typeDesc = ""
                 allTypes[decls[1]] = ""
                 wasEmittingDecl = True
 
             # Everything between comments is a type definition
-            overview = overview + l + "\n"
+            l = l.replace("//!<", "//")
+            docTypes = docTypes + l + "\n"
 
     if wasEmittingDecl:
-        overview = overview + "```\n"
+        docTypes = docTypes + "```\n"
 
-    return overview
+    return docTypes
 
 def processFunction(doc):
 
     # The last line is the function declaration:
-    # iModel_bbox iModel_placement_eabb(iModel_placement placement);
-    # iModel_angles iModel_angles(double yaw, double pitch, double roll);
-    o = re.match(r'(\w+)\s*(\w+)\s*[(]\s*(.*)[)]', doc[len(doc)-1]);
+    # iModel_bbox iModel_placement_eabb(iModel_placement placement)
+    # iModel_angles iModel_angles(double yaw, double pitch, double roll)
+    o = re.match(r'(\w+)\s*(\w+)\s*[(]\s*(.*)[)]', doc[len(doc)-1])
     if o == None:
         return ""
 
@@ -105,10 +119,10 @@ def processFunction(doc):
 
     sep = ""
     argPlaceHolderNames = ["X1", "X2", "X3", "X4", "X5"]
-    iNextArgPlaceHolderName = 0;
+    iNextArgPlaceHolderName = 0
     argsAndTypes = {}
     for a in args.split(','):
-        tn = a.strip().split();
+        tn = a.strip().split()
 
         if len(tn) > 1:
             aname = tn[1]
@@ -138,7 +152,7 @@ def processFunction(doc):
     docRefs = ""
     functionComment = ""
     for l in doc:
-        l = l.strip();
+        l = l.strip()
         if l.find("/**") != -1 or l.find("*/") != -1 or l.find("<p>") != -1 or l.find("__PUBLISH_INSERT_FILE__") != -1:
             continue
 
@@ -187,12 +201,19 @@ def processFunction(doc):
         docRefs = docRefs.replace("@see", ", ")   # hack to get rid of @see in the middle of the list
         docRefs = "@see " + docRefs[2:]
 
-    fdoc = "# " + fname + "\n"
+    exampleDoc = ""
+    if exampleCode.has_key(fname):
+        exampleDoc = "\n*Example:*\n``` ts\n[[include:" + exampleCode[fname] + "]]\n```\n"
+
+    fdoc = "\n-------------------\n"
+    fdoc = fdoc + "## " + fname + "\n"
     fdoc = fdoc + "\n```\n" + fdecl + "\n```\n"
     fdoc = fdoc + functionComment + "\n"
     fdoc = fdoc + docParams + "\n"
     fdoc = fdoc + docReturn  + "\n"
     fdoc = fdoc + docRefs + "\n"
+    fdoc = fdoc + exampleDoc + "\n"
+    fdoc = fdoc + "\n"
 
     return fdoc
 
@@ -200,17 +221,17 @@ def main(sourceFile):
     with open(sourceFile, 'r') as f:
         lines = f.readlines()
 
-    overview = ""
+    tdocs = ""
     fdocs = ""
     indoc = False
-    doc = [];
+    doc = []
     for line in lines:
         if not indoc:
             indoc = line.startswith("// __PUBLISH_SECTION_START__")
         else:
             if line.startswith("// __PUBLISH_SECTION_END__"):
                 if not doc[0].find("@addtogroup") == -1:
-                    overview = processOverview(doc)
+                    tdocs = processTypes(doc)
                 else:
                     fdocs = fdocs + processFunction(doc)
                 doc = []
@@ -238,9 +259,9 @@ def main(sourceFile):
     print ""
     print "Functions: "
     print flinks
-    print ""
-    print overview
-    print ""
+    print "# Types"
+    print tdocs
+    print "# Functions"
     print fdocs
 
 if __name__ == '__main__':

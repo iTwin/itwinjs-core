@@ -2,11 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
+import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl, GeometricElement3d, ECSqlStatement, PhysicalPartition } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, DbResult } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
+import { Range3dProps } from "@bentley/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
@@ -14,7 +15,7 @@ describe("Example Code", () => {
   let accessToken: AccessToken;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+    iModel = IModelTestUtils.openIModel("test.bim");
     accessToken = await IModelTestUtils.getTestUserAccessToken();
   });
 
@@ -160,4 +161,92 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
 
   });
+
+  it("should execute spatial queries", () => {
+
+    // __PUBLISH_EXTRACT_START__ Model.lookupByCode
+    const partitionCode = PhysicalPartition.createCode(iModel.elements.getRootSubject(), "DefaultModel");
+    const partitionId: Id64 | undefined = iModel.elements.queryElementIdByCode(partitionCode);
+    // __PUBLISH_EXTRACT_END__
+    assert.isTrue(partitionId !== undefined);
+    if (partitionId === undefined)
+      return;
+    const modelId = iModel.models.getSubModel(partitionId).id;
+    assert.isTrue(modelId !== undefined);
+
+    // __PUBLISH_EXTRACT_START__ EcsqlGeometryFunctions.iModel_bbox_areaxy
+    // Compute the largest element area in the X-Y plane.
+    let maxArea: number = 0;
+    iModel.withPreparedStatement(`SELECT iModel_bbox_areaxy(iModel_bbox(BBoxLow.X,BBoxLow.Y,BBoxLow.Z,BBoxHigh.X,BBoxHigh.Y,BBoxHigh.Z)) FROM ${GeometricElement3d.classFullName}`,
+      (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          const thisArea: number = stmt.getValue(0).getDouble();
+          if (thisArea > maxArea)
+            maxArea = thisArea;
+        }
+      });
+    // Report the result
+    reportArea(maxArea);
+
+    // Use the standard SUM operator to accumulate the results of the iModel_bbox_areaxy function. This shows that
+    // ECSQL treats the built-in geometry functions as normal expressions.
+    const areaSum: number = iModel.withPreparedStatement(`SELECT SUM(iModel_bbox_areaxy(iModel_bbox(BBoxLow.X,BBoxLow.Y,BBoxLow.Z,BBoxHigh.X,BBoxHigh.Y,BBoxHigh.Z))) FROM ${GeometricElement3d.classFullName}`,
+      (stmt: ECSqlStatement) => {
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          return 0; // ?
+        return stmt.getValue(0).getDouble();
+      });
+    // Report the result
+    reportArea(areaSum);
+
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ EcsqlGeometryFunctions.iModel_bbox_union
+    // This is an example of accumlating the union of bounding boxes.
+    // Note that when computing a union, it only makes sense to use axis-aligned bounding boxes, not element-aligned bounding boxes.
+    const bboxUnionStmtECSQL = `
+      SELECT
+        iModel_bbox_union(
+          iModel_placement_aabb(
+            iModel_placement(
+              iModel_point(g.Origin.X, g.Origin.Y, g.Origin.Z),
+              iModel_angles(g.Yaw, g.Pitch, g.Roll),
+              iModel_bbox(g.BBoxLow.X, g.BBoxLow.Y, g.BBoxLow.Z, g.BBoxHigh.X, g.BBoxHigh.Y, g.BBoxHigh.Z)
+            )
+          )
+        )
+      FROM ${Element.classFullName} AS e, ${GeometricElement3d.classFullName} AS g
+        WHERE e.model.id=? AND e.ecinstanceid=g.ecinstanceid
+    `;
+
+    const rangeSum: Range3dProps = iModel.withPreparedStatement(bboxUnionStmtECSQL,
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, modelId);
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          return {} as Range3dProps;
+        const r = stmt.getRow();
+        return r as Range3dProps;
+      });
+    reportRange(rangeSum);
+    // __PUBLISH_EXTRACT_END__
+
+    // This is an example of passing the WRONG TYPE of object to iModel_bbox_areaxy and getting an error.
+    // This statement is wrong, because iModel_placement_angles returns a iModel_angles object, while iModel_bbox_areaxy expects a DGN_bbox object.
+    // Note that the error is detected when you try to step the statement, not when you prepare it.
+    iModel.withPreparedStatement("SELECT iModel_bbox_areaxy(iModel_angles(Yaw,Pitch,Roll)) FROM " + GeometricElement3d.classFullName,
+      (stmt: ECSqlStatement) => {
+        // TODO: I expect an exception here:
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          // ...
+        }
+      });
+  });
+
 });
+
+function reportArea(a: number) {
+  a;
+}
+function reportRange(a: Range3dProps) {
+  a;
+}
