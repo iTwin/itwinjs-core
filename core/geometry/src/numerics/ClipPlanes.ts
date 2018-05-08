@@ -96,20 +96,21 @@ export class ClipUtilities {
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
  * * A signedDistance
+ *
  * Hence
  * * The halfspace function evaluation for "point" [x,y,z,] is: ([x,y,z] DOT (u,v,w)l - signedDistance)
  * * POSITIVE values of the halfspace function are "inside"
  * * ZERO value of the halfspace function is "on"
- * * NEGATIVE value of the halfspace fucntion is "outside"
+ * * NEGATIVE value of the halfspace function is "outside"
  * * A representative point on the plane is (signedDistance*u, signedDistance * v, signedDistance *w)
  */
 export class ClipPlane implements ClipperMethods {
   // Static variable from original native c++ function ConvexPolygonClipInPlace
   public static fractionTol = 1.0e-8;
   private _inwardNormal: Vector3d;
-  /** Construct a parallel plane through the orign.
+  /** Construct a parallel plane through the origin.
    * * Move it to the actual position.
-   * * _distanceFromOrigin is the distance it moved, with the (inwoard) normal direction as positive
+   * * _distanceFromOrigin is the distance it moved, with the (inward) normal direction as positive
    */
   private _distanceFromOrigin: number;
   private _invisible: boolean;
@@ -379,7 +380,7 @@ export class ClipPlane implements ClipperMethods {
   }
   /**
    * Move the plane INWARD by given distance
-   * @param offset distance of shift innwards
+   * @param offset distance of shift inwards
    */
   public offsetDistance(offset: number) {
     this._distanceFromOrigin += offset;
@@ -749,7 +750,7 @@ export class ConvexClipPlaneSet implements ClipperMethods {
 
   /** Find the parts of the line segment  (if any) that is within the convex clip volume.
    * * The input fractional interval from fraction0 to fraction1 (increasing!!) is the active part to consider.
-   * * To clip to the usual bounded line segment, starty with fractions (0,1).
+   * * To clip to the usual bounded line segment, starts with fractions (0,1).
    * If the clip volume is unbounded, the line interval may also be unbounded.
    * * An unbounded line portion will have fraction coordinates positive or negative Number.MAX_VALUE.
    * @param fraction0 fraction that is the initial lower fraction of the active interval. (e.g. 0.0 for bounded segment)
@@ -921,9 +922,9 @@ export class ConvexClipPlaneSet implements ClipperMethods {
   /**
    * * Define new planes in this ConvexClipPlaneSet so it clips to the inside of a polygon.
    * * always create planes for the swept edges of the polygon
-   * * optinoally (with nonzero sideSelect) create a cap plane using the polygon normal.
+   * * optionally (with nonzero sideSelect) create a cap plane using the polygon normal.
    * @param points Points of a bounding polygon
-   * @param sweepDirection directon to sweep.
+   * @param sweepDirection direction to sweep.
    * @param sideSelect 0 to have no cap polygon, 1 if the sweep vector side is in, -1 if sweep vector side is out.
    */
   public reloadSweptPolygon(points: Point3d[], sweepDirection: Vector3d, sideSelect: number): number {
@@ -1032,7 +1033,6 @@ export class ConvexClipPlaneSet implements ClipperMethods {
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)!);
   }
 
-  // additional define and ifdef blocks from native code (will need to sift through later)
   /*
     #define CheckAreaXY_not
     // EDL Dec 7 2016.
@@ -1062,9 +1062,9 @@ export class ConvexClipPlaneSet implements ClipperMethods {
 }
 
 /**
- * * A ClipPlaneSet is a collection of ConvexClipPlaneSet.
+ * A collection of ConvexClipPlaneSets.
  * * A point is "in" the clip plane set if it is "in" one or more of  the ConvexClipPlaneSet
- * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constuents.
+ * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constituents.
  */
 export class ClipPlaneSet implements ClipperMethods {
   private _convexSets: ConvexClipPlaneSet[];

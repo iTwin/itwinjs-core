@@ -82,8 +82,8 @@ export class RpcRequest<TResponse = any> {
   /** The parameters for this request. */
   public parameters: any[];
 
-  /** The RPC class instance for this request. */
-  public readonly interfaceInstance: RpcInterface;
+  /** The RPC client instance for this request. */
+  public readonly client: RpcInterface;
 
   /** Convenience access to the protocol of this request. */
   public readonly protocol: RpcProtocol;
@@ -138,12 +138,12 @@ export class RpcRequest<TResponse = any> {
   }
 
   /** Constructs an RPC request. */
-  public constructor(instance: RpcInterface, operation: string, parameters: any[]) {
-    this.interfaceInstance = instance;
-    this.protocol = instance.configuration.protocol;
-    this.operation = (instance.constructor.prototype as any)[operation][OPERATION];
+  public constructor(client: RpcInterface, operation: string, parameters: any[]) {
+    this.client = client;
+    this.protocol = client.configuration.protocol;
+    this.operation = (client.constructor.prototype as any)[operation][OPERATION];
     this.parameters = parameters;
-    this.retryInterval = instance.configuration.pendingOperationRetryInterval;
+    this.retryInterval = client.configuration.pendingOperationRetryInterval;
     this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
     this.id = this.operation.policy.requestId(this);
     this.protocol.events.addListener(this.handleProtocolEvent, this);

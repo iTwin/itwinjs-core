@@ -37,7 +37,7 @@ export class CodeSpecs {
     if (!codeSpecId.isValid())
       throw new IModelError(IModelStatus.InvalidId);
 
-    // good chance it's already loaded - check there before running a query
+    // good chance it is already loaded - check there before running a query
     const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
       return codeSpec.id === codeSpecId;
     });
@@ -56,7 +56,7 @@ export class CodeSpecs {
    * @throws [[IModelError]] if no CodeSpec with the specified name could be found.
    */
   public getByName(name: string): CodeSpec {
-    // good chance it's already loaded - check there before running a query
+    // good chance it is already loaded - check there before running a query
     const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
       return codeSpec.name === name;
     });

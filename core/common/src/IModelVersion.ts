@@ -34,7 +34,7 @@ export class IModelVersion {
    * to be applied or merged to the iModel.
    * Note that all ChangeSets up to and and including the specified ChangeSet
    * needs to be applied.
-   * If the changeSetId is an empty string, it's assumed to be the first version
+   * If the changeSetId is an empty string, it is assumed to be the first version
    * before any change sets have been applied.
    */
   public static asOfChangeSet(changeSetId: string): IModelVersion {

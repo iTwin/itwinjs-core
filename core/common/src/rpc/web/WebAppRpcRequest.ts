@@ -25,7 +25,7 @@ export class WebAppRpcRequest extends RpcRequest {
   public method: HttpMethod_T;
 
   /** Convenience access to the protocol of this request. */
-  public readonly protocol: WebAppRpcProtocol = this.interfaceInstance.configuration.protocol as any;
+  public readonly protocol: WebAppRpcProtocol = this.client.configuration.protocol as any;
 
   /** Deserializes a request. */
   public static deserialize(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcRequest {
@@ -52,8 +52,8 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Constructs a web application request. */
-  public constructor(instance: RpcInterface, operation: string, parameters: any[]) {
-    super(instance, operation, parameters);
+  public constructor(client: RpcInterface, operation: string, parameters: any[]) {
+    super(client, operation, parameters);
     this.path = this.protocol.supplyPathForOperation(this.operation, this);
     this.method = this.protocol.supplyMethodForOperation(this.operation);
   }

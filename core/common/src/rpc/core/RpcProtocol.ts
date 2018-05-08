@@ -145,8 +145,8 @@ export abstract class RpcProtocol {
   }
 
   /** @hidden @internal */
-  public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _instance: RpcInterface): void { }
+  public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
   /** @hidden @internal */
-  public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _instance: RpcInterface): void { }
+  public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 }

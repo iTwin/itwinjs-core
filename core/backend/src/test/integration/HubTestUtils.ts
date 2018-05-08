@@ -61,7 +61,7 @@ export class HubTestUtils {
   }
 
   /**
-   * Queries the project id by it's name
+   * Queries the project id by its name
    * @param accessToken AccessToken
    * @param projectName Name of project
    * @throws If the project is not found, or there is more than one project with the supplied name
@@ -74,7 +74,7 @@ export class HubTestUtils {
   }
 
   /**
-   * Queries the iModel id by it's name
+   * Queries the iModel id by its name
    * @param accessToken AccessToken
    * @param projectId Id of the project
    * @param iModelName Name of the iModel

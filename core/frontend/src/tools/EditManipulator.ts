@@ -26,13 +26,13 @@ export const enum ManipulatorSelectionMode {
 export abstract class EditManipulator {
 
   /**
-   * Called to have manipulator populate it's internal set of controls.
+   * Called to have manipulator populate its internal set of controls.
    * @return true if controls were created.
    */
   public abstract doCreateControls(): boolean;
 
   /**
-   * Called to have manipulator cleanup it's internal control data so that
+   * Called to have manipulator clean up its internal control data so that
    * doCreateControls might be called again. For example after a successful drag,
    * doCleanupControls will be called followed by doCreateControls to
    * have the controls reflect the changes to the element.
@@ -57,7 +57,7 @@ export abstract class EditManipulator {
    * Select control(s) that make the most sense for the supplied hit.
    * This method supports modification tools that need to select both the
    * element and controls from a single click and immediately start modification.
-   * The manipulator might not ever be asked to draw it's controls.
+   * The manipulator might not ever be asked to draw its controls.
    * @note A manipulator should always try to select at least one control.
    * @return true if any control is selected.
    */
@@ -82,7 +82,7 @@ export abstract class EditManipulator {
    * When multiple manipulators are active on a selection set, only the one whose control is actually
    * selected to start the modify operation is given responsibility for setting up the modification.
    * If called, the manipulator is responsible for setting the anchor point that will be used by all
-   * active manipulators to the center of it's selected control. This manipulator can also enable AccuSnap/AccuDraw.
+   * active manipulators to the center of its selected control. This manipulator can also enable AccuSnap/AccuDraw.
    * @param ev Current button event, point needs to be set to center of selected control.
    * @note If you merely want a control to handle clicks, implement _OnClick instead.
    * @return false to reject starting modify dynamics.

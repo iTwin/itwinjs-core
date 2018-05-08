@@ -748,7 +748,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
           return false;
       return true;
     }
-    // if both are null it's equal, otherwise unequal
+    // if both are null it is equal, otherwise unequal
     return (!dataA && !dataB);
   }
 

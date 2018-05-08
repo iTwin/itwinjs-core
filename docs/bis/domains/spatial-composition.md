@@ -76,7 +76,7 @@ Naming :
 Naming :
 1 - Equivalent of : `IfcRelAggregates`.
 
-Relates the Composer with its' composees
+Relates the Composer with its composees
 
 ```xml
     <ECRelationshipClass typeName="CompositeComposesSubComposites" strength="embedding" modifier="None">

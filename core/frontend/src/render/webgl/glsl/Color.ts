@@ -9,6 +9,7 @@ import {
 } from "../ShaderBuilder";
 import { LUTGeometry } from "../CachedGeometry";
 import { GLSLFragment } from "./Fragment";
+import { addRenderPass } from "./RenderPass";
 
 // Vertex
 const computeColor = `
@@ -43,6 +44,7 @@ export function addColor(builder: ProgramBuilder) {
   });
   builder.vert.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
 
+  addRenderPass(builder.vert);
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeColor", computeColor);
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

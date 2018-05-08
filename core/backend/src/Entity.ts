@@ -168,7 +168,7 @@ export class PropertyMetaData {
           return this.createValueOrArray(Point3d.fromJSON, jsonObj);
       }
     }
-    if (this.direction !== undefined)  // the presence of this means it's a navigation property
+    if (this.direction !== undefined)  // the presence of this means it is a navigation property
       return jsonObj.id !== undefined ? new RelatedElement(jsonObj) : Id64.fromJSON(jsonObj);
 
     return jsonObj;

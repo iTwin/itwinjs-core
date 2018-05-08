@@ -45,7 +45,7 @@ export interface AreaFillProps {
   transparency?: number;
   /** Set fill color to view background color. Use [[BackgroundFill.Solid]] for an opaque fill and [[BackgroundFill.Outline]] to display an outline using the line color */
   backgroundFill?: BackgroundFill;
-  /** Set fill color to a specific color. If the fill color the same as the line color, it's an opaque fill, otherwise it's an outline fill */
+  /** Set fill color to a specific color. If the fill color the same as the line color, it is an opaque fill, otherwise it is an outline fill */
   color?: ColorDef;
   /** Set fill using gradient properties */
   gradient?: Gradient.SymbProps;
@@ -116,7 +116,7 @@ export class GeometryStreamBuilder {
   }
 
   /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of locate and range testing for elements with a GeometryStream
-   * containing more than one GeometryQuery differentiable by range. Not useful for a single GeometryQuery, it's range and that of the GeometricElement are the same.
+   * containing more than one GeometryQuery differentiable by range. Not useful for a single GeometryQuery, its range and that of the GeometricElement are the same.
    * Ignored when defining a GeometryPart, and not needed when only appending GeometryPart instances to a GeometricElement as these store their own range.
    */
   public appendGeometryRanges() {

@@ -43,7 +43,7 @@ export class FuzzySearch<T> {
     if (!pattern || pattern.length < 2)
       return new FuzzySearchResults<T>(undefined);
 
-    // it's a multiword pattern if there's a space other than at the end of the pattern.
+    // it is a multiword pattern if there's a space other than at the end of the pattern.
     const spaceIndex: number = pattern.indexOf(" ");
     const multiWord: boolean = (-1 !== spaceIndex) && (spaceIndex !== (pattern.length - 1));
     const options: Fuse.FuseOptions = multiWord ? this.onGetMultiWordSearchOptions() : this.onGetSingleWordSearchOptions();

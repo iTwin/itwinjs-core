@@ -449,7 +449,7 @@ export class RotMatrix implements BeJSONFunctions {
 
     v0.normalizeInPlace();
     // V0 is a unit vector perpendicular to the rotation axis.
-    // Rotate it.   It's image V1 is also a unit vector, and the angle from V0 to V1 is the quat angle.
+    // Rotate it.   Its image V1 is also a unit vector, and the angle from V0 to V1 is the quat angle.
     // CrossProduct is axis vector times sine of angle.
     // Dot Product is cosine of angle.
     // V2 is zero in 180 degree case, so we use the Cross from the search as the axis

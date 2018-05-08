@@ -274,7 +274,7 @@ export class AutoPush {
     // the caller is node, and so the caller won't await it or otherwise deal with the Promise. That's fine, we just want to kick
     // off the push and let it run concurrently, as the service gets back to doing other things.
     // Yes, you can interleave other service operations, even inserts and updates and saveChanges, with a push. That is because
-    // pushChanges keeps track of the last local Txn that should process. It's no problem to add more while push is in progress.
+    // pushChanges keeps track of the last local Txn that should process. It is no problem to add more while push is in progress.
   }
 
 }

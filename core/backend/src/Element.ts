@@ -23,7 +23,7 @@ import {
  * or simply be information records.
  *
  * Every Element has a 64-bit id (inherited from Entity) that uniquely identifies it within an iModel. Every Element also
- * has a "code" that identifies it's meaning in the real world. Additionally, Elements may have a "federationGuid"
+ * has a "code" that identifies its meaning in the real world. Additionally, Elements may have a "federationGuid"
  * to hold a GUID, if the element was assigned that GUID by some other federated database. The iModel database enforces
  * uniqueness of id, code, and federationGuid.
  *

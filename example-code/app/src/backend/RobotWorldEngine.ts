@@ -109,7 +109,7 @@ export class RobotWorldEngine {
   }
 
   // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
-  // An experimental method. It's in the release build, but only turned on in some deployments.
+  // An experimental method. It is in the release build, but only turned on in some deployments.
   public static fuseRobots(iModelDb: IModelDb, r1Id: Id64, r2Id: Id64) {
     if (!RobotWorldEngine.features.check("experimentalMethods"))
       return;
