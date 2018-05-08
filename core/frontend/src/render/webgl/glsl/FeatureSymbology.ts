@@ -10,7 +10,8 @@ import {
   VariableType,
   VertexShaderComponent,
   VariablePrecision,
-  FragmentShaderComponent } from "../ShaderBuilder";
+  FragmentShaderComponent
+} from "../ShaderBuilder";
 import { RenderMode, Hilite, FeatureIndexType } from "@bentley/imodeljs-common";
 import { TextureUnit } from "../RenderFlags";
 import { FloatRgba } from "../FloatRGBA";
@@ -116,7 +117,7 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addUniform("u_featureInfo", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_featureInfo", (uniform, params) => {
       let dims = FeatureDimension.Empty;
-      const value = [ 0, 0 ];
+      const value = [0, 0];
       const features = params.geometry.featuresInfo;
       const featureIndexType = undefined !== features ? features.type : FeatureIndexType.Empty;
       if (FeatureIndexType.Uniform === featureIndexType)
@@ -175,7 +176,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
           if (params.geometry.isEdge) {
             const edgeOvrs = params.target.getEdgeOverrides(params.renderPass);
             if (undefined !== edgeOvrs)
-            flags = edgeOvrs.computeOvrFlags();
+              flags = edgeOvrs.computeOvrFlags();
           }
 
           uniform.setUniform1f(flags);
@@ -197,7 +198,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       assert(undefined !== ovr);
       if (ovr!.isNonUniform)
         ovr!.texture!.bindSampler(uniform, TextureUnit.FeatureSymbology);
-      });
+    });
   });
   vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_featureParams", (uniform, params) => {
@@ -247,8 +248,8 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
       const hilite = params.target.hiliteSettings;
       let silhouette = 2.0;
       switch (hilite.silhouette) {
-        case Hilite.Silhouette.None:  silhouette = 0.0; break;
-        case Hilite.Silhouette.Thin:  silhouette = 1.0; break;
+        case Hilite.Silhouette.None: silhouette = 0.0; break;
+        case Hilite.Silhouette.Thin: silhouette = 1.0; break;
       }
 
       // During the normal pass (with depth testing), we mix the hilite color with the element color.
@@ -256,7 +257,7 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
       // We have no idea if we're hiliting an occluded or visible portion of the hilited element.
       const hidden = hilite.hiddenRatio;
       const visible = Math.max(0, hilite.visibleRatio - hidden);
-      uniform.setUniform3fv([ visible, hidden, silhouette ]);
+      uniform.setUniform3fv([visible, hidden, silhouette]);
     });
   });
 }
@@ -268,7 +269,7 @@ const checkVertexHiliteDiscard = `return 0.0 == v_feature_hilited;`;
 const computeHiliteColor = `return vec4(ceil(v_feature_hilited));`;
 
 const computeHiliteOverrides =
-`
+  `
 vec4 value = getFirstFeatureRgba();
 float flags = value.r * 256.0;
 feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
@@ -276,7 +277,7 @@ v_feature_hilited = extractNthFeatureBit(flags, kOvrBit_Hilited);
 `;
 
 const computeHiliteOverridesWithWeight = computeHiliteOverrides +
-`
+  `
 linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
   value.g * 256.0,
   1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
@@ -338,8 +339,7 @@ if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Backgr
 vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
 vec2 depthAndOrder = readDepthAndOrder(tc);
 float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
-return depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5;
-}`;
+return depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5;`;
 
 const checkForEarlySurfaceDiscardWithElemID = `
 if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
@@ -500,7 +500,7 @@ function addElementId(builder: ProgramBuilder) {
   const vert = builder.vert;
   addLookupTable(vert, "elementId", "2.0");
   vert.addFunction(computeElementIdTextureCoords);
-  vert.addFunction(computeElementId);
+  vert.addFunction("void computeElementId()", computeElementId);
   vert.addUniform("u_elementIdLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_elementIdLUT", (uniform, params) => {
       assert(undefined !== params.target.currentPickTable);

@@ -60,7 +60,7 @@ export namespace GLSLFragment {
         rgba.rgb /= oldAlpha;
 
       rgba.rgb *= newAlpha;
-      rgba.a = new Alpha;
+      rgba.a = newAlpha;
       return rgba;
     }`;
 

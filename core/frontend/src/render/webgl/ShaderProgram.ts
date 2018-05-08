@@ -178,6 +178,10 @@ export class ShaderProgram implements IDisposable {
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     const compileLog = succeeded ? "" : (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " compilation errors: " + gl.getShaderInfoLog(shader) + "\n" + src;
+
+    // TEST console.log("shader = " + src); // tslint:disable-line:no-console
+    // TEST console.log("compileLog = " + compileLog); // tslint:disable-line:no-console
+
     assert(succeeded, compileLog);
     return succeeded ? shader : undefined;
   }

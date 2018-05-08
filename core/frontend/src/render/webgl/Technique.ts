@@ -75,7 +75,7 @@ export abstract class VariedTechnique implements Technique {
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void { this.addProgram(flags, builder.buildProgram(gl)); }
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
     const index = this.getShaderIndex(flags);
-    assert(undefined === this._programs[index], "program already exists");
+    // assert(undefined === this._programs[index], "program already exists");
     this._programs[index] = program;
   }
 
@@ -92,7 +92,7 @@ export abstract class VariedTechnique implements Technique {
   }
 
   private getShaderIndex(flags: TechniqueFlags) {
-    assert(!flags.isHilite || (!flags.isTranslucent && !flags.hasFeatures), "invalid technique flags");
+    assert(!flags.isHilite || (!flags.isTranslucent && flags.hasFeatures), "invalid technique flags");
     const index = this.computeShaderIndex(flags);
     assert(index < this._programs.length, "shader index out of bounds");
     return index;
