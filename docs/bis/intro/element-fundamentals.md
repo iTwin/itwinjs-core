@@ -1,32 +1,65 @@
 # Element Fundamentals
 
-A bis:Element represents an entity in the real world, e.g. pumps, beams, contracts companies, processes, requirements, documents, persons, etc.
+A BIS `Element` represents an entity in the real world, e.g. pumps, beams, contracts, companies, processes, requirements, documents, persons, etc.
 
 ## Codes
 
-A bis:Element has a “Code” that represents its identifier in the real world. Examples uses for Code include: Asset Tracking Number, Tag Number, Serial Number, VIN Number, Social Security Number, Document Tracking Number, Contract Number, Project Number, RFID, etc. When the identified entities are physical in nature, they will often have their “code” physically affixed to them (as in the VIN Number on a car or the Manufacturer’s Serial Number on a guitar).
+Every BIS `Element` has the ability to store a *Code* that represents its formal identifier in the real world.
+A Code is a human-readable string that is used to uniquely identify something.
+Codes are enforced to be unique within a BIS repository.
+A Code conveys information to the reader that understands the structure of the string and is therefore able to *decode* it.
+Different domains and organizations have different ways of *encoding* business information.
+For some classes of Elements, a Code is required.
+For other classes of Elements, a Code is optional.
+However, the notion of a formal naming system is pervasive enough to have as a first-class BIS property directly on `Element`.
+Examples uses for Code include:
 
-A Code is a three-part identifier that consists of a CodeSpec, a CodeScope and a CodeValue.
+- Asset Tracking Number
+- Tag Number
+- Serial Number
+- VIN Number
+- Social Security Number
+- Document Tracking Number
+- Contract Number
+- Project Number
+- RFID
+- Etc.
 
-## bisElements have the following properties:
+When the identified entity is physical in nature, it will often have its *code* physically affixed to it (as in the VIN Number on a car or the Manufacturer’s Serial Number on a guitar).
+
+A Code is a three-part identifier that consists of a `CodeSpec`, a `CodeScope` and a `CodeValue`.
+
+## BIS Element Properties
 
 ### CodeSpec
 
-### CodeSCope
+A `CodeSpec` (aka **Code Specification**) captures the rules for encoding and decoding significant business information into and from a Code (string).
+A Code Specification is used to generate and validate Codes.
+A BIS Repository (e.g. an iModel) can persist multiple Code Specifications because different classes of Elements can have different coding conventions.
+
+Each `Element` has a relationship to the `CodeSpec` that should be used to encode or decode the Code for that instance.
+
+### CodeScope
+
+Each `Element` has a relationship to another Element that provides the uniqueness scope for its Code.
+For example, a Floor Code (like "1" or "2") must be unique within a Building, but is not unique across Buildings.
+In this example, the Building instance is providing the CodeScope for the Floor.
 
 ### CodeValue
 
-Elements representing real-world entities that don’t have a meaningful real-world identifier, e.g. a piece of baseboard, a pile of dirt, an average bolt, will be assigned the “NullCode” authority and will have null for its CodeValue.
+Each `Element` stores a `CodeValue` (a text string).
+In many contexts, CodeValue is colloquially referred to as the *Element's Code*.
+A `CodeValue` should be a human-understandable string, *not* a Guid. `FederationGuid` fulfills that purpose.
 
-Note that a `CodeValue` should be a human-understandable string, *not* a Guid. `FederationGuid` fulfils that purpose.
+Elements representing real-world entities that don’t have a meaningful real-world identifier, e.g. a piece of baseboard, a pile of dirt, an average bolt, will have `null` for its `CodeValue`.
 
 ### FederationGuid
 
-Every `bis:Element` has an optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) called `FederationGuid`. Generally it is intended that FederationGuid are assigned by external systems to *federate* Elements to their external meaning.
+Every BIS `Element` has an optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) called `FederationGuid`. Generally it is intended that FederationGuid are assigned by external systems to *federate* Elements to their external meaning.
 
 ### UserLabel
 
-Every `bis:Element` has an optional `UserLabel` property, to provide an *alias* familiar to the user.
+Every BIS `Element` has an optional `UserLabel` property, to provide an *alias* familiar to the user.
 
 The UserLabel is always left for the user to enter and is not programmatically generated.
 
@@ -102,9 +135,7 @@ An Element may have child Elements. Both the parent and the children must live i
 These are subclasses of Element defined in the BIS core from which all other Element types must descend:
 
 - `GeometricElement`
-
 - `InformationContentElement`
-
 - `RoleElement`
 
 ![Core Element Types](./media/core-element-types.png)
@@ -121,15 +152,15 @@ The GeometricElement hierarchy defined in the BIS Core is broken down as shown i
 
 Brief descriptions for the classes in the 2d branch are:
 
-- `GeometricElement2d` – An Element that is inherently 2d in nature.
+- `GeometricElement2d` – An Element that is inherently 2D in nature.
 
 - `GraphicalElement2d` – _**xxxxxxxxxx**_.
 
 - `DrawingGraphic` – A GraphicalElement2d that is intended to be placed on a Drawing.
 
-Brief descriptions for the classes in the 3d branch are:
+Brief descriptions for the classes in the 3D branch are:
 
-- `GeometricElement3d` – An Element whose representation is inherently 3d in nature.
+- `GeometricElement3d` – An Element whose representation is inherently 3D in nature.
 
 - `GraphicalElement3d` – A 3D Element that is not relevant to real-world 3D space, such as a 3D bar chart. These Elements could be positioned in real-world 3D space (in a heads-up display, for example).
 
