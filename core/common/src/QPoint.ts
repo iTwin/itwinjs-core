@@ -305,6 +305,22 @@ export class QPoint3d {
     pt.z = Quantization.unquantize(this.z, params.origin.z, params.scale.z);
     return pt;
   }
+
+  public equals(other: QPoint3d) {
+    return this.x === other.x && this.y === other.y && this.z === other.z;
+  }
+
+  public compare(rhs: QPoint3d) {
+    let diff = this.x - rhs.x;
+    if (0 === diff) {
+      diff = this.y - rhs.y;
+      if (0 === diff) {
+        diff = this.z - rhs.z;
+      }
+    }
+
+    return diff;
+  }
 }
 
 /** A list of 3d points all quantized to the same range. */

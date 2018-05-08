@@ -3,69 +3,108 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
+/** A duration of time. Can be either positive (towards future) or negative (in the past).
+ * BeDurations are immutable.
+ */
 export class BeDuration {
-  private _milliseconds: number;
-  public get milliseconds() { return this._milliseconds; }
+  private readonly _milliseconds: number;
   private constructor(milliseconds: number = 0) { this._milliseconds = milliseconds; }
-  public static fromSeconds(seconds: number) { return new BeDuration(seconds * 1000); }
-  public static fromMilliseconds(milliseconds: number) { return new BeDuration(milliseconds); }
+
+  /** The duration in milliseconds */
+  public get milliseconds() { return this._milliseconds; }
   public get seconds() { return this._milliseconds / 1000; }
+
+  /** Create a BeDuration from seconds.
+   * @param seconds the number of seconds for this BeDuration
+   */
+  public static fromSeconds(seconds: number) { return new BeDuration(seconds * 1000); }
+  /** Create a BeDuration from milliseconds.
+   * @param milliseconds the number of milliseconds for this BeDuration
+   */
+  public static fromMilliseconds(milliseconds: number) { return new BeDuration(milliseconds); }
+  /** Determine whether this BeDuration is 0 seconds */
   public isZero() { return this._milliseconds === 0; }
-  public isTowardsFuture() { return this._milliseconds > 0; }
-  public isTowardsPast() { return this._milliseconds < 0; }
-  public minus(other: BeDuration) { return new BeDuration(this._milliseconds - other._milliseconds); }
-  public plus(other: BeDuration) { return new BeDuration(this._milliseconds + other._milliseconds); }
+  /** Determine whether this BeDuration is towards the future */
+  public isTowardsFuture(): boolean { return this._milliseconds > 0; }
+  /** Determine whether this BeDuration is towards the past */
+  public isTowardsPast(): boolean { return this._milliseconds < 0; }
+  /** Subtract a BeDuration from this BeDuration, returning a new BeDuration. */
+  public minus(other: BeDuration): BeDuration { return new BeDuration(this._milliseconds - other._milliseconds); }
+  /** Add a BeDuration to this BeDuration, returning a new BeDuration */
+  public plus(other: BeDuration): BeDuration { return new BeDuration(this._milliseconds + other._milliseconds); }
 }
 
+/** A specific point in time relative to the current time.
+ * BeTimePoints are used for timing operations. They are created from a BeDuration relative to the "now".
+ * BeTimePoints are immutable.
+ */
 export class BeTimePoint {
-  private _milliseconds: number;
+  private readonly _milliseconds: number;
+  /** the time in milliseconds, of this BeTimePoint (relative to January 1, 1970 00:00:00 UTC.) */
   public get milliseconds() { return this._milliseconds; }
-  private constructor(millis: number) { this._milliseconds = millis; }
+  private constructor(milliseconds: number) { this._milliseconds = milliseconds; }
+
+  /** Create a BeTimePoint from Date.now() */
   public static now() { return new BeTimePoint(Date.now()); }
 
-  /** Get a BeTimePoint at a specified duration in the future from now
+  /** Create a BeTimePoint at a specified duration in the future from now
    *  @param val the duration from now
    */
   public static fromNow(val: BeDuration) { return new BeTimePoint(Date.now() + val.milliseconds); }
 
-  /** Get a BeTimePoint at a specified duration in the past before now
+  /** Create a BeTimePoint at a specified duration in the past before now
    * @param val the duration before now
    */
   public static beforeNow(val: BeDuration) { return new BeTimePoint(Date.now() - val.milliseconds); }
 
-  /** Determine whether this BeTimePoint is valid (non-zero) */
-  public isValid() { return 0 !== this._milliseconds; }
+  /** Determine whether this BeTimePoint is a time in the future from the time this method is called (it calls now()!) */
+  public isInFuture(): boolean { return Date.now() < this._milliseconds; }
 
-  /** return true if this BeTimePoint is a valid time in the future from the time this method is called (it calls now()!)
-   * @note always returns false and does not call Now() if this is not a valid BeTimePoint
+  /** Determine whether this BeTimePoint is a time that has already passed before the time this method is called (it calls now()!) */
+  public isInPast(): boolean { return Date.now() > this._milliseconds; }
+
+  /** Determine whether this BeTimePoint happens before another one.
+   * @param other the other BeTimePoint.
    */
-  public isInFuture() { return this.isValid() && (Date.now() < this._milliseconds); }
+  public before(other: BeTimePoint): boolean { return this._milliseconds < other._milliseconds; }
 
-  /** return true if this BeTimePoint was a valid time that has past before the time this method is called (it calls now()!)
-   * @note always returns false and does not call Now() if this is not a valid BeTimePoint
+  /** Determine whether this BeTimePoint happens after another one.
+   * @param other the other BeTimePoint.
    */
-  public isInPast() { return this.isValid() && (Date.now() > this._milliseconds); }
+  public after(other: BeTimePoint): boolean { return this._milliseconds > other._milliseconds; }
 
-  public before(other: BeTimePoint) { return this._milliseconds < other._milliseconds; }
-  public after(other: BeTimePoint) { return this._milliseconds > other._milliseconds; }
-  public minus(duration: BeDuration) { return new BeTimePoint(this._milliseconds - duration.milliseconds); }
+  /** Subtract a BeDuration from this BeTimePoint, returning a new BeTimePoint. This moves this BeTimePoint backwards in time if BeDuration.isTowardsFuture() === true
+   * @param duration the duration to subtract.
+   */
+  public minus(duration: BeDuration): BeTimePoint { return new BeTimePoint(this._milliseconds - duration.milliseconds); }
+
+  /** Subtract a BeDuration from this BeTimePoint, returning a new BeTimePoint. This moves this BeTimePoint backwards in time if BeDuration.isTowardsFuture() === true
+   * @param duration the duration to subtract.
+   */
   public plus(duration: BeDuration) { return new BeTimePoint(this._milliseconds + duration.milliseconds); }
 }
 
+/** A StopWatch for timing operations. */
 export class StopWatch {
-  private _start?: BeTimePoint = undefined;
-  private _stop?: BeTimePoint = undefined;
-  /** Get the elapsed time since Start() on a running timer. */
-  public get current(): BeDuration { return BeDuration.fromMilliseconds(StopWatch.now().milliseconds - (!!this._start ? this._start.milliseconds : 0)); }
+  private _start?: BeTimePoint;
+  private _stop?: BeTimePoint;
+  /** Get the elapsed time since start() on a running timer. */
+  public get current(): BeDuration { return BeDuration.fromMilliseconds(BeTimePoint.now().milliseconds - (!!this._start ? this._start.milliseconds : 0)); }
+  /** Get the elapsed time, in seconds, since start() on a running timer. */
   public get currentSeconds(): number { return this.current.seconds; }
-  /** Get the elapsed time between Start() and Stop() on this timer. */
-  public get elapsed(): BeDuration { return BeDuration.fromMilliseconds((!!this._stop ? this._stop.milliseconds : StopWatch.now().milliseconds) - (!!this._start ? this._start.milliseconds : 0)); }
+  /** Get the elapsed time between start() and stop() on this timer. */
+  public get elapsed(): BeDuration { return BeDuration.fromMilliseconds((!!this._stop ? this._stop.milliseconds : BeTimePoint.now().milliseconds) - (!!this._start ? this._start.milliseconds : 0)); }
+  /** Get the elapsed time, in seconds, between start() and stop() on this  timer. */
   public get elapsedSeconds(): number { return this.elapsed.seconds; }
-  public static now(): BeTimePoint { return BeTimePoint.now(); }
-  constructor(public description?: string, startImmediately: boolean = false) { if (startImmediately) this.start(); }
-  /** Start or restart the stopwatch. Any future time measurements will be based on this new value. */
-  public start(): void { this.reset(); this._start = StopWatch.now(); }
+  /** ctor for StopWatch
+   * @param description optional string stored with the StopWatch
+   * @param startImmediately if true, StopWatch is started when created. Otherwise, call start() explicitly.
+   */
+  constructor(public description?: string, startImmediately = false) { if (startImmediately) this.start(); }
+  /** Start the stopwatch. Any future time measurements will be based on this new value. */
+  public start(): void { this.reset(); this._start = BeTimePoint.now(); }
   /** Stop the stopwatch so that the duration can be viewed later. */
-  public stop(): BeDuration { this._stop = StopWatch.now(); return this.elapsed; }
+  public stop(): BeDuration { this._stop = BeTimePoint.now(); return this.elapsed; }
+  /** Clear the StopWatch */
   public reset(): void { this._start = this._stop = undefined; }
 }
