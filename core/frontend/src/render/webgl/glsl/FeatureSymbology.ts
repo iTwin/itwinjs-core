@@ -10,7 +10,7 @@ import {
   VariableType,
   VertexShaderComponent,
   VariablePrecision,
-  FragmentShaderComponent
+  FragmentShaderComponent,
 } from "../ShaderBuilder";
 import { RenderMode, Hilite, FeatureIndexType } from "@bentley/imodeljs-common";
 import { TextureUnit } from "../RenderFlags";
