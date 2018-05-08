@@ -4,6 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "prebuild": "rush build -t imodeljs-core-testbed",
     "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:testpublic && npm run webpack:frontend",
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
     "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
