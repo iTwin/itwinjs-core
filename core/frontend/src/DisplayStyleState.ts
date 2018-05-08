@@ -22,7 +22,11 @@ export abstract class DisplayStyleState extends ElementState {
   public get name(): string { return this.code.getValue(); }
 
   public get viewFlags(): ViewFlags { return this._viewFlags; }
-  public set viewFlags(flags: ViewFlags) { this._viewFlags = flags; this.setStyle("viewflags", flags); }
+  public set viewFlags(flags: ViewFlags) {
+    const viewFlags = flags.clone();
+    this._viewFlags = viewFlags;
+    this.setStyle("viewflags", viewFlags);
+  }
 
   public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
   public getStyle(name: string): any {
