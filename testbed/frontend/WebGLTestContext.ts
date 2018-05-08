@@ -9,7 +9,7 @@ export namespace WebGLTestContext {
   // When executing on the continuous integration server, we fail to obtain a WebGLRenderingContext.
   // Need to determine why, and how to fix.
   // Bill Goehrig claims one or both of these env vars will be defined when executing on the CI server.
-  function isEnabled(): boolean { return undefined === process.env.CI && undefined === process.env.TF_BUILD; }
+  function isEnabled(): boolean { return undefined === process.env.CI && undefined === process.env.TF_BUILD && undefined === process.env.BENTLEY_CI_BUILD; }
 
   export let isInitialized = false;
 

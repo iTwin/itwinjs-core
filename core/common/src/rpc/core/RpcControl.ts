@@ -136,7 +136,7 @@ export class RpcControlChannel {
       }
     }
 
-    if (request.interfaceInstance.configuration.controlChannel !== this)
+    if (request.client.configuration.controlChannel !== this)
       return;
 
     switch (request.status) {

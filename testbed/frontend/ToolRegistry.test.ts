@@ -92,6 +92,10 @@ describe("ToolRegistry", () => {
     const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("place ");
     showSearchResults("Matches for 'place ':", searchResults);
   });
+  it("Should find some nomatch results 'fjt'", async () => {
+    const searchResults: FuzzySearchResults<typeof Tool> | undefined = await IModelApp.tools.findPartialMatches("fjt");
+    showSearchResults("Matches for 'place ':", searchResults);
+  });
 });
 
 function caretStringFromBoldMask(keyin: string, boldMask: boolean[]): string {
@@ -132,10 +136,11 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
 
     const keyin = thisResult!.getMatchedValue();
     logResult(keyin);
-    assert.isTrue(keyin.length > 0);
+    assert.isTrue(keyin && keyin.length > 0);
 
-    const boldMask: boolean[] = thisResult!.getBoldMask();
-    logResult(caretStringFromBoldMask(keyin, boldMask));
+    const boldMask: boolean[] | undefined = thisResult!.getBoldMask();
+    assert.isTrue(boldMask && boldMask.length > 0);
+    logResult(caretStringFromBoldMask(keyin!, boldMask!));
   }
 }
 

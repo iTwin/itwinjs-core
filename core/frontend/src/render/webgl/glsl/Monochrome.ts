@@ -24,8 +24,7 @@ if (u_monoRgb.a  > 0.5) {
 }
 
 baseColor.rgb *= baseColor.a;
-return baseColor;
-}`;
+return baseColor;`;
 
 export function addMonochrome(frag: FragmentShaderBuilder): void {
   frag.set(FragmentShaderComponent.ApplyMonochrome, applyMonochromeColor);

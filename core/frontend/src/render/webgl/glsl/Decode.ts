@@ -26,7 +26,7 @@ export namespace GLSLDecode {
       return dot(rgb, vec3(1.0, 1.0 / 255.0, 1.0 / 65025.0));
     }`;
 
-  export const decodeDepthRgb = `
+  export const encodeDepthRgb = `
   vec3 encodeDepthRgb(float depth) {
     // 1.0 must be reduced slightly; otherwise decoding will produce zero. It's the far plane, so we don't care (and decoding produces 1.0 anyway).
     depth = min(depth, 16777215.0/16777216.0);

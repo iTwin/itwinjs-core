@@ -22,7 +22,9 @@ import { FloatRgba, FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
-import { SurfaceFlags } from "../RenderFlags";
+import { SurfaceFlags, TextureUnit } from "../RenderFlags";
+import { TextureHandle } from "../Texture";
+import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 
 const applyMaterialOverrides = `
@@ -186,10 +188,17 @@ if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
 return baseColor;`;
 
 const computeTexCoord = `
-if (isSurfaceBitSet(kSurfaceBit_HasTexture))
-  return unquantize2d(a_texCoord, u_qTexCoordParams);
-else
-  return vec2(0.0);`;
+if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
+  return vec2(0.0);
+
+// ###TODO if (u_animParams.w > 0.0)
+  // ###TODO return computeAnimatedTextureParam(u_animValue * u_animParams.w);
+
+vec2 tc = g_vertexBaseCoords;
+tc.x += 3.0 * g_vert_stepX;
+vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
+return unquantize2d(qcoords, u_qTexCoordParams);`;
 
 const getSurfaceColor = `vec4 getSurfaceColor() { return v_color; }`;
 
@@ -251,6 +260,7 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   const builder = createCommon(clip);
   addShaderFlags(builder);
 
+  addHiliter(builder); // ###TODO: why needed?  Needed so addSurfaceFlags can see feature_ignore_material, but calling addHiliter in here isn't like the native code.
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
   addNormal(builder);
@@ -285,15 +295,16 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
       }
     });
   });
-  /*
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
       assert(undefined !== surfGeom.texture);
-      // ###TODO: bind surfGeom.texture; must also be a TextureHandle!
+      // ###TODO: bind surfGeom.texture as the real WebGLTexture
+      const wtex = System.instance.context.createTexture();
+      if (null !== wtex)
+        TextureHandle.bindSampler(uniform, wtex, TextureUnit.Zero);
     });
   });
-  */
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
@@ -316,7 +327,8 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
     builder.frag.addExtension("GL_EXT_draw_buffers");
-    builder.frag.addFunction(GLSLDecode.decodeDepthRgb);
+    builder.frag.addFunction(GLSLDecode.depthRgb);
+    builder.frag.addFunction(GLSLDecode.encodeDepthRgb);
     builder.frag.addFunction(GLSLFragment.computeLinearDepth);
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
   }

@@ -54,12 +54,12 @@ export class ElectronRpcProtocol extends RpcProtocol {
   }
 
   /** @hidden @internal */
-  public onRpcClientInitialized(definition: RpcInterfaceDefinition, _instance: RpcInterface): void {
+  public onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
     this.registerInterface(definition);
   }
 
   /** @hidden @internal */
-  public onRpcImplInitialized(definition: RpcInterfaceDefinition, _instance: RpcInterface): void {
+  public onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
     this.registerInterface(definition);
   }
 

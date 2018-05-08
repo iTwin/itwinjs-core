@@ -62,17 +62,26 @@ export class FuzzySearch<T> {
         checkScoreDelta = true;
     }
 
-    // Sometimes fuse returns results in the array where the matches array is empty. That seems like a bug to me. In the cases
-    // I have seen, they always come near the end of large sets, so we just truncate the set when we see one.
+    // Sometimes fuse returns results in the array where the matches array is empty. That seems like a bug to me, but it happens when
+    // the input  is something like "fjt" and the string it matches is "fit". If we have more than three actual matches, we just truncate the set when we see one.
     // The other use for this loop is to truncate when we see a dramatic increase in the score. The ones after are unlikely
     // to be useful, so we truncate the results when we hit that point also.
-    for (let resultIndex = 1; resultIndex < results.length; resultIndex++) {
-      if (0 === results[resultIndex].matches.length) {
-        results = results.slice(0, resultIndex);
-        break;
+    for (let resultIndex = 0; resultIndex < results.length; resultIndex++) {
+      const thisResult = results[resultIndex];
+      if (0 === thisResult.matches.length) {
+        // here we have a result with no matches. If we have other matches, just discard this and the rest.
+        if (resultIndex > 2) {
+          results = results.slice(0, resultIndex);
+          break;
+        }
+        // otherwise we want to keep this result, but we have to add the matched value to the object because we can't get it from the matches array.
+        // we assume it came from the first key (usually there's only one anyway).
+
+        thisResult.matchedValue = thisResult.item[keys[0]];
+        thisResult.matchedKey = keys[0];
       }
 
-      if (checkScoreDelta) {
+      if (checkScoreDelta && (resultIndex > 0)) {
         const resultScore = results[resultIndex].score;
         if (resultScore < 0.101)
           continue;
@@ -113,19 +122,27 @@ export interface FuzzySearchResult<T> {
 function getResult(this: any) { return this.item; }
 
 // this function is added to each result to support the FuzzySearchResult interface.
-function getMatchedKey(this: any): string { return this.matches[0].key; }
+function getMatchedKey(this: any): string { return (this.matches.length > 0) ? this.matches[0].key : this.matchedKey; }
 
 // this function is added to each result to support the FuzzySearchResult interface.
-function getMatchedValue(this: any): string { return this.matches[0].value; }
+function getMatchedValue(this: any): string { return (this.matches.length > 0) ? this.matches[0].value : this.matchedValue; }
 
 // this function is added to each result to support the FuzzySearchResult interface.
-function getBoldMask(this: any): boolean[] {
+function getBoldMask(this: any): boolean[] | undefined {
   if (this.boldMask)
     return this.boldMask;
 
+  // if we had no matches, we return a bold mask with all false.
+  if (0 === this.matches.length) {
+    const noBoldMask = new Array<boolean>(this.matchedValue.length);
+    noBoldMask.fill(false);
+    return this.boldMask = noBoldMask;
+  }
+
+  // we have some matched portions.
   const thisMatchedString: string = this.matches[0].value;
-  const keyinLength = thisMatchedString.length;
-  const boldMask: boolean[] = new Array<boolean>(keyinLength);
+  const valueLength = thisMatchedString.length;
+  const boldMask: boolean[] = new Array<boolean>(valueLength);
   boldMask.fill(false);
   const indicesArray: number[][] = this.matches[0].indices;
   indicesArray.forEach((set: number[]) => {
@@ -134,8 +151,7 @@ function getBoldMask(this: any): boolean[] {
     }
   });
   // cache it so if someone asks again we don't have to recalculate it.
-  this.boldMask = boldMask;
-  return boldMask;
+  return this.boldMask = boldMask;
 }
 
 /** This class is used to return the results of FuzzySearch.search. It is iterable, with each iteration
