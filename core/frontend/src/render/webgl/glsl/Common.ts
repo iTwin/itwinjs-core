@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { ShaderBuilder, ProgramBuilder, VariableType } from "../ShaderBuilder";
+import { ShaderBuilder, ProgramBuilder, VariableType, ShaderType } from "../ShaderBuilder";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
 import { LUTGeometry } from "../CachedGeometry";
@@ -62,6 +62,18 @@ export function addShaderFlags(builder: ProgramBuilder) {
   builder.addUniform("u_shaderFlags", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_shaderFlags", (uniform, params) => { setShaderFlags(uniform, params); });
   });
+}
+
+export function addFrustum(builder: ProgramBuilder) {
+  builder.addUniform("u_frustum", VariableType.Vec3, (prog) => {
+    prog.addProgramUniform("u_frustum", (uniform, params) => {
+      uniform.setUniform3fv(params.target.frustumUniforms.frustum); // ###TODO: proper use of frustumUniforms?
+    });
+  });
+
+  builder.addGlobal("kFrustumType_Ortho2d", VariableType.Float, ShaderType.Both, "0.0", true);
+  builder.addGlobal("kFrustumType_Ortho3d", VariableType.Float, ShaderType.Both, "1.0", true);
+  builder.addGlobal("kFrustumType_Perspective", VariableType.Float, ShaderType.Both, "2.0", true);
 }
 
 export namespace GLSLCommon {

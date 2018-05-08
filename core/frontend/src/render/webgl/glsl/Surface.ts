@@ -12,9 +12,11 @@ import {
   ShaderBuilder,
 } from "../ShaderBuilder";
 import { FeatureMode, WithClipVolume } from "../TechniqueFlags";
-import { GLSLFragment } from "./Fragment";
+import { GLSLFragment, addWhiteOnWhiteReversal } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { GLSLDecode } from "./Decode";
+import { addColor } from "./Color";
+import { addLighting } from "./Lighting";
 import { addClipping } from "./Clipping";
 import { FloatRgba, FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard } from "./FeatureSymbology";
@@ -191,6 +193,28 @@ else
 
 const getSurfaceColor = `vec4 getSurfaceColor() { return v_color; }`;
 
+const computeBaseColor = `
+if (isSurfaceBitSet(kSurfaceBit_HasTexture) && u_textureWeight >= 1.0) {
+  // if a glyph texture, must mix getSurfaceColor() with texCol so texCol.a is applied 100% and
+  // surfCol.rgb is scaled by texCol.rgb (texCol.rgb = full white originally but stretched via mipMapping)
+  if (u_applyGlyphTex > 0) {
+    vec4 surfCol = getSurfaceColor();
+    const vec3 white = vec3(1.0);
+    const vec3 epsilon = vec3(0.0001);
+    vec3 color = surfCol.a > 0.0 ? surfCol.rgb / surfCol.a : surfCol.rgb; // revert premultiplied alpha
+    vec3 delta = (color + epsilon) - white;
+    if (u_reverseWhiteOnWhite > 0.5 && delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
+      surfCol.rgb = vec3(0.0);
+
+    vec4 texCol = TEXTURE(s_texture, v_texCoord);
+    return vec4(surfCol.rgb * texCol.rgb, texCol.a);
+  } else {
+    return TEXTURE(s_texture, v_texCoord);
+  }
+} else {
+  return getSurfaceColor(); // if textured, compute surface/material color first then mix with texture in applyMaterialOverrides...
+}`;
+
 function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean) {
   builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", withFeatureOverrides ? computeSurfaceFlags : getSurfaceFlags);
 
@@ -249,17 +273,19 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   builder.vert.addFunction(GLSLDecode.unquantize2d);
   // ###TODO: Animation.addTextureParam(builder.vert);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
-  /*
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
       const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
       const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        // ###TODO: uniform.setUniform4fv(surfGeom.meshData.uvParams.paramsPtr());
-        // ###TODO: add uvParams to MeshData as an optional member (not throw away)
+        const uvQParams = surfGeom.lut.uvQParams;
+        if (undefined !== uvQParams) {
+          uniform.setUniform4fv(uvQParams);
+        }
       }
     });
   });
+  /*
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
@@ -279,20 +305,23 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   });
 
   // Fragment and Vertex
-  // ###TODO: ShaderSource.Color.AddToBuilder(builder);
+  addColor(builder);
 
   // Fragment
   builder.frag.addFunction(getSurfaceColor);
-  // ###TODO: ShaderSource.Lighting.AddToBuidler(builder);
-  // ###TODO: ShaderSource.Fragment.AddWhiteOnWhiteReversal(frag);
+  addLighting(builder);
+  addWhiteOnWhiteReversal(builder.frag);
 
   if (FeatureMode.None === feat) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
     builder.frag.addExtension("GL_EXT_draw_buffers");
-    // builder.frag.addFunction(GLSLDecode.)
+    builder.frag.addFunction(GLSLDecode.decodeDepthRgb);
+    builder.frag.addFunction(GLSLFragment.computeLinearDepth);
+    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
   }
 
-  // ###TODO: Finish this function...
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+
   return builder;
 }
