@@ -48,7 +48,7 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
     flags |= ShaderFlags.OITFlatAlphaWeight;
 
   // If Cesium-style transparency is being used with non-float texture targets, we must scale the output in the shaders to 0-1 range.
-  // Otherwise, it will get implicitly clamped to that range and we'll lose any semblance our desired precision (even though it's low).
+  // Otherwise, it will get implicitly clamped to that range and we'll lose any semblance our desired precision (even though it is low).
   if (maxRenderType < RenderType.TextureHalfFloat)
     flags |= ShaderFlags.OITScaleOutput;
 

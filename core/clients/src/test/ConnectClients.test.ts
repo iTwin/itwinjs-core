@@ -180,7 +180,7 @@ describe("RbacClient", () => {
     const project: Project = await connectClient.getProject(accessToken, queryOptions);
     chai.expect(!!project);
 
-    // Round trip the access token to mimic it's use
+    // Round trip the access token to mimic its use
     const newAccessToken = AccessToken.fromTokenString(accessToken.toTokenString()!);
 
     const permissions: IModelHubPermissions = await rbacClient.getIModelHubPermissions(newAccessToken!, project.wsgId);

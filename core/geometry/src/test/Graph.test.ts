@@ -127,8 +127,8 @@ function exerciseMaskMethods(ck: Checker, graph: HalfEdgeGraph) {
   graph.clearMask(myMask);
   let numSet = 0;
   // do some tedius stuff at "a few" nodes .. 0,3,9,21....
-  const mask1 = HalfEdgeMask.PRIMARY_VERTEX_MASK; // ignore the name -- it's a mask to work with
-  const mask2 = HalfEdgeMask.POLAR_LOOP_MASK; // ignore the name -- it's a mask to work with.
+  const mask1 = HalfEdgeMask.PRIMARY_VERTEX_MASK; // ignore the name -- it is a mask to work with
+  const mask2 = HalfEdgeMask.POLAR_LOOP_MASK; // ignore the name -- it is a mask to work with.
   let numMask2InSet = 0;
   graph.clearMask(mask1);
   ck.testExactNumber(0, graph.countMask(mask1), "clear mask " + mask1);

@@ -54,13 +54,13 @@ export class BriefcaseEntry {
   public iModelId!: string;
 
   /** Id of the last change set that was applied to the BIM.
-   * Set to an empty string if it's the initial version, or a standalone briefcase
+   * Set to an empty string if it is the initial version, or a standalone briefcase
    */
   public changeSetId!: string;
 
   /** Index of the last change set that was applied to the BI.
    * Only specified if the briefcase was acquired from the Hub.
-   * Set to 0 if it's the initial version.
+   * Set to 0 if it is the initial version.
    */
   public changeSetIndex = 0;
 
@@ -91,7 +91,7 @@ export class BriefcaseEntry {
   /** Flag to indicate if the briefcase is currently open */
   public isOpen = false;
 
-  /** Id of the user that acquired the briefcase. This is not set if it's standalone briefcase */
+  /** Id of the user that acquired the briefcase. This is not set if it is a standalone briefcase */
   public userId?: string;
 
   /** In-memory handle of the native Db */
@@ -265,7 +265,7 @@ export class BriefcaseManager {
    *        "pathname": "path to imodel",
    *        "parentChangeSetId": "Id of parent change set",
    *        "reversedChangeSetId": "Id of change set Db was reversed to, if any",
-   *        "briefcaseId": "Id of brief case. Standalone if it's a readonly standalone briefcase.",
+   *        "briefcaseId": "Id of brief case. Standalone if it is a readonly standalone briefcase.",
    *        "readOnly": true or false
    *      },
    *      {
@@ -387,7 +387,7 @@ export class BriefcaseManager {
     }
   }
 
-  /** Get the index of the change set from it's id */
+  /** Get the index of the change set from its id */
   private static async getChangeSetIndexFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<number> {
     if (changeSetId === "")
       return 0; // the first version
@@ -637,7 +637,7 @@ export class BriefcaseManager {
     BriefcaseManager.cache.deleteBriefcase(briefcase);
   }
 
-  /** Deletes a briefcase, and releases it's references in the iModelHub if necessary */
+  /** Deletes a briefcase, and releases its references in the iModelHub if necessary */
   private static async deleteBriefcase(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
     BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
@@ -705,7 +705,7 @@ export class BriefcaseManager {
   /** Open a standalone iModel from the local disk */
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
     if (BriefcaseManager.standaloneCache.findBriefcaseByToken(new IModelToken(pathname)))
-      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it's already been opened once`);
+      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it has already been opened once`);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
@@ -1028,7 +1028,7 @@ export class BriefcaseManager {
       if (key === "state") {
         return (value as number);
       }
-      // If the key is a number, it's an array member.
+      // If the key is a number, it is an array member.
       if (!Number.isNaN(Number.parseInt(key))) {
         const code = new Code();
         Object.assign(code, value);

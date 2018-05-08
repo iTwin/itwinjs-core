@@ -8,7 +8,7 @@ import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@ben
 import { IModelDb } from "./IModelDb";
 import { LineStyle } from "./backend";
 
-/** A line style definition is a uniquely named pattern that repeats as it's displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
+/** A line style definition is a uniquely named pattern that repeats as it is displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:
  * - A style described by a stroke pattern (series of dashes and gaps) that may also include symbol graphics.
  * - A style using pre-defined pixel bit patterns [[LinePixels]] for dashed display (Code1-Code7).
@@ -117,7 +117,7 @@ export namespace LineStyleDefinition {
 
   /** Stroke pattern component definition [[ComponentType.StrokePattern]].
    * A stroke pattern component consists of a series of dashes and gaps having specified lengths and widths in meters. Simple dash-dot type line styles that do not
-   * include point symbols can be created by referencing a stroke pattern component by it's file property id.
+   * include point symbols can be created by referencing a stroke pattern component by its file property id.
    */
   export interface StrokePatternProps {
     /** Name for this stroke pattern */
@@ -200,7 +200,7 @@ export namespace LineStyleDefinition {
     UseWeight = 0x8000,
   }
 
-  /** Identifies a symbol and it's location and orientation relative to a stroke pattern */
+  /** Identifies a symbol and its location and orientation relative to a stroke pattern */
   export interface SymbolProps {
     /** The file property id of the symbol component, assumed to be [[ComponentType.PointSymbol]] if symType is undefined. */
     symId: number;

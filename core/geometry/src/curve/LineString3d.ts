@@ -299,7 +299,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
 
     const origin = this._points.interpolate(baseIndex, localFraction, baseIndex + 1)!;
     const vectorA = this._points.vectorIndexIndex(baseIndex, baseIndex + 1)!;
-    // tricky stuff to handle colinear points.   But if vectorA is zero it's still a mess . ..
+    // tricky stuff to handle colinear points.   But if vectorA is zero it is still a mess . ..
     const normal = Vector3d.create();
     const workVector = Vector3d.create();
     // try forming normal using both forward and reverse stepping.

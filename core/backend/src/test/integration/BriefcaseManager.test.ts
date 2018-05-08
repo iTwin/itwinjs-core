@@ -601,7 +601,7 @@ describe("BriefcaseManager", () => {
     expect(codes[0].state === CodeState.Reserved);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency (#integration)", async () => {
+  it.only("should write to briefcase with optimistic concurrency (#integration)", async () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";

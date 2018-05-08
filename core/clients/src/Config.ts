@@ -31,7 +31,7 @@ export class Config {
     "https://connect-wsg20.bentley.com", // sso://wsfed_desktop/1654
   );
 
-  /** Returns true if the code is currently executing in a browser, or false if it's executing on the server */
+  /** Returns true if the code is currently executing in a browser, or false if it is executing on the server */
   public static isBrowser(): boolean {
     return (typeof window !== "undefined");
   }

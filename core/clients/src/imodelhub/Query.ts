@@ -82,7 +82,7 @@ export class InstanceIdQuery extends Query {
   protected _byId?: string;
 
   /**
-   * Query single instance by it's id.
+   * Query single instance by its id.
    * @param id Id of the instance to query.
    * @returns This query.
    */

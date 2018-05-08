@@ -20,7 +20,7 @@ const loggingCategory = "imodeljs-clients.imodelhub";
 export enum CodeState {
   /** Code with this state is not persisted in the database. Code that is updated to 'Available' state is deleted from the database */
   Available = 0,
-  /** Code is reserved by the briefcase, no one else is allowed to change it's state */
+  /** Code is reserved by the briefcase, no one else is allowed to change its state */
   Reserved = 1,
   /** Code is used in the changeSet committed to the server */
   Used = 2,

@@ -267,7 +267,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     let numDisjoint = 0;
     let haveContinuous = false;
     // NB: Somebody might stick a 'point' or point string into a curve vector with a boundary...
-    // No idea what they expect us to do if it also contains continuous curves but it's dumb anyway.
+    // No idea what they expect us to do if it also contains continuous curves but it is dumb anyway.
     if (!filled && curves instanceof BagOfCurves) {
       curves.children.forEach((prim) => {
         if (GeometryListBuilder.isDisjointCurvePrimitive(prim)) {

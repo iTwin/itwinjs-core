@@ -572,7 +572,7 @@ export class ToolAdmin {
     if (applyLocks && !(IModelApp.tentativePoint.isActive || IModelApp.accuSnap.isHot()))
       handled = IModelApp.accuDraw.adjustPoint(pointActive, vp, false);
 
-    // NOTE: We don't need to support axis lock, it's worthless if you have AccuDraw...
+    // NOTE: We don't need to support axis lock, it is worthless if you have AccuDraw...
     if (!handled && vp.isPointAdjustmentRequired()) {
       if (applyLocks)
         this.adjustPointToGrid(pointActive, vp);
@@ -933,7 +933,7 @@ export class ToolAdmin {
     if (!changed)
       return;
 
-    // Give active tool a chance to update it's dynamics...
+    // Give active tool a chance to update its dynamics...
     if (activeTool instanceof PrimitiveTool) {
       const ev = ToolAdmin.scratchButtonEvent1;
       this.fillEventFromCursorLocation(ev);

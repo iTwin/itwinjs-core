@@ -64,7 +64,7 @@ export class IModelConnection extends IModel {
 
     let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelHubClient);
     if (!changeSetId)
-      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the RPC interface API.
+      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it is required by the RPC interface API.
 
     const iModelToken = new IModelToken(undefined, undefined, contextId, iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId);
     let openResponse: IModel;
@@ -75,7 +75,7 @@ export class IModelConnection extends IModel {
 
     Logger.logTrace(loggingCategory, "IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
-    // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
+    // todo: Setup userId if it is a readWrite open - this is necessary to reopen the same exact briefcase at the backend
     return new IModelConnection(openResponse);
   }
 

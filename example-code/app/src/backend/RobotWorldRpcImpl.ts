@@ -88,7 +88,7 @@ export function initializeRpcImpl() {
 
   // Start with the interfaces that we know that we want to expose.
   // Note that this is an example of exposing more than one interface from a single service.
-  // It's also an example of exposing both a interface that is implemented by an imported package
+  // It is also an example of exposing both a interface that is implemented by an imported package
   // and a interface that is implemented by the service.
   const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface];
 

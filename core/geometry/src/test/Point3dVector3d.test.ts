@@ -119,7 +119,7 @@ export class MatrixTests {
     transform.multiplyPoint3dArray(pointA, pointB);  // pointB goes in too small !!!
     ck.testExactNumber(pointA.length, pointB.length, "mutliplyPoint3dArray needs push");
 
-    pointB.push(Point3d.create(1, 1, 1)); // now it's bigger !!!
+    pointB.push(Point3d.create(1, 1, 1)); // now it is bigger !!!
     transform.multiplyPoint3dArray(pointA, pointB);
     ck.testExactNumber(pointA.length, pointB.length, "mutliplyPoint3dArray needs push");
 
