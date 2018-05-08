@@ -3,13 +3,26 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Ids */
 
+/** The properties of a 64-bit Id value. When serialized, will always be a string. */
 export type Id64Props = Id64 | string;
+
+/** The properties of a GUID. When serialized, will always be a string. */
 export type GuidProps = Guid | string;
+
+/** A set of Id64 string values. Note that the set is **not** of Id64 objects, since JavaScript does not support non-primitive keys. */
 export type Id64Set = Set<string>;
+
+/** An array of Id64 string values. */
 export type Id64Array = string[];
+
+/** Used for arguments to functions that can accept one or more Id64 values. */
 export type Id64Arg = Id64[] | Id64 | Id64Set | Id64Array | string;
 
-/** A 64 bit id, stored as a hex string. If invalid, value will be "0" */
+/**
+ * A 64 bit Id, stored as a hex string. This is necessary since JavaScript does not intrinsically support 64-bit integers.
+ * @note If invalid, value will be "0".
+ * @note Id64 is an immutable class. Its value cannot be changed.
+ */
 export class Id64 {
   public readonly value: string;
   private static toHex(str: string): number { const v = parseInt(str, 16); return Number.isNaN(v) ? 0 : v; }
@@ -28,7 +41,7 @@ export class Id64 {
     return Id64.toHex(this.value.slice(start));
   }
 
-  /** get the "high" part of this Id64. This is the "briefcase id", and is the high 24 bits of the 64 bit value. */
+  /** Get the "high" part of this Id64. This is the "briefcase id", and is the high 24 bits of the 64 bit value. */
   public getHigh(): number {
     if (!this.isValid())
       return 0;
@@ -43,8 +56,10 @@ export class Id64 {
   }
 
   /**
-   * constructor for Id64
-   * @param prop either a string with a hex number, another Id64, or an array of two numbers with [low,high]. Otherwise it will be invalid.
+   * Constructor for Id64
+   * @param prop either a string with a hex number, another Id64, or an array of two numbers with [low,high]. Otherwise result will be invalid.
+   * @note If valid, the value will be *normalized* to always be in the form "0x123abc". That is, it will
+   * only have lowercase letters, with no leading zeros after the "0x"
    */
   constructor(prop?: Id64Props | number[]) {
     if (!prop) {
@@ -89,19 +104,38 @@ export class Id64 {
     this.value = "0x" + ((high === 0) ? lowStr : (high.toString(16).toLowerCase() + ("0000000000" + lowStr).substr(-10)));
   }
 
-  /** convert this Id to a string */
+  /** Convert this Id64 to a string */
   public toString(): string { return this.value; }
 
-  /** Determine whether this Id is valid */
+  /** Determine whether this Id64 is valid.
+   * @note The value of an invalid Id64 is "0".
+   */
   public isValid(): boolean { return this.value !== "0"; }
 
-  /** Test whether two Ids are the same */
+  /** Test whether two Id64s are the same
+   * @param other the other Id64 to compare
+   */
   public equals(other: Id64): boolean { return this.value === other.value; }
+
+  /** Compare two (potentially undefined) Id64 values.
+   * @param a The first value, may be undefined
+   * @param b The second value, may be undefined
+   */
   public static areEqual(a?: Id64, b?: Id64): boolean { return (a === b) || (a != null && b != null && a.equals(b)); }
 
-  /** create an Id64 from a json object. If val is already an Id64, just return it since Id64s are immutable. */
+  /** Create an Id64 from a json object. If val is already an Id64, just return it since Id64s are immutable.
+   * @param val the json object containing Id64Props. If val does not contain valid values, result will be an invalid Id64.
+   */
   public static fromJSON(val?: Id64Props): Id64 { return val instanceof Id64 ? val : new Id64(val); }
 
+  /** Convert an Id64Arg into an Id64Set.
+   * This method can be used by functions that accept an Id64Arg to conveniently process the value(s).
+   *
+   * For example:
+   * ```ts
+   *   public addCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
+   * ```
+   */
   public static toIdSet(arg: Id64Arg): Id64Set {
     if (arg instanceof Set)
       return arg;
@@ -122,13 +156,16 @@ export class Id64 {
   public static invalidId: Id64 = new Id64();
 }
 
-/** a string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid. */
+/** A string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid.
+ * @note Guid is an immutable class. Its value cannot be changed.
+ */
 export class Guid {
   public readonly value: string;
   private static uuidPattern = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
   private static hexChars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
   private static v4VariantChars = ["8", "9", "a", "b"];
 
+  /** construct  */
   public constructor(input?: Guid | string | boolean) {
     if (typeof input === "string") { this.value = input.toLowerCase(); if (Guid.isGuid(this.value)) return; }
     if (input instanceof Guid) { this.value = input.value; return; }
