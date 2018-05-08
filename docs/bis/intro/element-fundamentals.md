@@ -153,28 +153,30 @@ The GeometricElement hierarchy defined in the BIS Core is broken down as shown i
 Brief descriptions for the classes in the 2d branch are:
 
 - `GeometricElement2d` – An Element that is inherently 2D in nature.
-
-- `GraphicalElement2d` – _**xxxxxxxxxx**_.
-
-- `DrawingGraphic` – A GraphicalElement2d that is intended to be placed on a Drawing.
+- `GraphicalElement2d` – A 2D Element that holds graphical information rather than geometry that has business meaning.
+- `DrawingGraphic` – A 2D graphical Element that is intended to be placed on a Drawing.
 
 Brief descriptions for the classes in the 3D branch are:
 
-- `GeometricElement3d` – An Element whose representation is inherently 3D in nature.
-
-- `GraphicalElement3d` – A 3D Element that is not relevant to real-world 3D space, such as a 3D bar chart. These Elements could be positioned in real-world 3D space (in a heads-up display, for example).
-
+- `GeometricElement3d` – An Element that is inherently 3D in nature.
+- `GraphicalElement3d` – A 3D Element that holds graphical information rather than geometry that has business meaning. Examples include text annotations or 3D bar charts. Instances of `GraphicalElement3d` are typically positioned for *whitespace* reasons since they are not tied to real-world 3D space.
 - `SpatialElement` – An Element representing an entity that exists in and is relevant to real-world 3D space.
-
 - `PhysicalElement` – A SpatialElement representing a real physical entity, i.e. one that has mass.
-
 - `SpatialLocationElement` – A SpatialElement representing some defined point, curve, surface, or volume in the real world. Spatial locations are not physical, and have no mass. Examples include a property line, a zoning envelope, an alignment, or a gridline.
 
 ### InformationContentElement
 
-**_TODO: update required!_**
+<!-- TODO: More needed here... -->
 
-An `InformationContentElement` doesn’t just “represent” some real-world entity, it is an actual “carrier” of the information of some real-world information entity. For example a “requirement” is an information entity in the real world, and a Requirement Element in BIS can “carry” the information of that requirement (and may in fact be the only carrier of that information, if there are no paper copies or carriers in other systems.)
+An `InformationContentElement` is an Element that exists to carry and track information.  Information Elements are inherently non-geometric and cannot be graphically displayed, but can contain geometric properties (for definition or specification purposes).
+
+Examples include:
+
+- A document
+- A shared definition
+- A requirement
+- A specification
+- An information record
 
 ![Information Element](./media/information-element.png)
 
@@ -211,11 +213,8 @@ Assemblies imply ownership and cascading deletes. When a parent Element is delet
 Assemblies tend to follow 4 patterns:
 
 - The assembly is purely an aggregation; the primary role of the parent is to group the children together (example: a rebar cage collects various reinforcing bars together)
-
 - The assembly is an elaboration; properties (or other information) in the parent allow the children to be generated (example: a pipe support generates a pipe clamp, a beam clamp and a threaded rod)
-
 - The assembly is an item with modifications; the parent defines a base that the children modify (example: a BeamCope modifies a Beam).
-
 - The children in an assembly are
 
 As an Element can only have a single parent, it is important that domains and applications coordinate to ensure there is no conflict over which parent an Element should have. The best general rule to coordinate parenthood is that the domain author determines which Elements (if any) can be parents of it’s Elements.
@@ -239,7 +238,6 @@ If you have questions about how Elements breakdown into Models, you may want to 
 There are two mixins that declare and define key behaviors of an Element:
 
 - IParentElement – this Element can be a parent Element
-
 - ISubModeledElement – this Element can have an associated breakdown Model
 
 The Element class does not include either of these interfaces, so by default no Element can have children or can be broken down into a Model. Many Elements have no need for child Elements or breakdown Models and will therefore use neither of these interfaces; a Bolt class is a example of a class that requires neither.
