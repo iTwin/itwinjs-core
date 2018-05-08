@@ -10,7 +10,8 @@ export * from "./FeatureGates";
 export * from "./FeatureIndex";
 export * from "./Frustum";
 export * from "./Fonts";
-export * from "./Gateway";
+export * from "./RpcInterface";
+export * from "./RpcManager";
 export * from "./Image";
 export * from "./IModel";
 export * from "./IModelError";
@@ -29,17 +30,17 @@ export * from "./geometry/GeometryStream";
 export * from "./geometry/LineStyle";
 export * from "./geometry/Primitives";
 export * from "./geometry/TextString";
-export * from "./gateway/core/GatewayConfiguration";
-export * from "./gateway/core/GatewayInvocation";
-export * from "./gateway/core/GatewayOperation";
-export * from "./gateway/core/GatewayProtocol";
-export * from "./gateway/core/GatewayRequest";
-export * from "./gateway/core/GatewayControl";
-export * from "./gateway/electron/GatewayElectronConfiguration";
-export * from "./gateway/http/BentleyCloudGatewayConfiguration";
-export * from "./gateway/IModelReadGateway";
-export * from "./gateway/IModelWriteGateway";
-export * from "./gateway/StandaloneIModelGateway";
+export * from "./rpc/core/RpcConfiguration";
+export * from "./rpc/core/RpcInvocation";
+export * from "./rpc/core/RpcOperation";
+export * from "./rpc/core/RpcProtocol";
+export * from "./rpc/core/RpcRequest";
+export * from "./rpc/core/RpcControl";
+export * from "./rpc/electron/ElectronRpcManager";
+export * from "./rpc/web/BentleyCloudRpcManager";
+export * from "./rpc/IModelReadRpcInterface";
+export * from "./rpc/IModelWriteRpcInterface";
+export * from "./rpc/StandaloneIModelRpcInterface";
 
 /** @docs-package-description
  * The imodeljs-common package contains classes for working with iModels in both frontend and backend.
@@ -62,7 +63,7 @@ export * from "./gateway/StandaloneIModelGateway";
 /**
  * @docs-group-description ECSQL
  * Classes for working with ECSQL.
- * For more information: [ECSQL]($docs/learning/learning/ECSQL.md) and [Spatial Queries]($docs/learning/learning/SpatialQueries.md)
+ * For more information, see [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Built-in Geometry Functions]($docs/learning/SqlFuncs.md)
  */
 /**
  * @docs-group-description Errors
@@ -74,7 +75,8 @@ export * from "./gateway/StandaloneIModelGateway";
  */
 /**
  * @docs-group-description Gateway
- * [[include:GatewayTopic.md]]
+ * Classes for working with Gateways, the communication channel between clients and services.
+ * For more information: [Gateways]($docs/learning/Gateways.md)
  */
 /**
  * @docs-group-description Geometry
@@ -88,12 +90,12 @@ export * from "./gateway/StandaloneIModelGateway";
 /**
  * @docs-group-description SqlFuncs
  * Functions that you can call in ECSQL statements. These are not TypeScript functions -- you can only call them in ECSQL statements.
- * For more information: [Spatial Queries]($docs/learning/learning/SpatialQueries.md)
+ * For more information: [Spatial Queries]($docs/learning/SpatialQueries.md)
  */
 /**
  * @docs-group-description Schemas
  * Classes for working with ECSchemas.
- * For more information: [Executing ECSQL]($docs/learning/learning/ECSQL.md)
+ * For more information: [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Views

@@ -18,7 +18,9 @@ You can create links into the TypeDoc generated documentation using the same syn
 | A class|`($package/Class)`| links to the documentation for *Class* in *package*
 | A method|`($package/Class.method)`|links to the documentation for *Class.method* in *package*
 
-> Note: It is possible to include a `[label]` prefix when linking to a Class or method, but that should rarely be necessary and is discouraged since it can be wrong and misleading.
+> *Package aliases* can be added to config/docSites.json to allow for shorter names to be used as the package variable. Ex: common -> imodeljs-common.
+
+> Note: It is possible to include a `[label]` prefix when linking to a Class or method. That should rarely be necessary, and is discouraged since it can be wrong and misleading.
 
 ## Linking Markdown -> Markdown
 
@@ -26,13 +28,13 @@ Standard markdown rules apply:
 
 | Destination | Syntax | Notes
 |---|---|--
-| In same file |`[label](#section)`|
-| In same folder|`[label](./filename.md#section)`| both `./` and `.md` are required
-| Another folder|`[label](./relativePath/filename.md#section)`|`.md` is required
+| In same file |`[label](#section)`| |
+| In same folder|`[label](./filename.md#section)`| both `./` and `.md` are required|
+| Another folder|`[label](./relativePath/filename.md#section)`|`.md` is required|
 
 ### Notes on #section
 
-* #section is optional if a file is specified. If not present, the target is top of the markdown file.
+* `#section` is optional if a filename is specified. If not present, the target is the top of the file.
 * must be all lowercase. Use ‘-‘ instead of spaces.
 
 For example, if the target is:

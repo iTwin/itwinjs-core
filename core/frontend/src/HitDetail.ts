@@ -99,7 +99,7 @@ export const enum HitSource {
 
 /**
  * What was being tested to generate this hit. This is not the element or
- * GeometricPrimitive that generated the Hit, it's an indication of whether it's an
+ * GeometricPrimitive that generated the Hit, it is an indication of whether it is an
  * edge or interior hit.
  */
 export const enum HitGeomType {
@@ -326,7 +326,7 @@ export class HitList {
       this.currHit = -1;
 
     if (hitNum >= this.size())        // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
-      return;                         // Then Reset call RemoteCurrentHit, which passes in currHit. When it's out of range, we do nothing.
+      return;                         // Then Reset call RemoteCurrentHit, which passes in currHit. When it is out of range, we do nothing.
 
     this.hits.splice(hitNum, 1);
   }

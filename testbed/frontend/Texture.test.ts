@@ -76,27 +76,35 @@ describe("Texture tests", () => {
     expect(texture.imageCanvas).to.be.undefined; // data should not be preserved
     expect(texture.imageBytes).to.be.undefined;
   });
+});
 
-  it("should produce a image texture (png, glyph) resized to power of two with preserved data", () => {
+describe("Test pixel values of resized texture in callback (async texture loading)", () => {
+  let texture: TextureHandle | undefined;
+  let loaded = false;
+
+  before((done) => {
+    WebGLTestContext.startup();
+    const texLoadCallback: TextureLoadCallback = (/*t: TextureHandle*/): void => {
+      loaded = true;
+      done();
+    };
+    texture = TextureHandle.createForImage(3, 3, pixels, ImageSourceFormat.Png, false, texLoadCallback, false, true, false, true);
+  });
+
+  after(() => WebGLTestContext.shutdown());
+
+  it("should produce a image texture (png, glyph) resized to power of two with valid pixel values", () => {
     if (!IModelApp.hasRenderSystem) {
       return;
     }
 
-    let loaded = false;
-    const texLoadCallback: TextureLoadCallback = (/*t: TextureHandle*/): void => {
-      loaded = true;
-    };
-
-    const texture: TextureHandle | undefined = TextureHandle.createForImage(3, 3, pixels, ImageSourceFormat.Png, false, texLoadCallback, false, true, false, true);
     assert(undefined !== texture);
+    assert(loaded);
     if (undefined === texture) {
       return;
     }
 
     expect(texture.getHandle()).to.not.be.undefined;
-
-    if (loaded) {
-    }
 
     expect(texture.imageCanvas).to.not.be.undefined; // data should be preserved
     if (texture.imageCanvas !== undefined) {
@@ -105,14 +113,24 @@ describe("Texture tests", () => {
 
       const ctx = texture.imageCanvas.getContext("2d");
       expect(ctx).to.be.not.null;
-      /* ###TODO: this must be done once we KNOW the texture is done loading
       if (ctx !== null) {
-        const pixel: Uint8ClampedArray = ctx.getImageData(0, 0, 1, 1).data; // get 0,0 pixel (should be white)
+        // ###TODO: Why does the resizing result in slightly different RGB values on different machines?
+        // ###TODO: It appears that different canvas resizing algorithms are used different places / runs.
+        /*
+        let pixel: Uint8ClampedArray = ctx.getImageData(0, 0, 1, 1).data; // get 0,0 pixel (should be white)
         expect(pixel[0] > 0).to.be.true;
         expect(pixel[1] > 0).to.be.true;
         expect(pixel[2] > 0).to.be.true;
+        pixel = ctx.getImageData(3, 3, 1, 1).data; // get 3,3 pixel (should be green)
+        expect(pixel[0] > 0).to.be.false;
+        expect(pixel[1] > 0).to.be.true;
+        expect(pixel[2] > 0).to.be.false;
+        pixel = ctx.getImageData(3, 0, 1, 1).data; // get 3,0 pixel (should be red)
+        expect(pixel[0] > 0).to.be.true;
+        expect(pixel[1] > 0).to.be.false;
+        expect(pixel[2] > 0).to.be.false;
+        */
       }
-      */
     }
   });
 });

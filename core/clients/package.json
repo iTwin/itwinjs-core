@@ -9,7 +9,7 @@
     "node": ">=8.9.0 <9.0"
   },
   "scripts": {
-    "build": "npm run copy:assets && tsc",
+    "build": "npm run copy:assets && tsc 1>&2",
     "clean": "rimraf ./lib",
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
@@ -18,7 +18,7 @@
     "lint": "tslint --config tslint.json --project ./",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-clients",
     "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline=\"mock\"",
-    "test:online": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" ",
+    "test:integration": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" ",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {},

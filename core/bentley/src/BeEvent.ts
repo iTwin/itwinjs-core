@@ -3,15 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Events */
 
+/** A function invoked when a BeEvent is raised. */
 export type Listener = (...arg: any[]) => void;
+
 class EventContext {
   constructor(public listener: Listener | undefined, public scope: any, public once: boolean) { }
 }
 
 /**
- * A generic utility class for managing subscribers for a particular event.
+ * A generic class for managing a set of *listeners* for a particular event.
  * This class is usually instantiated inside of a container class and
- * exposed as a property for others to subscribe to.
+ * exposed as a property for others to *subscribe* via [[BeEvent.addListener]].
  */
 export class BeEvent<T extends Listener> {
   private _listeners: EventContext[] = [];
@@ -21,15 +23,12 @@ export class BeEvent<T extends Listener> {
   public get numberOfListeners() { return this._listeners.length; }
 
   /**
-   * Registers a callback function to be executed whenever the event is raised.
-   * An optional scope can be provided to serve as the <code>this</code> pointer
-   * in which the function will execute.
+   * Registers a Listener to be executed whenever the event is raised.
    *
    * @param listener The function to be executed when the event is raised.
-   * @param scope An optional object scope to serve as the <code>this</code>
-   *        pointer in which the listener function will execute.
-   * @returns A function that will remove this event listener when invoked.
-   * @see BeEvent.raiseEvent, BeEvent.removeListener
+   * @param scope An optional object scope to serve as the 'this' pointer when listener is invoked.
+   * @returns A function that will remove this event listener.
+   * @see [[BeEvent.raiseEvent]], [[BeEvent.removeListener]]
    */
   public addListener(listener: T, scope?: any): () => void {
     this._listeners.push(new EventContext(listener, scope, false));
@@ -39,14 +38,12 @@ export class BeEvent<T extends Listener> {
 
   /**
    * Registers a callback function to be executed *only once* when the event is raised.
-   * An optional scope can be provided to serve as the <code>this</code> pointer
-   * in which the function will execute.
    *
    * @param listener The function to be executed once when the event is raised.
-   * @param scope An optional object scope to serve as the <code>this</code>
+   * @param scope An optional object scope to serve as the `this`
    *        pointer in which the listener function will execute.
-   * @returns A function that will remove this event listener when invoked.
-   * @see BeEvent.raiseEvent, BeEvent.removeListener
+   * @returns A function that will remove this event listener.
+   * @see [[BeEvent.raiseEvent]], [[BeEvent.removeListener]]
    */
   public addOnce(listener: T, scope?: any): () => void {
     this._listeners.push(new EventContext(listener, scope, true));
@@ -55,11 +52,11 @@ export class BeEvent<T extends Listener> {
   }
 
   /**
-   * Un-registers a previously registered callback.
+   * Un-register a previously registered listener.
    *
-   * @param listener The function to be unregistered.
+   * @param listener The listener to be unregistered.
    * @param  [scope] The scope that was originally passed to addEventListener.
-   * @returns <code>true</code> if the listener was removed; <code>false</code> if the listener and scope are not registered with the event.
+   * @returns 'true' if the listener was removed; 'false' if the listener and scope are not registered with the event.
    * @see BeEvent.raiseEvent, BeEvent.addEventListener
    */
   public removeListener(listener: T, scope?: any): boolean {
@@ -80,9 +77,9 @@ export class BeEvent<T extends Listener> {
   }
 
   /**
-   * Raises the event by calling each registered listener with all supplied arguments.
+   * Raises the event by calling each registered listener with the supplied arguments.
    *
-   * @param arguments This method takes any number of parameters and passes them through to the listener functions.
+   * @param args This method takes any number of parameters and passes them through to the listeners.
    * @see BeEvent.removeListener, BeEvent.addEventListener
    */
   public raiseEvent(..._args: any[]) {
@@ -106,7 +103,7 @@ export class BeEvent<T extends Listener> {
 
       // if we had dropped listeners, remove them now
       if (dropped) {
-        this._listeners = [];
+        this._listeners.length = 0;
         listeners.forEach((c) => { if (c.listener) this._listeners.push(c); });
       }
 
@@ -114,6 +111,10 @@ export class BeEvent<T extends Listener> {
     this._insideRaiseEvent = false;
   }
 
+  /** Determine whether this BeEvent has a listener registered.
+   * @param listener The listener to check.
+   * @param scope optional scope argument to match call to addListener
+   */
   public has(listener: T, scope?: any): boolean {
     for (const sub of this._listeners) {
       if (sub.listener === listener && sub.scope === scope) {
@@ -123,19 +124,21 @@ export class BeEvent<T extends Listener> {
     return false;
   }
 
-  public clear(): void { this._listeners = []; }
+  /** Clear all Listeners from this BeEvent. */
+  public clear(): void { this._listeners.length = 0; }
 }
 
 /**
- * Storage class for multiple events that are accessible by name.
- * Events dispatchers are automatically created.
+ * A list of BeEvent objects, accessible by an event name.
+ * This class may be used instead of explicitly declaring each BeEvent as a member of a containing class.
  */
 export class BeEventList<T extends Listener> {
   private _events: { [name: string]: BeEvent<T> | undefined; } = {};
 
   /**
-   * Gets the dispatcher associated with the name.
+   * Gets the BeEvent associated with a name.
    * @param name The name of the event.
+   * @note the BeEvent will be created if none existed before this call.
    */
   public get(name: string): BeEvent<T> {
     let event = this._events[name];
@@ -148,7 +151,7 @@ export class BeEventList<T extends Listener> {
   }
 
   /**
-   * Removes the dispatcher associated with the name.
+   * Removes the BeEvent associated with a name.
    * @param name The name of the event.
    */
   public remove(name: string): void {

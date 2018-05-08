@@ -4,7 +4,7 @@
 import { FeatureGates, RelatedElement } from "@bentley/imodeljs-common";
 import { EnvMacroSubst, Id64, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb, Element, ECSqlStatement, IModelHost, IModelHostConfiguration, Platform, KnownLocations, InformationRecordElement } from "@bentley/imodeljs-backend";
-import { initializeGateways } from "./RobotWorldGatewayImpl";
+import { initializeRpcImpl } from "./RobotWorldRpcImpl";
 // import { initializeLogging } from "./Logging";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
@@ -18,7 +18,7 @@ const defaultsCfg = {
   "RobotWorld-DEFAULT-LOG-LEVEL": "Error",
   "RobotWorld-SEQ-URL": "http://localhost",
   "RobotWorld-SEQ-PORT": "5341",
-  };
+};
 
 // An example of how to implement a service.
 // This example manages a fictional domain called "robot world",
@@ -28,7 +28,7 @@ const defaultsCfg = {
 // In particular, the service does collision detection between robots and obstacles.
 export class RobotWorldEngine {
 
-// __PUBLISH_EXTRACT_START__ FeatureGates.defineFeatureGates
+  // __PUBLISH_EXTRACT_START__ FeatureGates.defineFeatureGates
   public static features: FeatureGates = new FeatureGates();
 
   private static readFeatureGates(): void {
@@ -44,7 +44,7 @@ export class RobotWorldEngine {
       RobotWorldEngine.features.setGate("features", config.features);
     }
   }
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
   public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64[]): number {
     let robotCount: number = 0;
@@ -52,7 +52,7 @@ export class RobotWorldEngine {
       const elem: Element = iModelDb.elements.getElement(elemId);
       if (elem.classFullName === RobotWorld.Class.Robot)
         ++robotCount;
-      }
+    }
     return robotCount;
   }
 
@@ -64,7 +64,7 @@ export class RobotWorldEngine {
     });
   }
 
-// __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
+  // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
   public static queryObstaclesHitByRobot(iModelDb: IModelDb, rid: Id64): Id64[] {
     const robot1 = iModelDb.elements.getElement(rid) as Robot;
 
@@ -81,9 +81,9 @@ export class RobotWorldEngine {
       return hits;
     });
   }
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
+  // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
   public static queryBarriersHitByRobot(iModelDb: IModelDb, rid: Id64): Id64[] {
     const robot1 = iModelDb.elements.getElement(rid) as Robot;
 
@@ -100,7 +100,7 @@ export class RobotWorldEngine {
       return hits;
     });
   }
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
   public static moveRobot(iModelDb: IModelDb, id: Id64, location: Point3d) {
     const r = iModelDb.elements.getElement(id) as Robot;
@@ -108,8 +108,8 @@ export class RobotWorldEngine {
     iModelDb.elements.updateElement(r);
   }
 
-// __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
-  // An experimental method. It's in the release build, but only turned on in some deployments.
+  // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
+  // An experimental method. It is in the release build, but only turned on in some deployments.
   public static fuseRobots(iModelDb: IModelDb, r1Id: Id64, r2Id: Id64) {
     if (!RobotWorldEngine.features.check("experimentalMethods"))
       return;
@@ -117,14 +117,14 @@ export class RobotWorldEngine {
     // Create an assembly with r1 and r2 as the children and a new (hidden) element as the head.
     const r1 = iModelDb.elements.getElement(r1Id) as Robot;
     const r2 = iModelDb.elements.getElement(r2Id) as Robot;
-    const parent = iModelDb.elements.createElement({classFullName: InformationRecordElement.classFullName, model: r1.model});
+    const parent = iModelDb.elements.createElement({ classFullName: InformationRecordElement.classFullName, model: r1.model });
     const parentId = iModelDb.elements.insertElement(parent);
-    r1.parent = new RelatedElement({id: parentId});
-    r2.parent = new RelatedElement({id: parentId});
+    r1.parent = new RelatedElement({ id: parentId });
+    r2.parent = new RelatedElement({ id: parentId });
     iModelDb.elements.updateElement(r1);
     iModelDb.elements.updateElement(r2);
   }
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
   public static insertRobot(iModelDb: IModelDb, modelId: Id64, name: string, location: Point3d): Id64 {
     const r = Robot.create(iModelDb.models.getModel(modelId), location);
@@ -147,19 +147,19 @@ export class RobotWorldEngine {
 
     RobotWorldEngine.readFeatureGates();
     // initializeLogging();
-    initializeGateways();
+    initializeRpcImpl();
 
-// __PUBLISH_EXTRACT_START__ Schema.registerSchema
+    // __PUBLISH_EXTRACT_START__ Schema.registerSchema
     // Register the TypeScript schema classes that I intend to use.
     RobotWorld.registerSchema();
-// __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ Schema.importSchema
+    // __PUBLISH_EXTRACT_START__ Schema.importSchema
     // Make sure the RobotWorld schema is in the iModel.
     IModelDb.onOpened.addListener((iModel: IModelDb) => {
-        RobotWorld.importSchema(iModel);
+      RobotWorld.importSchema(iModel);
     });
-// __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_END__
 
   }
 

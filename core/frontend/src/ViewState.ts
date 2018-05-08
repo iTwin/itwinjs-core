@@ -18,6 +18,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
+import { GraphicList } from "./Render/System";
 
 export const enum GridOrientationType {
   View = 0,
@@ -99,26 +100,73 @@ export class MarginPercent {
   }
 }
 
-/** A set of elements that are always drawn, and a set that are never drawn in a view. */
-class SpecialElements {
-  public always: Id64Set = new Set<string>();
-  public never: Id64Set = new Set<string>();
-  public get isEmpty(): boolean { return this.always.size === 0 && this.never.size === 0; }
+/**
+ * Standardize behavior for structs that consume always/never drawn sets
+ * Possibly should add clear methods
+ */
+export interface DrawnElementSets {
+  readonly alwaysDrawn: Id64Set;
+  readonly neverDrawn: Id64Set;
+  isNeverDrawn(id: Id64): boolean;
+  isAlwaysDrawn(id: Id64): boolean;
+  setNeverDrawn(id: Id64): void;
+  setAlwaysDrawn(id: Id64): void;
+  clearAlwaysDrawn(id?: Id64): void;
+  clearNeverDrawn(id?: Id64): void;
 }
 
 /**
- * The state of a ViewDefinition element, loaded in the frontend. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
- * Subclasses of ViewDefinition determine which model(s) are viewed.
- * @see ($docs/learning/frontend/Views.md)
+ * Encapsulates logic for handling always/never drawn sets
+ * This for example prevents ViewState and FeatureSymbology.Overrides from duplicating this logic
  */
-export abstract class ViewState extends ElementState {
+export class SpecialElements implements DrawnElementSets {
+  private _always: Id64Set = new Set<string>();
+  private _never: Id64Set = new Set<string>();
+
+  private copyAlwaysDrawn(always: Id64Set): void { this._always = new Set(always); }
+  private copyNeverDrawn(never: Id64Set): void { this._never = new Set(never); }
+
+  public get isEmpty(): boolean { return this._always.size === 0 && this._never.size === 0; }
+
+  public get alwaysDrawn(): Id64Set { return this._always; }
+  public get neverDrawn(): Id64Set { return this._never; }
+
+  public isAlwaysDrawn(id: Id64): boolean { return this._always.has(id.value); }
+  public isNeverDrawn(id: Id64): boolean { return this._never.has(id.value); }
+
+  public setAlwaysDrawn(id: Id64 | Id64Set): void {
+    if (id instanceof Id64) this._always.add(id.value);
+    else this.copyAlwaysDrawn(id);
+  }
+  public setNeverDrawn(id: Id64 | Id64Set): void {
+    if (id instanceof Id64) this._never.add(id.value);
+    else this.copyNeverDrawn(id);
+  }
+
+  public clearAlwaysDrawn(id?: Id64): void {
+    if (undefined !== id) this._always.delete(id.value);
+    else this._always.clear();
+  }
+  public clearNeverDrawn(id?: Id64): void {
+    if (undefined !== id) this._never.delete(id.value);
+    else this._never.clear();
+  }
+}
+
+/**
+ * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
+ * Subclasses of ViewDefinition determine which model(s) are viewed.
+ * * @see ($docs/learning/frontend/Views.md)
+ */
+export abstract class ViewState extends ElementState implements DrawnElementSets {
   protected _featureOverridesDirty = false;
   protected _selectionSetDirty = false;
+  private _noQuery: boolean = false;
+  protected _scene?: GraphicList;
   private _auxCoordSystem?: AuxCoordSystemState;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
   public isPrivate?: boolean;
-  private specialElements?: SpecialElements;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
@@ -132,6 +180,10 @@ export abstract class ViewState extends ElementState {
 
   /** get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
+
+  public get scene(): GraphicList | undefined { return this._scene; }
+  public get isSceneReady(): boolean { return undefined !== this.scene; }
+  public invalidateScene(): void { this._scene = undefined; }
 
   /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
@@ -164,18 +216,52 @@ export abstract class ViewState extends ElementState {
   /** Get the background color */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
-  /** Get a list of elements that are never drawn, if any */
-  public get neverDrawn(): Id64Set | undefined { return this.specialElements ? this.specialElements.never : undefined; }
+  /** Special Elements */
+  private _specialElements?: SpecialElements; // Get the set of special elements for this ViewState.
 
-  /** Get the list of elements that are always drawn */
-  public get alwaysDrawn(): Id64Set | undefined { return this.specialElements ? this.specialElements.always : undefined; }
+  public get neverDrawn(): Id64Set { return undefined !== this._specialElements ? this._specialElements.neverDrawn : new Set(); } // Get the list of elements that are never drawn
+  public get alwaysDrawn(): Id64Set { return undefined !== this._specialElements ? this._specialElements.alwaysDrawn : new Set(); } // Get the list of elements that are always drawn
+
+  public isNeverDrawn(id: Id64): boolean { return undefined !== this._specialElements ? this._specialElements.isNeverDrawn(id) : false; }
+  public isAlwaysDrawn(id: Id64): boolean { return undefined !== this._specialElements ? this._specialElements.isAlwaysDrawn(id) : false; }
+
+  private _clearAlwaysDrawn(id?: Id64): void { if (undefined !== this._specialElements) this._specialElements.clearAlwaysDrawn(id); }
+  private _clearNeverDrawn(id?: Id64): void { if (undefined !== this._specialElements) this._specialElements.clearNeverDrawn(id); }
+
+  public clearAlwaysDrawn(id?: Id64): void {
+    this._clearAlwaysDrawn(id);
+    this._noQuery = false;
+    this.setFeatureOverridesDirty();
+  }
+
+  public clearNeverDrawn(id?: Id64): void {
+    this._clearNeverDrawn(id);
+    this._noQuery = false;
+    this.setFeatureOverridesDirty();
+  }
+
+  public setNeverDrawn(id: Id64 | Id64Set): void {
+    if (undefined === this._specialElements) this._specialElements = new SpecialElements();
+    this._specialElements.setNeverDrawn(id);
+    this.setFeatureOverridesDirty();
+  }
+
+  public setAlwaysDrawn(id: Id64 | Id64Set, exclusive?: boolean): void {
+    if (undefined === this._specialElements) this._specialElements = new SpecialElements();
+    if (undefined !== exclusive) this._noQuery = exclusive;
+    this._specialElements.setAlwaysDrawn(id);
+    this.setFeatureOverridesDirty();
+  }
+
+  /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view controller */
+  public get isAlwaysDrawnExclusive(): boolean { return this._noQuery; }
 
   /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
   public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
 
-  public setFeatureOverridesDirty(dirty = true): void { this._featureOverridesDirty = dirty; }
-  public setSelectionSetDirty(dirty = true): void { this._selectionSetDirty = dirty; }
+  public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
+  public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   public abstract allow3dManipulations(): boolean;

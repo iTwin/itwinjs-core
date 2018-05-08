@@ -10,7 +10,7 @@ import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { AttributeHandle } from "./Handle";
 
-class PolylineGeometry extends CachedGeometry { // ###TODO put here as a placeholder until it is implemented for real
+export class PolylineGeometry extends CachedGeometry { // ###TODO put here as a placeholder until it is implemented for real
   public constructor(_params: PolylineParams) { super(); } // ### TODO
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Polyline; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.None; } // ### TODO
@@ -21,7 +21,7 @@ class PolylineGeometry extends CachedGeometry { // ###TODO put here as a placeho
   public draw(): void { } // ### TODO
 }
 
-class PolylineParams { // ###TODO put here as a placeholder until it is implemented for real
+export class PolylineParams { // ###TODO put here as a placeholder until it is implemented for real
   public constructor(_args: PolylineArgs) { }
   public static create(args: PolylineArgs): PolylineParams { return new PolylineParams(args); }
 }

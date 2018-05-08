@@ -3,15 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
-import {AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient} from "@bentley/imodeljs-clients";
-import { Appearance, Code, CreateIModelProps, ElementProps, Gateway, GeometricElementProps, IModel, IModelReadGateway } from "@bentley/imodeljs-common";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import {
-  IModelHostConfiguration, IModelHost, IModelDb, DefinitionModel, Model, Element,
+  IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestIModelInfo } from "./MockAssetUtil";
-import { HubTestUtils } from "./HubTestUtils";
+import { HubTestUtils } from "./integration/HubTestUtils";
 import { TestConfig } from "./TestConfig";
 import * as path from "path";
 import { NativePlatformRegistry } from "../NativePlatformRegistry";
@@ -48,8 +48,8 @@ while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatfo
 const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
-// Initialize the gateway classes used by tests
-Gateway.initialize(IModelReadGateway);
+// Initialize the RPC interface classes used by tests
+RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
@@ -115,7 +115,7 @@ export class IModelTestUtils {
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-      iModelInfo.changeSets = await HubTestUtils.hubClient!.ChangeSets().get(accessToken, iModelInfo.id);
+      iModelInfo.changeSets = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
@@ -130,7 +130,7 @@ export class IModelTestUtils {
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
     if (userCredentials === undefined)
-    userCredentials = TestUsers.regular;
+      userCredentials = TestUsers.regular;
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
 

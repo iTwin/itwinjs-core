@@ -316,7 +316,7 @@ export class IModelDb extends IModel {
    * See "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($imodeljs-common.IModelError) If the statement is invalid
+   * @throws [IModelError]($common/IModelError) If the statement is invalid
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -670,13 +670,13 @@ export class IModelDbModels {
   }
 
   /** Get the Model with the specified identifier.
+   * See [[IModelDbElements.queryElementIdByCode]] for an example of how to look up an element by Code. You can then find its subModel.
    * @param modelId The Model identifier.
    * @throws [[IModelError]]
    */
-  public getModel(modelId: Id64): Model {
-    const json = this.getModelJson(JSON.stringify({ id: modelId }));
+  public getModel(modelId: Id64Props): Model {
+    const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
     const props = JSON.parse(json!) as ModelProps;
-    props.iModel = this._iModel;
     return this._iModel.constructEntity(props) as Model;
   }
 
@@ -806,6 +806,10 @@ export class IModelDbElements {
    * @param code The code to look for
    * @returns The element that uses the code or undefined if the code is not used.
    * @throws IModelError if the code is invalid
+   * *Example:*
+   * ``` ts
+   * [[include:Model.lookupByCode]]
+   * ```
    */
   public queryElementIdByCode(code: Code): Id64 | undefined {
     if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);

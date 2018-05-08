@@ -220,7 +220,7 @@ export class Point4dArray {
       }
       return true;
     }
-    // if both are null it's equal, otherwise unequal
+    // if both are null it is equal, otherwise unequal
     return (!dataA && !dataB);
   }
   /** return true iff all xyzw points' altitudes are within tolerance of the plane.*/
@@ -340,7 +340,7 @@ export class Point3dArray {
       }
       return true;
     }
-    // if both are null it's equal, otherwise unequal
+    // if both are null it is equal, otherwise unequal
     return (!dataA && !dataB);
   }
 

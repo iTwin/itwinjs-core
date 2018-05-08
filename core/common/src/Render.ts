@@ -1,5 +1,4 @@
 /*---------------------------------------------------------------------------------------------
-Gradient/*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -11,9 +10,10 @@ import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
-import { OctEncodedNormal } from "./OctEncodedNormal";
+import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
+import { ImageSource } from "./Image";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
@@ -112,11 +112,6 @@ export class MeshPolyline {
   public clear() { this.indices = []; }
 }
 
-export const enum MeshEdgeFlags {
-  Invisible = 1,
-  Visible = 0,
-}
-
 export class MeshEdge {
   public indices = [0, 0];
   public constructor(index0?: number, index1?: number) {
@@ -135,44 +130,97 @@ export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
   public polylines: MeshPolyline[] = [];
-  public silhouetteNormals = new OctEncodedNormal(0);
+  public silhouetteNormals: OctEncodedNormalPair[] = [];
   public constructor() { }
 }
 
 export class EdgeArgs {
-  public edges: MeshEdge[] = [];
+  public edges?: MeshEdge[];
 
-  public clear(): void { this.edges = []; }
-  public init(meshEdges: MeshEdges) {
-    const visible = meshEdges.visible;
-    if (visible.length === 0) { return false; }
-    this.edges = visible;
-    return true;
+  public init(meshEdges?: MeshEdges): boolean {
+    this.clear();
+    if (undefined !== meshEdges && 0 < meshEdges.visible.length)
+      this.edges = meshEdges.visible;
+
+    return this.isValid;
   }
-  public isValid(): boolean { return this.edges.length !== 0; }
-  public get numEdges() { return this.edges.length; }
+
+  public clear(): void { this.edges = undefined; }
+  public get isValid(): boolean { return 0 < this.numEdges; }
+  public get numEdges() { return undefined !== this.edges ? this.edges.length : 0; }
 }
 
 export class SilhouetteEdgeArgs extends EdgeArgs {
-  public normals?: OctEncodedNormal;
-  public clear() { this.normals = undefined; super.clear(); }
-  public init(meshEdges: MeshEdges) {
-    const silhouette = meshEdges.silhouette;
-    if (silhouette.length === 0) { return false; }
-    this.edges = silhouette;
-    this.normals = meshEdges.silhouetteNormals;
-    return true;
+  public normals?: OctEncodedNormalPair[];
+
+  public init(meshEdges?: MeshEdges) {
+    this.clear();
+    if (undefined !== meshEdges && 0 < meshEdges.silhouette.length) {
+      this.edges = meshEdges.silhouette;
+      this.normals = meshEdges.silhouetteNormals;
+    }
+
+    return this.isValid;
   }
+
+  public clear() { this.normals = undefined; super.clear(); }
 }
 
 export class PolylineEdgeArgs {
-  public constructor(public lines: PolylineData[] = [] /*, public numLines = 0*/) { }
-  public get numLines() { return this.lines.length; }
-  public isValid() { return this.lines.length !== 0; }
-  public clear() { this.lines = []; }
-  public init(polylines: PolylineData[]) {
-    this.lines = 0 < this.numLines ? polylines : [];
-    return this.isValid();
+  public lines?: PolylineData[];
+
+  public constructor(lines?: PolylineData[]) { this.init(lines); }
+
+  public init(lines?: PolylineData[]): boolean {
+    this.lines = undefined !== lines && 0 < lines.length ? lines : undefined;
+    return this.isValid;
+  }
+
+  public get numLines() { return undefined !== this.lines ? this.lines.length : 0; }
+  public get isValid() { return this.numLines > 0; }
+  public clear() { this.lines = undefined; }
+}
+
+/** A Texture for rendering */
+export class RenderTexture {
+  public readonly params: RenderTexture.Params;
+
+  public constructor(params: RenderTexture.Params) {
+    this.params = params;
+  }
+
+  public get key(): string | undefined { return this.params.key; }
+  public get isGlyph(): boolean { return this.params.isGlyph; }
+
+  // Some textures preserve their image data. Most do not.
+  public get imageSource(): ImageSource | undefined { return undefined; }
+}
+
+export namespace RenderTexture {
+  export class Params {
+    public readonly key?: string; // The ID of a persistent texture, the name of a named texture, or undefined for an unnamed texture.
+    public readonly isTileSection: boolean;
+    public readonly isGlyph: boolean;
+    public readonly isRGBE: boolean;
+
+    public constructor(key?: string, isTileSection: boolean = false, isGlyph: boolean = false, isRGBE: boolean = false) {
+      this.key = key;
+      this.isTileSection = isTileSection;
+      this.isGlyph = isGlyph;
+      this.isRGBE = isRGBE;
+    }
+  }
+}
+
+/** Defines material properties for rendering */
+export class RenderMaterial {
+}
+
+export namespace ImageLight {
+  export class Solar {
+    constructor(public direction: Vector3d = new Vector3d(),
+                public color: ColorDef = ColorDef.white,
+                public intensity: number = 0) {}
   }
 }
 
@@ -188,8 +236,8 @@ export class GraphicParams {
   public readonly fillColor = new ColorDef();
   public trueWidthStart = 0;
   public trueWidthEnd = 0;
-  public lineTexture?: Texture;
-  public material?: Material;
+  public lineTexture?: RenderTexture;
+  public material?: RenderMaterial;
   public gradient?: Gradient.Symb;
 
   // void Cook(GeometryParamsCR, ViewContextR);
@@ -865,7 +913,14 @@ export const enum GeometryClass {
   Pattern = 3,
 }
 
-export class Material {
+/** A list of Render::Lights, plus the f-stop setting for the camera */
+export class SceneLights {
+  private _list: Light[] = [];
+  public get isEmpty(): boolean { return this._list.length === 0; }
+  constructor(public imageBased: { environmentalMap: RenderTexture, diffuseImage: RenderTexture, solar: ImageLight.Solar },
+              public fstop: number = 0, // must be between -3 and +3
+              ) {}
+  public addLight(light: Light): void { if (light.isValid()) this._list.push(light); }
 }
 
 /**
@@ -1072,10 +1127,25 @@ export namespace Hilite {
  * FeatureTable associated with the primitive.
  */
 export class Feature {
+  public readonly elementId: Id64;
+  public readonly subCategoryId: Id64;
+  public readonly geometryClass: GeometryClass;
+
+  public constructor(elementId: Id64 = Id64.invalidId, subCategoryId: Id64 = Id64.invalidId, geometryClass: GeometryClass = GeometryClass.Primary) {
+    this.elementId = elementId;
+    this.subCategoryId = subCategoryId;
+    this.geometryClass = geometryClass;
+  }
+
   public get isDefined(): boolean { return this.elementId.isValid() || this.subCategoryId.isValid() || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
-  constructor(public readonly elementId: Id64, public readonly subCategoryId: Id64, public readonly geometryClass: GeometryClass = GeometryClass.Primary) { }
-  public equals(other: Feature): boolean { return this.isUndefined && other.isUndefined ? true : this.elementId.equals(other.elementId) && this.subCategoryId.equals(other.subCategoryId) && this.geometryClass === other.geometryClass; }
+
+  public equals(other: Feature): boolean {
+    if (this === other)
+      return true;
+    else
+      return this.subCategoryId.equals(other.subCategoryId) && this.elementId.equals(other.elementId) && this.geometryClass === other.geometryClass;
+  }
 }
 
 /**
@@ -1086,76 +1156,47 @@ export class Feature {
  * amongst multiple sub-Graphics of a RenderGraphic.
  */
 export class FeatureTable {
-  public get size(): number { return this.map.size; }
-  public get isFull(): boolean { assert(this.size <= this.maxFeatures); return this.size >= this.maxFeatures; }
-  public get isUniform(): boolean { return this.size === 1; }
-  public get numIndices(): number { return new Uint32Array([this.size])[0]; }
-  public get anyDefined(): boolean { return this.size > 1 || (this.isUniform && Array.from(this.map.values())[0].isDefined); }
-  constructor(public readonly maxFeatures: number,
-    public readonly modelId = new Id64(),
-    public readonly map: Map<number, Feature> = new Map<number, Feature>()) { }
+  // ###TODO use a sorted array to compensate for javascript's lack of support for custom map key comparator.
+  public readonly list: Feature[] = [];
+  public readonly maxFeatures: number;
+  public readonly modelId: Id64;
+
+  public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId) {
+    this.maxFeatures = maxFeatures;
+    this.modelId = modelId;
+  }
+
+  public get length(): number { return this.list.length; }
+  public get isFull(): boolean { assert(this.length <= this.maxFeatures); return this.length >= this.maxFeatures; }
+  public get isUniform(): boolean { return this.length === 1; }
+  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this.list[0].isDefined); }
+
   /**
    * returns index of feature, unless it doesn't exist, then the feature is added and its key, which is the current numIndices is returned
    */
   public getIndex(feature: Feature): number {
     assert(!this.isFull);
-    let key = this.findIndex(feature);
-    if (key === -1 && !this.isFull) {
-      key = this.numIndices;
-      this.map.set(key, feature);
-      return key;
+    let index = this.findIndex(feature);
+    if (-1 === index && !this.isFull) {
+      index = this.length;
+      this.list.push(feature);
     }
-    return key;
-  }
-  /**
-   * Deviates from native source in the following ways: no index parameter since primitives are always pass by value in js,
-   * consequently instead of returning a boolean and setting the index reference, the index value is returned, which will be -1 when
-   * the feature isn't found, which is a common practice in js
-   */
-  public findIndex(feature: Feature): number {
-    let index = -1;
-    this.map.forEach((v, k) => { if (v.equals(feature)) index = k; });
+
     return index;
   }
-  /**
-   * Deviates from native source in the following ways: no feature parameter since the Feature's properties are readonly. Instead, the
-   * feature corresponding to the index will be returned, which could be undefined if not found.
-   */
-  public findFeature(index: number): Feature | undefined { return this.map.get(index); }
-  public clear(): void { this.map.clear(); }
-  public static fromFeatureTable(table: FeatureTable): FeatureTable { return new FeatureTable(table.maxFeatures, table.modelId, table.map); }
-}
 
-export class TextureCreateParams {
-  constructor(public key: Id64,
-              public pitch: number = 0,
-              public isTileSection: boolean = false,
-              public isGlyph: boolean = false,
-              public isRGBE: boolean = false) {}
-}
+  /** Returns the index of the Feature, or -1 if the Feature does not exist in the lookup table. */
+  public findIndex(feature: Feature): number {
+    for (let i = 0; i < this.length; i++) {
+      if (this.list[i].equals(feature)) {
+        return i;
+      }
+    }
 
-/** A Texture for rendering */
-export class Texture {
-  public get key(): Id64 { return this.params.key; }
-  public get isGlyph(): boolean { return this.params.isGlyph; }
-  constructor(public params: TextureCreateParams) {}
-  // public getImageSource(): ImageSource;
-}
-
-export namespace ImageLight {
-  export class Solar {
-    constructor(public direction: Vector3d = new Vector3d(),
-                public color: ColorDef = ColorDef.white,
-                public intensity: number = 0) {}
+    return -1;
   }
-}
 
-/** A list of Render::Lights, plus the f-stop setting for the camera */
-export class SceneLights {
-  private _list: Light[] = [];
-  public get isEmpty(): boolean { return this._list.length === 0; }
-  constructor(public imageBased: { environmentalMap: Texture, diffuseImage: Texture, solar: ImageLight.Solar },
-              public fstop: number = 0, // must be between -3 and +3
-              ) {}
-  public addLight(light: Light): void { if (light.isValid()) this._list.push(light); }
+  /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
+  public findFeature(index: number): Feature | undefined { return index < this.length ? this.list[index] : undefined; }
+  public clear(): void { this.list.length = 0; }
 }

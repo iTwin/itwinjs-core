@@ -3,10 +3,9 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { AccessToken, ChangeSet, UserInfo, IModelHubClient, UserInfoQuery, AzureFileHandler, ChangeSetQuery } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { Id64, using, assert, PerfLogger, OpenMode, DbResult } from "@bentley/bentleyjs-core";
-import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 import { ECDb } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -19,8 +18,8 @@ import { KnownLocations } from "./Platform";
 /** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
  *
  *  See also
- *  - [ChangeSummaryManager.queryChangeSummary]($imodeljs-backend.ChangeSummaryManager.queryChangeSummary)
- *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
+ *  - [ChangeSummaryManager.queryChangeSummary]($backend/ChangeSummaryManager.queryChangeSummary)
+ *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export interface ChangeSummary {
   id: Id64;
@@ -30,8 +29,8 @@ export interface ChangeSummary {
 /** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
  *
  *  See also
- *  - [ChangeSummaryManager.queryInstanceChange]($imodeljs-backend.ChangeSummaryManager.queryInstanceChange)
- *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
+ *  - [ChangeSummaryManager.queryInstanceChange]($backend/ChangeSummaryManager.queryInstanceChange)
+ *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export interface InstanceChange {
   id: Id64;
@@ -42,7 +41,7 @@ export interface InstanceChange {
   changedProperties: { before: any, after: any };
 }
 
-/** Options for [ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend.ChangeSummaryManager.extractChangeSummaries). */
+/** Options for [ChangeSummaryManager.extractChangeSummaries]($backend/ChangeSummaryManager.extractChangeSummaries). */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start changeset to the current changeset as of which the iModel
    *  was opened. If undefined, the extraction starts at the first changeset of the iModel.
@@ -57,12 +56,10 @@ export interface ChangeSummaryExtractOptions {
 class ChangeSummaryExtractContext {
   public readonly iModel: IModelDb;
   public readonly accessToken: AccessToken;
-  public readonly hubClient: IModelHubClient;
 
-  public constructor(iModel: IModelDb, hubclient?: IModelHubClient) {
+  public constructor(iModel: IModelDb) {
     this.iModel = iModel;
     this.accessToken = IModelDb.getAccessToken(this.iModelId);
-    this.hubClient = hubclient ? hubclient : new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
   }
 
   public get iModelId(): string { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
@@ -71,11 +68,9 @@ class ChangeSummaryExtractContext {
 /** Class to extract Change Summaries for a briefcase.
  *
  *  See also:
- *  - [ChangeSummary Overview]($docs/learning/learning/ChangeSummaries)
+ *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
-  private static hubClient?: IModelHubClient;
-
   /** Determines whether the *Changes Cache File* is attached to the specified iModel or not
    * @param iModel iModel to check whether a *Changes Cache File* is attached
    * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
@@ -90,7 +85,7 @@ export class ChangeSummaryManager {
   /** Attaches the *Changes Cache File* to the specified iModel if it hasn't been attached yet.
    * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
    * @param iModel iModel to attach the *Changes Cache File* file to
-   * @throws [IModelError]($imodeljs-common.IModelError)
+   * @throws [IModelError]($common/IModelError)
    */
   public static attachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -114,7 +109,7 @@ export class ChangeSummaryManager {
 
   /** Detaches the *Changes Cache File* from the specified iModel.
    * @param iModel iModel to detach the *Changes Cache File* to
-   * @throws [IModelError]($imodeljs-common.IModelError) in case of errors, e.g. if no *Changes Cache File* was attached before.
+   * @throws [IModelError]($common/IModelError) in case of errors, e.g. if no *Changes Cache File* was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -133,17 +128,14 @@ export class ChangeSummaryManager {
    * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
    * the iModel is moved back to the original changeset.
    * @param options Extraction options
-   * @throws [IModelError]($imodeljs-common.IModelError) if the iModel is standalone,r was not opened in readwrite mode.
+   * @throws [IModelError]($common/IModelError) if the iModel is standalone,r was not opened in readwrite mode.
    */
   public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
     // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.briefcase.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
-    if (!ChangeSummaryManager.hubClient ||  ChangeSummaryManager.hubClient!.deploymentEnv !== IModelHost.configuration!.iModelHubDeployConfig)
-      ChangeSummaryManager.hubClient = new IModelHubClient(IModelHost.configuration!.iModelHubDeployConfig, new AzureFileHandler());
-
-    const ctx = new ChangeSummaryExtractContext(iModel, this.hubClient);
+    const ctx = new ChangeSummaryExtractContext(iModel);
 
     const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
     assert(endChangeSetId.length !== 0);
@@ -212,7 +204,7 @@ export class ChangeSummaryManager {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (!foundUserEmail) {
-            const userInfo: UserInfo = (await ctx.hubClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
+            const userInfo: UserInfo = (await BriefcaseManager.hubClient.Users().get(ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId)))[0];
             userEmail = userInfo.email;
             // in the cache, add empty e-mail to mark that this user has already been looked up
             userInfoCache.set(userId, userEmail !== undefined ? userEmail : "");
@@ -245,7 +237,7 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await ctx.hubClient.ChangeSets().get(ctx.accessToken, ctx.iModelId, query);
+      const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(ctx.accessToken, ctx.iModelId, query);
       if (changeSets.length === 0)
         return Promise.reject(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
 
@@ -272,8 +264,8 @@ export class ChangeSummaryManager {
     }
 
     try {
-    ChangeSummaryManager.createChangesFile(iModel, changesFile, changesPath);
-    return changesFile;
+      ChangeSummaryManager.createChangesFile(iModel, changesFile, changesPath);
+      return changesFile;
     } catch (e) {
       // delete cache file again in case it was created but schema import failed
       if (IModelJsFs.existsSync(changesPath))
@@ -330,11 +322,11 @@ export class ChangeSummaryManager {
 
   /** Queries the ChangeSummary for the specified change summary id
    *
-   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @param iModel iModel
    * @param changeSummaryId ECInstanceId of the ChangeSummary
    * @returns Returns the requested ChangeSummary object
-   * @throws [IModelError]($imodeljs-common.IModelError) If change summary does not exist for the specified id, or if the
+   * @throws [IModelError]($common/IModelError) If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
@@ -342,24 +334,24 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
     return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindId(1, changeSummaryId);
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, changeSummaryId);
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId.value}.`);
 
-      const row = stmt.getRow();
-      return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author } };
-    });
+        const row = stmt.getRow();
+        return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, pushDate: row.pushDate, author: row.author } };
+      });
   }
 
   /** Queries the InstanceChange for the specified instance change id.
    *
-   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    *
    * @param iModel iModel
    * @param instanceChangeId ECInstanceId of the InstanceChange (see `ECDbChange.InstanceChange` ECClass in the *ECDbChange* ECSchema)
    * @returns Returns the requested InstanceChange object
-   * @throws [IModelError]($imodeljs-common.IModelError) if instance change does not exist for the specified id, or if the
+   * @throws [IModelError]($common/IModelError) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {
@@ -407,29 +399,29 @@ export class ChangeSummaryManager {
     // query property value changes just to build a SELECT statement against the class of the changed instance
     let propValECSql: string = "SELECT ";
     iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindId(1, instanceChange.id);
-      let isFirstRow: boolean = true;
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        if (!isFirstRow)
-          propValECSql += ",";
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, instanceChange.id);
+        let isFirstRow: boolean = true;
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          if (!isFirstRow)
+            propValECSql += ",";
 
-        // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
-        const accessString: string = stmt.getValue(0).getString();
-        const accessStringTokens: string[] = accessString.split(".");
-        assert(accessStringTokens.length > 0);
-        let isFirstToken: boolean = true;
-        for (const token of accessStringTokens) {
-          if (!isFirstToken)
-            propValECSql += ".";
+          // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
+          const accessString: string = stmt.getValue(0).getString();
+          const accessStringTokens: string[] = accessString.split(".");
+          assert(accessStringTokens.length > 0);
+          let isFirstToken: boolean = true;
+          for (const token of accessStringTokens) {
+            if (!isFirstToken)
+              propValECSql += ".";
 
-          propValECSql += "[" + token + "]";
-          isFirstToken = false;
+            propValECSql += "[" + token + "]";
+            isFirstToken = false;
+          }
+
+          isFirstRow = false;
         }
-
-        isFirstRow = false;
-      }
-    });
+      });
 
     propValECSql += " FROM main." + instanceChange.changedInstance.className + ".Changes(?," + changedValueState + ") WHERE ECInstanceId=?";
     return iModel.withPreparedStatement(propValECSql, (stmt: ECSqlStatement) => {

@@ -19,9 +19,8 @@ import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
 import { TextureHandle } from "./Texture";
 import { GL } from "./GL";
-import { CachedGeometry } from "./CachedGeometry";
 import { PolylinePrimitive } from "./Polyline";
-import { PointStringPrimitive, PointStringParams } from "./PointString";
+import { PointStringPrimitive, PointStringGeometry } from "./PointString";
 
 export const enum ContextState {
   Uninitialized,
@@ -219,13 +218,13 @@ export class System extends RenderSystem {
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
-  public createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic {
+  public createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
-      const pointStringParams: PointStringParams = new PointStringParams(args);
-      const cachedGeom: CachedGeometry = pointStringParams.createGeometry();
-      return new PointStringPrimitive(cachedGeom, imodel);
-    } else
+      const cachedGeom = PointStringGeometry.createGeometry(args);
+      return undefined !== cachedGeom ? new PointStringPrimitive(cachedGeom, imodel) : undefined;
+    } else {
       return PolylinePrimitive.create(args, imodel);
+    }
   }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }

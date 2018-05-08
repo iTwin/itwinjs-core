@@ -463,7 +463,7 @@ export abstract class ViewManip extends ViewTool {
 
       //   TentativePoint:: GetInstance().Clear(true);
 
-      //   // NOTE: AccuDraw won't normally grab focus because it's disabled for viewing tools...
+      //   // NOTE: AccuDraw won't normally grab focus because it is disabled for viewing tools...
       //   AccuDrawShortcuts:: RequestInputFocus();
       // }
 
@@ -1250,7 +1250,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
   public firstPoint(ev: BeButtonEvent): boolean {
     // NB: In desktop apps we want to center the cursor in the view.
-    // The browser doesn't support that, and it's more useful to be able to place the anchor point freely anyway.
+    // The browser doesn't support that, and it is more useful to be able to place the anchor point freely anyway.
     this.lastPtView.setFrom(ev.viewPoint);
     this.anchorPtView.setFrom(this.lastPtView);
 

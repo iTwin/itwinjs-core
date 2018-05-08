@@ -1,49 +1,71 @@
 # Introduction to BIS
 
-## [Introduction](./intro/introduction)
+## [Introduction](./intro/introduction.md)
 
-## [Modeling with BIS](./intro/modeling-with-bis)
+## [Modeling with BIS](./intro/modeling-with-bis.md)
 
-## [BIS Organization](./intro/bis-organization)
+## [BIS Organization](./intro/bis-organization.md)
 
-## [BIS Ecosystem](./intro/bis-ecosystem)
+## [BIS Ecosystem](./intro/bis-ecosystem.md)
 
-## [Fabric of the Universe](./intro/fabric-of-the-universe)
+## [Fabric of the Universe](./intro/fabric-of-the-universe.md)
 
-## [Element Fundamentals](./intro/element-fundamentals)
+## [Element Fundamentals](./intro/element-fundamentals.md)
 
-## [ElementAspect Fundamentals](./intro/aspect-fundamentals)
+## [ElementAspect Fundamentals](./intro/elementaspect-fundamentals.md)
 
-## [Model Fundamentals](./intro/model-fundamentals)
+## [Model Fundamentals](./intro/model-fundamentals.md)
 
-## [Relationship Fundamentals](./intro/relationship-fundamentals)
+## [Relationship Fundamentals](./intro/relationship-fundamentals.md)
 
-## [Schemas (“Domains”)](./intro/schemas-domains)
+## [Schemas (“Domains”)](./intro/schemas-domains.md)
 
-## [Model Hierarchy](./intro/model-hierarchy)
+## [Model Hierarchy](./intro/model-hierarchy.md)
 
-## [Physical Models and Elements](./intro/physical-models-and-elements)
+## [Physical Models and Elements](./intro/physical-models-and-elements.md)
 
-## [Functional Models and Elements](./intro/functional-models-and-elements)
+## [Functional Models and Elements](./intro/functional-models-and-elements.md)
 
-## [Information Models and Elements](./intro/information-models-and-elements)
+## [Information Models and Elements](./intro/information-models-and-elements.md)
 
-## [Quick Tour](./intro/quick-tour)
+## [Categories](./intro/categories.md)
 
-## [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time)
+## [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time.md)
+
+## [Glossary](./intro/glossary.md)
+
+<!-- TODO: The following are not linked in...?
+./domains/*
+./intro/analysis-models-and-elements.md
+./intro/appendix-c-bis-domain-design-fundamentals.md
+./intro/bis-schema-validation.md
+./intro/documents.md
+./intro/dynamic-data.md
+./intro/forms-profiles-and-features.md
+./intro/functional-models-and-elements.md
+./intro/imodel-bridges.md
+./intro/information-models-and-elements.md
+./intro/mixins.md
+./intro/requirements.md
+./intro/schema-versioning-and-generations.md
+./intro/types-instances-and-catalogs.md
+./intro/units.md
+-->
 
 # BIS Naming Guidelines
 
-## [Rules and Recommendation](./naming-guidelines/rules-and-recommendations)
+## [Rules and Recommendation](./naming-guidelines/rules-and-recommendations.md)
 
-## [Rules and Recommendation for Special Terms](./naming-guidelines/rules-and-recommendations-for-special-terms)
+## [Rules and Recommendation for Special Terms](./naming-guidelines/rules-and-recommendations-for-special-terms.md)
 
-## [Summary of Exceptions](./naming-guidelines/summary-of-exceptions)
+## [Summary of Exceptions](./naming-guidelines/summary-of-exceptions.md)
 
-## [Standard Abbreviations and Acronyms](./naming-guidelines/standard-abbreviations-and-acronyms)
+## [Standard Abbreviations and Acronyms](./naming-guidelines/standard-abbreviations-and-acronyms.md)
 
-## [Terms with Specific Semantic Meaning](./naming-guidelines/terms-with-specific-semantic-meaning)
+## [Standard Relationship “Strengths” Names](./naming-guidelines/standard-relationship-strengths-names.md)
 
-## [Standard Relationship “Strengths” Names](./naming-guidelines/standard-relationship-strengths-names)
-
-## [BIS Schemas Names](./naming-guidelines/bis-schemas-names)
+<!-- TODO: The following are not linked in...?
+./naming-guidelines/appendix.md
+./naming-guidelines/bis-schemas-names.md
+./naming-guidelines/terms-with-specific-semantic-meaning.md
+--->

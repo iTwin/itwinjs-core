@@ -32,7 +32,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
-import { DisplayParams, DisplayParamsType } from "./DisplayParams";
+import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 
 export abstract class Geometry {
@@ -267,7 +267,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     let numDisjoint = 0;
     let haveContinuous = false;
     // NB: Somebody might stick a 'point' or point string into a curve vector with a boundary...
-    // No idea what they expect us to do if it also contains continuous curves but it's dumb anyway.
+    // No idea what they expect us to do if it also contains continuous curves but it is dumb anyway.
     if (!filled && curves instanceof BagOfCurves) {
       curves.children.forEach((prim) => {
         if (GeometryListBuilder.isDisjointCurvePrimitive(prim)) {
@@ -316,10 +316,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public get geometryParams(): GeometryParams | undefined { return this.geometryParamsValid ? this._geometryParams : undefined; }
   public get elementId(): Id64 { return this.accum ? this.accum.elementId : new Id64(); }
 
-  public getDisplayParams(type: DisplayParamsType): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
-  public getMeshDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParamsType.Mesh); }
-  public getLinearDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParamsType.Linear); }
-  public get textDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParamsType.Text); }
+  public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
+  public getMeshDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Mesh); }
+  public getLinearDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Linear); }
+  public get textDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Text); }
 
   public get system(): RenderSystem | undefined { return this.accum ? this.accum.system : undefined; }
 
@@ -360,7 +360,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
       // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
       // No point generating edges for graphics that are always rendered in smooth shade mode.
-      const options = GeometryOptions.fromGraphicBuilderCreateParams(this.params);
+      const options = GeometryOptions.createForGraphicBuilder(this.params);
       const context = PrimitiveBuilderContext.fromPrimitiveBuilder(this);
       const tolerance = this.computeTolerance(accum);
       accum.saveToGraphicList(this.primitives, options, tolerance, context);

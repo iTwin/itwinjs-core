@@ -9,11 +9,11 @@
   },
   "reference": {
     "docSiteId": 3,
-    "displayName": "Reference Documentation"
+    "displayName": "API Reference"
   },
   "bis": {
     "docSiteId": 4,
-    "displayName": "BIS"
+    "displayName": "Base Infrastructure Schema"
   },
   "learning": {
     "docSiteId": 5,
@@ -22,18 +22,18 @@
   "metadata": {
     "home": "overview",
     "docSiteOrder": [
-      "overview",
       "getting-started",
+      "overview",
       "learning",
       "bis",
       "reference"
     ],
     "headerTabs": {
-      "Overview": {
-        "docSite": "overview"
-      },
       "Getting Started": {
         "docSite": "getting-started"
+      },
+      "Overview": {
+        "docSite": "overview"
       },
       "BIS": {
         "docSite": "bis"
@@ -44,6 +44,14 @@
       "Reference": {
         "docSite": "reference"
       }
+    },
+    "packageAliases": {
+      "common": "imodeljs-common",
+      "frontend": "imodeljs-frontend",
+      "backend": "imodeljs-backend",
+      "clients": "imodeljs-clients",
+      "geometry": "geometry-core",
+      "bentley": "bentleyjs-core"
     }
   }
 }

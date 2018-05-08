@@ -332,7 +332,7 @@ export class TentativePoint {
   }
 
   public process(ev: BeButtonEvent): void {
-    // remove the TP cross if it's already on the screen
+    // remove the TP cross if it is already on the screen
     this.removeTentative();
 
     const lastPtView = this.viewPt;

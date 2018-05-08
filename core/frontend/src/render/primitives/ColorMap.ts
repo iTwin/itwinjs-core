@@ -5,59 +5,62 @@ import { assert } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
 export class ColorMap {
-  public map: Map<number, number> = new Map<number, number>();
-  public hasAlpha: boolean = false;
+  // ###TODO: Use a sorted array
+  private readonly _list: number[] = [];
+  private _hasAlpha: boolean = false;
 
-  protected static getMaxIndex(): number { return 0xffff; }
+  private static get maxIndex(): number { return 0xffff; }
+  private static scratchColorDef = new ColorDef();
 
   public getIndex(color: number): number {
-    assert(!this.isFull());
-    assert(this.empty() || (0 !== new ColorDef(color).getAlpha()) === this.hasAlpha);
-
-    const val = this.map.get(color);
-    if (val !== undefined) {
-      return val;
-    } else if (this.isFull()) {
-      assert(false);
-      return 0;
+    for (let i = 0; i < this.length; i++) {
+      if (this._list[i] === color) {
+        return i;
+      }
     }
 
-    // The table should never contain a mix of opaque and translucent colors
-    if (this.empty()) {
-      this.hasAlpha = (0 !== new ColorDef(color).getAlpha());
+    assert(!this.isFull);
+
+    // The table should never contain a mix of opaque and translucent colors.
+    if (this.isEmpty) {
+      this._hasAlpha = ColorMap.hasAlpha(color);
+    } else {
+      assert(ColorMap.hasAlpha(color) === this.hasTransparency);
     }
 
-    const index = this.getNumIndices();
-    this.map.set(color, index);
-    return index;
+    this._list.push(color);
+    return this._list.length - 1;
   }
 
-  public hasTransparency(): boolean { return this.hasAlpha; }
-  public isUniform(): boolean { return 1 === this.size(); }
+  private static hasAlpha(color: number) {
+    this.scratchColorDef.tbgr = color;
+    return 0 !== this.scratchColorDef.getAlpha();
+  }
 
-  public isFull(): boolean { return this.map.size >= ColorMap.getMaxIndex(); }
-  public getNumIndices(): number { return this.map.size; }
+  public get hasTransparency(): boolean { return this._hasAlpha; }
+  public get isUniform(): boolean { return 1 === this.length; }
 
-  public entries(): IterableIterator<[number, number]> { return this.map.entries(); }
-  public size(): number { return this.map.size; }
-  public empty(): boolean { return this.map.size === 0; }
-  public get(key: number): number | undefined { return this.map.get(key); }
+  public get length(): number { return this._list.length; }
+  public get isEmpty(): boolean { return this.length === 0; }
+  public get isFull(): boolean { return this.length >= ColorMap.maxIndex; }
 
   public toColorIndex(index: ColorIndex, indices: Uint16Array): void {
     index.reset();
-    if (this.empty()) {
-      assert(false, "empty color map");
-    } else if (this.isUniform()) {
-      index.initUniform(this.map.keys().next().value);
-    } else {
-      assert(0 !== indices.length);
-
-      const colors = new Uint32Array(this.size());
-      this.map.forEach((item, key) => {
-        colors[item] = key;
-      });
-
-      index.initNonUniform(colors, indices, this.hasAlpha);
+    switch (this.length) {
+      case 0: {
+        assert(false, "empty color map");
+        break;
+      }
+      case 1: {
+        index.initUniform(this._list[0]);
+        break;
+      }
+      default: {
+        assert(0 !== indices.length);
+        const colors = Uint32Array.from(this._list);
+        index.initNonUniform(colors, indices, this.hasTransparency);
+        break;
+      }
     }
   }
 }

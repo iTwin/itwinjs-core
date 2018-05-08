@@ -260,7 +260,7 @@ export class SceneCompositor {
   public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
 
-  private reset() {
+  public reset() {
     this._depth = dispose(this._depth);
     this._textures.reset();
     this._fbos.reset();

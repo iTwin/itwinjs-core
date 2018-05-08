@@ -6,7 +6,7 @@
 import { IModelDb } from "./IModelDb";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
-import { GatewayRequest, IModelError } from "@bentley/imodeljs-common";
+import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 
@@ -24,7 +24,7 @@ export class BackendActivityMonitor implements AppActivityMonitor {
   public isIdle(): boolean {
     // If it has been over the specified amount of time since the last request was received,
     // then we *guess* the backend is in a lull and that the lull will continue for a similar amount of time.
-    const millisSinceLastPost: number = Date.now() - GatewayRequest.aggregateLoad.lastRequest;
+    const millisSinceLastPost: number = Date.now() - RpcRequest.aggregateLoad.lastRequest;
     return (millisSinceLastPost >= (this.idleIntervalSeconds * 1000));
 
   }
@@ -274,7 +274,7 @@ export class AutoPush {
     // the caller is node, and so the caller won't await it or otherwise deal with the Promise. That's fine, we just want to kick
     // off the push and let it run concurrently, as the service gets back to doing other things.
     // Yes, you can interleave other service operations, even inserts and updates and saveChanges, with a push. That is because
-    // pushChanges keeps track of the last local Txn that should process. It's no problem to add more while push is in progress.
+    // pushChanges keeps track of the last local Txn that should process. It is no problem to add more while push is in progress.
   }
 
 }

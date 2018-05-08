@@ -16,15 +16,15 @@ export class IModelToken {
     public readonly pathKey?: string,
     /** True for standalone iModels */
     public readonly isStandalone?: boolean,
-    /** Context (Project or Asset) in which the iModel exists. May be undefined *only* if it's a standalone iModel */
+    /** Context (Project or Asset) in which the iModel exists. May be undefined *only* if it is a standalone iModel */
     public readonly contextId?: string,
-    /** Guid of the iModel. May not be defined *only* if it's a standalone iModel */
+    /** Guid of the iModel. May not be defined *only* if it is a standalone iModel */
     public readonly iModelId?: string,
     /** Id of the last ChangeSet that was applied to the iModel */
     public changeSetId?: string,
     /** Mode used to open the iModel */
     public readonly openMode?: OpenMode,
-    /** Id of the user that's currently editing or viewing the iModel. May not be defined *only* if it's a standalone iModel */
+    /** Id of the user that's currently editing or viewing the iModel. May not be defined *only* if it is a standalone iModel */
     public readonly userId?: string,
   ) { }
 }

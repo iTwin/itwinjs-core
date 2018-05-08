@@ -9,13 +9,11 @@ Key BIS terms used in this documentation set are defined in this page.
 - How long is too long for a definition?
 - Is it ok to refer from the glossary to other pages (for more details....)?
 - Should any references to iModel exist in this glossary? (some items have little relevance outside an iModel-like implementation)
-
-**TODO - Other Questions**
-- There does not appear to be a way to reference a particular definition from another MD file. So...how and when should we refer to this Glossary page?
 -->
 
 <!-- NOTE: Need to use HTML named anchors because markdown doesn't have that concept yet. -->
 <!-- NOTE: The named anchor should be the glossary term in lowercase with words separated by "-" -->
+
 <!-- markdownlint-disable MD033 -->
 
 | Term | Description |
@@ -24,7 +22,7 @@ Key BIS terms used in this documentation set are defined in this page.
 | **BIS**<a name="bis"></a> | Base Infrastructure Schemas. A coordinated family of schemas for modeling built infrastructure (e.g. buildings, roads, bridges, factories, etc.) BIS also addresses concepts needed for infrastructure-related workflows (e.g. documents, drawings, requirements, issues, etc.). |
 | **BisCore**<a name="bis-core"></a> | The base BIS Domain for BIS. All ECClasses in any other Domain must derive (directly or indirectly) from a BisCore class. |
 | **Category**<a name="category"></a> | A property of a GeometricElement that "categorizes" its geometry. Every GeometricElement is assigned to one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. |
-| **Class**<a name="class"></a> | See ECClass. |
+| **Class**<a name="class"></a> | See [ECClass](#ec-class). |
 | **Code**<a name="code"></a> | An optional three part *human readable* identifier for an Element. A code consists of a CodeSpec, CodeScope, and CodeValue. If any of the three parts is defined, the combination of all three parts must be unique within an iModel. |
 | **CodeScope**<a name="code-scope"></a> | A Code Scope determines a *scope for uniqueness* for the CodeValue. For example, a scope may specify the whole repository, only within a certain Model, within an assembly, etc. For a given CodeSpec and CodeScope, all CodeValues must be unique. |
 | **CodeSpec**<a name="code-spec"></a> | A CodeSpec defines the *specification* (i.e. type) of a code. Often the specification is defined by some external system that enforces conventions, consistency, and validation. A CodeSpec captures the rules for encoding and decoding significant business information into and from a CodeValue. iModels hold a table of the known CodeSpecs, defined by the CodeSpec ECClass, and Elements refer to one of them by Id. |
@@ -47,7 +45,8 @@ Key BIS terms used in this documentation set are defined in this page.
 | **GeometricElement**<a name="geometric-element"></a> | A subclass of Element that can include geometry (in its GeometryStream property.) Only GeometricElements are visible in Views. |
 | **GeometricModel**<a name="geometric-model"></a> | A subclass of Model that can hold GeometricElements. |
 | **GeometryPart**<a name="geometry-part"></a> | A named GeometryStream that can be shared by many GeometricElements. |
-| **GeometryStream**<a name="geometry-stream"></a> | A collection of geometric primitives that describes the geometric properties of a GeometricElement. Individual members of GeometryStream may be on different SubCategories and may reference GeometryParts. |
+| **GeometryStream**<a name="geometry-stream"></a> | A collection of geometric primitives that describes the geometric properties of a GeometricElement. Individual members of GeometryStream may be in different [SubCategories](#sub-category) and may reference GeometryParts. |
+| **Granularity**<a name="granularity"></a> | The scale or level of detail of Elements in a Model. |
 | **iModel**<a name="imodel"></a> | A distributed BIS Repository implemented using [SQLite](https://www.sqlite.org). iModels are the most common BIS Repository. Many copies of an iModel may be extant simultaneously, each held in a Briefcase and synchronized via ChangeSets from iModelHub. |
 | **InformationPartitionElement**<a name="information-partition-element"></a> | An Element in the RepositoryModel that identifies a portion of the BIS Repository that models a Subject from the Partition's Modeling Perspective. A Partition must be the child of a Subject, which can have multiple specialized Partition Elements (e.g. PhysicalPartition, FunctionalPartition) as children. |
 | **Model**<a name="model"></a> | A set of Elements used to describe another Element (its *ModeledElement*) in more detail. Every Element is *contained in* one and only one Model via a ModelContainsElements relationship. In this manner, Models form a hierarchy of Elements. There are many subclasses of Model (e.g. PhysicalModel, FunctionalModel, etc.)|
@@ -58,14 +57,14 @@ Key BIS terms used in this documentation set are defined in this page.
 | **Object**<a name="object"></a> | A real-world object that may be physical or non-physical. Not used to refer to instances of ECClasses. |
 | **Perspective**<a name="perspective"></a> | See [Modeling Perspective](#modeling-perspective) |
 | **PhysicalModel**<a name="physical-model"></a> | A subclass of `SpatialModel` for the physical perspective that holds `PhysicalElement`s and `SpatialLocationElement`s. |
-| **Relationship**<a name="relationship"></a> | See ECRelationship. |
+| **Relationship**<a name="relationship"></a> | See [ECRelationship](#ec-relationship). |
 | **RepositoryModel**<a name="repository-model"></a> | A special Model that is the root of the hierarchy of Models that make up a Digital Twin. Every Repository has one and only one RepositoryModel, and it is the only Model that does not have a ModelModelsElement relationship to another Element. |
-| **Schema**<a name="schema"></a> |See ECSchema. |
+| **Schema**<a name="schema"></a> |See [ECSchema](#ec-schema). |
 | **SheetModel**<a name="sheet-model"></a> | A digital representation of a *sheet of paper*. Sheet Models are 2d models in bounded paper coordinates. SheetModels may contain annotation Elements as well as references to 2d or 3d Views. |
 | **Spatial Coordinate System**<a name="spatial-coordinate-system"></a> | The 3d coordinate system of a BIS Repository. The units are always meters (see ACS). The origin (0,0,0) of the Spatial Coordinate System may be oriented on the earth via an [EcefLocation](https://en.wikipedia.org/wiki/ECEF). |
 | **SpatialModel**<a name="spatial-model"></a> | A subclass of GeometricModel that holds 3d Elements in the BIS Repository's Spatial Coordinate System. |
 | **SpatialViewDefinition**<a name="spatial-view-definition"></a> | A subclass of ViewDefinition that displays one or more SpatialModels. |
-| **SubCategory**<a name="sub-category"></a> | A subdivision of a Category. SubCategories allow GeometricElements to have multiple pieces of Geometry that can be made independently visible and styled. It is important to understand that a SubCategory is **not** a Category (i.e. Categories do *not* nest) and that a SubCategory always subdivides a single Category. |
+| **SubCategory**<a name="sub-category"></a> | A subdivision of a [Category](#category). SubCategories allow GeometricElements to have multiple pieces of Geometry that can be made independently visible and styled. It is important to understand that a SubCategory is **not** a Category (i.e. Categories do *not* nest) and that a SubCategory always subdivides a single Category. |
 | **Subject, Root**<a name="root-subject"></a> | The primary Subject in the RepositoryModel that names or briefly describes (in text) the real-world Object of which the repository is a Digital Twin. There is always one and only one Root Subject in a repository. The Root Subject and its child Subjects effectively form a *table of contents* for the repository. |
 | **Subject**<a name="subject"></a> | An Element in the RepositoryModel that names or briefly describes (in text) a significant real-world Object that the repository is modeling. Every Subject is either the Root Subject, or a child of another Subject. |
 | **ViewDefinition**<a name="view-definition"></a> | A subclass of `DefinitionElement` that holds the persistent state of a View. |

@@ -190,6 +190,10 @@ export class ShaderVariables {
     this.addVariable(ShaderVariable.createGlobal(name, type, value, isConst));
   }
 
+  public addConstant(name: string, type: VariableType, value: string) {
+    this.addGlobal(name, type, value, true);
+  }
+
   /** Constructs the lines of glsl code declaring all of the variables. */
   public buildDeclarations(): string {
     let decls = "";
@@ -527,6 +531,8 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
   public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
+
+  public addDrawBuffersExtension(): void { this.addExtension("GL_EXT_draw_buffers"); }
 
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);

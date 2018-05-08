@@ -11,3 +11,14 @@ export const enum ImageSourceFormat { Jpeg = 0, Png = 2 }
 
 /** is image is stored bottom-up or top-up? This determines whether the rows should be flipped top-to-bottom */
 export const enum BottomUp { No = 0, Yes = 1 }
+
+/** Image data encoded as a jpeg or png */
+export class ImageSource {
+  public readonly data: Uint8Array;
+  public readonly format: ImageSourceFormat;
+
+  public constructor(data: Uint8Array, format: ImageSourceFormat) {
+    this.data = data;
+    this.format = format;
+  }
+}

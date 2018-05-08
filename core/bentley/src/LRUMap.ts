@@ -188,7 +188,7 @@ export class LRUMap<K, V> {
       this.oldest = entry;
     }
 
-    // add new entry to the end of the linked list -- it's now the freshest entry.
+    // add new entry to the end of the linked list -- it is now the freshest entry.
     this.newest = entry;
     ++this.size;
     if (this.size > this.limit) {

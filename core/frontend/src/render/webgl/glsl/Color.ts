@@ -1,0 +1,51 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+
+import {
+  ProgramBuilder,
+  VariableType,
+  FragmentShaderComponent,
+} from "../ShaderBuilder";
+import { LUTGeometry } from "../CachedGeometry";
+import { GLSLFragment } from "./Fragment";
+import { addRenderPass } from "./RenderPass";
+
+// Vertex
+const computeColor = `
+vec4 color = u_color;
+if (isShaderBitSet(kShaderBit_NonUniformColor)) {
+  // Color table is appended to vertex data. Compute the index of the vertex one-past-the-end of the vertex data
+  float colorTableStart = u_vertParams.z * u_vertParams.w; // num rgba per-vertex times num vertices
+  float colorIndex = decodeUInt16(g_vertexData2);
+  vec2 tc = computeLUTCoords(colorTableStart+colorIndex, u_vertParams.xy, g_vert_center, 1.0);
+  color = TEXTURE(u_vertLUT, tc);
+}
+
+if (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass)
+  color = adjustPreMultipliedAlpha(color, 1.0);
+
+return color;`;
+
+// Fragment
+const computeBaseColor = `return v_color;`;
+
+export function addColor(builder: ProgramBuilder) {
+  // ShaderSource::AddRenderPass
+  builder.vert.addUniform("u_color", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_color", (uniform, params) => {
+      const lutGeom = params.geometry as LUTGeometry;
+      const color = lutGeom.getColor(params.target);
+      if (color.isUniform) {
+        const rgba = color.uniform;
+        uniform.setUniform4fv(new Float32Array([rgba.red, rgba.green, rgba.blue, rgba.alpha]));
+      }
+    });
+  });
+  builder.vert.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
+
+  addRenderPass(builder.vert);
+  builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeColor", computeColor);
+
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+}

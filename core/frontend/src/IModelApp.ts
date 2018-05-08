@@ -65,7 +65,7 @@ export class IModelApp {
   }
 
   /**
-   * This method must be called before any iModelJs services are used. Typically, an application will make a subclass of IModelApp
+   * This method must be called before any iModelJs frontend services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
    * MyApp extends IModelApp {

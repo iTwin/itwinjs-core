@@ -49,6 +49,13 @@ export class TechniqueFlags {
     }
   }
 
+  public reset(mode: FeatureMode, clip: WithClipVolume, isTranslucent: boolean = false) {
+    this._isHilite = false;
+    this.featureMode = mode;
+    this.hasClipVolume = WithClipVolume.Yes === clip;
+    this.isTranslucent = isTranslucent;
+  }
+
   public get hasFeatures() { return FeatureMode.None !== this.featureMode; }
 
   public get isHilite() { return this._isHilite; }

@@ -10,12 +10,28 @@ import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
 import { Clip } from "./ClipVolume";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
+import { TextureHandle } from "./Texture";
+import { LUTDimension } from "./FeatureDimensions";
+
+export class FeatureOverrides {
+  // ###TODO this is just a placeholder
+  public readonly texture?: TextureHandle;
+  public readonly uniform1 = new Float32Array(4);
+  public readonly uniform2 = new Float32Array(4);
+  public readonly dimension = LUTDimension.Uniform;
+
+  public get isNonUniform(): boolean { return LUTDimension.Uniform === this.dimension; }
+  public get isUniform(): boolean { return !this.isNonUniform; }
+}
+
+// ###TODO this is just a placeholder
+export type PickTable = FeatureOverrides;
 
 export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
-    // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
-    const jointWidthThreshold = 5;
-    return is2d || lineWeight > jointWidthThreshold;
-  }
+  // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
+  const jointWidthThreshold = 5;
+  return is2d || lineWeight > jointWidthThreshold;
+}
 
 export abstract class Graphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
@@ -32,10 +48,10 @@ export class Batch extends Graphic {
   // public get overrides(): FeatureOverrides[] { return this._overrides; }
   // public get pickTable(): PickTable { return this._pickTable; }
   constructor(private _graphic: Graphic,
-              private _features: FeatureTable,
-              // private _overrides: FeatureOverrides[] = [],
-              // private _pickTable: PickTable
-              ) { super(_graphic.iModel); }
+    private _features: FeatureTable,
+    // private _overrides: FeatureOverrides[] = [],
+    // private _pickTable: PickTable
+  ) { super(_graphic.iModel); }
   // public onTargetDestroyed(target: Target): void {
   //   this._overrides.erase(target);
   // }

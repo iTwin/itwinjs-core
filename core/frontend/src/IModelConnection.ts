@@ -6,9 +6,9 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
-  IModelReadGateway, IModelWriteGateway, StandaloneIModelGateway,
+  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { IModelUnitTestGateway } from "@bentley/imodeljs-common/lib/gateway/IModelUnitTestGateway"; // not part of the "barrel"
+import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState, SpatialViewState, OrthographicViewState, ViewState2d, DrawingViewState, SheetViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -43,7 +43,7 @@ export class IModelConnection extends IModel {
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    */
   public async loadFontMap(): Promise<FontMap> {
-    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadGateway.getProxy().readFontJson(this.iModelToken))));
+    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
 
   private constructor(iModel: IModel) {
@@ -64,18 +64,18 @@ export class IModelConnection extends IModel {
 
     let changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, IModelApp.iModelHubClient);
     if (!changeSetId)
-      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it's required by the gateway API.
+      changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it is required by the RPC interface API.
 
     const iModelToken = new IModelToken(undefined, undefined, contextId, iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId);
     let openResponse: IModel;
     if (openMode === OpenMode.ReadWrite)
-      openResponse = await IModelWriteGateway.getProxy().openForWrite(accessToken, iModelToken);
+      openResponse = await IModelWriteRpcInterface.getClient().openForWrite(accessToken, iModelToken);
     else
-      openResponse = await IModelReadGateway.getProxy().openForRead(accessToken, iModelToken);
+      openResponse = await IModelReadRpcInterface.getClient().openForRead(accessToken, iModelToken);
 
     Logger.logTrace(loggingCategory, "IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
-    // todo: Setup userId if it's a readWrite open - this is necessary to reopen the same exact briefcase at the backend
+    // todo: Setup userId if it is a readWrite open - this is necessary to reopen the same exact briefcase at the backend
     return new IModelConnection(openResponse);
   }
 
@@ -85,7 +85,7 @@ export class IModelConnection extends IModel {
       return;
     IModelConnection.onClose.raiseEvent(this);
     try {
-      await IModelReadGateway.getProxy().close(accessToken, this.iModelToken);
+      await IModelReadRpcInterface.getClient().close(accessToken, this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused
     }
@@ -96,7 +96,7 @@ export class IModelConnection extends IModel {
    * This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
-    const openResponse: IModel = await StandaloneIModelGateway.getProxy().openStandalone(fileName, openMode);
+    const openResponse: IModel = await StandaloneIModelRpcInterface.getClient().openStandalone(fileName, openMode);
     Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
     return new IModelConnection(openResponse);
   }
@@ -107,7 +107,7 @@ export class IModelConnection extends IModel {
       return;
     IModelConnection.onClose.raiseEvent(this);
     try {
-      await StandaloneIModelGateway.getProxy().closeStandalone(this.iModelToken);
+      await StandaloneIModelRpcInterface.getClient().closeStandalone(this.iModelToken);
     } finally {
       (this.token as any) = undefined; // prevent closed connection from being reused
     }
@@ -124,7 +124,7 @@ export class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/learning/ECSQLParameterTypes)" describes the
+   * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
@@ -134,11 +134,11 @@ export class IModelConnection extends IModel {
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
-    return await IModelReadGateway.getProxy().executeQuery(this.iModelToken, ecsql, bindings);
+    return await IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
   }
 
   /** query for a set of ids that satisfy the supplied query params  */
-  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadGateway.getProxy().queryEntityIds(this.iModelToken, params); }
+  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken, params); }
 
   /**
    * Update the project extents of this iModel.
@@ -149,7 +149,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
     if (OpenMode.ReadWrite !== this.iModelToken.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
-    await IModelWriteGateway.getProxy().updateProjectExtents(this.iModelToken, newExtents);
+    await IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
 
   /**
@@ -161,25 +161,25 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
     if (OpenMode.ReadWrite !== this.iModelToken.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
-    return await IModelWriteGateway.getProxy().saveChanges(this.iModelToken, description);
+    return await IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
 
   /**
    * Determines whether the *Changes Cache File* is attached to this iModel or not.
    *
-   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
    */
-  public async isChangeCacheAttached(): Promise<boolean> { return await IModelReadGateway.getProxy().isChangeCacheAttached(this.iModelToken); }
+  public async isChangeCacheAttached(): Promise<boolean> { return await IModelReadRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
   /**
    * Attaches the *Changes Cache File* to this iModel if it hasn't been attached yet.
    *
    * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
    *
-   * See also [Change Summary Overview]($docs/learning/learning/ChangeSummaries)
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    */
-  public async attachChangeCache(): Promise<void> { await IModelReadGateway.getProxy().attachChangeCache(this.iModelToken); }
+  public async attachChangeCache(): Promise<void> { await IModelReadRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
   /**
    * Execute a test by name
@@ -187,7 +187,7 @@ export class IModelConnection extends IModel {
    * @param params A JSON string containing all parameters the test requires
    * @hidden
    */
-  public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestGateway.getProxy().executeTest(this.iModelToken, testName, params); }
+  public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 }
 
 /** The collection of models for an [[IModelConnection]]. */
@@ -202,7 +202,7 @@ export class IModelConnectionModels {
 
   /** Get a batch of [[ModelProps]] given a list of model ids. */
   public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-    return await IModelReadGateway.getProxy().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
+    return await IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
   }
 
   public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
@@ -262,7 +262,7 @@ export class IModelConnectionModels {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsTemplate=FALSE ";
     }
-    return await IModelReadGateway.getProxy().queryModelProps(this._iModel.iModelToken, params);
+    return await IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
   }
 }
 
@@ -279,17 +279,17 @@ export class IModelConnectionElements {
 
   /** Get a batch of [[ElementProps]] given one or more element ids. */
   public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-    return await IModelReadGateway.getProxy().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
+    return await IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
   }
 
   /** get a bach of [[ElementProps]] that satisfy a query */
   public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-    return await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params);
+    return await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
   }
 
   /** Ask the backend to format (for presentation) the specified list of element ids. */
   public async formatElements(elementIds: Id64Arg): Promise<any[]> {
-    return await IModelReadGateway.getProxy().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
+    return await IModelReadRpcInterface.getClient().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
   }
 }
 
@@ -306,7 +306,7 @@ export class IModelConnectionCodeSpecs {
       return;
 
     this._loaded = [];
-    const codeSpecArray: any[] = await IModelReadGateway.getProxy().getAllCodeSpecs(this._iModel.iModelToken);
+    const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.iModelToken);
     for (const codeSpec of codeSpecArray) {
       this._loaded.push(new CodeSpec(this._iModel, new Id64(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
     }
@@ -361,14 +361,14 @@ export class IModelConnectionViews {
       if (params.where.length > 0) params.where += " AND ";
       params.where += "IsPrivate=FALSE ";
     }
-    const viewProps = await IModelReadGateway.getProxy().queryElementProps(this._iModel.iModelToken, params);
+    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
     assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
     return viewProps as ViewDefinitionProps[];
   }
 
   /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
   public async load(viewDefinitionId: Id64Props): Promise<ViewState> {
-    const viewStateData: any = await IModelReadGateway.getProxy().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
+    const viewStateData: any = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, typeof viewDefinitionId === "string" ? viewDefinitionId : viewDefinitionId.value);
     const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
     let viewState: ViewState;

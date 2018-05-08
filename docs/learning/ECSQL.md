@@ -19,8 +19,6 @@ underlying database’s *persistence* schema.
 
 ![ECSQL versus SQL](./ecsql_vs_sql.png "ECSQL versus SQL")
 
-ECSQL can also be used to run [Spatial queries](./SpatialQueries.md)
-
 ## ECSQL in detail
 
 This is not a comprehensive documentation of the SQL subset of ECSQL. This document only describes the exceptions
@@ -306,3 +304,9 @@ SQL functions, either built into SQLite or custom SQL functions, can be used in 
 `SELECT ECInstanceId FROM bis.Element WHERE lower(UserLabel)=?`
 
 See also [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html).
+
+## Spatial Queries and Geometry Functions
+
+ECSQL can perform [spatial queries](./SpatialQueries.md).
+
+ECSQL has a number of [built-in geometry functions](./SqlFuncs.md)

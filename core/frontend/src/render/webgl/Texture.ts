@@ -81,6 +81,12 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Binds this texture to a uniform sampler2D */
+  public bindSampler(uniform: UniformHandle, unit: TextureUnit): void {
+    if (undefined !== this._glTexture)
+      TextureHandle.bindSampler(uniform, this._glTexture, unit);
+  }
+
+  /** Binds the specified texture to a uniform sampler2D */
   public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
     this.bindTexture(unit, tex);
     uniform.setUniform1i(unit);
@@ -216,6 +222,7 @@ export class TextureHandle implements IDisposable {
 
   private loadImageCanvas(params: TextureCreateParams) {
     // create an HTMLImageElement from a Blob created from the encoded bytes (jpeg or png)
+    // ###TODO: Add support for Alpha image formats
     const blob = new Blob([params.imageBytes], params.imageFormat === ImageSourceFormat.Jpeg ? { type: "image/jpeg" } : { type: "image/png" });
     const url = URL.createObjectURL(blob);
     const img = new Image();
