@@ -20,10 +20,16 @@
         "Prompt": "Click to zoom view."
       },
       "Look": {
-        "keyin": "Walk",
+        "keyin": "Look",
         "description": "Look around the design",
         "flyover": "Look Around",
         "Prompt": "Click and drag to look around."
+      },
+      "Walk": {
+        "keyin": "Walk",
+        "description": "Walk around in the design",
+        "flyover": "Walk Around",
+        "Prompt": "Click and drag to walk around."
       },
       "WindowArea": {
         "keyin": "Window Area",
