@@ -5,16 +5,16 @@ A gateway is a set of operations exposed by a service that a client can call, us
 A gateway consists of:
 * A TypeScript class that *defines* the gateway.
 * The proxy class for clients to use.
-* A TypeScript class that implements the gateway in [backend code]($docs/learning/Glossary.md#backend).
+* A TypeScript class that implements the gateway in [backend code](./Glossary.md#backend).
 * Configurations that specify how calls on the gateway are to be marshalled.
 
 The key concept is that API definition, API implementation, and call marshalling are all distinct concepts. Marshalling is factored out, so that clients and services can be written in a way that is independent of transport details, while transport can be configured at runtime to suit the requirements of the app's configuration.
 
-In this article, the term *client* is used to denote the code that calls gateway methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. The term *service* is used to denote the code that implements and exposes a gateway to clients. A service could be a deployed, stand-alone service, or the backend of an app, or a package that used by backend code. The main point is that it is [backend code]($docs/learning/Glossary.md#backend).
+In this article, the term *client* is used to denote the code that calls gateway methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. The term *service* is used to denote the code that implements and exposes a gateway to clients. A service could be a deployed, stand-alone service, or the backend of an app, or a package that used by backend code. The main point is that it is [backend code](./Glossary.md#backend).
 
-Gateway methods are always asynchronous. That is because the gateway implementation and the client that calls it are never in the same JavaScript context. This follows from the [iModelJs app architecture]($docs/overview/overview/App.md#interactive-apps).
+Gateway methods are always asynchronous. That is because the gateway implementation and the client that calls it are never in the same JavaScript context. This follows from the [iModelJs app architecture](../overview/App.md#interactive-apps).
 
-For more information on the purpose of gateways and their role in app architecture, see [Gateways]($docs/overview/overview/App.md#gateways).
+For more information on the purpose of gateways and their role in app architecture, see [Gateways](../overview/App.md#gateways).
 
 ### Defining Gateways
 
@@ -29,7 +29,7 @@ A gateway definition class must also define:
 
 Gateway definition classes must be in a directory or package that is accessible to both frontend and backend code. Note that the Gateway base class is defined in `@bentley/imodeljs-common`.
 
-<p><em>Example:</em>
+*Example:*
 ```ts
 [[include:Gateway.definition]]
 ```
@@ -42,7 +42,7 @@ The implementation class must override each API method defined by the gateway de
 
 A gateway definition class is always defined in backend code and is not exposed directly to clients.
 
-<p><em>Example:</em>
+*Example:*
 ```ts
 [[include:Gateway.implementation]]
 ```
@@ -57,7 +57,7 @@ Next, the service must use a ($common/GatewayConfiguration) to configure the gat
 
 A service can expose multiple gateways. A service can expose both its own implementations, if any, and imported implementations. The service can decide at run time which gateways to expose, perhaps based on deployment parameters.
 
-<p><em>Example:</em>
+*Example:*
 ```ts
 [[include:Gateway.configure]]
 ```

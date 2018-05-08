@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { Appearance, Code, CreateIModelProps, ElementProps, Gateway, GeometricElementProps, IModel, IModelReadGateway } from "@bentley/imodeljs-common";
+import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
@@ -48,8 +48,8 @@ while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatfo
 const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
-// Initialize the gateway classes used by tests
-Gateway.initialize(IModelReadGateway);
+// Initialize the RPC interface classes used by tests
+RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

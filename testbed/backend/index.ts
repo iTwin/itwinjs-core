@@ -5,7 +5,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
-import { TestGatewayImpl, TestGateway2Impl, TestGateway3Impl } from "./TestGatewayImpl";
+import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
 
 let pendingsSent = 0;
@@ -19,12 +19,12 @@ ipcMain.on("testbed", (event: any, arg: any) => {
     pendingResponseQuota = msg.value;
     pendingsSent = 0;
     event.returnValue = true;
-  } else if (msg.name === CONSTANTS.REGISTER_TEST_GATEWAY2IMPL_CLASS_MESSAGE) {
-    TestGateway2Impl.register();
-    TestGateway2Impl.instantiate();
+  } else if (msg.name === CONSTANTS.REGISTER_TEST_RPCIMPL2_CLASS_MESSAGE) {
+    TestRpcImpl2.register();
+    TestRpcImpl2.instantiate();
     event.returnValue = true;
-  } else if (msg.name === CONSTANTS.REPLACE_TEST_GATEWAY2IMPL_INSTANCE_MESSAGE) {
-    TestGateway2Impl.instantiate();
+  } else if (msg.name === CONSTANTS.REPLACE_TEST_RPCIMPL2_INSTANCE_MESSAGE) {
+    TestRpcImpl2.instantiate();
     event.returnValue = true;
   }
 });
@@ -32,15 +32,15 @@ ipcMain.on("testbed", (event: any, arg: any) => {
 // Start the backend
 IModelHost.startup();
 
-TestGatewayImpl.register();
-TestGateway3Impl.register();
-TestbedConfig.initializeGatewayConfig();
+TestRpcImpl.register();
+TestRpcImpl3.register();
+TestbedConfig.initializeRpcBackend();
 
-if (TestbedConfig.gatewayConfig) {
+if (TestbedConfig.cloudRpc) {
   const app = express();
   app.use(bodyParser.text());
   app.use(express.static(__dirname + "/public"));
-  app.get(TestbedConfig.swaggerURI, (req, res) => TestbedConfig.gatewayConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+  app.get(TestbedConfig.swaggerURI, (req, res) => TestbedConfig.cloudRpc.protocol.handleOpenApiDescriptionRequest(req, res));
 
   app.post("*", (req, res) => {
     if (pendingResponseQuota && pendingsSent < pendingResponseQuota) {
@@ -50,7 +50,7 @@ if (TestbedConfig.gatewayConfig) {
     }
 
     pendingsSent = 0;
-    TestbedConfig.gatewayConfig.protocol.handleOperationPostRequest(req, res);
+    TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res);
   });
 
   app.listen(TestbedConfig.serverPort);

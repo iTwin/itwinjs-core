@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { FragmentShaderBuilder, VariableType } from "../ShaderBuilder";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
   const windowCoordsToTexCoords = `vec2 windowCoordsToTexCoords(vec2 wc) { return wc * u_invScreenSize; }`;
@@ -16,8 +17,27 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
   });
 }
 
+export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
+  frag.addUniform("u_reverseWhiteOnWhite", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
+      const bgColor: ColorDef = params.target.bgColor;
+      bgColor.setAlpha(0);
+      const doReversal = (bgColor.equals(ColorDef.white) && params.geometry.wantWoWReversal(params)) ? 1.0 : 0.0;
+      uniform.setUniform1f(doReversal);
+    });
+  });
+}
+
 export namespace GLSLFragment {
   export const assignFragColor = `FragColor = baseColor;`;
+
+  export const assignFragData = `
+    FragColor0 = baseColor;
+    FragColor1 = v_element_id0;
+    FragColor2 = v_element_id1;
+
+    float linearDepth = computeLinearDepth(v_eyeSpace.z);
+    FragColor3 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0`;
 
   export const revertPreMultipliedAlpha = `
     vec4 revertPreMultipliedAlpha(vec4 rgba) {

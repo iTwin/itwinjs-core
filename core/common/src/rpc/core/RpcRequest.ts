@@ -1,0 +1,307 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
+/** @module RpcInterface */
+
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { RpcInterface } from "../../RpcInterface";
+import { RpcOperation } from "./RpcOperation";
+import { RpcInvocation } from "./RpcInvocation";
+import { RpcProtocol, RpcProtocolEvent } from "./RpcProtocol";
+import { RpcMarshaling } from "./RpcMarshaling";
+import { OPERATION, CURRENT_REQUEST } from "./RpcRegistry";
+import { aggregateLoad } from "./RpcControl";
+import { IModelToken } from "../../IModel";
+
+/** Supplies an IModelToken for an RPC request. */
+export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
+
+/** Supplies a unique identifier for an RPC request. */
+export type RpcRequestIdSupplier_T = (request: RpcRequest) => string;
+
+/** Runtime information related to the operation load of one or more RPC interfaces. */
+export interface RpcOperationsProfile {
+  readonly lastRequest: number;
+  readonly lastResponse: number;
+}
+
+/** The status of an RPC operation request. */
+export enum RpcRequestStatus {
+  Unknown,
+  Created,
+  Submitted,
+  Provisioning,
+  Pending,
+  Resolved,
+  Rejected,
+  Enqueued,
+  Acknowledged,
+  Finalized,
+  Disposed,
+}
+
+/** RPC request event types. */
+export enum RpcRequestEvent {
+  StatusChanged,
+  PendingUpdateReceived,
+}
+
+/** Handles RPC request events. */
+export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
+
+/** A RPC operation request. */
+export class RpcRequest<TResponse = any> {
+  private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
+  private _reject: (reason?: any) => void = () => undefined;
+  private _lastSubmitted: number = 0;
+  private _lastUpdated: number = 0;
+  private _status: RpcRequestStatus = RpcRequestStatus.Unknown;
+  private _extendedStatus: string = "";
+  private _connecting: boolean = false;
+
+  /** Events raised by RpcRequest. See [[RpcRequestEvent]] */
+  public static readonly events: BeEvent<RpcRequestEventHandler> = new BeEvent();
+
+  /** The aggregate operations profile of all active RPC interfaces. */
+  public static get aggregateLoad(): RpcOperationsProfile { return aggregateLoad; }
+
+  /**
+   * The request for the current RPC operation.
+   * @note The return value of this function is only reliable if program control was received from a RPC interface class member function that directly returns the result of calling RpcInterface.forward.
+   */
+  public static current(context: RpcInterface): RpcRequest {
+    return (context as any)[CURRENT_REQUEST];
+  }
+
+  /** The unique identifier of this request. */
+  public readonly id: string;
+
+  /** The operation for this request. */
+  public readonly operation: RpcOperation;
+
+  /** The parameters for this request. */
+  public parameters: any[];
+
+  /** The RPC class instance for this request. */
+  public readonly interfaceInstance: RpcInterface;
+
+  /** Convenience access to the protocol of this request. */
+  public readonly protocol: RpcProtocol;
+
+  /** The implementation response for this request. */
+  public readonly response: Promise<TResponse>;
+
+  /** The status of this request. */
+  public get status() { return this._status; }
+
+  /** Extended status information for this request (if available). */
+  public get extendedStatus() { return this._extendedStatus; }
+
+  /** The last submission for this request. */
+  public get lastSubmitted() { return this._lastSubmitted; }
+
+  /** The last status update received for this request. */
+  public get lastUpdated() { return this._lastUpdated; }
+
+  /** The target interval (in milliseconds) between submission attempts for this request. */
+  public readonly retryInterval: number;
+
+  /** Whether this request is finalized. */
+  public get finalized() { return this.status === RpcRequestStatus.Finalized; }
+
+  /** Whether a connection is active for this request. */
+  public get connecting() { return this._connecting; }
+
+  /** Whether this request is pending. */
+  public get pending(): boolean {
+    switch (this.status) {
+      case RpcRequestStatus.Submitted:
+      case RpcRequestStatus.Provisioning:
+      case RpcRequestStatus.Pending: {
+        return true;
+      }
+
+      default: {
+        return false;
+      }
+    }
+  }
+
+  /** Finds the first parameter of a given type if present. */
+  public findParameterOfType<T>(constructor: { new(...args: any[]): T }): T | undefined {
+    for (const param of this.parameters) {
+      if (param instanceof constructor)
+        return param;
+    }
+
+    return undefined;
+  }
+
+  /** Constructs an RPC request. */
+  public constructor(instance: RpcInterface, operation: string, parameters: any[]) {
+    this.interfaceInstance = instance;
+    this.protocol = instance.configuration.protocol;
+    this.operation = (instance.constructor.prototype as any)[operation][OPERATION];
+    this.parameters = parameters;
+    this.retryInterval = instance.configuration.pendingOperationRetryInterval;
+    this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
+    this.id = this.operation.policy.requestId(this);
+    this.protocol.events.addListener(this.handleProtocolEvent, this);
+    this.setStatus(RpcRequestStatus.Created);
+  }
+
+  /** Override to initialize the request communication channel. */
+  protected initializeChannel(): void { }
+
+  /** Override to send the request. */
+  protected send(): void { }
+
+  /** Override to set request header values. */
+  protected setHeader(_name: string, _value: string): void { }
+
+  /** Override to supply response status code. */
+  public getResponseStatusCode(): number { return 0; }
+
+  /** Override to supply response text. */
+  public getResponseText(): string { return ""; }
+
+  /* @hidden @internal */
+  public submit(): void {
+    this._lastSubmitted = new Date().getTime();
+
+    if (this.status === RpcRequestStatus.Created) {
+      this.setStatus(RpcRequestStatus.Submitted);
+    }
+
+    try {
+      this._connecting = true;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
+      this.initializeChannel();
+      this.setHeaders();
+      this.send();
+    } catch (e) {
+      this._connecting = false;
+      this.reject(e);
+    }
+  }
+
+  private handleProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
+    if (object !== this)
+      return;
+
+    switch (event) {
+      case RpcProtocolEvent.ResponseLoaded: {
+        this._connecting = false;
+        return this.handleResponse();
+      }
+
+      case RpcProtocolEvent.AcknowledgementReceived: {
+        return this.acknowledge();
+      }
+
+      case RpcProtocolEvent.BackendErrorReceived: {
+        this._connecting = false;
+        return;
+      }
+
+      case RpcProtocolEvent.ConnectionAborted:
+      case RpcProtocolEvent.ConnectionErrorReceived:
+      case RpcProtocolEvent.UnknownErrorReceived: {
+        this._connecting = false;
+        return this.reject(this.protocol.supplyErrorForEvent(event, this));
+      }
+    }
+  }
+
+  private handleResponse(): void {
+    const code = this.getResponseStatusCode();
+    const status = this.protocol.getStatus(code);
+
+    switch (status) {
+      case RpcRequestStatus.Resolved: {
+        const result = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+        return this.resolve(result);
+      }
+
+      case RpcRequestStatus.Rejected: {
+        this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorReceived, this);
+
+        const localError = new Error();
+        const error = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+        localError.name = error.name;
+        localError.message = error.message;
+
+        const localStack = localError.stack;
+        const remoteStack = error.stack;
+        error.stack = `${localStack}\n${remoteStack}`;
+
+        return this.reject(error);
+      }
+
+      case RpcRequestStatus.Provisioning:
+      case RpcRequestStatus.Pending: {
+        return this.setPending(status, this.getResponseText());
+      }
+    }
+  }
+
+  private resolve(value: TResponse): void {
+    this._lastUpdated = new Date().getTime();
+    this._resolve(value);
+    this.setStatus(RpcRequestStatus.Resolved);
+
+    if (this.operation.policy.requiresAcknowledgement) {
+      this.enqueue();
+    } else {
+      this.finalize();
+    }
+  }
+
+  private reject(reason: any): void {
+    this._lastUpdated = new Date().getTime();
+    this._reject(reason);
+    this.setStatus(RpcRequestStatus.Rejected);
+    this.finalize();
+  }
+
+  private enqueue(): void {
+    this.setStatus(RpcRequestStatus.Enqueued);
+  }
+
+  private acknowledge(): void {
+    this.setStatus(RpcRequestStatus.Acknowledged);
+    this.finalize();
+  }
+
+  private finalize(): void {
+    this.setStatus(RpcRequestStatus.Finalized);
+  }
+
+  /** @hidden @internal */
+  public dispose(): void {
+    this.setStatus(RpcRequestStatus.Disposed);
+  }
+
+  private setPending(status: RpcRequestStatus.Provisioning | RpcRequestStatus.Pending, extendedStatus: string): void {
+    this._lastUpdated = new Date().getTime();
+    this._extendedStatus = extendedStatus;
+    this.setStatus(status);
+    RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, this);
+  }
+
+  private setHeaders(): void {
+    this.setHeader(this.protocol.requestIdHeaderName, this.id);
+
+    if (this.protocol.authorizationHeaderName) {
+      this.setHeader(this.protocol.authorizationHeaderName, this.protocol.configuration.applicationAuthorizationValue);
+    }
+  }
+
+  private setStatus(status: RpcRequestStatus): void {
+    if (this._status === status)
+      return;
+
+    this._status = status;
+    RpcRequest.events.raiseEvent(RpcRequestEvent.StatusChanged, this);
+  }
+}

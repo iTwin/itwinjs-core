@@ -1,38 +1,51 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { BentleyCloudGatewayConfiguration, GatewayElectronConfiguration, GatewayOperation, IModelToken, IModelReadGateway, IModelWriteGateway, StandaloneIModelGateway } from "@bentley/imodeljs-common";
-import { IModelUnitTestGateway } from "@bentley/imodeljs-common/lib/gateway/IModelUnitTestGateway"; // not part of the "barrel"
-import { TestGateway, TestGateway2, TestGateway3 } from "../common/TestGateway";
+import { BentleyCloudRpcManager, ElectronRpcManager, BentleyCloudRpcConfiguration, RpcOperation, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface } from "@bentley/imodeljs-common";
+import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
+import { TestRpcInterface, TestRpcInterface2, TestRpcInterface3 } from "./TestRpcInterface";
 
 declare var ___TESTBED_IPC_RENDERER___: any;
 
 export class TestbedConfig {
-  public static gatewayParams = { info: { title: "imodeljs-core-testbed", version: "v1.0" } };
+  public static cloudRpcParams = { info: { title: "imodeljs-core-testbed", version: "v1.0" } };
   public static serverPort = process.env.PORT || 3000;
   public static swaggerURI = "/v3/swagger.json";
-  public static gatewayConfig: BentleyCloudGatewayConfiguration;
+  public static cloudRpc: BentleyCloudRpcConfiguration;
   public static get ipc(): any { return ___TESTBED_IPC_RENDERER___; }
   public static useIPC = false;
+  public static rpcInterfaces = [IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelUnitTestRpcInterface, TestRpcInterface, TestRpcInterface2];
 
-  public static initializeGatewayConfig() {
-    const gateways = [IModelReadGateway, IModelWriteGateway, StandaloneIModelGateway, IModelUnitTestGateway, TestGateway, TestGateway2];
-
+  public static initializeRpcFrontend() {
     if (TestbedConfig.useIPC) {
-      GatewayElectronConfiguration.initialize({}, gateways);
+      ElectronRpcManager.initializeClient({}, TestbedConfig.rpcInterfaces);
     } else {
-      TestbedConfig.gatewayConfig = BentleyCloudGatewayConfiguration.initialize(TestbedConfig.gatewayParams, gateways);
-
-      for (const gateway of gateways) {
-        GatewayOperation.forEach(gateway, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test"));
-      }
+      TestbedConfig.cloudRpc = BentleyCloudRpcManager.initializeClient(TestbedConfig.cloudRpcParams, TestbedConfig.rpcInterfaces);
+      TestbedConfig.initializeBentleyCloudCommon();
     }
 
-    GatewayElectronConfiguration.initialize({}, [TestGateway3]);
+    ElectronRpcManager.initializeClient({}, [TestRpcInterface3]);
+  }
+
+  public static initializeRpcBackend() {
+    if (TestbedConfig.useIPC) {
+      ElectronRpcManager.initializeImpl({}, TestbedConfig.rpcInterfaces);
+    } else {
+      TestbedConfig.cloudRpc = BentleyCloudRpcManager.initializeImpl(TestbedConfig.cloudRpcParams, TestbedConfig.rpcInterfaces);
+      TestbedConfig.initializeBentleyCloudCommon();
+    }
+
+    ElectronRpcManager.initializeImpl({}, [TestRpcInterface3]);
   }
 
   public static sendToMainSync(msg: TestbedIpcMessage) {
     return TestbedConfig.ipc.sendSync("testbed", msg);
+  }
+
+  private static initializeBentleyCloudCommon() {
+    for (const definition of TestbedConfig.rpcInterfaces) {
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test"));
+    }
   }
 }
 

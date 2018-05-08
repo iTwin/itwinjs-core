@@ -670,6 +670,7 @@ export class IModelDbModels {
   }
 
   /** Get the Model with the specified identifier.
+   * See [[IModelDbElements.queryElementIdByCode]] for an example of how to look up an element by Code. You can then find its subModel.
    * @param modelId The Model identifier.
    * @throws [[IModelError]]
    */
@@ -805,6 +806,10 @@ export class IModelDbElements {
    * @param code The code to look for
    * @returns The element that uses the code or undefined if the code is not used.
    * @throws IModelError if the code is invalid
+   * *Example:*
+   * ``` ts
+   * [[include:Model.lookupByCode]]
+   * ```
    */
   public queryElementIdByCode(code: Code): Id64 | undefined {
     if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);
