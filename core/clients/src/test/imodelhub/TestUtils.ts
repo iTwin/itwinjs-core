@@ -22,6 +22,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
 
+/** Other services */
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
   public getUserProfile(): UserProfile | undefined {
@@ -143,6 +144,11 @@ export async function getIModelId(accessToken: AccessToken, imodelName: string):
     return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
 
   return imodels[0].wsgId;
+}
+
+export function mockFileResponse(downloadToPath: string, times = 1) {
+  if (TestConfig.enableMocks)
+    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
 }
 
 /** Briefcases */
@@ -336,11 +342,7 @@ export function mockUpdateVersion(iModelId: string, version: Version) {
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockFileResponse(downloadToPath: string, times = 1) {
-  if (TestConfig.enableMocks)
-    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
-}
-
+/** Integration utilities */
 export function getMockSeedFilePath() {
   const dir = path.join(assetsPath, "SeedFile");
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);

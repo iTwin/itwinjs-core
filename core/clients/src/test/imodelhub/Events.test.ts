@@ -39,7 +39,7 @@ function mockGetEventSASToken(imodelId: string) {
   const responseObject = ResponseBuilder.generateObject<EventSAS>(EventSAS,
     new Map<string, any>([
       ["sasToken", Guid.createValue()],
-      ["baseAddres", `https://qa-imodelhubapi.bentley.com/v2.5/Repositories/iModel--${imodelId}/iModelScope`],
+      ["baseAddres", `${utils.defaultUrl}/v2.5/Repositories/iModel--${imodelId}/iModelScope`],
     ]));
   const requestResponse = ResponseBuilder.generatePostResponse<EventSAS>(responseObject);
   const postBody = ResponseBuilder.generatePostBody<EventSAS>(ResponseBuilder.generateObject<EventSAS>(EventSAS));

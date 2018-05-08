@@ -58,7 +58,7 @@ function mockPostNewSeedFile(imodelId: string, fileId: string, filePath: string)
       ["wsgId", fileId],
       ["fileId", fileId],
       ["fileName", path.basename(filePath)],
-      ["uploadUrl", `https://qa-imodelhubapi.bentley.com/imodelhub-${imodelId}/123456`],
+      ["uploadUrl", `${utils.defaultUrl}/imodelhub-${imodelId}/123456`],
     ])));
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }

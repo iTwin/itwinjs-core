@@ -70,7 +70,7 @@ describe("iModelHub ChangeSetHandler", () => {
     const cs = new ChangeSet();
     deepAssign(cs, changeSet);
     cs.wsgId = cs.id!;
-    cs.uploadUrl = `https://qa-imodelhubapi.bentley.com/imodelhub-${imodelId}/123456`;
+    cs.uploadUrl = `${utils.defaultUrl}/imodelhub-${imodelId}/123456`;
     const requestResponse = ResponseBuilder.generatePostResponse(cs);
 
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
