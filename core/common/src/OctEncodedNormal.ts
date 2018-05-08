@@ -69,7 +69,3 @@ export class OctEncodedNormalPair extends Pair<OctEncodedNormal, OctEncodedNorma
     super(first instanceof OctEncodedNormal ? first : new OctEncodedNormal(first), second instanceof OctEncodedNormal ? second : new OctEncodedNormal(second));
   }
 }
-
-export class OctEncodedNormalList extends Array<OctEncodedNormal> { constructor(...args: OctEncodedNormal[]) { super(...args); } }
-
-export class OctEncodedNormalPairList extends Array<OctEncodedNormalPair> { constructor(...args: OctEncodedNormalPair[]) { super(...args); } }

@@ -60,6 +60,7 @@ function testVertexLUTParams() {
   expectLUTParams(new VertexLUT.MeshBuilder(args), args.colors, expected);
 
   // Add uv params
+  args.textureUv = [];
   args.textureUv.push(new Point2d(-1, 1));  // 0, 0xffff
   args.textureUv.push(new Point2d(1, 0));   // 0xffff, 0x8000
   args.textureUv.push(new Point2d(0, -1));  // 0x8000, 0

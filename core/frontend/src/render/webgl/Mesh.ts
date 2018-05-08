@@ -22,21 +22,21 @@ import {
   QParams3d,
   QParams2d,
   FillFlags,
-  Texture,
+  RenderTexture,
   RenderMode,
-  Material,
+  RenderMaterial,
 } from "@bentley/imodeljs-common";
 
 export class MeshInfo {
   public readonly edgeWidth: number;
   public features?: FeaturesInfo;
-  public readonly texture?: Texture; // ###TODO...
+  public readonly texture?: RenderTexture; // ###TODO...
   public readonly type: SurfaceType;
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
 
-  protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: Texture) {
+  protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: RenderTexture) {
     this.edgeWidth = edgeWidth;
     this.features = features;
     this.texture = texture;
@@ -49,7 +49,7 @@ export class MeshInfo {
 
 export class MeshData extends MeshInfo {
   public readonly lut: VertexLUT.Data;
-  public readonly material: MaterialData;
+  public readonly material?: MaterialData | RenderMaterial; // ###TODO implement MaterialData, remove RenderMaterial as option
   public readonly animation: any; // should be a AnimationLookupTexture;
 
   public static create(params: MeshParams): MeshData | undefined {
@@ -69,7 +69,7 @@ export class MeshParams extends MeshInfo {
   public readonly vertexParams: QParams3d;
   public readonly uvParams?: QParams2d;
   public readonly lutParams: VertexLUT.Params;
-  public readonly material: Material;
+  public readonly material?: RenderMaterial;
   public readonly animationLUTParams: any; // TODO: should be a AnimationLUTParams;
 
   public constructor(args: MeshArgs) {
@@ -84,14 +84,14 @@ export class MeshParams extends MeshInfo {
     // ###TODO: MeshArgs.textureUV should be undefined unless it's non-empty
     const uvRange = Range2d.createNull();
     const fpts = args.textureUv;
-    if (fpts.length !== 0) {
-      for (let i = 0; i < args.points.length; i++) {
+    if (undefined !== fpts && fpts.length !== 0) {
+      for (let i = 0; i < args.points!.length; i++) {
         uvRange.extendPoint(Point2d.createFrom({ x: fpts[i].x, y: fpts[i].y }));
       }
     }
 
     this.uvParams = uvRange.isNull() ? undefined : QParams2d.fromRange(uvRange);
-    this.vertexParams = args.points.params;
+    this.vertexParams = args.points!.params;
     this.material = args.material;
     switch (this.type) {
       case SurfaceType.Lit:
@@ -131,7 +131,7 @@ export class MeshGraphic extends Graphic {
 
     // ###TODO edges
     // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
-    const convertPolylineEdges = args.edges.polylines.isValid() && !wantJointTriangles(args.edges.width, args.is2d);
+    const convertPolylineEdges = args.edges.polylines.isValid && !wantJointTriangles(args.edges.width, args.is2d);
     if (convertPolylineEdges) {
       // const simpleEdges = new SimplePolylineEdgeArgs(args.edges.polylines, args.edges.edges);
       // this.primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
