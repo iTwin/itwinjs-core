@@ -106,6 +106,21 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run Bentley Tests",
+      "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/core/bentley",
+      "args": [
+        "--packageRoot=${workspaceFolder}",
+        "--testDir=${workspaceFolder}/core/bentley/lib/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "example-code backend snippet tests",
       "program": "${workspaceFolder}/node_modules/@bentley/bentleyjs-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/snippets",
