@@ -23,9 +23,8 @@ export abstract class DisplayStyleState extends ElementState {
 
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) {
-    const viewFlags = flags.clone();
-    this._viewFlags = viewFlags;
-    this.setStyle("viewflags", viewFlags);
+    flags.clone(this._viewFlags);
+    this.setStyle("viewflags", flags);
   }
 
   public getStyles(): any { const p = this.jsonProperties as any; if (!p.styles) p.styles = new Object(); return p.styles; }
