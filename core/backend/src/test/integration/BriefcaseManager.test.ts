@@ -497,7 +497,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should push changes with codes (#integration)", async () => {
+  it("should push changes with codes (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
@@ -544,7 +544,7 @@ describe("BriefcaseManager", () => {
     expect(codes.length > initialCodes.length);
   });
 
-  it.skip("should push changes with code conflicts (#integration)", async () => {
+  it("should push changes with code conflicts (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel

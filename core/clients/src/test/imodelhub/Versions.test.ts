@@ -13,7 +13,7 @@ import * as utils from "./TestUtils";
 
 chai.should();
 
-describe("iModelHub VersionHandler", () => {
+describe.skip("iModelHub VersionHandler", () => {
   let accessToken: AccessToken;
   let iModelId: string;
   let briefcase: Briefcase;
