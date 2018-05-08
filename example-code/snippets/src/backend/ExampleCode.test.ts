@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl, GeometricElement3d, ECSqlStatement, PhysicalPartition } from "@bentley/imodeljs-backend";
+import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl, GeometricElement3d, ECSqlStatement, PhysicalPartition, Model } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, DbResult } from "@bentley/bentleyjs-core";
@@ -162,16 +162,25 @@ describe("Example Code", () => {
 
   });
 
-  it("should execute spatial queries", () => {
-
+  it("should look up model by code", () => {
     // __PUBLISH_EXTRACT_START__ Model.lookupByCode
+    // A Model does not have a code. The element that it models might. So, we first
+    // look up the modeled element. In this example, we are looking for a PhysicalModel,
+    // and so its modeled element will be a PhysicalPartition.
     const partitionCode = PhysicalPartition.createCode(iModel.elements.getRootSubject(), "DefaultModel");
     const partitionId: Id64 | undefined = iModel.elements.queryElementIdByCode(partitionCode);
-    // __PUBLISH_EXTRACT_END__
     assert.isTrue(partitionId !== undefined);
     if (partitionId === undefined)
       return;
-    const modelId = iModel.models.getSubModel(partitionId).id;
+    // Once we have the modeled element, we ask for its submodel -- that is that model.
+    const itsModel: Model = iModel.models.getSubModel(partitionId);
+    reportModel(itsModel);
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("should execute spatial queries", () => {
+    // in test.bim, it so happens that a bunch of PhysicalElements are in the default/root model.
+    const modelId = iModel.models.getSubModel(iModel.elements.getRootSubject().id).id;
     assert.isTrue(modelId !== undefined);
 
     // __PUBLISH_EXTRACT_START__ EcsqlGeometryFunctions.iModel_bbox_areaxy
@@ -249,4 +258,8 @@ function reportArea(a: number) {
 }
 function reportRange(a: Range3dProps) {
   a;
+}
+
+function reportModel(m: Model) {
+  m;
 }
