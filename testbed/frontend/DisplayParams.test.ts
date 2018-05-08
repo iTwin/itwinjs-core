@@ -3,26 +3,26 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DisplayParams, DisplayParamsType, DisplayParamsComparePurpose } from "@bentley/imodeljs-frontend/lib/rendering";
+import { DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
 import { GraphicParams, ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
 
 describe("DisplayParams creation tests", () => {
   it("should create mesh DisplayParams and be of type mesh", () => {
     const gf: GraphicParams = new GraphicParams();
     const dp: DisplayParams = DisplayParams.createForMesh(gf);
-    expect(dp.type).to.equal(DisplayParamsType.Mesh);
+    expect(dp.type).to.equal(DisplayParams.Type.Mesh);
   });
 
   it("should create linear DisplayParams and be of type linear", () => {
     const gf: GraphicParams = new GraphicParams();
     const dp: DisplayParams = DisplayParams.createForLinear(gf);
-    expect(dp.type).to.equal(DisplayParamsType.Linear);
+    expect(dp.type).to.equal(DisplayParams.Type.Linear);
   });
 
   it("should create text DisplayParams and be of type text", () => {
     const gf: GraphicParams = new GraphicParams();
     const dp: DisplayParams = DisplayParams.createForText(gf);
-    expect(dp.type).to.equal(DisplayParamsType.Text);
+    expect(dp.type).to.equal(DisplayParams.Type.Text);
   });
 });
 
@@ -62,13 +62,13 @@ describe("DisplayParams equality tests", () => {
     const gf1: GraphicParams = new GraphicParams();  gf1.setLineColor(cd1);
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1);
-    expect(dpMesh0.equals(dpMesh1, DisplayParamsComparePurpose.Merge)).to.be.true;
+    expect(dpMesh0.equals(dpMesh1, DisplayParams.ComparePurpose.Merge)).to.be.true;
     const dpLinear0: DisplayParams = DisplayParams.createForMesh(gf0);
     const dpLinear1: DisplayParams = DisplayParams.createForMesh(gf1);
-    expect(dpLinear0.equals(dpLinear1, DisplayParamsComparePurpose.Merge)).to.be.true;
+    expect(dpLinear0.equals(dpLinear1, DisplayParams.ComparePurpose.Merge)).to.be.true;
     const dpText0: DisplayParams = DisplayParams.createForMesh(gf0);
     const dpText1: DisplayParams = DisplayParams.createForMesh(gf1);
-    expect(dpText0.equals(dpText1, DisplayParamsComparePurpose.Merge)).to.be.true;
+    expect(dpText0.equals(dpText1, DisplayParams.ComparePurpose.Merge)).to.be.true;
   });
 
   it("two DisplayParams created with different types should be non-equal", () => {

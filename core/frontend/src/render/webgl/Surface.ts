@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+
+import { assert } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/Mesh";
 import { MaterialData } from "./CachedGeometry";
@@ -128,7 +130,7 @@ export class SurfaceGeometry extends MeshGeometry {
     // Don't invert white pixels of textures...
     return !this.isTextured || !this.wantTextures(target);
   }
-  public get material(): MaterialData { return this.materialData; }
+  public get material(): MaterialData | undefined { return this.materialData; }
 
   public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
     const target = params.target;
@@ -201,6 +203,11 @@ export class SurfaceGeometry extends MeshGeometry {
 
 export class SurfacePrimitive extends MeshPrimitive {
   public static create(args: MeshArgs, mesh: MeshGraphic): SurfacePrimitive | undefined {
+    if (undefined === args.vertIndices) {
+      assert(false);
+      return undefined;
+    }
+
     const geom = SurfaceGeometry.create(mesh.meshData, args.vertIndices);
     return undefined !== geom ? new SurfacePrimitive(geom, mesh) : undefined;
   }
