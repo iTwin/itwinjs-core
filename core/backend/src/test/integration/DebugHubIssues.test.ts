@@ -12,7 +12,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
-describe.skip("DebugHubIssues (#online-required)", () => {
+describe.skip("DebugHubIssues (#integration)", () => {
   let accessToken: AccessToken;
   const iModelRootDir = "d:\\temp\\IModelDumps\\";
 

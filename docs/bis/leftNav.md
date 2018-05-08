@@ -39,7 +39,6 @@
 ./intro/analysis-models-and-elements.md
 ./intro/appendix-c-bis-domain-design-fundamentals.md
 ./intro/bis-schema-validation.md
-./intro/codes-and-codespecs.md
 ./intro/documents.md
 ./intro/dynamic-data.md
 ./intro/forms-profiles-and-features.md

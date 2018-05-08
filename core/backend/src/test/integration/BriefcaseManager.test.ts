@@ -122,7 +122,7 @@ describe("BriefcaseManager", () => {
     assert.equal(callbackcount, 2);
   });
 
-  it.skip("test change-merging scenarios in optimistic concurrency mode (#online-required)", async () => {
+  it.skip("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
     const firstUser = accessToken;
     const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.user2);
@@ -251,7 +251,7 @@ describe("BriefcaseManager", () => {
 
   });
 
-  it.skip("should merge changes so that two branches of an iModel converge (#online-required)", () => {
+  it.skip("should merge changes so that two branches of an iModel converge (#integration)", () => {
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
     const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
@@ -497,7 +497,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should push changes with codes (#online-required)", async () => {
+  it.skip("should push changes with codes (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
@@ -544,7 +544,7 @@ describe("BriefcaseManager", () => {
     expect(codes.length > initialCodes.length);
   });
 
-  it.skip("should push changes with code conflicts (#online-required)", async () => {
+  it.skip("should push changes with code conflicts (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
@@ -601,7 +601,7 @@ describe("BriefcaseManager", () => {
     expect(codes[0].state === CodeState.Reserved);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency (#online-required)", async () => {
+  it.skip("should write to briefcase with optimistic concurrency (#integration)", async () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
@@ -717,7 +717,7 @@ describe("BriefcaseManager", () => {
     roIModel.close(accessToken);
   });
 
-  it.skip("should make change sets (#online-required)", async () => {
+  it.skip("should make change sets (#integration)", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite);
     assert.exists(iModel);
 
@@ -748,7 +748,7 @@ describe("BriefcaseManager", () => {
     iModel.close(accessToken);
   });
 
-  it.skip("should test AutoPush (#online-required)", async () => {
+  it.skip("should test AutoPush (#integration)", async () => {
     let isIdle: boolean = true;
     const activityMonitor = {
       isIdle: () => isIdle,

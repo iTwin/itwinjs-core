@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+export * from "./render/FeatureSymbology";
 export * from "./tools/AccuDrawTool";
 export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";

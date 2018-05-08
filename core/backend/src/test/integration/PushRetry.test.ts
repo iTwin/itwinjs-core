@@ -24,7 +24,7 @@ describe.skip("PushRetry", () => {
     testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
   });
 
-  it("should retry to push changes #online-required", async () => {
+  it("should retry to push changes (#integration)", async () => {
     const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
@@ -65,7 +65,7 @@ describe.skip("PushRetry", () => {
     await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
   });
 
-  it("should fail to push and not retry again #online-required", async () => {
+  it("should fail to push and not retry again (#integration)", async () => {
     const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
