@@ -9,7 +9,7 @@ import { MeshArgs } from "../primitives/Mesh";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
-import { Graphic, wantJointTriangles/*, Batch*/ } from "./Graphic";
+import { Graphic, wantJointTriangles, Batch } from "./Graphic";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
@@ -17,7 +17,7 @@ import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Target } from "./Target";
 import { SurfacePrimitive } from "./Surface";
-// import { RenderCommands, DrawCommands } from "./DrawCommand";
+import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
   QParams2d,
@@ -114,7 +114,7 @@ export class MeshParams extends MeshInfo {
 
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
-  private readonly _primitives = Array<Primitive | undefined>(4); // [surfaces, silhouettes, edges, polylines]
+  private readonly _primitives: MeshPrimitive[] = [];
 
   public static create(args: MeshArgs, iModel: IModelConnection) {
     const data = MeshData.create(new MeshParams(args));
@@ -125,9 +125,11 @@ export class MeshGraphic extends Graphic {
     super(iModel);
     this.meshData = data;
 
-    assert(undefined !== this._primitives); // silence unused variable warnings...
-    this._primitives[0] = SurfacePrimitive.create(args, this);
+    const surface = SurfacePrimitive.create(args, this);
+    if (undefined !== surface)
+      this._primitives.push(surface);
 
+    // ###TODO edges
     // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
     const convertPolylineEdges = args.edges.polylines.isValid() && !wantJointTriangles(args.edges.width, args.is2d);
     if (convertPolylineEdges) {
@@ -139,16 +141,9 @@ export class MeshGraphic extends Graphic {
     }
   }
 
-  // public addCommands(cmds: RenderCommands): void {
-  //   this.primitives.forEach((prim) => {
-  //     if (true /*prim.isValid()*/) { prim.addCommands(cmds); }
-  //   });
-  // }
-  // public addHiliteCommands(cmds: DrawCommands, batch: Batch): void {
-  //   this.primitives.forEach((prim) => {
-  //     if (true /*prim.isValid()*/) { prim.addHiliteCommands(cmds, batch); }
-  //   });
-  // }
+  public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
+  public addHiliteCommands(cmds: DrawCommands, batch: Batch): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch)); }
+
   public setUniformFeatureIndices(id: number): void {
     this.meshData.features = FeaturesInfo.createUniform(id);
   }
