@@ -12,7 +12,7 @@ import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil
 import { HubTestUtils } from "./HubTestUtils";
 import { ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { TestConfig } from "../TestConfig";
-import { AccessToken, CodeState, ChangeSet, ConnectClient, ContainsSchemaChanges, IModel as HubIModel, Code as HubCode, IModelHubClient, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
+import { AccessToken, CodeState, ChangeSet, ConnectClient, IModel as HubIModel, Code as HubCode, IModelHubClient, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -39,7 +39,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 }
 
 function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
-  const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.applyChangeSets(JSON.stringify([cstoken]), ChangeSetApplyOption.Merge, cstoken.containsSchemaChanges === ContainsSchemaChanges.Yes);
+  const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.applyChangeSets(JSON.stringify([cstoken]), ChangeSetApplyOption.Merge);
   imodel.onChangesetApplied.raiseEvent();
   assert.equal(status, ChangeSetStatus.Success);
 }

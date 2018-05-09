@@ -21,7 +21,7 @@
     "@bentley/bentleyjs-core": "8",
     "@bentley/geometry-core": "7",
     "@bentley/imodeljs-backend": "0",
-    "@bentley/imodeljs-n_8-win32-x64": "~17.1.1",
+    "@bentley/imodeljs-n_8-win32-x64": "~18.0.0",
     "@bentley/imodeljs-clients": "5",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-frontend": "0",
