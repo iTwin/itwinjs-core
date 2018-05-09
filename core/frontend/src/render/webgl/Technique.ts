@@ -75,7 +75,7 @@ export abstract class VariedTechnique implements Technique {
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void { this.addProgram(flags, builder.buildProgram(gl)); }
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
     const index = this.getShaderIndex(flags);
-    assert(undefined === this._programs[index], "program already exists"); // ###TODO: Why is this assert happening?
+    assert(undefined === this._programs[index], "program already exists");
     this._programs[index] = program;
   }
 
