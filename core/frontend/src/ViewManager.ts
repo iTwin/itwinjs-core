@@ -3,14 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "./Viewport";
 import { BeCursor } from "./tools/Tool";
-import { assert, BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { Point3d } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { UpdatePlan } from "./render/UpdatePlan";
-import { TaskPriority, IdleTask } from "./render/Task";
 import { DecorateContext } from "./ViewContext";
 
 /** The ViewManager holds the list of opened views, plus the "selected view" */
@@ -22,7 +21,6 @@ export class ViewManager {
   private _newTilesReady: boolean = false;
   private _skipSceneCreation: boolean = false;
   private _doContinuousRendering: boolean = false;
-  private _wantIdle: boolean = false;
 
   public onInitialized(): void { }
 
@@ -51,16 +49,15 @@ export class ViewManager {
     if (!this.inDynamicsMode)
       return;
 
-    let priority = 0;
     this.inDynamicsMode = false;
 
     const cursorVp = IModelApp.toolAdmin.getCursorView();
     if (cursorVp)
-      cursorVp.changeDynamics(undefined, priority);
+      cursorVp.changeDynamics(undefined);
 
     for (const vp of this._viewports) {
       if (vp !== cursorVp)
-        vp.changeDynamics(undefined, ++priority);
+        vp.changeDynamics(undefined);
     }
   }
   public beginDynamicsMode() { this.inDynamicsMode = true; }
@@ -162,11 +159,10 @@ export class ViewManager {
 
     const cursorVp = IModelApp.toolAdmin.getCursorView();
     const plan = new UpdatePlan();
-    const priority = new TaskPriority(1);
 
-    if (undefined === cursorVp || cursorVp.renderFrame(priority, plan))
+    if (undefined === cursorVp || cursorVp.renderFrame(plan))
       for (const vp of this._viewports)
-        if (vp !== cursorVp && !vp.renderFrame(priority.increment(), plan))
+        if (vp !== cursorVp && !vp.renderFrame(plan))
           break;
 
     // const tileGenerationSeconds = 5.0;
@@ -178,10 +174,7 @@ export class ViewManager {
   }
 
   private processIdle(): void {
-    if (this._wantIdle && IModelApp.renderQueue.isIdle) {
-      assert(this._viewports.length === 0);
-      IModelApp.renderQueue.addTask(new IdleTask(IModelApp.renderSystem));
-    }
+    // ###TODO: precompile shaders?
   }
 
   public callDecorators(context: DecorateContext) {
@@ -190,6 +183,6 @@ export class ViewManager {
     IModelApp.accuDraw.display(context);
     IModelApp.toolAdmin.decorate(context);
     context.viewport.callDecorators(context);
-    // decorators.callAllHandlers(new DecoratorCaller(context));
+    // ###TODO: decorators.callAllHandlers(new DecoratorCaller(context));
   }
 }

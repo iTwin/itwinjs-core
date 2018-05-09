@@ -40,8 +40,7 @@ export class BeEvent<T extends Listener> {
    * Registers a callback function to be executed *only once* when the event is raised.
    *
    * @param listener The function to be executed once when the event is raised.
-   * @param scope An optional object scope to serve as the `this`
-   *        pointer in which the listener function will execute.
+   * @param scope An optional object scope to serve as the `this` pointer in which the listener function will execute.
    * @returns A function that will remove this event listener.
    * @see [[BeEvent.raiseEvent]], [[BeEvent.removeListener]]
    */

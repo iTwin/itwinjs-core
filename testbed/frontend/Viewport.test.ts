@@ -3,13 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
-// WIP import { Cartographic, FontType, FontMap, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, FontType, FontMap, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
-// WIP import { RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -170,7 +168,14 @@ describe("Cartographic tests", () => {
   });
 });
 
-/*
+// RenderLoop tests exist because all the rendering code lives in the mono-repo, while
+// applications like proto-gist which actually allow the user to open a viewport reside outside
+// of the mono-repo. This test opens a viewport and then lets the browser's event loop run indefinitely,
+// so that we can interact with and debug the viewport.
+// Otherwise, every time we made a change/fix to the rendering code, we'd need to republish imodeljs-core
+// so that we could test it in proto-gist.
+const doRenderLoopTests = false;
+
 describe("RenderLoop tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
@@ -180,19 +185,24 @@ describe("RenderLoop tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {
+    if (!doRenderLoopTests)
+      return;
+
     IModelApp.startup("QA", true);
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
-    if (imodel)
-      await imodel.closeStandalone();
-    IModelApp.shutdown();
+  after(async (done) => {
+    if (!doRenderLoopTests)
+      done();
   });
 
   it("should start up the render loop", () => {
+    if (!doRenderLoopTests)
+      return;
+
     const target = IModelApp.renderSystem.createTarget(canvas);
     const viewport = new Viewport(canvas, spatialView, target);
     viewport.setupFromView();
@@ -204,8 +214,5 @@ describe("RenderLoop tests", () => {
     expect((target as Target).bgColor.tbgr).to.equal(ColorByName.darkBlue);
 
     target.drawFrame();
-
-    IModelApp.viewManager.dropViewport(viewport);
   });
 });
-*/
