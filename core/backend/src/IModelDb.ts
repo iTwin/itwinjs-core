@@ -54,7 +54,7 @@ export class IModelDb extends IModel {
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.briefcase.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
 
-  /** Event raised just before a connected IModelDb is opened.<p><em>Example:</em>
+  /** Event raised just before a connected IModelDb is opened. <p><em>Example:</em>
    * ``` ts
    * [[include:IModelDb.onOpen]]
    * ```
