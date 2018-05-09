@@ -14,7 +14,7 @@ import { IModelDb } from "./IModelDb";
  * See [[IModelDbModels]] for how to query and manage the Models in an IModelDB.
  */
 export class Model extends Entity implements ModelProps {
-  public readonly modeledElement: Id64;
+  public readonly modeledElement: RelatedElement;
   public readonly name: string;
   public readonly parentModel: Id64;
   public readonly jsonProperties: any;
@@ -25,7 +25,7 @@ export class Model extends Entity implements ModelProps {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
     this.name = props.name ? props.name : "";
-    this.modeledElement = RelatedElement.idFromJson(props.modeledElement);
+    this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
     this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);

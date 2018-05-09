@@ -9,7 +9,7 @@ import { Id64Props } from "@bentley/bentleyjs-core";
 import { RelatedElementProps } from "./ElementProps";
 
 export interface ModelProps extends EntityProps {
-  modeledElement: Id64Props | RelatedElementProps;
+  modeledElement: RelatedElementProps;
   name?: string;
   parentModel?: Id64Props; // NB! Must always match the model of the modeledElement!
   isPrivate?: boolean;

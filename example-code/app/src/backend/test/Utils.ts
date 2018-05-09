@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
@@ -104,8 +104,10 @@ export class IModelTestUtils {
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
     const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
 
+    const modeledElementRef = new RelatedElement({id: modeledElementId});
+
     // The model
-    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
+    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
     const newModelId = outputImodel.models.insertModel(newModel);
     assert.isTrue(newModelId.isValid());
 
