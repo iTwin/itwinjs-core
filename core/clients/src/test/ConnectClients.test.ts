@@ -96,7 +96,7 @@ describe("ConnectClient", () => {
     };
 
     const projects: Project[] = await connectClient.getProjects(accessToken, queryOptions);
-    chai.expect(projects.length).equals(1);
+    chai.expect(projects.length > 0);
   });
 
   it("should get a project by name", async function (this: Mocha.ITestCallbackContext) {

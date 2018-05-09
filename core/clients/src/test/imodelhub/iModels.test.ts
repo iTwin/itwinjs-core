@@ -63,10 +63,6 @@ function mockPostNewSeedFile(imodelId: string, fileId: string, filePath: string)
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockUploadSeedFile(imodelId: string) {
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456`);
-}
-
 function mockPostUpdatedSeedFile(imodelId: string, fileId: string, filePath: string) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile", fileId);
   const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
@@ -88,14 +84,14 @@ function mockGetSeedFile(imodelId: string) {
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-function mockCreateiModel(projectId: string, imodelId: string, imodelName: string, filePath: string) {
+function mockCreateiModel(projectId: string, imodelId: string, imodelName: string, filePath: string, chunks = 1) {
   if (!TestConfig.enableMocks)
     return;
 
   const fileId = Guid.createValue();
   mockPostiModel(projectId, imodelId, imodelName);
   mockPostNewSeedFile(imodelId, fileId, filePath);
-  mockUploadSeedFile(imodelId);
+  utils.mockUploadFile(imodelId, chunks);
   mockPostUpdatedSeedFile(imodelId, fileId, filePath);
   mockGetSeedFile(imodelId);
 }
@@ -243,8 +239,8 @@ describe("iModelHub iModelHandler", () => {
   });
 
   it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
-    const filePath = utils.getMockSeedFilePath();
-    mockCreateiModel(projectId, Guid.createValue(), createIModelName, filePath);
+    const filePath = utils.assetsPath + "LargerSeedFile.bim";
+    mockCreateiModel(projectId, Guid.createValue(), createIModelName, filePath, 2);
     const iModel = await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, filePath);
 
     chai.expect(iModel.name).equals(createIModelName);
@@ -268,7 +264,7 @@ describe("iModelHub iModelHandler", () => {
       const fileId = Guid.createValue();
       mockGetIModelByName(projectId, imodelName, iModelId, false);
       mockPostNewSeedFile(iModelId, fileId, filePath);
-      mockUploadSeedFile(iModelId);
+      utils.mockUploadFile(iModelId, 1);
       mockPostUpdatedSeedFile(iModelId, fileId, filePath);
       mockGetSeedFile(iModelId);
     }

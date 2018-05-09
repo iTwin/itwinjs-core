@@ -66,7 +66,7 @@ export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken:
   return { modelId, spatialCategoryId };
 }
 
-describe("BriefcaseManager", () => {
+describe.only("BriefcaseManager", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;
@@ -548,7 +548,7 @@ describe("BriefcaseManager", () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
-    const iModelName = "CodesPushTest";
+    const iModelName = "CodesConflictTest";
     const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
