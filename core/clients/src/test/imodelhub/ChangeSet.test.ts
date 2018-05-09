@@ -76,10 +76,6 @@ describe("iModelHub ChangeSetHandler", () => {
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
   }
 
-  function mockUploadChangeSet(imodelId: string) {
-    ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456`);
-  }
-
   function mockPostUpdatedChangeSet(imodelId: string, changeSet: ChangeSet) {
     const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet", changeSet.id!);
 
@@ -99,7 +95,7 @@ describe("iModelHub ChangeSetHandler", () => {
       return;
 
     mockPostNewChangeSet(imodelId, changeSet);
-    mockUploadChangeSet(imodelId);
+    utils.mockUploadFile(imodelId, 1);
     mockPostUpdatedChangeSet(imodelId, changeSet);
   }
 
