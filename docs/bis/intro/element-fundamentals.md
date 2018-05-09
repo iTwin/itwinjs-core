@@ -118,7 +118,7 @@ The largest advantage of JSON properties is that they do not require any schema 
 
 Each Element *lives in* a single Model. The Model *owns* the Element and Models cannot be deleted unless all of their Elements are first deleted. Models provide context and scope for their Elements.
 
-Every `Model` models some `Element`. This is a [key principle of BIS](model-hierarchy.md) to support modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single *root Subject* for the entire BIS Repository.
+Every `Model` models some `Element`. This is the basic building block of the [Information Hierarchy](./information-hierarchy.md), which is a key principle of BIS and supports modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single [Root Subject](./glossary.md#root-subject) for the entire BIS Repository.
 
 There is one exception to the “Every Model models an Element” rule: There is exactly one RepositoryModel in every BIS Repository which does not Model another Element (at least not another Element in the same BIS Repository). This RepositoryModel is at the top of the Model/Element hierarchy.
 
@@ -232,7 +232,7 @@ See also the IParentElement and ISubModeledElement section below.
 
 ## IParentElement and ISubModeledElement
 
-This section tries not to repeat the material in [Model Fundamentals](./model-fundamentals) and [Information Hierarchy](./model-hierarchy).
+This section tries not to repeat the material in [Model Fundamentals](./model-fundamentals.md) and [Information Hierarchy](./information-hierarchy.md).
 If you have questions about how Elements breakdown into Models, you may want to skim those chapters.
 
 There are two mixins that declare and define key behaviors of an Element:

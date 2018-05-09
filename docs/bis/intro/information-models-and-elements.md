@@ -20,7 +20,7 @@ Domain and application developers should start with the most appropriate subclas
 
 ### InformationRecordElement
 
-InformationRecordElement is an abstract base class for modeling information records. 
+InformationRecordElement is an abstract base class for modeling information records.
 InformationRecordElement is the default choice if no other subclass of InformationContentElement makes sense.
 For example, importing a spreadsheet may cause InformationRecordElements to be created.
 
@@ -56,11 +56,11 @@ Example usages:
 
 ### InformationPartitionElement
 
-InformationPartitionElement is an abstract base class for elements that indicate that there is a new modeling perspective within the overall repository information hierarchy. 
+InformationPartitionElement is an abstract base class for elements that indicate that there is a new modeling perspective within the overall repository information hierarchy.
 An InformationPartitionElement is always parented to a Subject and broken down by a Model.
 An InformationPartitionElement is always contained by the RepositoryModel.
 
-See [Information Hierarchy](model-hierarchy) for more details.
+See [Information Hierarchy](./information-hierarchy.md) for more details.
 
 ### InformationReferenceElement
 
@@ -93,7 +93,7 @@ LinkElement base classes include:
 Subjects are Elements that are used to identify things that the repository is about.
 Subjects are logical references to those external things.
 
-See [Information Hierarchy](model-hierarchy) for more details.
+See [Information Hierarchy](./information-hierarchy.md) for more details.
 
 ### Document
 

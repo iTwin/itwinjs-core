@@ -14,7 +14,7 @@ Typically each Analysis Model is relevant to only one type of analysis. A partic
 
 ## Analysis Elements
 
-As discussed in [Element Fundamentals](element-fundamentals), Analysis Elements are simplified representations of real physical infrastructure. An example of an Analysis Element is a Pipe Segment (not a physical pipe) in a hydraulic analysis model. This Pipe Segment might have a simple 2D line segment location, together with a set of hydraulic analysis properties; it would also likely have relationships to other hydraulic Analysis Elements in the network being analyzed.
+As discussed in [Element Fundamentals](./element-fundamentals.md), Analysis Elements are simplified representations of real physical infrastructure. An example of an Analysis Element is a Pipe Segment (not a physical pipe) in a hydraulic analysis model. This Pipe Segment might have a simple 2D line segment location, together with a set of hydraulic analysis properties; it would also likely have relationships to other hydraulic Analysis Elements in the network being analyzed.
 
 Analysis Elements must always be contained in Analysis Models. Analysis Elements will frequently have relationships to the Physical Elements that model the same real world infrastructure. This relationship, however, is not always 1:1.
 
@@ -24,7 +24,7 @@ Currently, only AnalysisElement3d is defined. This class is for Analysis Element
 
 ## Analysis Models
 
-As discussed in [Model Fundamentals](model-fundamentals), Analysis Models exist to facilitate the analyses of infrastructure. Analysis Models contain – directly or indirectly - all of the information necessary for one or more analysis of single type. For some analysis domains, it may be appropriate to have more than one AnalysisModel for a PhysicalModel.
+As discussed in [Model Fundamentals](./model-fundamentals.md), Analysis Models exist to facilitate the analyses of infrastructure. Analysis Models contain – directly or indirectly - all of the information necessary for one or more analysis of single type. For some analysis domains, it may be appropriate to have more than one AnalysisModel for a PhysicalModel.
 
 <!-- WIP: References to classes that do not exist
 Currently, only AnalysisModel3d is defined. This class is for Analysis Models that relate to real-world 3D space.
@@ -39,7 +39,7 @@ Analysis Models contain Analysis Elements, but they may also contain other types
 As Analysis Models are used to assist in the design or understanding of physical infrastructure, Analysis Models are often linked to PhysicalModels.
 
 <!--
-TODO: Finish this section. Likely reference [Model Hierarchy](model-hierarchy).
+TODO: Finish this section. Likely reference [Information Hierarchy](./information-hierarchy.md).
 -->
 
 ## Typical Analysis Model Workflows

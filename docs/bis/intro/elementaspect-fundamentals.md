@@ -16,7 +16,7 @@ There are three core ElementAspect classes in this class hierarchy:
   - `ElementUniqueAspect`
   - `ElementMultiAspect`
 
-All three of these classes are abstract and therefore never instantiated. 
+All three of these classes are abstract and therefore never instantiated.
 ElementAspect is not expected to ever have more than the two subclasses shown here.
 There are and will be many subclasses of ElementUniqueAspect and ElementMultiAspect.
 
@@ -47,7 +47,7 @@ ElementOwnsUniqueAspect and ElementOwnsMultiAspects relationships are used to de
 
 For example, A Fireproofing ElementAspect might have a Thickness property and a relationship to a FireproofingMaterial. As the relationship is “outward”, it would not be possible to find all the Fireproofing aspects that are related to a FireproofingMaterial without searching.
 
-General behaviors and uses of BIS relationships are discussed in [Relationship Fundamentals](relationship-fundamentals).
+General behaviors and uses of BIS relationships are discussed in [Relationship Fundamentals](./relationship-fundamentals.md).
 
 ## Common Strategies Involving ElementAspects
 
