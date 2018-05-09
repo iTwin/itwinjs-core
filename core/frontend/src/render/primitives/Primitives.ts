@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, SortedArray } from "@bentley/bentleyjs-core";
 import { GraphicBuilderCreateParams } from "../GraphicBuilder";
 
 export namespace ToleranceRatio {
@@ -36,7 +36,7 @@ export class GeometryOptions {
 }
 
 export class Triangle {
-  public readonly indices = [0, 0, 0];
+  public readonly indices = new Uint32Array(3);
   public readonly visible = [true, true, true];
   public singleSided: boolean;
 
@@ -99,5 +99,66 @@ export class TriangleList {
     }
 
     return triangle;
+  }
+}
+
+export class TriangleKey {
+  private readonly _sortedIndices = new Uint32Array(3);
+
+  public constructor(triangle: Triangle) {
+    const index = triangle.indices;
+    const sorted = this._sortedIndices;
+
+    if (index[0] < index[1]) {
+      if (index[0] < index[2]) {
+        sorted[0] = index[0];
+        if (index[1] < index[2]) {
+          sorted[1] = index[1];
+          sorted[2] = index[2];
+        } else {
+          sorted[1] = index[2];
+          sorted[2] = index[1];
+        }
+      } else {
+        sorted[0] = index[2];
+        sorted[1] = index[0];
+        sorted[2] = index[1];
+      }
+    } else {
+      if (index[1] < index[2]) {
+        sorted[0] = index[1];
+        if (index[0] < index[2]) {
+          sorted[1] = index[0];
+          sorted[2] = index[2];
+        } else {
+          sorted[1] = index[2];
+          sorted[2] = index[0];
+        }
+      } else {
+        sorted[0] = index[2];
+        sorted[1] = index[1];
+        sorted[2] = index[0];
+      }
+    }
+
+    assert(sorted[0] < sorted[1]);
+    assert(sorted[1] < sorted[2]);
+  }
+
+  public compare(rhs: TriangleKey): number {
+    let diff = 0;
+    for (let i = 0; i < 3; i++) {
+      diff = this._sortedIndices[i] - rhs._sortedIndices[i];
+      if (0 !== diff)
+        break;
+    }
+
+    return diff;
+  }
+}
+
+export class TriangleSet extends SortedArray<TriangleKey> {
+  public constructor() {
+    super((lhs: TriangleKey, rhs: TriangleKey) => lhs.compare(rhs));
   }
 }
