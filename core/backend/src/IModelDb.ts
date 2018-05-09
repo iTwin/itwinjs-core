@@ -810,7 +810,7 @@ export class IModelDbElements {
    * For a more complex lookup, you can execute an ECSQL select statement.
    * *Example:*
    * ``` ts
-   * [[include:Element.queryElementIdByCodeValue]]
+   * [[include:ECSQL-backend-queries.select-element-by-code-value]]
    * ```
    * @param code The code to look for
    * @returns The element that uses the code or undefined if the code is not used.
