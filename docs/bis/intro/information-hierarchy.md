@@ -1,6 +1,6 @@
 # Information Hierarchy
 
-<!-- TODO: Some of the information in this chapter will likely be moved to [Model Fundamentals](model-fundamentals). It will be natural to have links from this chapter to that one. -->
+<!-- TODO: Some of the information in this chapter will likely be moved to [Model Fundamentals](./model-fundamentals.md). It will be natural to have links from this chapter to that one. -->
 
 The information in a BIS repository is arranged in a hierarchy that is governed by rules. Some of the rules are explicitly defined by the schemas, and other rules require the applications that are creating data to follow standards.
 
@@ -8,7 +8,7 @@ The hierarchies in BIS repositories are intended to facilitate both human and so
 
 ## Hierarchy Constructs
 
-As was explained in [Model Fundamentals](model-fundamentals), there are only three mechanisms available in BIS to create a hierarchy:
+As was explained in [Model Fundamentals](./model-fundamentals.md), there are only three mechanisms available in BIS to create a hierarchy:
 
 * A Model can contain Elements
 * An Element can own child Elements
@@ -91,7 +91,7 @@ InformationPartitionElements are used to "partition" a Subject into different pe
 
 InformationPartitionElements exist to record that a Subject is being modeled from a perspective and to be the Element that breaks down into a Model matching the correct perspective. For example a PhysicalPartition breaks down into a PhysicalModel.
 
-A single Subject can be modeled from multiple perspectives (physical, functional, informational, etc.), and hence can have multiple child InformationPartitionElements.  
+A single Subject can be modeled from multiple perspectives (physical, functional, informational, etc.), and hence can have multiple child InformationPartitionElements.
 
 All InformationPartitionElements are contained by the RepositoryModel. They are not used elsewhere in the information hierarchy.
 
@@ -101,30 +101,26 @@ The top of a physical hierarchy starts with a `PhysicalModel` that models a `Phy
 It continues when another PhysicalModel breaks down a `PhysicalElement`.
 For example, a plant physical layout model can break down a PhysicalElement that represents the overall plant.
 
-See [Physical Models and Elements](physical-models-and-element) for details of physical modeling.
+See [Physical Models and Elements](./physical-models-and-elements.md) for details of physical modeling.
 
 <!-- TODO
 ### FunctionalPartitions
-
 TODO: write text
-
-See [Functional Models and Elements](functional-models-and-elements) for details of physical modeling.
+See [Functional Models and Elements](./functional-models-and-elements.md) for details of physical modeling.
 -->
 
 <!-- TODO
 ### AnalysisPartitions
-
 TODO: write text
-
-See [Analysis Models and Elements](functional-models-and-elements) for details of physical modeling.
+See [Analysis Models and Elements](./functional-models-and-elements.md) for details of physical modeling.
 -->
 
 ### DefinitionPartition
 
 The top of a definition hierarchy starts with a `DefinitionModel` that models a `DefinitionPartition`.
 This allows `DefinitionElements` to be organized by how they relate to the parent `Subject` of the `DefinitionPartition`.
-
-<!-- TODO: AB> can there be multiple definition partitions? How do we tell them apart. -->
+The can be multiple `DefinitionPartition` Elements and corresponding `DefinitionModel` Models so that definitions (instances of `DefinitionElement`) can be organized by source, discipline, or other criteria.
+Each `DefinitionPartition` is identified by its [Code](./glossary.md#code).
 
 ### DocumentPartition
 
@@ -182,5 +178,5 @@ TODO: show organization for an iModel created by both:
 
 TODO
 
-![Model Hierarchy](./media/TBD-model-hierarchy.png)
+![Information Hierarchy](./media/TBD-information-hierarchy.png)
 -->

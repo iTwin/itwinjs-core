@@ -20,7 +20,7 @@
 
 ## [Schemas (“Domains”)](./intro/schemas-domains.md)
 
-## [Model Hierarchy](./intro/model-hierarchy.md)
+## [Information Hierarchy](./intro/information-hierarchy.md)
 
 ## [Physical Models and Elements](./intro/physical-models-and-elements.md)
 

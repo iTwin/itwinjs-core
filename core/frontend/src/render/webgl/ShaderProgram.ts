@@ -210,7 +210,7 @@ export class ShaderProgram implements IDisposable {
     const vert = this.compileShader(GL.ShaderType.Vertex);
     const frag = this.compileShader(GL.ShaderType.Fragment);
     if (undefined !== vert && undefined !== frag) {
-      if (this.linkProgram(vert, frag)) {
+      if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms) && this.compileAttributes()) {
         this._status = CompileStatus.Success;
         return true;
       }
@@ -235,9 +235,7 @@ export class ShaderProgram implements IDisposable {
     params.context.useProgram(this._glProgram);
 
     for (const uniform of this._programUniforms) {
-      if (!uniform.bind(params)) {
-        return false;
-      }
+      uniform.bind(params);
     }
 
     return true;
@@ -272,6 +270,24 @@ export class ShaderProgram implements IDisposable {
   public addAttribute(name: string, binding: BindAttribute) {
     assert(this.isUncompiled);
     this._attributes.push(new Attribute(name, binding));
+  }
+
+  private compileUniforms<T extends Uniform>(uniforms: T[]): boolean {
+    for (const uniform of uniforms) {
+      if (!uniform.compile(this))
+        return false;
+    }
+
+    return true;
+  }
+
+  private compileAttributes(): boolean {
+    for (const attribute of this._attributes) {
+      if (!attribute.compile(this))
+        return false;
+    }
+
+    return true;
   }
 }
 

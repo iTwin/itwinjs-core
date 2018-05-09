@@ -6,7 +6,7 @@ The variability and potential magnitude of schema rules lead to the need for qua
 
 BIS is defined using EC v3. EC v3 is a more clearly defined and rigorous version of the EC that has been used widely in Bentley over the past 10+ years.
 
-BIS is modularized into a set of interrelated *domains* (each expressed in a separate ECSchema) that are consistent, coordinated and constrained to maximize the functionality of the entire BIS-based ecosystem. Some flexibility that is available in "raw" EC is not available in BIS. For example, all ECClasses defined in domain ECSchemas (other than BisCore itself) are required to sub-class from some ECClass in BisCore. Other BIS rules are documented at [BIS Schema Validation](bis-schema-validation).
+BIS is modularized into a set of interrelated *domains* (each expressed in a separate ECSchema) that are consistent, coordinated and constrained to maximize the functionality of the entire BIS-based ecosystem. Some flexibility that is available in "raw" EC is not available in BIS. For example, all ECClasses defined in domain ECSchemas (other than BisCore itself) are required to sub-class from some ECClass in BisCore. Other BIS rules are documented at [BIS Schema Validation](./bis-schema-validation.md).
 
 Unless noted otherwise, all references to “schema”, “class” and “property” in this document refer to ECSchema, ECClass and ECProperty.
 

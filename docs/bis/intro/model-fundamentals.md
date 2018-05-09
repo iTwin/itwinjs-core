@@ -36,7 +36,7 @@ Model its identity. The value of the model's Id matches the value of the modeled
 The Model is related to its modeled Element via the `bis:ModelModelsElement` relationship.
 Also, a Model does not store a name of its own. Instead, it its name comes from the `CodeValue` of its modeled element.
 
-See [Information Hierarchy](model-hierarchy) for more details.
+See [Information Hierarchy](./information-hierarchy.md) for more details.
 
 <!-- WIP
 ## Rules

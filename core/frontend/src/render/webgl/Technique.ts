@@ -54,8 +54,7 @@ export abstract class VariedTechnique implements Technique {
   public compileShaders(): boolean {
     let allCompiled = true;
     for (const program of this._programs) {
-      if (program !== undefined) // ###TODO: Related to 'program already exists' assert?
-        if (!program.compile()) allCompiled = false;
+      if (!program.compile()) allCompiled = false;
     }
 
     return allCompiled;
@@ -76,7 +75,7 @@ export abstract class VariedTechnique implements Technique {
   protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void { this.addProgram(flags, builder.buildProgram(gl)); }
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
     const index = this.getShaderIndex(flags);
-    // assert(undefined === this._programs[index], "program already exists"); // ###TODO: Why is this assert happening?
+    assert(undefined === this._programs[index], "program already exists");
     this._programs[index] = program;
   }
 
@@ -100,8 +99,7 @@ export abstract class VariedTechnique implements Technique {
   }
 }
 
-// ###TODO this doesn't need to be exported - only exporting temporarily because otherwise compiler complains it is unused otherwise.
-export class SurfaceTechnique extends VariedTechnique {
+class SurfaceTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
@@ -129,7 +127,11 @@ export class SurfaceTechnique extends VariedTechnique {
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
       assert(flags.hasFeatures);
-      return SurfaceTechnique.kHilite;
+      let hIndex = SurfaceTechnique.kHilite;
+      if (flags.hasClipVolume) {
+        hIndex += SurfaceTechnique.kClip;
+      }
+      return hIndex;
     }
 
     let index = flags.isTranslucent ? SurfaceTechnique.kTranslucent : SurfaceTechnique.kOpaque;
