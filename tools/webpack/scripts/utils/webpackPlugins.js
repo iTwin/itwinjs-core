@@ -225,7 +225,7 @@ LicenseExtractor.prototype.getLicenseText = function(packageJson, licenseName,  
       .replace(/\r\n/g, '\n');
   }
 
-  baseGetLicenseText.call(this, packageJson, licenseName,  modulePrefix);
+  return baseGetLicenseText.call(this, packageJson, licenseName,  modulePrefix);
 }
 
 module.exports = {
