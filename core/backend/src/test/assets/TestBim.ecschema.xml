@@ -30,12 +30,22 @@
           <Class class="TestPhysicalObject"/>
       </Target>
   </ECRelationshipClass>
-  
+
   <ECEntityClass typeName="TestPhysicalObject" >
     <BaseClass>bis:PhysicalElement</BaseClass>
     <ECNavigationProperty propertyName="relatedElement" relationshipName="TestPhysicalObjectRelatedToTestPhysicalObject" direction="Forward" readOnly="True"/>
     <ECProperty propertyName="longProp" typeName="long" displayLabel="an int64_t value" />
     <ECProperty propertyName="intProperty" typeName="int" displayLabel="an int32 value" />
-</ECEntityClass>
-  
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="TestModelModelsElement" strength="embedding" strengthDirection="Backward" modifier="None">
+      <BaseClass>bis:ModelModelsElement</BaseClass>
+      <Source multiplicity="(0..1)" roleLabel="models" polymorphic="true">
+          <Class class="bis:Model"/>
+      </Source>
+      <Target multiplicity="(0..1)" roleLabel="is modeled by" polymorphic="true">
+          <Class class="bis:ISubModeledElement" />
+      </Target>
+  </ECRelationshipClass>
+
 </ECSchema>

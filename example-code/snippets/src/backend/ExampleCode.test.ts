@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
+import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 
@@ -46,8 +46,10 @@ describe("Example Code", () => {
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
     const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
 
+    const modeledElementRef = new RelatedElement({id: modeledElementId});
+
     // The model
-    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementId, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
+    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
     const newModelId = outputImodel.models.insertModel(newModel);
     assert.isTrue(newModelId.isValid());
 

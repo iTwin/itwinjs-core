@@ -47,7 +47,7 @@ function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
 export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
   // Create a new physical model.
   let modelId: Id64;
-  [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
@@ -279,7 +279,7 @@ describe("BriefcaseManager", () => {
     let el1: Id64;
     // first. Create a new model, category, and element.  =>  #0
     if (true) {
-      [, modelId] = IModelTestUtils.createAndInsertPhysicalModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);
+      [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);
       const dictionary: DictionaryModel = first.models.getModel(IModel.dictionaryId) as DictionaryModel;
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
@@ -522,7 +522,7 @@ describe("BriefcaseManager", () => {
     timer = new Timer("make local changes");
     let newModelId: Id64;
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, code, true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
@@ -578,7 +578,7 @@ describe("BriefcaseManager", () => {
 
     timer = new Timer("make local changes");
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, code, true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
@@ -636,7 +636,7 @@ describe("BriefcaseManager", () => {
 
     // Create a new physical model.
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
@@ -724,7 +724,7 @@ describe("BriefcaseManager", () => {
     const dictionary: DictionaryModel = iModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
 
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(iModel, Code.createEmpty(), true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
 
     const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert();
 
