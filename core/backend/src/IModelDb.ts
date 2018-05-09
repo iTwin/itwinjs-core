@@ -670,7 +670,6 @@ export class IModelDbModels {
   }
 
   /** Get the Model with the specified identifier.
-   * See [[IModelDbElements.queryElementIdByCode]] for an example of how to look up an element by Code. You can then find its subModel.
    * @param modelId The Model identifier.
    * @throws [[IModelError]]
    */
@@ -681,7 +680,7 @@ export class IModelDbModels {
   }
 
   /**
-   * Read the properties for a Model as a json string
+   * Read the properties for a Model as a json string.
    * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
    * @return a json string with the properties of the model.
    */
@@ -693,7 +692,8 @@ export class IModelDbModels {
   }
 
   /** Get the sub-model of the specified Element.
-   * @param elementId The Element identifier.
+   * See [[IModelDbElements.queryElementIdByCode]] for more on how to find an element by Code.
+   * @param modeledElementId Identifies the modeled element.
    * @throws [[IModelError]]
    */
   public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
@@ -802,14 +802,19 @@ export class IModelDbElements {
   }
 
   /**
-   * Query for the DgnElementId of the element that has the specified code
+   * Query for the DgnElementId of the element that has the specified code.
+   * This method is for the case where you know the element's Code.
+   * If you only know the code *value*, then in the simplest case, you can query on that
+   * and filter the results.
+   * In the simplest case, call [[IModelDb.queryEntityIds]], specifying the code value in where clause of the query params.
+   * For a more complex lookup, you can execute an ECSQL select statement.
+   * *Example:*
+   * ``` ts
+   * [[include:Element.queryElementIdByCodeValue]]
+   * ```
    * @param code The code to look for
    * @returns The element that uses the code or undefined if the code is not used.
    * @throws IModelError if the code is invalid
-   * *Example:*
-   * ``` ts
-   * [[include:Model.lookupByCode]]
-   * ```
    */
   public queryElementIdByCode(code: Code): Id64 | undefined {
     if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);

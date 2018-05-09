@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { BisCore, Element, InformationPartitionElement, IModelDb, ConcurrencyControl, GeometricElement3d, ECSqlStatement, PhysicalPartition, Model } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
-import { Id64, DbResult } from "@bentley/bentleyjs-core";
+import { Id64, Id64Set, DbResult } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib/Token";
 import { Range3dProps, Range3d } from "@bentley/geometry-core";
 
@@ -163,11 +163,46 @@ describe("Example Code", () => {
   });
 
   it("should look up model by code", () => {
-    // __PUBLISH_EXTRACT_START__ Model.lookupByCode
+    // __PUBLISH_EXTRACT_START__ Element.queryElementIdByCodeValue
     // A Model does not have a code. The element that it models might. So, we first
     // look up the modeled element.
-    // In this example, we are looking for a PhysicalModel, and so its modeled element will be a PhysicalPartition.
-    // In this particular example, the partition's CodeValue happens to be "Physical".
+
+    // Suppose we have the following breakdown structure:
+    // * The root subject
+    // * * Subject with CodeValue="Subject1"
+    // * * * PhysicalPartition with CodeValue ="Physical"
+
+    // Suppose we want to look up the PhysicalPartition whose code value is "Physical".
+    // We could write the following query, to find this partition as a child of the
+    // "Subject1" subject element. Note that we specify the BisCore class names
+    // of both the parent subject and the child partition. That makes the query very
+    // specific. It's unlikely that it will turn up any but the element that we want.
+    const partitionIds: Id64Set = iModel.withPreparedStatement(`
+      select
+        partition.ecinstanceid
+      from
+        bis.PhysicalPartition as partition,
+        (select ecinstanceid from bis.Subject where CodeValue=:parentName) as parent
+      where
+        partition.codevalue=:partitionName and partition.parent.id = parent.ecinstanceid;
+    `, (stmt: ECSqlStatement) => {
+        stmt.bindString("parentName", "Subject1");
+        stmt.bindString("partitionName", "Physical");
+        const ids: Id64Set = new Set<string>();
+        while (stmt.step() === DbResult.BE_SQLITE_ROW)
+          ids.add(stmt.getValue(0).getId());
+        return ids;
+      });
+
+    assert.isNotEmpty(partitionIds);
+    assert.equal(partitionIds.size, 1);
+    for (const eidStr of partitionIds) {
+      assert.equal(iModel.elements.getElement(eidStr).code.getValue(), "Physical");
+    }
+
+    // If we are sure that the name of the PhysicalPartition is unique within the
+    // iModel or if we have some way of filtering results, we could do a direct query
+    // for just its code value using the IModelDb.queryEntityIds convenience method.
     for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
       // Once we have the modeled element, we ask for its submodel -- that is that model.
       const itsModel: Model = iModel.models.getSubModel(new Id64(eidStr));
