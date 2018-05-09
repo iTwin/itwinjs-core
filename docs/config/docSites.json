@@ -1,11 +1,11 @@
 {
-  "getting-started": {
-    "docSiteId": 1,
-    "displayName": "Getting Started"
-  },
   "overview": {
-    "docSiteId": 2,
+    "docSiteId": 1,
     "displayName": "Overview"
+  },
+  "getting-started": {
+    "docSiteId": 2,
+    "displayName": "Getting Started"
   },
   "reference": {
     "docSiteId": 3,
@@ -29,11 +29,11 @@
       "reference"
     ],
     "headerTabs": {
-      "Getting Started": {
-        "docSite": "getting-started"
-      },
       "Overview": {
         "docSite": "overview"
+      },
+      "Getting Started": {
+        "docSite": "getting-started"
       },
       "BIS": {
         "docSite": "bis"
