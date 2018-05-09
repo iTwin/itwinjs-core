@@ -173,6 +173,7 @@ const config = {
   ],
   node: {
     __filename: true,
+    __dirname: true,
   }
 };
 
