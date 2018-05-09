@@ -22,7 +22,6 @@ describe("Useful ECSQL spatial queries", () => {
   it("should execute spatial queries", () => {
     let modelId: Id64 | undefined;
     for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
-      // Once we have the modeled element, we ask for its submodel -- that is that model.
       modelId = iModel.models.getSubModel(new Id64(eidStr)).id;
     }
     assert(modelId !== undefined);

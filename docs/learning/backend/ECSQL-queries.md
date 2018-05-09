@@ -6,3 +6,4 @@ The following ECSQL select statements are examples of useful queries that an app
 ``` ts
 [[include:ECSQL-backend-queries.select-element-by-code-value]]
 ```
+As an alternative, you can use the [IModelDb.queryEntityIds]($backend) convenience method for simple cases.

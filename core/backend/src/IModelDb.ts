@@ -336,6 +336,11 @@ export class IModelDb extends IModel {
    * Query for a set of entity ids, given an EntityQueryParams
    * @param params the EntityQueryParams for query
    * @returns an Id64Set with results of query
+   *
+   * *Example:*
+   * ``` ts
+   * [[include:ECSQL-backend-queries.select-element-by-code-value-using-queryEntityIds]]
+   * ```
    */
   public queryEntityIds(params: EntityQueryParams): Id64Set {
     let sql = "SELECT ECInstanceId FROM ";
