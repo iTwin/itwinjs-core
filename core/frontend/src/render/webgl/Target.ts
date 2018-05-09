@@ -496,7 +496,15 @@ export abstract class Target extends RenderTarget {
     return new ColorInfo(this._visibleEdgeOverrides.color!);
   }
 
+  private _doDebugPaint: boolean = false;
+  protected debugPaint(): void { }
+
   private paintScene(): void {
+    if (this._doDebugPaint) {
+      this.debugPaint();
+      return;
+    }
+
     if (!this._dcAssigned) {
       return;
     }
@@ -587,6 +595,23 @@ export class OnScreenTarget extends Target {
     this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColor);
     return undefined !== this._blitGeom;
   }
+
+  protected debugPaint(): void {
+    const rect = this.viewRect;
+    const canvas = System.instance.canvas;
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
+    const gl = System.instance.context;
+    gl.viewport(0, 0, rect.width, rect.height);
+    gl.clearColor(1, 0, 1, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const context = this._canvas.getContext("2d");
+    assert(null !== context);
+    context!.drawImage(canvas, 0, 0);
+  }
+
   protected _beginPaint(): void {
     assert(undefined !== this._fbo);
 
