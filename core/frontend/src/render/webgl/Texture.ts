@@ -89,7 +89,7 @@ export class TextureHandle implements IDisposable {
   /** Binds the specified texture to a uniform sampler2D */
   public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
     this.bindTexture(unit, tex);
-    uniform.setUniform1i(unit);
+    uniform.setUniform1i(unit - TextureUnit.Zero);
   }
 
   /**

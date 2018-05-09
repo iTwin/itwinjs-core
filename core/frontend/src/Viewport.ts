@@ -6,7 +6,7 @@ import {
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, StopWatch } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -16,10 +16,10 @@ import { DecorateContext } from "./ViewContext";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { Decorations, DecorationList, RenderTarget } from "./render/System";
+import { Decorations, DecorationList, RenderTarget, RenderPlan } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
-import { ChangeDecorationsTask, TaskPriority, SetHiliteTask, OverrideFeatureSymbologyTask } from "./render/Task";
 import { ViewFlags } from "@bentley/imodeljs-common";
+import { FeatureSymbology } from "./render/FeatureSymbology";
 
 /** viewport synchronization flags */
 export class SyncFlags {
@@ -294,9 +294,11 @@ export class Viewport {
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
   public invalidateDecorations() { }
 
-  public changeDynamics(_list: DecorationList | undefined, _priority: number): void {
-    //    RenderQueue().AddTask(* new ChangeDynamicsTask(* GetRenderTarget(), priority, list));
-    this.invalidateDecorations();
+  public changeDynamics(dynamics: DecorationList | undefined): void {
+    if (this.isActive) {
+      this.target.changeDynamics(dynamics);
+      this.invalidateDecorations();
+    }
   }
 
   /** change the cursor for this Viewport */
@@ -1368,18 +1370,13 @@ export class Viewport {
     return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
   }
 
-  /** [WIP] */
-  public renderFrame(priority: TaskPriority, plan: UpdatePlan): boolean {
-    const sync = this.sync;
-    const view = this.view;
-    const renderQueue = IModelApp.renderQueue;
-    const target = this.target;
-
+  public renderFrame(plan: UpdatePlan): boolean {
     if (!this.isActive)
       return true;
 
-    const timer = new StopWatch();
-    timer.start();
+    const sync = this.sync;
+    const view = this.view;
+    const target = this.target;
 
     this.animate();
 
@@ -1387,18 +1384,16 @@ export class Viewport {
     view.onRenderFrame();
 
     let isRedrawNeeded = sync.isRedrawPending;
-    sync.invalidateRedrawPending();  // || m_animator.IsValid(); If animator is active it will have changed frustum thereby invalidating render plan...
+    sync.invalidateRedrawPending();
 
     if (view.isSelectionSetDirty) {
-      const task = new SetHiliteTask(target, priority, view);
-      renderQueue.addTask(task);
+      target.setHiliteSet(view.iModel.hilited);
       view.setSelectionSetDirty(false);
       isRedrawNeeded = true;
     }
 
     if (view.areFeatureOverridesDirty) {
-      const task = new OverrideFeatureSymbologyTask(target, priority, view);
-      renderQueue.addTask(task);
+      target.overrideFeatureSymbology(new FeatureSymbology.Overrides(view));
       view.setFeatureOverridesDirty(false);
       isRedrawNeeded = true;
     }
@@ -1407,6 +1402,7 @@ export class Viewport {
       this.setupFromView();
 
     if (!sync.isValidScene) {
+      // ###TODO: create scene...
       // view.requestScene(this, plan, requests);
       // const scene = view.useReadyScene();
       // const task = new ChangeSceneTask(priority, target, scene, view.activeVolume);
@@ -1417,41 +1413,31 @@ export class Viewport {
     }
 
     if (!sync.isValidRenderPlan) {
-      // this.changeRenderPlan(priority);
+      target.changeRenderPlan(new RenderPlan(this));
       sync.setValidRenderPlan();
       isRedrawNeeded = true;
     }
 
     if (!sync.isValidDecorations) {
-      const task = new ChangeDecorationsTask(target, priority);
-      this.prepareDecorations(plan, task.decorations);
-      renderQueue.addTask(task);
+      const decorations = new Decorations();
+      this.prepareDecorations(plan, decorations);
+      target.changeDecorations(decorations);
       isRedrawNeeded = true;
     }
 
+    // ###TODO: Flash...
     // if (this.processFlash()) {
     //   const task = new SetFlashTask(priority, target);
     //   renderQueue.addTask(task);
     //   isRedrawNeeded = true;
     // }
 
-    if (!isRedrawNeeded)
-      return true;
-
-    // if (renderQueue.hasActiveOrPending(Operation.RenderFrame, target)) {
-    //   sync.setRedrawPending();
-    //   return true;
-    // }
-
-    timer.stop();
-
-    // const task = new RenderFrameTask(priority, target, timer.elapsedSeconds);
-    // renderQueue.addTask(task);
+    if (isRedrawNeeded)
+      this.target.drawFrame();
 
     return true;
   }
 
-  /** [WIP] */
   public prepareDecorations(plan: UpdatePlan, decorations: Decorations): void {
     this.sync.setValidDecorations();
     if (plan.wantDecorators) {
@@ -1460,9 +1446,9 @@ export class Viewport {
     }
   }
 
-  /** [WIP] */
   public callDecorators(context: DecorateContext): void {
     this.view.drawDecorations(context);
+    // ###TODO: Decorations...
     // this.view.drawGrid(context);
     // if (context.viewFlags.showAcsTriad())
     //   this.getAuxCoordSystem()

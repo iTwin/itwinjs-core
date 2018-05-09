@@ -12,7 +12,6 @@ import { I18N, I18NOptions } from "./Localization";
 import { ToolRegistry } from "./tools/Tool";
 import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-common";
 import { NotificationManager } from "./NotificationManager";
-import { RenderQueue } from "./render/Task";
 import { System } from "./render/webgl/System";
 import { RenderSystem } from "./render/System";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
@@ -33,7 +32,6 @@ import * as idleTool from "./tools/IdleTool";
 export class IModelApp {
   protected static _initialized = false;
   protected static _renderSystem?: RenderSystem;
-  public static renderQueue: RenderQueue;
   public static viewManager: ViewManager;
   public static notifications: NotificationManager;
   public static toolAdmin: ToolAdmin;
@@ -99,7 +97,6 @@ export class IModelApp {
 
     // the startup function may have already allocated any of these members, so first test whether they're present
     if (!IModelApp._renderSystem && wantDisplayCapabilities) IModelApp._renderSystem = this.supplyRenderSystem();
-    if (!IModelApp.renderQueue) IModelApp.renderQueue = new RenderQueue();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
     if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
@@ -112,7 +109,6 @@ export class IModelApp {
       IModelApp._renderSystem.onInitialized();
     }
 
-    IModelApp.renderQueue.onInitialized();
     IModelApp.viewManager.onInitialized();
     IModelApp.toolAdmin.onInitialized();
     IModelApp.accuDraw.onInitialized();
