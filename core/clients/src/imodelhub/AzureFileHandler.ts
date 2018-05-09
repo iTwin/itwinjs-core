@@ -5,11 +5,13 @@ import { request, RequestOptions } from "../Request";
 import { IModelHubRequestError } from "./Errors";
 import { Config } from "../Config";
 import { Logger } from "@bentley/bentleyjs-core";
-import { URL } from "url";
-import * as Azure from "azure-storage";
 import { FileHandler } from "./FileHandler";
 import * as fs from "fs";
 import * as path from "path";
+import * as util from "util";
+
+const read = util.promisify(fs.read);
+const open = util.promisify(fs.open);
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -47,7 +49,7 @@ export class AzureFileHandler implements FileHandler {
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
 
-    const writeStream: fs.WriteStream = fs.createWriteStream(downloadToPathname, {encoding: "binary"});
+    const writeStream: fs.WriteStream = fs.createWriteStream(downloadToPathname, { encoding: "binary" });
 
     const options: RequestOptions = {
       method: "GET",
@@ -67,6 +69,31 @@ export class AzureFileHandler implements FileHandler {
     Logger.logTrace(loggingCategory, `Downloaded file from ${downloadUrl}`);
   }
 
+  /** Get encoded block id from its number */
+  private getBlockId(blockId: number) {
+    return Base64.encode(blockId.toString(16).padStart(5, "0"));
+  }
+
+  private async uploadChunk(uploadUrlString: string, fileDescriptor: number, blockId: number) {
+    const chunkSize = 4 * 1024 * 1024;
+    let buffer = new Buffer(chunkSize);
+    const bytesRead = (await read(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId)).bytesRead;
+    buffer = buffer.slice(0, bytesRead);
+
+    const options: RequestOptions = {
+      method: "PUT",
+      headers: {
+        "x-ms-blob-type": "BlockBlob",
+        "Content-Type": "application/octet-stream",
+        "Content-Length": buffer.length,
+      },
+      body: buffer,
+    };
+
+    const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
+    await request(uploadUrl, options);
+  }
+
   /**
    * Uploads a file to AzureBlobStorage for the iModelHub
    * @param uploadUrl URL to upload the fille to.
@@ -82,26 +109,28 @@ export class AzureFileHandler implements FileHandler {
     if (!fs.existsSync(uploadFromPathname))
       return Promise.reject(new Error("Could not find file at specified location: " + uploadFromPathname));
 
-    const uploadUrl = new URL(uploadUrlString);
-    const azureStorageHost = `${uploadUrl.protocol}//${uploadUrl.host}`;
-    const azureSasToken = uploadUrl.search.substr(1); // Omit the leading "?"
-    const split = uploadUrl.pathname.split(/[\/]/);
-    const azureContainerId = split[1];
-    const azureBlobId = split[2];
+    const fileSize = this.getFileSize(uploadFromPathname);
+    const file = await open(uploadFromPathname, "r");
+    const chunkSize = 4 * 1024 * 1024;
 
-    const blobService: Azure.BlobService = Azure.createBlobServiceWithSas(azureStorageHost, azureSasToken);
+    let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
+    for (let i = 0; i * chunkSize < fileSize; ++i) {
+      await this.uploadChunk(uploadUrlString, file, i);
+      blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
+    }
+    blockList += "</BlockList>";
 
-    return new Promise<void>((resolve, reject) => {
-      blobService.createBlockBlobFromLocalFile(azureContainerId, azureBlobId, uploadFromPathname, (error: Error): void => {
-        if (error) {
-          Logger.logError(loggingCategory, `Failed to upload file to ${uploadUrlString}: ${error.name} ${error.message}`);
-          reject(error);
-          return;
-        }
-        Logger.logTrace(loggingCategory, `Uploaded file to ${uploadUrlString}`);
-        resolve();
-      });
-    });
+    const options: RequestOptions = {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/xml",
+        "Content-Length": blockList.length,
+      },
+      body: blockList,
+    };
+
+    const uploadUrl = `${uploadUrlString}&comp=blocklist`;
+    await request(uploadUrl, options);
   }
 
   /**

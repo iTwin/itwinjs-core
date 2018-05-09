@@ -243,7 +243,7 @@ describe("iModelHub iModelHandler", () => {
   });
 
   it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
-    const filePath = utils.getMockSeedFilePath();
+    const filePath = utils.assetsPath + "LargerSeedFile.bim";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, filePath);
     const iModel = await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, filePath);
 

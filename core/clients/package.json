@@ -63,7 +63,6 @@
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
   ],
   "dependencies": {
-    "azure-storage": "^2.7.0",
     "clone": "^2.1.1",
     "deep-assign": "^2.0.0",
     "js-base64": "^2.4.0",
