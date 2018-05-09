@@ -544,7 +544,7 @@ describe.only("BriefcaseManager", () => {
     expect(codes.length > initialCodes.length);
   });
 
-  it("should push changes with code conflicts (#integration)", async () => {
+  it.skip("should push changes with code conflicts (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
