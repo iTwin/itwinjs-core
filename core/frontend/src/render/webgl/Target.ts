@@ -582,7 +582,9 @@ export class OnScreenTarget extends Target {
       return false;
     }
 
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(this._fbo.getColor(0), TechniqueId.CopyColor);
+    const tx = this._fbo.getColor(0);
+    assert(undefined !== tx.getHandle());
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColor);
     return undefined !== this._blitGeom;
   }
   protected _beginPaint(): void {

@@ -186,7 +186,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands = new Array<DrawCommands>(RenderPass.COUNT);
+  private readonly _commands: DrawCommands[] = [ [], [], [], [], [], [], [], [], [] ];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -209,6 +209,7 @@ export class RenderCommands {
   constructor(target: Target, stack: BranchStack) {
     this.target = target;
     this._stack = stack;
+    assert(RenderPass.COUNT === this._commands.length);
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {

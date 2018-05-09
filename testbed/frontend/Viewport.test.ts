@@ -4,10 +4,12 @@
 import { assert, expect } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
+// WIP import { Cartographic, FontType, FontMap, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
+// WIP import { RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -168,7 +170,7 @@ describe("Cartographic tests", () => {
   });
 });
 
-/* WIP
+/*
 describe("RenderLoop tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
@@ -199,8 +201,11 @@ describe("RenderLoop tests", () => {
     const plan = new RenderPlan(viewport);
     plan.bgColor.tbgr = ColorByName.darkBlue;
     target.changeRenderPlan(plan);
+    expect((target as Target).bgColor.tbgr).to.equal(ColorByName.darkBlue);
+
     target.drawFrame();
 
     IModelApp.viewManager.dropViewport(viewport);
   });
-}); */
+});
+*/

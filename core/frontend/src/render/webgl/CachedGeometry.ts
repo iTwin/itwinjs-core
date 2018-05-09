@@ -16,6 +16,7 @@ import { System } from "./System";
 import { ColorInfo } from "./ColorInfo";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
+import { TextureHandle } from "./Texture";
 
 // Represents a geometric primitive ready to be submitted to the GPU for rendering.
 export abstract class CachedGeometry {
@@ -229,6 +230,12 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
     super(params, techniqueId);
     this.uvParams = uvParams;
     this._textures = textures;
+
+    // TypeScript compiler will happily accept TextureHandle (or any other type) in place of WebGLTexture.
+    // There is no such 'type' as WebGLTexture at run-time.
+    for (const texture of this._textures) {
+      assert(!(texture instanceof TextureHandle));
+    }
   }
 }
 
