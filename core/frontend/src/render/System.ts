@@ -33,7 +33,7 @@ export class RenderPlan {
   public readonly hiliteSettings: Hilite.Settings;
   public readonly aaLines: AntiAliasPref;
   public readonly aaText: AntiAliasPref;
-  public readonly activeVolume: ClipVector;
+  public readonly activeVolume?: ClipVector;
   public readonly hline?: HiddenLine.Params;
   public readonly lights?: SceneLights;
 

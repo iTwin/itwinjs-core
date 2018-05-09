@@ -520,7 +520,10 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   }
 
   /** Get the clipping volume for this view */
-  public getViewClip(): ClipVector { return ClipVector.fromJSON(this.getDetail("clip")); }
+  public getViewClip(): ClipVector | undefined {
+    const clip = ClipVector.fromJSON(this.getDetail("clip"));
+    return clip.isValid() ? clip : undefined;
+  }
 
   /** Set the grid settings for this view */
   public setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void {

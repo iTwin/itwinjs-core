@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
+import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -122,6 +123,24 @@ describe("Viewport", () => {
     assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
   });
 
+  it("creates a RenderPlan from a viewport", () => {
+    const vpView = spatialView.clone<SpatialViewState>();
+    const vp = new TestViewport(canvas!, vpView);
+    let plan: RenderPlan| undefined;
+    try {
+      plan = new RenderPlan(vp);
+    } catch (e) {
+      plan = undefined;
+    }
+
+    expect(plan).not.to.be.undefined;
+    expect(plan!.is3d).to.be.true;
+    expect(plan!.activeVolume).to.be.undefined;
+    expect(plan!.hline).not.to.be.undefined;
+    expect(plan!.hline!.visible.ovrColor).to.be.false;
+    expect(plan!.hline!.hidden.width).to.equal(0);
+    expect(plan!.lights).to.be.undefined;
+  });
 });
 
 describe("Cartographic tests", () => {
@@ -148,3 +167,40 @@ describe("Cartographic tests", () => {
     assert.isTrue(newYork.equalsEpsilon(ny2!, 0.01));
   });
 });
+
+/* WIP
+describe("RenderLoop tests", () => {
+  let imodel: IModelConnection;
+  let spatialView: SpatialViewState;
+
+  const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  canvas!.width = canvas!.height = 400;
+  document.body.appendChild(canvas!);
+
+  before(async () => {
+    IModelApp.startup("QA", true);
+    imodel = await IModelConnection.openStandalone(iModelLocation);
+    spatialView = await imodel.views.load("0x34") as SpatialViewState;
+    spatialView.setStandardRotation(StandardViewId.RightIso);
+  });
+
+  after(async () => {
+    if (imodel)
+      await imodel.closeStandalone();
+    IModelApp.shutdown();
+  });
+
+  it("should start up the render loop", () => {
+    const target = IModelApp.renderSystem.createTarget(canvas);
+    const viewport = new Viewport(canvas, spatialView, target);
+    viewport.setupFromView();
+    IModelApp.viewManager.addViewport(viewport);
+
+    const plan = new RenderPlan(viewport);
+    plan.bgColor.tbgr = ColorByName.darkBlue;
+    target.changeRenderPlan(plan);
+    target.drawFrame();
+
+    IModelApp.viewManager.dropViewport(viewport);
+  });
+}); */

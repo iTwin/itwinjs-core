@@ -77,11 +77,17 @@ export class ClipVector {
 
     /** Parse a JSON object into a new ClipVector. */
     public static fromJSON(json: any, result?: ClipVector): ClipVector {
-        result = result ? result : new ClipVector();
-        result.clear();
+      result = result ? result : new ClipVector();
+      result.clear();
+
+      try {
         for (const clip of json)
-            result.clips.push(ClipShape.fromJSON(clip));
-        return result;
+          result.clips.push(ClipShape.fromJSON(clip));
+      } catch (e) {
+        result.clear();
+      }
+
+      return result;
     }
 
     /** Returns a deep copy of this ClipVector (optionally stores it in the result param rather than create using new()) */

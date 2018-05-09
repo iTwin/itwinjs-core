@@ -4,7 +4,7 @@
 /** @module Views */
 
 import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
-import { ColorDef } from "./ColorDef";
+import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane } from "@bentley/geometry-core";
@@ -734,10 +734,17 @@ export namespace HiddenLine {
     public pattern: LinePixels;
     public width: number;
     public constructor(json: any) {
-      this.ovrColor = JsonUtils.asBool(json.ovrColor);
-      this.color = ColorDef.fromJSON(json.color);
-      this.pattern = JsonUtils.asInt(json.pattern, LinePixels.Solid);
-      this.width = JsonUtils.asInt(json.width);
+      if (undefined !== json) {
+        this.ovrColor = JsonUtils.asBool(json.ovrColor);
+        this.color = ColorDef.fromJSON(json.color);
+        this.pattern = JsonUtils.asInt(json.pattern, LinePixels.Solid);
+        this.width = JsonUtils.asInt(json.width);
+      } else {
+        this.ovrColor = false;
+        this.color = new ColorDef(ColorByName.white);
+        this.pattern = LinePixels.Solid;
+        this.width = 0;
+      }
     }
     public equals(other: Style): boolean {
       return this.ovrColor === other.ovrColor && this.color === other.color && this.pattern === other.pattern && this.width === other.width;
@@ -763,9 +770,9 @@ export namespace HiddenLine {
     public transparencyThreshold: number = 1.0;
     public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
     public constructor(json: any) {
-      this.visible = new HiddenLine.Style(json.visible);
-      this.hidden = new HiddenLine.Style(json.hidden);
-      this.transparencyThreshold = JsonUtils.asDouble(json.transparencyThreshold, 1.0);
+      this.visible = new HiddenLine.Style(undefined !== json ? json.visible : undefined);
+      this.hidden = new HiddenLine.Style(undefined !== json ? json.hidden : undefined);
+      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transparencyThreshold, 1.0) : 1.0;
     }
   }
 }
