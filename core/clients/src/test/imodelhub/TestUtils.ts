@@ -151,6 +151,14 @@ export function mockFileResponse(downloadToPath: string, times = 1) {
     ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
 }
 
+export function mockUploadFile(imodelId: string, chunks = 1) {
+  for (let i = 0; i < chunks; ++i) {
+    const blockId = Base64.encode(i.toString(16).padStart(5, "0"));
+    ResponseBuilder.mockResponse(defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456&comp=block&blockid=${blockId}`);
+  }
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Put, `/imodelhub-${imodelId}/123456&comp=blocklist`);
+}
+
 /** Briefcases */
 export async function getBriefcases(accessToken: AccessToken, imodelId: string, count: number): Promise<Briefcase[]> {
   if (TestConfig.enableMocks) {
