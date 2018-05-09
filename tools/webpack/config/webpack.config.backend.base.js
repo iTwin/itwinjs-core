@@ -136,7 +136,6 @@ module.exports = (publicPath) => {
     },
     plugins: [
       new plugins.CopyAssetsPlugin(),
-      new plugins.CopyBentleyDependencyPublicFoldersPlugin(),
       new plugins.CopyNativeAddonsPlugin(),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.

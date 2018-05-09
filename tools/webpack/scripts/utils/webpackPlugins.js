@@ -130,11 +130,11 @@ class CopyBentleyDependencyPublicFoldersPlugin {
   apply(compiler) {
     compiler.hooks.environment.tap("CopyBentleyDependencyPublicFoldersPlugin", () => {
       const bentleyDir = paths.appBentleyNodeModules;
-      // go through all node_modules/@bentley directories. If there's a "public" folder, copy its contents
+      // go through all node_modules/@bentley directories. If there's a "lib/public" folder, copy its contents
       const subDirectoryNames = fs.readdirSync(bentleyDir).filter(isDirectory, { bentleyDir: paths.appBentleyNodeModules });
       for (const thisSubDir of subDirectoryNames) {
         const fullDirName = path.resolve (bentleyDir, thisSubDir );
-        const testDir = path.resolve (fullDirName, "public");
+        const testDir = path.resolve (fullDirName, "lib", "public");
         try {
           if (fs.statSync(testDir).isDirectory()) {
             fs.copySync (testDir, paths.appLibPublic, { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: true});
