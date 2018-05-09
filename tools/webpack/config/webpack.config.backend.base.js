@@ -68,6 +68,7 @@ module.exports = (publicPath) => {
       ),
       extensions: [
         ".ts",
+        ".mjs",
         ".js",
         ".json",
       ],
