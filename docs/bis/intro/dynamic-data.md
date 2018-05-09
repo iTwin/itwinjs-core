@@ -59,19 +59,19 @@ The technology (often iModel bridges) that converts data from other databases in
 
 ## Dynamic Schema Minor Change Considerations
 
-As dynamic schemas are extensions of BIS schemas, they must follow the rules of BIS schemas to prevent upgrade problems. These rules are defined in [Schema Versioning and Generations](schema-versioning-and-generations). The most notable of these rules is that classes and properties cannot be removed or significantly redefined. In general, only additions to schemas are allowed.
+As dynamic schemas are extensions of BIS schemas, they must follow the rules of BIS schemas to prevent upgrade problems. These rules are defined in [Schema Versioning and Generations](./schema-versioning-and-generations.md). The most notable of these rules is that classes and properties cannot be removed or significantly redefined. In general, only additions to schemas are allowed.
 
 ## Minor (BIS) Schema Upgrade Considerations
 
-As defined in [Schema Versioning and Generations](schema-versioning-and-generations), BIS schemas may be upgraded at almost any time within a generation. The classes in dynamic schemas always subclass from BIS classes, so they may be affected by these minor upgrades at almost anytime.
+As defined in [Schema Versioning and Generations](./schema-versioning-and-generations.md), BIS schemas may be upgraded at almost any time within a generation. The classes in dynamic schemas always subclass from BIS classes, so they may be affected by these minor upgrades at almost anytime.
 
 The biggest danger from these minor schema upgrades is that a BIS class may add a property that has the same name as a property in a dynamic subclass. This class will cause ????????????? when the upgraded schema is imported into a BIS repository.
 
-Class name conflicts (a class being added in BIS that has the same name as a class in a dynamic schema) is not a techical problem as the classes are scoped by the name of the schema that contains them. The duplicate class names can cause user confusion, however.
+Class name conflicts (a class being added in BIS that has the same name as a class in a dynamic schema) is not a technical problem as the classes are scoped by the name of the schema that contains them. The duplicate class names can cause user confusion, however.
 
 ## Generational (BIS) Schema Upgrade Considerations
 
-As defined in [Schema Versioning and Generations](schema-versioning-and-generations), generational changes allow radical changes to schemas and must be accompanied by code that understands how to map data (Elements and Models) from one generation of schemas to another. The generational mapping code can potentially be very complex; for example, it may include:
+As defined in [Schema Versioning and Generations](./schema-versioning-and-generations.md), generational changes allow radical changes to schemas and must be accompanied by code that understands how to map data (Elements and Models) from one generation of schemas to another. The generational mapping code can potentially be very complex; for example, it may include:
 
 - 1:1, 1:N, N:1, N:N instance mapping
 - 1:1, 1:N, N:1, N:N property mapping
