@@ -8,10 +8,6 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { FileHandler } from "./FileHandler";
 import * as fs from "fs";
 import * as path from "path";
-import * as util from "util";
-
-const read = util.promisify(fs.read);
-const open = util.promisify(fs.open);
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -77,7 +73,7 @@ export class AzureFileHandler implements FileHandler {
   private async uploadChunk(uploadUrlString: string, fileDescriptor: number, blockId: number) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = new Buffer(chunkSize);
-    const bytesRead = (await read(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId)).bytesRead;
+    const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
     buffer = buffer.slice(0, bytesRead);
 
     const options: RequestOptions = {
@@ -110,7 +106,7 @@ export class AzureFileHandler implements FileHandler {
       return Promise.reject(new Error("Could not find file at specified location: " + uploadFromPathname));
 
     const fileSize = this.getFileSize(uploadFromPathname);
-    const file = await open(uploadFromPathname, "r");
+    const file = fs.openSync(uploadFromPathname, "r");
     const chunkSize = 4 * 1024 * 1024;
 
     let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
