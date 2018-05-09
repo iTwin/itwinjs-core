@@ -689,9 +689,17 @@
         "@bentley/imodeljs-n_8-win32-x64": "17.1.1"
       }
     },
+    "@forked/turndown": {
+      "version": "4.0.4",
+      "resolved": "https://registry.npmjs.org/@forked/turndown/-/turndown-4.0.4.tgz",
+      "integrity": "sha512-GPmVBlNBCdi6GqDTvlRD2lRF3OXd7MBR6smUC5PbkMmh3eKlayGfoxi4CQ5ggnJi9nPZfBZ+85dho6zx6cyf2g==",
+      "requires": {
+        "jsdom": "11.10.0"
+      }
+    },
     "@rush-temp/bentleyjs-core": {
       "version": "file:projects/bentleyjs-core.tgz",
-      "integrity": "sha1-D2psyr1PPn/kmE+SHtopJ2GLLqI=",
+      "integrity": "sha1-OsOgI91cN+ttnvrVvkgnRu7+WiI=",
       "requires": {
         "rimraf": "2.6.2",
         "typedoc": "0.11.1",
@@ -700,7 +708,7 @@
     },
     "@rush-temp/example-code-app": {
       "version": "file:projects/example-code-app.tgz",
-      "integrity": "sha1-/ThLJpYlRWFdFe+pEF3Uy1jHY38=",
+      "integrity": "sha1-SUuld4ZkyxCeRE19NbmacgLw+s8=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "17.1.1",
         "body-parser": "1.18.2",
@@ -723,7 +731,7 @@
     },
     "@rush-temp/example-code-snippets": {
       "version": "file:projects/example-code-snippets.tgz",
-      "integrity": "sha1-3U2bPEm1RY5kOP7Vyatdi5WtawI=",
+      "integrity": "sha1-q7RFSTYBV87ABCn10zoHE0EpIqE=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "17.1.1",
         "body-parser": "1.18.2",
@@ -746,7 +754,7 @@
     },
     "@rush-temp/geometry-core": {
       "version": "file:projects/geometry-core.tgz",
-      "integrity": "sha1-vSwaYE7ahMdXeydHo0HWuC0jJ9I=",
+      "integrity": "sha1-6hZiSVc8XssSdTiT3QOcS1P7880=",
       "requires": {
         "@types/lodash": "4.14.106",
         "chai": "4.1.2",
@@ -765,7 +773,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-GjLgLBItE4WKtmAfpGeNCQmAM4o=",
+      "integrity": "sha1-o+4VjTHmDHbtTxaAhJHfxrY3iRE=",
       "requires": {
         "@bentley/imodeljs-native-platform-api": "17.1.1",
         "@bentley/imodeljs-native-platform-electron": "17.1.1",
@@ -787,7 +795,7 @@
     },
     "@rush-temp/imodeljs-clients": {
       "version": "file:projects/imodeljs-clients.tgz",
-      "integrity": "sha1-uIl2Xi3wPcR2PbAysoe2P5510cE=",
+      "integrity": "sha1-7AhFpQRWNC2jTzDMqIm24bGWeig=",
       "requires": {
         "@types/clone": "0.1.30",
         "@types/deep-assign": "0.1.1",
@@ -816,7 +824,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-qfe/wSU2UPeTgH0M4hsMvPrK614=",
+      "integrity": "sha1-u/vwLfxNQ8kBLnr7poMhcSW7mpg=",
       "requires": {
         "@types/uuid": "3.4.3",
         "cpx": "1.5.0",
@@ -828,7 +836,7 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-X/trOfkWaLtD9PfUvo4dMC6HCic=",
+      "integrity": "sha1-iNAREkKh2WC5QVOTdxKaDNGX41M=",
       "requires": {
         "@bentley/bemetalsmith": "2.0.5",
         "@bentley/bentleyjs-tools": "3.4.1",
@@ -874,7 +882,7 @@
         "tslint": "5.10.0",
         "typedoc": "0.11.1",
         "typedoc-plugin-external-module-name": "1.1.1",
-        "typedoc-plugin-markdown": "1.1.7",
+        "typedoc-plugin-markdown": "1.1.8",
         "typemoq": "2.1.0",
         "typescript": "2.7.2",
         "webpack": "3.11.0",
@@ -883,7 +891,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-5wuSqV45Nmr6rWEo5XqO5GZNYkg=",
+      "integrity": "sha1-JWG6KuDCldDsLkmm78rGWlMDaSI=",
       "requires": {
         "@bentley/imodeljs-e_1_6_11-win32-x64": "17.1.1",
         "body-parser": "1.18.2",
@@ -908,7 +916,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-vlMI9G9w+kcgmpyTnoo/wmX8RN4=",
+      "integrity": "sha1-ZOHGLUG7w4035TvUBzFx+jq7cHY=",
       "requires": {
         "cpx": "1.5.0",
         "fuse.js": "3.2.0",
@@ -3417,9 +3425,9 @@
       }
     },
     "browserify": {
-      "version": "16.2.0",
-      "resolved": "https://registry.npmjs.org/browserify/-/browserify-16.2.0.tgz",
-      "integrity": "sha512-yotdAkp/ZbgDesHQBYU37zjc29JDH4iXT8hjzM1fdUVWogjARX0S1cKeX24Ci6zZ+jG+ADmCTRt6xvtmJnI+BQ==",
+      "version": "16.2.2",
+      "resolved": "https://registry.npmjs.org/browserify/-/browserify-16.2.2.tgz",
+      "integrity": "sha512-fMES05wq1Oukts6ksGUU2TMVHHp06LyQt0SIwbXIHm7waSrQmNBZePsU0iM/4f94zbvb/wHma+D1YrdzWYnF/A==",
       "requires": {
         "JSONStream": "1.3.2",
         "assert": "1.4.1",
@@ -19017,14 +19025,6 @@
         "safe-buffer": "5.1.2"
       }
     },
-    "turndown": {
-      "version": "4.0.2",
-      "resolved": "https://registry.npmjs.org/turndown/-/turndown-4.0.2.tgz",
-      "integrity": "sha512-pqZ6WrHFGnxXC9q2xJ3Qa7EoLAwrojgFRajWZjxTKwbz9vnNnyi8lLjiD5h86UTPOcMlEyHjm6NMhjEDdlc25A==",
-      "requires": {
-        "jsdom": "11.10.0"
-      }
-    },
     "type-check": {
       "version": "0.3.2",
       "resolved": "https://registry.npmjs.org/type-check/-/type-check-0.3.2.tgz",
@@ -19141,11 +19141,11 @@
       "integrity": "sha512-Erc0MyKDGYIN7kSlIjgifVieZEogg8YwOH8bjW6RXb0y44hVeTER0UoW6Rh+n8leg6rvlPdnH092aFfcd8kRlA=="
     },
     "typedoc-plugin-markdown": {
-      "version": "1.1.7",
-      "resolved": "https://registry.npmjs.org/typedoc-plugin-markdown/-/typedoc-plugin-markdown-1.1.7.tgz",
-      "integrity": "sha512-1MKUUcyR69olawPxNziDWIhyZkwUioGOe0l/4WpxnheWTL0XKuCJyDeFOIH4OXOWj3ZOyrTcT31Elce2uO1C2g==",
+      "version": "1.1.8",
+      "resolved": "https://registry.npmjs.org/typedoc-plugin-markdown/-/typedoc-plugin-markdown-1.1.8.tgz",
+      "integrity": "sha512-+YenfAjplH2gdqREOiLiZyHr8+xeIDc2aQyHSFfyA4vvBxOBt01HT4Pzw9vnZnEYvt1VV3WcTRNmxWL0S2nVJw==",
       "requires": {
-        "turndown": "4.0.2"
+        "@forked/turndown": "4.0.4"
       }
     },
     "typemoq": {
@@ -19677,7 +19677,7 @@
       "integrity": "sha512-7jWG0c3cKKm2hKScnSAMUEUjRJKXUShwMPk0ASVhICycQhwND3IMAdhJYmc1mxxKzBUJTSF5HZizfrKrS6BzkA==",
       "requires": {
         "anymatch": "1.3.2",
-        "browserify": "16.2.0",
+        "browserify": "16.2.2",
         "chokidar": "1.7.0",
         "defined": "1.0.0",
         "outpipe": "1.1.1",

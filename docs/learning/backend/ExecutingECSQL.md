@@ -25,6 +25,8 @@ There are two ways to execute an ECSQL statement:
 > ECDb. Just replace [IModelDb.withPreparedStatement]($backend/IModelDb.withPreparedStatement) in the code examples
 > with [ECDb.withPreparedStatement]($backend/ECDb.withPreparedStatement).
 
+Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the specific ECSQL queries that app backends and services often run.
+
 ## Parameter Bindings
 
 ### Binding per parameter

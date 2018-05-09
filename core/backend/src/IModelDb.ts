@@ -336,6 +336,11 @@ export class IModelDb extends IModel {
    * Query for a set of entity ids, given an EntityQueryParams
    * @param params the EntityQueryParams for query
    * @returns an Id64Set with results of query
+   *
+   * *Example:*
+   * ``` ts
+   * [[include:ECSQL-backend-queries.select-element-by-code-value-using-queryEntityIds]]
+   * ```
    */
   public queryEntityIds(params: EntityQueryParams): Id64Set {
     let sql = "SELECT ECInstanceId FROM ";
@@ -670,7 +675,6 @@ export class IModelDbModels {
   }
 
   /** Get the Model with the specified identifier.
-   * See [[IModelDbElements.queryElementIdByCode]] for an example of how to look up an element by Code. You can then find its subModel.
    * @param modelId The Model identifier.
    * @throws [[IModelError]]
    */
@@ -681,7 +685,7 @@ export class IModelDbModels {
   }
 
   /**
-   * Read the properties for a Model as a json string
+   * Read the properties for a Model as a json string.
    * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
    * @return a json string with the properties of the model.
    */
@@ -693,7 +697,8 @@ export class IModelDbModels {
   }
 
   /** Get the sub-model of the specified Element.
-   * @param elementId The Element identifier.
+   * See [[IModelDbElements.queryElementIdByCode]] for more on how to find an element by Code.
+   * @param modeledElementId Identifies the modeled element.
    * @throws [[IModelError]]
    */
   public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
@@ -802,14 +807,16 @@ export class IModelDbElements {
   }
 
   /**
-   * Query for the DgnElementId of the element that has the specified code
+   * Query for the DgnElementId of the element that has the specified code.
+   * This method is for the case where you know the element's Code.
+   * If you only know the code *value*, then in the simplest case, you can query on that
+   * and filter the results.
+   * In the simple case, call [[IModelDb.queryEntityIds]], specifying the code value in the where clause of the query params.
+   * Or, you can execute an ECSQL select statement. See
+   * [frequently used ECSQL queries]($docs/learning/backend/ECSQL-queries.md) for an example.
    * @param code The code to look for
    * @returns The element that uses the code or undefined if the code is not used.
    * @throws IModelError if the code is invalid
-   * *Example:*
-   * ``` ts
-   * [[include:Model.lookupByCode]]
-   * ```
    */
   public queryElementIdByCode(code: Code): Id64 | undefined {
     if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);
