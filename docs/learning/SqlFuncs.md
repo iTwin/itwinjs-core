@@ -1,10 +1,28 @@
 # ECSQL Built-in Geometry Functions
+
+ECSQL statements can use builtin functions to query and analyze element geometry.
+These functions can be used in SELECT and WHERE clauses. The functions
+that return primtive types can be in expressions with other values.
+    
 Types: 
 [iModel_placement](#iModel_spatial_overlap_aabb), [iModel_bbox](#iModel_spatial_overlap_aabb), [iModel_angles](#iModel_spatial_overlap_aabb), [iModel_point](#iModel_spatial_overlap_aabb)
 
 Functions: 
 [iModel_angles](#iModel_angles), [iModel_angles_maxdiff](#iModel_angles_maxdiff), [iModel_angles_value](#iModel_angles_value), [iModel_bbox](#iModel_bbox), [iModel_bbox_areaxy](#iModel_bbox_areaxy), [iModel_bbox_contains](#iModel_bbox_contains), [iModel_bbox_depth](#iModel_bbox_depth), [iModel_bbox_height](#iModel_bbox_height), [iModel_bbox_overlaps](#iModel_bbox_overlaps), [iModel_bbox_union](#iModel_bbox_union), [iModel_bbox_value](#iModel_bbox_value), [iModel_bbox_volume](#iModel_bbox_volume), [iModel_bbox_width](#iModel_bbox_width), [iModel_placement_aabb](#iModel_placement_aabb), [iModel_placement_angles](#iModel_placement_angles), [iModel_placement_eabb](#iModel_placement_eabb), [iModel_placement_origin](#iModel_placement_origin), [iModel_point_distance](#iModel_point_distance), [iModel_point_min_distance_to_bbox](#iModel_point_min_distance_to_bbox), [iModel_point_value](#iModel_point_value), [iModel_spatial_overlap_aabb](#iModel_spatial_overlap_aabb)
 # Types
+
+The geometry builtin functions work with custom data types, such as bounding boxes,
+points, angles, and placements, allowing you to work with the structured data
+that appears in the spatial index and in element geometry.
+
+These custom data types are described here in a conceptual way. You do not
+work directly with them. Instead, in ECSQL, you use builtin functions to
+create, analyze, and extract or compute primitive values from them.
+If you return a structured data type value from an ECSQL statement, it will have the
+type of ArrayBuffer in script.
+You will normally have to convert a returned anArrayBuffer to the appropriate geometry
+type before you can work with it in script. See, for example, [Range3d.fromArrayBuffer]($geometry).
+    
 
 
 
@@ -75,6 +93,18 @@ iModel_bbox bbox;      // Element-aligned bounding box
 ```
 
 # Functions
+
+The builtin geometry functions include functions to extract geometric information
+from elements, as well as functions to create, analyze, and extract or compute primitive values from
+the custom structured data types.
+
+Most of the builtin functions just perform a function and return a result.
+
+### Aggregate
+Some of the builtin geometry functions are *aggregate* functions. They accumulate results,
+reducing all of the values passed to them by the statement to a single resultant value.
+See [SQLite Aggregate Functions](https://sqlite.org/lang_aggfunc.html)
+    
 
 -------------------
 ## iModel_placement_aabb
@@ -429,7 +459,7 @@ Get a member of a iModel_bbox object
 ```
 iModel_bbox_union(X1)
 ```
- Aggregate function that computes the union of a series of bounding boxes
+ [Aggregate](#aggregate) function that computes the union of a series of bounding boxes
 
 |Parameter|Type|Description
 |---|---|---

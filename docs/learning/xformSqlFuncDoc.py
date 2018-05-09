@@ -17,6 +17,42 @@ exampleCode = {
     'iModel_bbox':                  'EcsqlGeometryFunctions.iModel_bbox_union',
 }
 
+def getIntro():
+    return """
+ECSQL statements can use builtin functions to query and analyze element geometry.
+These functions can be used in SELECT and WHERE clauses. The functions
+that return primtive types can be in expressions with other values.
+    """
+
+def getTypesIntro():
+    return """
+The geometry builtin functions work with custom data types, such as bounding boxes,
+points, angles, and placements, allowing you to work with the structured data
+that appears in the spatial index and in element geometry.
+
+These custom data types are described here in a conceptual way. You do not
+work directly with them. Instead, in ECSQL, you use builtin functions to
+create, analyze, and extract or compute primitive values from them.
+If you return a structured data type value from an ECSQL statement, it will have the
+type of ArrayBuffer in script.
+You will normally have to convert a returned anArrayBuffer to the appropriate geometry
+type before you can work with it in script. See, for example, [Range3d.fromArrayBuffer]($geometry).
+    """
+
+def getFunctionsIntro():
+    return """
+The builtin geometry functions include functions to extract geometric information
+from elements, as well as functions to create, analyze, and extract or compute primitive values from
+the custom structured data types.
+
+Most of the builtin functions just perform a function and return a result.
+
+### Aggregate
+Some of the builtin geometry functions are *aggregate* functions. They accumulate results,
+reducing all of the values passed to them by the statement to a single resultant value.
+Also see [SQLite Aggregate Functions](https://sqlite.org/lang_aggfunc.html).
+    """
+
 def reformatDoxygenMarkup(line):
     # Formatting markup -- TODO
     line = line.replace("\\a", "")
@@ -37,6 +73,13 @@ def reformatDoxygenMarkup(line):
     line = line[0:i]
     line = line + repl
     return line
+
+def detectTopicLinks(t):
+    i = t.lower().find("aggregate")
+    if i == -1:
+        return t
+    x = t[0:i] + "[" + t[i:i+9] + "](#aggregate)" + t[i+9:]
+    return x
 
 def formatLinkToType(t):
     if t == "iModel_aabb":
@@ -205,6 +248,8 @@ def processFunction(doc):
     if exampleCode.has_key(fname):
         exampleDoc = "\n*Example:*\n``` ts\n[[include:" + exampleCode[fname] + "]]\n```\n"
 
+    functionComment = detectTopicLinks(functionComment)
+
     fdoc = "\n-------------------\n"
     fdoc = fdoc + "## " + fname + "\n"
     fdoc = fdoc + "\n```\n" + fdecl + "\n```\n"
@@ -254,14 +299,17 @@ def main(sourceFile):
         sep = ", "
 
     print "# ECSQL Built-in Geometry Functions"
+    print getIntro()
     print "Types: "
     print tlinks
     print ""
     print "Functions: "
     print flinks
     print "# Types"
+    print getTypesIntro()
     print tdocs
     print "# Functions"
+    print getFunctionsIntro()
     print fdocs
 
 if __name__ == '__main__':
