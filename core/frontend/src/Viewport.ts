@@ -1447,6 +1447,7 @@ export class Viewport {
 
     // const task = new RenderFrameTask(priority, target, timer.elapsedSeconds);
     // renderQueue.addTask(task);
+    this.target.drawFrame();
 
     return true;
   }
