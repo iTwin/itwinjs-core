@@ -806,12 +806,9 @@ export class IModelDbElements {
    * This method is for the case where you know the element's Code.
    * If you only know the code *value*, then in the simplest case, you can query on that
    * and filter the results.
-   * In the simplest case, call [[IModelDb.queryEntityIds]], specifying the code value in where clause of the query params.
-   * For a more complex lookup, you can execute an ECSQL select statement.
-   * *Example:*
-   * ``` ts
-   * [[include:ECSQL-backend-queries.select-element-by-code-value]]
-   * ```
+   * In the simple case, call [[IModelDb.queryEntityIds]], specifying the code value in the where clause of the query params.
+   * Or, you can execute an ECSQL select statement. See
+   * [frequently used ECSQL queries]($docs/learning/backend/ECSQL-queries.md) for an example.
    * @param code The code to look for
    * @returns The element that uses the code or undefined if the code is not used.
    * @throws IModelError if the code is invalid

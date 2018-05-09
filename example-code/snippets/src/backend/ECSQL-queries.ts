@@ -24,13 +24,12 @@ describe("Useful ECSQL queries", () => {
     // Suppose an iModel has the following breakdown structure:
     // * The root subject
     // * * Subject with CodeValue="Subject1"
-    // * * * PhysicalPartition with CodeValue ="Physical"
+    // * * * PhysicalPartition with CodeValue="Physical"
 
     // Suppose you want to look up the PhysicalPartition whose code value is "Physical".
-    // We could write the following query, to find this partition as a child of the
-    // "Subject1" subject element. Note that you specify the BisCore class names
-    // of both the parent subject and the child partition. That makes the query very
-    // specific. It's unlikely that it will turn up any but the element that you want.
+    // You could write the following query to find it. This query specifies that the
+    // element you want is a PhysicalPartition, it has a code value of "Physical",
+    // and it is a child of a Subject named "Subject1".
     const partitionIds: Id64Set = iModel.withPreparedStatement(`
       select
         partition.ecinstanceid
