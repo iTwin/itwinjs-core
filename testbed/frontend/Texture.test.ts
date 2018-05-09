@@ -84,17 +84,21 @@ describe("Test pixel values of resized texture in callback (async texture loadin
 
   before((done) => {
     WebGLTestContext.startup();
-    const texLoadCallback: TextureLoadCallback = (/*t: TextureHandle*/): void => {
-      loaded = true;
+    if (WebGLTestContext.isInitialized) {
+      const texLoadCallback: TextureLoadCallback = (/*t: TextureHandle*/): void => {
+        loaded = true;
+        done();
+      };
+      texture = TextureHandle.createForImage(3, 3, pixels, ImageSourceFormat.Png, false, texLoadCallback, false, true, false, true);
+    } else {
       done();
-    };
-    texture = TextureHandle.createForImage(3, 3, pixels, ImageSourceFormat.Png, false, texLoadCallback, false, true, false, true);
+    }
   });
 
   after(() => WebGLTestContext.shutdown());
 
   it("should produce a image texture (png, glyph) resized to power of two with valid pixel values", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
