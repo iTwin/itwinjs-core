@@ -12,6 +12,9 @@ export * from "./Logger";
 export * from "./LRUMap";
 export * from "./SortedArray";
 export * from "./Time";
+export * from "./Compare";
+export * from "./Clone";
+export * from "./Iterable";
 
 /** @module Utils */
 
