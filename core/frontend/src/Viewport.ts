@@ -218,7 +218,7 @@ export class DecorationAnimator implements ViewportAnimator {
  * the viewing parameters.
  */
 export class Viewport {
-  private iModel?: IModelConnection;
+  private _iModel?: IModelConnection;
   /** Called whenever this viewport is synchronized with its ViewState */
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   private readonly viewCorners: Range3d = new Range3d();
@@ -269,6 +269,8 @@ export class Viewport {
   public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
+
+  public get iModel(): IModelConnection | undefined { return this._iModel; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
@@ -394,7 +396,7 @@ export class Viewport {
   public changeView(view: ViewState) {
     this.clearUndo();
     this._view = view;
-    this.iModel = view.iModel;
+    this._iModel = view.iModel;
     this.setupFromView();
     this.saveViewUndo();
 

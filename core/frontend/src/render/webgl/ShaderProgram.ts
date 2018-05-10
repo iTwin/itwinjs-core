@@ -305,7 +305,7 @@ export class ShaderProgramExecutor implements IDisposable {
 
   public dispose() { this.changeProgram(undefined); }
 
-  public setProgram(program: ShaderProgram) { this.changeProgram(program); }
+  public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }
   public get isValid() { return undefined !== this._program; }
   public get target() { return this._params.target; }
   public get renderPass() { return this._params.renderPass; }
