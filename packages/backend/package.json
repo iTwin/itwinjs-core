@@ -27,6 +27,7 @@
     "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
+    "pseudolocalize": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
     "test": "node ../../scripts/run-tests.js --testsDir ./tests",
     "test+cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
     "validatePackageJson": "validjson ./package.json",

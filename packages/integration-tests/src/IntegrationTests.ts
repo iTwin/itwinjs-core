@@ -14,6 +14,7 @@ import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ECPresentation as ECPresentationFrontend } from "@bentley/ecpresentation-frontend";
 
+process.env.NODE_ENV = "development";
 let isInitialized = false;
 
 export const initialize = () => {

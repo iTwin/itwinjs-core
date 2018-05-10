@@ -4,7 +4,7 @@ exports[`GridDataProvider getColumns returns columns for a single instance 1`] =
 Array [
   Object {
     "description": Object {
-      "displayLabel": "Label",
+      "displayLabel": "£ábêl",
       "editor": undefined,
       "name": "DisplayLabel",
       "typename": "string",
@@ -12,7 +12,7 @@ Array [
     "editable": false,
     "filterable": true,
     "key": "DisplayLabel",
-    "label": "Label",
+    "label": "£ábêl",
     "sortable": true,
   },
   Object {
@@ -35,7 +35,7 @@ exports[`GridDataProvider getColumns returns columns for multiple instances 1`] 
 Array [
   Object {
     "description": Object {
-      "displayLabel": "Label",
+      "displayLabel": "£ábêl",
       "editor": undefined,
       "name": "DisplayLabel",
       "typename": "string",
@@ -43,7 +43,7 @@ Array [
     "editable": false,
     "filterable": true,
     "key": "DisplayLabel",
-    "label": "Label",
+    "label": "£ábêl",
     "sortable": true,
   },
   Object {
@@ -76,7 +76,7 @@ Object {
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "Label",
+          "displayLabel": "£ábêl",
           "editor": undefined,
           "name": "DisplayLabel",
           "typename": "string",
@@ -136,7 +136,7 @@ Array [
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "Label",
+            "displayLabel": "£ábêl",
             "editor": undefined,
             "name": "DisplayLabel",
             "typename": "string",
@@ -192,7 +192,7 @@ Array [
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "Label",
+            "displayLabel": "£ábêl",
             "editor": undefined,
             "name": "DisplayLabel",
             "typename": "string",
@@ -248,7 +248,7 @@ Array [
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "Label",
+            "displayLabel": "£ábêl",
             "editor": undefined,
             "name": "DisplayLabel",
             "typename": "string",
@@ -262,13 +262,13 @@ Array [
         },
       },
       Object {
-        "displayValue": "Not specified",
+        "displayValue": "Ñót spêçìfíêd",
         "isBold": false,
         "isDisabled": false,
         "isItalic": false,
         "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
         "value": Object {
-          "description": "Not specified",
+          "description": "Ñót spêçìfíêd",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
@@ -279,7 +279,7 @@ Array [
           },
           "unit": "",
           "value": Object {
-            "displayValue": "Not specified",
+            "displayValue": "Ñót spêçìfíêd",
             "value": null,
             "valueFormat": "Primitive",
           },
@@ -309,7 +309,7 @@ Array [
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "Label",
+            "displayLabel": "£ábêl",
             "editor": undefined,
             "name": "DisplayLabel",
             "typename": "string",
@@ -323,13 +323,13 @@ Array [
         },
       },
       Object {
-        "displayValue": "Not specified",
+        "displayValue": "Ñót spêçìfíêd",
         "isBold": false,
         "isDisabled": false,
         "isItalic": false,
         "key": "PhysicalModel_RepositoryModel_FunctionalModel_ModeledElement",
         "value": Object {
-          "description": "Not specified",
+          "description": "Ñót spêçìfíêd",
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
@@ -340,7 +340,7 @@ Array [
           },
           "unit": "",
           "value": Object {
-            "displayValue": "Not specified",
+            "displayValue": "Ñót spêçìfíêd",
             "value": null,
             "valueFormat": "Primitive",
           },
@@ -365,7 +365,7 @@ Array [
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "Label",
+            "displayLabel": "£ábêl",
             "editor": undefined,
             "name": "DisplayLabel",
             "typename": "string",
@@ -421,7 +421,7 @@ Array [
           "isMerged": false,
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "Label",
+            "displayLabel": "£ábêl",
             "editor": undefined,
             "name": "DisplayLabel",
             "typename": "string",
