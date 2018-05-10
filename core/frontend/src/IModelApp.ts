@@ -117,7 +117,14 @@ export class IModelApp {
     IModelApp.tentativePoint.onInitialized();
   }
 
-  public static shutdown() { IModelApp._initialized = false; }
+  public static shutdown() {
+    if (undefined !== IModelApp._renderSystem) {
+      IModelApp._renderSystem.onShutDown();
+      IModelApp._renderSystem = undefined;
+    }
+
+    IModelApp._initialized = false;
+  }
 
   /**
    * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.

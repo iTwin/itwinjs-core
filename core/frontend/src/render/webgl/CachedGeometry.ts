@@ -2,10 +2,10 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { QPoint3dList, QParams3d, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
-import { Point3d, Point2d } from "@bentley/geometry-core";
-import { AttributeHandle, BufferHandle, QBufferHandle3d, QBufferHandle2d } from "./Handle";
+import { Point3d } from "@bentley/geometry-core";
+import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
@@ -150,8 +150,6 @@ class ViewportQuad {
   public readonly vertices: Uint16Array;
   public readonly vertexParams: QParams3d;
   public readonly indices = new Uint32Array(6);
-  public readonly textureUV: Uint16Array;
-  public readonly textureParams: QParams2d;
 
   public constructor() {
     const pt = new Point3d(-1, -1, 0);
@@ -173,19 +171,6 @@ class ViewportQuad {
     this.indices[3] = 0;
     this.indices[4] = 2;
     this.indices[5] = 3;
-
-    const uv = new Point2d(0, 0);
-    const textureUV = new QPoint2dList(QParams2d.fromZeroToOne());
-    textureUV.add(uv);
-    uv.x = 1;
-    textureUV.add(uv);
-    uv.y = 1;
-    textureUV.add(uv);
-    uv.x = 0;
-    textureUV.add(uv);
-
-    this.textureUV = textureUV.toTypedArray();
-    this.textureParams = textureUV.params;
   }
 
   public createParams() {
@@ -215,16 +200,10 @@ export class ViewportQuadGeometry extends IndexedGeometry {
 
 // Geometry used for view-space rendering techniques which involve sampling one or more textures.
 export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
-  public readonly uvParams: QBufferHandle2d;
   protected readonly _textures: WebGLTexture[];
 
-  protected static createUVParams(): QBufferHandle2d | undefined {
-    return QBufferHandle2d.create(_viewportQuad.textureParams, _viewportQuad.textureUV);
-  }
-
-  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId, uvParams: QBufferHandle2d, textures: WebGLTexture[]) {
+  protected constructor(params: IndexedGeometryParams, techniqueId: TechniqueId, textures: WebGLTexture[]) {
     super(params, techniqueId);
-    this.uvParams = uvParams;
     this._textures = textures;
 
     // TypeScript compiler will happily accept TextureHandle (or any other type) in place of WebGLTexture.
@@ -239,12 +218,11 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
 export class CompositeGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
     const params = _viewportQuad.createParams();
-    const uvBuf = this.createUVParams();
-    if (undefined === params || undefined === uvBuf) {
+    if (undefined === params) {
       return undefined;
     }
 
-    return new CompositeGeometry(params, uvBuf, [opaque, accum, reveal, hilite]);
+    return new CompositeGeometry(params, [opaque, accum, reveal, hilite]);
   }
 
   public get opaque() { return this._textures[0]; }
@@ -262,8 +240,8 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
     }
   }
 
-  private constructor(params: IndexedGeometryParams, uvParams: QBufferHandle2d, textures: WebGLTexture[]) {
-    super(params, TechniqueId.CompositeHilite, uvParams, textures);
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.CompositeHilite, textures);
     assert(4 === this._textures.length);
   }
 }
@@ -272,9 +250,8 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(idLow: WebGLTexture, idHigh: WebGLTexture, depthAndOrder: WebGLTexture) {
     const params = _viewportQuad.createParams();
-    const uv = this.createUVParams();
-    if (undefined !== params && undefined !== uv) {
-      return new CopyPickBufferGeometry(params, uv, [idLow, idHigh, depthAndOrder]);
+    if (undefined !== params) {
+      return new CopyPickBufferGeometry(params, [idLow, idHigh, depthAndOrder]);
     } else {
       return undefined;
     }
@@ -284,27 +261,26 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
   public get elemIdHigh() { return this._textures[1]; }
   public get depthAndOrder() { return this._textures[2]; }
 
-  private constructor(params: IndexedGeometryParams, uv: QBufferHandle2d, textures: WebGLTexture[]) {
-    super(params, TechniqueId.CopyPickBuffers, uv, textures);
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.CopyPickBuffers, textures);
   }
 }
 
 export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(texture: WebGLTexture, techId: TechniqueId) {
     const params = _viewportQuad.createParams();
-    const uvBuf = this.createUVParams();
-    if (undefined === params || undefined === uvBuf) {
+    if (undefined === params) {
       return undefined;
     }
 
-    return new SingleTexturedViewportQuadGeometry(params, uvBuf, texture, techId);
+    return new SingleTexturedViewportQuadGeometry(params, texture, techId);
   }
 
   public get texture(): WebGLTexture { return this._textures[0]; }
   public set texture(texture: WebGLTexture) { this._textures[0] = texture; }
 
-  protected constructor(params: IndexedGeometryParams, uv: QBufferHandle2d, texture: WebGLTexture, techId: TechniqueId) {
-    super(params, techId, uv, [texture]);
+  protected constructor(params: IndexedGeometryParams, texture: WebGLTexture, techId: TechniqueId) {
+    super(params, techId, [texture]);
   }
 }
 
