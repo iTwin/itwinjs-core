@@ -10,6 +10,8 @@
 
 ## [ECSQL](./ECSQL.md)
 
+## [Wire Format](./WireFormat.md)
+
 ## [Frequently asked Questions](./faq.md)
 
 ## [Guidelines and Tips](./guidelines/index.md)
