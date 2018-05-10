@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { Point3d } from "@bentley/geometry-core";
-import { RenderGraphic, IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam } from "@bentley/imodeljs-frontend/lib/rendering";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
+import { Point3d, Range3d } from "@bentley/geometry-core";
+import { RenderGraphic, IndexedPrimitiveParamsFeatures, PolylineParamVertex, PolylineParam, MeshArgs } from "@bentley/imodeljs-frontend/lib/rendering";
+import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { FeatureIndexType, FeatureIndex, ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
+import { WebGLTestContext } from "./WebGLTestContext";
 
 export class FakeGraphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
@@ -276,5 +277,36 @@ describe("RenderGraphic", () => {
     p1 = ppv.GetParam(true, true, false, false);
     assert.isTrue(PolylineParam.kMiterInsideOnly + PolylineParam.kNegateAlong + PolylineParam.kNegatePerp === p1,
       "GetParam(false,true,false,false) should return kMiterInsideOnly + kNegateAlong + PolylineParam.kNegatePerp if !isSegmentStart and !isPolylineStartOrEnd");
+  });
+});
+
+describe("createTriMesh", () => {
+  let imodel: IModelConnection;
+  before(async () => {
+    imodel = await IModelConnection.openStandalone(iModelLocation);
+    WebGLTestContext.startup();
+  });
+
+  after(async () => {
+    WebGLTestContext.shutdown();
+    if (imodel) await imodel.closeStandalone();
+  });
+
+  it("should create a simple mesh graphic", () => {
+    if (!WebGLTestContext.isInitialized)
+      return;
+
+    const args = new MeshArgs();
+
+    const points = [ new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0) ];
+    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+    for (const point of points)
+      args.points.add(point);
+
+    args.vertIndices = [ 0, 1, 2 ];
+    args.colors.initUniform(ColorByName.tan);
+
+    const graphic = IModelApp.renderSystem.createTriMesh(args, imodel);
+    expect(graphic).not.to.be.undefined;
   });
 });
