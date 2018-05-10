@@ -7,7 +7,7 @@ import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
@@ -88,7 +88,7 @@ export class PolylineFlags {
 
 /* An individual polyline which indexes into a shared set of vertices */
 export class PolylineData {
-  public constructor(public vertIndices: number[] = [], public numIndices = 0, public startDistance = 0) { }
+  public constructor(public vertIndices: number[] = [], public numIndices = 0, public startDistance = 0, public rangeCenter = new Point3d()) { }
 
   public isValid(): boolean { return 0 < this.numIndices; }
   public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
@@ -96,13 +96,16 @@ export class PolylineData {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
     this.startDistance = polyline.startDistance;
+    this.rangeCenter = polyline.rangeCenter;
     return this.isValid();
   }
 }
 
 export class MeshPolyline {
   public indices: number[] = [];
-  public constructor(public startDistance = 0, indices?: number[]) {
+  public rangeCenter = new Point3d();
+  public constructor(public startDistance = 0, rangeCenter?: Point3d, indices?: number[]) {
+    if (rangeCenter) { this.rangeCenter = rangeCenter; }
     if (indices) { this.indices = indices.slice(); }
   }
   public addIndex(index: number) { if (this.indices.length === 0 || this.indices[this.indices.length - 1] !== index) this.indices.push(index); }
@@ -1203,4 +1206,100 @@ export class FeatureTable {
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined { return index < this.length ? this.list[index] : undefined; }
   public clear(): void { this.list.length = 0; }
+}
+
+export class TextureMapping {
+  private _texture?: RenderTexture;
+  private _params?: TextureMapping.Params;
+  public get texture(): RenderTexture | undefined { return this._texture; }
+  public get params(): TextureMapping.Params | undefined { return this._params; }
+  public get isValid(): boolean { return undefined !== this.texture; }
+  constructor(texture?: RenderTexture, params?: TextureMapping.Params) {
+    this._texture = texture;
+    this._params = params;
+  }
+}
+
+export namespace TextureMapping {
+
+  export const enum Mode {
+    None = -1,
+    Parametric = 0,
+    ElevationDrape = 1,
+    Planar = 2,
+    DirectionalDrape = 3,
+    Cubic = 4,
+    Spherical = 5,
+    Cylindrical = 6,
+    Solid = 7,
+    FrontProject = 8, // Only valid for lights.
+  }
+
+  export type NumArr6 = [number, number, number, number, number, number];
+
+  export class Trans2x3 {
+    private _vals = new Array<[number, number, number]>(2);
+    private _transform?: Transform;
+
+    public constructor(t00: number = 1, t01: number = 0, t02: number = 0, t10: number = 0, t11: number = 1, t12: number = 0) {
+      const vals = this._vals;
+      vals[0][0] = t00; vals[0][1] = t01; vals[0][2] = t02; vals[1][0] = t10; vals[1][1] = t11; vals[1][2] = t12;
+    }
+
+    public setTransform(): void {
+      const transform = Transform.createIdentity(), vals = this._vals, matrix = transform.matrix;
+
+      for (let i = 0, len = 2; i < 2; ++i)
+        for (let j = 0; j < len; ++j)
+          matrix.setAt(i, j, vals[i][j]);
+
+      matrix.setAt(0, 3, vals[0][2]);
+      matrix.setAt(1, 3, vals[1][2]);
+
+      this._transform = transform;
+    }
+
+    public get transform(): Transform { if (undefined === this._transform) this.setTransform(); return this._transform!; }
+  }
+
+  export interface ParamProps {
+    textureMat2x3?: TextureMapping.Trans2x3;
+    textureWeight?: number;
+    mapMode?: TextureMapping.Mode;
+    worldMapping?: boolean;
+  }
+
+  export class Params {
+    public textureMatrix: TextureMapping.Trans2x3;
+    public weight: number;
+    public mode: TextureMapping.Mode;
+    public worldMapping: boolean;
+    constructor(props = {} as TextureMapping.ParamProps) {
+      const { textureMat2x3 = new Trans2x3(), textureWeight = 1.0, mapMode = Mode.Parametric, worldMapping = false } = props;
+      this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;
+    }
+    public computeUVParams(_params: Point2d[], _visitor: IndexedPolyfaceVisitor, _transformToImodel: Transform): void { // BentleyStatus {
+      // const { mode, textureMatrix, worldMapping } = this;
+      // switch (mode) {
+      //   default:
+      //   case Mode.Parametric:
+      //     computeParametricUVParams(params[0], visitor, textureMatrix.transform, !worldMapping);
+      //     return BentleyStatus.SUCCESS;
+      //   case Mode.Planar:
+      //     const normalIndices = visitor.normalIndex;
+      //     // We ignore planar mode unless master or sub units for scaleMode (TR# 162118) and facet is planar.
+      //     if (!worldMapping || (undefined !== normalIndices && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2])))
+      //       computeParametricUVParams(params[0], visitor, textureMatrix.transform, !worldMapping);
+      //     else
+      //       computePlanarUVParams(params[0], visitor, textureMatrix.transform);
+      //     return BentleyStatus.SUCCESS;
+    }
+  }
+  export function computeParametricUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform, _isRelativeUnits: boolean): void {
+    // for (let i = 0, len = visitor.numEdges; ++i) {
+    //   const param = Point2d.create(0, 0);
+    //   if (isRelativeUnits || !visitor.tr)
+    // }
+  }
+  export function computePlanarUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform): void { }
 }
