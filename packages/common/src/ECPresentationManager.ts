@@ -18,6 +18,11 @@ export interface PageOptions {
  * tree and content controls
  */
 export interface ECPresentationManager {
+  /**
+   * Currently active locale used to localize presentation data.
+   */
+  activeLocale: string | undefined;
+
   /** Retrieves root nodes.
    * @param token Token of imodel to pull data from.
    * @param pageOptions  Page options for the requested nodes.

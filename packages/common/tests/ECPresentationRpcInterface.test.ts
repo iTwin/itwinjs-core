@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet } from "@src/index";
@@ -38,6 +39,12 @@ describe("ECPresentationRpcInterface", () => {
       rpcInterface = new ECPresentationRpcInterface();
       mock = moq.Mock.ofInstance(rpcInterface.forward);
       rpcInterface.forward = mock.object;
+    });
+
+    it("forwards setActiveLocale call", async () => {
+      const locale = faker.locale;
+      await rpcInterface.setActiveLocale(locale);
+      mock.verify((x) => x(locale), moq.Times.once());
     });
 
     it("forwards getRootNodes call", async () => {

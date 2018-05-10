@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import ECPresentationManager from "./ECPresentationManager";
+import ECPresentationManager, { Props as ECPresentationManagerProps } from "./ECPresentationManager";
 import SelectionManager from "./selection/SelectionManager";
 
 let presentationManager: ECPresentationManager | undefined;
@@ -31,8 +31,8 @@ export default class ECPresentation {
    * The method should be called after a call
    * to [IModelApp.startup]($imodeljs-frontend)
    */
-  public static initialize(): void {
-    presentationManager = new ECPresentationManager();
+  public static initialize(props?: ECPresentationManagerProps): void {
+    presentationManager = new ECPresentationManager(props);
     selectionManager = new SelectionManager();
   }
 

@@ -4,8 +4,11 @@
   
   <!-- Root Subject -->
   <RootNodeRule>
-    <InstancesOfSpecificClasses ClassNames='BisCore:Subject' ArePolymorphic='false' InstanceFilter='this.Parent = NULL' GroupByClass='false' GroupByLabel='false'/>
+    <CustomNode Type="TYPE_Subjects" Label="@Sample:presentation.subjects.label@" Description="@Sample:presentation.subjects.description@" ImageId="subjects" />
   </RootNodeRule>
+  <ChildNodeRule Condition='ParentNode.Type = "TYPE_Subjects"'>
+    <InstancesOfSpecificClasses ClassNames='BisCore:Subject' ArePolymorphic='false' InstanceFilter='this.Parent = NULL' GroupByClass='false' GroupByLabel='false'/>
+  </ChildNodeRule>
   <!-- Navigation of Subject / Subject and Subject / InformationPartitionElement hierarchy -->
   <ChildNodeRule Condition='ParentNode.ECInstance.IsOfClass("Subject", "BisCore")'>
     <RelatedInstances RelationshipClassNames='BisCore:SubjectOwnsSubjects' RequiredDirection='Forward' RelatedClassNames='BisCore:Subject' GroupByClass='false' GroupByLabel='false' />

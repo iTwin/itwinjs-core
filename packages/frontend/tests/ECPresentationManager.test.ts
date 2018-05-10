@@ -29,6 +29,32 @@ describe("ECPresentationManager", () => {
     manager = new ECPresentationManager();
   });
 
+  describe("constructor", () => {
+
+    it("sets active locale if supplied with props", async () => {
+      const props = { activeLocale: faker.locale };
+      const mgr = new ECPresentationManager(props);
+      expect(mgr.activeLocale).to.eq(props.activeLocale);
+    });
+
+  });
+
+  describe("activeLocale", () => {
+
+    it("calls gateway when locale changes", async () => {
+      const locale = faker.locale;
+      manager.activeLocale = locale;
+      expect(manager.activeLocale).to.eq(locale);
+      interfaceMock.verify((x) => x.setActiveLocale(locale), moq.Times.once());
+    });
+
+    it("doesn't call gateway when locale doesn't change", async () => {
+      manager.activeLocale = manager.activeLocale;
+      interfaceMock.verify((x) => x.setActiveLocale(moq.It.isAny()), moq.Times.never());
+    });
+
+  });
+
   describe("getRootNodes", () => {
 
     it("requests root nodes from proxy", async () => {

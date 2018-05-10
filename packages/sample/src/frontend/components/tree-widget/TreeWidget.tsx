@@ -1,6 +1,6 @@
 import * as React from "react";
 import Tree, { TreeNode } from "rc-tree";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionHandler } from "@bentley/ecpresentation-frontend";
 import { TreeDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
@@ -103,7 +103,7 @@ export default class TreeWidget extends React.Component<Props, State> {
     const treeNodes = loop(this.state.treeData);
     return (
       <div className="TreeWidget">
-        <h3>Tree Widget</h3>
+        <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
         <Tree loadData={this.loadChildNodes} multiple={true} showIcon={false} checkable={false} autoExpandParent={false} onSelect={this.onNodeSelected}>
           {treeNodes}
         </Tree>

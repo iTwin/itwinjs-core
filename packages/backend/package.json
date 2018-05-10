@@ -17,7 +17,8 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src",
+    "build": "tsc -p ./src && npm run build:assets",
+    "build:assets": "cpx ./assets/**/* ./lib/assets && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
     "docs": "npm run docs:reference && npm run docs:changelog",
@@ -44,6 +45,7 @@
     "@bentley/bentleyjs-core": "^8",
     "@bentley/imodeljs-backend": "^0.85.1",
     "@bentley/imodeljs-common": "^0.85",
+    "cpx": "^1.5",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",

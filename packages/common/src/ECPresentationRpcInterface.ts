@@ -31,6 +31,9 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   /** Get the frontend client of this interface */
   public static getClient(): ECPresentationRpcInterface { return RpcManager.getClientForInterface(ECPresentationRpcInterface); }
 
+  /** Change active locale used by the backend */
+  public setActiveLocale(_locale: string | undefined): Promise<void> { return this.forward.apply(this, arguments); }
+
   /** See [[ECPresentationManager.getRootNodes]] */
   public getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<ReadonlyArray<Readonly<Node>>> { return this.forward.apply(this, arguments); }
   /** See [[ECPresentationManager.getRootNodesCount]] */

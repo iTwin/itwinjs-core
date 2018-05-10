@@ -4,9 +4,10 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
+import * as path from "path";
 import { OpenMode, using } from "@bentley/bentleyjs-core";
 import { IModelToken, IModelError } from "@bentley/imodeljs-common";
-import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
+import { NativePlatformRegistry, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
 import { PageOptions, SelectionInfo, KeySet } from "@bentley/ecpresentation-common";
 import { Node, NodeKey, ECInstanceNodeKey } from "@bentley/ecpresentation-common";
@@ -23,55 +24,75 @@ import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley
 import { ItemJSON } from "@bentley/ecpresentation-common/lib/content/Item";
 import "@helpers/Snapshots";
 import "@helpers/Promises";
+import "./IModeHostSetup";
 
 describe("ECPresentationManager", () => {
 
-  beforeEach(() => {
-    IModelHost.shutdown();
-    try {
-      IModelHost.startup();
-    } catch (_e) {}
-  });
+  describe("constructor", () => {
 
-  it("uses default native library implementation if not overridden", () => {
-    using(new ECPresentationManager(), (manager) => {
-      expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
-    });
-  });
-
-  it("uses addon implementation supplied through props", () => {
-    const mock = moq.Mock.ofType<NodeAddonDefinition>();
-    using(new ECPresentationManager({ addon: mock.object }), (manager) => {
-      expect(manager.getNativePlatform()).eq(mock.object);
-    });
-  });
-
-  it("calls native platform terminate when disposed", () => {
-    const mock = moq.Mock.ofType<NodeAddonDefinition>();
-    const manager = new ECPresentationManager({ addon: mock.object });
-    manager.dispose();
-    mock.verify((x) => x.terminate(), moq.Times.once());
-  });
-
-  it("throws when attempting to use native platform after disposal", () => {
-    const mock = moq.Mock.ofType<NodeAddonDefinition>();
-    const manager = new ECPresentationManager({ addon: mock.object });
-    manager.dispose();
-    expect(() => manager.getNativePlatform()).to.throw();
-  });
-
-  describe("addon setup based on constructor props", () => {
-
-    const addon = moq.Mock.ofType<NodeAddonDefinition>();
-    beforeEach(() => {
-      addon.reset();
+    it("uses default native library implementation if not overridden", () => {
+      using(new ECPresentationManager(), (manager) => {
+        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
+      });
     });
 
-    it("sets up ruleset directories if supplied", () => {
-      const dirs = ["test1", "test2"];
-      addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
-      using(new ECPresentationManager({ addon: addon.object, rulesetDirectories: dirs }), () => {});
-      addon.verifyAll();
+    it("uses addon implementation supplied through props", () => {
+      const mock = moq.Mock.ofType<NodeAddonDefinition>();
+      using(new ECPresentationManager({ addon: mock.object }), (manager) => {
+        expect(manager.getNativePlatform()).eq(mock.object);
+      });
+    });
+
+    describe("addon setup based on props", () => {
+
+      const addon = moq.Mock.ofType<NodeAddonDefinition>();
+      beforeEach(() => {
+        addon.reset();
+      });
+
+      it("sets up ruleset directories if supplied", () => {
+        const dirs = ["test1", "test2"];
+        addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
+        using(new ECPresentationManager({ addon: addon.object, rulesetDirectories: dirs }), () => { });
+        addon.verifyAll();
+      });
+
+      it("sets up locale directories if supplied", () => {
+        const suppliedDirs = ["test1", "test2", "test2"];
+        const addonDirs = [path.resolve(__dirname, "../src/assets/locales"), "test1", "test2"];
+        addon.setup((x) => x.setupLocaleDirectories(addonDirs)).verifiable();
+        using(new ECPresentationManager({ addon: addon.object, localeDirectories: suppliedDirs }), () => { });
+        addon.verifyAll();
+      });
+
+      it("sets up active locale if supplied", () => {
+        const locale = faker.locale;
+        addon.setup((x) => x.setActiveLocale(locale)).verifiable();
+        using(new ECPresentationManager({ addon: addon.object, activeLocale: locale }), (manager) => {
+          expect(manager.activeLocale).to.eq(locale);
+        });
+        addon.verifyAll();
+      });
+
+    });
+
+  });
+
+  describe("dispose", () => {
+
+    it("calls native platform terminate when disposed", () => {
+      const mock = moq.Mock.ofType<NodeAddonDefinition>();
+      const manager = new ECPresentationManager({ addon: mock.object });
+      manager.dispose();
+      manager.dispose(); // to verify the addon gets terminated only once
+      mock.verify((x) => x.terminate(), moq.Times.once());
+    });
+
+    it("throws when attempting to use native platform after disposal", () => {
+      const mock = moq.Mock.ofType<NodeAddonDefinition>();
+      const manager = new ECPresentationManager({ addon: mock.object });
+      manager.dispose();
+      expect(() => manager.getNativePlatform()).to.throw();
     });
 
   });
@@ -81,8 +102,8 @@ describe("ECPresentationManager", () => {
     let manager: ECPresentationManager;
     const addonMock = moq.Mock.ofType<NativeECPresentationManager>();
     beforeEach(() => {
-      addonMock.reset();
       manager = new ECPresentationManager();
+      addonMock.reset();
       // we're replacing the native addon with our mock - make sure the original
       // one gets terminated
       (manager.getNativePlatform() as any)._nativeAddon.terminate();
@@ -108,6 +129,20 @@ describe("ECPresentationManager", () => {
       addonMock.setup((x) => x.setupRulesetDirectories(moq.It.isAny())).verifiable();
       manager.getNativePlatform().setupRulesetDirectories([]);
       addonMock.verifyAll();
+    });
+
+    it("calls addon's setupLocaleDirectories", async () => {
+      addonMock.setup((x) => x.setupLocaleDirectories(moq.It.isAny())).verifiable();
+      manager.getNativePlatform().setupLocaleDirectories([]);
+      addonMock.verifyAll();
+    });
+
+    it("calls addon's setActiveLocale", async () => {
+      const locale = faker.locale;
+      manager.activeLocale = locale;
+      addonMock.verify((x) => x.setActiveLocale(locale), moq.Times.once());
+      manager.activeLocale = undefined;
+      addonMock.verify((x) => x.setActiveLocale(""), moq.Times.once());
     });
 
     it("returns imodel addon from IModelDb", () => {

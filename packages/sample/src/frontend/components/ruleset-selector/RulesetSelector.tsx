@@ -1,4 +1,5 @@
 import * as React from "react";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 import "./RulesetSelector.css";
 
@@ -19,10 +20,10 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
   }
   public render() {
     if (0 === this.props.availableRulesets.length)
-      return (<div className="RulesetSelector">No available rulesets</div>);
+      return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.no-available-rulesets")}</div>);
     return (
       <div className="RulesetSelector">
-        Select a ruleset:
+        {IModelApp.i18n.translate("Sample:controls.notifications.select-ruleset")}:
         <select onChange={this.onSelectedRulesetIdChanged}>
           {this.props.availableRulesets.map((rulesetId: string) => (
             <option value={rulesetId} key={rulesetId}>{rulesetId}</option>

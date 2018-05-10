@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionChangeEventArgs, ISelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
 import { PropertyPaneDataProvider, PropertyRecord, PropertyCategory } from "@bentley/ecpresentation-controls";
@@ -19,7 +19,7 @@ export default class PropertiesWidget extends React.Component<Props> {
   public render() {
     return (
       <div className="PropertiesWidget">
-        <h3>Properties</h3>
+        <h3>{IModelApp.i18n.translate("Sample:controls.properties")}</h3>
         <div className="ContentContainer">
           <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} />
         </div>
@@ -162,11 +162,11 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
   }
   public render() {
     if (this.state.error)
-      return (<div className="Error">{this.state.error}</div>);
+      return (<div className="Error">{IModelApp.i18n.translate("Sample:controls.notifications.error")}: {this.state.error}</div>);
     if (!this._hasSelection)
-      return (<div className="NoData">Nothing selected</div>);
+      return (<div className="NoData">{IModelApp.i18n.translate("Sample:controls.notifications.nothing-selected")}</div>);
     if (!this.state.groups || 0 === this.state.groups.length)
-      return (<div className="NoProperties">No Properties</div>);
+      return (<div className="NoProperties">{IModelApp.i18n.translate("Sample:controls.notifications.no-properties")}</div>);
     return (
       <table>
         <tbody>

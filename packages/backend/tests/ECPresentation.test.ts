@@ -8,6 +8,7 @@ import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import ECPresentation from "@src/ECPresentation";
 import ECPresentationManager from "@src/ECPresentationManager";
+import "./IModeHostSetup";
 
 describe("ECPresentation", () => {
 

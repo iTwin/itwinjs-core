@@ -26,15 +26,18 @@ export const initialize = () => {
   // init backend
   IModelHost.startup();
   ECPresentationBackend.initialize({
-    rulesetDirectories: ["assets/rulesets/"],
+    rulesetDirectories: ["assets/rulesets"],
+    localeDirectories: ["assets/locales"],
   });
-
-  // init frontend
-  IModelApp.startup();
-  ECPresentationFrontend.initialize();
 
   // set up rpc interfaces
   TestRpcManager.initializeClient([StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface]);
+
+  // init frontend
+  IModelApp.startup();
+  ECPresentationFrontend.initialize({
+    activeLocale: IModelApp.i18n.languageList()[0],
+  });
 
   isInitialized = true;
 };

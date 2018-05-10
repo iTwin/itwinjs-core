@@ -30,6 +30,11 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return ECPresentation.manager;
   }
 
+  public setActiveLocale(locale: string | undefined): Promise<void> {
+    this.getManager().activeLocale = locale;
+    return Promise.resolve();
+  }
+
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return await this.getManager().getRootNodes(token, pageOptions, options);
   }

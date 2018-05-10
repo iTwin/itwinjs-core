@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import * as path from "path";
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
@@ -19,8 +20,22 @@ export interface Props {
   /** @hidden */
   addon?: NodeAddonDefinition;
 
-  /** Paths to directories which contain application rulesets */
+  /**
+   * A list of directories containing presentation rulesets.
+   */
   rulesetDirectories?: string[];
+
+  /**
+   * A list of directories containing locale-specific localized
+   * string files (in simplified i18next v3 format)
+   */
+  localeDirectories?: string[];
+
+  /**
+   * Sets the active locale to use when localizing presentation-related
+   * strings. It can later be changed through ECPresentationManager.
+   */
+  activeLocale?: string;
 }
 
 /**
@@ -30,6 +45,7 @@ export interface Props {
 export default class ECPresentationManager implements ECPresentationManagerDefinition, IDisposable {
 
   private _addon?: NodeAddonDefinition;
+  private _activeLocale?: string;
   private _isDisposed: boolean;
 
   /**
@@ -42,6 +58,9 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       this._addon = props.addon;
     if (props && props.rulesetDirectories)
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
+    if (props)
+      this.activeLocale = props.activeLocale;
+    this.setupLocaleDirectories(props);
   }
 
   /**
@@ -64,6 +83,34 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       this._addon = new addonImpl();
     }
     return this._addon!;
+  }
+
+  private setupLocaleDirectories(props?: Props) {
+    const localeDirectories = [path.join(__dirname, "assets", "locales")];
+    if (props && props.localeDirectories) {
+      props.localeDirectories.forEach((dir) => {
+        if (-1 === localeDirectories.indexOf(dir))
+          localeDirectories.push(dir);
+      });
+    }
+    this.getNativePlatform().setupLocaleDirectories(localeDirectories);
+  }
+
+  /**
+   * Get currently active locale
+   */
+  public get activeLocale(): string | undefined {
+    return this._activeLocale;
+  }
+
+  /**
+   * Set active locale
+   */
+  public set activeLocale(locale: string | undefined) {
+    if (this.activeLocale !== locale) {
+      this._activeLocale = locale;
+      this.getNativePlatform().setActiveLocale(locale ? locale : "");
+    }
   }
 
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
@@ -149,6 +196,8 @@ export interface NodeAddonDefinition {
   terminate(): void;
   handleRequest(db: any, options: string): string;
   setupRulesetDirectories(directories: string[]): void;
+  setupLocaleDirectories(directories: string[]): void;
+  setActiveLocale(locale: string): void;
   getImodelAddon(token: IModelToken): any;
 }
 
@@ -165,6 +214,12 @@ const createAddonImpl = () => {
     }
     public setupRulesetDirectories(directories: string[]): void {
       this._nativeAddon.setupRulesetDirectories(directories);
+    }
+    public setupLocaleDirectories(directories: string[]): void {
+      this._nativeAddon.setupLocaleDirectories(directories);
+    }
+    public setActiveLocale(locale: string): void {
+      this._nativeAddon.setActiveLocale(locale);
     }
     public getImodelAddon(token: IModelToken): any {
       const imodel = IModelDb.find(token);

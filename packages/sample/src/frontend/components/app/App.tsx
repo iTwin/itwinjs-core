@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import IModelSelector from "../imodel-selector/IModelSelector";
 import PropertiesWidget from "../properties-widget/PropertiesWidget";
@@ -59,7 +59,7 @@ export default class App extends React.Component<{}, State> {
     return (
       <div className="App">
         <div className="Header">
-          <h2>Welcome to ECPresentation Sample App</h2>
+          <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
         </div>
         <IModelSelector onIModelSelected={this.onIModelSelected} onBeforeCloseImodel={this.onBeforeCloseImodel} />
         <RulesetSelector availableRulesets={["Items", "Classes"]} onRulesetSelected={this.onRulesetSelected} />
