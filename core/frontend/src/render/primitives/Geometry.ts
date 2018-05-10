@@ -41,9 +41,19 @@ import { ViewContext } from "../../ViewContext";
 import { StrokesList } from "./Strokes";
 
 export abstract class Geometry {
+  public readonly transform: Transform;
+  public readonly tileRange: Range3d;
+  public readonly entityId: Id64;
+  public readonly displayParams: DisplayParams;
+  public readonly isCurved: boolean;
   public clip?: ClipVector;
 
-  public constructor(public transform: Transform, public tileRange: Range3d, public entityId: Id64, public displayParams: DisplayParams, public isCurved: boolean) {
+  public constructor(transform: Transform, tileRange: Range3d, entityId: Id64, displayParams: DisplayParams, isCurved: boolean) {
+    this.transform = transform;
+    this.tileRange = tileRange;
+    this.entityId = entityId;
+    this.displayParams = displayParams;
+    this.isCurved = isCurved;
   }
 
   public static createFromGeom(geometry: GeometryQuery, tf: Transform, tileRange: Range3d, entityId: Id64, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
