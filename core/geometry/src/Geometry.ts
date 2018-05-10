@@ -388,7 +388,7 @@ export class Geometry {
   public static inverseInterpolate01(f0: number, f1: number, targetF: number = 0): number | undefined {
     return Geometry.conditionalDivideFraction(targetF - f0, f1 - f0);
   }
-
+  /** Return true if json is an array with at least minEntries, and all entries are numbers (including those beyond minEntries) */
   public static isNumberArray(json: any, minEntries: number = 0): boolean {
     if (Array.isArray(json) && json.length >= minEntries) {
       let entry;
@@ -397,6 +397,17 @@ export class Geometry {
         if (!Number.isFinite(entry))
           return false;
       }
+      return true;
+    }
+    return false;
+  }
+  /** Return true if json is an array of at least numNumberArrays, with at least minEntries in each number array.
+   */
+  public static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries: number = 0): boolean {
+    if (Array.isArray(json) && json.length >= numNumberArray) {
+      let entry;
+      for (entry of json)
+        if (!Geometry.isNumberArray(entry, minEntries)) return false;
       return true;
     }
     return false;

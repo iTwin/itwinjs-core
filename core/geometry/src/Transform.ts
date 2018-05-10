@@ -142,12 +142,12 @@ export class RotMatrix implements BeJSONFunctions {
     this.inverseState = InverseMatrixState.unknown;
   }
   /** Return a json object containing the 9 numeric entries as a single array in row major order,
-   * `[ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]`
+   * `[ [1, 2, 3],[ 4, 5, 6], [7, 8, 9] ]`
    * */
   public toJSON(): RotMatrixProps {
-    return [this.coffs[0], this.coffs[1], this.coffs[2],
-    this.coffs[3], this.coffs[4], this.coffs[5],
-    this.coffs[6], this.coffs[7], this.coffs[8]];
+    return [[this.coffs[0], this.coffs[1], this.coffs[2]],
+    [this.coffs[3], this.coffs[4], this.coffs[5]],
+    [this.coffs[6], this.coffs[7], this.coffs[8]]];
   }
 
   public setFromJSON(json?: RotMatrixProps): void {
@@ -162,15 +162,26 @@ export class RotMatrix implements BeJSONFunctions {
       return;
     }
 
+    if (Geometry.isArrayOfNumberArray(json, 3, 3)) {
+      const data = json as number[][];
+      this.setRowValues(
+        data[0][0], data[0][1], data[0][2],
+        data[1][0], data[1][1], data[1][2],
+        data[2][0], data[2][1], data[2][2]);
+      return;
+    }
+
     if (json.length === 9) {
+      const data = json as number[];
       this.setRowValues(
-        json[0], json[1], json[2],
-        json[3], json[4], json[5],
-        json[6], json[7], json[8]);
+        data[0], data[1], data[2],
+        data[3], data[4], data[5],
+        data[6], data[7], data[8]);
     } else if (json.length === 4) {
+      const data = json as number[];
       this.setRowValues(
-        json[0], json[1], 0,
-        json[2], json[3], 0,
+        data[0], data[1], 0,
+        data[2], data[3], 0,
         0, 0, 1);
     }
   }
@@ -1707,11 +1718,24 @@ export class Transform implements BeJSONFunctions {
   /** Set this Transform to be an identity. */
   public setIdentity() { this._origin.setZero(); this._matrix.setIdentity(); }
   public setFromJSON(json?: TransformProps): void {
-    if (json && json.origin && json.matrix) {
-      this._origin.setFromJSON(json.origin);
-      this._matrix.setFromJSON(json.matrix);
-    } else
-      this.setIdentity();
+    if (json) {
+      if (json instanceof Object && (json as any).origin && (json as any).matrix) {
+        this._origin.setFromJSON((json as any).origin);
+        this._matrix.setFromJSON((json as any).matrix);
+        return;
+      }
+      if (Geometry.isArrayOfNumberArray(json, 3, 4)) {
+        const data = json as number[][];
+        this._matrix.setRowValues(
+          data[0][0], data[0][1], data[0][2],
+          data[1][0], data[1][1], data[1][2],
+          data[2][0], data[2][1], data[2][2]);
+        this._origin.set(data[0][3], data[1][3], data[2][3]);
+        return;
+      }
+
+    }
+    this.setIdentity();
   }
   /**
    * Test for near equality with other Transform.  Comparison uses the isAlmostEqual methods on
@@ -1719,7 +1743,15 @@ export class Transform implements BeJSONFunctions {
    * @param other Transform to compare to.
    */
   public isAlmostEqual(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqual(other._matrix); }
-  public toJSON(): TransformProps { return { origin: this._origin.toJSON(), matrix: this._matrix.toJSON() }; }
+  public toJSON(): TransformProps {
+    // return { origin: this._origin.toJSON(), matrix: this._matrix.toJSON() };
+    return [
+      [this._matrix.coffs[0], this._matrix.coffs[1], this._matrix.coffs[2], this._origin.x],
+      [this._matrix.coffs[3], this._matrix.coffs[4], this._matrix.coffs[5], this._origin.y],
+      [this._matrix.coffs[6], this._matrix.coffs[7], this._matrix.coffs[8], this._origin.z],
+    ];
+  }
+
   public static fromJSON(json?: TransformProps): Transform {
     const result = Transform.createIdentity();
     result.setFromJSON(json);
