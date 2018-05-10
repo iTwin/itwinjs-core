@@ -2,10 +2,22 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
+import {
+  assert,
+  // SortedArray,
+} from "@bentley/bentleyjs-core";
+import {
+  Point2d,
+  Point3d,
+  Range3d,
+  Polyface,
+  // PolyfaceQuery,
+  // IndxedPolyfaceVisitor,
+} from "@bentley/geometry-core";
+import { VertexMap, VertexKey } from "./VertexKey";
 import {
   PolylineData,
+  QPoint3d,
   QPoint3dList,
   MeshPolyline,
   MeshEdges,
@@ -24,13 +36,15 @@ import {
   OctEncodedNormal,
   RenderTexture,
   RenderMaterial,
+  TextureMapping,
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "./DisplayParams";
 // import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
 // import { System } from "../webgl/System";
-import { TriangleList } from "./Primitives";
+import { Triangle, TriangleList, TriangleKey, TriangleSet } from "./Primitives";
 import { Graphic } from "../webgl/Graphic";
+import { IModelConnection } from "../../IModelConnection";
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
 export class PolylineArgs {
@@ -72,7 +86,7 @@ export class PolylineArgs {
     this.linePixels = mesh.displayParams.linePixels;
     this.flags.is2d = mesh.is2d;
     this.flags.isPlanar = mesh.isPlanar;
-    this.flags.isDisjoint = MeshPrimitiveType.Point === mesh.type;
+    this.flags.isDisjoint = Mesh.PrimitiveType.Point === mesh.type;
     if (DisplayParams.RegionEdgeType.Outline === mesh.displayParams.regionEdgeType) {
       // This polyline is behaving as the edges of a region surface.
       // TODO: GradientSymb not implemented yet!  Uncomment following lines when it is implemented.
@@ -193,66 +207,6 @@ export class MeshGraphicArgs {
   public meshArgs: MeshArgs = new MeshArgs();
 }
 
-export class MeshFeatures {
-  public readonly table: FeatureTable;
-  public readonly _indices: number[] = [];
-  public uniform = 0;
-  public initialized = false;
-
-  public constructor(table: FeatureTable) { this.table = table; }
-
-  public get indices(): number[] { return this._indices; }
-
-  public add(feat: Feature, numVerts: number): void {
-    const index = this.table.getIndex(feat);
-    if (!this.initialized) {
-      // First feature - uniform.
-      this.uniform = index;
-      this.initialized = true;
-    } else if (0 < this.indices.length) {
-      // Already non-uniform
-      this.indices.push(index);
-    } else {
-      // Second feature - back-fill uniform for existing verts
-      while (this.indices.length < numVerts - 1)
-        this.indices.push(this.uniform);
-
-      this.indices.push(index);
-    }
-  }
-
-  /*
-  public setIndices(indices: number[]) {
-    this._indices.length = 0;
-    this.uniform = 0;
-    this.initialized = 0 < indices.length;
-
-    assert(0 < indices.length);
-    if (1 == indices.length)
-      this.uniform = indices[0];
-    else if (1 < indices.length)
-      this._indices = indices;
-  } */
-
-  public toFeatureIndex(index: FeatureIndex): void {
-    if (!this.initialized) {
-      index.type = FeatureIndexType.Empty;
-    } else if (this.indices.length === 0) {
-      index.type = FeatureIndexType.Uniform;
-      index.featureID = this.uniform;
-    } else {
-      index.type = FeatureIndexType.NonUniform;
-      index.featureIDs = new Uint32Array(this._indices);
-    }
-  }
-}
-
-export const enum MeshPrimitiveType {
-  Mesh,
-  Polyline,
-  Point,
-}
-
 export type PolylineList = MeshPolyline[];
 
 export class Mesh {
@@ -263,14 +217,15 @@ export class Mesh {
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
   public readonly colors: Uint16Array = new Uint16Array();
   public edges?: MeshEdges;
-  public readonly displayParams: DisplayParams;
-  public readonly features: MeshFeatures;
-  public readonly type: MeshPrimitiveType;
+  public readonly features: Mesh.Features;
+  public readonly type: Mesh.PrimitiveType;
   public readonly is2d: boolean;
   public readonly isPlanar: boolean;
+  public displayParams: DisplayParams;
 
-  public constructor(displayParams: DisplayParams, features: MeshFeatures, type: MeshPrimitiveType, range: Range3d, is2d: boolean, isPlanar: boolean) {
-    if (MeshPrimitiveType.Mesh === type)
+  private constructor(props: Mesh.Props) {
+    const { displayParams, features, type, range, is2d, isPlanar } = props;
+    if (Mesh.PrimitiveType.Mesh === type)
       this._data = new TriangleList();
     else
       this._data = new Array<MeshPolyline>();
@@ -283,8 +238,8 @@ export class Mesh {
     this.points = new QPoint3dList(QParams3d.fromRange(range));
   }
 
-  public get triangles(): TriangleList | undefined { return MeshPrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
-  public get polylines(): PolylineList | undefined { return MeshPrimitiveType.Mesh !== this.type ? this._data as PolylineList : undefined; }
+  public get triangles(): TriangleList | undefined { return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
+  public get polylines(): PolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as PolylineList : undefined; }
 
   public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
   public getGraphics(args: MeshGraphicArgs/*, system: System, iModel: IModelConnection*/): Graphic | undefined {
@@ -295,5 +250,243 @@ export class Mesh {
       // graphic = system.createIndexedPolylines(args.polylineArgs, iModel);
     }
     return graphic;
+  }
+
+  public addPolyline(poly: MeshPolyline): void {
+    const { type, polylines } = this;
+    assert(Mesh.PrimitiveType.Polyline === type || Mesh.PrimitiveType.Point === type);
+    assert(undefined !== polylines);
+    if (Mesh.PrimitiveType.Polyline === type && poly.indices.length < 2)
+      return;
+    if (undefined !== polylines) polylines.push(poly);
+  }
+
+  public addTriangle(triangle: Triangle): void {
+    const { triangles, type } = this;
+    assert(Mesh.PrimitiveType.Mesh === type);
+    assert(undefined !== triangles);
+    if (undefined !== triangles) triangles.addTriangle(triangle);
+  }
+
+  public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
+}
+
+export namespace Mesh {
+  export const enum PrimitiveType {
+    Mesh,
+    Polyline,
+    Point,
+  }
+
+  export class Features {
+    public readonly table: FeatureTable;
+    public readonly _indices: number[] = [];
+    public uniform = 0;
+    public initialized = false;
+
+    public constructor(table: FeatureTable) { this.table = table; }
+
+    public get indices(): number[] { return this._indices; }
+
+    public add(feat: Feature, numVerts: number): void {
+      const index = this.table.getIndex(feat);
+      if (!this.initialized) {
+        // First feature - uniform.
+        this.uniform = index;
+        this.initialized = true;
+      } else if (0 < this.indices.length) {
+        // Already non-uniform
+        this.indices.push(index);
+      } else {
+        // Second feature - back-fill uniform for existing verts
+        while (this.indices.length < numVerts - 1)
+          this.indices.push(this.uniform);
+
+        this.indices.push(index);
+      }
+    }
+
+    /*
+    public setIndices(indices: number[]) {
+      this._indices.length = 0;
+      this.uniform = 0;
+      this.initialized = 0 < indices.length;
+
+      assert(0 < indices.length);
+      if (1 == indices.length)
+        this.uniform = indices[0];
+      else if (1 < indices.length)
+        this._indices = indices;
+    } */
+
+    public toFeatureIndex(index: FeatureIndex): void {
+      if (!this.initialized) {
+        index.type = FeatureIndexType.Empty;
+      } else if (this.indices.length === 0) {
+        index.type = FeatureIndexType.Uniform;
+        index.featureID = this.uniform;
+      } else {
+        index.type = FeatureIndexType.NonUniform;
+        index.featureIDs = new Uint32Array(this._indices);
+      }
+    }
+  }
+
+  export interface Props {
+    displayParams: DisplayParams;
+    features: Mesh.Features;
+    type: Mesh.PrimitiveType;
+    range: Range3d;
+    is2d: boolean;
+    isPlanar: boolean;
+  }
+}
+
+export class MeshBuilder {
+  private _vertexMap?: VertexMap;
+  private _triangleSet?: TriangleSet;
+  private _currentPolyface?: MeshBuilderPolyface;
+  public readonly mesh: Mesh;
+  public readonly tolerance: number;
+  public readonly areaTolerance: number;
+  public readonly tileRange: Range3d;
+  public get currentPolyface(): MeshBuilderPolyface | undefined { return this._currentPolyface; }
+  public set displayParams(params: DisplayParams) { this.mesh.displayParams = params; }
+
+  /** create reference for vertexMap on demand */
+  public get vertexMap(): VertexMap {
+    if (undefined === this._vertexMap) this._vertexMap = new VertexMap();
+    return this._vertexMap;
+  }
+
+  /** create reference for triangleSet on demand */
+  public get triangleSet(): TriangleSet {
+    if (undefined === this._triangleSet) this._triangleSet = new TriangleSet();
+    return this._triangleSet;
+  }
+
+  private constructor(mesh: Mesh, tolerance: number, areaTolerance: number, tileRange: Range3d) {
+    this.mesh = mesh;
+    this.tolerance = tolerance;
+    this.areaTolerance = areaTolerance;
+    this.tileRange = tileRange;
+  }
+
+  public static create(props: MeshBuilder.Props): MeshBuilder {
+    const mesh = Mesh.create(props);
+    const { tolerance, areaTolerance, range } = props;
+    return new MeshBuilder(mesh, tolerance, areaTolerance, range);
+  }
+
+  // public addFromPolyfaceVisitor(params: MeshBuilder.PolyfaceVisitorParams): void {
+  //   const { visitor, mappedTexture, iModel, feature, includeParams, fillColor, requireNormals, auxData } = params;
+  //   if (visitor.)
+  // }
+
+  /** removed Feature for now */
+  public addPolyline(points: QPoint3d[], fillColor: number, startDistance: number): void {
+    const poly = new MeshPolyline(startDistance);
+    for (const point of points) poly.addIndex(this.addVertex(point, fillColor));
+    this.mesh.addPolyline(poly);
+  }
+
+  private createQPoint(point: Point3d): QPoint3d {
+    const params = this.mesh.points.params;
+    return QPoint3d.create(point, params);
+  }
+
+  /** removed Feature for now */
+  public addPointString(points: Point3d[], fillColor: number, startDistance: number): void {
+    const { addVertex, createQPoint, mesh } = this;
+    // Assume no duplicate points in point strings (or, too few to matter).
+    // Why? Because drawGridDots() potentially sends us tens of thousands of points (up to 83000 on my large monitor in top view), and wants to do so every frame.
+    // The resultant map lookups/inserts/rebalancing kill performance in non-optimized builds.
+    // NB: startDistance currently unused - Ray claims they will be used in future for non-cosmetic line styles? If not let's jettison them...
+    const poly = new MeshPolyline(startDistance);
+    for (const point of points) poly.addIndex(addVertex(createQPoint(point), fillColor));
+    mesh.addPolyline(poly);
+  }
+
+  // public beginPolyface(polyface: PolyfaceQuery, options: MeshEdgeCreationOptions): void;
+  // public endPolyface();
+
+  // #TODO: empty method declaration?
+  // public addMesh(triangle: Triangle): void;
+
+  public addVertex(qpoint: QPoint3d, fillColor: number): number {
+    return this.vertexMap.insert(new VertexKey(qpoint, fillColor));
+  }
+  public addTriangle(triangle: Triangle): void {
+    const { triangleSet, mesh } = this;
+    // Prefer to avoid adding vertices originating from degenerate triangles before we get here...
+    assert(!triangle.isDegenerate);
+    const key = new TriangleKey(triangle);
+    if (triangleSet.findEqual(key) === undefined) {
+      triangleSet.insert(key);
+      mesh.addTriangle(triangle);
+    }
+  }
+}
+
+export namespace MeshBuilder {
+  export interface Props extends Mesh.Props {
+    tolerance: number;
+    areaTolerance: number;
+  }
+  export interface PolyfaceVisitorParams {
+    // visitor: IndxedPolyfaceVisitor;
+    mappedTexture: TextureMapping;
+    iModel: IModelConnection;
+    feature: Feature;
+    includeParams: boolean;
+    fillColor: number;
+    requireNormals: boolean;
+    // auxData: MeshAuxData;
+  }
+}
+
+export class MeshEdgeCreationOptions {
+  public readonly type: MeshEdgeCreationOptions.Type;
+  public readonly minCreaseAngle = 20.0 * GeomConstant.radiansPerDegree;
+  public get generateAllEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.AllEdges; }
+  public get generateNoEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.NoEdges; }
+  public get generateSheetEdges(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.SheetEdges); }
+  public get generateCreaseEdges(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreaseEdges); }
+  /** Create edge chains for polyfaces that do not already have them. */
+  public get createEdgeChains(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreateChains); }
+  constructor(type = MeshEdgeCreationOptions.Type.NoEdges) { this.type = type; }
+}
+
+export namespace MeshEdgeCreationOptions {
+  export const enum Type {
+    NoEdges = 0x0000,
+    SheetEdges = 0x0001 << 0,
+    CreaseEdges = 0x0001 << 1,
+    SmoothEdges = 0x0001 << 2,
+    CreateChains = 0x0001 << 3,
+    DefaultEdges = CreaseEdges | SheetEdges,
+    AllEdges = CreaseEdges | SheetEdges | SmoothEdges,
+  }
+}
+
+export class GeomConstant {
+  public static readonly piOver4 = 7.85398163397448280000e-001;
+  public static readonly piOver2 = 1.57079632679489660000e+000;
+  public static readonly pi = 3.14159265358979310000e+000;
+  public static readonly pi2 = 6.28318530717958620000e+000;
+  public static readonly degreesPerRadian = (45.0 / GeomConstant.piOver4);
+  public static readonly radiansPerDegree = (GeomConstant.piOver4 / 45.0);
+  public static readonly piOver12 = 0.26179938779914943653855361527329;
+  public static readonly PI = 3.1415926535897932384626433;
+}
+
+export class MeshBuilderPolyface {
+  public readonly polyface: Polyface;
+  public readonly edgeOptions: MeshEdgeCreationOptions;
+  public readonly vertexIndexMap: Map<number, number>;
+  constructor(polyface: Polyface, edgeOptions: MeshEdgeCreationOptions, vertexIndexMap = new Map<number, number>()) {
+    this.polyface = polyface;
+    this.edgeOptions = edgeOptions;
+    this.vertexIndexMap = vertexIndexMap;
   }
 }
