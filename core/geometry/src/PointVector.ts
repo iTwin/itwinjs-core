@@ -23,8 +23,8 @@ export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 
 export type XYZProps = { x?: number; y?: number; z?: number } | number[];
 export type XYProps = { x?: number; y?: number; } | number[];
-export type RotMatrixProps = RotMatrix | number[];
-export interface TransformProps { origin: XYZProps; matrix: RotMatrixProps; }
+export type RotMatrixProps = number[][] | RotMatrix | number[];
+export type TransformProps = number [][] | number[] | { origin: XYZProps; matrix: RotMatrixProps; };
 export type Range3dProps = { low: XYZProps; high: XYZProps; } | XYZProps[];
 export type Range2dProps = { low: XYProps; high: XYProps; } | XYProps[];
 export type Range1dProps = { low: number; high: number } | number[];
@@ -1248,10 +1248,10 @@ export class YawPitchRollAngles implements BeJSONFunctions {
     if (!this.yaw.isAlmostZero()) val.yaw = this.yaw.toJSON();
     return val;
   }
-/**
- * Install all rotations from `other` into `this`.
- * @param other YawPitchRollAngles source
- */
+  /**
+   * Install all rotations from `other` into `this`.
+   * @param other YawPitchRollAngles source
+   */
   public setFrom(other: YawPitchRollAngles) {
     this.yaw.setFrom(other.yaw);
     this.pitch.setFrom(other.pitch);
@@ -1271,12 +1271,12 @@ export class YawPitchRollAngles implements BeJSONFunctions {
    * Clone all angles from `this` into a new `YawPitchRoolAngles`.
    */
   public clone() { return new YawPitchRollAngles(this.yaw.clone(), this.pitch.clone(), this.roll.clone()); }
-/**
- * expand the angles into a (rigid rotation) matrix.
- * * The returned matrix is "rigid" -- unit length rows and columns, and its transpose is its inverse.
- * * The "rigid" matrix is always a right handed coordinate system.
- * @param result optional pre-allocated `RotMatrix`
- */
+  /**
+   * expand the angles into a (rigid rotation) matrix.
+   * * The returned matrix is "rigid" -- unit length rows and columns, and its transpose is its inverse.
+   * * The "rigid" matrix is always a right handed coordinate system.
+   * @param result optional pre-allocated `RotMatrix`
+   */
   public toRotMatrix(result?: RotMatrix) {
     const c0 = Math.cos(this.yaw.radians);
     const s0 = Math.sin(this.yaw.radians);
@@ -1321,15 +1321,15 @@ export class YawPitchRollAngles implements BeJSONFunctions {
       this.roll.radians - other.roll.radians,
     );
   }
-/** @returns the largest angle in degrees. */
+  /** @returns the largest angle in degrees. */
   public maxAbsDegrees(): number {
     return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees);
   }
-/** @returns the sum of squared angles in degrees. */
+  /** @returns the sum of squared angles in degrees. */
   public sumSquaredDegrees(): number {
     return Geometry.hypotenuseSquaredXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees);
   }
-/** Return a json object with a transform unbundled as an origin and yaw pitch roll angles. */
+  /** Return a json object with a transform unbundled as an origin and yaw pitch roll angles. */
   public static tryFromTransform(transform: Transform): { origin: Point3d, angles: YawPitchRollAngles | undefined } {
     // bundle up the transform's origin with the angle data extracted from the transform
     return {

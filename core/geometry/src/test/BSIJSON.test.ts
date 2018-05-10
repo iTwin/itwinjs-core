@@ -337,10 +337,26 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.createInvertibleTransforms()) {
         exercise(a);
         let a1 = Transform.fromJSON(a.toJSON());
+        // console.log (a.toJSON ());
         // console.log(a, a1);
         if (!a.isAlmostEqual(a1)) {
           console.log("FAIL", a, a1);
           a1 = Transform.fromJSON(a.toJSON());
+        }
+        expect(a.isAlmostEqual(a1)).equals(true);
+      }
+    }
+
+    {
+      let a;
+      for (a of Sample.createRotMatrixArray()) {
+        exercise(a);
+        let a1 = RotMatrix.fromJSON(a.toJSON());
+        // console.log (a.toJSON ());
+        // console.log(a, a1);
+        if (!a.isAlmostEqual(a1)) {
+          console.log("FAIL", a, a1);
+          a1 = RotMatrix.fromJSON(a.toJSON());
         }
         expect(a.isAlmostEqual(a1)).equals(true);
       }
