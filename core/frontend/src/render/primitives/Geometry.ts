@@ -24,6 +24,7 @@ import {
   SolidPrimitive,
   Polyface,
   StrokeOptions,
+  Angle,
 } from "@bentley/geometry-core";
 import {
   GraphicParams,
@@ -86,14 +87,14 @@ export abstract class Geometry {
   public part() { return undefined; }
 
   public static createFacetOptions(chordTolerance: number): StrokeOptions {
-    // const piOver2: number = 1.57079632679489660000e+000; // default angle tolerance
+    const piOver2: number = 1.57079632679489660000e+000; // default angle tolerance
     const strkOpts: StrokeOptions = StrokeOptions.createForFacets();
-    // strkOpts.chordTolerance = chordTolerance;
-    if (chordTolerance === 0) { // shut up tslint
-    }
-    // strkOpts.angleTol = piOver2;
-    // strkOpts.maxPerFace = 100;
-    // ###TODO: Finish this function
+    strkOpts.chordTol = chordTolerance;
+    strkOpts.angleTol = Angle.createRadians(piOver2);
+    // ###TODO: strkOpts.convexFacetsRequired = true; // not available yet
+    strkOpts.needParams = true;
+    strkOpts.needNormals = true;
+
     return strkOpts;
   }
 }
