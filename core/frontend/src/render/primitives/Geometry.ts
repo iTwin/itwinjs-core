@@ -23,10 +23,10 @@ import {
   BSplineSurface3d,
   SolidPrimitive,
   Polyface,
+  StrokeOptions,
 } from "@bentley/geometry-core";
 import {
   GraphicParams,
-  GeometryParams,
   AsThickenedLine,
   TextString,
   QParams3d,
@@ -38,8 +38,8 @@ import { GeometryOptions, NormalMode } from "./Primitives";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
-import { StrokesList } from "./Strokes";
-import { PolyfaceList } from "./Polyface";
+import { StrokesPrimitiveList } from "./Strokes";
+import { PolyfacePrimitiveList } from "./Polyface";
 
 export abstract class Geometry {
   public readonly transform: Transform;
@@ -59,10 +59,10 @@ export abstract class Geometry {
     return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
   }
 
-  protected abstract _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList;
-  protected abstract _getStrokes(chordTolerance: number, vc: ViewContext): StrokesList;
+  protected abstract _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList;
+  protected abstract _getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList;
 
-  public getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList {
+  public getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList {
     const polyfaces = this._getPolyfaces(chordTolerance, nm, vc);
     if (this.clip === undefined || 0 === polyfaces.length)
       return polyfaces;
@@ -71,7 +71,7 @@ export abstract class Geometry {
     return polyfaces;
   }
 
-  public getStrokes(chordTolerance: number, vc: ViewContext): StrokesList {
+  public getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList {
     const strokes = this._getStrokes(chordTolerance, vc);
     if (this.clip === undefined || 0 === strokes.length)
       return strokes;
@@ -84,15 +84,21 @@ export abstract class Geometry {
   public doDecimate() { return false; }
   public doVertexCluster() { return true; }
   public part() { return undefined; }
-  // public abstract set inCache(inCache: boolean);
 
-  // public get feature() { return this.displayParams.isValid() ? new Feature(this.entityId, this.displayParams.subCategoryId, this.displayParams.geomClass) : new Feature(this.entityId, new Id64()); }
-  // public static createFacetOptions(chordTolerance: number): StrokeOptions { }
+  public static createFacetOptions(chordTolerance: number): StrokeOptions {
+    // const piOver2: number = 1.57079632679489660000e+000; // default angle tolerance
+    const strkOpts: StrokeOptions = StrokeOptions.createForFacets();
+    // strkOpts.chordTolerance = chordTolerance;
+    if (chordTolerance === 0) { // shut up tslint
+    }
+    // strkOpts.angleTol = piOver2;
+    // strkOpts.maxPerFace = 100;
+    // ###TODO: Finish this function
+    return strkOpts;
+  }
 }
 
 export class PrimitiveGeometry extends Geometry {
-  public inCache = false;
-
   public constructor(public geometry: GeometryQuery, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ public disjoint: boolean) {
     super(tf, range, params, isCurved/*, iModel*/);
   }
@@ -103,23 +109,23 @@ export class PrimitiveGeometry extends Geometry {
   }
 
   // ###TODO: actual implementation
-  protected _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList {
+  protected _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList {
     if (0 === chordTolerance) { // shut up tslint
     }
     if (NormalMode.Always === nm) { // shut up tslint
     }
     if (vc.viewFlags.fill) { // shut up tslint
     }
-    return new PolyfaceList();
+    return new PolyfacePrimitiveList();
   }
 
   // ###TODO: actual implementation
-  protected _getStrokes(chordTolerance: number, vc: ViewContext): StrokesList {
+  protected _getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList {
     if (0 === chordTolerance) { // shut up tslint
     }
     if (vc.viewFlags.fill) { // shut up tslint
     }
-    return new StrokesList();
+    return new StrokesPrimitiveList();
   }
 }
 
@@ -215,8 +221,6 @@ export class GeometryAccumulator {
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum?: GeometryAccumulator;
   public graphicParams: GraphicParams = new GraphicParams();
-  private _geometryParams?: GeometryParams;
-  public geometryParamsValid: boolean = false;
   // private _isOpen: boolean = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
@@ -253,14 +257,8 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     return graphic;
   }
 
-  public activateGraphicParams(graphicParams: GraphicParams, geomParams?: GeometryParams): void {
+  public activateGraphicParams(graphicParams: GraphicParams): void {
     this.graphicParams = graphicParams;
-    this.geometryParamsValid = geomParams !== undefined;
-    if (this.geometryParamsValid) {
-      this._geometryParams = geomParams;
-    } else {
-      this._geometryParams = new GeometryParams(new Id64());
-    }
   }
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
     if (0.0 === zDepth) {
@@ -362,7 +360,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
-  public get geometryParams(): GeometryParams | undefined { return this.geometryParamsValid ? this._geometryParams : undefined; }
   public get elementId(): Id64 { return this.accum ? this.accum.elementId : new Id64(); }
 
   public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }

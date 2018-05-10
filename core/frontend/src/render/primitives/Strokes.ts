@@ -4,29 +4,29 @@
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { DisplayParams } from "./DisplayParams";
 
-export class StrokesPointList {
+export class StrokesPrimitivePointList {
   public points: Point3d[];
   public readonly startDistance: number;
   constructor(startDistance: number, points: Point3d[] = []) { this.startDistance = startDistance; this.points = [...points]; }
 }
 
-export class StrokesPointLists extends Array<StrokesPointList> { constructor(...args: StrokesPointList[]) { super(...args); } }
+export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList> { constructor(...args: StrokesPrimitivePointList[]) { super(...args); } }
 
-export class Strokes {
+export class StrokesPrimitive {
   public readonly displayParams: DisplayParams;
-  private _strokes: StrokesPointLists;
+  private _strokes: StrokesPrimitivePointLists;
   public readonly isDisjoint: boolean;
   public readonly isPlanar: boolean;
 
   public get strokes() { return this._strokes; }
 
   public static create(params: DisplayParams, isDisjoint: boolean, isPlanar: boolean) {
-    return new Strokes(params, isDisjoint, isPlanar);
+    return new StrokesPrimitive(params, isDisjoint, isPlanar);
   }
 
   private constructor(params: DisplayParams, isDisjoint: boolean, isPlanar: boolean) {
     this.displayParams = params;
-    this._strokes = new StrokesPointLists();
+    this._strokes = new StrokesPrimitivePointLists();
     this.isDisjoint = isDisjoint;
     this.isPlanar = isPlanar;
   }
@@ -40,4 +40,4 @@ export class Strokes {
   }
 }
 
-export class StrokesList extends Array<Strokes> { constructor(...args: Strokes[]) { super(...args); } }
+export class StrokesPrimitiveList extends Array<StrokesPrimitive> { constructor(...args: StrokesPrimitive[]) { super(...args); } }

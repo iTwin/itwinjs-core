@@ -4,7 +4,7 @@
 import { IndexedPolyface, Transform } from "@bentley/geometry-core";
 import { DisplayParams } from "./DisplayParams";
 
-export class Polyface {
+export class PolyfacePrimitive {
   public readonly displayParams: DisplayParams;
   private _polyface: IndexedPolyface;
   public readonly displayEdges: boolean;
@@ -13,7 +13,7 @@ export class Polyface {
   public get indexedPolyface() { return this._polyface; }
 
   public static create(params: DisplayParams, pf: IndexedPolyface, displayEdges: boolean, isPlanar: boolean) {
-    return new Polyface(params, pf, displayEdges, isPlanar);
+    return new PolyfacePrimitive(params, pf, displayEdges, isPlanar);
   }
 
   private constructor(params: DisplayParams, pf: IndexedPolyface, displayEdges: boolean, isPlanar: boolean) {
@@ -23,8 +23,8 @@ export class Polyface {
     this.isPlanar = isPlanar;
   }
 
-  public clone(): Polyface { return new Polyface(this.displayParams, this._polyface.clone(), this.displayEdges, this.isPlanar); }
+  public clone(): PolyfacePrimitive { return new PolyfacePrimitive(this.displayParams, this._polyface.clone(), this.displayEdges, this.isPlanar); }
   public transform(trans: Transform): boolean { return this._polyface.tryTransformInPlace(trans); }
 }
 
-export class PolyfaceList extends Array<Polyface> { constructor(...args: Polyface[]) { super(...args); } }
+export class PolyfacePrimitiveList extends Array<PolyfacePrimitive> { constructor(...args: PolyfacePrimitive[]) { super(...args); } }
