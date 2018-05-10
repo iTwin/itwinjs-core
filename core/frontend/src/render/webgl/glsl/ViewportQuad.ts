@@ -5,7 +5,7 @@
 import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 
 // Positions are in NDC [-1..1]. Compute UV params in [0..1]
-const computeTexCoord = `v_texCoord = (rawPosition.xy + 1.0) * 0.5;`
+const computeTexCoord = `v_texCoord = (rawPosition.xy + 1.0) * 0.5;`;
 const computePosition = `return rawPos;`;
 
 function addTexture(prog: ProgramBuilder) {
