@@ -4,7 +4,7 @@
 /** @module Geometry */
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, RotMatrix, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps,
 } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Id64, Id64Props, IModelStatus } from "@bentley/bentleyjs-core";
@@ -64,6 +64,40 @@ export interface MaterialProps {
   rotation?: YawPitchRollProps;
 }
 
+export namespace BRepEntity {
+  /** Enum for type of solid kernel entity this represents */
+  export const enum Type {
+    /** Body consisting of at least one solid region */
+    Solid = 0,
+    /** Body consisting of connected sets of faces having edges that are shared by a maximum of two faces */
+    Sheet = 1,
+    /** Body consisting of connected sets of edges having vertices that are shared by a maximum of two edges */
+    Wire = 2,
+  }
+
+  /** Optional symbology that can be assigned to individual faces of a solid or sheet body */
+  export interface FaceSymbologyProps {
+    /** Optional color override for face */
+    color?: ColorDef;
+    /** Optional transparency override for face */
+    transparency?: number;
+    /** Optional material override for face */
+    materialId?: Id64Props;
+  }
+
+  /** GeometryStream entry for brep data. Must be specifically requested. */
+  export interface DataProps {
+    /** data as Base64 encoded string */
+    data?: string;
+    /** body type, default is Solid */
+    type?: Type;
+    /** body transform, default is identity */
+    transform?: TransformProps;
+    /** body face attachments */
+    faceSymbology?: FaceSymbologyProps[];
+  }
+}
+
 /** GeometryStream entry to a GeometryPart for a GeometricElement */
 export interface GeometryPartInstanceProps {
   /** GeometryPart id */
@@ -85,6 +119,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   material?: MaterialProps;
   geomPart?: GeometryPartInstanceProps;
   textString?: TextStringProps;
+  brep?: BRepEntity.DataProps;
   subRange?: LowAndHighXYZ;
 }
 
@@ -241,6 +276,24 @@ export class GeometryStreamBuilder {
     this.geometryStream.push(localGeomData);
     return true;
   }
+
+  /** Append raw brep data supplied in either local or world coordinates to the GeometryStreamProps array */
+  public appendBRepData(brep: BRepEntity.DataProps): boolean {
+    if (undefined === this.worldToLocal) {
+      this.geometryStream.push({ brep });
+      return true;
+    }
+    const entityTrans = Transform.fromJSON(brep.transform);
+    const localTrans = entityTrans.multiplyTransformTransform(this.worldToLocal);
+    const localBrep: BRepEntity.DataProps = {
+      data: brep.data,
+      type: brep.type,
+      transform: localTrans.isIdentity() ? undefined : localTrans,
+      faceSymbology: brep.faceSymbology,
+    };
+    this.geometryStream.push({ brep: localBrep });
+    return true;
+  }
 }
 
 /** Hold current state information for GeometryStreamIterator */
@@ -253,12 +306,14 @@ export class GeometryStreamIteratorEntry {
   public localRange?: Range3d;
   /** Optional GeometryPart instance transform when current entry is for a GeometryPart */
   public partToLocal?: Transform;
-  /** Current entry is a GeometryPart instance when advanceToNextGeometry returns true and partId is not undefined */
+  /** Current iterator entry is a GeometryPart instance when not undefined */
   public partId?: Id64;
-  /** Current entry is a GeometryQuery when advanceToNextGeometry returns true and geometryQuery is not undefined */
+  /** Current iterator entry is a GeometryQuery geometryQuery is not undefined */
   public geometryQuery?: GeometryQuery;
-  /** Current entry is a TextString when advanceToNextGeometry returns true and textString is not undefined */
+  /** Current iterator entry is a TextString when textString is not undefined */
   public textString?: TextString;
+  /** Current iterator entry is raw brep data when brep is not undefined */
+  public brep?: BRepEntity.DataProps;
 
   public constructor(category?: Id64Props) {
     this.geomParams = new GeometryParams(category !== undefined ? new Id64(category) : Id64.invalidId);
@@ -349,10 +404,10 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   }
 
   /** Advance to next displayable geometric entry while updating the current [[GeometryParams]] from appearance related entries.
-   * Geometric entries are [[TextString]], [[GeometryQuery]], and [[GeometryPart]].
+   * Geometric entries are [[TextString]], [[GeometryQuery]], [[GeometryPart]], and [[BRepEntity.DataProps]].
    */
   public next(): IteratorResult<GeometryStreamIteratorEntry> {
-    this.entry.partToLocal = this.entry.partId = this.entry.geometryQuery = this.entry.textString = undefined; // NOTE: localRange remains valid until new subRange entry is encountered
+    this.entry.partToLocal = this.entry.partId = this.entry.geometryQuery = this.entry.textString = this.entry.brep = undefined; // NOTE: localRange remains valid until new subRange entry is encountered
     while (this.index < this.geometryStream.length) {
       const entry = this.geometryStream[this.index++];
       if (entry.appearance) {
@@ -413,6 +468,13 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         this.entry.textString = new TextString(entry.textString);
         if (this.entry.localToWorld !== undefined)
           this.entry.textString.transformInPlace(this.entry.localToWorld);
+        return { value: this.entry, done: false };
+      } else if (entry.brep) {
+        this.entry.brep = entry.brep;
+        if (this.entry.localToWorld !== undefined) {
+          const entityTrans = Transform.fromJSON(entry.brep.transform);
+          this.entry.brep.transform = entityTrans.multiplyTransformTransform(this.entry.localToWorld);
+        }
         return { value: this.entry, done: false };
       } else {
         this.entry.geometryQuery = GeomJson.Reader.parse(entry);
