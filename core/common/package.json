@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.81.1",
+  "version": "0.83.0",
   "description": "iModelJs components common to frontend and backend",
   "license": "MIT",
   "main": "lib/common.js",
@@ -36,7 +36,7 @@
   ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/geometry-core": "7",
+    "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "5"
   },
   "//devDependencies": [
@@ -45,7 +45,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/geometry-core": "7",
+    "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "5",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",

@@ -13,7 +13,7 @@ import {
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps,
+  AxisAlignedBox3d, Appearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -682,14 +682,14 @@ describe("iModel", () => {
 
     let modeledElementId: Id64;
     let newModelId: Id64;
-    [modeledElementId, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
+    [modeledElementId, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
 
     const newModelPersist = testImodel.models.getModel(newModelId);
 
     // Check that it has the properties that we set.
     assert.equal(newModelPersist.classFullName, PhysicalModel.classFullName);
     assert.isTrue(newModelPersist.isPrivate);
-    assert.deepEqual(newModelPersist.modeledElement, modeledElementId);
+    assert.deepEqual(newModelPersist.modeledElement.id, modeledElementId);
 
     // Update the model
     const changedModelProps: ModelProps = Object.assign({}, newModelPersist);
@@ -708,12 +708,52 @@ describe("iModel", () => {
     }
   });
 
+  it("should create model with custom relationship to modeled element", () => {
+    const testBimName = "should-create-models-with-custom-relationship.bim";
+    let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", {copyFilename: testBimName});
+
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    testImodel.importSchema(schemaPathname); // will throw an exception if import fails
+    assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
+
+    let newModelId1: Id64;
+    let newModelId2: Id64;
+    let relClassName1: string | undefined;
+    let relClassName2: string | undefined;
+
+    if (true) {
+      const newPartition1 = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, Code.createEmpty());
+      relClassName1 = "TestBim:TestModelModelsElement";
+      const modeledElementRef = new RelatedElement({id: newPartition1, relClassName: relClassName1});
+      newModelId1 = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef);
+      assert.isTrue(newModelId1.isValid());
+    }
+
+    if (true) {
+      [, newModelId2] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty());
+      const newModel2 = testImodel.models.getModel(newModelId2);
+      relClassName2 = newModel2.modeledElement.relClassName;
+    }
+
+    IModelTestUtils.closeIModel(testImodel);
+    testImodel = IModelTestUtils.openIModelFromOut(testBimName);
+
+    const model1 = testImodel.models.getModel(newModelId1);
+    const model2 = testImodel.models.getModel(newModelId2);
+
+    const foundRelClassName1 = model1.modeledElement.relClassName;
+    const foundRelClassName2 = model2.modeledElement.relClassName;
+
+    assert.equal(foundRelClassName1, relClassName1);
+    assert.equal(foundRelClassName2, relClassName2);
+  });
+
   it("should create link table relationship instances", () => {
     const testImodel: IModelDb = imodel1;
 
     // Create a new physical model
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
@@ -779,7 +819,7 @@ describe("iModel", () => {
 
     // Create a new physical model
     let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalModel(testImodel, Code.createEmpty(), true);
+    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;

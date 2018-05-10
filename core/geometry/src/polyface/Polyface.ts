@@ -562,7 +562,7 @@ export class IndexedPolyface extends Polyface {
   /** ASSUME valid facet index . .. return its end index in index arrays. */
   public facetIndex1(index: number): number { return this.facetStart[index + 1]; }
   /** create a visitor for this polyface */
-  public createVisitor(numWrap: number = 0): PolyfaceVisitor { return IndxedPolyfaceVisitor.create(this, numWrap); }
+  public createVisitor(numWrap: number = 0): PolyfaceVisitor { return IndexedPolyfaceVisitor.create(this, numWrap); }
 
   public range(transform?: Transform, result?: Range3d): Range3d { return this.data.range(result, transform); }
   public extendRange(range: Range3d, transform?: Transform): void { this.data.range(range, transform); }
@@ -596,7 +596,7 @@ export abstract class PolyfaceVisitor extends PolyfaceData {
   public abstract clientColorIndex(i: number): number;
 }
 
-class IndxedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
+export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
   private currentFacetIndex: number;
   private nextFacetIndex: number;
   private numWrap: number;
@@ -614,7 +614,7 @@ class IndxedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
   }
 
   public static create(polyface: IndexedPolyface, numWrap: number): PolyfaceVisitor {
-    return new IndxedPolyfaceVisitor(polyface, numWrap);
+    return new IndexedPolyfaceVisitor(polyface, numWrap);
   }
   public moveToReadIndex(facetIndex: number): boolean {
     if (!this.polyface.isValidFacetIndex(facetIndex)) return false;

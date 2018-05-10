@@ -109,6 +109,27 @@ export class FrameBuffer implements IDisposable {
     const status: GLenum = System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET);
     return status;
   }
+
+  // Chiefly for debugging currently - assumes RGBA, unsigned byte, want all pixels.
+  public get debugPixels(): Uint8Array | undefined {
+    if (!this.isBound || 0 === this.colorTextures.length)
+      return undefined;
+
+    const tex = this.colorTextures[0];
+    if (GL.Texture.Format.Rgba !== tex.format || GL.Texture.DataType.UnsignedByte !== tex.dataType)
+      return undefined;
+
+    const buffer = new Uint8Array(tex.width * tex.height * 4);
+    for (let i = 0; i < buffer.length; i += 4) {
+      buffer[i] = 0xba;
+      buffer[i + 1] = 0xad;
+      buffer[i + 2] = 0xf0;
+      buffer[i + 3] = 0x0d;
+    }
+
+    System.instance.context.readPixels(0, 0, tex.width, tex.height, tex.format, tex.dataType, buffer);
+    return buffer;
+  }
 }
 
 interface Binding {

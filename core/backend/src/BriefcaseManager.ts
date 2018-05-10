@@ -897,7 +897,7 @@ export class BriefcaseManager {
       briefcase.onBeforeClose.raiseEvent(briefcase);
 
     // Apply the changes
-    const status: ChangeSetStatus = briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption, containsSchemaChanges);
+    const status: ChangeSetStatus = briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
     if (ChangeSetStatus.Success !== status)
       return Promise.reject(new IModelError(status));
 
@@ -1104,11 +1104,11 @@ export class BriefcaseManager {
   }
 
   /** Applies a change set to a standalone iModel */
-  public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption, containsSchemaChanges: boolean): ChangeSetStatus {
+  public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus {
     if (!briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR);
 
-    return briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption, containsSchemaChanges);
+    return briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
   }
 
   /** Dumps a change set */

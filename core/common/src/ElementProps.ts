@@ -129,7 +129,10 @@ export interface ElementLoadProps {
   id?: Id64Props;
   code?: CodeProps;
   federationGuid?: GuidProps;
+  /** Whether to include geometry stream in GeometricElementProps and GeometryPartProps, false when undefined */
   wantGeometry?: boolean;
+  /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
+  wantBRepData?: boolean;
 }
 
 /** ElementAspectProps */

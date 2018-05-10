@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
@@ -228,11 +228,7 @@ export class IModelTestUtils {
   //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   //
-  public static createAndInsertPhysicalModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64[] {
-    let modeledElementId: Id64;
-    let newModelId: Id64;
-
-    //  The modeled element
+  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: Code): Id64 {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       iModel: testImodel,
@@ -241,19 +237,33 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    modeledElementId = testImodel.elements.insertElement(modeledElement);
+    return testImodel.elements.insertElement(modeledElement);
+  }
 
-    assert.isTrue(modeledElementId.isValid());
+  //
+  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  //
+  public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64 {
 
-    // The model
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementId, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    newModelId = testImodel.models.insertModel(newModel);
+    const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    const newModelId = testImodel.models.insertModel(newModel);
 
     assert.isTrue(newModelId.isValid());
     assert.isTrue(newModel.id.isValid());
     assert.deepEqual(newModelId, newModel.id);
 
-    return [modeledElementId, newModelId];
+    return newModelId;
+  }
+
+  //
+  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+  // @return [modeledElementId, modelId]
+  //
+  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64[] {
+    const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
+    const modeledElementRef = new RelatedElement({id: eid});
+    const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
+    return [eid, mid];
   }
 
   public static getUniqueSpatialCategoryCode(scopeModel: Model, newCodeBaseValue: string): Code {

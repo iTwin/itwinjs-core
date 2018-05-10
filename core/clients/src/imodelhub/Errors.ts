@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as deepAssign from "deep-assign";
-import { ResponseError } from "./../Request";
+import { ResponseError, HttpResponseType } from "./../Request";
 import { WsgError, WSError } from "./../WsgClient";
 import { Logger, LogFunction } from "@bentley/bentleyjs-core";
 
@@ -178,7 +178,7 @@ export class IModelHubResponseError extends WsgError {
     this.id = IModelHubResponseErrorId[error.slice(IModelHubResponseError._idPrefix.length) as keyof typeof IModelHubResponseErrorId];
 
     if (!this.id)
-      this.id =  IModelHubResponseErrorId.Unknown;
+      this.id = IModelHubResponseErrorId.Unknown;
   }
 
   /**
@@ -254,21 +254,25 @@ export class IModelHubResponseError extends WsgError {
     if (response === undefined || response === null) {
       return super.shouldRetry(error, response);
     }
-    const parsedError = IModelHubResponseError.parse({response});
+
+    if (response.statusType === HttpResponseType.Ok) {
+      return false;
+    }
+    const parsedError = IModelHubResponseError.parse({ response });
 
     if (!(parsedError instanceof WsgError)) {
       return super.shouldRetry(error, response);
-     }
+    }
 
     if ((parsedError instanceof IModelHubResponseError)) {
       return false;
-     }
+    }
 
     const errorCodesToRetry: number[] = [WSError.ServerError,
-                                          WSError.Unknown];
+    WSError.Unknown];
 
     const errorStatus = super.getErrorStatus(parsedError.name !== undefined ?
-        super.getWSErrorId(parsedError.name) : WSError.Unknown, response.statusType);
+      super.getWSErrorId(parsedError.name) : WSError.Unknown, response.statusType);
     return errorCodesToRetry.includes(errorStatus);
   }
 

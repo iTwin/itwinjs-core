@@ -266,7 +266,7 @@ export class HubTestUtils {
     for (const changeSet of changeSets) {
       const tempChangeSets = [changeSet];
 
-      const status: ChangeSetStatus = BriefcaseManager.applyStandaloneChangeSets(iModel.briefcase, tempChangeSets, applyOption, !!changeSet.containsSchemaChanges);
+      const status: ChangeSetStatus = BriefcaseManager.applyStandaloneChangeSets(iModel.briefcase, tempChangeSets, applyOption);
 
       let msg: string = `Applying change set ${changeSet.index}:${changeSet.id}: `;
       msg = (status === ChangeSetStatus.Success) ? msg.concat("Success") : msg.concat("ERROR!!");

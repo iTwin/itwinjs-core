@@ -42,6 +42,7 @@
     "cover:backend": "cd core/backend && npm run cover",
     "cover:backend:integration": "cd core/backend && npm run cover:integration",
     "cover:clients": "cd core/clients && npm run cover",
+    "cover:testbed": "cd testbed && node bin/testbed.js --coveragePattern ../core/frontend/lib/**/*.js",
     "module:backend": "cd core/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
     "module:frontend": "cd core/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true"
   },
@@ -65,7 +66,7 @@
     "@bentley/bemetalsmith": "^2.0.0",
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "^3.4.1",
-    "@bentley/geometry-core": "7",
+    "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "5",
     "@types/body-parser": "^1.16.8",
     "@types/chai": "^4.1.2",

@@ -388,7 +388,7 @@ export class Geometry {
   public static inverseInterpolate01(f0: number, f1: number, targetF: number = 0): number | undefined {
     return Geometry.conditionalDivideFraction(targetF - f0, f1 - f0);
   }
-
+  /** Return true if json is an array with at least minEntries, and all entries are numbers (including those beyond minEntries) */
   public static isNumberArray(json: any, minEntries: number = 0): boolean {
     if (Array.isArray(json) && json.length >= minEntries) {
       let entry;
@@ -397,6 +397,17 @@ export class Geometry {
         if (!Number.isFinite(entry))
           return false;
       }
+      return true;
+    }
+    return false;
+  }
+  /** Return true if json is an array of at least numNumberArrays, with at least minEntries in each number array.
+   */
+  public static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries: number = 0): boolean {
+    if (Array.isArray(json) && json.length >= numNumberArray) {
+      let entry;
+      for (entry of json)
+        if (!Geometry.isNumberArray(entry, minEntries)) return false;
       return true;
     }
     return false;
@@ -430,6 +441,13 @@ export class Geometry {
  * * The various access method are named so that callers can specify whether untyped numbers passed in or out are degrees or radians.
  */
 export class Angle implements BeJSONFunctions {
+  public static readonly piOver4Radians = 7.85398163397448280000e-001;
+  public static readonly piOver2Radians = 1.57079632679489660000e+000;
+  public static readonly piRadians = 3.14159265358979310000e+000;
+  public static readonly pi2Radians = 6.28318530717958620000e+000;
+  public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
+  public static readonly radiansPerDegree = (Angle.piOver4Radians / 45.0);
+  public static readonly piOver12Radians = 0.26179938779914943653855361527329;
   private _radians: number;
   private _degrees?: number;
   private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }

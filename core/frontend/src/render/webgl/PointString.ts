@@ -13,7 +13,8 @@ import { PolylineArgs } from "../primitives/Mesh";
 import { VertexLUT } from "./VertexLUT";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { AttributeHandle, BufferHandle } from "./Handle";
-import { ColorInfo } from "./ColorInfo";
+import { GL } from "./GL";
+import { System } from "./System";
 
 export class PointStringInfo {
   public vertexParams: QParams3d;
@@ -28,24 +29,31 @@ export class PointStringInfo {
 }
 
 export class PointStringGeometry extends LUTGeometry {
-  public pointString: PointStringInfo;
-  public lut: VertexLUT.Data;
-  public indices: BufferHandle;
+  public readonly pointString: PointStringInfo;
+  public readonly lut: VertexLUT.Data;
+  public readonly indices: BufferHandle;
+  public readonly numIndices: number;
+
   public constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT.Data, info: PointStringInfo) {
-    super(numIndices);
+    super();
+    this.numIndices = numIndices;
     this.indices = indices;
     this.lut = lut;
     this.pointString = info;
   }
+
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
-  public get qOrigin(): Float32Array { return new Float32Array(1); }
-  public get qScale(): Float32Array { return new Float32Array(1); }
-  public bindVertexArray(_handle: AttributeHandle): void { }
-  public draw(): void { }
-  public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
-  public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
+  public bindVertexArray(attr: AttributeHandle): void {
+    attr.enableArray(this.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+  }
+
+  public draw(): void {
+    const gl = System.instance.context;
+    this.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    gl.drawArrays(GL.PrimitiveType.Points, 0, this.numIndices);
+  }
 
   public static createGeometry(args: PolylineArgs): PointStringGeometry | undefined {
     assert(args.polylines.length === 1);
@@ -56,7 +64,7 @@ export class PointStringGeometry extends LUTGeometry {
       const info = new PointStringInfo(args);
       const lut = lutParams.toData(info.vertexParams);
       if (undefined !== lut) {
-        return new PointStringGeometry(indices, lut.numVertices, lut, info);
+        return new PointStringGeometry(indices, args.polylines[0].vertIndices.length, lut, info);
       }
     }
     return undefined;

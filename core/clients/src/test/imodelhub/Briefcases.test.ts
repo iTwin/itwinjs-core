@@ -172,12 +172,15 @@ describe("iModelHub BriefcaseHandler", () => {
 
     const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
+    let error;
     try {
       (await imodelHubClient.Briefcases().get(accessToken, iModelId));
     } catch (err) {
-      chai.expect(err.status).to.be.equal(409);
-      chai.expect(err.name).to.be.equal("NoServerLicense");
+      error = err;
     }
+    chai.assert(error);
+    chai.expect(error.status).to.be.equal(409);
+    chai.expect(error.name).to.be.equal("NoServerLicense");
   });
 
   it("should get error 500 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
@@ -186,10 +189,13 @@ describe("iModelHub BriefcaseHandler", () => {
 
     const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Briefcase");
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
+    let error;
     try {
       (await imodelHubClient.Briefcases().get(accessToken, iModelId));
     } catch (err) {
-      chai.expect(err.status).to.be.equal(500);
+      error = err;
     }
+    chai.assert(error);
+    chai.expect(error.status).to.be.equal(500);
   });
 });

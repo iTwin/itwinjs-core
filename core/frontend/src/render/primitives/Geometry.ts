@@ -2,75 +2,159 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, Id64 } from "@bentley/bentleyjs-core";
-import { Transform,
-         Range3d,
-         Arc3d,
-         LineSegment3d,
-         CurvePrimitive,
-         GeometryQuery,
-         ClipVector,
-         AnyCurve,
-         Loop,
-         Path,
-         BagOfCurves,
-         LineString3d,
-         Point2d,
-         Point3d,
-         PointString3d,
-         CurveCollection,
-         BSplineCurve3d,
-         BSplineSurface3d,
-         SolidPrimitive,
-         Polyface } from "@bentley/geometry-core";
-import { GraphicParams,
-         GeometryParams,
-         AsThickenedLine,
-         TextString,
-         QParams3d } from "@bentley/imodeljs-common";
+import {
+  Transform,
+  Range3d,
+  Arc3d,
+  LineSegment3d,
+  CurvePrimitive,
+  GeometryQuery,
+  ClipVector,
+  AnyCurve,
+  Loop,
+  Path,
+  BagOfCurves,
+  LineString3d,
+  Point2d,
+  Point3d,
+  PointString3d,
+  CurveCollection,
+  CurveChain,
+  BSplineCurve3d,
+  BSplineSurface3d,
+  SolidPrimitive,
+  Polyface,
+  StrokeOptions,
+  Angle,
+  IndexedPolyface,
+} from "@bentley/geometry-core";
+import {
+  GraphicParams,
+  AsThickenedLine,
+  TextString,
+  QParams3d,
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
-import { GeometryOptions } from "./Primitives";
+import { GeometryOptions, NormalMode } from "./Primitives";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
+import { StrokesPrimitiveList } from "./Strokes";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
+
+export type PrimitiveGeometryType = CurveChain | IndexedPolyface; // More will receive support
 
 export abstract class Geometry {
-  public facetCount: number;
-  public hasTextured: boolean;
+  public readonly transform: Transform;
+  public readonly tileRange: Range3d;
+  public readonly displayParams: DisplayParams;
+  public readonly isCurved: boolean;
   public clip?: ClipVector;
 
-  public constructor(public transform: Transform, public tileRange: Range3d, public entityId: Id64, public displayParams: DisplayParams, public isCurved: boolean) {
-    this.facetCount = 0;
-    this.hasTextured = displayParams.isTextured;
+  public constructor(transform: Transform, tileRange: Range3d, displayParams: DisplayParams, isCurved: boolean) {
+    this.transform = transform;
+    this.tileRange = tileRange;
+    this.displayParams = displayParams;
+    this.isCurved = isCurved;
   }
 
-  // public abstract get polyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList;
-  // public get strokes(chordTolerance: number, vc: ViewContext): StrokesList;
+  public static createFromGeom(geometry: PrimitiveGeometryType, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
+
+    return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
+  }
+
+  protected abstract _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList;
+  protected abstract _getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList;
+
+  public getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList {
+    const polyfaces = this._getPolyfaces(chordTolerance, nm, vc);
+    if (this.clip === undefined || 0 === polyfaces.length)
+      return polyfaces;
+
+    // ###TODO: clip the polyfaces if needed (See native code GeometryClipper); for now, return unclipped
+    return polyfaces;
+  }
+
+  public getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList {
+    const strokes = this._getStrokes(chordTolerance, vc);
+    if (this.clip === undefined || 0 === strokes.length)
+      return strokes;
+
+    // ###TODO: clip the strokes if needed (See native code GeometryClipper); for now, return unclipped
+    return strokes;
+  }
+
+  public get hasTexture() { return this.displayParams.isTextured; }
   public doDecimate() { return false; }
   public doVertexCluster() { return true; }
   public part() { return undefined; }
-  // public abstract set inCache(inCache: boolean);
 
-  // public abstract get facetCount(param1?: StrokeCounter | StrokeOptions);
-  // public get feature() { return this.displayParams.isValid() ? new Feature(this.entityId, this.displayParams.subCategoryId, this.displayParams.geomClass) : new Feature(this.entityId, new Id64()); }
-  // public static createFacetOptions(chordTolerance: number): StrokeOptions { }
+  public static createFacetOptions(chordTolerance: number): StrokeOptions {
+    const strkOpts: StrokeOptions = StrokeOptions.createForFacets();
+    strkOpts.chordTol = chordTolerance;
+    strkOpts.angleTol = Angle.createRadians(Angle.piOver2Radians);
+    // ###TODO: strkOpts.convexFacetsRequired = true; // not available yet
+    strkOpts.needParams = true;
+    strkOpts.needNormals = true;
 
-  public static createFromGeom(geometry: GeometryQuery, tf: Transform, tileRange: Range3d, entityId: Id64, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
-    return PrimitiveGeometry.create(geometry, tf, tileRange, entityId, params, isCurved, disjoint);
+    return strkOpts;
   }
 }
 
 export class PrimitiveGeometry extends Geometry {
-  public inCache = false;
+  public readonly geometry: PrimitiveGeometryType;
+  public readonly isDisjoint: boolean;
 
-  public constructor(public geometry: GeometryQuery, tf: Transform, range: Range3d, elemId: Id64, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ public disjoint: boolean) {
-    super(tf, range, elemId, params, isCurved/*, iModel*/);
+  public constructor(geometry: PrimitiveGeometryType, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ isDisjoint: boolean) {
+    super(tf, range, params, isCurved/*, iModel*/);
+    this.geometry = geometry;
+    this.isDisjoint = isDisjoint;
   }
 
-  public static create(geometry: GeometryQuery, tf: Transform, range: Range3d, elemId: Id64, params: DisplayParams, isCurved: boolean, /* iModel: IModelConnection,*/ disjoint: boolean) {
-    assert(!disjoint || geometry instanceof CurveCollection);
-    return new PrimitiveGeometry(geometry, tf, range, elemId, params, isCurved, /* iModel, */ disjoint);
+  public static create(geometry: PrimitiveGeometryType, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /* iModel: IModelConnection,*/ isDisjoint: boolean) {
+    assert(!isDisjoint || geometry instanceof CurveCollection);
+    return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ isDisjoint);
+  }
+
+  protected _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList {
+    if (this.geometry instanceof IndexedPolyface) {
+      const polyface = this.geometry as IndexedPolyface;
+      if (this.hasTexture) {
+        if (polyface.data.param) {
+          polyface.data.param = [];
+        }
+        if (polyface.data.paramIndex) {
+          polyface.data.paramIndex = [];
+        }
+      }
+
+      // ###TODO: FixPolyface
+
+      assert(this.transform.isIdentity());
+      const displayEdges = false; // ###TODO
+      const isPlanar = false; // ###TODO
+      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, displayEdges, isPlanar));
+    }
+
+    if (0 === chordTolerance) { // shut up tslint
+    }
+    if (NormalMode.Always === nm) { // shut up tslint
+    }
+    if (vc.viewFlags.fill) { // shut up tslint
+    }
+
+    return new PolyfacePrimitiveList();
+  }
+
+  // ###TODO: actual implementation
+  protected _getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList {
+    if (0 === chordTolerance) { // shut up tslint
+    }
+    if (vc.viewFlags.fill) { // shut up tslint
+    }
+    return new StrokesPrimitiveList();
   }
 }
 
@@ -121,14 +205,14 @@ export class GeometryAccumulator {
     }
   }
 
-  public get isEmpty(): boolean { return !!this.geometries && this.geometries.isEmpty; }
+  public get isEmpty(): boolean { return !!this.geometries && this.geometries.isEmpty; }
 
   public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector) {
     if (this.surfacesOnly && !curves.isAnyRegionType()) { return true; } // ignore...
     const isCurved: boolean = curves.hasNonLinearPrimitives();
-    return this.addGeometry(curves, isCurved, displayParams, transform, disjoint, clip);
+    return this.addGeometry(curves as CurveChain, isCurved, displayParams, transform, disjoint, clip);
   }
-  public addGeometry(geom: GeometryQuery, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
+  public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
     let range3d;
     if (!range) {
       if (!geom.range(undefined, range3d)) { return false; }
@@ -144,7 +228,7 @@ export class GeometryAccumulator {
       range3d = range;
     }
     if (!range3d) { range3d = new Range3d(); }
-    const geometry = Geometry.createFromGeom(geom, transform, range3d, this.elementId, displayParams, isCurved, /*this.iModel,*/ disjoint);
+    const geometry = Geometry.createFromGeom(geom, transform, range3d, displayParams, isCurved, /*this.iModel,*/ disjoint);
     if (!geometry) { return false; }
     geometry.clip = clip;
     if (this.geometries) { this.geometries.push_back(geometry); }
@@ -160,14 +244,12 @@ export class GeometryAccumulator {
     this.surfacesOnly = surfacesOnly;
   }
 
-  public saveToGraphicList(_graphics: RenderGraphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void {} //tslint:disable-line
+  public saveToGraphicList(_graphics: RenderGraphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void { } //tslint:disable-line
 }
 
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum?: GeometryAccumulator;
   public graphicParams: GraphicParams = new GraphicParams();
-  private _geometryParams?: GeometryParams;
-  public geometryParamsValid: boolean = false;
   // private _isOpen: boolean = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
@@ -204,14 +286,8 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     return graphic;
   }
 
-  public activateGraphicParams(graphicParams: GraphicParams, geomParams?: GeometryParams): void {
+  public activateGraphicParams(graphicParams: GraphicParams): void {
     this.graphicParams = graphicParams;
-    this.geometryParamsValid = geomParams !== undefined;
-    if (this.geometryParamsValid) {
-      this._geometryParams = geomParams;
-    } else {
-      this._geometryParams = new GeometryParams(new Id64());
-    }
   }
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
     if (0.0 === zDepth) {
@@ -313,7 +389,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
-  public get geometryParams(): GeometryParams | undefined { return this.geometryParamsValid ? this._geometryParams : undefined; }
   public get elementId(): Id64 { return this.accum ? this.accum.elementId : new Id64(); }
 
   public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
@@ -378,18 +453,18 @@ export class PrimitiveBuilder extends GeometryListBuilder {
     return this.params.viewport!.getPixelSizeAtPoint(pt) * toleranceMult;
   }
 
-  public reset(): void {}
-  public addBSplineCurve(_curve: BSplineCurve3d, _filled: boolean): void {} //tslint:disable-line
-  public addBSplineCurve2d(_curve: BSplineCurve3d, _filled: boolean, _zDepth: number): void {} //tslint:disable-line
-  public addBSplineSurface(_surface: BSplineSurface3d): void {} //tslint:disable-line
-  public addPointString(_numPoints: number, _points: Point3d[]): void {} //tslint:disable-line
-  public addPointString2d(_numPoints: number, _points: Point2d[], _zDepth: number): void {} //tslint:disable-line
-  public addPolyface(_meshData: Polyface, _filled: boolean): void {} //tslint:disable-line
-  public addShape(_numPoints: number, _points: Point3d[], _filled: boolean): void {} //tslint:disable-line
-  public addShape2d(_numPoints: number, _points: Point2d[], _filled: boolean, _zDepth: number): void {} //tslint:disable-line
-  public addSolidPrimitive(_primitive: SolidPrimitive): void {} //tslint:disable-line
-  public addTextString(_text: TextString): void {} //tslint:disable-line
-  public addTextString2d(_text: TextString, _zDepth: number): void {} //tslint:disable-line
-  public addTriStrip(_numPoints: number, _points: Point3d[], _asThickenedLine: AsThickenedLine): void {} //tslint:disable-line
-  public addTriStrip2d(_numPoints: number, _points: Point2d[], _asThickenedLine: AsThickenedLine, _zDepth: number): void {} //tslint:disable-line
+  public reset(): void { }
+  public addBSplineCurve(_curve: BSplineCurve3d, _filled: boolean): void { } //tslint:disable-line
+  public addBSplineCurve2d(_curve: BSplineCurve3d, _filled: boolean, _zDepth: number): void { } //tslint:disable-line
+  public addBSplineSurface(_surface: BSplineSurface3d): void { } //tslint:disable-line
+  public addPointString(_numPoints: number, _points: Point3d[]): void { } //tslint:disable-line
+  public addPointString2d(_numPoints: number, _points: Point2d[], _zDepth: number): void { } //tslint:disable-line
+  public addPolyface(_meshData: Polyface, _filled: boolean): void { } //tslint:disable-line
+  public addShape(_numPoints: number, _points: Point3d[], _filled: boolean): void { } //tslint:disable-line
+  public addShape2d(_numPoints: number, _points: Point2d[], _filled: boolean, _zDepth: number): void { } //tslint:disable-line
+  public addSolidPrimitive(_primitive: SolidPrimitive): void { } //tslint:disable-line
+  public addTextString(_text: TextString): void { } //tslint:disable-line
+  public addTextString2d(_text: TextString, _zDepth: number): void { } //tslint:disable-line
+  public addTriStrip(_numPoints: number, _points: Point3d[], _asThickenedLine: AsThickenedLine): void { } //tslint:disable-line
+  public addTriStrip2d(_numPoints: number, _points: Point2d[], _asThickenedLine: AsThickenedLine, _zDepth: number): void { } //tslint:disable-line
 }
