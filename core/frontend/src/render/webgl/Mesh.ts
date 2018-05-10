@@ -158,6 +158,7 @@ export class MeshGraphic extends Graphic {
 // Defines one aspect of the geometry of a mesh (surface or edges)
 export abstract class MeshGeometry extends LUTGeometry {
   protected readonly mesh: MeshData;
+  protected readonly numIndices: number;
 
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
@@ -174,7 +175,8 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get lut() { return this.mesh.lut; }
 
   protected constructor(mesh: MeshData, numIndices: number) {
-    super(numIndices);
+    super();
+    this.numIndices = numIndices;
     this.mesh = mesh;
   }
 

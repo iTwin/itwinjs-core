@@ -84,20 +84,16 @@ export abstract class CachedGeometry {
 
 // Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
 export abstract class LUTGeometry extends CachedGeometry {
-  // The number of indices into the vertex data to be drawn.
-  public readonly numIndices: number;
-
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT.Data;
-  public abstract getColor(target: Target): ColorInfo;
+
+  // Override this if your color varies based on the target
+  public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
 
-  protected constructor(numIndices: number) {
-    super();
-    this.numIndices = numIndices;
-  }
+  protected constructor() { super(); }
 }
 
 // Parameters used to construct an IndexedGeometry

@@ -13,7 +13,6 @@ import { PolylineArgs } from "../primitives/Mesh";
 import { VertexLUT } from "./VertexLUT";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { AttributeHandle, BufferHandle } from "./Handle";
-import { ColorInfo } from "./ColorInfo";
 import { GL } from "./GL";
 import { System } from "./System";
 
@@ -30,12 +29,14 @@ export class PointStringInfo {
 }
 
 export class PointStringGeometry extends LUTGeometry {
-  public pointString: PointStringInfo;
-  public lut: VertexLUT.Data;
-  public indices: BufferHandle;
+  public readonly pointString: PointStringInfo;
+  public readonly lut: VertexLUT.Data;
+  public readonly indices: BufferHandle;
+  public readonly numIndices: number;
 
   public constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT.Data, info: PointStringInfo) {
-    super(numIndices);
+    super();
+    this.numIndices = numIndices;
     this.indices = indices;
     this.lut = lut;
     this.pointString = info;
@@ -44,10 +45,6 @@ export class PointStringGeometry extends LUTGeometry {
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
-  public get qOrigin(): Float32Array { return this.lut.qOrigin; }
-  public get qScale(): Float32Array { return this.lut.qScale; }
-  public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
-  public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
@@ -55,7 +52,7 @@ export class PointStringGeometry extends LUTGeometry {
   public draw(): void {
     const gl = System.instance.context;
     this.indices.bind(GL.Buffer.Target.ArrayBuffer);
-    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
+    gl.drawArrays(GL.PrimitiveType.Points, 0, this.numIndices);
   }
 
   public static createGeometry(args: PolylineArgs): PointStringGeometry | undefined {
