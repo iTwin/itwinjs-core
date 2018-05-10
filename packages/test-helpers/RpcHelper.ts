@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Gateway, GatewayDefinition } from "@bentley/imodeljs-common";
+import { RpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
-// MUST be called to use ECPresentation gateway but AFTER ECPresentation.initialize(),
+// MUST be called to use ECPresentation RPC interface but AFTER ECPresentation.initialize(),
 // otherwise does nothing
-export const initializeGateway = (gateway: GatewayDefinition) => {
+export const initializeRpcInterface = (rpcInterface: RpcInterfaceDefinition) => {
   // calling it more than once throws, so we have to wrap it with try/catch.
   try {
-    Gateway.initialize(gateway);
+    RpcManager.initializeInterface(rpcInterface);
   } catch (_e) {
   }
 };

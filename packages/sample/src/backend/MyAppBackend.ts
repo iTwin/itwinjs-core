@@ -5,6 +5,7 @@ import * as path from "path";
 import initLogging from "./logging";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ECPresentation } from "@bentley/ecpresentation-backend";
+import "./SampleRpcImpl"; // just to get the RPC implementation registered
 
 // initialize logging
 initLogging();

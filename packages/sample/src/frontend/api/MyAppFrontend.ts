@@ -4,10 +4,11 @@
 import initLogging from "./logging";
 import { Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
-import { BentleyCloudGatewayConfiguration, StandaloneIModelGateway, IModelReadGateway, GatewayOperation, IModelToken } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface, RpcOperation, IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentation, ECPresentationGateway } from "@bentley/ecpresentation-frontend";
-import SampleGateway from "./SampleGateway";
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 // initialize logging
 initLogging();
@@ -15,11 +16,11 @@ initLogging();
 // initialize ECPresentation
 ECPresentation.initialize();
 
-// Initialize my application gateway configuration for the frontend
-const gateways = [StandaloneIModelGateway, IModelReadGateway, ECPresentationGateway, SampleGateway];
-BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } }, gateways);
-for (const gateway of gateways)
-  GatewayOperation.forEach(gateway, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test")); // wtf?
+// Initialize my application RPC for the frontend
+const interfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface, SampleRpcInterface];
+BentleyCloudRpcManager.initializeClient({ info: { title: "my-app", version: "v1.0" } }, interfaces);
+for (const def of interfaces)
+  RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test")); // wtf?
 
 // Configure a CORS proxy in development mode.
 if (process.env.NODE_ENV === "development")
@@ -29,7 +30,7 @@ export class MyAppFrontend {
   public static iModel: IModelConnection | undefined;
 
   public static async getSampleImodels(): Promise<string[]> {
-    return await SampleGateway.getProxy().getSampleImodels();
+    return await SampleRpcInterface.getClient().getSampleImodels();
   }
 
   public static async openIModel(path: string): Promise<IModelConnection> {

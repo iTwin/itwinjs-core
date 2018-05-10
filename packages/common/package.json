@@ -31,7 +31,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
-    "@bentley/imodeljs-common": "^0.80",
+    "@bentley/imodeljs-common": "^0.82",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",

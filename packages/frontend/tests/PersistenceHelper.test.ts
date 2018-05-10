@@ -9,6 +9,7 @@ import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/ecpresent
 import { PersistenceHelper } from "@src/index";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomId } from "@helpers/random/Misc";
+import { RelatedElementProps } from "@bentley/imodeljs-common/lib/common";
 
 describe("PersistenceHelper", () => {
 
@@ -28,7 +29,7 @@ describe("PersistenceHelper", () => {
       // set up the mock
       const modelsMock = moq.Mock.ofType<IModelConnectionModels>();
       modelsMock.setup((x) => x.getProps(moq.It.isValue([modelKey.id]))).returns(() => Promise.resolve([{
-        modeledElement: new Id64("0x1"),
+        modeledElement: { id: new Id64("0x1") } as RelatedElementProps,
         classFullName: modelKey.className,
         id: modelKey.id,
       }])).verifiable();

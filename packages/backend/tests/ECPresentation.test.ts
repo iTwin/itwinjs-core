@@ -2,23 +2,37 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Gateway } from "@bentley/imodeljs-common";
-import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
+import { spy } from "@helpers/Spies";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { RpcManager } from "@bentley/imodeljs-common";
+import { IModelHost } from "@bentley/imodeljs-backend";
 import ECPresentation from "@src/ECPresentation";
 import ECPresentationManager from "@src/ECPresentationManager";
-import ECPresentationGateway from "@src/ECPresentationGateway";
-import { initializeGateway } from "@helpers/GatewayHelper";
 
 describe("ECPresentation", () => {
 
+  afterEach(() => {
+    ECPresentation.terminate();
+  });
+
   describe("initialize", () => {
 
-    it("registers gateway and creates manager instance", () => {
+    it("registers rpc implementation", () => {
+      const registerSpy = spy.on(RpcManager, RpcManager.registerImpl.name);
+      ECPresentation.initialize();
+      expect(registerSpy).to.be.called();
+    });
+
+    it("registers itself as IModelHost shutdown listener", () => {
+      const addListenerSpy = spy.on(IModelHost.onBeforeShutdown, BeEvent.prototype.addListener.name);
+      ECPresentation.initialize();
+      expect(addListenerSpy).to.be.called();
+    });
+
+    it("creates a manager instance", () => {
       expect(() => ECPresentation.manager).to.throw();
       ECPresentation.initialize();
-      initializeGateway(ECPresentationGateway);
       expect(ECPresentation.manager).to.be.instanceof(ECPresentationManager);
-      expect(Gateway.getProxyForGateway(ECPresentationGatewayDefinition)).to.be.instanceof(ECPresentationGateway);
     });
 
   });
@@ -36,13 +50,15 @@ describe("ECPresentation", () => {
 
   describe("[set] manager", () => {
 
-    it("overwrites manager instance", () => {
-      const otherManager = new ECPresentationManager();
+    it("disposes and overwrites manager instance", () => {
       ECPresentation.initialize();
+      const otherManager = new ECPresentationManager();
+      const disposeSpy = spy.on(ECPresentation.manager, ECPresentationManager.prototype.dispose.name);
       expect(ECPresentation.manager).to.be.not.null;
       expect(ECPresentation.manager).to.not.eq(otherManager);
       ECPresentation.manager = otherManager;
       expect(ECPresentation.manager).to.eq(otherManager);
+      expect(disposeSpy).to.be.called();
     });
 
   });

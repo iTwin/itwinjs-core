@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, using } from "@bentley/bentleyjs-core";
 import { IModelToken, IModelError } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
@@ -34,14 +34,30 @@ describe("ECPresentationManager", () => {
   });
 
   it("uses default native library implementation if not overridden", () => {
-    const manager = new ECPresentationManager();
-    expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
+    using(new ECPresentationManager(), (manager) => {
+      expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
+    });
   });
 
   it("uses addon implementation supplied through props", () => {
     const mock = moq.Mock.ofType<NodeAddonDefinition>();
+    using(new ECPresentationManager({ addon: mock.object }), (manager) => {
+      expect(manager.getNativePlatform()).eq(mock.object);
+    });
+  });
+
+  it("calls native platform terminate when disposed", () => {
+    const mock = moq.Mock.ofType<NodeAddonDefinition>();
     const manager = new ECPresentationManager({ addon: mock.object });
-    expect(manager.getNativePlatform()).eq(mock.object);
+    manager.dispose();
+    mock.verify((x) => x.terminate(), moq.Times.once());
+  });
+
+  it("throws when attempting to use native platform after disposal", () => {
+    const mock = moq.Mock.ofType<NodeAddonDefinition>();
+    const manager = new ECPresentationManager({ addon: mock.object });
+    manager.dispose();
+    expect(() => manager.getNativePlatform()).to.throw();
   });
 
   describe("addon setup based on constructor props", () => {
@@ -54,7 +70,7 @@ describe("ECPresentationManager", () => {
     it("sets up ruleset directories if supplied", () => {
       const dirs = ["test1", "test2"];
       addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
-      new ECPresentationManager({ addon: addon.object, rulesetDirectories: dirs });
+      using(new ECPresentationManager({ addon: addon.object, rulesetDirectories: dirs }), () => {});
       addon.verifyAll();
     });
 
@@ -62,11 +78,24 @@ describe("ECPresentationManager", () => {
 
   describe("calling default addon implementation", () => {
 
-    const manager = new ECPresentationManager();
+    let manager: ECPresentationManager;
     const addonMock = moq.Mock.ofType<NativeECPresentationManager>();
     beforeEach(() => {
       addonMock.reset();
+      manager = new ECPresentationManager();
+      // we're replacing the native addon with our mock - make sure the original
+      // one gets terminated
+      (manager.getNativePlatform() as any)._nativeAddon.terminate();
       (manager.getNativePlatform() as any)._nativeAddon = addonMock.object;
+    });
+    afterEach(() => {
+      manager.dispose();
+    });
+
+    it("calls addon's terminate", async () => {
+      addonMock.setup((x) => x.terminate()).verifiable();
+      manager.getNativePlatform().terminate();
+      addonMock.verifyAll();
     });
 
     it("calls addon's handleRequest", async () => {
@@ -103,7 +132,7 @@ describe("ECPresentationManager", () => {
 
     let testData: any;
     const mock = moq.Mock.ofType<NodeAddonDefinition>();
-    const manager = new ECPresentationManager({ addon: mock.object });
+    let manager: ECPresentationManager;
     beforeEach(() => {
       testData = {
         imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.Readonly, "user id"),
@@ -121,8 +150,10 @@ describe("ECPresentationManager", () => {
       };
       mock.reset();
       mock.setup((x) => x.getImodelAddon(testData.imodelToken)).verifiable(moq.Times.atLeastOnce());
+      manager = new ECPresentationManager({ addon: mock.object });
     });
     afterEach(() => {
+      manager.dispose();
       mock.verifyAll();
     });
 

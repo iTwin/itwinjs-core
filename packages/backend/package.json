@@ -34,12 +34,12 @@
     "No need to repeat all of the dependencies that I have in common with backend."
   ],
   "peerDependencies": {
-    "@bentley/imodeljs-backend": "^0.80"
+    "@bentley/imodeljs-backend": "^0.82"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
-    "@bentley/imodeljs-backend": "^0.80",
-    "@bentley/imodeljs-common": "^0.80",
+    "@bentley/imodeljs-backend": "^0.82",
+    "@bentley/imodeljs-common": "^0.82",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",

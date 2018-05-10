@@ -4,14 +4,15 @@
 // a hack to get imodeljs-frontend import working
 (global as any).WebGLRenderingContext = require("gl"); // tslint:disable-line:no-var-requires
 // common includes
-import GatewayConfiguration from "@helpers/TestGatewayConfiguration";
+import TestRpcManager from "@helpers/TestRpcManager";
 // backend includes
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ECPresentation as ECPresentationBackend, ECPresentation } from "@bentley/ecpresentation-backend";
 // frontend includes
-import { StandaloneIModelGateway, IModelReadGateway } from "@bentley/imodeljs-common"; // doesn't really belong to "common"
+import { StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ECPresentation as ECPresentationFrontend, ECPresentationGateway } from "@bentley/ecpresentation-frontend";
+import { ECPresentation as ECPresentationFrontend } from "@bentley/ecpresentation-frontend";
 
 let isInitialized = false;
 
@@ -32,8 +33,8 @@ export const initialize = () => {
   IModelApp.startup();
   ECPresentationFrontend.initialize();
 
-  // set up gateways
-  GatewayConfiguration.initialize([StandaloneIModelGateway, IModelReadGateway, ECPresentationGateway]);
+  // set up rpc interfaces
+  TestRpcManager.initializeClient([StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface]);
 
   isInitialized = true;
 };

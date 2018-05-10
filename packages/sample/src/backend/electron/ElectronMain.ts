@@ -6,12 +6,12 @@ import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from "electro
 import * as path from "path";
 import * as url from "url";
 
-// Initialize my application gateway configuration for the backend
-import { StandaloneIModelGateway, IModelReadGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common";
-import { ECPresentationGateway } from "@bentley/ecpresentation-frontend";
-import SampleGateway from "../SampleGateway";
-BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } },
-  [StandaloneIModelGateway, IModelReadGateway, ECPresentationGateway, SampleGateway]);
+// Initialize my application rpc configuration for the backend
+import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import SampleRpcInterface from "../../common/SampleRpcInterface";
+BentleyCloudRpcManager.initializeImpl({ info: { title: "my-app", version: "v1.0" } },
+  [StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface, SampleRpcInterface]);
 
 const isDevBuild = (process.env.NODE_ENV === "development");
 let winRef: any;

@@ -6,15 +6,15 @@ import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { KeySet, Content, Descriptor } from "@bentley/ecpresentation-common";
-import { ECPresentationGateway, ECPresentationManager } from "@src/index";
+import { KeySet, Content, Descriptor, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { ECPresentationManager } from "@src/index";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
-import FrontendGatewayConfiguration from "@helpers/TestGatewayConfiguration";
+import { initializeRpcInterface } from "@helpers/RpcHelper";
 
 describe("ECPresentationManager", () => {
 
-  let gatewayMock: moq.IMock<ECPresentationGateway>;
+  let interfaceMock: moq.IMock<ECPresentationRpcInterface>;
   let manager: ECPresentationManager;
   const testData = {
     imodelToken: new IModelToken(),
@@ -23,9 +23,9 @@ describe("ECPresentationManager", () => {
   };
 
   beforeEach(() => {
-    FrontendGatewayConfiguration.initialize([ECPresentationGateway]);
-    gatewayMock = moq.Mock.ofType<ECPresentationGateway>();
-    ECPresentationGateway.getProxy = () => gatewayMock.object;
+    initializeRpcInterface(ECPresentationRpcInterface);
+    interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
+    ECPresentationRpcInterface.getClient = () => interfaceMock.object;
     manager = new ECPresentationManager();
   });
 
@@ -33,13 +33,13 @@ describe("ECPresentationManager", () => {
 
     it("requests root nodes from proxy", async () => {
       const result = [createRandomECInstanceNode(), createRandomECInstanceNode()];
-      gatewayMock
+      interfaceMock
         .setup((x) => x.getRootNodes(testData.imodelToken, testData.pageOptions, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.pageOptions);
       expect(actualResult).to.eq(result);
-      gatewayMock.verifyAll();
+      interfaceMock.verifyAll();
     });
 
   });
@@ -48,13 +48,13 @@ describe("ECPresentationManager", () => {
 
     it("requests root nodes count from proxy", async () => {
       const result = faker.random.number();
-      gatewayMock
+      interfaceMock
         .setup((x) => x.getRootNodesCount(testData.imodelToken, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await manager.getRootNodesCount(testData.imodelToken, testData.pageOptions);
       expect(actualResult).to.eq(result);
-      gatewayMock.verifyAll();
+      interfaceMock.verifyAll();
     });
 
   });
@@ -64,13 +64,13 @@ describe("ECPresentationManager", () => {
     it("requests child nodes from proxy", async () => {
       const parentNodeKey = createRandomECInstanceNodeKey();
       const result = [createRandomECInstanceNode(), createRandomECInstanceNode()];
-      gatewayMock
+      interfaceMock
         .setup((x) => x.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await manager.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.pageOptions);
       expect(actualResult).to.eq(result);
-      gatewayMock.verifyAll();
+      interfaceMock.verifyAll();
     });
 
   });
@@ -80,13 +80,13 @@ describe("ECPresentationManager", () => {
     it("requests child nodes count from proxy", async () => {
       const parentNodeKey = createRandomECInstanceNodeKey();
       const result = faker.random.number();
-      gatewayMock
+      interfaceMock
         .setup((x) => x.getChildrenCount(testData.imodelToken, parentNodeKey, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await manager.getChildrenCount(testData.imodelToken, parentNodeKey, testData.pageOptions);
       expect(actualResult).to.eq(result);
-      gatewayMock.verifyAll();
+      interfaceMock.verifyAll();
     });
 
   });
@@ -98,13 +98,13 @@ describe("ECPresentationManager", () => {
       const descriptorMock = moq.Mock.ofType<Descriptor>();
       moq.configureForPromiseResult(descriptorMock);
       const result = descriptorMock.object;
-      gatewayMock
+      interfaceMock
         .setup((x) => x.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await manager.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData);
       expect(actualResult).to.eq(result);
-      gatewayMock.verifyAll();
+      interfaceMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship, moq.Times.once());
     });
 
@@ -116,13 +116,13 @@ describe("ECPresentationManager", () => {
       const keyset = new KeySet();
       const descriptor = createRandomDescriptor();
       const result = faker.random.number();
-      gatewayMock
+      interfaceMock
         .setup((x) => x.getContentSetSize(testData.imodelToken, moq.It.is((d) => deepEqual(d, descriptor.createStrippedDescriptor())), keyset, testData.extendedData))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await manager.getContentSetSize(testData.imodelToken, descriptor, keyset, testData.extendedData);
       expect(actualResult).to.eq(result);
-      gatewayMock.verifyAll();
+      interfaceMock.verifyAll();
     });
 
   });
@@ -137,13 +137,13 @@ describe("ECPresentationManager", () => {
         descriptor: descriptorMock.object,
         contentSet: [],
       };
-      gatewayMock
+      interfaceMock
         .setup((x) => x.getContent(testData.imodelToken, moq.It.is((d) => deepEqual(d, descriptorMock.object.createStrippedDescriptor())), keyset, testData.pageOptions, testData.extendedData))
         .returns(() => Promise.resolve(result))
         .verifiable();
       const actualResult = await manager.getContent(testData.imodelToken, descriptorMock.object, keyset, testData.pageOptions, testData.extendedData);
       expect(actualResult).to.eq(result);
-      gatewayMock.verifyAll();
+      interfaceMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship(), moq.Times.once());
     });
 

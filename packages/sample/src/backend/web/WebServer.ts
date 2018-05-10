@@ -1,8 +1,8 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { StandaloneIModelGateway, IModelReadGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-common";
-import { ECPresentationGateway } from "@bentley/ecpresentation-frontend";
-import SampleGateway from "../SampleGateway";
+import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 declare namespace global {
   const webpackDevServer: express.Application | undefined;
@@ -10,8 +10,8 @@ declare namespace global {
 
 export function setupWebServer(app: express.Application) {
 
-  const gatewaysConfig = BentleyCloudGatewayConfiguration.initialize({ info: { title: "my-app", version: "v1.0" } },
-    [StandaloneIModelGateway, IModelReadGateway, ECPresentationGateway, SampleGateway]);
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "my-app", version: "v1.0" } },
+    [StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface, SampleRpcInterface]);
 
   app.use(bodyParser.text());
 
@@ -25,8 +25,8 @@ export function setupWebServer(app: express.Application) {
   // ---------------------------------------------
   // Routes
   // ---------------------------------------------
-  app.get("/v3/swagger.json", (req, res) => gatewaysConfig.protocol.handleOpenApiDescriptionRequest(req, res));
-  app.post("*", async (req, res) => gatewaysConfig.protocol.handleOperationPostRequest(req, res));
+  app.get("/v3/swagger.json", (req, res) => rpcConfig.protocol.handleOpenApiDescriptionRequest(req, res));
+  app.post("*", async (req, res) => rpcConfig.protocol.handleOperationPostRequest(req, res));
 }
 
 if (global.webpackDevServer) {

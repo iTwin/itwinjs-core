@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "React to Gateway's API changes: moved ECPresentationGateway to ecpresentation-common package to be consistent with imodeljs-core.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

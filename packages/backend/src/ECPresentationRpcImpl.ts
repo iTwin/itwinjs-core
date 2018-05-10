@@ -2,15 +2,15 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "@bentley/imodeljs-common";
-import { ECPresentationGatewayDefinition } from "@bentley/ecpresentation-common";
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import ECPresentation from "./ECPresentation";
 import ECPresentationManager from "./ECPresentationManager";
 
-/** The backend implementation of ECPresentationGatewayDefinition. */
-export default class ECPresentationGateway extends ECPresentationGatewayDefinition {
+/** The backend implementation of ECPresentationRpcInterface. */
+export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
 
   public getManager(): ECPresentationManager {
     return ECPresentation.manager;

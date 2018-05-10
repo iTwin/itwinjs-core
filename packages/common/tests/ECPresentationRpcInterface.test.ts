@@ -4,78 +4,78 @@
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { KeySet } from "@bentley/ecpresentation-common";
-import { ECPresentationGateway } from "@src/index";
+import { KeySet } from "@src/index";
+import { ECPresentationRpcInterface } from "@src/index";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
-import FrontendGatewayConfiguration from "@helpers/TestGatewayConfiguration";
+import { initializeRpcInterface } from "@helpers/RpcHelper";
 
-describe("ECPresentationGateway", () => {
+describe("ECPresentationRpcInterface", () => {
 
-  describe("getProxy", () => {
+  describe("getClient", () => {
 
     it("throws when not registered", () => {
-      expect(() => ECPresentationGateway.getProxy()).to.throw();
+      expect(() => ECPresentationRpcInterface.getClient()).to.throw();
     });
 
-    it("returns gateway when registered", () => {
-      FrontendGatewayConfiguration.initialize([ECPresentationGateway]);
-      const proxy = ECPresentationGateway.getProxy();
-      expect(proxy).is.instanceof(ECPresentationGateway);
+    it("returns interface when registered", () => {
+      initializeRpcInterface(ECPresentationRpcInterface);
+      const proxy = ECPresentationRpcInterface.getClient();
+      expect(proxy).is.instanceof(ECPresentationRpcInterface);
     });
 
   });
 
   describe("calls forwarding", () => {
 
-    let gateway: ECPresentationGateway;
+    let rpcInterface: ECPresentationRpcInterface;
     let mock: moq.IMock<(<T>(operation: string, ...parameters: any[]) => Promise<T>)>;
     const testData = {
       imodelToken: new IModelToken(),
     };
 
     beforeEach(() => {
-      gateway = new ECPresentationGateway();
-      mock = moq.Mock.ofInstance(gateway.forward);
-      gateway.forward = mock.object;
+      rpcInterface = new ECPresentationRpcInterface();
+      mock = moq.Mock.ofInstance(rpcInterface.forward);
+      rpcInterface.forward = mock.object;
     });
 
     it("forwards getRootNodes call", async () => {
-      await gateway.getRootNodes(testData.imodelToken, undefined, {});
+      await rpcInterface.getRootNodes(testData.imodelToken, undefined, {});
       mock.verify((x) => x(moq.It.isAny(), undefined, {}), moq.Times.once());
     });
 
     it("forwards getRootNodesCount call", async () => {
-      await gateway.getRootNodesCount(testData.imodelToken, {});
+      await rpcInterface.getRootNodesCount(testData.imodelToken, {});
       mock.verify((x) => x(moq.It.isAny(), {}), moq.Times.once());
     });
 
     it("forwards getChildren call", async () => {
       const parentKey = createRandomECInstanceNodeKey();
-      await gateway.getChildren(testData.imodelToken, parentKey, undefined, {});
+      await rpcInterface.getChildren(testData.imodelToken, parentKey, undefined, {});
       mock.verify((x) => x(moq.It.isAny(), parentKey, undefined, {}), moq.Times.once());
     });
 
     it("forwards getChildrenCount call", async () => {
       const parentKey = createRandomECInstanceNodeKey();
-      await gateway.getChildrenCount(testData.imodelToken, parentKey, {});
+      await rpcInterface.getChildrenCount(testData.imodelToken, parentKey, {});
       mock.verify((x) => x(moq.It.isAny(), parentKey, {}), moq.Times.once());
     });
 
     it("forwards getContentDescriptor call", async () => {
-      await gateway.getContentDescriptor(testData.imodelToken, "test", new KeySet(), undefined, {});
+      await rpcInterface.getContentDescriptor(testData.imodelToken, "test", new KeySet(), undefined, {});
       mock.verify((x) => x(moq.It.isAny(), "test", moq.It.is((a) => a instanceof KeySet), undefined, {}), moq.Times.once());
     });
 
     it("forwards getContentSetSize call", async () => {
       const descriptor = createRandomDescriptor();
-      await gateway.getContentSetSize(testData.imodelToken, descriptor, new KeySet(), {});
+      await rpcInterface.getContentSetSize(testData.imodelToken, descriptor, new KeySet(), {});
       mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), {}), moq.Times.once());
     });
 
     it("forwards getContent call", async () => {
       const descriptor = createRandomDescriptor();
-      await gateway.getContent(testData.imodelToken, descriptor, new KeySet(), undefined, {});
+      await rpcInterface.getContent(testData.imodelToken, descriptor, new KeySet(), undefined, {});
       mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), undefined, {}), moq.Times.once());
     });
 

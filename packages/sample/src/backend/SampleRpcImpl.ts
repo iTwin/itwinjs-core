@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import SampleGatewayDefinition from "../common/SampleGatewayDefinition";
-import { Gateway } from "@bentley/imodeljs-common";
+import SampleRpcInterface from "../common/SampleRpcInterface";
+import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import * as fs from "fs";
 import * as path from "path";
 
-/** The backend implementation of SampleGatewayDefinition. */
-export default class SampleGateway extends SampleGatewayDefinition {
+/** The backend implementation of SampleRpcInterface. */
+export default class SampleRpcImpl extends SampleRpcInterface {
 
   private getAssetsDir(): string {
     if (IModelHost.appAssetsDir)
@@ -24,5 +24,5 @@ export default class SampleGateway extends SampleGatewayDefinition {
 
 }
 
-/** Auto-register the gateway when this file is included. */
-Gateway.registerImplementation(SampleGatewayDefinition, SampleGateway);
+/** Auto-register the impl when this file is included. */
+RpcManager.registerImpl(SampleRpcInterface, SampleRpcImpl);

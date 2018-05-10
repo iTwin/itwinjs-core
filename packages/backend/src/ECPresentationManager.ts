@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
 import { NodeKey, Node } from "@bentley/ecpresentation-common";
@@ -14,19 +16,31 @@ export interface Props {
   rulesetDirectories?: string[];
 }
 
-export default class ECPresentationManager implements ECPresentationManagerDefinition {
+export default class ECPresentationManager implements ECPresentationManagerDefinition, IDisposable {
 
   private _addon?: NodeAddonDefinition;
+  private _isDisposed: boolean;
 
   constructor(props?: Props) {
+    this._isDisposed = false;
     if (props && props.addon)
       this._addon = props.addon;
     if (props && props.rulesetDirectories)
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
+  public dispose() {
+    if (this._addon) {
+      this.getNativePlatform().terminate();
+      this._addon = undefined;
+    }
+    this._isDisposed = true;
+  }
+
   /** @hidden */
   public getNativePlatform(): NodeAddonDefinition {
+    if (this._isDisposed)
+      throw new Error("Attempting to use ECPresentation manager after disposal");
     if (!this._addon) {
       const addonImpl = createAddonImpl();
       this._addon = new addonImpl();
@@ -114,6 +128,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
 
 /** @hidden */
 export interface NodeAddonDefinition {
+  terminate(): void;
   handleRequest(db: any, options: string): string;
   setupRulesetDirectories(directories: string[]): void;
   getImodelAddon(token: IModelToken): any;
@@ -123,12 +138,15 @@ const createAddonImpl = () => {
   // note the implementation is constructed here to make ECPresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NodeAddonDefinition {
-    private _nativeAddon = new (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager();
+    private _nativeAddon: NativeECPresentationManager = new (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager();
+    public terminate() {
+      this._nativeAddon.terminate();
+    }
     public handleRequest(db: any, options: string): string {
       return this._nativeAddon.handleRequest(db, options);
     }
     public setupRulesetDirectories(directories: string[]): void {
-      return this._nativeAddon.setupRulesetDirectories(directories);
+      this._nativeAddon.setupRulesetDirectories(directories);
     }
     public getImodelAddon(token: IModelToken): any {
       const imodel = IModelDb.find(token);

@@ -7,4 +7,4 @@ export { default as PersistentKeysContainer } from "./PersistentKeysContainer";
 export * from "./content";
 export * from "./hierarchy";
 export * from "./ECPresentationManager";
-export { default as ECPresentationGatewayDefinition } from "./ECPresentationGatewayDefinition";
+export { default as ECPresentationRpcInterface } from "./ECPresentationRpcInterface";
