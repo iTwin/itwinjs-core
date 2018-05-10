@@ -18,17 +18,17 @@ import { ImageSource } from "./Image";
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
 export enum FillFlags {
-  None       = 0,               // No fill, e.g. for any non-planar geometry.
-  ByView     = 1 << 0,          // Use element fill color, when fill enabled by view
-  Always     = 1 << 1,          // Use element fill color, even when fill is disabled by view
-  Behind     = 1 << 2,          // Always rendered behind other geometry belonging to the same element. e.g., text background.
-  Blanking   = Behind | Always, // Use element fill color, always rendered behind other geometry belonging to the same element.
+  None = 0,               // No fill, e.g. for any non-planar geometry.
+  ByView = 1 << 0,          // Use element fill color, when fill enabled by view
+  Always = 1 << 1,          // Use element fill color, even when fill is disabled by view
+  Behind = 1 << 2,          // Always rendered behind other geometry belonging to the same element. e.g., text background.
+  Blanking = Behind | Always, // Use element fill color, always rendered behind other geometry belonging to the same element.
   Background = 1 << 3,          // Use background color specified by view
 }
 
 export enum PolylineTypeFlags {
-  Normal  = 0,      // Just an ordinary polyline
-  Edge    = 1 << 0, // A polyline used to define the edges of a planar region.
+  Normal = 0,      // Just an ordinary polyline
+  Edge = 1 << 0, // A polyline used to define the edges of a planar region.
   Outline = 1 << 1, // Like Edge, but the edges are only displayed in wireframe mode when surface fill is undisplayed.
 }
 
@@ -66,7 +66,7 @@ export class PolylineFlags {
   public get isNormalEdge(): boolean { return PolylineTypeFlags.Edge === this.type; }
   public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }
   public setIsNormalEdge(): void { this.type = PolylineTypeFlags.Edge; }
-  public setIsOutlineEdge(): void {this.type = PolylineTypeFlags.Outline; }
+  public setIsOutlineEdge(): void { this.type = PolylineTypeFlags.Outline; }
 
   /** Convert these flags to a numeric representation for serialization. */
   public pack(): number {
@@ -88,7 +88,7 @@ export class PolylineFlags {
 
 /* An individual polyline which indexes into a shared set of vertices */
 export class PolylineData {
-  public constructor(public vertIndices: number[] = [], public numIndices = 0, public startDistance = 0, public rangeCenter = new Point3d()) { }
+  public constructor(public vertIndices: number[] = [], public numIndices = 0, public startDistance = 0) { }
 
   public isValid(): boolean { return 0 < this.numIndices; }
   public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
@@ -96,16 +96,13 @@ export class PolylineData {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
     this.startDistance = polyline.startDistance;
-    this.rangeCenter = polyline.rangeCenter;
     return this.isValid();
   }
 }
 
 export class MeshPolyline {
   public indices: number[] = [];
-  public rangeCenter = new Point3d();
-  public constructor(public startDistance = 0, rangeCenter?: Point3d, indices?: number[]) {
-    if (rangeCenter) { this.rangeCenter = rangeCenter; }
+  public constructor(public startDistance = 0, indices?: number[]) {
     if (indices) { this.indices = indices.slice(); }
   }
   public addIndex(index: number) { if (this.indices.length === 0 || this.indices[this.indices.length - 1] !== index) this.indices.push(index); }
@@ -219,8 +216,8 @@ export class RenderMaterial {
 export namespace ImageLight {
   export class Solar {
     constructor(public direction: Vector3d = new Vector3d(),
-                public color: ColorDef = ColorDef.white,
-                public intensity: number = 0) {}
+      public color: ColorDef = ColorDef.white,
+      public intensity: number = 0) { }
   }
 }
 
@@ -925,8 +922,8 @@ export class SceneLights {
   private _list: Light[] = [];
   public get isEmpty(): boolean { return this._list.length === 0; }
   constructor(public imageBased: { environmentalMap: RenderTexture, diffuseImage: RenderTexture, solar: ImageLight.Solar },
-              public fstop: number = 0, // must be between -3 and +3
-              ) {}
+    public fstop: number = 0, // must be between -3 and +3
+  ) { }
   public addLight(light: Light): void { if (light.isValid()) this._list.push(light); }
 }
 

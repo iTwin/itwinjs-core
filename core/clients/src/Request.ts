@@ -127,9 +127,9 @@ export class ResponseError extends Error {
       }
     }
 
-    error.status = response.status;
+    error.status = response.status || response.statusCode;
     error.name = response.code || response.name || error.name;
-    error.message = error.message || response.message;
+    error.message = error.message || response.message || response.statusMessage;
     return error;
   }
 
@@ -144,7 +144,7 @@ export class ResponseError extends Error {
         return true;
       }
     }
-    return (response !== undefined  && response.statusType === HttpResponseType.ServerError);
+    return (response !== undefined && response.statusType === HttpResponseType.ServerError);
   }
 
   protected logMessage(): string {

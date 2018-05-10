@@ -7,37 +7,26 @@ import { StrokesPointList, StrokesPointLists } from "@bentley/imodeljs-frontend/
 
 describe("StrokesPointList", () => {
   it("StrokesPointList works as expected", () => {
-    const a = new StrokesPointList();
-    assert.isTrue(a.startDistance === 0, "startDistance set correctly when default constructor used");
-    assert.isTrue(a.rangeCenter.isExactEqual(new Point3d(0, 0, 0)), "rangeCenter set correctly when default constructor used");
-    assert.isTrue(a.points.length === 0, "points set correctly when default constructor used");
-
-    const center = new Point3d(1, 2, 3);
-    const b = new StrokesPointList(undefined, center);
-    assert.isTrue(b.startDistance === 0, "startDistance set correctly when constructor with just rangeCenter param used");
-    assert.isTrue(b.rangeCenter.isExactEqual(center), "rangeCenter set correctly when constructor with just rangeCenter param used");
-    assert.isTrue(b.points.length === 0, "points set correctly when constructor with just rangeCenter param used");
+    const b = new StrokesPointList(0.0);
+    assert.isTrue(b.startDistance === 0, "startDistance set correctly when constructor with just startDistance param used");
+    assert.isTrue(b.points.length === 0, "points set correctly when constructor with just startDistance param used");
 
     const points = [new Point3d(1, 2, 3), new Point3d(2, 4, 5), new Point3d(6, 7, 8)];
-    const c = new StrokesPointList(undefined, center, points);
-    assert.isTrue(c.startDistance === 0, "startDistance set correctly when constructor with just points param used");
-    assert.isTrue(c.rangeCenter.isExactEqual(center), "rangeCenter set correctly when constructor with just points param used");
+    const c = new StrokesPointList(0.0, points);
+    assert.isTrue(c.startDistance === 0, "startDistance set correctly when constructor with points param specified");
     expect(c.points).to.deep.equal(points);
   });
 });
 
 describe("StrokesPointLists", () => {
   it("StrokesPointLists works as expected", () => {
-    const a = new StrokesPointList();
-
-    const center = new Point3d(1, 2, 3);
-    const b = new StrokesPointList(undefined, center);
+    const a = new StrokesPointList(0.0);
 
     const points = [new Point3d(1, 2, 3), new Point3d(2, 4, 5), new Point3d(6, 7, 8)];
-    const c = new StrokesPointList(undefined, center, points);
+    const b = new StrokesPointList(0.0, points);
 
-    const list = [a, b, c];
-    const strokesLists = new StrokesPointLists(a, b, c);
+    const list = [a, b];
+    const strokesLists = new StrokesPointLists(a, b);
     expect(strokesLists).to.deep.equal(list);
   });
 });

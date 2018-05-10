@@ -7,7 +7,7 @@ import { CodeState } from "./Codes";
 import { IModelHubBaseHandler } from "./BaseHandler";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
-import { EventBaseHandler } from "./EventsBase";
+import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription } from "./EventsBase";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -37,20 +37,7 @@ export type EventType =
   "VersionEvent";
 
 /** Base type for all iModelHub events */
-export abstract class IModelHubEvent {
-  public eventTopic?: string;
-  public fromEventSubscriptionId?: string;
-  public toEventSubscriptionId?: string;
-
-  /**
-   * Construct this event from object instance.
-   * @param obj Object instance.
-   */
-  public fromJson(obj: any) {
-    this.eventTopic = obj.EventTopic;
-    this.fromEventSubscriptionId = obj.FromEventSubscriptionId;
-    this.toEventSubscriptionId = obj.ToEventSubscriptionId;
-  }
+export abstract class IModelHubEvent extends IModelHubBaseEvent {
 }
 
 /** Base type for iModelHub events that have BriefcaseId */
@@ -200,8 +187,8 @@ function ConstructorFromEventType(type: EventType): EventConstructor {
       return IModelDeletedEvent;
     case "VersionEvent":
       return VersionEvent;
-    }
   }
+}
 
 /**
  * Parse @see IModelHubEvent from response object.
@@ -216,20 +203,15 @@ export function ParseEvent(response: Response) {
 }
 
 /** EventSubscription */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSubscription", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSubscription", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSubscription extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.EventTypes")
   public eventTypes?: EventType[];
 }
 
 /** EventSAS */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSAS", {schemaPropertyName: "schemaName", classPropertyName: "className"})
-export class EventSAS extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.BaseAddress")
-  public baseAddres?: string;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.EventServiceSASToken")
-  public sasToken?: string;
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSAS", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class EventSAS extends BaseEventSAS {
 }
 
 /**
@@ -299,14 +281,14 @@ export class EventSubscriptionHandler {
    * @param eventSubscriptionId Id of the event subscription.
    * @returns Resolves if the EventSubscription has been successfully deleted.
    */
-  public async delete(token: AccessToken, imodelId: string, eventSubscriptionId: string): Promise<void>   {
+  public async delete(token: AccessToken, imodelId: string, eventSubscriptionId: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Deleting event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
 
     await this._handler.delete(token, this.getRelativeUrl(imodelId, eventSubscriptionId));
 
     Logger.logTrace(loggingCategory, `Deleted event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
-    }
   }
+}
 
 /**
  * Handler for all methods related to iModel Hub events.
@@ -403,5 +385,22 @@ export class EventHandler extends EventBaseHandler {
     Logger.logWarning(loggingCategory, `Getting event from subscription ${subscriptionId} failed with status ${result.status}`);
 
     return Promise.reject(result.status);
+  }
+
+  /**
+   * Creates a listener for long polling events from a subscription.
+   * @param authenticationCallback Callback used to get AccessToken. Only the first registered callback for this subscription will be used.
+   * @param subscriptionId Id of subscription.
+   * @param imodelId Id of the iModel.
+   * @param listener Callback that is called when an event is received.
+   * @returns Function that deletes the listener.
+   */
+  public createListener(authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: string, listener: (event: IModelHubEvent) => void): () => void {
+    const subscription = new ListenerSubscription();
+    subscription.authenticationCallback = authenticationCallback;
+    subscription.getEvent = this.getEvent;
+    subscription.getSASToken = (token: AccessToken) => this.getSASToken(token, imodelId);
+    subscription.id = subscriptionId;
+    return EventListener.create(subscription, listener);
   }
 }

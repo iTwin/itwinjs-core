@@ -6,7 +6,7 @@ import { request, Response } from "./../Request";
 import { IModelHubBaseHandler } from "./BaseHandler";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
-import { EventBaseHandler } from "./EventsBase";
+import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener } from "./EventsBase";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -24,23 +24,17 @@ export type GlobalEventType =
   "NamedVersionCreatedEvent";
 
 /** Base type for all iModelHub global events */
-export abstract class IModelHubGlobalEvent {
-  public eventTopic?: string;
+export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   public iModelId?: string;
   public projectId?: string;
-  public fromEventSubscriptionId?: string;
-  public toEventSubscriptionId?: string;
 
   /**
    * Construct this global event from object instance.
    * @param obj Object instance.
    */
   public fromJson(obj: any) {
-    this.eventTopic = obj.EventTopic;
     this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
-    this.fromEventSubscriptionId = obj.FromEventSubscriptionId;
-    this.toEventSubscriptionId = obj.ToEventSubscriptionId;
   }
 }
 
@@ -122,7 +116,7 @@ export function ParseGlobalEvent(response: Response) {
 }
 
 /** GlobalEventSubscription */
-@ECJsonTypeMap.classToJson("wsg", "GlobalScope.GlobalEventSubscription", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "GlobalScope.GlobalEventSubscription", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class GlobalEventSubscription extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.EventTypes")
   public eventTypes?: GlobalEventType[];
@@ -132,13 +126,8 @@ export class GlobalEventSubscription extends WsgInstance {
 }
 
 /** GlobalEventSAS */
-@ECJsonTypeMap.classToJson("wsg", "GlobalScope.GlobalEventSAS", {schemaPropertyName: "schemaName", classPropertyName: "className"})
-export class GlobalEventSAS extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.BaseAddress")
-  public baseAddres?: string;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.EventServiceSASToken")
-  public sasToken?: string;
+@ECJsonTypeMap.classToJson("wsg", "GlobalScope.GlobalEventSAS", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class GlobalEventSAS extends BaseEventSAS {
 }
 
 /**
@@ -308,5 +297,21 @@ export class GlobalEventHandler extends EventBaseHandler {
     Logger.logWarning(loggingCategory, `Getting Global Event from subscription with instance id: ${subscriptionInstanceId} failed with status ${result.status}`);
 
     return Promise.reject(result.status);
+  }
+
+  /**
+   * Creates a listener for long polling events from a subscription.
+   * @param authenticationCallback Callback used to get AccessToken. Only the first registered callback for this subscription will be used.
+   * @param subscriptionId Id of subscription.
+   * @param listener Callback that is called when an event is received.
+   * @returns Function that deletes the listener.
+   */
+  public createListener(authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
+    const subscription = new ListenerSubscription();
+    subscription.authenticationCallback = authenticationCallback;
+    subscription.getEvent = this.getEvent;
+    subscription.getSASToken = this.getSASToken;
+    subscription.id = subscriptionId;
+    return EventListener.create(subscription, listener);
   }
 }

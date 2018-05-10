@@ -74,7 +74,7 @@ function mockGetGlobalEventSASToken() {
   const requestPath = utils.createRequestUrl(ScopeType.Global, "", "GlobalEventSAS");
   const responseObject = ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS, new Map<string, any>([
     ["sasToken", "12345"],
-    ["baseAddres", `${utils.defaultUrl}/v2.5/Repositories/Global--Global/GlobalScope`]]));
+    ["baseAddress", `${utils.defaultUrl}/v2.5/Repositories/Global--Global/GlobalScope`]]));
   const requestResponse = ResponseBuilder.generatePostResponse<GlobalEventSAS>(responseObject);
   const postBody = ResponseBuilder.generatePostBody<IModel>(ResponseBuilder.generateObject<GlobalEventSAS>(GlobalEventSAS));
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
@@ -135,7 +135,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
     const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, "iModelCreatedEvent", JSON.parse(eventBody));
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).instanceof(IModelCreatedEvent);
   });
@@ -147,7 +147,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, "SoftiModelDeleteEvent", JSON.parse(eventBody));
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).instanceof(SoftiModelDeleteEvent);
   });
@@ -159,7 +159,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, "HardiModelDeleteEvent", JSON.parse(eventBody));
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).instanceof(HardiModelDeleteEvent);
   });
@@ -171,7 +171,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","BriefcaseId":2,"ChangeSetId":"369","ChangeSetIndex":"1"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, "ChangeSetCreatedEvent", JSON.parse(eventBody));
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).instanceof(ChangeSetCreatedEvent);
   });
@@ -192,7 +192,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const eventBody = '{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"456","ToEventSubscriptionId":"","ProjectId":"123456","iModelId":"789","ChangeSetId":"369","VersionId":"159","VersionName":"357"}';
     mockGetGlobalEvent(globalEventSubscription.wsgId, "NamedVersionCreatedEvent", JSON.parse(eventBody));
 
-    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddres!, globalEventSubscription.wsgId);
+    const event = await imodelHubClient.GlobalEvents().getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).instanceof(NamedVersionCreatedEvent);
   });

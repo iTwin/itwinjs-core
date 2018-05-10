@@ -23,7 +23,7 @@ import * as path from "path";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
 
 /** Other services */
-class MockAccessToken extends AccessToken {
+export class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
   public getUserProfile(): UserProfile | undefined {
     return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley");

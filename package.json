@@ -42,6 +42,7 @@
     "cover:backend": "cd core/backend && npm run cover",
     "cover:backend:integration": "cd core/backend && npm run cover:integration",
     "cover:clients": "cd core/clients && npm run cover",
+    "cover:testbed": "cd testbed && node bin/testbed.js --coveragePattern ../core/frontend/lib/**/*.js",
     "module:backend": "cd core/backend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true",
     "module:frontend": "cd core/frontend && node ../../node_modules/@bentley/bentleyjs-tools/scripts/mastermodule --includes=../common --recursively=true"
   },

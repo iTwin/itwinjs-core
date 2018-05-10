@@ -34,30 +34,42 @@ import {
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
-import { GeometryOptions } from "./Primitives";
+import { GeometryOptions, NormalMode } from "./Primitives";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 import { StrokesList } from "./Strokes";
+import { PolyfaceList } from "./Polyface";
 
 export abstract class Geometry {
+  public readonly transform: Transform;
+  public readonly tileRange: Range3d;
+  public readonly displayParams: DisplayParams;
+  public readonly isCurved: boolean;
   public clip?: ClipVector;
 
-  public constructor(public transform: Transform, public tileRange: Range3d, public entityId: Id64, public displayParams: DisplayParams, public isCurved: boolean) {
+  public constructor(transform: Transform, tileRange: Range3d, displayParams: DisplayParams, isCurved: boolean) {
+    this.transform = transform;
+    this.tileRange = tileRange;
+    this.displayParams = displayParams;
+    this.isCurved = isCurved;
   }
 
-  public static createFromGeom(geometry: GeometryQuery, tf: Transform, tileRange: Range3d, entityId: Id64, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
-    return PrimitiveGeometry.create(geometry, tf, tileRange, entityId, params, isCurved, disjoint);
+  public static createFromGeom(geometry: GeometryQuery, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
+    return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
   }
 
-  // protected abstract _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList;
+  protected abstract _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList;
   protected abstract _getStrokes(chordTolerance: number, vc: ViewContext): StrokesList;
 
-  /*
   public getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList {
-    this._getPolyfaces();
+    const polyfaces = this._getPolyfaces(chordTolerance, nm, vc);
+    if (this.clip === undefined || 0 === polyfaces.length)
+      return polyfaces;
+
+    // ###TODO: clip the polyfaces if needed (See native code GeometryClipper); for now, return unclipped
+    return polyfaces;
   }
-  */
 
   public getStrokes(chordTolerance: number, vc: ViewContext): StrokesList {
     const strokes = this._getStrokes(chordTolerance, vc);
@@ -81,13 +93,24 @@ export abstract class Geometry {
 export class PrimitiveGeometry extends Geometry {
   public inCache = false;
 
-  public constructor(public geometry: GeometryQuery, tf: Transform, range: Range3d, elemId: Id64, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ public disjoint: boolean) {
-    super(tf, range, elemId, params, isCurved/*, iModel*/);
+  public constructor(public geometry: GeometryQuery, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ public disjoint: boolean) {
+    super(tf, range, params, isCurved/*, iModel*/);
   }
 
-  public static create(geometry: GeometryQuery, tf: Transform, range: Range3d, elemId: Id64, params: DisplayParams, isCurved: boolean, /* iModel: IModelConnection,*/ disjoint: boolean) {
+  public static create(geometry: GeometryQuery, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /* iModel: IModelConnection,*/ disjoint: boolean) {
     assert(!disjoint || geometry instanceof CurveCollection);
-    return new PrimitiveGeometry(geometry, tf, range, elemId, params, isCurved, /* iModel, */ disjoint);
+    return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ disjoint);
+  }
+
+  // ###TODO: actual implementation
+  protected _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfaceList {
+    if (0 === chordTolerance) { // shut up tslint
+    }
+    if (NormalMode.Always === nm) { // shut up tslint
+    }
+    if (vc.viewFlags.fill) { // shut up tslint
+    }
+    return new PolyfaceList();
   }
 
   // ###TODO: actual implementation
@@ -170,7 +193,7 @@ export class GeometryAccumulator {
       range3d = range;
     }
     if (!range3d) { range3d = new Range3d(); }
-    const geometry = Geometry.createFromGeom(geom, transform, range3d, this.elementId, displayParams, isCurved, /*this.iModel,*/ disjoint);
+    const geometry = Geometry.createFromGeom(geom, transform, range3d, displayParams, isCurved, /*this.iModel,*/ disjoint);
     if (!geometry) { return false; }
     geometry.clip = clip;
     if (this.geometries) { this.geometries.push_back(geometry); }
