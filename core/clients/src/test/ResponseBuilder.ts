@@ -192,29 +192,33 @@ export class ResponseBuilder {
    * @param responseCode Specifies response code.
    */
   public static mockResponse(url: string, requestType: RequestType, requestPath: string, requestResponse?: object | (() => object),
-    times = 1, postBody?: object, headers?: any, responseCode = 200): void {
+    times = 1, postBody?: object, headers?: any, responseCode = 200, delay = 0): void {
     const response: any = requestResponse || "";
     switch (requestType) {
       case RequestType.Get:
         nock(url)
           .get(requestPath)
           .times(times)
+          .delayConnection(delay)
           .reply(responseCode, response);
         break;
       case RequestType.Post:
         nock(url)
           .post(requestPath, postBody)
+          .delayConnection(delay)
           .reply(responseCode, response);
         break;
       case RequestType.Delete:
         nock(url)
           .delete(requestPath)
           .times(times)
+          .delayConnection(delay)
           .reply(responseCode, response, headers);
         break;
       case RequestType.Put:
         nock(url)
           .put(requestPath)
+          .delayConnection(delay)
           .reply(responseCode, response);
         break;
     }
