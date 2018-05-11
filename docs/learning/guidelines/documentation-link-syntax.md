@@ -13,14 +13,12 @@ You can create links into the TypeDoc generated documentation using the same syn
 
 | Link to: | Syntax| Notes
 |---------|----|--
-| A package | `[label]($package)`| links to the documentation found in the index.ts file for *package*, marked with the `@docs-package-description` tag.
+| A package | `($package)`| links to the documentation found in the index.ts file for *package*, marked with the `@docs-package-description` tag.
 | A topic|`[label]($package:Topic)`| links to the documentation found in the index.ts file for *package*, marked with the `@docs-group-description Topic` tag.
-| A class|`($package/Class)`| links to the documentation for *Class* in *package*
-| A method|`($package/Class.method)`|links to the documentation for *Class.method* in *package*
+| A class|`[Class]($package)`| links to the documentation for *Class* in *package*
+| A method|`[Class.method]($package)`|links to the documentation for *Class.method* in *package*
 
 > *Package aliases* can be added to config/docSites.json to allow for shorter names to be used as the package variable. Ex: common -> imodeljs-common.
-
-> Note: It is possible to include a `[label]` prefix when linking to a Class or method. That should rarely be necessary, and is discouraged since it can be wrong and misleading.
 
 ## Linking Markdown -> Markdown
 

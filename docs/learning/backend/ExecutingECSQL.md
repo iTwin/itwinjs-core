@@ -10,20 +10,20 @@ Executing an ECSQL statement typically consists of these steps:
 1. Reset the statement and clear its parameter bindings, if the statement should be executed again.
 
 > For iModels only ECSQL SELECT statements can be executed. Data modification must be done through the API.
-> For [ECDb files]($backend/ECDb) ECSQL INSERT, UPDATE and DELETE statements can be executed as well.
+> For [ECDb]($backend) ECSQL INSERT, UPDATE and DELETE statements can be executed as well.
 
 There are two ways to execute an ECSQL statement:
 
-- [IModelDb.executeQuery]($backend/IModelDb.executeQuery) is the high-level API which does all the above steps in a single call.
-- [ECSqlStatement]($backend/ECSqlStatement) is the lower-level API in case you need more flexibility,
-  e.g. when iterating over the query results. Use [IModelDb.withPreparedStatement]($backend/IModelDb.withPreparedStatement)
-  or [ECDb.withPreparedStatement]($backend/ECDb.withPreparedStatement) in that case.
+- [IModelDb.executeQuery]($backend) is the high-level API which does all the above steps in a single call.
+- [ECSqlStatement]($backend) is the lower-level API in case you need more flexibility,
+  e.g. when iterating over the query results. Use [IModelDb.withPreparedStatement]($backend)
+  or [ECDb.withPreparedStatement]($backend) in that case.
 
 # Code Examples
 
-> The code examples do not explicitly show examples using the [ECDb]($backend/ECDb) class. However, the code examples work likewise for
-> ECDb. Just replace [IModelDb.withPreparedStatement]($backend/IModelDb.withPreparedStatement) in the code examples
-> with [ECDb.withPreparedStatement]($backend/ECDb.withPreparedStatement).
+> The code examples do not explicitly show examples using the [ECDb]($backend) class. However, the code examples work likewise for
+> ECDb. Just replace [IModelDb.withPreparedStatement]($backend) in the code examples
+> with [ECDb.withPreparedStatement]($backend).
 
 Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the specific ECSQL queries that app backends and services often run.
 
@@ -63,7 +63,7 @@ parameters at once.
 ### Navigation properties
 
 [Navigation properties](../ECSQL#navigation-properties) are structs made up of the Id of the related instance and the backing
-ECRelationshipClass. The [NavigationBindingValue]($common/NavigationBindingValue) interface is used to bind values to navigation property parameters.
+ECRelationshipClass. The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
 
 ```ts
 [[include:ExecuteECSql_Binding_Navigation_ByParameter]]
@@ -131,11 +131,11 @@ See "[Array properties in ECSQL](../ECSQL#arrays)" for the ECSQL background.
 The current row of the query result can be retrieved in two ways:
 
 - as a whole as JavaScript literal (adhering to the [ECSQL row format](../ECSQLRowFormat))
-- column by column (using the [ECSqlValue]($backend/ECSqlValue) API as returned from [ECSqlStatement.getValue]($backend/ECSqlStatement.getValue))
+- column by column (using the [ECSqlValue]($backend) API as returned from [ECSqlStatement.getValue]($backend))
 
 > The column by column approach is more low-level, but gives you more flexible access to the data in the row. For example,
 > [ECClassIds](../ECSQL#ecclassid) are turned into class names in the [ECSQL row format](../ECSQLRowFormat).
-> Using the [ECSqlValue]($backend/ECSqlValue) API allows you to retrieve ECClassIds as Id64s.
+> Using the [ECSqlValue]($backend) API allows you to retrieve ECClassIds as Id64s.
 
 ### Rows as a whole
 

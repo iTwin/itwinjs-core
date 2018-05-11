@@ -93,7 +93,7 @@ It must use the appropriate ($common/GatewayConfiguration) for each gateway, dep
 ... TBD more details on this ...
 ... TBD code sample ...
 
-A client makes calls on a gateway's [proxy]($common/Gateway.getProxyForGateway). Each method in the proxy forwards the call to the implementation. The call signature for the proxy methods is the same as given in the definition.
+A client makes calls on a gateway's [Gateway.getProxyForGateway]($common). Each method in the proxy forwards the call to the implementation. The call signature for the proxy methods is the same as given in the definition.
 
 ### Gateway Performance
 
