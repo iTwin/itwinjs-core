@@ -43,10 +43,10 @@ import { GeometryOptions } from "./Primitives";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
-import { StrokesPrimitiveList } from "./Strokes";
+import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointLists } from "./Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
 
-export type PrimitiveGeometryType = CurveChain | IndexedPolyface; // More will receive support
+export type PrimitiveGeometryType = Loop | Path | IndexedPolyface; // More will receive support
 
 export abstract class Geometry {
   public readonly transform: Transform;
@@ -67,21 +67,27 @@ export abstract class Geometry {
     return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
   }
 
-  protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList;
-  protected abstract _getStrokes(chordTolerance: number): StrokesPrimitiveList;
+  protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
+  protected abstract _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined;
 
-  public getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList {
+  public getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     const polyfaces = this._getPolyfaces(facetOptions);
-    if (this.clip === undefined || 0 === polyfaces.length)
+    if (undefined === polyfaces)
+      return undefined;
+
+    if (undefined === this.clip)
       return polyfaces;
 
     // ###TODO: clip the polyfaces if needed (See native code GeometryClipper); for now, return unclipped
     return polyfaces;
   }
 
-  public getStrokes(chordTolerance: number): StrokesPrimitiveList {
-    const strokes = this._getStrokes(chordTolerance);
-    if (this.clip === undefined || 0 === strokes.length)
+  public getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    const strokes = this._getStrokes(facetOptions);
+    if (undefined === strokes)
+      return undefined;
+
+    if (undefined === this.clip)
       return strokes;
 
     // ###TODO: clip the strokes if needed (See native code GeometryClipper); for now, return unclipped
@@ -120,7 +126,7 @@ export class PrimitiveGeometry extends Geometry {
     return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ isDisjoint);
   }
 
-  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList {
+  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     // IndexedPolyface
     if (this.geometry instanceof IndexedPolyface) {
       const polyface = this.geometry as IndexedPolyface;
@@ -140,21 +146,21 @@ export class PrimitiveGeometry extends Geometry {
       return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface));
     }
 
-    // used by CurveChain right now, could be used by other primitives
+    // used by Loop right now, could be used by other primitives
     const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
     let isPlanar = false;
     let builderHasPoly = false;
 
-    // CurveChain
-    if (this.geometry instanceof CurveChain) {
-      const chain = this.geometry as CurveChain;
+    // Loop
+    if (this.geometry instanceof Loop) {
+      const loop = this.geometry as Loop;
 
-      if (!chain.isAnyRegionType()) {
-        return new PolyfacePrimitiveList();
+      if (!loop.isAnyRegionType()) {
+        return undefined;
       }
 
       // The following is good for single loop things.
-      const contour = SweepContour.createForLinearSweep(chain);
+      const contour = SweepContour.createForLinearSweep(loop);
       if (contour !== undefined) {
         isPlanar = true;
         builderHasPoly = true;
@@ -165,23 +171,51 @@ export class PrimitiveGeometry extends Geometry {
     // ###TODO: solidPrimitive
     // ###TODO: bsplineSurface
 
-    const pfList = new PolyfacePrimitiveList();
-
     if (builderHasPoly) {
       const polyface = pfBuilder.claimPolyface();
       const wantEdges = (!(this.geometry instanceof CurveChain) || DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType);
-      pfList.push(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
+      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
     }
 
-    return pfList;
+    return undefined;
   }
 
-  // ###TODO: actual implementation
-  protected _getStrokes(chordTolerance: number): StrokesPrimitiveList {
-    if (0 === chordTolerance) { // shut up tslint
+  // ###WIP  ###WIP
+  protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    const strksList = new StrokesPrimitiveList();
+
+    if (this.geometry instanceof CurveChain) {
+      const chain = this.geometry as CurveChain; // ###WIP
+
+      if (!chain.isAnyRegionType() || this.displayParams.wantRegionOutline) {
+        const strksPts: StrokesPrimitivePointLists = new StrokesPrimitivePointLists();
+        if (facetOptions.chordTol === undefined) { // shut up tslint
+        }
+        // PrimitiveGeometry.collectCurveStrokes(strksPts, chain, facetOptions, this.transform);
+
+        if (strksPts.length > 0) {
+          const isPlanar = chain.isAnyRegionType();
+          assert(isPlanar === this.displayParams.wantRegionOutline);
+          const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, this.isDisjoint, isPlanar);
+          // add strksPts to strskPrim:
+          // strksPrim.strokes = strksPts;
+          strksList.push(strksPrim);
+        }
+      }
     }
-    return new StrokesPrimitiveList();
+
+    return strksList;
   }
+
+  /*
+  private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, chain: CurveChain, facetOptions: StrokeOptions, trans: Transform) {
+    const strokes: LineString3d = chain.cloneStroked(facetOptions) as LineString3d;
+    const pt: Point3d = Point3d.create(0, 0, 0);
+    for (let i = 0; i < strokes.numPoints(); i++) {
+      strokes.pointAt(i, pt);
+    }
+  }
+  */
 }
 
 export class GeometryList extends Array<Geometry> {
@@ -241,7 +275,7 @@ export class GeometryAccumulator {
   public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector) {
     if (this.surfacesOnly && !curves.isAnyRegionType()) { return true; } // ignore...
     const isCurved: boolean = curves.hasNonLinearPrimitives();
-    return this.addGeometry(curves as CurveChain, isCurved, displayParams, transform, disjoint, clip);
+    return this.addGeometry(curves, isCurved, displayParams, transform, disjoint, clip);
   }
   public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
     let range3d;
