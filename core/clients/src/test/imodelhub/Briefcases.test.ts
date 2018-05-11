@@ -37,6 +37,7 @@ function mockGetBriefcaseWithDownloadUrl(imodelId: string, briefcase: Briefcase)
     `${briefcase.briefcaseId!}?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`);
   briefcase.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
   briefcase.fileName = "TestModel.bim";
+  briefcase.fileSize = utils.getMockFileSize();
   const requestResponse = ResponseBuilder.generateGetResponse<Briefcase>(briefcase);
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
@@ -66,8 +67,13 @@ describe("iModelHub BriefcaseHandler", () => {
 
       // Ensure that at least one briefcase is available for querying
       if (briefcasesCount === 0) {
-        await imodelHubClient.Briefcases().create(accessToken, iModelId);
+        const briefcase = await imodelHubClient.Briefcases().create(accessToken, iModelId);
+        briefcaseId = briefcase.briefcaseId!;
+      } else {
+        briefcaseId = briefcases[0].briefcaseId!;
       }
+    } else {
+      briefcaseId = 2;
     }
 
     if (!fs.existsSync(downloadToPath)) {
@@ -94,7 +100,6 @@ describe("iModelHub BriefcaseHandler", () => {
     for (const briefcase of briefcases) {
       chai.expect(briefcase.iModelId).to.be.equal(iModelId);
     }
-    briefcaseId = briefcases[0].briefcaseId!;
   });
 
   it("should fail getting an invalid briefcase", async () => {
@@ -134,7 +139,7 @@ describe("iModelHub BriefcaseHandler", () => {
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.expect(briefcase.fileName);
-    chai.expect(briefcase.fileName!.length > 0);
+    chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
     chai.expect(briefcase.downloadUrl);
     chai.expect(briefcase.downloadUrl!.startsWith("https://"));
   });
@@ -147,9 +152,11 @@ describe("iModelHub BriefcaseHandler", () => {
     const fileName: string = briefcase.fileName!;
     const downloadToPathname: string = path.join(downloadToPath, fileName);
 
-    utils.mockFileResponse(downloadToPath);
+    utils.mockFileResponse();
 
-    await imodelHubClient.Briefcases().download(briefcase, downloadToPathname);
+    const progressTracker = new utils.ProgressTracker();
+    await imodelHubClient.Briefcases().download(briefcase, downloadToPathname, progressTracker.track());
+    progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
 

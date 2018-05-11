@@ -20,7 +20,9 @@ import { ConnectClient, Project } from "../../ConnectClients";
 
 import * as fs from "fs";
 import * as path from "path";
+import * as chai from "chai";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
+import { ProgressInfo } from "../..";
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -58,6 +60,7 @@ export function getDefaultClient() {
 }
 
 export const assetsPath = __dirname + "/../assets/";
+
 /**
  * Generates request URL.
  * @param scope Specifies scope.
@@ -146,9 +149,13 @@ export async function getIModelId(accessToken: AccessToken, imodelName: string):
   return imodels[0].wsgId;
 }
 
-export function mockFileResponse(downloadToPath: string, times = 1) {
+export function mockFileResponse(times = 1) {
   if (TestConfig.enableMocks)
-    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", downloadToPath + "empty-files/empty.bim", times);
+    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", getMockSeedFilePath(), times);
+}
+
+export function getMockFileSize(): string {
+  return fs.statSync(getMockSeedFilePath()).size.toString();
 }
 
 export function mockUploadFile(imodelId: string, chunks = 1) {
@@ -232,8 +239,10 @@ export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, ...c
 
   let i = 1;
   changeSets.forEach((value) => {
-    if (getDownloadUrl)
+    if (getDownloadUrl) {
       value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
+      value.fileSize = getMockFileSize();
+    }
     value.index = `${i++}`;
   });
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
@@ -428,4 +437,24 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: strin
     result.push(changeSet);
   }
   return result;
+}
+
+export class ProgressTracker {
+  private loaded: number = 0;
+  private total: number = 0;
+  private count: number = 0;
+
+  public track() {
+    return (progress: ProgressInfo) => {
+      this.loaded = progress.loaded;
+      this.total = progress.total!;
+      this.count++;
+    };
+  }
+
+  public check() {
+    chai.expect(this.count).to.be.greaterThan(0);
+    chai.expect(this.loaded).to.be.greaterThan(0);
+    chai.expect(this.loaded).equals(this.total);
+  }
 }
