@@ -78,7 +78,7 @@ describe.skip("iModelHub VersionHandler", () => {
     for (const expectedVersion of versions) {
       utils.mockGetVersionById(iModelId, mockedVersions[i++]);
       const actualVersion: Version = (await imodelHubClient.Versions().get(accessToken, iModelId, new VersionQuery().byId(expectedVersion.wsgId)))[0];
-      chai.expect(!!actualVersion);
+      chai.assert(!!actualVersion);
       chai.expect(actualVersion.changeSetId).to.be.equal(expectedVersion.changeSetId);
     }
   });

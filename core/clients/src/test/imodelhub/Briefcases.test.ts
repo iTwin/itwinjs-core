@@ -88,14 +88,14 @@ describe("iModelHub BriefcaseHandler", () => {
   it("should acquire a briefcase", async () => {
     utils.mockCreateBriefcase(iModelId, 2);
     const briefcase = await imodelHubClient.Briefcases().create(accessToken, iModelId);
-    chai.expect(briefcase.briefcaseId).greaterThan(1);
+    chai.expect(briefcase.briefcaseId).to.be.greaterThan(1);
 
   });
 
   it("should get all briefcases", async () => {
     utils.mockGetBriefcase(iModelId, utils.generateBriefcase(2), utils.generateBriefcase(3));
     const briefcases = await imodelHubClient.Briefcases().get(accessToken, iModelId);
-    chai.expect(briefcases.length).greaterThan(0);
+    chai.expect(briefcases.length).to.be.greaterThan(0);
 
     for (const briefcase of briefcases) {
       chai.expect(briefcase.iModelId).to.be.equal(iModelId);
@@ -110,8 +110,8 @@ describe("iModelHub BriefcaseHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error instanceof IModelHubRequestError);
-    chai.expect(error.id === IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error).to.be.instanceof(IModelHubRequestError);
+    chai.expect(error.id).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
   });
 
   it("should get information on a briefcase by id", async () => {
@@ -130,24 +130,24 @@ describe("iModelHub BriefcaseHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error instanceof IModelHubRequestError);
-    chai.expect(error.id === IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error).to.be.instanceof(IModelHubRequestError);
+    chai.expect(error.id).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
   });
 
   it("should get the download URL for a Briefcase", async () => {
     mockGetBriefcaseWithDownloadUrl(iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
-    chai.expect(briefcase.fileName);
+    chai.assert(briefcase.fileName);
     chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
-    chai.expect(briefcase.downloadUrl);
-    chai.expect(briefcase.downloadUrl!.startsWith("https://"));
+    chai.assert(briefcase.downloadUrl);
+    chai.assert(briefcase.downloadUrl!.startsWith("https://"));
   });
 
   it("should download a Briefcase", async () => {
     mockGetBriefcaseWithDownloadUrl(iModelId, utils.generateBriefcase(briefcaseId));
     const briefcase: Briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
-    chai.expect(briefcase.downloadUrl);
+    chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
     const downloadToPathname: string = path.join(downloadToPath, fileName);
@@ -170,7 +170,7 @@ describe("iModelHub BriefcaseHandler", () => {
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "BadRequest"), 1, undefined, undefined, 400);
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     const briefcase = (await imodelHubClient.Briefcases().get(accessToken, iModelId));
-    chai.expect(briefcase);
+    chai.assert(briefcase);
   });
 
   it("should get error 409 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {

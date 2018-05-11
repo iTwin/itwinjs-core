@@ -91,7 +91,7 @@ describe("iModelHub EventHandler", () => {
     mockCreateEventSubscription(iModelId, eventTypes);
 
     subscription = await imodelHubClient.Events().Subscriptions().create(accessToken, iModelId, eventTypes);
-    chai.expect(subscription);
+    chai.assert(subscription);
   });
 
   it("should fail getting SAS token with invalid accessToken", async function (this: Mocha.ITestCallbackContext) {
@@ -105,7 +105,7 @@ describe("iModelHub EventHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error.status === 401);
+    chai.expect(error.status).to.be.equal(401);
   });
 
   it("should get SAS token", async () => {
@@ -123,7 +123,7 @@ describe("iModelHub EventHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error.status === 401);
+    chai.expect(error.status).to.be.equal(401);
   });
 
   it("should fail receiving event with invalid subscription id", async () => {
@@ -135,7 +135,7 @@ describe("iModelHub EventHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error.status === 404);
+    chai.expect(error.status).to.be.equal(404);
   });
 
   it("should reject when no event is available", async () => {
@@ -147,7 +147,7 @@ describe("iModelHub EventHandler", () => {
       error = err;
     }
     chai.assert(error);
-    chai.expect(error.status === 204);
+    chai.expect(error.status).to.be.equal(204);
   });
 
   it("should receive code event", async () => {
@@ -161,7 +161,7 @@ describe("iModelHub EventHandler", () => {
 
     const event = await imodelHubClient.Events().getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
 
-    chai.expect(event).instanceof(CodeEvent);
+    chai.expect(event).to.be.instanceof(CodeEvent);
   });
 
   it("should receive events through listener", async function (this: Mocha.ITestCallbackContext) {
@@ -178,7 +178,10 @@ describe("iModelHub EventHandler", () => {
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.Events().createListener(async () => {
       return await utils.login();
-    }, subscription.wsgId, iModelId, (receivedEvent: IModelHubEvent) => { if (receivedEvent instanceof CodeEvent) receivedEventsCount++; });
+    }, subscription.wsgId, iModelId, (receivedEvent: IModelHubEvent) => {
+      if (receivedEvent instanceof CodeEvent)
+        receivedEventsCount++;
+    });
 
     if (!TestConfig.enableMocks) {
       await imodelHubClient.Codes().update(accessToken, iModelId, [codes[0]]);
@@ -192,7 +195,7 @@ describe("iModelHub EventHandler", () => {
       await new Promise((resolve) => setTimeout(resolve, TestConfig.enableMocks ? 1 : 100));
     }
     deleteListener();
-    chai.expect(timeoutCounter < 100);
+    chai.expect(timeoutCounter).to.be.lessThan(100);
   });
 
   it("should delete subscription", async () => {

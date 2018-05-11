@@ -455,6 +455,6 @@ export class ProgressTracker {
   public check() {
     chai.expect(this.count).to.be.greaterThan(0);
     chai.expect(this.loaded).to.be.greaterThan(0);
-    chai.expect(this.loaded).equals(this.total);
+    chai.expect(this.loaded).to.be.equal(this.total);
   }
 }
