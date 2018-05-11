@@ -202,8 +202,10 @@ export class MockAssetUtil {
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny(),
+      TypeMoq.It.isAny(),
       TypeMoq.It.isAnyNumber()))
-      .returns((_tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string, _timeOut: number) => {
+      .returns((_tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string,
+        _callback: ((progress: any) => void) | undefined, _timeOut: number) => {
         setTimeout(() => { }, 100);
         for (const pair of this.iModelMap) {
           if (hubName === pair[1]) {

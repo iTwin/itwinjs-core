@@ -143,6 +143,24 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addFunction(getFeatureIndex);
 }
 
+// Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa
+// (The latter occurs when some translucent feature is overridden to be opaque, or vice-versa)
+const checkVertexDiscard = `
+if (feature_invisible)
+  return true;
+
+bool hasAlpha = 1.0 == u_hasAlpha;
+if (v_feature_alpha_flashed.y > 0.0) {
+  const float s_minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
+  const float s_maxAlpha = (255.0 - s_minTransparency) / 255.0;
+  hasAlpha = v_feature_alpha_flashed.x < s_maxAlpha;
+}
+
+bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
+bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
+return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
+`;
+
 function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions): boolean {
   if (FeatureMode.None === mode)
     return false;
@@ -226,6 +244,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
           uniform.setUniform4fv(ovr.uniform2);
       });
     });
+
+    vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
   }
 
   return true;
@@ -566,4 +586,104 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
 
   addRenderOrder(frag);
   addRenderPass(frag);
+}
+
+// bool feature_invisible = false;
+// varying vec4 v_feature_rgb; // alpha > 0.0 if overridden
+// varying vec4 v_feature_alpha_flashed; // y > 0.0 if overridden. z > 0.0 if flashed. w > 0.0 if hilited.
+// vec4 linear_feature_overrides; // x: weight overridden y: weight z: line code overridden w: line code
+const computeFeatureOverrides = `
+v_feature_rgb = vec4(1.0);
+v_feature_alpha_flashed = vec4(1.0);
+vec4 value = getFirstFeatureRgba();
+
+// 2 RGBA values per feature - first R is override flags mask
+if (0.0 == value.r) {
+  v_feature_rgb.a = 0.0;
+  v_feature_alpha_flashed.yzw = vec3(0.0);
+  return; // nothing overridden for this feature
+}
+
+float flags = value.r * 256.0;
+feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
+if (feature_invisible)
+  return;
+
+v_feature_rgb.a = extractNthFeatureBit(flags, kOvrBit_Rgb);
+v_feature_alpha_flashed.y = extractNthFeatureBit(flags, kOvrBit_Alpha);
+if (v_feature_alpha_flashed.y > 0.0 || v_feature_rgb.a > 0.0) {
+  vec4 rgba = getSecondFeatureRgba();
+  v_feature_rgb.rgb = rgba.rgb;
+  v_feature_alpha_flashed.x = rgba.a;
+}
+
+linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
+                                value.g * 256.0,
+                                1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
+                                value.b * 256.0);
+
+feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
+v_feature_alpha_flashed.z = extractNthFeatureBit(flags, kOvrBit_Flashed);
+v_feature_alpha_flashed.w = extractNthFeatureBit(flags, kOvrBit_Hilited);
+`;
+
+const applyFeatureColor = `
+if (floatToBool(v_feature_rgb.a))
+  baseColor.rgb = v_feature_rgb.rgb * baseColor.a;
+
+if (floatToBool(v_feature_alpha_flashed.y))
+  baseColor = adjustPreMultipliedAlpha(baseColor, v_feature_alpha_flashed.x);
+
+return baseColor;
+`;
+
+const applyFlash = `
+float isFlashed = floatToBool(v_feature_alpha_flashed.z) ? 1.0 : 0.0;
+float isHilited = floatToBool(v_feature_alpha_flashed.w) ? 1.0 : 0.0;
+
+float hiliteRatio = u_hilite_settings.x * isHilited;
+baseColor = revertPreMultipliedAlpha(baseColor);
+baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, hiliteRatio);
+
+if (u_hilite_color.a == 1.0) { // .a indicates lit geometry - brighten it
+  const float maxBrighten = 0.2;
+  float brighten = u_flash_intensity * maxBrighten;
+  baseColor.rgb += isFlashed * brighten;
+} else { // unlit geometry - tween it toward flash color
+  float maxTween = 0.75;
+  float hiliteFraction = u_flash_intensity * isFlashed * maxTween;
+  baseColor.rgb *= (1.0 - hiliteFraction);
+  baseColor.rgb += u_hilite_color.rgb * hiliteFraction;
+}
+
+return applyPreMultipliedAlpha(baseColor);
+`;
+
+export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions): void {
+  if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
+    return;
+
+  assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
+
+  builder.addVarying("v_feature_rgb", VariableType.Vec4);
+  builder.addVarying("v_feature_alpha_flashed", VariableType.Vec4);
+
+  const vert = builder.vert;
+  vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);
+
+  const frag = builder.frag;
+  addHiliteSettings(frag);
+  frag.addFunction(GLSLCommon.floatToBool);
+  frag.set(FragmentShaderComponent.ApplyFeatureColor, applyFeatureColor);
+
+  frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
+  frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
+  frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
+  frag.set(FragmentShaderComponent.ApplyFlash, applyFlash);
+
+  frag.addUniform("u_flash_intensity", VariableType.Float, (prog) => {
+    prog.addProgramUniform("u_flash_intensity", (uniform, params) => {
+      uniform.setUniform1f(params.target.flashIntensity);
+    });
+  });
 }

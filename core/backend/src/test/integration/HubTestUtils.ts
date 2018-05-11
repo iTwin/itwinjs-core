@@ -168,7 +168,7 @@ export class HubTestUtils {
       await BriefcaseManager.hubClient.IModels().delete(accessToken, projectId, iModel.wsgId);
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, iModelName, seedPathname, "", 2 * 60 * 1000);
+    iModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, iModelName, seedPathname, "", undefined, 2 * 60 * 1000);
     const iModelId = iModel!.wsgId;
 
     const briefcase: HubBriefcase = await BriefcaseManager.hubClient.Briefcases().create(accessToken, iModelId);

@@ -19,7 +19,7 @@ import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addClipping } from "./Clipping";
 import { FloatRgba, FloatPreMulRgba } from "../FloatRGBA";
-import { addHiliter, addSurfaceDiscard } from "./FeatureSymbology";
+import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
@@ -260,7 +260,7 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   const builder = createCommon(clip);
   addShaderFlags(builder);
 
-  addHiliter(builder); // ###TODO: why needed?  Needed so addSurfaceFlags can see feature_ignore_material, but calling addHiliter in here isn't like the native code.
+  addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
   addSurfaceDiscard(builder, feat);
   addNormal(builder);
@@ -298,11 +298,14 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
-      assert(undefined !== surfGeom.texture);
-      // ###TODO: bind surfGeom.texture as the real WebGLTexture
-      const wtex = System.instance.context.createTexture();
-      if (null !== wtex)
-        TextureHandle.bindSampler(uniform, wtex, TextureUnit.Zero);
+      const surfFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        assert(undefined !== surfGeom.texture);
+        // ###TODO: bind surfGeom.texture as the real WebGLTexture
+        const wtex = System.instance.context.createTexture();
+        if (null !== wtex)
+          TextureHandle.bindSampler(uniform, wtex, TextureUnit.Zero);
+      }
     });
   });
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {

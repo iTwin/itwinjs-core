@@ -4,7 +4,6 @@
 
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix3, Matrix4 } from "../Matrix";
-import { TextureHandle } from "../Texture";
 import { LUTGeometry } from "../CachedGeometry";
 import { TextureUnit, RenderPass } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
@@ -94,7 +93,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
-      TextureHandle.bindSampler(uniform, (params.geometry as LUTGeometry).lut.texture, TextureUnit.VertexLUT);
+      (params.geometry as LUTGeometry).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
     });
   });
 
