@@ -2,17 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d, Angle, Range3d } from "@bentley/geometry-core";
-import { Cartographic, FontType, FontMap, ColorByName, QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
+import { Point3d, Angle, Range3d, RotMatrix, Vector3d } from "@bentley/geometry-core";
+import { Cartographic, FontType, FontMap, ColorDef, ColorByName, QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { DecorateContext, SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { UpdatePlan, RenderTarget, RenderGraphic, MeshArgs, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { UpdatePlan, RenderTarget, MeshArgs, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 class TestViewport extends Viewport {
-  protected _decoration?: RenderGraphic;
+  private static _rotIncrement: number = 2.0;
+  private _rot: number = 0.0;
   protected _continuousDecorations: boolean = true;
 
   public constructor(canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
@@ -29,21 +30,26 @@ class TestViewport extends Viewport {
 
   public callDecorators(context: DecorateContext): void {
     super.callDecorators(context);
-    if (undefined === this._decoration) {
-      const args = new MeshArgs();
-      const points = [ new Point3d(-1, -1, 0), new Point3d(1, -1, 0), new Point3d(0, 1, 0) ];
-      args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
-      for (const point of points)
-        args.points.add(point);
 
-      args.vertIndices = [ 0, 1, 2 ];
-      args.colors.initUniform(ColorByName.tan);
+    const rot = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this._rot))!;
+    this._rot += TestViewport._rotIncrement;
+    if (this._rot >= 360.0)
+      this._rot = 0.0;
 
-      this._decoration = IModelApp.renderSystem.createTriMesh(args, this.iModel!);
-    }
+    const points = [ new Point3d(-0.25, -0.25, 0), new Point3d(0.25, -0.25, 0), new Point3d(0, 0.25, 0) ];
+    rot.multiplyVectorArrayInPlace(points);
+    const args = new MeshArgs();
+    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+    for (const point of points)
+      args.points.add(point);
 
-    assert(undefined !== this._decoration);
-    context.setViewBackground(this._decoration!);
+    args.vertIndices = [ 0, 1, 2 ];
+    args.colors.initUniform(ColorByName.green);
+
+    const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel!);
+
+    assert(undefined !== triangle);
+    context.setViewBackground(triangle!);
   }
 }
 
@@ -232,12 +238,14 @@ describe("RenderLoop tests", () => {
     if (!doRenderLoopTests)
       return;
 
+    spatialView.displayStyle.backgroundColor = new ColorDef(ColorByName.darkBlue);
     const target = IModelApp.renderSystem.createTarget(canvas);
     const viewport = new TestViewport(canvas, spatialView, target);
     IModelApp.viewManager.addViewport(viewport);
 
+    expect((target as Target).bgColor.tbgr).to.equal(ColorByName.white);
+
     const plan = new RenderPlan(viewport);
-    plan.bgColor.tbgr = ColorByName.darkBlue;
     target.changeRenderPlan(plan);
     expect((target as Target).bgColor.tbgr).to.equal(ColorByName.darkBlue);
 

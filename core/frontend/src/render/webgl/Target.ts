@@ -621,8 +621,11 @@ export class OnScreenTarget extends Target {
 
     // Ensure off-screen canvas dimensions match on-screen canvas dimensions
     const viewRect = this.viewRect;
-    system.canvas.width = viewRect.width;
-    system.canvas.height = viewRect.height;
+    if (system.canvas.width !== viewRect.width)
+      system.canvas.width = viewRect.width;
+
+    if (system.canvas.height !== viewRect.height)
+      system.canvas.height = viewRect.height;
   }
   protected _endPaint(): void {
     const onscreenContext = this._canvas.getContext("2d");
@@ -641,6 +644,8 @@ export class OnScreenTarget extends Target {
     system.techniques.draw(params);
 
     // Copy off-screen canvas contents to on-screen canvas
+    // ###TODO: Determine if clearRect() actually required...seems to leave some leftovers from prev image if not...
+    onscreenContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
     onscreenContext.drawImage(system.canvas, 0, 0);
   }
   public onResized(): void {
