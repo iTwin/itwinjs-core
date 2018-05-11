@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecpresentation-common
 
-This log was last generated on Tue, 08 May 2018 07:05:52 GMT and should not be manually modified.
+This log was last generated on Fri, 11 May 2018 06:59:50 GMT and should not be manually modified.
+
+## 0.2.0
+Fri, 11 May 2018 06:57:38 GMT
+
+### Minor changes
+
+- React to Gateway's API changes: renamed ECPresentationGateway to ECPresentationRpcInterface.
 
 ## 0.1.2
 Tue, 08 May 2018 07:05:52 GMT

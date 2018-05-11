@@ -2,6 +2,26 @@
   "name": "@bentley/ecpresentation-backend",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@bentley/ecpresentation-backend_v0.2.0",
+      "date": "Fri, 11 May 2018 06:57:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "React to Gateway's API changes: renamed ECPresentationGateway to ECPresentationRpcImpl."
+          },
+          {
+            "comment": "Make ECPresentationManager IDisposable to properly terminate native resources."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.2` to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@bentley/ecpresentation-backend_v0.1.2",
       "date": "Tue, 08 May 2018 07:05:52 GMT",

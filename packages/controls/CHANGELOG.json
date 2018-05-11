@@ -2,6 +2,26 @@
   "name": "@bentley/ecpresentation-controls",
   "entries": [
     {
+      "version": "0.1.4",
+      "tag": "@bentley/ecpresentation-controls_v0.1.4",
+      "date": "Fri, 11 May 2018 06:57:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update package dependencies."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.1.2` to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-frontend\" from `^0.1.2` to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.3",
       "tag": "@bentley/ecpresentation-controls_v0.1.3",
       "date": "Tue, 08 May 2018 07:05:52 GMT",

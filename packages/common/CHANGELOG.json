@@ -2,6 +2,18 @@
   "name": "@bentley/ecpresentation-common",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@bentley/ecpresentation-common_v0.2.0",
+      "date": "Fri, 11 May 2018 06:57:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "React to Gateway's API changes: renamed ECPresentationGateway to ECPresentationRpcInterface."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@bentley/ecpresentation-common_v0.1.2",
       "date": "Tue, 08 May 2018 07:05:52 GMT",
