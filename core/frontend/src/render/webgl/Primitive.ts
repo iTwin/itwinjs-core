@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
+
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { FeatureIndexType, FeatureIndex } from "@bentley/imodeljs-common";
+import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { Target } from "./Target";
 import { Graphic, Batch } from "./Graphic";
@@ -14,51 +14,6 @@ import { DrawParams } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { RenderCommands, DrawCommand, DrawCommands } from "./DrawCommand";
-
-export class IndexedPrimitiveParamsFeatures {
-  public type: FeatureIndexType;
-  public uniform: number;
-  public nonUniform: Uint32Array | undefined;
-
-  public constructor(index?: FeatureIndex, nVerts?: number) {
-    this.type = FeatureIndexType.Empty;
-    this.uniform = 0;
-    this.nonUniform = undefined;
-    if (undefined !== index) {
-      this.type = index.type;
-      if (FeatureIndexType.Uniform === index.type)
-        this.uniform = index.featureID;
-      else if (FeatureIndexType.NonUniform === index.type) {
-        assert(undefined !== nVerts);
-        assert(undefined !== index.featureIDs);
-        if (undefined !== nVerts && undefined !== index.featureIDs) {
-          assert(0 < nVerts);
-          this.nonUniform = new Uint32Array(nVerts);
-          for (let i = 0; i < nVerts; ++i) {
-            this.nonUniform[i] = index.featureIDs[i];
-          }
-        }
-      }
-    }
-  }
-
-  public clear(): void {
-    if (undefined !== this.nonUniform) {
-      this.nonUniform = undefined;
-    }
-    this.type = FeatureIndexType.Empty;
-  }
-  public isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
-  public isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
-
-  public toFeatureIndex(): FeatureIndex {
-    const fIndex: FeatureIndex = new FeatureIndex();
-    fIndex.type = this.type;
-    fIndex.featureID = this.uniform;
-    fIndex.featureIDs = (undefined === this.nonUniform ? undefined : new Uint32Array(this.nonUniform.buffer));
-    return fIndex;
-  }
-}
 
 export const enum PolylineParam {
   kNone = 0,
