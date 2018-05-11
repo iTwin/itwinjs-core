@@ -20,7 +20,7 @@ import { RenderBuffer } from "./RenderBuffer";
 import { TextureHandle } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
-import { PointStringPrimitive, PointStringGeometry } from "./PointString";
+import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 
 export const enum ContextState {
@@ -221,12 +221,10 @@ export class System extends RenderSystem {
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined {
-    if (args.flags.isDisjoint) {
-      const cachedGeom = PointStringGeometry.createGeometry(args);
-      return undefined !== cachedGeom ? new PointStringPrimitive(cachedGeom, imodel) : undefined;
-    } else {
+    if (args.flags.isDisjoint)
+      return PointStringPrimitive.create(args, imodel);
+    else
       return PolylinePrimitive.create(args, imodel);
-    }
   }
   public createTriMesh(args: MeshArgs, iModel: IModelConnection) { return MeshGraphic.create(args, iModel); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }

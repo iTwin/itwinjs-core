@@ -34,7 +34,7 @@ export class PointStringGeometry extends LUTGeometry {
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
-  public constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT.Data, info: PointStringInfo) {
+  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT.Data, info: PointStringInfo) {
     super();
     this.numIndices = numIndices;
     this.indices = indices;
@@ -55,7 +55,7 @@ export class PointStringGeometry extends LUTGeometry {
     gl.drawArrays(GL.PrimitiveType.Points, 0, this.numIndices);
   }
 
-  public static createGeometry(args: PolylineArgs): PointStringGeometry | undefined {
+  public static create(args: PolylineArgs): PointStringGeometry | undefined {
     assert(args.polylines.length === 1);
     const vertexIndices = VertexLUT.convertIndicesToTriplets(args.polylines[0].vertIndices);
     const indices = BufferHandle.createArrayBuffer(vertexIndices);
@@ -72,6 +72,10 @@ export class PointStringGeometry extends LUTGeometry {
 }
 
 export class PointStringPrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(cachedGeom, iModel); }
+  public static create(args: PolylineArgs, iModel: IModelConnection): PointStringPrimitive | undefined {
+    const geom = PointStringGeometry.create(args);
+    return undefined !== geom ? new PointStringPrimitive(geom, iModel) : undefined;
+  }
+  private constructor(cachedGeom: CachedGeometry, iModel: IModelConnection) { super(cachedGeom, iModel); }
   public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
 }
