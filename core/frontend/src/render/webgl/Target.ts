@@ -158,7 +158,7 @@ export abstract class Target extends RenderTarget {
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
-  public readonly bgColor = ColorDef.white.clone();
+  public readonly bgColor = ColorDef.red.clone();
   public readonly monoColor = ColorDef.white.clone();
   public readonly hiliteSettings = new Hilite.Settings();
   public readonly planFrustum = new Frustum();

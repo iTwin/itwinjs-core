@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d, Angle, Range3d, RotMatrix, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Angle, Range3d, Transform, RotMatrix, Vector3d } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap, ColorDef, ColorByName, QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { DecorateContext, SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
@@ -31,20 +31,29 @@ class TestViewport extends Viewport {
   public callDecorators(context: DecorateContext): void {
     super.callDecorators(context);
 
-    const rot = RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this._rot))!;
+    const tf = Transform.createIdentity();
+    const rect = this.viewRect;
+    tf.origin.set(rect.width / 2, rect.height / 2, 0);
+
+    RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this._rot), tf.matrix)!;
+    tf.matrix.scaleRows(rect.width, rect.height, 1.0, tf.matrix);
+
     this._rot += TestViewport._rotIncrement;
     if (this._rot >= 360.0)
       this._rot = 0.0;
 
     const points = [ new Point3d(-0.25, -0.25, 0), new Point3d(0.25, -0.25, 0), new Point3d(0, 0.25, 0) ];
-    rot.multiplyVectorArrayInPlace(points);
+    tf.multiplyPoint3dArrayInPlace(points);
+
     const args = new MeshArgs();
     args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
       args.points.add(point);
 
     args.vertIndices = [ 0, 1, 2 ];
-    args.colors.initUniform(ColorByName.green);
+
+    const colors = new Uint32Array([ ColorByName.yellow, ColorByName.cyan, ColorByName.fuchsia ]);
+    args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2]), false);
 
     const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel!);
 
