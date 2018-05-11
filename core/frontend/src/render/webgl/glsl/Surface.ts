@@ -298,11 +298,14 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
-      assert(undefined !== surfGeom.texture);
-      // ###TODO: bind surfGeom.texture as the real WebGLTexture
-      const wtex = System.instance.context.createTexture();
-      if (null !== wtex)
-        TextureHandle.bindSampler(uniform, wtex, TextureUnit.Zero);
+      const surfFlags = surfGeom.computeSurfaceFlags(params);
+      if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
+        assert(undefined !== surfGeom.texture);
+        // ###TODO: bind surfGeom.texture as the real WebGLTexture
+        const wtex = System.instance.context.createTexture();
+        if (null !== wtex)
+          TextureHandle.bindSampler(uniform, wtex, TextureUnit.Zero);
+      }
     });
   });
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {

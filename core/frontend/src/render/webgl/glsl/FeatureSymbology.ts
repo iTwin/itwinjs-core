@@ -159,7 +159,6 @@ if (v_feature_alpha_flashed.y > 0.0) {
 bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
 bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
 return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
-}
 `;
 
 function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions): boolean {

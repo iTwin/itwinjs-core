@@ -653,7 +653,7 @@ export class Viewport {
     this.rootToView.setFrom(this.calcNpcToView().multiplyMapMap(this.rootToNpc));
 
     this.sync.invalidateRenderPlan();
-    this.sync.setValidController;
+    this.sync.setValidController();
 
     this.onViewChanged.raiseEvent(this);
     return ViewStatus.Success;
