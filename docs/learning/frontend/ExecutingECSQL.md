@@ -2,7 +2,7 @@
 
 ECSQL by itself is described in detail here: [ECSQL](../ECSQL)
 
-A frontend ECSQL query is executed by calling [IModelConnection.executeQuery]($imodeljs-frontend.IModelConnection.executeQuery).
+A frontend ECSQL query is executed by calling [IModelConnection.executeQuery]($imodeljs-frontend).
 
 > On the frontend, only ECSQL SELECT statements can be executed. Data modification must be done through the API.
 
@@ -34,7 +34,7 @@ parameters at once.
 ### Navigation properties
 
 [Navigation properties](../ECSQL#navigation-properties) are structs made up of the Id of the related instance and the backing
-ECRelationshipClass. The [NavigationBindingValue]($common/NavigationBindingValue) interface is used to bind values to navigation property parameters.
+ECRelationshipClass. The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
 
 ```ts
 [[include:ExecuteECSql_Binding_Navigation]]
