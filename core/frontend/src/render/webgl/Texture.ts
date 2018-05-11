@@ -75,6 +75,7 @@ export class TextureHandle implements IDisposable {
 
   /** Binds specified texture handle to specified texture unit. */
   public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
+    assert(!(glTex instanceof TextureHandle));
     const gl: WebGLRenderingContext = System.instance.context;
     gl.activeTexture(texUnit);
     gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null);
@@ -88,6 +89,7 @@ export class TextureHandle implements IDisposable {
 
   /** Binds the specified texture to a uniform sampler2D */
   public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
+    assert(!(tex instanceof TextureHandle));
     this.bindTexture(unit, tex);
     uniform.setUniform1i(unit - TextureUnit.Zero);
   }

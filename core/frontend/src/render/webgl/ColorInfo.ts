@@ -23,7 +23,7 @@ export class ColorInfo {
     }
   }
 
-  public get isUniform() { return undefined !== this.uniform; }
+  public get isUniform() { return undefined !== this._uniform; }
   public get isNonUniform() { return !this.isUniform; }
   public get uniform(): FloatPreMulRgba { assert(this.isUniform); return this._uniform!; }
 }
