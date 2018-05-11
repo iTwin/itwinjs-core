@@ -8,16 +8,11 @@ import {
   Arc3d,
   LineSegment3d,
   CurvePrimitive,
-  GeometryQuery,
   ClipVector,
-  AnyCurve,
   Loop,
   Path,
-  BagOfCurves,
-  LineString3d,
   Point2d,
   Point3d,
-  PointString3d,
   CurveCollection,
   CurveChain,
   Polyface,
@@ -256,19 +251,6 @@ export class GeometryAccumulator {
     this.tileRange = tileRange;
   }
 
-  public addCurveVector(curves: CurveCollection, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector): boolean {
-    const { surfacesOnly, addGeometry } = this;
-
-    if (surfacesOnly && !curves.isAnyRegionType())
-      return true;
-
-    // NB: If we're stroking a styled curve vector, we have set m_addingCurved based on whether the input curve vector was curved - the
-    // stroked components may not be.
-    const isCurved = curves.hasNonLinearPrimitives(),
-      geom = curves as CurveChain;
-    return addGeometry(geom, isCurved, displayParams, transform, disjoint, undefined, clip);
-  }
-
   public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, range: Range3d = new Range3d(), clip?: ClipVector): boolean {
     const { _transform, haveTransform, geometries } = this;
 
@@ -311,18 +293,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   // private _isOpen: boolean = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
-
-  private static isDisjointCurvePrimitive(prim: AnyCurve | GeometryQuery): boolean {
-    if (prim instanceof PointString3d) {
-      return true;
-    } else if (prim instanceof LineSegment3d) {
-      return prim.point0Ref.isAlmostEqual(prim.point1Ref);
-    } else if (prim instanceof LineString3d) {
-      return 1 === prim.points.length || (2 === prim.points.length && prim.points[0].isAlmostEqual(prim.points[1]));
-    } else {
-      return false;
-    }
-  }
 
   public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, accumulatorTf: Transform = Transform.createIdentity()) {
     super(params);
@@ -369,13 +339,15 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
     if (this.accum) {
       const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addCurveVector(curve, displayParams, this.localToWorldTransform, false, this.currClip);
+      this.accum.addGeometry(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, undefined, this.currClip);
     }
   }
 
   public addLineString(points: Point3d[]): void {
-    const curve = BagOfCurves.create(LineString3d.create(points));
-    this.addCurveVector(curve, false);
+    if (points.length === 0) { // shut up tslint
+    }
+    // const curve = BagOfCurves.create(LineString3d.create(points));
+    // ###TODO
   }
 
   public addLineString2d(points: Point2d[], zDepth: number): void {
@@ -388,62 +360,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public abstract reset(): void;
 
-  public addCurveVector(curves: CurveCollection, filled: boolean, disjoint?: boolean): void {
-    if (disjoint !== undefined) {
-      assert(!filled || !disjoint);
-      if (this.accum) {
-        const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-        this.accum.addCurveVector(curves, displayParams, this.localToWorldTransform, disjoint, this.currClip);
-      }
-    }
-    let numDisjoint = 0;
-    let haveContinuous = false;
-    // NB: Somebody might stick a 'point' or point string into a curve vector with a boundary...
-    // No idea what they expect us to do if it also contains continuous curves but it is dumb anyway.
-    if (!filled && curves instanceof BagOfCurves) {
-      curves.children.forEach((prim) => {
-        if (GeometryListBuilder.isDisjointCurvePrimitive(prim)) {
-          numDisjoint++;
-        } else {
-          haveContinuous = true;
-        }
-      });
-    } else {
-      haveContinuous = true;
-    }
-
-    const haveDisjoint = numDisjoint > 0;
-    assert(haveDisjoint || haveContinuous);
-    if (haveDisjoint !== haveContinuous) {
-      // The typical case...
-      assert(!filled || !haveDisjoint);
-      if (this.accum) {
-        const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-        this.accum.addCurveVector(curves, /*filled,*/ displayParams, this.localToWorldTransform, haveDisjoint, this.currClip);
-      }
-      return;
-    }
-
-    // Must split up disjoint and continuous into two separate curve vectors...
-    // Note std::partition does not preserve relative order, but we don't care because boundary type NONE.
-    const disjointCurves = BagOfCurves.create();
-    if (curves.children) {
-      curves.children.forEach((child) => {
-        if (GeometryListBuilder.isDisjointCurvePrimitive(child)) {
-          disjointCurves.children.push(child as AnyCurve);
-        }
-      });
-      curves.children.filter((child) => !GeometryListBuilder.isDisjointCurvePrimitive(child));
-    }
-    if (this.accum) {
-      const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addCurveVector(curves, /*false,*/ displayParams, this.localToWorldTransform, false, this.currClip);
-    }
-    if (this.accum) {
-      const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addCurveVector(disjointCurves, /*false,*/ displayParams, this.localToWorldTransform, true, this.currClip);
-    }
-  }
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
 
   public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
@@ -467,12 +383,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
   constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams) { super(system, params); }
-
-  public createSubGraphic(subToGf: Transform, _clip: ClipVector): GraphicBuilder {
-    const tf = subToGf.isIdentity() ? this.localToWorldTransform : Transform.createIdentity();
-    const params = this.params.subGraphic(tf);
-    return this.system.createGraphic(params);
-  }
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
     if (!accum.isEmpty) {
