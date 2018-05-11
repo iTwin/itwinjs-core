@@ -5,6 +5,7 @@ export * from "./Assert";
 export * from "./BeEvent";
 export * from "./BentleyError";
 export * from "./BeSQLite";
+export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
 export * from "./JsonUtils";
