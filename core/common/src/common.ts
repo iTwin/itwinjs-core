@@ -74,13 +74,12 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  * Classes for working with fonts, colors, and other symbology.
  */
 /**
- * @docs-group-description Gateway
- * Classes for working with Gateways, the communication channel between clients and services.
- * For more information: [Gateways]($docs/learning/Gateways.md)
- */
-/**
  * @docs-group-description Geometry
  * Classes for working with geometry.
+ */
+/**
+ * @docs-group-description Views
+ * Classes for working with views of models and elements.
  */
 /**
  * @docs-group-description iModels
@@ -88,16 +87,12 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  * For more information, see [iModel Overview]($docs/overview/overview/IModels.md)
  */
 /**
- * @docs-group-description SqlFuncs
- * Functions that you can call in ECSQL statements. These are not TypeScript functions -- you can only call them in ECSQL statements.
- * For more information: [Spatial Queries]($docs/learning/SpatialQueries.md)
+ * @docs-group-description RpcInterface
+ * Classes for working with RpcInterfaces, the communication channel between clients and services.
+ * For more information: [Gateways]($docs/learning/Gateways.md)
  */
 /**
- * @docs-group-description Schemas
+ * @docs-group-description Schema
  * Classes for working with ECSchemas.
  * For more information: [Executing ECSQL]($docs/learning/ECSQL.md)
- */
-/**
- * @docs-group-description Views
- * Classes for working with views of models and elements.
  */

@@ -83,10 +83,6 @@
  */
 // doc:export class NumericsDoc { }
 /**
- * @docs-group-description GeometricUtilities
- */
-
-/**
  * @docs-group-description Polyface
  * A Polyface is a mesh structure with arrays of points that are shared among multiple incident facets.
  */

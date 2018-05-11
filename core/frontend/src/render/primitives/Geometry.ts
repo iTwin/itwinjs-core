@@ -19,11 +19,14 @@ import {
   Point3d,
   PointString3d,
   CurveCollection,
+  CurveChain,
   BSplineCurve3d,
   BSplineSurface3d,
   SolidPrimitive,
   Polyface,
   StrokeOptions,
+  Angle,
+  IndexedPolyface,
 } from "@bentley/geometry-core";
 import {
   GraphicParams,
@@ -39,7 +42,9 @@ import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 import { StrokesPrimitiveList } from "./Strokes";
-import { PolyfacePrimitiveList } from "./Polyface";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
+
+export type PrimitiveGeometryType = CurveChain | IndexedPolyface; // More will receive support
 
 export abstract class Geometry {
   public readonly transform: Transform;
@@ -55,7 +60,8 @@ export abstract class Geometry {
     this.isCurved = isCurved;
   }
 
-  public static createFromGeom(geometry: GeometryQuery, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
+  public static createFromGeom(geometry: PrimitiveGeometryType, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
+
     return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
   }
 
@@ -80,42 +86,65 @@ export abstract class Geometry {
     return strokes;
   }
 
-  public get hasTextured() { return this.displayParams.isTextured; }
+  public get hasTexture() { return this.displayParams.isTextured; }
   public doDecimate() { return false; }
   public doVertexCluster() { return true; }
   public part() { return undefined; }
 
   public static createFacetOptions(chordTolerance: number): StrokeOptions {
-    // const piOver2: number = 1.57079632679489660000e+000; // default angle tolerance
     const strkOpts: StrokeOptions = StrokeOptions.createForFacets();
-    // strkOpts.chordTolerance = chordTolerance;
-    if (chordTolerance === 0) { // shut up tslint
-    }
-    // strkOpts.angleTol = piOver2;
-    // strkOpts.maxPerFace = 100;
-    // ###TODO: Finish this function
+    strkOpts.chordTol = chordTolerance;
+    strkOpts.angleTol = Angle.createRadians(Angle.piOver2Radians);
+    // ###TODO: strkOpts.convexFacetsRequired = true; // not available yet
+    strkOpts.needParams = true;
+    strkOpts.needNormals = true;
+
     return strkOpts;
   }
 }
 
 export class PrimitiveGeometry extends Geometry {
-  public constructor(public geometry: GeometryQuery, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ public disjoint: boolean) {
+  public readonly geometry: PrimitiveGeometryType;
+  public readonly isDisjoint: boolean;
+
+  public constructor(geometry: PrimitiveGeometryType, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ isDisjoint: boolean) {
     super(tf, range, params, isCurved/*, iModel*/);
+    this.geometry = geometry;
+    this.isDisjoint = isDisjoint;
   }
 
-  public static create(geometry: GeometryQuery, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /* iModel: IModelConnection,*/ disjoint: boolean) {
-    assert(!disjoint || geometry instanceof CurveCollection);
-    return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ disjoint);
+  public static create(geometry: PrimitiveGeometryType, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /* iModel: IModelConnection,*/ isDisjoint: boolean) {
+    assert(!isDisjoint || geometry instanceof CurveCollection);
+    return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ isDisjoint);
   }
 
-  // ###TODO: actual implementation
   protected _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList {
+    if (this.geometry instanceof IndexedPolyface) {
+      const polyface = this.geometry as IndexedPolyface;
+      if (this.hasTexture) {
+        if (polyface.data.param) {
+          polyface.data.param = [];
+        }
+        if (polyface.data.paramIndex) {
+          polyface.data.paramIndex = [];
+        }
+      }
+
+      // ###TODO: FixPolyface
+
+      assert(this.transform.isIdentity());
+      const displayEdges = false; // ###TODO
+      const isPlanar = false; // ###TODO
+      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, displayEdges, isPlanar));
+    }
+
     if (0 === chordTolerance) { // shut up tslint
     }
     if (NormalMode.Always === nm) { // shut up tslint
     }
     if (vc.viewFlags.fill) { // shut up tslint
     }
+
     return new PolyfacePrimitiveList();
   }
 
@@ -181,9 +210,9 @@ export class GeometryAccumulator {
   public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector) {
     if (this.surfacesOnly && !curves.isAnyRegionType()) { return true; } // ignore...
     const isCurved: boolean = curves.hasNonLinearPrimitives();
-    return this.addGeometry(curves, isCurved, displayParams, transform, disjoint, clip);
+    return this.addGeometry(curves as CurveChain, isCurved, displayParams, transform, disjoint, clip);
   }
-  public addGeometry(geom: GeometryQuery, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
+  public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
     let range3d;
     if (!range) {
       if (!geom.range(undefined, range3d)) { return false; }

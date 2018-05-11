@@ -67,11 +67,6 @@ export * from "./IModelDb"; // must be last
  * Classes for working with fonts, colors, and other symbology.
  */
 /**
- * @docs-group-description Gateway
- * Classes for working with Gateways.
- * For more information, see [Gateway Overview]($docs/overview/App.md#gateways).
- */
-/**
  * @docs-group-description iModels
  * Classes for working with iModels. The key classes are:
  * * [IModelDb]($backend/IModelDb)
@@ -84,7 +79,12 @@ export * from "./IModelDb"; // must be last
  * For more information, see [Portability Overview]($docs/learning/Portability.md)
  */
 /**
- * @docs-group-description Schemas
+ * @docs-group-description RpcInterface
+ * Classes for working with RpcInterfaces.
+ * For more information, see [Gateway Overview]($docs/overview/App.md#gateways).
+ */
+/**
+ * @docs-group-description Schema
  * Classes for working with ECSchemas.
  * For more information: [Executing ECSQL]($docs/learning/ECSQL.md)
  */

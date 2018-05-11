@@ -28,17 +28,17 @@
       "integrity": "sha1-L6+hX7pF886shjxt3OhUW0M9rQE="
     },
     "@bentley/bemetalsmith": {
-      "version": "2.0.7",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-2.0.7.tgz",
-      "integrity": "sha1-R/EHuv+KQR7MHqTizVHpNbGS4uY=",
+      "version": "2.1.4",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-2.1.4.tgz",
+      "integrity": "sha1-IMjHWwcM+PyQOmImf9ESwtabUZs=",
       "requires": {
         "@bentley/bemetalsmith-add-descriptions": "1.18.7",
         "@bentley/bemetalsmith-add-titles": "2.0.6",
         "@bentley/bemetalsmith-bwc-markdown": "1.19.3",
         "@bentley/bemetalsmith-concat-single-pages": "1.18.6",
-        "@bentley/bemetalsmith-doc-sites": "2.0.7",
+        "@bentley/bemetalsmith-doc-sites": "2.1.4",
         "@bentley/bemetalsmith-generate-index": "2.0.6",
-        "@bentley/bemetalsmith-handlebars-helpers": "2.0.6",
+        "@bentley/bemetalsmith-handlebars-helpers": "2.1.0",
         "@bentley/bemetalsmith-headings": "2.0.7",
         "@bentley/bemetalsmith-headings-identifier": "2.0.6",
         "@bentley/bemetalsmith-insert-api": "1.18.7",
@@ -48,7 +48,7 @@
         "@bentley/bemetalsmith-nested-headings": "1.19.3",
         "@bentley/bemetalsmith-replace-links": "1.18.6",
         "@bentley/bemetalsmith-toc-metadata": "2.0.0",
-        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.0.7",
+        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.1.4",
         "@bentley/bwc": "5.1.1",
         "@bentley/icons-webfont": "6.5.0",
         "babel-cli": "6.26.0",
@@ -66,7 +66,7 @@
         "command-line-args": "4.0.7",
         "css-loader": "0.28.11",
         "extract-text-webpack-plugin": "3.0.2",
-        "fs-extra": "6.0.0",
+        "fs-extra": "6.0.1",
         "graceful-fs": "4.1.11",
         "gumshoe": "0.2.1",
         "handlebars": "4.0.11",
@@ -110,9 +110,9 @@
       },
       "dependencies": {
         "fs-extra": {
-          "version": "6.0.0",
-          "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-6.0.0.tgz",
-          "integrity": "sha512-lk2cUCo8QzbiEWEbt7Cw3m27WMiRG321xsssbcIpfMhpRjrlC08WBOVQqj1/nQYYNnPtyIhP1oqLO3QwT2tPCw==",
+          "version": "6.0.1",
+          "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-6.0.1.tgz",
+          "integrity": "sha512-GnyIkKhhzXZUWFCaJzvyDLEEgDkPfb4/TPvJCJVuS8MWZgoSsErf++QpiAlDnKFcqhRlm+tIOcencCjyJE6ZCA==",
           "requires": {
             "graceful-fs": "4.1.11",
             "jsonfile": "4.0.0",
@@ -171,12 +171,12 @@
       }
     },
     "@bentley/bemetalsmith-doc-sites": {
-      "version": "2.0.7",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-doc-sites/-/bemetalsmith-doc-sites-2.0.7.tgz",
-      "integrity": "sha1-gSkzIX1gN+SrFm/S/3Hv8TULxGw=",
+      "version": "2.1.4",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-doc-sites/-/bemetalsmith-doc-sites-2.1.4.tgz",
+      "integrity": "sha1-mdvURnzKmHTvM/nQHlEElkJMcAA=",
       "requires": {
         "@bentley/bemetalsmith-toc-metadata": "2.0.0",
-        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.0.7",
+        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.1.4",
         "lodash.omit": "4.5.0",
         "metalsmith-debug": "1.2.0"
       }
@@ -191,9 +191,9 @@
       }
     },
     "@bentley/bemetalsmith-handlebars-helpers": {
-      "version": "2.0.6",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-handlebars-helpers/-/bemetalsmith-handlebars-helpers-2.0.6.tgz",
-      "integrity": "sha1-p+TlGWGYW5TgXFwQfkAcxbXMHiE=",
+      "version": "2.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-handlebars-helpers/-/bemetalsmith-handlebars-helpers-2.1.0.tgz",
+      "integrity": "sha1-gtW2E8j8AOxuYwChsaI48nIjRSc=",
       "requires": {
         "@bentley/be-cases": "1.17.0"
       }
@@ -343,9 +343,9 @@
       "integrity": "sha1-NYZIPIz1dlqF+KYoCBL9XZ+9fQA="
     },
     "@bentley/bemetalsmith-typedoc-json-to-markdown": {
-      "version": "2.0.7",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-typedoc-json-to-markdown/-/bemetalsmith-typedoc-json-to-markdown-2.0.7.tgz",
-      "integrity": "sha1-KrH1Vdwmui/IDsG2TW4W+7+trHI=",
+      "version": "2.1.4",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-typedoc-json-to-markdown/-/bemetalsmith-typedoc-json-to-markdown-2.1.4.tgz",
+      "integrity": "sha1-tJUBWzhlVX8I3FmQo0auQNMuhoM=",
       "requires": {
         "obj-traverse": "1.0.0"
       }
@@ -367,7 +367,7 @@
         "merge-json": "0.1.0-b.3",
         "mocha": "3.5.3",
         "mocha-junit-reporter": "1.17.0",
-        "nyc": "11.7.2",
+        "nyc": "11.7.3",
         "obj-traverse": "1.0.0",
         "recursive-readdir": "2.2.2",
         "rimraf": "2.6.2",
@@ -611,7 +611,7 @@
     },
     "@rush-temp/bentleyjs-core": {
       "version": "file:projects/bentleyjs-core.tgz",
-      "integrity": "sha1-k0xNCpf7Br29zByDp/2hQbF4cCs=",
+      "integrity": "sha1-ULSMTfuZaAGP1U4ytUaO3hPWl0g=",
       "requires": {
         "rimraf": "2.6.2",
         "typedoc": "0.11.1",
@@ -620,7 +620,7 @@
     },
     "@rush-temp/example-code-app": {
       "version": "file:projects/example-code-app.tgz",
-      "integrity": "sha1-Npa/6cXdiEfezJIHWa84NUv1ggg=",
+      "integrity": "sha1-YFjH9nH04NKrN4wmitcrnZYrLL4=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "18.0.0",
         "body-parser": "1.18.2",
@@ -643,7 +643,7 @@
     },
     "@rush-temp/example-code-snippets": {
       "version": "file:projects/example-code-snippets.tgz",
-      "integrity": "sha1-9sH4GmEaNV5M2sOxgMGKMb1MW7U=",
+      "integrity": "sha1-XsNeiFfxHN4tSVrOzQtxX8iav1Q=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "18.0.0",
         "body-parser": "1.18.2",
@@ -666,14 +666,14 @@
     },
     "@rush-temp/geometry-core": {
       "version": "file:projects/geometry-core.tgz",
-      "integrity": "sha1-99D0+lyYKr47VaUThpVRsw1/beU=",
+      "integrity": "sha1-AE2sZPiCLE4NpXGGLKcoko4mVck=",
       "requires": {
         "@types/lodash": "4.14.106",
         "chai": "4.1.2",
         "cpx": "1.5.0",
         "debug": "2.6.9",
         "mocha": "3.5.3",
-        "nyc": "11.7.2",
+        "nyc": "11.7.3",
         "rimraf": "2.6.2",
         "semver": "5.5.0",
         "source-map-support": "0.5.5",
@@ -685,7 +685,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-KwFjKH9yyKAw8KYaiwDDIFz/z1k=",
+      "integrity": "sha1-WBBAPTzEt0h170c3YKKXlyjPRTc=",
       "requires": {
         "@bentley/imodeljs-native-platform-api": "18.0.0",
         "@bentley/imodeljs-native-platform-electron": "18.0.0",
@@ -695,7 +695,7 @@
         "fs-extra": "5.0.0",
         "js-base64": "2.4.3",
         "mocha": "3.5.3",
-        "nyc": "11.7.2",
+        "nyc": "11.7.3",
         "rimraf": "2.6.2",
         "source-map-support": "0.5.5",
         "ts-node": "3.3.0",
@@ -707,7 +707,7 @@
     },
     "@rush-temp/imodeljs-clients": {
       "version": "file:projects/imodeljs-clients.tgz",
-      "integrity": "sha1-cyw6GoHu3dQBmQsMx8xFJxlmC8I=",
+      "integrity": "sha1-6wphGcNqrJodBmIVutJEMCxipII=",
       "requires": {
         "@types/clone": "0.1.30",
         "@types/deep-assign": "0.1.1",
@@ -721,7 +721,7 @@
         "js-base64": "2.4.3",
         "mocha": "3.5.3",
         "nock": "9.2.5",
-        "nyc": "11.7.2",
+        "nyc": "11.7.3",
         "qs": "6.5.2",
         "source-map-support": "0.5.5",
         "superagent": "3.8.3",
@@ -736,7 +736,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-SG+E3tKJOYrkxeC86sYRrK4zzcg=",
+      "integrity": "sha1-apiiYGen+R8uih+zb4jBkU7XNqc=",
       "requires": {
         "@types/uuid": "3.4.3",
         "cpx": "1.5.0",
@@ -748,9 +748,9 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-ER6zOPEPEycm7vyUFNLh08f9s6I=",
+      "integrity": "sha1-QjLMxfTeTUPzu1PEBelXIV9yMy4=",
       "requires": {
-        "@bentley/bemetalsmith": "2.0.7",
+        "@bentley/bemetalsmith": "2.1.4",
         "@bentley/bentleyjs-tools": "3.4.1",
         "@types/body-parser": "1.17.0",
         "@types/chai": "4.1.3",
@@ -803,7 +803,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-Xnk3YXxZZfWHjq2PzhURr2I+A0Y=",
+      "integrity": "sha1-nDMNrJqhgljNQXHpctmUbilU/gI=",
       "requires": {
         "@bentley/imodeljs-e_1_6_11-win32-x64": "18.0.0",
         "body-parser": "1.18.2",
@@ -828,7 +828,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-XxN1CZxYHUNieDH7sm/aJl0qKSo=",
+      "integrity": "sha1-7L898wF+lWKT+vrQq3oNtntseuo=",
       "requires": {
         "cpx": "1.5.0",
         "fuse.js": "3.2.0",
@@ -1778,7 +1778,7 @@
       "integrity": "sha1-Hb0cg1ZY41zj+ZhAmdsAWFx4IBQ=",
       "requires": {
         "browserslist": "1.7.7",
-        "caniuse-db": "1.0.30000836",
+        "caniuse-db": "1.0.30000839",
         "normalize-range": "0.1.2",
         "num2fraction": "1.2.2",
         "postcss": "5.2.18",
@@ -3318,7 +3318,7 @@
       "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-1.7.7.tgz",
       "integrity": "sha1-C9dnBCWL6CmyOYu1Dkti0aFmsLk=",
       "requires": {
-        "caniuse-db": "1.0.30000836",
+        "caniuse-db": "1.0.30000839",
         "electron-to-chromium": "1.3.45"
       }
     },
@@ -3438,15 +3438,15 @@
       "integrity": "sha1-tTTnxzTE+B7F++isoq0kNUuWLGw=",
       "requires": {
         "browserslist": "1.7.7",
-        "caniuse-db": "1.0.30000836",
+        "caniuse-db": "1.0.30000839",
         "lodash.memoize": "4.1.2",
         "lodash.uniq": "4.5.0"
       }
     },
     "caniuse-db": {
-      "version": "1.0.30000836",
-      "resolved": "https://registry.npmjs.org/caniuse-db/-/caniuse-db-1.0.30000836.tgz",
-      "integrity": "sha1-eItsj28CmRdDsYzbvVT5bQW0uVo="
+      "version": "1.0.30000839",
+      "resolved": "https://registry.npmjs.org/caniuse-db/-/caniuse-db-1.0.30000839.tgz",
+      "integrity": "sha1-VahuQCx0rhcUlwe+o+o5lSIjNJc="
     },
     "capture-exit": {
       "version": "1.2.0",
@@ -5200,9 +5200,9 @@
       }
     },
     "domhandler": {
-      "version": "2.4.1",
-      "resolved": "https://registry.npmjs.org/domhandler/-/domhandler-2.4.1.tgz",
-      "integrity": "sha1-iS5HAAqZvlW783dP/qBWHYh5wlk=",
+      "version": "2.4.2",
+      "resolved": "https://registry.npmjs.org/domhandler/-/domhandler-2.4.2.tgz",
+      "integrity": "sha512-JiK04h0Ht5u/80fdLMCEmV4zkNh2BcoMFBmZ/91WtYZ8qVXSKjiw7fXMgFPnHcSZgOo3XdinHvmnDUeMf5R4wA==",
       "requires": {
         "domelementtype": "1.3.0"
       }
@@ -6274,7 +6274,7 @@
       "integrity": "sha1-kojj6ePMN0hxfTnq3hfPcfww7m8=",
       "requires": {
         "commondir": "1.0.1",
-        "make-dir": "1.2.0",
+        "make-dir": "1.3.0",
         "pkg-dir": "2.0.0"
       }
     },
@@ -7355,7 +7355,7 @@
       "integrity": "sha1-G9+HrMoPP55T+k/M6w9LTLsAszg=",
       "requires": {
         "domelementtype": "1.3.0",
-        "domhandler": "2.4.1",
+        "domhandler": "2.4.2",
         "domutils": "1.7.0",
         "entities": "1.1.1",
         "inherits": "2.0.3",
@@ -9742,9 +9742,9 @@
       "integrity": "sha1-WQTcU3w57G2+/q6QIycTX6hRHxI="
     },
     "make-dir": {
-      "version": "1.2.0",
-      "resolved": "https://registry.npmjs.org/make-dir/-/make-dir-1.2.0.tgz",
-      "integrity": "sha512-aNUAa4UMg/UougV25bbrU4ZaaKNjJ/3/xnvg/twpmKROPdKZPZ9wGgI0opdZzO8q/zUFawoUuixuOv33eZ61Iw==",
+      "version": "1.3.0",
+      "resolved": "https://registry.npmjs.org/make-dir/-/make-dir-1.3.0.tgz",
+      "integrity": "sha512-2w31R7SJtieJJnQtGc7RVL2StM2vGYVfqUOvUDxH6bC6aJTxPxTF0GnIgCyu7tjockiUWAYQRbxa7vKn34s5sQ==",
       "requires": {
         "pify": "3.0.0"
       }
@@ -10730,7 +10730,7 @@
         "querystring-es3": "0.2.1",
         "readable-stream": "2.3.6",
         "stream-browserify": "2.0.1",
-        "stream-http": "2.8.1",
+        "stream-http": "2.8.2",
         "string_decoder": "1.1.1",
         "timers-browserify": "2.0.10",
         "tty-browserify": "0.0.0",
@@ -11182,9 +11182,9 @@
       "integrity": "sha512-3iuY4N5dhgMpCUrOVnuAdGrgxVqV2cJpM+XNccjR2DKOB1RUP0aA+wGXEiNziG/UKboFyGBIoKOaNlJxx8bciQ=="
     },
     "nyc": {
-      "version": "11.7.2",
-      "resolved": "https://registry.npmjs.org/nyc/-/nyc-11.7.2.tgz",
-      "integrity": "sha512-gBt7qwsR1vryYfglVjQRx1D+AtMZW5NbUKxb+lZe8SN8KsheGCPGWEsSC9AGQG+r2+te1+10uPHUCahuqm1nGQ==",
+      "version": "11.7.3",
+      "resolved": "https://registry.npmjs.org/nyc/-/nyc-11.7.3.tgz",
+      "integrity": "sha512-40EtXYqklVP8nFtXtw6tziHV/FBfP2e0HENZc2kivMyzmOdkrp7ljKqpdjS8ubYWdzUMWlMnPDkbNMQeVd2Q5A==",
       "requires": {
         "archy": "1.0.0",
         "arrify": "1.0.1",
@@ -11404,6 +11404,10 @@
                 "kind-of": "6.0.2"
               }
             },
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            },
             "kind-of": {
               "version": "6.0.2",
               "bundled": true
@@ -11460,6 +11464,12 @@
             "to-object-path": "0.3.0",
             "union-value": "1.0.0",
             "unset-value": "1.0.0"
+          },
+          "dependencies": {
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            }
           }
         },
         "caching-transform": {
@@ -11512,6 +11522,10 @@
               "requires": {
                 "is-descriptor": "0.1.6"
               }
+            },
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
             }
           }
         },
@@ -11632,6 +11646,10 @@
                 "is-data-descriptor": "1.0.0",
                 "kind-of": "6.0.2"
               }
+            },
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
             },
             "kind-of": {
               "version": "6.0.2",
@@ -11915,6 +11933,12 @@
             "get-value": "2.0.6",
             "has-values": "1.0.0",
             "isobject": "3.0.1"
+          },
+          "dependencies": {
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            }
           }
         },
         "has-values": {
@@ -11925,6 +11949,22 @@
             "kind-of": "4.0.0"
           },
           "dependencies": {
+            "is-number": {
+              "version": "3.0.0",
+              "bundled": true,
+              "requires": {
+                "kind-of": "3.2.2"
+              },
+              "dependencies": {
+                "kind-of": {
+                  "version": "3.2.2",
+                  "bundled": true,
+                  "requires": {
+                    "is-buffer": "1.1.6"
+                  }
+                }
+              }
+            },
             "kind-of": {
               "version": "4.0.0",
               "bundled": true,
@@ -12049,6 +12089,12 @@
           "bundled": true,
           "requires": {
             "isobject": "3.0.1"
+          },
+          "dependencies": {
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            }
           }
         },
         "is-stream": {
@@ -12348,6 +12394,14 @@
             "to-regex": "3.0.2"
           },
           "dependencies": {
+            "arr-diff": {
+              "version": "4.0.0",
+              "bundled": true
+            },
+            "array-unique": {
+              "version": "0.3.2",
+              "bundled": true
+            },
             "kind-of": {
               "version": "6.0.2",
               "bundled": true
@@ -12402,6 +12456,12 @@
           "bundled": true,
           "requires": {
             "isobject": "3.0.1"
+          },
+          "dependencies": {
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            }
           }
         },
         "object.pick": {
@@ -12409,6 +12469,12 @@
           "bundled": true,
           "requires": {
             "isobject": "3.0.1"
+          },
+          "dependencies": {
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            }
           }
         },
         "once": {
@@ -12751,6 +12817,10 @@
                 "kind-of": "6.0.2"
               }
             },
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            },
             "kind-of": {
               "version": "6.0.2",
               "bundled": true
@@ -12895,6 +12965,230 @@
             "object-assign": "4.1.1",
             "read-pkg-up": "1.0.1",
             "require-main-filename": "1.0.1"
+          },
+          "dependencies": {
+            "arr-diff": {
+              "version": "4.0.0",
+              "bundled": true
+            },
+            "array-unique": {
+              "version": "0.3.2",
+              "bundled": true
+            },
+            "braces": {
+              "version": "2.3.2",
+              "bundled": true,
+              "requires": {
+                "arr-flatten": "1.1.0",
+                "array-unique": "0.3.2",
+                "extend-shallow": "2.0.1",
+                "fill-range": "4.0.0",
+                "isobject": "3.0.1",
+                "repeat-element": "1.1.2",
+                "snapdragon": "0.8.2",
+                "snapdragon-node": "2.1.1",
+                "split-string": "3.1.0",
+                "to-regex": "3.0.2"
+              },
+              "dependencies": {
+                "extend-shallow": {
+                  "version": "2.0.1",
+                  "bundled": true,
+                  "requires": {
+                    "is-extendable": "0.1.1"
+                  }
+                }
+              }
+            },
+            "expand-brackets": {
+              "version": "2.1.4",
+              "bundled": true,
+              "requires": {
+                "debug": "2.6.9",
+                "define-property": "0.2.5",
+                "extend-shallow": "2.0.1",
+                "posix-character-classes": "0.1.1",
+                "regex-not": "1.0.2",
+                "snapdragon": "0.8.2",
+                "to-regex": "3.0.2"
+              },
+              "dependencies": {
+                "define-property": {
+                  "version": "0.2.5",
+                  "bundled": true,
+                  "requires": {
+                    "is-descriptor": "0.1.6"
+                  }
+                },
+                "extend-shallow": {
+                  "version": "2.0.1",
+                  "bundled": true,
+                  "requires": {
+                    "is-extendable": "0.1.1"
+                  }
+                },
+                "is-accessor-descriptor": {
+                  "version": "0.1.6",
+                  "bundled": true,
+                  "requires": {
+                    "kind-of": "3.2.2"
+                  },
+                  "dependencies": {
+                    "kind-of": {
+                      "version": "3.2.2",
+                      "bundled": true,
+                      "requires": {
+                        "is-buffer": "1.1.6"
+                      }
+                    }
+                  }
+                },
+                "is-data-descriptor": {
+                  "version": "0.1.4",
+                  "bundled": true,
+                  "requires": {
+                    "kind-of": "3.2.2"
+                  },
+                  "dependencies": {
+                    "kind-of": {
+                      "version": "3.2.2",
+                      "bundled": true,
+                      "requires": {
+                        "is-buffer": "1.1.6"
+                      }
+                    }
+                  }
+                },
+                "is-descriptor": {
+                  "version": "0.1.6",
+                  "bundled": true,
+                  "requires": {
+                    "is-accessor-descriptor": "0.1.6",
+                    "is-data-descriptor": "0.1.4",
+                    "kind-of": "5.1.0"
+                  }
+                },
+                "kind-of": {
+                  "version": "5.1.0",
+                  "bundled": true
+                }
+              }
+            },
+            "extglob": {
+              "version": "2.0.4",
+              "bundled": true,
+              "requires": {
+                "array-unique": "0.3.2",
+                "define-property": "1.0.0",
+                "expand-brackets": "2.1.4",
+                "extend-shallow": "2.0.1",
+                "fragment-cache": "0.2.1",
+                "regex-not": "1.0.2",
+                "snapdragon": "0.8.2",
+                "to-regex": "3.0.2"
+              },
+              "dependencies": {
+                "define-property": {
+                  "version": "1.0.0",
+                  "bundled": true,
+                  "requires": {
+                    "is-descriptor": "1.0.2"
+                  }
+                },
+                "extend-shallow": {
+                  "version": "2.0.1",
+                  "bundled": true,
+                  "requires": {
+                    "is-extendable": "0.1.1"
+                  }
+                }
+              }
+            },
+            "fill-range": {
+              "version": "4.0.0",
+              "bundled": true,
+              "requires": {
+                "extend-shallow": "2.0.1",
+                "is-number": "3.0.0",
+                "repeat-string": "1.6.1",
+                "to-regex-range": "2.1.1"
+              },
+              "dependencies": {
+                "extend-shallow": {
+                  "version": "2.0.1",
+                  "bundled": true,
+                  "requires": {
+                    "is-extendable": "0.1.1"
+                  }
+                }
+              }
+            },
+            "is-accessor-descriptor": {
+              "version": "1.0.0",
+              "bundled": true,
+              "requires": {
+                "kind-of": "6.0.2"
+              }
+            },
+            "is-data-descriptor": {
+              "version": "1.0.0",
+              "bundled": true,
+              "requires": {
+                "kind-of": "6.0.2"
+              }
+            },
+            "is-descriptor": {
+              "version": "1.0.2",
+              "bundled": true,
+              "requires": {
+                "is-accessor-descriptor": "1.0.0",
+                "is-data-descriptor": "1.0.0",
+                "kind-of": "6.0.2"
+              }
+            },
+            "is-number": {
+              "version": "3.0.0",
+              "bundled": true,
+              "requires": {
+                "kind-of": "3.2.2"
+              },
+              "dependencies": {
+                "kind-of": {
+                  "version": "3.2.2",
+                  "bundled": true,
+                  "requires": {
+                    "is-buffer": "1.1.6"
+                  }
+                }
+              }
+            },
+            "isobject": {
+              "version": "3.0.1",
+              "bundled": true
+            },
+            "kind-of": {
+              "version": "6.0.2",
+              "bundled": true
+            },
+            "micromatch": {
+              "version": "3.1.10",
+              "bundled": true,
+              "requires": {
+                "arr-diff": "4.0.0",
+                "array-unique": "0.3.2",
+                "braces": "2.3.2",
+                "define-property": "2.0.2",
+                "extend-shallow": "3.0.2",
+                "extglob": "2.0.4",
+                "fragment-cache": "0.2.1",
+                "kind-of": "6.0.2",
+                "nanomatch": "1.2.9",
+                "object.pick": "1.3.0",
+                "regex-not": "1.0.2",
+                "snapdragon": "0.8.2",
+                "to-regex": "3.0.2"
+              }
+            }
           }
         },
         "to-fast-properties": {
@@ -12924,6 +13218,15 @@
           "requires": {
             "is-number": "3.0.0",
             "repeat-string": "1.6.1"
+          },
+          "dependencies": {
+            "is-number": {
+              "version": "3.0.0",
+              "bundled": true,
+              "requires": {
+                "kind-of": "3.2.2"
+              }
+            }
           }
         },
         "trim-right": {
@@ -13015,6 +13318,10 @@
             },
             "has-values": {
               "version": "0.1.4",
+              "bundled": true
+            },
+            "isobject": {
+              "version": "3.0.1",
               "bundled": true
             }
           }
@@ -17161,9 +17468,9 @@
       }
     },
     "stream-http": {
-      "version": "2.8.1",
-      "resolved": "https://registry.npmjs.org/stream-http/-/stream-http-2.8.1.tgz",
-      "integrity": "sha512-cQ0jo17BLca2r0GfRdZKYAGLU6JRoIWxqSOakUMuKOT6MOK7AAlE856L33QuDmAy/eeOrhLee3dZKX0Uadu93A==",
+      "version": "2.8.2",
+      "resolved": "https://registry.npmjs.org/stream-http/-/stream-http-2.8.2.tgz",
+      "integrity": "sha512-QllfrBhqF1DPcz46WxKTs6Mz1Bpc+8Qm6vbqOpVav5odAXwbyzwnEczoWqtxrsmlO+cJqtPrp/8gWKWjaKLLlA==",
       "requires": {
         "builtin-status-codes": "3.0.0",
         "inherits": "2.0.3",
@@ -17456,7 +17763,7 @@
       "requires": {
         "graceful-fs": "4.1.11",
         "is-stream": "1.1.0",
-        "make-dir": "1.2.0",
+        "make-dir": "1.3.0",
         "pify": "3.0.0",
         "temp-dir": "1.0.0",
         "uuid": "3.2.1"
@@ -18959,7 +19266,7 @@
       "requires": {
         "detect-indent": "5.0.0",
         "graceful-fs": "4.1.11",
-        "make-dir": "1.2.0",
+        "make-dir": "1.3.0",
         "pify": "3.0.0",
         "sort-keys": "2.0.0",
         "write-file-atomic": "2.3.0"

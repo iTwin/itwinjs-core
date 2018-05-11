@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "7.4.5",
+  "version": "8.0.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
@@ -35,7 +35,7 @@
     "Bentley",
     "iModel"
   ],
-  "author": { 
+  "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
