@@ -453,13 +453,16 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     return error;
   }
 
-  /** Get the current value of a view detail */
+  /** Peek to see if a detail is defined. May return undefined. */
+  public peekDetail(name: string): any { return this.getDetails()[name]; }
+
+  /** Get the current value of a view detail. If not present, return empty object. */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
 
-  /** Change the value of a view detail */
+  /** Change the value of a view detail. */
   public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
 
-  /** Remove a view detail */
+  /** Remove a view detail. */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
 
   /** Set the CategorySelector for this view. */
@@ -475,7 +478,9 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
   public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
-  /** Set the AuxiliaryCoordinateSystem for this view. */
+  /** Set or clear the AuxiliaryCoordinateSystem for this view.
+   * @param acs the new AuxiliaryCoordinateSystem for this view. If undefined, no AuxiliaryCoordinateSystem will be used.
+   */
   public setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState) {
     this._auxCoordSystem = acs;
     if (acs)
@@ -484,16 +489,16 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       this.removeDetail("acs");
   }
 
-  /** Query if the specified Category is displayed in this view */
+  /** Determine whether the specified Category is displayed in this view */
   public viewsCategory(id: Id64): boolean { return this.categorySelector.isCategoryViewed(id); }
 
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
 
-  /** Get the aspect ratio skew (x/y, usually 1.0) that can be used to exaggerate one axis of the view. */
+  /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate one axis of the view. */
   public getAspectRatioSkew(): number { return JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0); }
 
-  /** Set the aspect ratio skew for this view */
+  /** Set the aspect ratio skew (x/y) for this view. To remove aspect ratio skew, pass 1.0 for val. */
   public setAspectRatioSkew(val: number) {
     if (!val || val === 1.0) {
       this.removeDetail("aspectSkew");
@@ -502,16 +507,24 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     }
   }
 
-  /** Get the unit vector that points in the view X (left-to-right) direction. */
+  /** Get the unit vector that points in the view X (left-to-right) direction.
+   * @param result optional Vector3d to be used for output. If undefined, a new object is created.
+   */
   public getXVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(0, result); }
 
-  /** Get the unit vector that points in the view Y (bottom-to-top) direction. */
+  /** Get the unit vector that points in the view Y (bottom-to-top) direction.
+   * @param result optional Vector3d to be used for output. If undefined, a new object is created.
+   */
   public getYVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(1, result); }
 
-  /** Get the unit vector that points in the view Z (front-to-back) direction. */
+  /** Get the unit vector that points in the view Z (front-to-back) direction.
+   * @param result optional Vector3d to be used for output. If undefined, a new object is created.
+   */
   public getZVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(2, result); }
 
-  /** Set the clipping volume for this view. */
+  /** Set or clear the clipping volume for this view.
+   * @param clip the new clipping volume. If undefined, clipping is removed from view.
+   */
   public setViewClip(clip?: ClipVector) {
     if (clip && clip.isValid())
       this.setDetail("clip", clip.toJSON());
@@ -519,10 +532,13 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       this.removeDetail("clip");
   }
 
-  /** Get the clipping volume for this view */
+  /** Get the clipping volume for this view, if defined */
   public getViewClip(): ClipVector | undefined {
-    const clip = ClipVector.fromJSON(this.getDetail("clip"));
-    return clip.isValid() ? clip : undefined;
+    const clip = this.peekDetail("clip");
+    if (clip === undefined)
+      return undefined;
+    const clipVector = ClipVector.fromJSON(clip);
+    return clipVector.isValid() ? clipVector : undefined;
   }
 
   /** Set the grid settings for this view */

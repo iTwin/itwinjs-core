@@ -32,7 +32,7 @@ export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
 /**
  * Represents a physical copy (a briefcase) of an iModel that can be accessed as a file on the local computer.
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
- * @see []($docs/learning/backend/ImodelDb.md)
+ * @see []($docs/learning/backend/IModelDb.md)
  */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000; // default limit for batching queries
@@ -54,14 +54,18 @@ export class IModelDb extends IModel {
   public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.briefcase.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
 
-  /** Event raised just before a connected IModelDb is opened. <p><em>Example:</em>
+  /** Event raised just before a connected IModelDb is opened.
+   *
+   * **Example:**
    * ``` ts
    * [[include:IModelDb.onOpen]]
    * ```
    */
   public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openMode: OpenMode, _version: IModelVersion) => void>();
-  /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only.
-   * This event is not raised for standalone IModelDbs. <p><em>Example:</em>
+  /** Event raised just after a connected IModelDb is opened. This event is raised only for iModel access initiated by this app only,
+   * it is *not* raised for standalone IModelDbs.
+   *
+   * **Example:**
    * ``` ts
    * [[include:IModelDb.onOpened]]
    * ```

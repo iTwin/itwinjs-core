@@ -19,7 +19,7 @@ export const enum ContainsSchemaChanges {
 }
 
 /** ChangeSet */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Id")
   public id?: string;
@@ -160,7 +160,6 @@ export class ChangeSetHandler {
    * If there is an error in downloading some ChangeSet, throws an error and any incomplete ChangeSet is deleted from disk.
    * @param changeSets Change sets to download. These need to include a download link. @see ChangeSetQuery.selectDownloadUrl().
    * @param downloadToPath Directory where the ChangeSets should be downloaded.
-   * @throws [[Error]] if the change sets cannot be downloaded.
    */
   public async download(changeSets: ChangeSet[], downloadToPath: string): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading ${changeSets.length} changesets`);

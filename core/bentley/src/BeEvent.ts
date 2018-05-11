@@ -11,7 +11,7 @@ class EventContext {
 }
 
 /**
- * A generic class for managing a set of *listeners* for a particular event.
+ * Manages a set of *listeners* for a particular event and notifies them when the event is raised.
  * This class is usually instantiated inside of a container class and
  * exposed as a property for others to *subscribe* via [[BeEvent.addListener]].
  */
@@ -23,8 +23,7 @@ export class BeEvent<T extends Listener> {
   public get numberOfListeners() { return this._listeners.length; }
 
   /**
-   * Registers a Listener to be executed whenever the event is raised.
-   *
+   * Registers a Listener to be executed whenever this event is raised.
    * @param listener The function to be executed when the event is raised.
    * @param scope An optional object scope to serve as the 'this' pointer when listener is invoked.
    * @returns A function that will remove this event listener.
@@ -38,7 +37,6 @@ export class BeEvent<T extends Listener> {
 
   /**
    * Registers a callback function to be executed *only once* when the event is raised.
-   *
    * @param listener The function to be executed once when the event is raised.
    * @param scope An optional object scope to serve as the `this` pointer in which the listener function will execute.
    * @returns A function that will remove this event listener.
@@ -52,11 +50,10 @@ export class BeEvent<T extends Listener> {
 
   /**
    * Un-register a previously registered listener.
-   *
    * @param listener The listener to be unregistered.
-   * @param  [scope] The scope that was originally passed to addEventListener.
+   * @param  scope The scope that was originally passed to addEventListener.
    * @returns 'true' if the listener was removed; 'false' if the listener and scope are not registered with the event.
-   * @see BeEvent.raiseEvent, BeEvent.addEventListener
+   * @see [[BeEvent.raiseEvent]], [[BeEvent.addEventListener]]
    */
   public removeListener(listener: T, scope?: any): boolean {
     const listeners = this._listeners;
@@ -77,9 +74,8 @@ export class BeEvent<T extends Listener> {
 
   /**
    * Raises the event by calling each registered listener with the supplied arguments.
-   *
    * @param args This method takes any number of parameters and passes them through to the listeners.
-   * @see BeEvent.removeListener, BeEvent.addEventListener
+   * @see [[BeEvent.removeListener]], [[BeEvent.addEventListener]]
    */
   public raiseEvent(..._args: any[]) {
     this._insideRaiseEvent = true;
@@ -103,20 +99,20 @@ export class BeEvent<T extends Listener> {
       // if we had dropped listeners, remove them now
       if (dropped) {
         this._listeners.length = 0;
-        listeners.forEach((c) => { if (c.listener) this._listeners.push(c); });
+        listeners.forEach((ctx) => { if (ctx.listener) this._listeners.push(ctx); });
       }
 
     }
     this._insideRaiseEvent = false;
   }
 
-  /** Determine whether this BeEvent has a listener registered.
+  /** Determine whether this BeEvent has a specified listener registered.
    * @param listener The listener to check.
    * @param scope optional scope argument to match call to addListener
    */
   public has(listener: T, scope?: any): boolean {
-    for (const sub of this._listeners) {
-      if (sub.listener === listener && sub.scope === scope) {
+    for (const ctx of this._listeners) {
+      if (ctx.listener === listener && ctx.scope === scope) {
         return true;
       }
     }
