@@ -200,7 +200,7 @@ module.exports = (publicPath) => {
 
     // There are a number of plugins that are common to both configs
     plugins: [
-      new plugins.CopyBentleyDependencyPublicFoldersPlugin(),
+      new plugins.CopyBentleyStaticResourcesPlugin(["public"]),
       // Generates an `index.html` file with the <script> injected.
       // This _should_ be specified in the separate dev and prod configs, but it's here because it has to be added _before_ InterpolateHtmlPlugin
       new HtmlWebpackPlugin({

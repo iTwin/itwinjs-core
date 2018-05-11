@@ -108,42 +108,48 @@ class CopyNativeAddonsPlugin {
   }
 }
 
-class CopyAssetsPlugin {
-  apply(compiler) {
-    compiler.hooks.environment.tap("CopyAssetsPlugin", () => {
-      const backendAssets = path.resolve(paths.appBentleyNodeModules, "imodeljs-backend", "lib", "assets");
-      if (fs.existsSync(backendAssets))
-        fs.copySync(backendAssets, path.resolve(paths.appLib, "assets"));
-
-      if (fs.existsSync(paths.appAssets))
-        fs.copySync(paths.appAssets, path.resolve(paths.appLib, "assets"));
-    });
-  }
-}
-
-// Merges the contents of the @bentley packages we depend on with the public folder.
 function isDirectory (directoryName) {
   return (fs.statSync(path.resolve (this.bentleyDir, directoryName)).isDirectory());
 }
-class CopyBentleyDependencyPublicFoldersPlugin {
-
+function tryCopyDirectoryContents(source, target) {
+  if (!fs.existsSync(source))
+    return;  
+  const copyOptions = { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: false };
+  try {
+    if (fs.statSync(source).isDirectory() && fs.existsSync(target) && fs.statSync(target).isDirectory()) {
+      fs.readdirSync(source).forEach((name) => {
+        tryCopyDirectoryContents(path.join(source, name), path.join(target, name));
+      });
+    }
+    else {
+      fs.copySync(source, target, copyOptions);
+    }
+  } catch (err) {
+    console.log(`Error trying to copy '${source}' to '${target}': ${err.toString()}`);
+  }
+}
+class CopyBentleyStaticResourcesPlugin {
+  constructor(directoryNames) { this.directoryNames = directoryNames; }
   apply(compiler) {
-    compiler.hooks.environment.tap("CopyBentleyDependencyPublicFoldersPlugin", () => {
+    compiler.hooks.environment.tap("CopyBentleyStaticResourcesPlugin", () => {
       const bentleyDir = paths.appBentleyNodeModules;
-      // go through all node_modules/@bentley directories. If there's a "lib/public" folder, copy its contents
       const subDirectoryNames = fs.readdirSync(bentleyDir).filter(isDirectory, { bentleyDir: paths.appBentleyNodeModules });
       for (const thisSubDir of subDirectoryNames) {
-        const fullDirName = path.resolve (bentleyDir, thisSubDir );
-        const testDir = path.resolve (fullDirName, "lib", "public");
-        try {
-          if (fs.statSync(testDir).isDirectory()) {
-            fs.copySync (testDir, paths.appLibPublic, { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: true});
-    
-          }
-        } catch (_err) {
-          // do nothing.
+        const fullDirName = path.resolve(bentleyDir, thisSubDir);
+        for (const staticAssetsDirectoryName of this.directoryNames) {
+          tryCopyDirectoryContents(
+            path.join(fullDirName, "lib", staticAssetsDirectoryName),
+            path.join(paths.appLib, staticAssetsDirectoryName)
+          );
         }
       }
+    });
+  }
+}
+class CopyAppAssetsPlugin {
+  apply(compiler) {
+    compiler.hooks.environment.tap("CopyAppAssetsPlugin", () => {
+      tryCopyDirectoryContents(paths.appAssets, path.resolve(paths.appLib, "assets"));
     });
   }
 }
@@ -232,7 +238,7 @@ module.exports = {
   BanFrontendImportsPlugin,
   BanBackendImportsPlugin,
   CopyNativeAddonsPlugin,
-  CopyAssetsPlugin,
-  CopyBentleyDependencyPublicFoldersPlugin,
+  CopyAppAssetsPlugin,
+  CopyBentleyStaticResourcesPlugin,
   PrettyLicenseWebpackPlugin
 };
