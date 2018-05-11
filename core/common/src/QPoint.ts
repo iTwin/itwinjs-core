@@ -328,9 +328,8 @@ export class QPoint3dList {
   public readonly params!: QParams3d;
   public readonly list = new Array<QPoint3d>();
 
-  public constructor(params?: QParams3d) {
-    const newParams = undefined !== params ? params : QParams3d.fromRange(Range3d.createNull());
-    newParams.clone(this.params); // spare the extra call to new
+  public constructor(paramsIn?: QParams3d) {
+    this.params = paramsIn ? paramsIn.clone() : QParams3d.fromRange(Range3d.createNull());
   }
 
   /** Clears out the contents of the list */
