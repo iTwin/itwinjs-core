@@ -1,6 +1,6 @@
 # iModelJs Tools
 
-A [Tool]($imodeljs-frontend.Tool) is a JavaScript class that performs an action on behalf of a user. There are several Tool types, all of which are implemented by subclassing various classes in the Tool class hierarchy.
+A [Tool]($imodeljs-frontend) is a JavaScript class that performs an action on behalf of a user. There are several Tool types, all of which are implemented by subclassing various classes in the Tool class hierarchy.
 
 * Immediate Tools execute their assigned tasks immediately without affecting the active tool, and are implemented as subclasses of ImmediateTool.
 * Viewing Tools (such as zoom, pan, and view rotation) pause the active tool while they are executing and resume the active tool when finished. They are implemented as subclasses of ViewTool.

@@ -6,7 +6,7 @@ A row returned from an [ECSQL](./ECSQL) SELECT query is formatted as JavaScript 
 
 If the ECSQL select clause item
 
-- is an [ECSQL system property]($common/ECSqlSystemProperty), the property name is as described here: [ECJsNames.toJsName]($common/ECJsNames.toJsName)
+- is an [ECSqlSystemProperty]($common), the property name is as described here: [ECJsNames.toJsName]($common)
 - has a column alias, the alias, with the first character lowered, becomes the property name.
 - has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
 
@@ -18,7 +18,7 @@ ECSQL type | Extended Type | JavaScript Typ
 ---------- | ------------- | ---------------
 Boolean    | -             | boolean
 Blob       | -             | ArrayBuffer
-Blob       | BeGuid        | GUID string (see [Guid]($bentleyjs-core.Guid))
+Blob       | BeGuid        | GUID string (see [Guid]($bentleyjs-core))
 ClassId system properties | - | fully qualified class name
 Double     | -             | number
 DateTime   | -             | ISO8601 string
@@ -26,10 +26,10 @@ Id system properties | -   | hexadecimal string
 Integer    | -             | number
 Int64      | -             | number
 Int64      | Id            | hexadecimal string
-Point2d    | -             | [XAndY]($geometry-core.XAndY)
-Point3d    | -             | [XYAndZ]($geometry-core.XYAndZ)
+Point2d    | -             | [XAndY]($geometry-core)
+Point3d    | -             | [XYAndZ]($geometry-core)
 String     | -             | string
-Navigation | n/a           | [NavigationValue]($common/NavigationValue)
+Navigation | n/a           | [NavigationValue]($common)
 Struct     | n/a           | JavaScript object with properties of the types in this table
 Array      | n/a           | array of the types in this table
 

@@ -1,7 +1,7 @@
 ## iModelJs Packages
 ---
 
-### [backend]($backend)
+### ($backend)
 ##### [App]($backend:App)
 ##### [BisCore]($backend:BisCore)
 ##### [Codes]($backend:Codes)
@@ -14,9 +14,9 @@
 ##### [Schema]($backend:Schema)
 ##### [Views]($backend:Views)
 
-### [frontend]($frontend)
+### ($frontend)
 
-### [common]($common)
+### ($common)
 ##### [App]($common:App)
 ##### [BisCore]($common:BisCore)
 ##### [Codes]($common:Codes)
@@ -30,11 +30,11 @@
 ##### [Schema]($common:Schema)
 
 
-### [clients]($clients)
+### ($clients)
 
 ## Support Packages
 ---
-### [bentleyjs-core]($bentleyjs-core)
+### ($bentleyjs-core)
 ##### [BeSQLite]($bentleyjs-core:BeSQLite)
 ##### [Errors]($bentleyjs-core:Errors)
 ##### [Events]($bentleyjs-core:Events)
@@ -42,7 +42,7 @@
 ##### [Logging]($bentleyjs-core:Logging)
 ##### [Utils]($bentleyjs-core:Utils)
 
-### [geometry-core]($geometry-core)
+### ($geometry-core)
 ##### [CartesianGeometry]($geometry-core:CartesianGeometry)
 ##### [ArraysAndInterfaces]($geometry-core:ArraysAndInterfaces)
 ##### [Bspline]($geometry-core:Bspline)

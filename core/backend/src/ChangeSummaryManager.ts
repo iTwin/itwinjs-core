@@ -18,7 +18,7 @@ import { KnownLocations } from "./Platform";
 /** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
  *
  *  See also
- *  - [ChangeSummaryManager.queryChangeSummary]($backend/ChangeSummaryManager.queryChangeSummary)
+ *  - [ChangeSummaryManager.queryChangeSummary]($backend)
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export interface ChangeSummary {
@@ -29,7 +29,7 @@ export interface ChangeSummary {
 /** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
  *
  *  See also
- *  - [ChangeSummaryManager.queryInstanceChange]($backend/ChangeSummaryManager.queryInstanceChange)
+ *  - [ChangeSummaryManager.queryInstanceChange]($backend)
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export interface InstanceChange {
@@ -41,7 +41,7 @@ export interface InstanceChange {
   changedProperties: { before: any, after: any };
 }
 
-/** Options for [ChangeSummaryManager.extractChangeSummaries]($backend/ChangeSummaryManager.extractChangeSummaries). */
+/** Options for [ChangeSummaryManager.extractChangeSummaries]($backend). */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start changeset to the current changeset as of which the iModel
    *  was opened. If undefined, the extraction starts at the first changeset of the iModel.
@@ -85,7 +85,7 @@ export class ChangeSummaryManager {
   /** Attaches the *Changes Cache File* to the specified iModel if it hasn't been attached yet.
    * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
    * @param iModel iModel to attach the *Changes Cache File* file to
-   * @throws [IModelError]($common/IModelError)
+   * @throws [IModelError]($common)
    */
   public static attachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -109,7 +109,7 @@ export class ChangeSummaryManager {
 
   /** Detaches the *Changes Cache File* from the specified iModel.
    * @param iModel iModel to detach the *Changes Cache File* to
-   * @throws [IModelError]($common/IModelError) in case of errors, e.g. if no *Changes Cache File* was attached before.
+   * @throws [IModelError]($common) in case of errors, e.g. if no *Changes Cache File* was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -128,7 +128,7 @@ export class ChangeSummaryManager {
    * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
    * the iModel is moved back to the original changeset.
    * @param options Extraction options
-   * @throws [IModelError]($common/IModelError) if the iModel is standalone,r was not opened in readwrite mode.
+   * @throws [IModelError]($common) if the iModel is standalone,r was not opened in readwrite mode.
    */
   public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
     // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)
@@ -326,7 +326,7 @@ export class ChangeSummaryManager {
    * @param iModel iModel
    * @param changeSummaryId ECInstanceId of the ChangeSummary
    * @returns Returns the requested ChangeSummary object
-   * @throws [IModelError]($common/IModelError) If change summary does not exist for the specified id, or if the
+   * @throws [IModelError]($common) If change summary does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64): ChangeSummary {
@@ -351,7 +351,7 @@ export class ChangeSummaryManager {
    * @param iModel iModel
    * @param instanceChangeId ECInstanceId of the InstanceChange (see `ECDbChange.InstanceChange` ECClass in the *ECDbChange* ECSchema)
    * @returns Returns the requested InstanceChange object
-   * @throws [IModelError]($common/IModelError) if instance change does not exist for the specified id, or if the
+   * @throws [IModelError]($common) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
   public static queryInstanceChange(iModel: IModelDb, instanceChangeId: Id64): InstanceChange {

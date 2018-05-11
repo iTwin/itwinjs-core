@@ -40,10 +40,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description BisCore
  * Classes for working with the major classes in the BisCore schema. The key classes are:
- * * [BisCore]($backend/BisCore)
- * * [Model]($backend/Model)
- * * [Element]($backend/Element)
- * * [Category]($backend/Category)
+ * * [BisCore]($backend)
+ * * [Model]($backend)
+ * * [Element]($backend)
+ * * [Category]($backend)
  * For more information, see [BIS Overview]($docs/overview/BIS.md)
  */
  /**
@@ -57,8 +57,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECSQL
  * Classes for working with ECSQL. The key classes are:
- * * [ECSqlStatement]($backend/ECSqlStatement)
- * * [ECSqlValue]($backend/ECSqlValue)
+ * * [ECSqlStatement]($backend)
+ * * [ECSqlValue]($backend)
  *
  * For more information, see [Executing ECSQL]($docs/learning/ECSQL.md)
  */
@@ -69,8 +69,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description iModels
  * Classes for working with iModels. The key classes are:
- * * [IModelDb]($backend/IModelDb)
- * * [ConcurrencyControl]($backend/ConcurrencyControl)
+ * * [IModelDb]($backend)
+ * * [ConcurrencyControl]($backend)
  * For more information, see [iModel Overview]($docs/overview/IModels.md)
  */
 /**
