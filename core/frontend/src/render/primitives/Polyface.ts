@@ -12,7 +12,7 @@ export class PolyfacePrimitive {
 
   public get indexedPolyface() { return this._polyface; }
 
-  public static create(params: DisplayParams, pf: IndexedPolyface, displayEdges: boolean, isPlanar: boolean) {
+  public static create(params: DisplayParams, pf: IndexedPolyface, displayEdges: boolean = true, isPlanar: boolean = false) {
     return new PolyfacePrimitive(params, pf, displayEdges, isPlanar);
   }
 

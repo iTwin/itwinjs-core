@@ -27,6 +27,8 @@ import {
   StrokeOptions,
   Angle,
   IndexedPolyface,
+  PolyfaceBuilder,
+  SweepContour,
 } from "@bentley/geometry-core";
 import {
   GraphicParams,
@@ -37,7 +39,7 @@ import {
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
-import { GeometryOptions, NormalMode } from "./Primitives";
+import { GeometryOptions } from "./Primitives";
 import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
@@ -65,11 +67,11 @@ export abstract class Geometry {
     return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
   }
 
-  protected abstract _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList;
-  protected abstract _getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList;
+  protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList;
+  protected abstract _getStrokes(chordTolerance: number): StrokesPrimitiveList;
 
-  public getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList {
-    const polyfaces = this._getPolyfaces(chordTolerance, nm, vc);
+  public getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList {
+    const polyfaces = this._getPolyfaces(facetOptions);
     if (this.clip === undefined || 0 === polyfaces.length)
       return polyfaces;
 
@@ -77,8 +79,8 @@ export abstract class Geometry {
     return polyfaces;
   }
 
-  public getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList {
-    const strokes = this._getStrokes(chordTolerance, vc);
+  public getStrokes(chordTolerance: number): StrokesPrimitiveList {
+    const strokes = this._getStrokes(chordTolerance);
     if (this.clip === undefined || 0 === strokes.length)
       return strokes;
 
@@ -118,9 +120,11 @@ export class PrimitiveGeometry extends Geometry {
     return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ isDisjoint);
   }
 
-  protected _getPolyfaces(chordTolerance: number, nm: NormalMode, vc: ViewContext): PolyfacePrimitiveList {
+  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList {
+    // IndexedPolyface
     if (this.geometry instanceof IndexedPolyface) {
       const polyface = this.geometry as IndexedPolyface;
+
       if (this.hasTexture) {
         if (polyface.data.param) {
           polyface.data.param = [];
@@ -133,26 +137,48 @@ export class PrimitiveGeometry extends Geometry {
       // ###TODO: FixPolyface
 
       assert(this.transform.isIdentity());
-      const displayEdges = false; // ###TODO
-      const isPlanar = false; // ###TODO
-      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, displayEdges, isPlanar));
+      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface));
     }
 
-    if (0 === chordTolerance) { // shut up tslint
-    }
-    if (NormalMode.Always === nm) { // shut up tslint
-    }
-    if (vc.viewFlags.fill) { // shut up tslint
+    // used by CurveChain right now, could be used by other primitives
+    const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
+    let isPlanar = false;
+    let builderHasPoly = false;
+
+    // CurveChain
+    if (this.geometry instanceof CurveChain) {
+      const chain = this.geometry as CurveChain;
+
+      if (!chain.isAnyRegionType()) {
+        return new PolyfacePrimitiveList();
+      }
+
+      // The following is good for single loop things.
+      const contour = SweepContour.createForLinearSweep(chain);
+      if (contour !== undefined) {
+        isPlanar = true;
+        builderHasPoly = true;
+        contour.emitFacets(pfBuilder, facetOptions, false); // build facets and emit them to the builder
+      } // ###TODO: Will this handle all region cases? (might not work with holes)
     }
 
-    return new PolyfacePrimitiveList();
+    // ###TODO: solidPrimitive
+    // ###TODO: bsplineSurface
+
+    const pfList = new PolyfacePrimitiveList();
+
+    if (builderHasPoly) {
+      const polyface = pfBuilder.claimPolyface();
+      const wantEdges = (!(this.geometry instanceof CurveChain) || DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType);
+      pfList.push(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
+    }
+
+    return pfList;
   }
 
   // ###TODO: actual implementation
-  protected _getStrokes(chordTolerance: number, vc: ViewContext): StrokesPrimitiveList {
+  protected _getStrokes(chordTolerance: number): StrokesPrimitiveList {
     if (0 === chordTolerance) { // shut up tslint
-    }
-    if (vc.viewFlags.fill) { // shut up tslint
     }
     return new StrokesPrimitiveList();
   }
