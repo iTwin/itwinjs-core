@@ -20,9 +20,6 @@ import {
   PointString3d,
   CurveCollection,
   CurveChain,
-  BSplineCurve3d,
-  BSplineSurface3d,
-  SolidPrimitive,
   Polyface,
   StrokeOptions,
   Angle,
@@ -32,15 +29,13 @@ import {
 } from "@bentley/geometry-core";
 import {
   GraphicParams,
-  AsThickenedLine,
-  TextString,
   QParams3d,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
-import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
+import { RenderSystem, RenderGraphic } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 import { StrokesPrimitiveList } from "./Strokes";
@@ -438,17 +433,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
   constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams) { super(system, params); }
-  public addSubGraphic(gf: RenderGraphic, subToGf: Transform, _gfParams: GraphicParams, clips?: ClipVector): void {
-    // ###TODO_ELEMENT_TILE: Overriding GraphicParams?
-    // ###TODO_ELEMENT_TILE: Clip...
-    if (undefined !== clips || !subToGf.isIdentity()) {
-      const branch = new GraphicBranch();
-      const tf = this.localToWorldTransform.multiplyTransformTransform(subToGf);
-      branch.add(gf);
-      const graphic = this.system.createBranch(branch, this.iModel, tf, clips);
-      this.primitives.push(graphic);
-    } else this.primitives.push(gf);
-  }
 
   public createSubGraphic(subToGf: Transform, _clip: ClipVector): GraphicBuilder {
     const tf = subToGf.isIdentity() ? this.localToWorldTransform : Transform.createIdentity();
@@ -480,17 +464,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   }
 
   public reset(): void { }
-  public addBSplineCurve(_curve: BSplineCurve3d, _filled: boolean): void { } //tslint:disable-line
-  public addBSplineCurve2d(_curve: BSplineCurve3d, _filled: boolean, _zDepth: number): void { } //tslint:disable-line
-  public addBSplineSurface(_surface: BSplineSurface3d): void { } //tslint:disable-line
   public addPointString(_numPoints: number, _points: Point3d[]): void { } //tslint:disable-line
   public addPointString2d(_numPoints: number, _points: Point2d[], _zDepth: number): void { } //tslint:disable-line
   public addPolyface(_meshData: Polyface, _filled: boolean): void { } //tslint:disable-line
   public addShape(_numPoints: number, _points: Point3d[], _filled: boolean): void { } //tslint:disable-line
   public addShape2d(_numPoints: number, _points: Point2d[], _filled: boolean, _zDepth: number): void { } //tslint:disable-line
-  public addSolidPrimitive(_primitive: SolidPrimitive): void { } //tslint:disable-line
-  public addTextString(_text: TextString): void { } //tslint:disable-line
-  public addTextString2d(_text: TextString, _zDepth: number): void { } //tslint:disable-line
-  public addTriStrip(_numPoints: number, _points: Point3d[], _asThickenedLine: AsThickenedLine): void { } //tslint:disable-line
-  public addTriStrip2d(_numPoints: number, _points: Point2d[], _asThickenedLine: AsThickenedLine, _zDepth: number): void { } //tslint:disable-line
 }
