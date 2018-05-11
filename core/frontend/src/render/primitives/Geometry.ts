@@ -184,27 +184,21 @@ export class PrimitiveGeometry extends Geometry {
   }
 }
 
-export class GeometryList extends Array<Geometry> {
-  private _isComplete = false;
-  private _isCurved = false;
-  public get isComplete(): boolean { return this._isComplete; }
-  public get isCurved(): boolean { return this._isCurved; }
-  public get isEmpty() { return this.length === 0; }
-  constructor(...args: Geometry[]) { super(...args); }
+export class GeometryList {
+  private _list: Geometry[] = [];
+  public get isEmpty(): boolean { return this._list.length === 0; }
   public push(geom: Geometry): number {
-    this._isCurved = this._isCurved || geom.isCurved;
-    return super.push(geom);
+    return this._list.push(geom);
   }
   public append(src: GeometryList): GeometryList {
-    this._isCurved = this._isCurved || src.isCurved;
-    super.push(...src);
+    this._list.push(...src._list);
     return this;
   }
-  public clear(): void { this.length = 0; }
+  public clear(): void { this._list.length = 0; }
   public computeRange(): Range3d {
     const range: Range3d = Range3d.createNull();
     const extendRange = (geom: Geometry) => range.extendRange(geom.tileRange);
-    this.forEach(extendRange);
+    this._list.forEach(extendRange);
     return range;
   }
   public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }
