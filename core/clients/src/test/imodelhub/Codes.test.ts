@@ -40,7 +40,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockUpdateCodes(iModelId, code1, code2);
 
     const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2]);
-    chai.expect(result);
+    chai.assert(result);
     chai.expect(result.length).to.be.equal(2);
     result.forEach((value: Code) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
   });
@@ -54,7 +54,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockUpdateCodes(iModelId, code1, code2, code3);
 
     const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2, code3]);
-    chai.expect(result);
+    chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
     result.forEach((value: Code) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
 
@@ -72,7 +72,7 @@ describe("iModelHub CodeHandler", () => {
     } catch (error) {
       receivedError = error;
     }
-    chai.expect(receivedError);
+    chai.assert(receivedError);
     chai.expect(receivedError).to.be.instanceof(AggregateResponseError);
   });
 
@@ -85,7 +85,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockUpdateCodes(iModelId, code1, code2, code3);
 
     const result = await imodelHubClient.Codes().update(accessToken, iModelId, [code1, code2, code3]);
-    chai.expect(result);
+    chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
     result.forEach((value: Code) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
 
@@ -102,11 +102,11 @@ describe("iModelHub CodeHandler", () => {
       await imodelHubClient.Codes().update(accessToken, iModelId, [code2, code3, code4],
         { deniedCodes: true, codesPerRequest: 1, continueOnConflict: true });
     } catch (error) {
-      chai.expect(error).is.instanceof(ConflictingCodesError);
+      chai.expect(error).to.be.instanceof(ConflictingCodesError);
       receivedError = error;
     }
-    chai.expect(receivedError);
-    chai.expect(receivedError!.conflictingCodes);
+    chai.assert(receivedError);
+    chai.assert(receivedError!.conflictingCodes);
     chai.expect(receivedError!.conflictingCodes!.length).to.be.equal(2);
     chai.expect(receivedError!.conflictingCodes![0].value).to.be.equal(code2.value);
     chai.expect(receivedError!.conflictingCodes![1].value).to.be.equal(code3.value);
@@ -117,7 +117,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockUpdateCodes(iModelId, code);
     let result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
 
-    chai.expect(result);
+    chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
     code = result[0];
     chai.expect(code.state).to.be.equal(CodeState.Reserved);
@@ -128,7 +128,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockUpdateCodes(iModelId, code);
     result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
 
-    chai.expect(result);
+    chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
     code = result[0];
     chai.expect(code.state).to.be.equal(CodeState.Used);
@@ -139,7 +139,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockUpdateCodes(iModelId, code);
     result = await imodelHubClient.Codes().update(accessToken, iModelId, [code]);
 
-    chai.expect(result);
+    chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
     code = result[0];
     chai.expect(code.state).to.be.equal(CodeState.Retired);

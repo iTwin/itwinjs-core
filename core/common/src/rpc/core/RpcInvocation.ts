@@ -68,10 +68,10 @@ export class RpcInvocation {
       this._threw = false;
 
       const parameters = RpcMarshaling.deserialize(this.operation, protocol, request.parameters);
-      const impl = RpcRegistry.instance.getImplementationForInterface(this.operation.interfaceDefinition);
+      const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
       const op = this.lookupOperationFunction(impl);
       (impl as any)[CURRENT_INVOCATION] = this;
-      this.result = op.call(impl, ...parameters);
+      this.result = Promise.resolve(op.call(impl, ...parameters));
     } catch (error) {
       this._threw = true;
       this.result = Promise.reject(error);

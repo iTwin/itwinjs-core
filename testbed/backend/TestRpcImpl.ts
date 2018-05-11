@@ -83,6 +83,10 @@ export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {
     RpcManager.registerImpl(TestRpcInterface2, TestRpcImpl2);
   }
 
+  public static unregister() {
+    RpcManager.unregisterImpl(TestRpcInterface2);
+  }
+
   public static instantiate() {
     // Demonstrates how a consumer can create and supply an instance of the RPC implementation class if necessary.
     const instance = new TestRpcImpl2();

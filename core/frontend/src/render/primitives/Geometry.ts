@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import {
   Transform,
   Range3d,
@@ -20,9 +20,6 @@ import {
   PointString3d,
   CurveCollection,
   CurveChain,
-  BSplineCurve3d,
-  BSplineSurface3d,
-  SolidPrimitive,
   Polyface,
   StrokeOptions,
   Angle,
@@ -32,15 +29,13 @@ import {
 } from "@bentley/geometry-core";
 import {
   GraphicParams,
-  AsThickenedLine,
-  TextString,
   QParams3d,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
 import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
-import { RenderSystem, RenderGraphic, GraphicBranch } from "../System";
+import { RenderSystem, RenderGraphic } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointLists } from "./Strokes";
@@ -218,98 +213,96 @@ export class PrimitiveGeometry extends Geometry {
   */
 }
 
-export class GeometryList extends Array<Geometry> {
-  private _isComplete = false;
-  private _isCurved = false;
-  public get isComplete(): boolean { return this._isComplete; }
-  public get isCurved(): boolean { return this._isCurved; }
-  public get isEmpty() { return this.length === 0; }
-  constructor(...args: Geometry[]) { super(...args); }
+export class GeometryList {
+  private _list: Geometry[] = [];
+  public get isEmpty(): boolean { return this._list.length === 0; }
   public push(geom: Geometry): number {
-    this._isCurved = this._isCurved || geom.isCurved;
-    return super.push(geom);
+    return this._list.push(geom);
   }
   public append(src: GeometryList): GeometryList {
-    this._isCurved = this._isCurved || src.isCurved;
-    super.push(...src);
+    this._list.push(...src._list);
     return this;
   }
-  public clear(): void { this.length = 0; }
+  public clear(): void { this._list.length = 0; }
   public computeRange(): Range3d {
     const range: Range3d = Range3d.createNull();
     const extendRange = (geom: Geometry) => range.extendRange(geom.tileRange);
-    this.forEach(extendRange);
+    this._list.forEach(extendRange);
     return range;
   }
   public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }
 }
 
 export class GeometryAccumulator {
-  public geometries?: GeometryList;
-  public transform: Transform;
-  public elementId: Id64 = new Id64();
-  public surfacesOnly: boolean;
-  public haveTransform: boolean;
-  public checkGlyphBoxes: boolean = false;
-  public tileRange: Range3d;
+  private _transform: Transform;
+  private _surfacesOnly: boolean;
+
+  public readonly tileRange: Range3d;
+  public readonly geometries: GeometryList = new GeometryList();
+  public readonly checkGlyphBoxes: boolean = false; // #TODO: obviously update when checkGlyphBoxes needs to be mutuable
   public readonly iModel: IModelConnection;
   public readonly system: RenderSystem;
 
-  public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform?: Transform, tileRange?: Range3d) {
-    this.surfacesOnly = surfacesOnly;
+  public get surfacesOnly(): boolean { return this._surfacesOnly; }
+  public get transform(): Transform { return this._transform; }
+  public get isEmpty(): boolean { return this.geometries.isEmpty; }
+  public get haveTransform(): boolean { return !this._transform.isIdentity(); }
+
+  public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform: Transform = Transform.createIdentity(), tileRange: Range3d = Range3d.createNull()) {
+    this._surfacesOnly = surfacesOnly;
+    this._transform = transform;
     this.iModel = iModel;
     this.system = system;
-    if (transform && tileRange) {
-      this.transform = transform;
-      this.tileRange = tileRange;
-      this.haveTransform = !transform.isIdentity();
-    } else {
-      this.transform = Transform.createIdentity();
-      this.tileRange = Range3d.createNull();
-      this.haveTransform = false;
-    }
+    this.tileRange = tileRange;
   }
 
-  public get isEmpty(): boolean { return !!this.geometries && this.geometries.isEmpty; }
+  public addCurveVector(curves: CurveCollection, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector): boolean {
+    const { surfacesOnly, addGeometry } = this;
 
-  public addCurveVector(curves: CurveCollection, /*filled: boolean, */ displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector) {
-    if (this.surfacesOnly && !curves.isAnyRegionType()) { return true; } // ignore...
-    const isCurved: boolean = curves.hasNonLinearPrimitives();
-    return this.addGeometry(curves, isCurved, displayParams, transform, disjoint, clip);
+    if (surfacesOnly && !curves.isAnyRegionType())
+      return true;
+
+    // NB: If we're stroking a styled curve vector, we have set m_addingCurved based on whether the input curve vector was curved - the
+    // stroked components may not be.
+    const isCurved = curves.hasNonLinearPrimitives(),
+      geom = curves as CurveChain;
+    return addGeometry(geom, isCurved, displayParams, transform, disjoint, undefined, clip);
   }
-  public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector, range?: Range3d): boolean {
-    let range3d;
-    if (!range) {
-      if (!geom.range(undefined, range3d)) { return false; }
-      let tf: Transform;
-      if (this.haveTransform) {
-        tf = Transform.createIdentity();
-        this.transform.multiplyTransformTransform(transform, tf);
-      } else {
-        tf = transform;
-      }
-      if (range3d) { tf.multiplyRange(range3d, range3d); }
-    } else {
-      range3d = range;
-    }
-    if (!range3d) { range3d = new Range3d(); }
-    const geometry = Geometry.createFromGeom(geom, transform, range3d, displayParams, isCurved, /*this.iModel,*/ disjoint);
-    if (!geometry) { return false; }
-    geometry.clip = clip;
-    if (this.geometries) { this.geometries.push(geometry); }
+
+  public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, range: Range3d = new Range3d(), clip?: ClipVector): boolean {
+    const { _transform, haveTransform, geometries } = this;
+
+    geom.range(undefined, range);
+    if (range.isNull())
+      return false;
+
+    if (haveTransform) _transform.multiplyTransformTransform(transform, transform);
+    transform.multiplyRange(range, range);
+
+    // #TODO: should createFromGeom be possibly undefined? seems like native expects that possibility
+    const geometry = Geometry.createFromGeom(geom, transform, range, displayParams, isCurved, disjoint);
+
+    if (undefined !== clip)
+      geometry.clip = ClipVector.createFrom(clip, geometry.clip);
+
+    geometries.push(geometry);
     return true;
   }
-  public addGeometryWithGeom(geom: Geometry): void { if (this.geometries) { this.geometries.push(geom); } }
-  public clear() { if (this.geometries) { this.geometries.clear(); } }
 
-  public reInitialize(transform: Transform = Transform.createIdentity(), elemId: Id64 = new Id64(), surfacesOnly: boolean = false) {
+  public addGeometryWithGeom(geom: Geometry): void { this.geometries.push(geom); }
+  public clear() { this.geometries.clear(); }
+
+  public reset(transform: Transform = Transform.createIdentity(), surfacesOnly: boolean = false) {
     this.clear();
-    this.transform = transform;
-    this.elementId = elemId;
-    this.surfacesOnly = surfacesOnly;
+    this._transform = transform;
+    this._surfacesOnly = surfacesOnly;
   }
 
-  public saveToGraphicList(_graphics: RenderGraphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void { } //tslint:disable-line
+  /**
+   * Populate a list of Graphic objects from the accumulated Geometry objects.
+   * #TODO: implement MeshBuilderMap
+   */
+  public saveToGraphicList(_graphics: RenderGraphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void { }
 }
 
 export abstract class GeometryListBuilder extends GraphicBuilder {
@@ -331,12 +324,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
 
-  public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, elemId: Id64 = new Id64(), accumulatorTf: Transform = Transform.createIdentity()) {
+  public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, accumulatorTf: Transform = Transform.createIdentity()) {
     super(params);
     if (params.iModel) {
-      this.accum = new GeometryAccumulator(params.iModel, system);
-      this.accum.elementId = elemId;
-      this.accum.transform = accumulatorTf;
+      this.accum = new GeometryAccumulator(params.iModel, system, undefined, accumulatorTf);
     }
   }
 
@@ -378,7 +369,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
     if (this.accum) {
       const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addCurveVector(curve, /*filled,*/ displayParams, this.localToWorldTransform, false, this.currClip);
+      this.accum.addCurveVector(curve, displayParams, this.localToWorldTransform, false, this.currClip);
     }
   }
 
@@ -402,7 +393,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       assert(!filled || !disjoint);
       if (this.accum) {
         const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-        this.accum.addCurveVector(curves, /*filled,*/ displayParams, this.localToWorldTransform, disjoint, this.currClip);
+        this.accum.addCurveVector(curves, displayParams, this.localToWorldTransform, disjoint, this.currClip);
       }
     }
     let numDisjoint = 0;
@@ -454,7 +445,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
-  public get elementId(): Id64 { return this.accum ? this.accum.elementId : new Id64(); }
 
   public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
   public getMeshDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Mesh); }
@@ -465,8 +455,8 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public add(geom: Geometry): void { if (this.accum) this.accum.addGeometryWithGeom(geom); }
 
-  public reInitialize(localToWorld: Transform, accumTf: Transform = Transform.createIdentity(), elemId: Id64 = new Id64()) {
-    if (this.accum) this.accum.reInitialize(accumTf, elemId);
+  public reInitialize(localToWorld: Transform, accumTf: Transform = Transform.createIdentity()) {
+    if (this.accum) this.accum.reset(accumTf);
     this.activateGraphicParams(this.graphicParams);
     this.createParams.placement = localToWorld;
     this._isOpen = true;
@@ -476,18 +466,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
-  constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams, public elemId: Id64 = new Id64()) { super(system, params, elemId); }
-  public addSubGraphic(gf: RenderGraphic, subToGf: Transform, _gfParams: GraphicParams, clips?: ClipVector): void {
-    // ###TODO_ELEMENT_TILE: Overriding GraphicParams?
-    // ###TODO_ELEMENT_TILE: Clip...
-    if (undefined !== clips || !subToGf.isIdentity()) {
-      const branch = new GraphicBranch();
-      const tf = this.localToWorldTransform.multiplyTransformTransform(subToGf);
-      branch.add(gf);
-      const graphic = this.system.createBranch(branch, this.iModel, tf, clips);
-      this.primitives.push(graphic);
-    } else this.primitives.push(gf);
-  }
+  constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams) { super(system, params); }
 
   public createSubGraphic(subToGf: Transform, _clip: ClipVector): GraphicBuilder {
     const tf = subToGf.isIdentity() ? this.localToWorldTransform : Transform.createIdentity();
@@ -519,17 +498,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   }
 
   public reset(): void { }
-  public addBSplineCurve(_curve: BSplineCurve3d, _filled: boolean): void { } //tslint:disable-line
-  public addBSplineCurve2d(_curve: BSplineCurve3d, _filled: boolean, _zDepth: number): void { } //tslint:disable-line
-  public addBSplineSurface(_surface: BSplineSurface3d): void { } //tslint:disable-line
   public addPointString(_numPoints: number, _points: Point3d[]): void { } //tslint:disable-line
   public addPointString2d(_numPoints: number, _points: Point2d[], _zDepth: number): void { } //tslint:disable-line
   public addPolyface(_meshData: Polyface, _filled: boolean): void { } //tslint:disable-line
   public addShape(_numPoints: number, _points: Point3d[], _filled: boolean): void { } //tslint:disable-line
   public addShape2d(_numPoints: number, _points: Point2d[], _filled: boolean, _zDepth: number): void { } //tslint:disable-line
-  public addSolidPrimitive(_primitive: SolidPrimitive): void { } //tslint:disable-line
-  public addTextString(_text: TextString): void { } //tslint:disable-line
-  public addTextString2d(_text: TextString, _zDepth: number): void { } //tslint:disable-line
-  public addTriStrip(_numPoints: number, _points: Point3d[], _asThickenedLine: AsThickenedLine): void { } //tslint:disable-line
-  public addTriStrip2d(_numPoints: number, _points: Point2d[], _asThickenedLine: AsThickenedLine, _zDepth: number): void { } //tslint:disable-line
 }

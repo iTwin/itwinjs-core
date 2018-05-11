@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SortedArray } from "../bentleyjs-core";
+import { Dictionary, SortedArray } from "../bentleyjs-core";
 
 class Thing {
   public constructor(public readonly first: number, public readonly second: number) { }
@@ -45,7 +45,7 @@ function expectSorted<T>(array: T[], expectedLength: number, allowDuplicates: bo
   }
 }
 
-describe("SortedArray tests", () => {
+describe("SortedArray", () => {
   it("Should maintain sorted order", () => {
     const list = new SortedArray<Thing>(compareThings);
 
@@ -106,5 +106,28 @@ describe("SortedArray tests", () => {
       list.insert(new Id(toInsert));
 
     expectSorted(list.extractArray(), ids.length + 2, true, (lhs: Id, rhs: Id) => lhs.compare(rhs));
+  });
+});
+
+describe("Dictionary", () => {
+  it ("should maintain mapping between keys and values", () => {
+    const compareIds = (lhs: Id, rhs: Id) => lhs.compare(rhs);
+    const entries = [ "a", "b", "c", "z", "y", "x", "p", "r", "q" ];
+    const dict = new Dictionary<Id, Id>(compareIds);
+    for (const entry of entries) {
+      const key = new Id(entry);
+      const val = new Id(entry);
+      expect(dict.insert(key, val)).to.be.true;
+      const found = dict.get(key);
+      expect(found).not.to.be.undefined;
+      expect(found!.value).to.equal(entry);
+      expect(found!).to.equal(val);
+    }
+
+    expect(dict.length).to.equal(entries.length);
+
+    const arrays = dict.extractArrays();
+    expectSorted(arrays.keys, entries.length, false, compareIds);
+    expectSorted(arrays.values, entries.length, false, compareIds);
   });
 });

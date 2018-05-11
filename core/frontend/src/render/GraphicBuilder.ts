@@ -6,26 +6,15 @@ import { Transform,
          Point3d,
          Point2d,
          ClipVector,
-         CurveCollection,
          Range3d,
-         Range2d,
-         Vector3d,
          Arc3d,
-         BSplineCurve3d,
-         BSplineSurface3d,
-         SolidPrimitive,
          Polyface,
-         TorusPipe,
-         Angle,
-         Box,
          StrokeOptions } from "@bentley/geometry-core";
 import { AreaPattern,
          ColorDef,
          GraphicParams,
-         AsThickenedLine,
          GeometryParams,
          LinePixels,
-         TextString,
          LineStyle} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./System";
@@ -241,79 +230,8 @@ export abstract class GraphicBuilder {
    */
   public abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
 
-  /** Draw a BSpline curve. */
-  public abstract addBSplineCurve(curve: BSplineCurve3d, filled: boolean): void;
-
-  /**
-   * Draw a BSpline curve as 2d geometry with display priority.
-   * @note Only necessary for non-ICachedDraw calls to support non-zero display priority.
-   */
-  public abstract addBSplineCurve2d(curve: BSplineCurve3d, filled: boolean, zDepth: number): void;
-
-  /** Draw a curve vector */
-  public abstract addCurveVector(curves: CurveCollection, filled: boolean): void;
-  // public abstract addCurveVector(curves: CurveVector, filled: boolean, zDepth: number): void;
-
-  /**
-   * Draw a curve vector as 2d geometry with display priority.
-   * @note Only necessary for non-ICachedDraw calls to support non-zero display priority.
-   */
-  // public abstract addCurveVector2d(curves: CurveVector, filled: boolean, zDepth: number): void;
-
-  /**
-   * Draw a light-weight surface or solid primitive.
-   * @note Solid primitives can be capped or uncapped, they include cones, torus, box, spheres, and sweeps.
-   */
-  public abstract addSolidPrimitive(primitive: SolidPrimitive): void;
-
-  /** Draw a BSpline surface. */
-  public abstract addBSplineSurface(surface: BSplineSurface3d): void;
-
   /** @note Wireframe fill display supported for non-illuminated meshes. */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
-
-  /** Draw a BRep surface/solid entity from the solids kernel. */
-  // public abstract addBody(entity: IBRepEntityCR): void;
-
-  /**
-   * Draw a series of Glyphs.
-   * @param text Text drawing parameters
-   */
-  public abstract addTextString(text: TextString): void;
-
-  /**
-   * Draw a series of Glyphs with display priority.
-   * @param text Text drawing parameters
-   * @param zDepth Priority value in 2d
-   */
-  public abstract addTextString2d(text: TextString, zDepth: number): void;
-
-  /**
-   * Draw a filled triangle strip from 3D points.
-   * @param numPoints Number of vertices in \c points array.
-   * @param points Array of vertices.
-   *  @param asThickenedLine whether the tri-strip represents a thickened line.
-   */
-  public abstract addTriStrip(numPoints: number, points: Point3d[], asThickenedLine: AsThickenedLine): void;
-
-  /**
-   * Draw a filled triangle strip from 2D points.
-   * @param numPoints Number of vertices in \c points array.
-   * @param points Array of vertices.
-   * @param asThickenedLine whether the tri-strip represents a thickened line.
-   * @param zDepth Z depth value.
-   */
-  public abstract addTriStrip2d(numPoints: number, points: Point2d[], asThickenedLine: AsThickenedLine, zDepth: number): void;
-
-  /** Helper Method to draw TorusPipe. */
-  public addTorus(center: Point3d, vectorX: Vector3d, vectorY: Vector3d, majorRadius: number, minorRadius: number, sweepAngle: Angle, capped: boolean): void {
-    this.addSolidPrimitive(TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, sweepAngle, capped)!);
-  }
-
-  /** Helper Method to draw Box. */
-  public addBox(primary: Vector3d, secondary: Vector3d, basePoint: Point3d, topPoint: Point3d, baseWidth: number, baseLength: number, topWidth: number, topLength: number, capped: boolean): void {
-    this.addSolidPrimitive(Box.createDgnBox(basePoint, primary, secondary, topPoint, baseWidth, baseLength, topWidth, topLength, capped)!);
-  }
 
   /** Add DRange3d edges */
   public addRangeBox(range: Range3d) {
@@ -334,21 +252,6 @@ export abstract class GraphicBuilder {
 
     this.addLineStrings([9, tmpPts], [2, [p[0], p[3]]], [2, [p[4], p[5]]], [2, [p[1], p[7]]], [2, [p[2], p[6]]]);
   }
-
-  /** Add DRange2d edges */
-  public addRangeBox2d(range: Range2d, zDepth: number) {
-    const tmpPts: Point2d[] = [];
-    tmpPts[0] = new Point2d(range.low.x, range.low.y);
-    tmpPts[1] = new Point2d(range.high.x, range.low.y);
-    tmpPts[2] = new Point2d(range.high.x, range.high.y);
-    tmpPts[3] = new Point2d(range.low.x, range.high.y);
-    tmpPts[4] = tmpPts[0];
-    this.addLineString2d(tmpPts, zDepth);
-  }
-
-  public abstract addSubGraphic(graphic: RenderGraphic, trans: Transform, params: GraphicParams, clip?: ClipVector): void;
-
-  public abstract createSubGraphic(trans: Transform, clip?: ClipVector): GraphicBuilder;
 
   /**
    * Set symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize

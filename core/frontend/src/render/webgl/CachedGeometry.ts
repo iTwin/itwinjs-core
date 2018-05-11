@@ -178,7 +178,16 @@ class ViewportQuad {
   }
 }
 
-const _viewportQuad = new ViewportQuad();
+namespace ViewportQuad {
+  let _viewportQuad: ViewportQuad | undefined;
+
+  export function getInstance(): ViewportQuad {
+  if (undefined === _viewportQuad)
+    _viewportQuad = new ViewportQuad();
+
+  return _viewportQuad;
+  }
+}
 
 // Geometry used for view-space rendering techniques.
 export class ViewportQuadGeometry extends IndexedGeometry {
@@ -189,7 +198,7 @@ export class ViewportQuadGeometry extends IndexedGeometry {
     this._techniqueId = techniqueId;
   }
   public static create(techniqueId: TechniqueId) {
-    const params = _viewportQuad.createParams();
+    const params = ViewportQuad.getInstance().createParams();
     return undefined !== params ? new ViewportQuadGeometry(params, techniqueId) : undefined;
   }
 
@@ -217,7 +226,7 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
 // Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
 export class CompositeGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
-    const params = _viewportQuad.createParams();
+    const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
@@ -249,7 +258,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 // Geometry used to ping-pong the pick buffer data in between opaque passes.
 export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(idLow: WebGLTexture, idHigh: WebGLTexture, depthAndOrder: WebGLTexture) {
-    const params = _viewportQuad.createParams();
+    const params = ViewportQuad.getInstance().createParams();
     if (undefined !== params) {
       return new CopyPickBufferGeometry(params, [idLow, idHigh, depthAndOrder]);
     } else {
@@ -268,7 +277,7 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
 
 export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(texture: WebGLTexture, techId: TechniqueId) {
-    const params = _viewportQuad.createParams();
+    const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }

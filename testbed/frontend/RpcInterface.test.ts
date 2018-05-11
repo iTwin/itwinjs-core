@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent } from "@bentley/imodeljs-common";
+import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface } from "@bentley/imodeljs-common";
 import { TestRpcInterface, TestOp1Params, TestRpcInterface2 } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
@@ -11,6 +11,24 @@ import { CONSTANTS } from "../common/Testbed";
 const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe("RpcInterface", () => {
+  class LocalInterface extends RpcInterface {
+    public static version = "0.0.0";
+    public static types = () => [];
+    public op(): Promise<void> { return this.forward.apply(this, arguments); }
+  }
+
+  const initializeLocalInterface = () => {
+    RpcManager.registerImpl(LocalInterface, class extends RpcInterface {
+      public op(): Promise<void> { return undefined as any; }
+    });
+
+    RpcManager.initializeInterface(LocalInterface);
+  };
+
+  const terminateLocalInterface = () => {
+    RpcManager.terminateInterface(LocalInterface);
+  };
+
   it("should marshall types over the wire", async () => {
     const params = new TestOp1Params(1, 1);
     const remoteSum = await TestRpcInterface.getClient().op1(params);
@@ -161,6 +179,8 @@ describe("RpcInterface", () => {
 
     const response2 = await TestRpcInterface2.getClient().op1(2);
     assert.equal(response2, 2);
+
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.UNREGISTER_TEST_RPCIMPL2_CLASS_MESSAGE, value: undefined }));
   });
 
   it("should allow access to request and invocation objects and allow a custom request id", () => {
@@ -193,5 +213,22 @@ describe("RpcInterface", () => {
     } catch (err) {
       assert(err instanceof BentleyError);
     }
+  });
+
+  it("should allow void return values when using RpcDirectProtocol", async () => {
+    initializeLocalInterface();
+    await RpcManager.getClientForInterface(LocalInterface).op();
+    terminateLocalInterface();
+  });
+
+  it("should allow terminating interfaces", async () => {
+    try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
+    initializeLocalInterface();
+    await RpcManager.getClientForInterface(LocalInterface).op();
+    terminateLocalInterface();
+    try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
+    initializeLocalInterface();
+    await RpcManager.getClientForInterface(LocalInterface).op();
+    terminateLocalInterface();
   });
 });

@@ -31,6 +31,10 @@ export class RpcMarshaling {
 
   /** Serializes a value. */
   public static serialize(operation: RpcOperation, _protocol: RpcProtocol, value: any) {
+    if (typeof (value) === "undefined") {
+      return "";
+    }
+
     marshalingScope = operation.interfaceDefinition.name;
     return JSON.stringify(value, RpcMarshaling.marshal);
   }

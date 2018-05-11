@@ -398,7 +398,8 @@ export class EventHandler extends EventBaseHandler {
   public createListener(authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: string, listener: (event: IModelHubEvent) => void): () => void {
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
-    subscription.getEvent = this.getEvent;
+    subscription.getEvent = (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
+      this.getEvent(sasToken, baseAddress, id, timeout);
     subscription.getSASToken = (token: AccessToken) => this.getSASToken(token, imodelId);
     subscription.id = subscriptionId;
     return EventListener.create(subscription, listener);

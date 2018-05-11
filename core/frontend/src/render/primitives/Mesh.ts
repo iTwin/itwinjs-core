@@ -11,6 +11,7 @@ import {
   Point3d,
   Range3d,
   Polyface,
+  Angle,
   // PolyfaceQuery,
   // IndxedPolyfaceVisitor,
 } from "@bentley/geometry-core";
@@ -447,7 +448,7 @@ export namespace MeshBuilder {
 
 export class MeshEdgeCreationOptions {
   public readonly type: MeshEdgeCreationOptions.Type;
-  public readonly minCreaseAngle = 20.0 * GeomConstant.radiansPerDegree;
+  public readonly minCreaseAngle = 20.0 * Angle.radiansPerDegree;
   public get generateAllEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.AllEdges; }
   public get generateNoEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.NoEdges; }
   public get generateSheetEdges(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.SheetEdges); }
@@ -467,17 +468,6 @@ export namespace MeshEdgeCreationOptions {
     DefaultEdges = CreaseEdges | SheetEdges,
     AllEdges = CreaseEdges | SheetEdges | SmoothEdges,
   }
-}
-
-export class GeomConstant {
-  public static readonly piOver4 = 7.85398163397448280000e-001;
-  public static readonly piOver2 = 1.57079632679489660000e+000;
-  public static readonly pi = 3.14159265358979310000e+000;
-  public static readonly pi2 = 6.28318530717958620000e+000;
-  public static readonly degreesPerRadian = (45.0 / GeomConstant.piOver4);
-  public static readonly radiansPerDegree = (GeomConstant.piOver4 / 45.0);
-  public static readonly piOver12 = 0.26179938779914943653855361527329;
-  public static readonly PI = 3.1415926535897932384626433;
 }
 
 export class MeshBuilderPolyface {

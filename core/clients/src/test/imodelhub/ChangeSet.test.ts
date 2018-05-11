@@ -121,7 +121,7 @@ describe("iModelHub ChangeSetHandler", () => {
     utils.mockGetChangeSet(iModelId, true, ...mockedChangeSets);
 
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
-    chai.expect(changeSets.length >= 2);
+    chai.expect(changeSets.length).to.be.greaterThan(1);
 
     let i = 0;
     for (const changeSet of changeSets) {
@@ -131,7 +131,7 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(fileName.length).to.be.greaterThan(0);
 
       const downloadUrl: string = changeSet.downloadUrl!;
-      chai.expect(downloadUrl.startsWith("https://"));
+      chai.assert(downloadUrl.startsWith("https://"));
 
       const changeSet2: ChangeSet = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSet.wsgId)))[0];
 
@@ -191,7 +191,7 @@ describe("iModelHub ChangeSetHandler", () => {
       // $filter: "LockType+eq+2+and+LockLevel+eq+2", // LockType=Element AND LockLevel=Exclusive
     };
     const elementLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, queryOptions);
-    chai.expect(elementLocks.length).equals(1);
+    chai.expect(elementLocks.length).to.be.equal(1);
     const testElementId: string = elementLocks[0].objectId!; // Hex or Decimal
 
     if (TestConfig.enableMocks) {
@@ -210,10 +210,10 @@ describe("iModelHub ChangeSetHandler", () => {
       $filter: "ObjectId+eq+'" + testElementId + "'",
     };
     const queryLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, queryOptions);
-    chai.expect(queryLocks.length).equals(1);
+    chai.expect(queryLocks.length).to.be.equal(1);
 
     const changeSetId: string = queryLocks[0].releasedWithChangeSet!; // Can get changeSetIndex also if necessary to compare against current
-    chai.expect(changeSetId).length.greaterThan(0);
+    chai.expect(changeSetId).length.to.be.greaterThan(0);
 
     if (TestConfig.enableMocks) {
       const requestResponse = ResponseBuilder.generateGetResponse<ChangeSet>(ResponseBuilder.generateObject<ChangeSet>(ChangeSet,
@@ -222,7 +222,7 @@ describe("iModelHub ChangeSetHandler", () => {
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
     const changeSet: ChangeSet = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
-    chai.expect(!!changeSet);
+    chai.assert(!!changeSet);
 
     if (TestConfig.enableMocks) {
       const requestResponse = ResponseBuilder.generateGetResponse<UserInfo>(ResponseBuilder.generateObject<UserInfo>(UserInfo));
@@ -230,6 +230,6 @@ describe("iModelHub ChangeSetHandler", () => {
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
     const userInfo: UserInfo = (await imodelHubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(changeSet.userCreated!)))[0];
-    chai.expect(!!userInfo);
+    chai.assert(!!userInfo);
   });
 });
