@@ -80,6 +80,7 @@ export interface RequestOptions {
   redirects?: number;
   errorCallback?: (response: any) => ResponseError;
   retryCallback?: (error: any, response: any) => boolean;
+  progressCallback?: (progress: ProgressInfo) => void;
 }
 
 /** Response object if the request was successful. Note that the status within the range of 200-299
@@ -89,6 +90,12 @@ export interface Response {
   body: any; // Parsed body of response
   header: any; // Parsed headers of response
   status: number; // Status code of response
+}
+
+export interface ProgressInfo {
+  percent?: number;
+  total?: number;
+  loaded: number;
 }
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or
@@ -219,6 +226,18 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
   if (options.parser) {
     sareq.parse(options.parser);
+  }
+
+  if (options.progressCallback) {
+    sareq.on("progress", (event: sarequest.ProgressEvent) => {
+      if (event) {
+        options.progressCallback!({
+          loaded: event.loaded,
+          total: event.total,
+          percent: event.percent,
+        });
+      }
+    });
   }
 
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;

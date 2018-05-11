@@ -111,6 +111,7 @@ describe("iModelHub EventHandler", () => {
   it("should get SAS token", async () => {
     mockGetEventSASToken(iModelId);
     sasToken = await imodelHubClient.Events().getSASToken(accessToken, iModelId);
+    chai.assert(sasToken);
   });
 
   it("should fail receiving event with invalid SAS token", async () => {
