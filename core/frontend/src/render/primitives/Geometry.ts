@@ -8,16 +8,11 @@ import {
   Arc3d,
   LineSegment3d,
   CurvePrimitive,
-  GeometryQuery,
   ClipVector,
-  AnyCurve,
   Loop,
   Path,
-  BagOfCurves,
-  LineString3d,
   Point2d,
   Point3d,
-  PointString3d,
   CurveCollection,
   CurveChain,
   Polyface,
@@ -38,10 +33,10 @@ import { GeometryOptions } from "./Primitives";
 import { RenderSystem, RenderGraphic } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
-import { StrokesPrimitiveList } from "./Strokes";
+import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointLists } from "./Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
 
-export type PrimitiveGeometryType = CurveChain | IndexedPolyface; // More will receive support
+export type PrimitiveGeometryType = Loop | Path | IndexedPolyface; // More will receive support
 
 export abstract class Geometry {
   public readonly transform: Transform;
@@ -62,21 +57,27 @@ export abstract class Geometry {
     return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
   }
 
-  protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList;
-  protected abstract _getStrokes(chordTolerance: number): StrokesPrimitiveList;
+  protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
+  protected abstract _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined;
 
-  public getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList {
+  public getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     const polyfaces = this._getPolyfaces(facetOptions);
-    if (this.clip === undefined || 0 === polyfaces.length)
+    if (undefined === polyfaces)
+      return undefined;
+
+    if (undefined === this.clip)
       return polyfaces;
 
     // ###TODO: clip the polyfaces if needed (See native code GeometryClipper); for now, return unclipped
     return polyfaces;
   }
 
-  public getStrokes(chordTolerance: number): StrokesPrimitiveList {
-    const strokes = this._getStrokes(chordTolerance);
-    if (this.clip === undefined || 0 === strokes.length)
+  public getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    const strokes = this._getStrokes(facetOptions);
+    if (undefined === strokes)
+      return undefined;
+
+    if (undefined === this.clip)
       return strokes;
 
     // ###TODO: clip the strokes if needed (See native code GeometryClipper); for now, return unclipped
@@ -115,7 +116,7 @@ export class PrimitiveGeometry extends Geometry {
     return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ isDisjoint);
   }
 
-  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList {
+  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     // IndexedPolyface
     if (this.geometry instanceof IndexedPolyface) {
       const polyface = this.geometry as IndexedPolyface;
@@ -135,21 +136,21 @@ export class PrimitiveGeometry extends Geometry {
       return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface));
     }
 
-    // used by CurveChain right now, could be used by other primitives
+    // used by Loop right now, could be used by other primitives
     const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
     let isPlanar = false;
     let builderHasPoly = false;
 
-    // CurveChain
-    if (this.geometry instanceof CurveChain) {
-      const chain = this.geometry as CurveChain;
+    // Loop
+    if (this.geometry instanceof Loop) {
+      const loop = this.geometry as Loop;
 
-      if (!chain.isAnyRegionType()) {
-        return new PolyfacePrimitiveList();
+      if (!loop.isAnyRegionType()) {
+        return undefined;
       }
 
       // The following is good for single loop things.
-      const contour = SweepContour.createForLinearSweep(chain);
+      const contour = SweepContour.createForLinearSweep(loop);
       if (contour !== undefined) {
         isPlanar = true;
         builderHasPoly = true;
@@ -160,23 +161,51 @@ export class PrimitiveGeometry extends Geometry {
     // ###TODO: solidPrimitive
     // ###TODO: bsplineSurface
 
-    const pfList = new PolyfacePrimitiveList();
-
     if (builderHasPoly) {
       const polyface = pfBuilder.claimPolyface();
       const wantEdges = (!(this.geometry instanceof CurveChain) || DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType);
-      pfList.push(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
+      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
     }
 
-    return pfList;
+    return undefined;
   }
 
-  // ###TODO: actual implementation
-  protected _getStrokes(chordTolerance: number): StrokesPrimitiveList {
-    if (0 === chordTolerance) { // shut up tslint
+  // ###WIP  ###WIP
+  protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    const strksList = new StrokesPrimitiveList();
+
+    if (this.geometry instanceof CurveChain) {
+      const chain = this.geometry as CurveChain; // ###WIP
+
+      if (!chain.isAnyRegionType() || this.displayParams.wantRegionOutline) {
+        const strksPts: StrokesPrimitivePointLists = new StrokesPrimitivePointLists();
+        if (facetOptions.chordTol === undefined) { // shut up tslint
+        }
+        // PrimitiveGeometry.collectCurveStrokes(strksPts, chain, facetOptions, this.transform);
+
+        if (strksPts.length > 0) {
+          const isPlanar = chain.isAnyRegionType();
+          assert(isPlanar === this.displayParams.wantRegionOutline);
+          const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, this.isDisjoint, isPlanar);
+          // add strksPts to strskPrim:
+          // strksPrim.strokes = strksPts;
+          strksList.push(strksPrim);
+        }
+      }
     }
-    return new StrokesPrimitiveList();
+
+    return strksList;
   }
+
+  /*
+  private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, chain: CurveChain, facetOptions: StrokeOptions, trans: Transform) {
+    const strokes: LineString3d = chain.cloneStroked(facetOptions) as LineString3d;
+    const pt: Point3d = Point3d.create(0, 0, 0);
+    for (let i = 0; i < strokes.numPoints(); i++) {
+      strokes.pointAt(i, pt);
+    }
+  }
+  */
 }
 
 export class GeometryList {
@@ -222,19 +251,6 @@ export class GeometryAccumulator {
     this.tileRange = tileRange;
   }
 
-  public addCurveVector(curves: CurveCollection, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector): boolean {
-    const { surfacesOnly, addGeometry } = this;
-
-    if (surfacesOnly && !curves.isAnyRegionType())
-      return true;
-
-    // NB: If we're stroking a styled curve vector, we have set m_addingCurved based on whether the input curve vector was curved - the
-    // stroked components may not be.
-    const isCurved = curves.hasNonLinearPrimitives(),
-      geom = curves as CurveChain;
-    return addGeometry(geom, isCurved, displayParams, transform, disjoint, undefined, clip);
-  }
-
   public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, range: Range3d = new Range3d(), clip?: ClipVector): boolean {
     const { _transform, haveTransform, geometries } = this;
 
@@ -277,18 +293,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   // private _isOpen: boolean = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
-
-  private static isDisjointCurvePrimitive(prim: AnyCurve | GeometryQuery): boolean {
-    if (prim instanceof PointString3d) {
-      return true;
-    } else if (prim instanceof LineSegment3d) {
-      return prim.point0Ref.isAlmostEqual(prim.point1Ref);
-    } else if (prim instanceof LineString3d) {
-      return 1 === prim.points.length || (2 === prim.points.length && prim.points[0].isAlmostEqual(prim.points[1]));
-    } else {
-      return false;
-    }
-  }
 
   public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, accumulatorTf: Transform = Transform.createIdentity()) {
     super(params);
@@ -335,13 +339,15 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
     if (this.accum) {
       const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addCurveVector(curve, displayParams, this.localToWorldTransform, false, this.currClip);
+      this.accum.addGeometry(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, undefined, this.currClip);
     }
   }
 
   public addLineString(points: Point3d[]): void {
-    const curve = BagOfCurves.create(LineString3d.create(points));
-    this.addCurveVector(curve, false);
+    if (points.length === 0) { // shut up tslint
+    }
+    // const curve = BagOfCurves.create(LineString3d.create(points));
+    // ###TODO
   }
 
   public addLineString2d(points: Point2d[], zDepth: number): void {
@@ -354,62 +360,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public abstract reset(): void;
 
-  public addCurveVector(curves: CurveCollection, filled: boolean, disjoint?: boolean): void {
-    if (disjoint !== undefined) {
-      assert(!filled || !disjoint);
-      if (this.accum) {
-        const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-        this.accum.addCurveVector(curves, displayParams, this.localToWorldTransform, disjoint, this.currClip);
-      }
-    }
-    let numDisjoint = 0;
-    let haveContinuous = false;
-    // NB: Somebody might stick a 'point' or point string into a curve vector with a boundary...
-    // No idea what they expect us to do if it also contains continuous curves but it is dumb anyway.
-    if (!filled && curves instanceof BagOfCurves) {
-      curves.children.forEach((prim) => {
-        if (GeometryListBuilder.isDisjointCurvePrimitive(prim)) {
-          numDisjoint++;
-        } else {
-          haveContinuous = true;
-        }
-      });
-    } else {
-      haveContinuous = true;
-    }
-
-    const haveDisjoint = numDisjoint > 0;
-    assert(haveDisjoint || haveContinuous);
-    if (haveDisjoint !== haveContinuous) {
-      // The typical case...
-      assert(!filled || !haveDisjoint);
-      if (this.accum) {
-        const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-        this.accum.addCurveVector(curves, /*filled,*/ displayParams, this.localToWorldTransform, haveDisjoint, this.currClip);
-      }
-      return;
-    }
-
-    // Must split up disjoint and continuous into two separate curve vectors...
-    // Note std::partition does not preserve relative order, but we don't care because boundary type NONE.
-    const disjointCurves = BagOfCurves.create();
-    if (curves.children) {
-      curves.children.forEach((child) => {
-        if (GeometryListBuilder.isDisjointCurvePrimitive(child)) {
-          disjointCurves.children.push(child as AnyCurve);
-        }
-      });
-      curves.children.filter((child) => !GeometryListBuilder.isDisjointCurvePrimitive(child));
-    }
-    if (this.accum) {
-      const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addCurveVector(curves, /*false,*/ displayParams, this.localToWorldTransform, false, this.currClip);
-    }
-    if (this.accum) {
-      const displayParams = curves.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addCurveVector(disjointCurves, /*false,*/ displayParams, this.localToWorldTransform, true, this.currClip);
-    }
-  }
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
 
   public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
@@ -433,12 +383,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
   constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams) { super(system, params); }
-
-  public createSubGraphic(subToGf: Transform, _clip: ClipVector): GraphicBuilder {
-    const tf = subToGf.isIdentity() ? this.localToWorldTransform : Transform.createIdentity();
-    const params = this.params.subGraphic(tf);
-    return this.system.createGraphic(params);
-  }
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
     if (!accum.isEmpty) {
