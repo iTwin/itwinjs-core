@@ -23,7 +23,7 @@ class TestViewport extends Viewport {
     super.callDecorators(context);
     if (undefined === this._decoration) {
       const args = new MeshArgs();
-      const points = [ new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0) ];
+      const points = [ new Point3d(0, 0, 0), new Point3d(4, 0, 0), new Point3d(2, 4, 0) ];
       args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
       for (const point of points)
         args.points.add(point);
