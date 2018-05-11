@@ -9,6 +9,7 @@ import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FileHandler } from "./FileHandler";
+import { ProgressInfo } from "../Request";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -157,9 +158,10 @@ class SeedFileHandler {
    * @param imodelId Id of the iModel
    * @param seedFile Information of the SeedFile to be uploaded.
    * @param seedPathname Pathname of the SeedFile to be uploaded.
+   * @param progressCallback Callback for tracking progress.
    * @throws [[Error]] if the upload fails.
    */
-  public async uploadSeedFile(token: AccessToken, imodelId: string, seedPathname: string, seedFileDescription?: string): Promise<SeedFile> {
+  public async uploadSeedFile(token: AccessToken, imodelId: string, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
     Logger.logInfo(loggingCategory, `Uploading seed file to iModel ${imodelId}`);
 
     if (Config.isBrowser())
@@ -182,7 +184,7 @@ class SeedFileHandler {
     if (!createdSeedFile.uploadUrl)
       return Promise.reject(new Error("Error setting up a URL to upload the SeedFile"));
 
-    await this._fileHandler.uploadFile(createdSeedFile.uploadUrl, seedPathname);
+    await this._fileHandler.uploadFile(createdSeedFile.uploadUrl, seedPathname, progressCallback);
 
     createdSeedFile.uploadUrl = undefined;
     createdSeedFile.downloadUrl = undefined;
@@ -332,9 +334,12 @@ export class IModelHandler {
    * @param projectId Id of the connect project.
    * @param name Name of the iModel on the Hub.
    * @param description Description of the iModel on the Hub.
+   * @param progressCallback Callback for tracking progress.
+   * @param timeOutInMiliseconds Time to wait for iModel initialization.
    */
   public async create(token: AccessToken, projectId: string, name: string, pathName: string,
-    description?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModel> {
+    description?: string, progressCallback?: (progress: ProgressInfo) => void,
+    timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModel> {
     Logger.logInfo(loggingCategory, `Creating iModel in project ${projectId}`);
 
     if (!this._fileHandler)
@@ -346,7 +351,7 @@ export class IModelHandler {
 
     const iModel = await this.createIModelInstance(token, projectId, name, description);
 
-    await this._seedFileHandler.uploadSeedFile(token, iModel.wsgId, pathName, description)
+    await this._seedFileHandler.uploadSeedFile(token, iModel.wsgId, pathName, description, progressCallback)
       .catch(async (err) => {
         await this.delete(token, projectId, iModel.wsgId);
         return Promise.reject(err);
@@ -396,9 +401,10 @@ export class IModelHandler {
    * @param accessToken Delegation token of the authorized user.
    * @param imodelId Id of the iModel.
    * @param downloadToPathname Directory where the seed file should be downloaded.
+   * @param progressCallback Callback for tracking progress.
    * @returns Resolves when the seed file is successfully downloaded.
    */
-  public async download(accessToken: AccessToken, imodelId: string, downloadToPathname: string): Promise<void> {
+  public async download(accessToken: AccessToken, imodelId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
 
     if (!this._fileHandler)
@@ -409,7 +415,7 @@ export class IModelHandler {
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
       return Promise.reject(IModelHubResponseError.fromId(IModelHubResponseErrorId.FileDoesNotExist, "Failed to get seed file."));
 
-    await this._fileHandler.downloadFile(seedFiles[0].downloadUrl!, downloadToPathname);
+    await this._fileHandler.downloadFile(seedFiles[0].downloadUrl!, downloadToPathname, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
 
     Logger.logTrace(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
   }

@@ -241,10 +241,12 @@ describe("iModelHub iModelHandler", () => {
   it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, filePath, 2);
-    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, filePath);
+    const progressTracker = new utils.ProgressTracker();
+    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, filePath, undefined, progressTracker.track());
 
     chai.expect(iModel.name).equals(createIModelName);
     chai.expect(iModel.initialized).equals(true);
+    progressTracker.check();
   });
 
   it("should continue creating not initialized iModel", async function (this: Mocha.ITestCallbackContext) {

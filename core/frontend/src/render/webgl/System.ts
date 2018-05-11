@@ -7,7 +7,7 @@ import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../Sys
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/Geometry";
-import { PolylineArgs } from "../primitives/Mesh";
+import { PolylineArgs, MeshArgs } from "../primitives/Mesh";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
@@ -21,6 +21,7 @@ import { TextureHandle } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive, PointStringGeometry } from "./PointString";
+import { MeshGraphic } from "./Mesh";
 
 export const enum ContextState {
   Uninitialized,
@@ -227,6 +228,7 @@ export class System extends RenderSystem {
       return PolylinePrimitive.create(args, imodel);
     }
   }
+  public createTriMesh(args: MeshArgs, iModel: IModelConnection) { return MeshGraphic.create(args, iModel); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 

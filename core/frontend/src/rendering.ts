@@ -41,3 +41,4 @@ export * from "./render/webgl/VertexLUT";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
 export * from "./render/System";
+export * from "./render/UpdatePlan";

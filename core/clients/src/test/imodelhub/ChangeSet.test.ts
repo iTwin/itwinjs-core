@@ -109,9 +109,11 @@ describe("iModelHub ChangeSetHandler", () => {
     const filePath = utils.getMockChangeSetPath(index, mockChangeSets[index].id!);
 
     mockCreateChangeSet(iModelId, mockChangeSets[2]);
-    const newChangeSet = await imodelHubClient.ChangeSets().create(accessToken, iModelId, mockChangeSets[index], filePath);
+    const progressTracker = new utils.ProgressTracker();
+    const newChangeSet = await imodelHubClient.ChangeSets().create(accessToken, iModelId, mockChangeSets[index], filePath, progressTracker.track());
 
-    chai.expect(newChangeSet);
+    chai.assert(newChangeSet);
+    progressTracker.check();
   });
 
   it("should get information on ChangeSets", async () => {
@@ -153,9 +155,11 @@ describe("iModelHub ChangeSetHandler", () => {
 
     const downloadChangeSetsToPath: string = path.join(downloadToPath, iModelId);
 
-    utils.mockFileResponse(downloadToPath, 2);
-    await imodelHubClient.ChangeSets().download(changeSets, downloadChangeSetsToPath);
+    utils.mockFileResponse(2);
+    const progressTracker = new utils.ProgressTracker();
+    await imodelHubClient.ChangeSets().download(changeSets, downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
+    progressTracker.check();
     for (const changeSet of changeSets) {
       const fileName: string = changeSet.fileName!;
       const downloadedPathname: string = path.join(downloadChangeSetsToPath, fileName);
