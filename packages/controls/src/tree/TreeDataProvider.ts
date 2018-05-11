@@ -47,14 +47,14 @@ const getChildNodesKeyResolver = (parent: TreeNodeItem, pageOptions?: PageOption
 };
 const getChildNodesCountKeyResolver = createKeyForTreeNodeItem;
 
-/** Tree data provider which uses @ref PresentationManager to query nodes. */
+/** Tree data provider which uses ECPresentation to query nodes. */
 export default class TreeDataProvider {
   private _rulesetId: string;
   private _imodelToken: IModelToken;
 
   /** Constructor.
-   * @param[in] manager Presentation manager used to get the nodes.
-   * @param[in] imodelToken Token of the imodel to pull data from.
+   * @param manager Presentation manager used to get the nodes.
+   * @param imodelToken Token of the imodel to pull data from.
    */
   public constructor(imodelToken: IModelToken, rulesetId: string) {
     this._rulesetId = rulesetId;
@@ -86,7 +86,7 @@ export default class TreeDataProvider {
   }
 
   /** Returns the root nodes.
-   * @param[in] pageOptions Information about the requested page of data.
+   * @param pageOptions Information about the requested page of data.
    */
   public getRootNodes = memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const nodes = await ECPresentation.presentation.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
@@ -99,8 +99,8 @@ export default class TreeDataProvider {
   });
 
   /** Returns child nodes.
-   * @param[in] parentNode The parent node to return children for.
-   * @param[in] pageOptions Information about the requested page of data.
+   * @param parentNode The parent node to return children for.
+   * @param pageOptions Information about the requested page of data.
    */
   public getChildNodes = memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
@@ -113,7 +113,7 @@ export default class TreeDataProvider {
   }, getChildNodesKeyResolver);
 
   /** Returns the total number of child nodes.
-   * @param[in] parentNode The parent node to return children count for.
+   * @param parentNode The parent node to return children count for.
    */
   public getChildNodesCount = memoize(async (parentNode: TreeNodeItem): Promise<number> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);

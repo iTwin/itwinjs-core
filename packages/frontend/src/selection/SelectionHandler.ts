@@ -19,11 +19,11 @@ export default class SelectionHandler implements IDisposable {
   public onSelect?: SelectionChangesListener;
 
   /** Constructor.
-   * @param[in] manager SelectionManager used to store overall selection.
-   * @param[in] name The name of the selection handler.
-   * @param[in] rulesetId Id of a ruleset selection changes will be associated.
-   * @param[in] imodelToken Token of the imodel connection with which the selection changes will be associated.
-   * @param[in] onSelect Callback function called when selection changes.
+   * @param manager SelectionManager used to store overall selection.
+   * @param name The name of the selection handler.
+   * @param rulesetId Id of a ruleset selection changes will be associated.
+   * @param imodelToken Token of the imodel connection with which the selection changes will be associated.
+   * @param onSelect Callback function called when selection changes.
    */
   constructor(manager: SelectionManager, name: string, imodelToken: IModelToken, rulesetId: string, onSelect?: SelectionChangesListener) {
     this._inSelect = false;
@@ -44,7 +44,7 @@ export default class SelectionHandler implements IDisposable {
   }
 
   /** Called when the selection changes. Handles this callback by first checking whether
-   * the event should be handled at all (see @ref shouldHandle) and then calling onSelect
+   * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
   protected onSelectionChanged(evt: SelectionChangeEventArgs, provider: ISelectionProvider): void {
     if (!this.onSelect || !this.shouldHandle(evt))
@@ -63,8 +63,8 @@ export default class SelectionHandler implements IDisposable {
   }
 
   /** Add to selection.
-   * @param[in] keys The keys to add to selection.
-   * @param[in] level Level of the selection.
+   * @param keys The keys to add to selection.
+   * @param level Level of the selection.
    */
   public addToSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect)
@@ -74,8 +74,8 @@ export default class SelectionHandler implements IDisposable {
   }
 
   /** Remove from selection.
-   * @param[in] keys The keys to remove from selection.
-   * @param[in] level Level of the selection.
+   * @param keys The keys to remove from selection.
+   * @param level Level of the selection.
    */
   public removeFromSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect)
@@ -85,8 +85,8 @@ export default class SelectionHandler implements IDisposable {
   }
 
   /** Change selection.
-   * @param[in] keys The keys indicating the new selection.
-   * @param[in] level Level of the selection.
+   * @param keys The keys indicating the new selection.
+   * @param level Level of the selection.
    */
   public replaceSelection(keys: Keys, level: number = 0): void {
     if (this._inSelect)
@@ -96,7 +96,7 @@ export default class SelectionHandler implements IDisposable {
   }
 
   /** Clear selection.
-   * @param[in] level Level of the selection.
+   * @param level Level of the selection.
    */
   public clearSelection(level: number = 0): void {
     if (this._inSelect)

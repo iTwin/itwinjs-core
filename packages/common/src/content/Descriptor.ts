@@ -71,7 +71,7 @@ export interface DescriptorOverrides {
 }
 
 /** Describes the content: fields, sorting, filtering, format. Users may change
- * @ref Descriptor to control what content they get and how they get it.
+ * descriptor to control what content they get and how they get it.
  */
 export default class Descriptor {
   public readonly connectionId!: string;

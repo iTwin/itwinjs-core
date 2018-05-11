@@ -13,6 +13,7 @@
   "private": true,
   "scripts": {
     "build": "",
+    "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../out/docs/extract",
     "start": "imodeljs-react-scripts start",
     "validatePackageJson": "validjson ./package.json"
   },

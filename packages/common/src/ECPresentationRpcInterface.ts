@@ -7,11 +7,11 @@ import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, Neste
 import { PageOptions } from "./ECPresentationManager";
 import KeySet from "./KeySet";
 
-/** Interface used for communication between ECPresentation backend and frontend.
- * @note: it's called an interface but actually it's a real implemented
- * frontend-specific class. It's setup that way to keep consistency with imodeljs-core.
- */
+/** Interface used for communication between ECPresentation backend and frontend. */
 export default class ECPresentationRpcInterface extends RpcInterface {
+  // developer note: It's called an interface but actually it's a real implemented
+  // frontend-specific class.It's setup that way to keep consistency with imodeljs-core.
+
   /** The version of the interface. */
   public static version = "1.0.0";
 

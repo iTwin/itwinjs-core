@@ -272,8 +272,8 @@ export default class GridDataProvider extends ContentDataProvider {
   }
 
   /** Sorts the data in this data provider.
-   * @param[in] columnIndex Index of the column to sort on.
-   * @param[in] sortDirection Sorting direction.
+   * @param columnIndex Index of the column to sort on.
+   * @param sortDirection Sorting direction.
    */
   public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
     const columns = await this.getColumns();
@@ -324,7 +324,7 @@ export default class GridDataProvider extends ContentDataProvider {
   });
 
   /** Get a single row.
-   * @param[in] rowIndex Index of the row to return.
+   * @param rowIndex Index of the row to return.
    */
   public getRow = memoize(async (rowIndex: number): Promise<Readonly<RowItem>> => {
     let page = this._pages.getPage(rowIndex);
@@ -338,7 +338,7 @@ export default class GridDataProvider extends ContentDataProvider {
   });
 
   /** Try to get the loaded row. Returns undefined if the row is not currently cached.
-   * @param[in] rowIndex Index of the row to return.
+   * @param rowIndex Index of the row to return.
    */
   public getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined {
     return this._pages.getRow(rowIndex);

@@ -14,29 +14,35 @@ in hard to diagnose issues.
 ## Committing changes
 
 It's important to generate change files when committing changes -
-steps #4 - #7 do that.
+steps #2 - #5 do that.
 
-1. Make some changes that you want to commit.
+1. Commit some changes.
 
-2. `git add .`
+2. `rush change` asks several questions about the changes and creates change files.
 
-3. `rush change`
+3. Review the change files created by Rush.
 
-    Asks several questions about the changes and creates change files.
+4. `git add .` stages created change files for commit.
 
-4. Review the change files created by Rush.
-
-5. `git add .`
-
-6. `git commit`
+5. `git commit --amend --no-edit` amends the generated change files to the last commit.
 
 You can make multiple local commits before pushing the changes.
+
+### Why is that important?
+
+For several reasons:
+1. You don't need to increase the package version after each commit
+2. You don't need to remember what kind of changes (major, minor, patch)
+were made in all the commits since last publish when you're updating
+package versions before publishing.
+3. It creates a nice *CHANGELOG.md* file which can be used as a reference
+to see what changes were made in each package version.
 
 ## Pushing the changes
 
 Use [pull requests](./PULL_REQUESTS.md).
 
-Note: before pushing it's recommended to run the `pre-publish.bat`
+Note: before pushing it's recommended to run the `scripts/pre-publish.bat`
 file - it runs the same commands as our CI job and helps to make
 sure you don't forget to build / lint / test / etc.
 
@@ -55,7 +61,9 @@ new versions:
    - Updates library package dependency versions for *sample* and *test*
    packages.
 
-2. Review the changes made by Rush.
+2. Review the changes made by Rush and make appropriate changes, if necessary.
+*CHANGELOG.md* files can be regenerated after changing *CHANGELOG.json* with a
+rush command `rush publish --regenerate-changelogs`.
 
 3. `git add .`
 
@@ -63,5 +71,6 @@ new versions:
 
 5. `git push`
 
-6. Start the `ecpresentation` CI job with the `publish` flag set to `true`.
-The job builds the library, lints, tests and finally publishes it.
+6. The `ecpresentation` CI job is automatically started. Open the job and tag it
+with a "Release" tag. This will start a release job after a successful build which
+will publish the packages.

@@ -16,6 +16,15 @@ export default class ECPresentation {
   /* istanbul ignore next */
   private constructor() { }
 
+  /**
+   * Initializes ECPresentation library for the backend.
+   *
+   * Example:
+   * ``` ts
+   * [[include:Backend.Initialization.ECPresentation]]
+   * ```
+   * @param [props] Optional properties for ECPresentationManager
+   */
   public static initialize(props?: ECPresentationManagerProps): void {
     try {
       RpcManager.registerImpl(ECPresentationRpcInterface, ECPresentationRpcImpl);
@@ -28,6 +37,9 @@ export default class ECPresentation {
     ECPresentation._manager = new ECPresentationManager(props);
   }
 
+  /**
+   * Terminates ECPresentation. Should be called to clean up before shutting down.
+   */
   public static terminate(): void {
     if (ECPresentation._manager) {
       ECPresentation._manager.dispose();
@@ -39,6 +51,9 @@ export default class ECPresentation {
     }
   }
 
+  /**
+   * Get the single static instance of ECPresentationManager
+   */
   public static get manager(): ECPresentationManager {
     if (!ECPresentation._manager)
       throw new Error("ECPresentation must be first initialized by calling ECPresentation.initialize");

@@ -13,7 +13,9 @@ initLogging();
 // initialize imodeljs-backend
 IModelHost.startup();
 
-// set up presentation manager
+// __PUBLISH_EXTRACT_START__ Backend.Initialization.ECPresentation
+// set up ECPresentation library
 ECPresentation.initialize({
   rulesetDirectories: [path.resolve(__dirname, "assets/presentation_rules")],
 });
+// __PUBLISH_EXTRACT_END__

@@ -11,8 +11,8 @@ export default interface ISelectionProvider {
   selectionChange: SelectionChangeEvent;
 
   /** Return selection.
-   * @param[in] imodelToken Token of the imodel connection with which the selection is associated.
-   * @param[in] level   Level of the selection.
+   * @param imodelToken Token of the imodel connection with which the selection is associated.
+   * @param level   Level of the selection.
    */
   getSelection(imodelToken: Readonly<IModelToken>, level: number): Readonly<KeySet>;
 }

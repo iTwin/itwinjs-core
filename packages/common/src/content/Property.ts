@@ -12,7 +12,7 @@ export interface PropertyAccessor {
 /** Describes path to a property. */
 export type PropertyAccessorPath = PropertyAccessor[];
 
-/** Describes a single ECProperty that's included in a @ref ContentField. */
+/** Describes a single ECProperty that's included in a PropertiesField. */
 export default interface Property {
   property: Readonly<ec.PropertyInfo>;
   relatedClassPath: Readonly<ec.RelationshipPathInfo>;
