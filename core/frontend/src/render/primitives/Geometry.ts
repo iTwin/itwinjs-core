@@ -13,8 +13,6 @@ import {
   Path,
   Point2d,
   Point3d,
-  CurveCollection,
-  CurveChain,
   Polyface,
   StrokeOptions,
   Angle,
@@ -36,7 +34,7 @@ import { ViewContext } from "../../ViewContext";
 import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointLists } from "./Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
 
-export type PrimitiveGeometryType = Loop | Path | IndexedPolyface; // More will receive support
+export type PrimitiveGeometryType = Loop | Path | IndexedPolyface;
 
 export abstract class Geometry {
   public readonly transform: Transform;
@@ -53,8 +51,12 @@ export abstract class Geometry {
   }
 
   public static createFromGeom(geometry: PrimitiveGeometryType, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
-
-    return PrimitiveGeometry.create(geometry, tf, tileRange, params, isCurved, disjoint);
+    if (geometry instanceof Loop)
+      return new PrimitiveLoopGeometry(geometry, tf, tileRange, params, isCurved, disjoint);
+    else if (geometry instanceof Path)
+      return new PrimitivePathGeometry(geometry, tf, tileRange, params, isCurved, disjoint);
+    else // geometry instanceof IndexedPolyface
+      return new PrimitivePolyfaceGeometry(geometry, tf, tileRange, params, isCurved);
   }
 
   protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
@@ -101,96 +103,39 @@ export abstract class Geometry {
   }
 }
 
-export class PrimitiveGeometry extends Geometry {
-  public readonly geometry: PrimitiveGeometryType;
+export class PrimitivePathGeometry extends Geometry {
+  public readonly path: Path;
   public readonly isDisjoint: boolean;
 
-  public constructor(geometry: PrimitiveGeometryType, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ isDisjoint: boolean) {
+  public constructor(path: Path, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ isDisjoint: boolean) {
     super(tf, range, params, isCurved/*, iModel*/);
-    this.geometry = geometry;
+    this.path = path;
     this.isDisjoint = isDisjoint;
   }
 
-  public static create(geometry: PrimitiveGeometryType, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /* iModel: IModelConnection,*/ isDisjoint: boolean) {
-    assert(!isDisjoint || geometry instanceof CurveCollection);
-    return new PrimitiveGeometry(geometry, tf, range, params, isCurved, /* iModel, */ isDisjoint);
-  }
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined { return undefined; }
 
-  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
-    // IndexedPolyface
-    if (this.geometry instanceof IndexedPolyface) {
-      const polyface = this.geometry as IndexedPolyface;
-
-      if (this.hasTexture) {
-        if (polyface.data.param) {
-          polyface.data.param = [];
-        }
-        if (polyface.data.paramIndex) {
-          polyface.data.paramIndex = [];
-        }
-      }
-
-      // ###TODO: FixPolyface
-
-      assert(this.transform.isIdentity());
-      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface));
-    }
-
-    // used by Loop right now, could be used by other primitives
-    const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
-    let isPlanar = false;
-    let builderHasPoly = false;
-
-    // Loop
-    if (this.geometry instanceof Loop) {
-      const loop = this.geometry as Loop;
-
-      if (!loop.isAnyRegionType()) {
-        return undefined;
-      }
-
-      // The following is good for single loop things.
-      const contour = SweepContour.createForLinearSweep(loop);
-      if (contour !== undefined) {
-        isPlanar = true;
-        builderHasPoly = true;
-        contour.emitFacets(pfBuilder, facetOptions, false); // build facets and emit them to the builder
-      } // ###TODO: Will this handle all region cases? (might not work with holes)
-    }
-
-    // ###TODO: solidPrimitive
-    // ###TODO: bsplineSurface
-
-    if (builderHasPoly) {
-      const polyface = pfBuilder.claimPolyface();
-      const wantEdges = (!(this.geometry instanceof CurveChain) || DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType);
-      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
-    }
-
-    return undefined;
-  }
-
-  // ###WIP  ###WIP
   protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    return PrimitivePathGeometry.getStrokesForLoopOrPath(this.path, facetOptions, this.displayParams, this.isDisjoint);
+  }
+
+  public static getStrokesForLoopOrPath(loopOrPath: Loop | Path, facetOptions: StrokeOptions, params: DisplayParams, isDisjoint: boolean): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
 
-    if (this.geometry instanceof CurveChain) {
-      const chain = this.geometry as CurveChain; // ###WIP
+    if (!loopOrPath.isAnyRegionType() || params.wantRegionOutline) {
+      const strksPts: StrokesPrimitivePointLists = new StrokesPrimitivePointLists();
+      if (facetOptions.chordTol === undefined) { // shut up tslint
+      }
+      // PrimitiveGeometry.collectCurveStrokes(strksPts, chain, facetOptions, this.transform);
 
-      if (!chain.isAnyRegionType() || this.displayParams.wantRegionOutline) {
-        const strksPts: StrokesPrimitivePointLists = new StrokesPrimitivePointLists();
-        if (facetOptions.chordTol === undefined) { // shut up tslint
-        }
-        // PrimitiveGeometry.collectCurveStrokes(strksPts, chain, facetOptions, this.transform);
-
-        if (strksPts.length > 0) {
-          const isPlanar = chain.isAnyRegionType();
-          assert(isPlanar === this.displayParams.wantRegionOutline);
-          const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, this.isDisjoint, isPlanar);
-          // add strksPts to strskPrim:
-          // strksPrim.strokes = strksPts;
-          strksList.push(strksPrim);
-        }
+      if (strksPts.length > 0) {
+        const isPlanar = loopOrPath.isAnyRegionType();
+        assert(isPlanar === params.wantRegionOutline);
+        const strksPrim: StrokesPrimitive = StrokesPrimitive.create(params, isDisjoint, isPlanar);
+        // add strksPts to strskPrim:
+        // strksPrim.strokes = strksPts;
+        // ###WIP  ###WIP  ###NEEDSWORK
+        strksList.push(strksPrim);
       }
     }
 
@@ -206,6 +151,68 @@ export class PrimitiveGeometry extends Geometry {
     }
   }
   */
+}
+
+export class PrimitiveLoopGeometry extends Geometry {
+  public readonly loop: Loop;
+  public readonly isDisjoint: boolean;
+
+  public constructor(loop: Loop, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ isDisjoint: boolean) {
+    super(tf, range, params, isCurved/*, iModel*/);
+    this.loop = loop;
+    this.isDisjoint = isDisjoint;
+  }
+
+  protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
+    if (!this.loop.isAnyRegionType()) {
+      return undefined;
+    }
+
+    // The following is good for single loop things according to Earlin.
+    const contour = SweepContour.createForLinearSweep(this.loop);
+    if (contour !== undefined) {
+      const pfBuilder: PolyfaceBuilder = PolyfaceBuilder.create(facetOptions);
+      contour.emitFacets(pfBuilder, facetOptions, false); // build facets and emit them to the builder
+      const polyface = pfBuilder.claimPolyface();
+
+      const wantEdges = DisplayParams.RegionEdgeType.Default === this.displayParams.regionEdgeType;
+      const isPlanar = true;
+      return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, polyface, wantEdges, isPlanar));
+    } // ###TODO: this approach might not work with holes
+
+    return undefined;
+  }
+
+  protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    return PrimitivePathGeometry.getStrokesForLoopOrPath(this.loop, facetOptions, this.displayParams, this.isDisjoint);
+  }
+}
+
+export class PrimitivePolyfaceGeometry extends Geometry {
+  public readonly polyface: IndexedPolyface;
+
+  public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean/*, iModel: IModelConnection,*/) {
+    super(tf, range, params, isCurved/*, iModel*/);
+    this.polyface = polyface;
+  }
+
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
+    if (this.hasTexture) { // clear parameters
+      if (this.polyface.data.param) {
+        this.polyface.data.param = [];
+      }
+      if (this.polyface.data.paramIndex) {
+        this.polyface.data.paramIndex = [];
+      }
+    }
+
+    // ###TODO: FixPolyface
+
+    assert(this.transform.isIdentity());
+    return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
+  }
+
+  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined { return undefined; }
 }
 
 export class GeometryList {
