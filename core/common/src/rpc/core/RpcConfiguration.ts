@@ -66,6 +66,16 @@ export abstract class RpcConfiguration {
   public onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
     this.protocol.onRpcImplInitialized(definition, impl);
   }
+
+  /** @hidden @internal */
+  public onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void {
+    this.protocol.onRpcClientTerminated(definition, client);
+  }
+
+  /** @hidden @internal */
+  public onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
+    this.protocol.onRpcImplTerminated(definition, impl);
+  }
 }
 
 // A default configuration that can be used for basic testing within a library.
@@ -90,7 +100,7 @@ export class RpcDirectRequest extends RpcRequest {
     const request = this.protocol.serialize(this);
 
     this.protocol.fulfill(request).then((fulfillment) => {
-      this.fulfillment = fulfillment;
+      this.fulfillment = JSON.parse(JSON.stringify(fulfillment));
       this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
     });
   }
