@@ -7,23 +7,31 @@ import { Cartographic, FontType, FontMap, ColorByName, QPoint3dList, QParams3d }
 import * as path from "path";
 import { DecorateContext, SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { RenderTarget, RenderGraphic, MeshArgs, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { UpdatePlan, RenderTarget, RenderGraphic, MeshArgs, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 class TestViewport extends Viewport {
   protected _decoration?: RenderGraphic;
+  protected _continuousDecorations: boolean = true;
 
   public constructor(canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
     super(canvas, viewState, target);
     this.setupFromView();
   }
 
+  public renderFrame(plan: UpdatePlan): boolean {
+    if (this._continuousDecorations)
+      this.sync.invalidateDecorations();
+
+    return super.renderFrame(plan);
+  }
+
   public callDecorators(context: DecorateContext): void {
     super.callDecorators(context);
     if (undefined === this._decoration) {
       const args = new MeshArgs();
-      const points = [ new Point3d(0, 0, 0), new Point3d(4, 0, 0), new Point3d(2, 4, 0) ];
+      const points = [ new Point3d(-1, -1, 0), new Point3d(1, -1, 0), new Point3d(0, 1, 0) ];
       args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
       for (const point of points)
         args.points.add(point);

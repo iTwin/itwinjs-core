@@ -663,7 +663,7 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
     return;
 
-  assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) == (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
+  assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
 
   builder.addVarying("v_feature_rgb", VariableType.Vec4);
   builder.addVarying("v_feature_alpha_flashed", VariableType.Vec4);
