@@ -2,63 +2,40 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d, Angle, Range3d, Transform, RotMatrix, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Angle, Range3d } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap, ColorDef, ColorByName, QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { DecorateContext, SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { UpdatePlan, RenderTarget, MeshArgs, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderTarget, MeshArgs, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 class TestViewport extends Viewport {
-  private static _rotIncrement: number = 2.0;
-  private _rot: number = 0.0;
-  protected _continuousDecorations: boolean = true;
-
   public constructor(canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
     super(canvas, viewState, target);
     this.setupFromView();
   }
 
-  public renderFrame(plan: UpdatePlan): boolean {
-    if (this._continuousDecorations)
-      this.sync.invalidateDecorations();
-
-    return super.renderFrame(plan);
-  }
-
   public callDecorators(context: DecorateContext): void {
     super.callDecorators(context);
 
-    const tf = Transform.createIdentity();
     const rect = this.viewRect;
-    tf.origin.set(rect.width / 2, rect.height / 2, 0);
-
-    RotMatrix.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this._rot), tf.matrix)!;
-    tf.matrix.scaleRows(rect.width, rect.height, 1.0, tf.matrix);
-
-    this._rot += TestViewport._rotIncrement;
-    if (this._rot >= 360.0)
-      this._rot = 0.0;
-
-    const points = [ new Point3d(-0.25, -0.25, 0), new Point3d(0.25, -0.25, 0), new Point3d(0, 0.25, 0) ];
-    tf.multiplyPoint3dArrayInPlace(points);
-
+    const points = [ new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height) ];
     const args = new MeshArgs();
     args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
       args.points.add(point);
 
-    args.vertIndices = [ 0, 1, 2 ];
+    args.vertIndices = [ 3, 2, 0, 2, 1, 0 ];
 
-    const colors = new Uint32Array([ ColorByName.yellow, ColorByName.cyan, ColorByName.fuchsia ]);
-    args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2]), false);
+    const colors = new Uint32Array([ ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue ]);
+    args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
 
-    const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel!);
+    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel!);
 
-    assert(undefined !== triangle);
-    context.setViewBackground(triangle!);
+    assert(undefined !== gf);
+    context.setViewBackground(gf!);
   }
 }
 
