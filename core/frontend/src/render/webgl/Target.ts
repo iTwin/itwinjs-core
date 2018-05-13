@@ -175,7 +175,8 @@ export abstract class Target extends RenderTarget {
     super();
     this._renderCommands = new RenderCommands(this, this._stack);
     this._overlayRenderState = new RenderState();
-    this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
+    this._overlayRenderState.flags.depthMask = false;
+    this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
     this.compositor = new SceneCompositor(this);
   }

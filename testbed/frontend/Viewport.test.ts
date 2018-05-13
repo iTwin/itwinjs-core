@@ -36,6 +36,10 @@ class TestViewport extends Viewport {
 
     assert(undefined !== gf);
     context.setViewBackground(gf!);
+
+    args.vertIndices = [ 3, 2, 0 ];
+    args.colors.initUniform(0x7f7f7f7f);
+    context.addViewOverlay(IModelApp.renderSystem.createTriMesh(args, this.iModel!)!);
   }
 }
 
