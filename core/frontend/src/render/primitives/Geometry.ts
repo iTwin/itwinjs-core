@@ -32,7 +32,7 @@ import { GeometryOptions } from "./Primitives";
 import { RenderSystem, RenderGraphic } from "../System";
 import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
-import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointLists } from "./Strokes";
+import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "./Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
 
 export type PrimitiveGeometryType = Loop | Path | IndexedPolyface;
@@ -136,9 +136,7 @@ export class PrimitivePathGeometry extends Geometry {
         const isPlanar = loopOrPath.isAnyRegionType();
         assert(isPlanar === params.wantRegionOutline);
         const strksPrim: StrokesPrimitive = StrokesPrimitive.create(params, isDisjoint, isPlanar);
-        // add strksPts to strskPrim:
-        // strksPrim.strokes = strksPts;
-        // ###WIP  ###WIP  ###NEEDSWORK
+        strksPrim.strokes = strksPts;
         strksList.push(strksPrim);
       }
     }
@@ -148,10 +146,14 @@ export class PrimitivePathGeometry extends Geometry {
 
   private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, loopOrPath: Loop | Path, facetOptions: StrokeOptions, trans: Transform) {
     const strokes: LineString3d = loopOrPath.cloneStroked(facetOptions) as LineString3d;
+    assert(strokes instanceof LineString3d);
     const pt: Point3d = Point3d.create(0, 0, 0);
+    const pts: Point3d[] = [];
     for (let i = 0; i < strokes.numPoints(); i++) {
       strokes.pointAt(i, pt);
+      pts.push(trans.multiplyPoint(pt));
     }
+    strksPts.push(new StrokesPrimitivePointList(0, pts));
   }
 }
 
@@ -186,7 +188,7 @@ export class PrimitiveLoopGeometry extends Geometry {
   }
 
   protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
-    return PrimitivePathGeometry.getStrokesForLoopOrPath(this.loop, facetOptions, this.displayParams, this.isDisjoint);
+    return PrimitivePathGeometry.getStrokesForLoopOrPath(this.loop, facetOptions, this.displayParams, this.isDisjoint, this.transform);
   }
 }
 

@@ -14,11 +14,9 @@ export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList>
 
 export class StrokesPrimitive {
   public readonly displayParams: DisplayParams;
-  private _strokes: StrokesPrimitivePointLists;
   public readonly isDisjoint: boolean;
   public readonly isPlanar: boolean;
-
-  public get strokes() { return this._strokes; }
+  public strokes: StrokesPrimitivePointLists;
 
   public static create(params: DisplayParams, isDisjoint: boolean, isPlanar: boolean) {
     return new StrokesPrimitive(params, isDisjoint, isPlanar);
@@ -26,7 +24,7 @@ export class StrokesPrimitive {
 
   private constructor(params: DisplayParams, isDisjoint: boolean, isPlanar: boolean) {
     this.displayParams = params;
-    this._strokes = new StrokesPrimitivePointLists();
+    this.strokes = new StrokesPrimitivePointLists();
     this.isDisjoint = isDisjoint;
     this.isPlanar = isPlanar;
   }
@@ -34,7 +32,7 @@ export class StrokesPrimitive {
   // ###TODO: public static clipToRange(input: StrokesPointLists, range: any);
 
   public transform(trans: Transform) {
-    for (const strk of this._strokes) {
+    for (const strk of this.strokes) {
       trans.multiplyPoint3dArrayInPlace(strk.points);
     }
   }
