@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d, Angle, Range3d } from "@bentley/geometry-core";
-import { Cartographic, FontType, FontMap, ColorDef, ColorByName, QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
+import { Point3d, Angle } from "@bentley/geometry-core";
+import { Cartographic, FontType, FontMap, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { DecorateContext, SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
+import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { RenderTarget, MeshArgs, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderTarget, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -15,31 +15,6 @@ class TestViewport extends Viewport {
   public constructor(canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
     super(canvas, viewState, target);
     this.setupFromView();
-  }
-
-  public callDecorators(context: DecorateContext): void {
-    super.callDecorators(context);
-
-    const rect = this.viewRect;
-    const points = [ new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height) ];
-    const args = new MeshArgs();
-    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
-    for (const point of points)
-      args.points.add(point);
-
-    args.vertIndices = [ 3, 2, 0, 2, 1, 0 ];
-
-    const colors = new Uint32Array([ ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue ]);
-    args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
-
-    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel!);
-
-    assert(undefined !== gf);
-    context.setViewBackground(gf!);
-
-    args.vertIndices = [ 3, 2, 0 ];
-    args.colors.initUniform(0x7f7f7f7f);
-    context.addViewOverlay(IModelApp.renderSystem.createTriMesh(args, this.iModel!)!);
   }
 }
 

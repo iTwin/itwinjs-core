@@ -9,6 +9,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
+  QParams3d, QPoint3dList, ColorByName
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -19,6 +20,8 @@ import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
 import { GraphicList } from "./Render/System";
+import { MeshArgs } from "./Render/Primitives/Mesh";
+import { IModelApp } from "./IModelApp";
 
 export const enum GridOrientationType {
   View = 0,
@@ -1146,6 +1149,51 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
+
+  public drawDecorations(context: DecorateContext): void {
+    this.drawSkyBox(context);
+    this.drawGroundPlane(context);
+  }
+
+  protected drawSkyBox(context: DecorateContext): void {
+    // ###TODO: Check if skybox enabled in display style; draw actual skybox instead of this fake thing
+    const rect = context.viewport.viewRect;
+    const points = [ new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height) ];
+    const args = new MeshArgs();
+    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+    for (const point of points)
+      args.points.add(point);
+
+    args.vertIndices = [ 3, 2, 0, 2, 1, 0 ];
+
+    const colors = new Uint32Array([ ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue ]);
+    args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
+
+    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    if (undefined !== gf)
+      context.setViewBackground(gf);
+  }
+
+  protected drawGroundPlane(context: DecorateContext): void {
+    // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
+    const extents = this.getViewedExtents(); // the project extents
+    const pts = [ extents.low, extents.low.clone(), extents.high.clone(), extents.low.clone() ];
+    pts[1].x = extents.high.x;
+    pts[2].z = extents.low.z;
+    pts[3].y = extents.high.y;
+
+    const args = new MeshArgs();
+    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(pts)));
+    for (const point of pts)
+      args.points.add(point);
+
+    args.vertIndices = [ 3, 2, 0, 2, 1, 0 ];
+    args.colors.initUniform(ColorByName.darkGreen);
+
+    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    if (undefined !== gf)
+      context.addWorldDecoration(gf);
+  }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
