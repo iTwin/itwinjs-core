@@ -1054,7 +1054,7 @@ export class Viewport {
 
   public computeViewRange(): Range3d {
     this.setupFromView();
-    const viewRange = new Range3d();
+    const viewRange = this.view.computeFitRange();
     // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
     // const geomRange = this.geometry.range;
     // const geomMatrix = this.geometry.modelMatrix;

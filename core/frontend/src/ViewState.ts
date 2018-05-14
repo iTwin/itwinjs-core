@@ -270,6 +270,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
   public abstract getViewedExtents(): AxisAlignedBox3d;
+  public computeFitRange(): Range3d { return this.getViewedExtents(); } // ###TODO
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
