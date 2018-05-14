@@ -4,6 +4,9 @@
 
 import {
   assert,
+  Comparable,
+  compare,
+  Dictionary,
   // SortedArray,
 } from "@bentley/bentleyjs-core";
 import {
@@ -43,7 +46,7 @@ import { DisplayParams } from "./DisplayParams";
 // import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
 // import { System } from "../webgl/System";
-import { Triangle, TriangleList, TriangleKey, TriangleSet } from "./Primitives";
+import { Triangle, TriangleList, TriangleKey, TriangleSet, ToleranceRatio } from "./Primitives";
 import { Graphic } from "../webgl/Graphic";
 import { IModelConnection } from "../../IModelConnection";
 
@@ -478,5 +481,53 @@ export class MeshBuilderPolyface {
     this.polyface = polyface;
     this.edgeOptions = edgeOptions;
     this.vertexIndexMap = vertexIndexMap;
+  }
+}
+
+export class MeshList extends Array<Mesh> {
+  public readonly features: FeatureTable;
+  constructor(maxFeatures: number = 2014 * 1024, ...args: Mesh[]) {
+    super(...args);
+    this.features = new FeatureTable(maxFeatures);
+  }
+}
+
+export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
+  public readonly range: Range3d;
+  public readonly vertexTolerance: number;
+  public readonly facetAreaTolerance: number;
+  public readonly featureTable: FeatureTable;
+  public readonly is2d: boolean;
+  constructor(tolerance: number, features: FeatureTable, range: Range3d, is2d: boolean) {
+    super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
+    this.vertexTolerance = tolerance * ToleranceRatio.vertex;
+    this.facetAreaTolerance = tolerance * ToleranceRatio.facetArea;
+    this.featureTable = features;
+    this.range = range;
+    this.is2d = is2d;
+  }
+}
+
+export namespace MeshBuilderMap {
+  export class Key implements Comparable<Key> {
+    public order: number = 0;
+    public readonly params: DisplayParams;
+    public readonly type: Mesh.PrimitiveType;
+    public readonly hasNormals: boolean;
+    public readonly isPlanar: boolean;
+    constructor(params: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean) {
+      this.params = params;
+      this.type = type;
+      this.hasNormals = hasNormals;
+      this.isPlanar = isPlanar;
+    }
+    public static createFromMesh(mesh: Mesh): Key {
+      return new Key(mesh.displayParams, Mesh.PrimitiveType.Mesh, mesh.normals.length !== 0, mesh.isPlanar);
+    }
+    public compare(rhs: Key): number { return compare(this.order, rhs.order); }
+    public equals(rhs: Key): boolean {
+      const { order, type, isPlanar, hasNormals, params } = rhs;
+      return this.order === order && this.type === type && this.isPlanar === isPlanar && this.hasNormals === hasNormals && this.params.equals(params);
+    }
   }
 }
