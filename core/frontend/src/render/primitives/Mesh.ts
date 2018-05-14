@@ -498,13 +498,11 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public readonly range: Range3d;
   public readonly vertexTolerance: number;
   public readonly facetAreaTolerance: number;
-  public readonly featureTable: FeatureTable;
   public readonly is2d: boolean;
-  constructor(tolerance: number, features: FeatureTable, range: Range3d, is2d: boolean) {
+  constructor(tolerance: number, range: Range3d, is2d: boolean) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
     this.facetAreaTolerance = tolerance * ToleranceRatio.facetArea;
-    this.featureTable = features;
     this.range = range;
     this.is2d = is2d;
   }
