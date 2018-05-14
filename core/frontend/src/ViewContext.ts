@@ -113,7 +113,7 @@ export class RenderContext extends ViewContext {
   public get target(): RenderTarget { return this.viewport.target; }
   constructor(vp: Viewport) { super(vp); }
   public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined {
-    return this._createGraphic(GraphicBuilderCreateParams.create(_type, this.viewport.iModel, _tf, this.viewport));
+    return this._createGraphic(GraphicBuilderCreateParams.create(_type, this.viewport, _tf));
   }
   private _createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return this.target.createGraphic(params); }
 }

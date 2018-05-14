@@ -74,21 +74,20 @@ export class GraphicBuilderCreateParams {
 
   private readonly _placement: Transform;
   public readonly type: GraphicType;
-  public readonly iModel: IModelConnection;
-  public viewport?: Viewport;
+  public readonly viewport: Viewport;
+  public get iModel(): IModelConnection { return this.viewport.iModel; }
 
-  constructor(placement: Transform = Transform.createIdentity(), type: GraphicType, iModel: IModelConnection, viewport?: Viewport) {
+  constructor(placement: Transform = Transform.createIdentity(), type: GraphicType, viewport: Viewport) {
     this._placement = placement;
     this.type = type;
-    this.iModel = iModel;
     this.viewport = viewport;
   }
 
   /**
    * consolidates viewport and imodel parameters, as we would always want to use the imodel of the viewport if the viewport was passed
    */
-  public static create(type: GraphicType, iModel: IModelConnection, placement?: Transform, vp?: Viewport): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, type, iModel, vp);
+  public static create(type: GraphicType, vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(placement, type, vp);
   }
 
   /**
@@ -98,15 +97,15 @@ export class GraphicBuilderCreateParams {
    * If this function is used outside of tile generation context, a default coarse tolerance will be used.
    * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
    */
-  public static scene(iModel: IModelConnection, placement?: Transform, vp?: Viewport) {
-    return new GraphicBuilderCreateParams(placement, GraphicType.Scene, iModel, vp);
+  public static scene(vp: Viewport, placement?: Transform) {
+    return new GraphicBuilderCreateParams(placement, GraphicType.Scene, vp);
   }
 
   /**
    * Create params for a subgraphic
    */
   public subGraphic(placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, this.type, this.iModel, this.viewport);
+    return new GraphicBuilderCreateParams(placement, this.type, this.viewport);
   }
 
   /**
@@ -114,7 +113,7 @@ export class GraphicBuilderCreateParams {
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
   public static worldDecoration(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.WorldDecoration, vp.iModel, vp);
+    return new GraphicBuilderCreateParams(placement, GraphicType.WorldDecoration, vp);
   }
 
   /**
@@ -122,14 +121,14 @@ export class GraphicBuilderCreateParams {
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
   public static worldOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.WorldOverlay, vp.iModel, vp);
+    return new GraphicBuilderCreateParams(placement, GraphicType.WorldOverlay, vp);
   }
 
   /**
    * Create params for a ViewOverlay-type RenderGraphic
    */
   public static viewOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp.iModel, vp);
+    return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp);
   }
 }
 
