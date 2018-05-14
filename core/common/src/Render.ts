@@ -1278,6 +1278,7 @@ export namespace TextureMapping {
       const { textureMat2x3 = new Trans2x3(), textureWeight = 1.0, mapMode = Mode.Parametric, worldMapping = false } = props;
       this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;
     }
+    // ###TODO use polyface geometry to complete computeUVParams
     public computeUVParams(_params: Point2d[], _visitor: IndexedPolyfaceVisitor, _transformToImodel: Transform): void { // BentleyStatus {
       // const { mode, textureMatrix, worldMapping } = this;
       // switch (mode) {
@@ -1295,11 +1296,13 @@ export namespace TextureMapping {
       //     return BentleyStatus.SUCCESS;
     }
   }
+  // ###TODO use polyface geometry to complete computeParametricUVParams
   export function computeParametricUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform, _isRelativeUnits: boolean): void {
     // for (let i = 0, len = visitor.numEdges; ++i) {
     //   const param = Point2d.create(0, 0);
     //   if (isRelativeUnits || !visitor.tr)
     // }
   }
+  // ###TODO use polyface geometry to complete computePlanarUVParams
   export function computePlanarUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform): void { }
 }
