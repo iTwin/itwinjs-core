@@ -98,7 +98,12 @@ export class RpcMarshaling {
 
             const errorMessage = value.message;
             value.message = "[Backend to Frontend Transition]";
-            (value as any)[RpcMarshalingDirective.ErrorStack] = value.stack;
+
+            let stack = value.stack;
+            if (typeof (stack) === "undefined")
+              stack = "[Backend to Frontend Transition]\n[Backend Implementation]";
+
+            (value as any)[RpcMarshalingDirective.ErrorStack] = stack;
 
             value.message = errorMessage;
             (value as any)[RpcMarshalingDirective.ErrorMessage] = value.message;
