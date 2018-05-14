@@ -21,10 +21,10 @@ function runDocs() {
 
 function generateDocs() {
   const source = path.resolve("out/docs");
-  const destination = path.resolve("out/docs-final");
+  const destination = path.resolve("out/docs-public");
   const exe = path.resolve("node_modules", ".bin", "bmsWatch");
   childProcess.execSync(
-    `${exe} --source "${source}" --destination "${destination}"`,
+    `${exe} --source "${source}" --destination "${destination}" --siteTitle "ECPresentation Docs"`,
     { stdio: [0, 1, 2] }
   );
 }

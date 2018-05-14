@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { fromJSON, DefaultNodeTypes, BaseNodeKey, ECInstanceNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey } from "@src/hierarchy/Key";
+import { fromJSON, StandardNodeTypes, BaseNodeKey, ECInstanceNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey } from "@src/hierarchy/Key";
 import { createRandomId } from "@helpers/random/Misc";
 
 describe("NodeKey fromJSON", () => {
@@ -19,7 +19,7 @@ describe("NodeKey fromJSON", () => {
 
   it("creates ECInstanceNodeKey", () => {
     const json: ECInstanceNodeKeyJSON = {
-      type: DefaultNodeTypes.ECInstanceNode,
+      type: StandardNodeTypes.ECInstanceNode,
       pathFromRoot: [faker.random.uuid()],
       instanceKey: {
         className: faker.random.word(),
@@ -32,7 +32,7 @@ describe("NodeKey fromJSON", () => {
 
   it("creates ECClassGroupingNodeKey", () => {
     const json: ECClassGroupingNodeKey = {
-      type: DefaultNodeTypes.ECClassGroupingNode,
+      type: StandardNodeTypes.ECClassGroupingNode,
       pathFromRoot: [faker.random.uuid()],
       className: faker.random.word(),
     };
@@ -42,7 +42,7 @@ describe("NodeKey fromJSON", () => {
 
   it("creates ECPropertyGroupingNodeKey", () => {
     const json: ECPropertyGroupingNodeKey = {
-      type: DefaultNodeTypes.ECPropertyGroupingNode,
+      type: StandardNodeTypes.ECPropertyGroupingNode,
       pathFromRoot: [faker.random.uuid()],
       className: faker.random.word(),
       propertyName: faker.random.word(),
@@ -54,7 +54,7 @@ describe("NodeKey fromJSON", () => {
 
   it("creates LabelGroupingNodeKey", () => {
     const json: LabelGroupingNodeKey = {
-      type: DefaultNodeTypes.DisplayLabelGroupingNode,
+      type: StandardNodeTypes.DisplayLabelGroupingNode,
       pathFromRoot: [faker.random.uuid()],
       label: faker.random.words(),
     };

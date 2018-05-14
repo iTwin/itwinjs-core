@@ -1,19 +1,36 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Content */
+
 import * as ec from "../EC";
 
-/** Describes one step of property accessor path. */
+/**
+ * Data structure that describes one step of property
+ * accessor path.
+ */
 export interface PropertyAccessor {
+  /** Name of ECProperty */
   propertyName: string;
+  /** If the property is an array, array index. Otherwise undefined. */
   arrayIndex?: number;
 }
 
-/** Describes path to a property. */
+/**
+ * Describes path to a property.
+ */
 export type PropertyAccessorPath = PropertyAccessor[];
 
-/** Describes a single ECProperty that's included in a PropertiesField. */
+/**
+ * Data structure that describes a single ECProperty that's
+ * included in a [[PropertiesField]].
+ */
 export default interface Property {
+  /** ECProperty information */
   property: Readonly<ec.PropertyInfo>;
+  /**
+   * Relationship path from [Primary instance]($docs/learning/content/Terminology#primary-instance) to
+   * this property. This array is not empty only for [Related properties]($docs/learning/content/Terminology#related-properties).
+   */
   relatedClassPath: Readonly<ec.RelationshipPathInfo>;
 }

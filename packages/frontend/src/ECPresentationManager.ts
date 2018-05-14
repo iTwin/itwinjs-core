@@ -1,12 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationManager as ECPInterface, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 
+/**
+ * Frontend ECPresentation manager which basically just forwards all calls to
+ * the backend implementation.
+ */
 export default class ECPresentationManager implements ECPInterface {
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return await ECPresentationRpcInterface.getClient().getRootNodes(token, pageOptions, options);

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module UnifiedSelection */
+
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet } from "@bentley/ecpresentation-common";
@@ -29,7 +31,6 @@ export enum SelectionChangeType {
 
 /** The event object that's sent when the selection changes */
 export interface SelectionChangeEventArgs {
-
   /** The name of the selection source which caused the selection change. */
   source: string;
 

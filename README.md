@@ -1,109 +1,46 @@
 # Introduction
 
-ECPresentation library helps retrieve presentation data from imodels and
+ECPresentation library helps retrieve presentation data from iModels and
 takes care of unified selection.
 
 # Getting Started
 
-## Installation process
+## About this Repository
 
-If your app is using separate packages for frontend and backend:
-- In the frontend:
-   ```bash
-   npm install ecpresentation-frontend
-   ```
-- In the backend:
-   ```bash
-   npm install ecpresentation-backend
-   ```
-Else:
-   ```bash
-   npm install ecpresentation-backend ecpresentation-frontend
-   ```
+This repository is a *monorepo* that holds the source code to several npm
+packages. It is built using [Rush](http://rushjs.io/).
 
-## Setting up
+See [rush.json](./rush.json) for the list of packages. These packages are
+described below:
+- `package.json`
+  - Private, not published
+  - Provides the npm scripts to work with this repository
+  - Identifies the overall devDependencies (union of backend, frontend, and test
+  devDependencies). Many devDependencies are in common between backend and
+  frontend, so consolidating them makes them easier to manage.
+- `packages/common/package.json`
+  - Controls the version number for **@bentley/ecpresentation-common**
+  - Controls the package dependencies for the source code in common to both the
+  backend and frontend
+- `packages/backend/package.json`
+  - Controls the version number and package dependencies for **@bentley/ecpresentation-backend**
+- `packages/frontend/package.json`
+  - Controls the version number and package dependencies for **@bentley/ecpresentation-frontend**
+- `packages/controls/package.json`
+  - Controls the version number and package dependencies for **@bentley/ecpresentation-controls**
+- `packages/sample/package.json`
+  - Private, not published
+  - Sample application used for testing the library using read-world
+  controls.
+- `packages/integration-tests/package.json`
+  - Private, not published
+  - Integration tests' package which uses the library just like a
+  real-world app would.
 
-In addition to setting up *imodeljs-core* there are some steps that API users
-must do before ECPresentation library can be used.
+## Consuming
 
-1. Register ECPresentation gateway in the frontend:
-```typescript
-import { IModelGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-frontend";
-import ECPresentationGateway from "@bentley/ecpresentation-frontend/lib/gateway/ECPresentationGateway";
-BentleyCloudGatewayConfiguration.initialize(
-  {info: {title: "my-app", version: "v1.0"}},
-  [IModelGateway, ECPresentationGateway]
-);
-```
+See [this page](./docs/consume/index.md) on how to consume the library.
 
-2. Register ECPresentation gateway in the backend:
-```typescript
-import { IModelGateway, BentleyCloudGatewayConfiguration } from "@bentley/imodeljs-backend";
-import ECPresentationGateway from "@bentley/ecpresentation-backend/lib/gateway/ECPresentationGateway";
-BentleyCloudGatewayConfiguration.initialize(
-  {info: {title: "my-app", version: "v1.0"}},
-  [IModelGateway, ECPresentationGateway]
-);
-```
+## Contributing
 
-3. Ensure that ecpresentation is included:
-```typescript
-import ECPresentationManager from "@bentley/ecpresentation-backend/lib/ECPresentationManager";
-ECPresentationManager;
-```
-
-## Software dependencies
-
-The primary dependencies required by ecpresentation packages are the
-imodeljs-core packages (backend and frontend) and the imodeljs-nodeaddonapi
-package. It's **VERY IMPORTANT** that version of `imodeljs-nodeaddonapi`
-used by `ecpresentation-backend` matches the one used by `imodeljs-backend`.
-
-## API references
-
-TODO: See sample app.
-
-# Build and Test
-
-The library uses [@microsoft/rush](https://github.com/Microsoft/web-build-tools/wiki/Rush)
-for managing multiple packages in the repository. It's a requirement to
-have this package installed globally:
-```bash
-npm install -g @microsoft/rush
-```
-After that the steps to build are simple:
-```bash
-rush install
-rush rebuild
-```
-To build just one package + all its dependencies:
-```bash
-rush rebuild --to @bentley/ecpresentation-tests
-```
-To build rebuild all dependencies after changing one package:
-```bash
-rush rebuild --from @bentley/ecpresentation-frontend
-```
-
-## Test
-
-In the repository root location:
-```bash
-rush test
-```
-
-### Test dependencies
-
-Tests have these primary dependencies:
-- [mocha](https://mochajs.org/) test framework
-- [chai](http://chaijs.com/) assertion library
-- [typemoq](https://github.com/florinn/typemoq) mocking library. Chosen
-mostly because it was written for typescript as opposed to most other
-popular javascript libraries which have typescript declarations.
-
-## Run Sample Application
-
-In the repository root location:
-```bash
-npm start
-```
+See [this page](./docs/contribute/index.md) on how to contribute to the library.

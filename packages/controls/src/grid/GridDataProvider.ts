@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Content */
+
 import { memoize, MemoizedFunction } from "lodash";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";

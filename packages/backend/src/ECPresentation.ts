@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
@@ -8,6 +10,14 @@ import ECPresentationRpcImpl from "./ECPresentationRpcImpl";
 import ECPresentationManager, { Props as ECPresentationManagerProps } from "./ECPresentationManager";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 
+/**
+ * Static class used to statically set up ECPresentation library for the backend.
+ * Basically what it does is:
+ * - Register a RPC implementation
+ * - Create a singleton [[ECPresentationManager]] instance
+ * - Subscribe for [IModelHost.onBeforeShutdown]($imodeljs-backend) event and terminate
+ *   the presentation manager when that happens.
+ */
 export default class ECPresentation {
 
   private static _manager: ECPresentationManager | undefined;
@@ -23,7 +33,10 @@ export default class ECPresentation {
    * ``` ts
    * [[include:Backend.Initialization.ECPresentation]]
    * ```
-   * @param [props] Optional properties for ECPresentationManager
+   *
+   * **Important:** The method should be called after a call to [IModelHost.startup]($imodeljs-backend)
+   *
+   * @param props Optional properties for ECPresentationManager
    */
   public static initialize(props?: ECPresentationManagerProps): void {
     try {
@@ -38,7 +51,8 @@ export default class ECPresentation {
   }
 
   /**
-   * Terminates ECPresentation. Should be called to clean up before shutting down.
+   * Terminates ECPresentation. Consumers don't need to call this as it's automatically
+   * called on [IModelHost.onBeforeShutdown]($imodeljs-backend) event.
    */
   public static terminate(): void {
     if (ECPresentation._manager) {
@@ -52,7 +66,7 @@ export default class ECPresentation {
   }
 
   /**
-   * Get the single static instance of ECPresentationManager
+   * Get the single static instance of [[ECPresentationManager]]
    */
   public static get manager(): ECPresentationManager {
     if (!ECPresentation._manager)
@@ -61,7 +75,7 @@ export default class ECPresentation {
   }
 
   /** @hidden */
-  public static set manager(value: ECPresentationManager) {
+  public static setManager(value: ECPresentationManager) {
     if (ECPresentation._manager)
       ECPresentation._manager.dispose();
     ECPresentation._manager = value;

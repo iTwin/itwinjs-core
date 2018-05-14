@@ -35,7 +35,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bemetalsmith": "^2.0.0",
+    "@bentley/bemetalsmith": "^2.2.1",
     "@bentley/bentleyjs-tools": "^3.3.0",
     "@bentley/geometry-core": "^7",
     "@types/chai": "^4.0.10",
@@ -68,6 +68,7 @@
     "tsconfig-paths": "^3.3.1",
     "tslint": "^5.9.0",
     "tslint-consistent-codestyle": "^1.11.0",
+    "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
     "typescript": "^2.8.3",
     "valid-json-cli": "^1.3.0",

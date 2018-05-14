@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import KeySet, { SerializedKeySet } from "@src/KeySet";
+import KeySet, { KeySetJSON } from "@src/KeySet";
 import { InstanceKey } from "@src/EC";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomECInstanceKey, createRandomECInstanceId } from "@helpers/random/EC";
@@ -42,7 +42,7 @@ describe("KeySet", () => {
       expect(set.has(props[1])).to.be.true;
     });
 
-    it("initializes from SerializedKeySet", () => {
+    it("initializes from KeySetJSON", () => {
       const instanceKey11 = createRandomECInstanceKey();
       const instanceKey12 = {
         className: instanceKey11.className,
@@ -56,7 +56,7 @@ describe("KeySet", () => {
           [instanceKey2.className, [instanceKey2.id.value]],
         ],
         nodeKeys: [nodeKey],
-      } as SerializedKeySet;
+      } as KeySetJSON;
 
       const set = new KeySet(serialized);
       expect(set.size).to.eq(4);
@@ -263,7 +263,7 @@ describe("KeySet", () => {
           [instanceKey2.className, [instanceKey2.id.value]],
         ],
         nodeKeys: [nodeKey2],
-      } as SerializedKeySet;
+      } as KeySetJSON;
 
       set.add(serialized);
       expect(set.size).to.eq(4);
@@ -382,7 +382,7 @@ describe("KeySet", () => {
           [instanceKeys[1].className, [instanceKeys[1].id.value]],
         ],
         nodeKeys: [nodeKeys[0]],
-      } as SerializedKeySet;
+      } as KeySetJSON;
 
       set.delete(serialized);
       expect(set.size).to.eq(2);

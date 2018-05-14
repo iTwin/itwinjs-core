@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Content */
+
 export { default as CategoryDescription } from "./Category";
 export { default as Content } from "./Content";
 export { default as Descriptor, SelectClassInfo, SelectionInfo, SortDirection, ContentFlags } from "./Descriptor";

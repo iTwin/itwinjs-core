@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Content */
+
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";

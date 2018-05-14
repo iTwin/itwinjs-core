@@ -1,39 +1,52 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** Format of the property value. */
+/** @module Content */
+
+/**
+ * Format of the property value.
+ */
 export enum PropertyValueFormat {
   Primitive = "Primitive",
   Array = "Array",
   Struct = "Struct",
 }
 
-/** Base interface for content field type descriptions. */
+/**
+ * Data structure for base content field type description.
+ */
 export interface BaseTypeDescription {
   valueFormat: PropertyValueFormat;
   typeName: string;
 }
 
-/** Type description for primitive properties */
-// tslint:disable-next-line:no-empty-interface
+/**
+ * Type description for primitive properties.
+ */
 export interface PrimitiveTypeDescription extends BaseTypeDescription {
   valueFormat: PropertyValueFormat.Primitive;
 }
 
-/** Type description for array properties. */
+/**
+ * Type description for array properties.
+ */
 export interface ArrayTypeDescription extends BaseTypeDescription {
   valueFormat: PropertyValueFormat.Array;
   memberType: TypeDescription;
 }
 
-/** An interface for struct member type description. */
+/**
+ * A data structure that describes a struct member
+ */
 export interface StructFieldMemberDescription {
   name: string;
   label: string;
   type: TypeDescription;
 }
 
-/** Type description for struct properties. */
+/**
+ * Type description for struct properties.
+ */
 export interface StructTypeDescription extends BaseTypeDescription {
   valueFormat: PropertyValueFormat.Struct;
   members: StructFieldMemberDescription[];

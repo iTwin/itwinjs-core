@@ -1,24 +1,40 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { Id64 } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
 import { NodeKey, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
 
+/** A single key that identifies something that can be selected */
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
-export type Keys = ReadonlyArray<Key> | Readonly<SerializedKeySet> | Readonly<KeySet>;
 
-export interface SerializedKeySet {
+/** A type for multiple keys that identify something that can be selected */
+export type Keys = ReadonlyArray<Key> | Readonly<KeySetJSON> | Readonly<KeySet>;
+
+/**
+ * A data structure of serialized [[KeySet]]
+ */
+export interface KeySetJSON {
   instanceKeys: Array<[string, string[]]>;
   nodeKeys: NodeKey[];
 }
 
+/**
+ * A class that holds multiple [[Key]] objects. It's basically
+ * used as a container that holds multiple keys of different types.
+ */
 export default class KeySet {
   // note: all keys are stored as strings because we need ability to find them by value
   private _instanceKeys: Map<string, Set<string>>; // class name => instance ids
   private _nodeKeys: Set<string>;
 
+  /**
+   * Creates an instance of KeySet.
+   * @param source Optional source to initialize from.
+   */
   constructor(source?: Keys) {
     this._instanceKeys = new Map();
     this._nodeKeys = new Set();
@@ -26,7 +42,10 @@ export default class KeySet {
       this.add(source);
   }
 
-  public toJSON(): SerializedKeySet {
+  /**
+   * Serializes this KeySet to JSON
+   */
+  public toJSON(): KeySetJSON {
     const instanceKeys = new Array();
     for (const entry of this._instanceKeys.entries())
       instanceKeys.push([entry["0"], [...entry["1"]]]);
@@ -36,6 +55,12 @@ export default class KeySet {
     };
   }
 
+  /**
+   * Get a map of instance keys stored in this KeySet
+   *
+   * **Warning**: getting instance keys might be expensive for
+   * large KeySets.
+   */
   public get instanceKeys(): Map<string, Set<InstanceId>> {
     const map = new Map<string, Set<InstanceId>>();
     for (const entry of this._instanceKeys)
@@ -43,6 +68,12 @@ export default class KeySet {
     return map;
   }
 
+  /**
+   * Get a set of node keys stored in this KeySet
+   *
+   * **Warning**: getting node keys might be expensive for
+   * large KeySets.
+   */
   public get nodeKeys(): Set<NodeKey> {
     const set = new Set<NodeKey>();
     for (const serialized of this._nodeKeys) {
@@ -52,7 +83,7 @@ export default class KeySet {
     return set;
   }
 
-  private isSerializedKeySet(set: Keys | Key): set is Readonly<SerializedKeySet> {
+  private isKeySetJSON(set: Keys | Key): set is Readonly<KeySetJSON> {
     return Array.isArray((set as any).nodeKeys) && Array.isArray((set as any).instanceKeys);
   }
 
@@ -76,6 +107,10 @@ export default class KeySet {
     return (key as any).classFullName && (key as any).id;
   }
 
+  /**
+   * Clear this KeySet.
+   * @returns itself
+   */
   public clear(): KeySet {
     this._instanceKeys = new Map();
     this._nodeKeys = new Set();
@@ -97,20 +132,25 @@ export default class KeySet {
     }
   }
 
-  private addSerializedKeySet(keyset: Readonly<SerializedKeySet>): void {
+  private addKeySetJSON(keyset: Readonly<KeySetJSON>): void {
     for (const key of keyset.nodeKeys)
       this._nodeKeys.add(JSON.stringify(key));
     for (const entry of keyset.instanceKeys)
       this._instanceKeys.set(entry["0"], new Set(entry["1"]));
   }
 
+  /**
+   * Add a key or keys to this KeySet.
+   * @param value A key or keys to add.
+   * @returns itself
+   */
   public add(value: Keys | Key): KeySet {
     if (!value)
       throw new Error("Invalid argument");
     if (this.isKeySet(value)) {
       this.addKeySet(value);
-    } else if (this.isSerializedKeySet(value)) {
-      this.addSerializedKeySet(value);
+    } else if (this.isKeySetJSON(value)) {
+      this.addKeySetJSON(value);
     } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.add(key);
@@ -141,7 +181,7 @@ export default class KeySet {
     }
   }
 
-  private deleteSerializedKeySet(keyset: Readonly<SerializedKeySet>): void {
+  private deleteKeySetJSON(keyset: Readonly<KeySetJSON>): void {
     for (const key of keyset.nodeKeys)
       this._nodeKeys.delete(JSON.stringify(key));
     for (const entry of keyset.instanceKeys) {
@@ -154,13 +194,18 @@ export default class KeySet {
     }
   }
 
+  /**
+   * Deletes a key or keys from this KeySet.
+   * @param value A key or keys to delete.
+   * @returns itself
+   */
   public delete(value: Keys | Key): KeySet {
     if (!value)
       throw new Error("Invalid argument");
     if (this.isKeySet(value)) {
       this.deleteKeySet(value);
-    } else if (this.isSerializedKeySet(value)) {
-      this.deleteSerializedKeySet(value);
+    } else if (this.isKeySetJSON(value)) {
+      this.deleteKeySetJSON(value);
     } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.delete(key);
@@ -178,6 +223,10 @@ export default class KeySet {
     return this;
   }
 
+  /**
+   * Check if this KeySet contains the specified key.
+   * @param value The key to check.
+   */
   public has(value: Key): boolean {
     if (!value)
       throw new Error("Invalid argument");
@@ -192,6 +241,9 @@ export default class KeySet {
     throw new Error("Invalid argument");
   }
 
+  /**
+   * Get the number of keys stored in this KeySet.
+   */
   public get size(): number {
     const nodeKeysCount = this._nodeKeys.size;
     let instanceIdsCount = 0;
@@ -200,6 +252,9 @@ export default class KeySet {
     return nodeKeysCount + instanceIdsCount;
   }
 
+  /**
+   * Is this KeySet currently empty.
+   */
   public get isEmpty(): boolean {
     return 0 === this.size;
   }

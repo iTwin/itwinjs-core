@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { Node, NodeKey } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { IModelToken } from "@bentley/imodeljs-common";
@@ -12,7 +14,9 @@ export interface PageOptions {
   pageSize?: number;
 }
 
-/** An abstract presentation manager which drives presentation controls. */
+/** An interface of presentation manager which provides presentation services for
+ * tree and content controls
+ */
 export interface ECPresentationManager {
   /** Retrieves root nodes.
    * @param token Token of imodel to pull data from.

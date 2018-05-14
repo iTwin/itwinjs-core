@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module UnifiedSelection */
+
 import { IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { Keys } from "@bentley/ecpresentation-common";
@@ -8,7 +10,10 @@ import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionC
 import SelectionManager from "./SelectionManager";
 import ISelectionProvider from "./ISelectionProvider";
 
-/** A class that handles selection changes and helps to change the selection */
+/**
+ * A class that handles selection changes and helps to change
+ * internal the selection state
+ */
 export default class SelectionHandler implements IDisposable {
   private _manager: SelectionManager;
   private _inSelect: boolean;
@@ -18,7 +23,8 @@ export default class SelectionHandler implements IDisposable {
   public imodelToken: Readonly<IModelToken>;
   public onSelect?: SelectionChangesListener;
 
-  /** Constructor.
+  /**
+   * Constructor.
    * @param manager SelectionManager used to store overall selection.
    * @param name The name of the selection handler.
    * @param rulesetId Id of a ruleset selection changes will be associated.
@@ -36,14 +42,16 @@ export default class SelectionHandler implements IDisposable {
     this._disposables.add(this._manager.selectionChange.addListener(this.onSelectionChanged, this));
   }
 
-  /** Destructor. Must be called before disposing this object to make sure it cleans
+  /**
+   * Destructor. Must be called before disposing this object to make sure it cleans
    * up correctly.
    */
   public dispose(): void {
     this._disposables.dispose();
   }
 
-  /** Called when the selection changes. Handles this callback by first checking whether
+  /**
+   * Called when the selection changes. Handles this callback by first checking whether
    * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
   protected onSelectionChanged(evt: SelectionChangeEventArgs, provider: ISelectionProvider): void {
@@ -62,7 +70,8 @@ export default class SelectionHandler implements IDisposable {
     return true;
   }
 
-  /** Add to selection.
+  /**
+   * Add to selection.
    * @param keys The keys to add to selection.
    * @param level Level of the selection.
    */
@@ -73,7 +82,8 @@ export default class SelectionHandler implements IDisposable {
     return this._manager.addToSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
   }
 
-  /** Remove from selection.
+  /**
+   * Remove from selection.
    * @param keys The keys to remove from selection.
    * @param level Level of the selection.
    */
@@ -84,7 +94,8 @@ export default class SelectionHandler implements IDisposable {
     return this._manager.removeFromSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
   }
 
-  /** Change selection.
+  /**
+   * Change selection.
    * @param keys The keys indicating the new selection.
    * @param level Level of the selection.
    */
@@ -95,7 +106,8 @@ export default class SelectionHandler implements IDisposable {
     return this._manager.replaceSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
   }
 
-  /** Clear selection.
+  /**
+   * Clear selection.
    * @param level Level of the selection.
    */
   public clearSelection(level: number = 0): void {

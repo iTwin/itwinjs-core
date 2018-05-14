@@ -4,7 +4,6 @@
 import * as path from "path";
 import initLogging from "./logging";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { ECPresentation } from "@bentley/ecpresentation-backend";
 import "./SampleRpcImpl"; // just to get the RPC implementation registered
 
 // initialize logging
@@ -14,7 +13,7 @@ initLogging();
 IModelHost.startup();
 
 // __PUBLISH_EXTRACT_START__ Backend.Initialization.ECPresentation
-// set up ECPresentation library
+import { ECPresentation } from "@bentley/ecpresentation-backend";
 ECPresentation.initialize({
   rulesetDirectories: [path.resolve(__dirname, "assets/presentation_rules")],
 });

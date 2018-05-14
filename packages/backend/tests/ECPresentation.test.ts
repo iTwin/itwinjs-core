@@ -48,7 +48,7 @@ describe("ECPresentation", () => {
 
   });
 
-  describe("[set] manager", () => {
+  describe("setManager", () => {
 
     it("disposes and overwrites manager instance", () => {
       ECPresentation.initialize();
@@ -56,7 +56,7 @@ describe("ECPresentation", () => {
       const disposeSpy = spy.on(ECPresentation.manager, ECPresentationManager.prototype.dispose.name);
       expect(ECPresentation.manager).to.be.not.null;
       expect(ECPresentation.manager).to.not.eq(otherManager);
-      ECPresentation.manager = otherManager;
+      ECPresentation.setManager(otherManager);
       expect(ECPresentation.manager).to.eq(otherManager);
       expect(disposeSpy).to.be.called();
     });
