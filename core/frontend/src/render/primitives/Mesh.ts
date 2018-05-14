@@ -5,7 +5,8 @@
 import {
   assert,
   Comparable,
-  compare,
+  compareNumbers,
+  compareBooleans,
   Dictionary,
   // SortedArray,
 } from "@bentley/bentleyjs-core";
@@ -515,19 +516,36 @@ export namespace MeshBuilderMap {
     public readonly type: Mesh.PrimitiveType;
     public readonly hasNormals: boolean;
     public readonly isPlanar: boolean;
+
     constructor(params: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean) {
       this.params = params;
       this.type = type;
       this.hasNormals = hasNormals;
       this.isPlanar = isPlanar;
     }
+
     public static createFromMesh(mesh: Mesh): Key {
       return new Key(mesh.displayParams, Mesh.PrimitiveType.Mesh, mesh.normals.length !== 0, mesh.isPlanar);
     }
-    public compare(rhs: Key): number { return compare(this.order, rhs.order); }
-    public equals(rhs: Key): boolean {
-      const { order, type, isPlanar, hasNormals, params } = rhs;
-      return this.order === order && this.type === type && this.isPlanar === isPlanar && this.hasNormals === hasNormals && this.params.equals(params);
+
+    public compare(rhs: Key): number {
+      let diff = compareNumbers(this.order, rhs.order);
+      if (0 === diff) {
+        diff = compareNumbers(this.type, rhs.type);
+        if (0 === diff) {
+          diff = compareBooleans(this.isPlanar, rhs.isPlanar);
+          if (0 === diff) {
+            diff = compareBooleans(this.hasNormals, rhs.hasNormals);
+            if (0 === diff) {
+              diff = this.params.compareForMerge(rhs.params);
+            }
+          }
+        }
+      }
+
+      return diff;
     }
+
+    public equals(rhs: Key): boolean { return 0 === this.compare(rhs); }
   }
 }
