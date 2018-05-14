@@ -9,7 +9,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName
+  QParams3d, QPoint3dList, ColorByName,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
