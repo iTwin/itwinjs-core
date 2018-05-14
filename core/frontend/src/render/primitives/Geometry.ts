@@ -9,7 +9,6 @@ import {
   LineSegment3d,
   LineString3d,
   CurvePrimitive,
-  ClipVector,
   Loop,
   Path,
   Point2d,
@@ -41,55 +40,34 @@ export abstract class Geometry {
   public readonly transform: Transform;
   public readonly tileRange: Range3d;
   public readonly displayParams: DisplayParams;
-  public readonly isCurved: boolean;
-  public clip?: ClipVector;
 
-  public constructor(transform: Transform, tileRange: Range3d, displayParams: DisplayParams, isCurved: boolean) {
+  public constructor(transform: Transform, tileRange: Range3d, displayParams: DisplayParams) {
     this.transform = transform;
     this.tileRange = tileRange;
     this.displayParams = displayParams;
-    this.isCurved = isCurved;
   }
 
-  // ###TODO: specify IModelConnection
-
-  public static createFromLoop(loop: Loop, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, disjoint: boolean): Geometry {
-    return new PrimitiveLoopGeometry(loop, tf, tileRange, params, isCurved, disjoint);
+  public static createFromLoop(loop: Loop, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean): Geometry {
+    return new PrimitiveLoopGeometry(loop, tf, tileRange, params, disjoint);
   }
 
-  public static createFromPath(path: Path, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, disjoint: boolean): Geometry {
-    return new PrimitivePathGeometry(path, tf, tileRange, params, isCurved, disjoint);
+  public static createFromPath(path: Path, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean): Geometry {
+    return new PrimitivePathGeometry(path, tf, tileRange, params, disjoint);
   }
 
-  public static createFromPolyface(ipf: IndexedPolyface, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean): Geometry {
-    return new PrimitivePolyfaceGeometry(ipf, tf, tileRange, params, isCurved);
+  public static createFromPolyface(ipf: IndexedPolyface, tf: Transform, tileRange: Range3d, params: DisplayParams): Geometry {
+    return new PrimitivePolyfaceGeometry(ipf, tf, tileRange, params);
   }
 
   protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
   protected abstract _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined;
 
   public getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
-    const polyfaces = this._getPolyfaces(facetOptions);
-    if (undefined === polyfaces)
-      return undefined;
-
-    if (undefined === this.clip)
-      return polyfaces;
-
-    // ###TODO: clip the polyfaces if needed (See native code GeometryClipper); for now, return unclipped
-    return polyfaces;
+    return this._getPolyfaces(facetOptions);
   }
 
   public getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
-    const strokes = this._getStrokes(facetOptions);
-    if (undefined === strokes)
-      return undefined;
-
-    if (undefined === this.clip)
-      return strokes;
-
-    // ###TODO: clip the strokes if needed (See native code GeometryClipper); for now, return unclipped
-    return strokes;
+    return this._getStrokes(facetOptions);
   }
 
   public get hasTexture() { return this.displayParams.isTextured; }
@@ -113,8 +91,8 @@ export class PrimitivePathGeometry extends Geometry {
   public readonly path: Path;
   public readonly isDisjoint: boolean;
 
-  public constructor(path: Path, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ isDisjoint: boolean) {
-    super(tf, range, params, isCurved/*, iModel*/);
+  public constructor(path: Path, tf: Transform, range: Range3d, params: DisplayParams, isDisjoint: boolean) {
+    super(tf, range, params);
     this.path = path;
     this.isDisjoint = isDisjoint;
   }
@@ -161,8 +139,8 @@ export class PrimitiveLoopGeometry extends Geometry {
   public readonly loop: Loop;
   public readonly isDisjoint: boolean;
 
-  public constructor(loop: Loop, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ isDisjoint: boolean) {
-    super(tf, range, params, isCurved/*, iModel*/);
+  public constructor(loop: Loop, tf: Transform, range: Range3d, params: DisplayParams, isDisjoint: boolean) {
+    super(tf, range, params);
     this.loop = loop;
     this.isDisjoint = isDisjoint;
   }
@@ -195,8 +173,8 @@ export class PrimitiveLoopGeometry extends Geometry {
 export class PrimitivePolyfaceGeometry extends Geometry {
   public readonly polyface: IndexedPolyface;
 
-  public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams, isCurved: boolean/*, iModel: IModelConnection,*/) {
-    super(tf, range, params, isCurved/*, iModel*/);
+  public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams) {
+    super(tf, range, params);
     this.polyface = polyface;
   }
 
@@ -209,8 +187,6 @@ export class PrimitivePolyfaceGeometry extends Geometry {
         this.polyface.data.paramIndex = [];
       }
     }
-
-    // ###TODO: FixPolyface
 
     assert(this.transform.isIdentity());
     return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
@@ -277,38 +253,33 @@ export class GeometryAccumulator {
     transform.multiplyRange(range, range);
   }
 
-  private addGeomWithClip(geom: Geometry, clip?: ClipVector): boolean {
-    if (undefined !== clip)
-      geom.clip = ClipVector.createFrom(clip, geom.clip);
-
-    this.geometries.push(geom);
-    return true;
-  }
-
-  public addLoop(loop: Loop, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector): boolean {
+  public addLoop(loop: Loop, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
     const range: Range3d | undefined = this.getPrimitiveRange(loop);
     if (!range)
       return false;
+
     this.calculateTransform(transform, range);
-    return this.addGeomWithClip(Geometry.createFromLoop(loop, transform, range, displayParams, isCurved, disjoint), clip);
+    return this.addGeometry(Geometry.createFromLoop(loop, transform, range, displayParams, disjoint));
   }
 
-  public addPath(path: Path, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector): boolean {
+  public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
     const range: Range3d | undefined = this.getPrimitiveRange(path);
     if (!range)
       return false;
+
     this.calculateTransform(transform, range);
-    return this.addGeomWithClip(Geometry.createFromPath(path, transform, range, displayParams, isCurved, disjoint), clip);
+    return this.addGeometry(Geometry.createFromPath(path, transform, range, displayParams, disjoint));
   }
 
-  public addPolyface(ipf: IndexedPolyface, isCurved: boolean, displayParams: DisplayParams, transform: Transform, clip?: ClipVector): boolean {
+  public addPolyface(ipf: IndexedPolyface, displayParams: DisplayParams, transform: Transform): boolean {
     const range: Range3d | undefined = this.getPrimitiveRange(ipf);
     if (!range)
       return false;
+
     this.calculateTransform(transform, range);
-    return this.addGeomWithClip(Geometry.createFromPolyface(ipf, transform, range, displayParams, isCurved), clip);
+    return this.addGeometry(Geometry.createFromPolyface(ipf, transform, range, displayParams));
   }
-  public addGeometryWithGeom(geom: Geometry): void { this.geometries.push(geom); }
+  public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }
   public clear() { this.geometries.clear(); }
 
   public reset(transform: Transform = Transform.createIdentity(), surfacesOnly: boolean = false) {
@@ -376,9 +347,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     if (this.accum) {
       const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
       if (isLoop) // ###TODO: surely there is a better way to do this
-        this.accum.addLoop(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, this.currClip);
+        this.accum.addLoop(curve, displayParams, this.localToWorldTransform, false);
       else
-        this.accum.addPath(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, this.currClip);
+        this.accum.addPath(curve, displayParams, this.localToWorldTransform, false);
     }
   }
 
@@ -406,7 +377,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public get system(): RenderSystem | undefined { return this.accum ? this.accum.system : undefined; }
 
-  public add(geom: Geometry): void { if (this.accum) this.accum.addGeometryWithGeom(geom); }
+  public add(geom: Geometry): void { this.accum.addGeometry(geom); }
 
   public reInitialize(localToWorld: Transform, accumTf: Transform = Transform.createIdentity()) {
     if (this.accum) this.accum.reset(accumTf);

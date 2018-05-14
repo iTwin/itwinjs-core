@@ -6,7 +6,6 @@ import {
   Transform,
   Point3d,
   Point2d,
-  ClipVector,
   Range3d,
   Arc3d,
   Polyface,
@@ -61,8 +60,12 @@ export class GraphicBuilderTileCorners extends Iterable<Point3d> {
   constructor(public pts: [Point3d, Point3d, Point3d, Point3d]) { super(pts); }
 }
 
+const identityTransform = Transform.createIdentity();
+Object.freeze(identityTransform);
+
 /** Parameters used to construct a GraphicBuilder. */
 export class GraphicBuilderCreateParams {
+
   public get placement(): Transform { return this._placement; }
   public set placement(tf: Transform) { this._placement.setFrom(tf); }
 
@@ -77,7 +80,7 @@ export class GraphicBuilderCreateParams {
   public readonly viewport: Viewport;
   public get iModel(): IModelConnection { return this.viewport.iModel; }
 
-  constructor(placement: Transform = Transform.createIdentity(), type: GraphicType, viewport: Viewport) {
+  constructor(placement: Transform = identityTransform, type: GraphicType, viewport: Viewport) {
     this._placement = placement;
     this.type = type;
     this.viewport = viewport;
@@ -135,8 +138,6 @@ export class GraphicBuilderCreateParams {
 /** Exposes methods for constructing a RenderGraphic from geometric primitives. */
 export abstract class GraphicBuilder {
   protected _isOpen: boolean = false;
-
-  public currClip?: ClipVector;
 
   /**
    * Get/Set the current GeometryStreamEntryId, which identifies the graphics that are currently being drawn.
