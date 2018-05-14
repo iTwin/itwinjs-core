@@ -523,7 +523,7 @@ export namespace MeshBuilderMap {
       this.isPlanar = isPlanar;
     }
     public static createFromMesh(mesh: Mesh): Key {
-      return new Key(mesh.displayParams, Mesh.PrimitiveType.Mesh, mesh.normals.length !== 0, mesh.isPlanar);
+      return new Key(mesh.displayParams, mesh.type, mesh.normals.length !== 0, mesh.isPlanar);
     }
     public compare(rhs: Key): number { return compare(this.order, rhs.order); }
     public equals(rhs: Key): boolean {
