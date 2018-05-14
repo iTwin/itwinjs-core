@@ -7,9 +7,12 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
+import { RpcConfiguration } from "@bentley/imodeljs-common";
 
 let pendingsSent = 0;
 let pendingResponseQuota = 0;
+
+RpcConfiguration.developmentMode = true;
 
 // tslint:disable-next-line:no-var-requires
 const { ipcMain } = require("electron");

@@ -15,6 +15,12 @@ export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
  * RpcConfiguration is the base class for specific configurations.
  */
 export abstract class RpcConfiguration {
+  /**
+   * Whether development mode is enabled.
+   * @note This parameter determines whether developer convenience features like backend stack traces are available.
+   */
+  public static developmentMode: boolean = false;
+
   /** Sets the configuration supplier for an RPC interface class. */
   public static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void {
     definition.prototype.configurationSupplier = supplier;

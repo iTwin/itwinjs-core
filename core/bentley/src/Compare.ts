@@ -16,7 +16,9 @@ export function compareWithTolerance(a: number, b: number, tolerance = 0.1): num
     return 0;
 }
 
-export function compare(a: number, b: number): number { return a < b ? -1 : a > b ? 1 : 0; }
+export function compareNumbers(a: number, b: number): number { return a - b; }
+
+export function compareBooleans(a: boolean, b: boolean): number { return a !== b ? (a < b ? -1 : 1) : 0; }
 
 export interface Comparable<T> {
   equals(rhs: T): boolean;

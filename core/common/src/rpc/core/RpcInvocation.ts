@@ -11,6 +11,7 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
 import { RpcRequestStatus } from "./RpcRequest";
 import { RpcProtocol, RpcProtocolEvent, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
+import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling } from "./RpcMarshaling";
 import { RpcPendingResponse } from "./RpcControl";
 
@@ -84,6 +85,9 @@ export class RpcInvocation {
       protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
       return this.createFulfillment(result, status);
     }, (reason) => {
+      if (!RpcConfiguration.developmentMode)
+        reason.stack = undefined;
+
       if (reason instanceof RpcPendingResponse) {
         this._pending = true;
         protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);

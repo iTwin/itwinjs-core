@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial } from "@bentley/imodeljs-common";
+import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
 
 export namespace DisplayParams {
   export const enum Type {
@@ -119,7 +120,9 @@ export class DisplayParams {
 
   /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
   public equals(rhs: DisplayParams, purpose: DisplayParams.ComparePurpose = DisplayParams.ComparePurpose.Strict): boolean {
-    if (rhs === this)
+    if (DisplayParams.ComparePurpose.Merge === purpose)
+      return 0 === this.compareForMerge(rhs);
+    else if (rhs === this)
       return true;
 
     if (this.type !== rhs.type) return false;
@@ -131,15 +134,43 @@ export class DisplayParams {
     // ###TODO: if (this.textureMapping.texture !== rhs.textureMapping.texture) return false;
     if (this.wantRegionOutline !== rhs.wantRegionOutline) return false;
 
-    if (DisplayParams.ComparePurpose.Merge === purpose) {
-      if (this.hasFillTransparency !== rhs.hasFillTransparency) return false;
-      if (this.hasLineTransparency !== rhs.hasLineTransparency) return false;
-      // ###TODO: if texture mapping, test fillColor to match // Textures may use color so they can't be merged. (could test if texture actually uses color).
-      return true;
-    }
-
     if (!this.fillColor.equals(rhs.fillColor)) return false;
     if (!this.lineColor.equals(rhs.lineColor)) return false;
     return true;
+  }
+
+  public compareForMerge(rhs: DisplayParams): number {
+    if (rhs === this)
+      return 0;
+
+    let diff = compareNumbers(this.type, rhs.type);
+    if (0 === diff) {
+      diff = compareBooleans(this.ignoreLighting, rhs.ignoreLighting);
+      if (0 === diff) {
+        diff = compareNumbers(this.width, rhs.width);
+        if (0 === diff) {
+          // ###TODO texture mapping
+          // ###TODO: Define ordering between materials...
+          if (this.material !== rhs.material)
+            return -1;
+
+          diff = compareNumbers(this.linePixels, rhs.linePixels);
+          if (0 === diff) {
+            diff = compareNumbers(this.fillFlags, rhs.fillFlags);
+            if (0 === diff) {
+              diff = compareBooleans(this.wantRegionOutline, rhs.wantRegionOutline);
+              if (0 === diff) {
+                diff = compareBooleans(this.hasFillTransparency, rhs.hasFillTransparency);
+                if (0 === diff) {
+                  diff = compareBooleans(this.hasLineTransparency, rhs.hasLineTransparency);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return diff;
   }
 }
