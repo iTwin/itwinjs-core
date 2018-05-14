@@ -66,7 +66,7 @@ A service can expose multiple interfaces. A service can expose both its own impl
 
 *Example:*
 ```ts
-[[include:RpcInterface.configure]]
+[[include:RpcInterface.initializeImpl]]
 ```
 This example shows how a service could configure and expose more than one interface, including imported interfaces.
 It also shows how to choose the appropriate configuration.
@@ -100,7 +100,12 @@ When a service is the backend of a mobile app, <em>TBD...</em.
 A client (e.g., an app frontend) must configure the interfaces that it intends to use.
 It must use the appropriate configuration for each interface, depending on how the client itself it configured and how the service that implements the interface is deployed.
 
-A client makes calls on a interface's client implementation. Each method in the client implementation forwards the call to the service, via the configured RPC mechanism. The call signature for the client methods is the same as given in the definition.
+*Example:*
+```ts
+[[include:RpcInterface.initializeClient]]
+```
+
+A client makes calls on a interface's client implementation (which just forwards the calls to the service, via the configured RPC mechanism). The call signature for the client methods is the same as given in the definition.
 
 ### RpcInterface Performance
 

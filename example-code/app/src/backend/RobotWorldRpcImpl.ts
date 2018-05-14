@@ -66,7 +66,7 @@ class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInt
 }
 // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.configure
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClient
 /* Initialize the RPC clients used by this service. */
 export function initializeRpcClient(interfaces: RpcInterfaceDefinition[], uriPrefix?: string) {
   if (Platform.isMobile()) {
@@ -77,7 +77,9 @@ export function initializeRpcClient(interfaces: RpcInterfaceDefinition[], uriPre
     BentleyCloudRpcManager.initializeClient({ info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix }, interfaces);
   }
 }
+// __PUBLISH_EXTRACT_END__
 
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeImpl
 /* Configures the RPC implementations that are implemented by this service */
 export function initializeRpcImpl() {
   // Register my own interfaces
