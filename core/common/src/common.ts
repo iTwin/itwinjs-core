@@ -89,7 +89,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
 /**
  * @docs-group-description RpcInterface
  * Classes for working with RpcInterfaces, the communication channel between clients and services.
- * For more information: [Gateways]($docs/learning/Gateways.md)
+ * For more information: [RpcInterface]($docs/learning/RpcInterface.md)
  */
 /**
  * @docs-group-description Schema

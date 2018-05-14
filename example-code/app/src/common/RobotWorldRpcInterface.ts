@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// __PUBLISH_EXTRACT_START__ Gateway.definition
+// __PUBLISH_EXTRACT_START__ RpcInterface.definition
 import { RpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Point3d, Angle } from "@bentley/geometry-core";

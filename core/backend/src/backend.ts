@@ -81,7 +81,7 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description RpcInterface
  * Classes for working with RpcInterfaces.
- * For more information, see [Gateway Overview]($docs/overview/App.md#gateways).
+ * For more information, see [RpcInterface Overview]($docs/overview/App.md#rpcinterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
  */
 /**
  * @docs-group-description Schema

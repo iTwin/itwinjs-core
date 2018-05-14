@@ -21,9 +21,7 @@ An example of the logging-related sections of a configuration .json file that is
      "defaultLevel": "${ROBOT-WORLD-DEFAULT-LOG-LEVEL}",
      "categoryLevels": [
          {"category": "ROBOT-WORLD", "logLevel": "Trace"},
-         {"category": "imodeljs-gateway.BentleyCloudGatewayProtocol", "logLevel": "Trace"},
-         {"category": "imodeljs-gateway.GatewayHttpProtocol", "logLevel": "Trace"},
-         {"category": "imodeljs-gateway", "logLevel": "Trace"},
+         {"category": "imodeljs-rpc", "logLevel": "Trace"},
          {"category": "imodeljs-backend.AutoPush", "logLevel": "Trace"},
          {"category": "ECPresentation", "logLevel": "None"},
          {"category": "Diagnostics.ECSqlStatement", "logLevel": "None"},

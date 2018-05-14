@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// __PUBLISH_EXTRACT_START__ Gateway.implementation
+// __PUBLISH_EXTRACT_START__ RpcInterface.implementation
 import { RpcInterface, RpcInterfaceDefinition, RpcManager, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, BentleyCloudRpcManager, ElectronRpcManager } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -99,7 +99,7 @@ export function initializeRpcImpl() {
     interfaces.push(RobotWorldWriteRpcInterface);
   }
 
-  // Expose the gateways using the appropriate configuration.
+  // Expose the RpcInterfaces using the appropriate configuration.
   if (Platform.isMobile()) {
     assert(false, "TBD: mobile RPC config");
   } else if (Platform.electron !== undefined) {

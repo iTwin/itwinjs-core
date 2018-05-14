@@ -29,13 +29,13 @@ A true service is a stand-alone program that is never bundled with the clients t
 
 An example of a service is a program that serves out spatial tiles that it extracts from a specified area of an iModel upon request.
 
-An iModel service (or app backend) is exposed to clients using by a [gateway](#gateways). Client code must be written in TypeScript and must use the gateway to access an iModel service.
+An iModel service or app backend exposes an *interface* that clients can use to make requests. An iModel service interface is an [RpcInterface](#rpcinterface). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
 
 ## Interactive Apps
 
 An interactive app has two parts: a *frontend* containing its UI and a *backend* containing its data-access logic. Frontends and backends have very different concerns and must be kept strictly separate. They are sometimes bundled together in a single install set or program, and they are sometimes deployed separately to different machines or processes.
 
-The backend implements services that are used by the frontend. Following good design principles, the frontend may call the backend, but not the other way around.
+The backend implements operations that are used by the frontend. Following good design principles, the frontend may call the backend, but not the other way around.
 
 ### App Backend
 
@@ -43,7 +43,7 @@ The data-access part of an app is called the [backend](https://en.wikipedia.org/
 
 An app can use a pre-existing or general-purpose [service](#imodel-services) as its backend. For example, a family of viewing apps can use a general-purpose service that handles requests for data from a given iModel.
 
-An app may require data-access services that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using [gateways](#gateways) and are encouraged.
+An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using [RpcInterface](#rpcinterface) and are encouraged.
 
 App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
 
@@ -51,7 +51,7 @@ An app can use many services, both general-purpose and app-specific.
 
 #### Backends for Frontends
 
-Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs gateway architecture encourages and supports the BFF pattern. Since a gateway is just a TypeScript class, it is easy for an app to implement its own services. And, it is easy for an app to choose a different mix of gateways at runtime, depending on its configuration.
+Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs [RpcInterface](#rpcinterface) architecture encourages and supports the BFF pattern. It is easy to write and deploy app-specific backends, because a backend is just a TypeScript class that deals only with the app's functionality, not communciation details. It is easy for an app to choose the mix of backend services that match its configuration, because RpcInterfaces, as TypeScript classes, are first class objects that can be managed at runtime.
 
 ### App Frontend
 
@@ -59,53 +59,54 @@ The UI-specific part of an app is called the [frontend](https://en.wikipedia.org
 
 The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
-The frontend makes requests on backend services in order to access iModel content using gateways, as explained below. The frontend must use [gateways](#gateways) to communicate with the app's backend(s). The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on nodejs.
+The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on nodejs.
 
-### Gateways
+### RpcInterface
 
-A *gateway* is a set of operations exposed by a service that a client can call. To the iModelJs app programmer, a gateway is a TypeScript class, and using a gateway is a method call. Client and service must both be implemented in TypeScript/JavaScript. iModelJs services support only compliant script clients, and iModelJs clients use gateways exclusively when communicating with iModelJs services.
+An *interface* is the boundary between two components, allowing them to communicate in a clearly defined way. A service implements an interface in order to make its operations available, and a client makes calls on a service's interface it in order to request operations. Since client and service do not run in the same JavaScript context and may not even be on the same machine, a call across the interface is always a [remote procedure call](../learning/Glossary.md#rpc). That is why the interfaces implemented by services and called by clients are called *RpcInterfaces*.
 
-In operational terms, a gateway is composed of four things:
-* A TypeScript interface that declares a set of requests that are provided by a service, including their parameters.
-* A proxy class that allows the client to make requests.
-* An implementation class that allows the service to handle the requests.
-* A [configuration](#gateway-configurations) that marshalls the requests.
+An RpcInterface is made up of:
+* The interface - An abstract TypeScript class that defines the interface as a set of abstract methods.
+* The client agent - A concrete TypeScript class for clients to use. This class implements the interface, making each method an RPC.
+* The service-side implementation - A concrete TypeScript class that the service implements. This class extends implements the interface, making each method actually handle the corrsponding request.
 
-The static methods of the gateway interface are the operations offered by the service. The parameters and return type of the methods are the parameters and results of the operations. Note that the service is declared and exposed in TypeScript. There is no separate definition of the service. A client sends a request to a service by obtaining the proxy for the appropriate gateway and calling the appropriate method on it. A service exposes its API by defining and registering a class that is derived from the gateway interface. As far as both client and service are concerned, service operations are TypeScript method calls. The section on [gateway configurations](#gateway-configurations) below described how these calls are marshalled and dispatched.
+The interface is defined entirely in TypeScript. A client requests an operation on a service by selecting an RpcInterface, obtaining the client-side implementation of it, and calling a method on it. A service exposes its operations by defining and registering implementations of its RpcInterfaces.
 
-A gateway is unidirectional. It allows a client to make a request on a service and get a return value. Services never send requests to clients.
+As far as both client and service are concerned, service operations are TypeScript method calls. The section on [RPC configurations](#rpc-configurations) below describes how these calls are marshalled and dispatched.
 
-Gateway methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
+An RpcInterface is unidirectional. It allows a client to make a request on a service and get a return value. Services never send requests to clients.
 
-The key API class is [Gateway]($common).
+RpcInterface methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
 
-### Gateway Configurations
+The key imodeljs API class is [RpcInterface]($common).
 
-A gateway defines a frontend-backend interface in a way that is independent of how the call will be made. The call is marshalled differently, depending on how the app itself is configured. iModelJs supplies transport mechanisms to marshall calls between client and service. These mechanisms are called *gateway configurations*. Configurations are applied to gateways at runtime. Available configurations include: cloud, desktop, and in-process.
+### RPC Configurations
 
-#### Cloud gateway configuration
+An RpcInterface defines an interface in a way that is independent of how calls will be made. A  call is marshalled differently, depending on how the app itself is configured. iModelJs supplies transport mechanisms to marshall calls between client and service. These mechanisms are called *RPC configurations*. Configurations are applied to RpcInterfaces at runtime. Available configurations include: cloud, desktop, and in-process.
 
-Transforms client calls on the gateway into HTTP requests. Provides endpoint-processing and call dispatching in the service process.
+#### Cloud RPC configuration
 
-The iModelJs cloud gateway configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure.
+Transforms client calls on an RpcInterface into HTTP requests. Provides endpoint-processing and call dispatching in the service process.
 
-See [BentleyCloudGatewayConfiguration]($common).
+The iModelJs cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure.
 
-#### Desktop gateway configuration
+See [BentleyCloudRpcManager]($common).
 
-Marshalls calls on the gateway through high-bandwidth, low-latency pipes between cooperating processes on the same computer. Provides endpoint-processing and call dispatching in the service backend process.
+#### Desktop RPC configuration
 
-The iModelJs desktop gateway configuration is specific to Electron.
+Marshalls calls on an RpcInterface through high-bandwidth, low-latency pipes between cooperating processes on the same computer. Provides endpoint-processing and call dispatching in the service backend process.
 
-See [GatewayElectronConfiguration]($common).
+The iModelJs desktop RPC configuration is specific to Electron.
 
-#### In-process gateway configuration
+See [ElectronRpcManager]($common).
 
-Marshalls calls on the gateway across threads within a single process. Provides call dispatching in the backend thread.
+#### In-process RPC configuration
 
-### App Runtime Gateway Configuration
+Marshalls calls on an RpcInterface across threads within a single process. Provides call dispatching in the backend thread.
 
-An app chooses the appropriate configuration for each gateway that it uses. For example, while an app accesses both true services and app-specific backends through gateways, the app must configure the gateways differently: a cloud configuration for services and a configuration based on its own app configuration for an app-specific backend.
+### Configuring RpcInterfaces at Runtime
+
+An app chooses the appropriate configuration for each RpcInterface that it uses. For example, while an app accesses both true services and app-specific backends through RpcInterfaces, the app must configure the RpcInterfaces differently: a cloud configuration is always uses for services and a configuration based on its own app configuration must be use for an app-specific backend.
 
 ## Interactive App Configurations
 
@@ -117,15 +118,15 @@ The backend of the app can be the same in all configurations. An app developer c
 
 ### Web Apps
 
-When configured as a Web app, the [frontend](#app-frontend) will run in a Web browser and the [backend](#app-backend) will run on a server. The frontend's assets (HTML pages and js files) will be served out by a server (generally different from the backend). The frontend and backend will use the [cloud configuration](#cloud-gateway-configuration) for all gateways. As noted, gateway requests will run through whatever router infrastructure surrounds each service.
+When configured as a Web app, the [frontend](#app-frontend) will run in a Web browser and the [backend](#app-backend) will run on a server. The frontend's assets (HTML pages and js files) will be served out by a server (generally different from the backend). The frontend and backend will use the [cloud configuration](#cloud-rpc-configuration) for all RpcInterfaces. As noted, RPCS will run through whatever router infrastructure surrounds each service.
 
 ### Desktop Apps
 
-[Electron](https://electronjs.org/) is used to package an iModelJs app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](#desktop-gateway-configuration) for efficient local calls on app-specific gateways and [cloud configuration](#cloud-gateway-configuration) for remote services.
+[Electron](https://electronjs.org/) is used to package an iModelJs app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and [cloud configuration](#cloud-rpc-configuration) for remote services.
 
 ### Mobile Apps
 
-When configured as a mobile app, the [frontend](#app-frontend) and [backend](#app-backend) will be bundled into a single app. The app will run as a single process, with frontend and backend in separate threads. The app will use the [in-process configuration](#in-process-gateway-configuration) for efficient in-process calls on app-specific gateways and [cloud configuration](#cloud-gateway-configuration) for remote services.
+When configured as a mobile app, the [frontend](#app-frontend) and [backend](#app-backend) will be bundled into a single app. The app will run as a single process, with frontend and backend in separate threads. The app will use the [in-process configuration](#in-process-rpc-configuration) for efficient in-process calls on app-specific RpcInterfaces and [cloud configuration](#cloud-rpc-configuration) for remote services.
 
 ### Making Interactive Apps Fit the Platform
 
