@@ -39,7 +39,7 @@ exports.handler = async (argv) => {
   const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
   const printHostingInstructions = require("react-dev-utils/printHostingInstructions");
   const { measureFileSizesBeforeBuild, printFileSizesAfterBuild } = require("react-dev-utils/FileSizeReporter");
-  const { buildFrontend, buildBackend, saveJsonStats } = require("./utils/buildBackend");
+  const { buildFrontend, buildBackend, saveJsonStats } = require("./utils/webpackWrappers");
 
   const paths = require("../config/paths");
   const frontendConfig = require("../config/webpack.config.frontend.prod");

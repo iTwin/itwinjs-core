@@ -47,7 +47,7 @@ exports.handler = async (argv) => {
 
   const paths = require("../config/paths");
   const config = require("../config/webpack.config.backend.dev");
-  const { watchBackend }= require("./utils/buildBackend");
+  const { watchBackend }= require("./utils/webpackWrappers");
 
   const nodeDebugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
   const electronDebugOptions = (argv.electronDebug) ? ["--debug-brk=" + argv.electronDebug] : [];

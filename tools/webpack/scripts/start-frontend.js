@@ -28,7 +28,7 @@ exports.handler = async (argv) => {
   const checkRequiredFiles = require("react-dev-utils/checkRequiredFiles");
   const openBrowser = require("react-dev-utils/openBrowser");
   const { choosePort } = require("react-dev-utils/WebpackDevServerUtils");
-  const { startFrontendDevServer } = require("./utils/buildBackend");
+  const { startFrontendDevServer } = require("./utils/webpackWrappers");
 
   // Warn and crash if required files are missing
   if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
