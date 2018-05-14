@@ -2,20 +2,24 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "../IModelConnection";
-import { Transform,
-         Point3d,
-         Point2d,
-         ClipVector,
-         Range3d,
-         Arc3d,
-         Polyface,
-         StrokeOptions } from "@bentley/geometry-core";
-import { AreaPattern,
-         ColorDef,
-         GraphicParams,
-         GeometryParams,
-         LinePixels,
-         LineStyle} from "@bentley/imodeljs-common";
+import {
+  Transform,
+  Point3d,
+  Point2d,
+  ClipVector,
+  Range3d,
+  Arc3d,
+  Polyface,
+  StrokeOptions,
+} from "@bentley/geometry-core";
+import {
+  AreaPattern,
+  ColorDef,
+  GraphicParams,
+  GeometryParams,
+  LinePixels,
+  LineStyle,
+} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./System";
 
@@ -68,19 +72,23 @@ export class GraphicBuilderCreateParams {
   public get isViewBackground(): boolean { return this.type === GraphicType.ViewBackground; }
   public get isOverlay(): boolean { return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay; }
 
-  constructor(private readonly _placement: Transform = Transform.createIdentity(),
-              public readonly type: GraphicType,
-              public viewport?: Viewport,
-              public iModel?: IModelConnection,
-              ) {}
+  private readonly _placement: Transform;
+  public readonly type: GraphicType;
+  public readonly iModel: IModelConnection;
+  public viewport?: Viewport;
+
+  constructor(placement: Transform = Transform.createIdentity(), type: GraphicType, iModel: IModelConnection, viewport?: Viewport) {
+    this._placement = placement;
+    this.type = type;
+    this.iModel = iModel;
+    this.viewport = viewport;
+  }
 
   /**
    * consolidates viewport and imodel parameters, as we would always want to use the imodel of the viewport if the viewport was passed
    */
-  public static create(type: GraphicType, vpOrIModel?: Viewport | IModelConnection, placement?: Transform): GraphicBuilderCreateParams {
-    const vp = vpOrIModel instanceof Viewport ? vpOrIModel : undefined;
-    const imodel = !!vp && !!vp.view.iModel ? vp.view.iModel :  vpOrIModel instanceof IModelConnection ? vpOrIModel : undefined;
-    return new GraphicBuilderCreateParams(placement, type, vp, imodel);
+  public static create(type: GraphicType, iModel: IModelConnection, placement?: Transform, vp?: Viewport): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(placement, type, iModel, vp);
   }
 
   /**
@@ -90,15 +98,15 @@ export class GraphicBuilderCreateParams {
    * If this function is used outside of tile generation context, a default coarse tolerance will be used.
    * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
    */
-  public static scene(vp?: Viewport, placement?: Transform, iModel?: IModelConnection) {
-    return new GraphicBuilderCreateParams(placement, GraphicType.Scene, vp, iModel);
+  public static scene(iModel: IModelConnection, placement?: Transform, vp?: Viewport) {
+    return new GraphicBuilderCreateParams(placement, GraphicType.Scene, iModel, vp);
   }
 
   /**
    * Create params for a subgraphic
    */
   public subGraphic(placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, this.type, this.viewport, this.iModel );
+    return new GraphicBuilderCreateParams(placement, this.type, this.iModel, this.viewport);
   }
 
   /**
@@ -106,7 +114,7 @@ export class GraphicBuilderCreateParams {
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
   public static worldDecoration(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.WorldDecoration, vp);
+    return new GraphicBuilderCreateParams(placement, GraphicType.WorldDecoration, vp.iModel, vp);
   }
 
   /**
@@ -114,14 +122,14 @@ export class GraphicBuilderCreateParams {
    * The faceting tolerance will be computed from the finished graphic's range and the viewport.
    */
   public static worldOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.WorldOverlay, vp);
+    return new GraphicBuilderCreateParams(placement, GraphicType.WorldOverlay, vp.iModel, vp);
   }
 
   /**
    * Create params for a ViewOverlay-type RenderGraphic
    */
   public static viewOverlay(vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp);
+    return new GraphicBuilderCreateParams(placement, GraphicType.ViewOverlay, vp.iModel, vp);
   }
 }
 
@@ -136,13 +144,13 @@ export abstract class GraphicBuilder {
    * Separated from _streamId to allow child classes to override the logic involved in setting the streamId
    */
   public get isOpen(): boolean { return this._isOpen; }
-  public get iModel(): IModelConnection { return this.createParams.iModel!; }
+  public get iModel(): IModelConnection { return this.createParams.iModel; }
   public get localToWorldTransform(): Transform { return this.createParams.placement; }
   public get viewport(): Viewport { return this.createParams.viewport!; }
   public get isWorldCoordinates(): boolean { return this.createParams.isWorldCoordinates; }
   public get isViewCoordinates(): boolean { return this.createParams.isViewCoordinates; }
 
-  constructor(public readonly createParams: GraphicBuilderCreateParams) {}
+  constructor(public readonly createParams: GraphicBuilderCreateParams) { }
 
   /** IFacetOptions => StrokeOptions */
   public wantStrokeLineStyle(_symb: LineStyle.Info, _facetOptions: StrokeOptions): boolean { return true; }
