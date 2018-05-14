@@ -83,9 +83,6 @@ module.exports = function(proxy, allowedHost) {
     before(app) {
       // This lets us open files from the runtime error overlay.
       app.use(errorOverlayMiddleware());
-
-      global.webpackDevServer = app;
-      require(paths.appBuiltMainJs);
     },
   };
 };
