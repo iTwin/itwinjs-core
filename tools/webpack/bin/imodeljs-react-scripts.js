@@ -13,6 +13,7 @@ const yargs = require("yargs");
 const argv = yargs
   .wrap(Math.min(120, yargs.terminalWidth()))
   .usage(`\n${chalk.bold("$0")} ${chalk.yellow("<command>")}`)
+  .command(require("../scripts/start"))
   .command(require("../scripts/start-backend"))
   .command(require("../scripts/start-frontend"))
   .command(require("../scripts/test"))
