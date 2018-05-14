@@ -50,13 +50,18 @@ export abstract class Geometry {
     this.isCurved = isCurved;
   }
 
-  public static createFromGeom(geometry: PrimitiveGeometryType, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, /*iModel: IModelConnection,*/ disjoint: boolean): Geometry {
-    if (geometry instanceof Loop)
-      return new PrimitiveLoopGeometry(geometry, tf, tileRange, params, isCurved, disjoint);
-    else if (geometry instanceof Path)
-      return new PrimitivePathGeometry(geometry, tf, tileRange, params, isCurved, disjoint);
-    else // geometry instanceof IndexedPolyface
-      return new PrimitivePolyfaceGeometry(geometry, tf, tileRange, params, isCurved);
+  // ###TODO: specify IModelConnection
+
+  public static createFromLoop(loop: Loop, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, disjoint: boolean): Geometry {
+    return new PrimitiveLoopGeometry(loop, tf, tileRange, params, isCurved, disjoint);
+  }
+
+  public static createFromPath(path: Path, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean, disjoint: boolean): Geometry {
+    return new PrimitivePathGeometry(path, tf, tileRange, params, isCurved, disjoint);
+  }
+
+  public static createFromPolyface(ipf: IndexedPolyface, tf: Transform, tileRange: Range3d, params: DisplayParams, isCurved: boolean): Geometry {
+    return new PrimitivePolyfaceGeometry(ipf, tf, tileRange, params, isCurved);
   }
 
   protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
@@ -258,24 +263,51 @@ export class GeometryAccumulator {
     this.tileRange = tileRange;
   }
 
-  public addGeometry(geom: PrimitiveGeometryType, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, range: Range3d = new Range3d(), clip?: ClipVector): boolean {
-    const { _transform, haveTransform, geometries } = this;
+  private getPrimitiveRange(pGeom: PrimitiveGeometryType): Range3d | undefined {
+    const pRange: Range3d = new Range3d();
+    pGeom.range(undefined, pRange);
+    if (pRange.isNull())
+      return undefined;
+    return pRange;
+  }
 
-    geom.range(undefined, range);
-    if (range.isNull())
-      return false;
+  private calculateTransform(transform: Transform, range: Range3d): void {
+    const { _transform, haveTransform } = this;
 
     if (haveTransform) _transform.multiplyTransformTransform(transform, transform);
     transform.multiplyRange(range, range);
+  }
 
-    // #TODO: should createFromGeom be possibly undefined? seems like native expects that possibility
-    const geometry = Geometry.createFromGeom(geom, transform, range, displayParams, isCurved, disjoint);
-
+  private addGeomWithClip(geom: Geometry, clip?: ClipVector): boolean {
     if (undefined !== clip)
-      geometry.clip = ClipVector.createFrom(clip, geometry.clip);
+      geom.clip = ClipVector.createFrom(clip, geom.clip);
 
-    geometries.push(geometry);
+    this.geometries.push(geom);
     return true;
+  }
+
+  public addLoop(loop: Loop, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector): boolean {
+    const range: Range3d | undefined = this.getPrimitiveRange(loop);
+    if (!range)
+      return false;
+    this.calculateTransform(transform, range);
+    return this.addGeomWithClip(Geometry.createFromLoop(loop, transform, range, displayParams, isCurved, disjoint), clip);
+  }
+
+  public addPath(path: Path, isCurved: boolean, displayParams: DisplayParams, transform: Transform, disjoint: boolean, clip?: ClipVector): boolean {
+    const range: Range3d | undefined = this.getPrimitiveRange(path);
+    if (!range)
+      return false;
+    this.calculateTransform(transform, range);
+    return this.addGeomWithClip(Geometry.createFromPath(path, transform, range, displayParams, isCurved, disjoint), clip);
+  }
+
+  public addPolyface(ipf: IndexedPolyface, isCurved: boolean, displayParams: DisplayParams, transform: Transform, clip?: ClipVector): boolean {
+    const range: Range3d | undefined = this.getPrimitiveRange(ipf);
+    if (!range)
+      return false;
+    this.calculateTransform(transform, range);
+    return this.addGeomWithClip(Geometry.createFromPolyface(ipf, transform, range, displayParams, isCurved), clip);
   }
 
   public addGeometryWithGeom(geom: Geometry): void { this.geometries.push(geom); }
@@ -333,8 +365,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
   public addArc(ellipse: Arc3d, isEllipse: boolean, filled: boolean): void {
     let curve;
+    let isLoop = false;
     if (isEllipse || filled) {
       curve = Loop.create(ellipse);
+      isLoop = true;
     } else {
       curve = Path.create(ellipse);
     }
@@ -346,7 +380,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
     if (this.accum) {
       const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      this.accum.addGeometry(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, undefined, this.currClip);
+      if (isLoop)
+        this.accum.addLoop(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, this.currClip);
+      else
+        this.accum.addPath(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, this.currClip);
     }
   }
 
