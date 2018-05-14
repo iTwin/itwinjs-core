@@ -201,11 +201,10 @@ class PrettyLicenseWebpackPlugin extends LicenseWebpackPlugin {
       }
 
       if (formattedErrors.length > 0) {
-        console.log();
         console.log(`${chalk.bold.yellow("WARNING:")} ${chalk.yellow("License notices for the following packages could not be found:")}`);
         formattedErrors.sort().forEach((e) => console.log(e));
         console.log(chalk.yellow("Don't worry, this warning will not be treated as an error in CI builds (yet)."));
-        console.log(chalk.yellow("We're still looking for a good way to pull and manage these notices.\n"));
+        console.log(chalk.yellow("We're still looking for a good way to pull and manage these notices."));
       }
     });
   }
