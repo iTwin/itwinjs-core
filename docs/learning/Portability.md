@@ -40,7 +40,10 @@ An app-specific backend's main script must check the app's configuration to deci
 * Desktop app - the backend should run a Web server and use the [desktop RPC configuration](../overview/App.md#desktop-rpc-configuration).
 * Web app - the backend should run a Web server and use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration).
 
-*TBD: Sample Code*
+*Example:*
+```ts
+[[include:RpcInterface.initializeImpl]]
+```
 
 A backend can use node builtins, but only in guarded code.
 
