@@ -5,7 +5,7 @@ import { assert, expect } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
+import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode, FitViewTool } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderTarget, RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
 
@@ -215,5 +215,10 @@ describe("RenderLoop tests", () => {
     expect((target as Target).bgColor.tbgr).to.equal(ColorByName.darkBlue);
 
     target.drawFrame();
+
+    const fitView = IModelApp.tools.create("View.Fit", viewport);
+    expect(fitView).not.to.be.undefined;
+    expect(fitView instanceof FitViewTool).to.be.true;
+    (fitView as FitViewTool).run();
   });
 });
