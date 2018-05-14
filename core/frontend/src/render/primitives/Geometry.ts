@@ -328,7 +328,6 @@ export class GeometryAccumulator {
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
   public graphicParams: GraphicParams = new GraphicParams();
-  protected _isOpen: boolean = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
 
@@ -338,7 +337,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 
   public _finish(): RenderGraphic | undefined {
-    if (!this.isOpen || !this.accum) {
+    if (!this.isOpen) {
       assert(false);
       return undefined;
     }
