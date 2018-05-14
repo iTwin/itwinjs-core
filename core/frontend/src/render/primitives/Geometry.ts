@@ -309,7 +309,6 @@ export class GeometryAccumulator {
     this.calculateTransform(transform, range);
     return this.addGeomWithClip(Geometry.createFromPolyface(ipf, transform, range, displayParams, isCurved), clip);
   }
-
   public addGeometryWithGeom(geom: Geometry): void { this.geometries.push(geom); }
   public clear() { this.geometries.clear(); }
 
@@ -327,17 +326,15 @@ export class GeometryAccumulator {
 }
 
 export abstract class GeometryListBuilder extends GraphicBuilder {
-  public accum?: GeometryAccumulator;
+  public accum: GeometryAccumulator;
   public graphicParams: GraphicParams = new GraphicParams();
-  // private _isOpen: boolean = false;
+  protected _isOpen: boolean = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by _Finish() to obtain the finished RenderGraphic.
 
   public constructor(system: RenderSystem, params: GraphicBuilderCreateParams, accumulatorTf: Transform = Transform.createIdentity()) {
     super(params);
-    if (params.iModel) {
-      this.accum = new GeometryAccumulator(params.iModel, system, undefined, accumulatorTf);
-    }
+    this.accum = new GeometryAccumulator(params.iModel, system, undefined, accumulatorTf);
   }
 
   public _finish(): RenderGraphic | undefined {
@@ -387,9 +384,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
   }
 
-  public addLineString(points: Point3d[]): void {
-    if (points.length === 0) { // shut up tslint
-    }
+  public addLineString(_points: Point3d[]): void {
     // const curve = BagOfCurves.create(LineString3d.create(points));
     // ###TODO
   }
