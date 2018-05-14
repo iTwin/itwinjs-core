@@ -485,10 +485,11 @@ export class MeshBuilderPolyface {
 }
 
 export class MeshList extends Array<Mesh> {
-  public readonly features: FeatureTable;
-  constructor(maxFeatures: number = 2014 * 1024, ...args: Mesh[]) {
+  public readonly features?: FeatureTable;
+  constructor(features?: FeatureTable, ...args: Mesh[]) {
     super(...args);
-    this.features = new FeatureTable(maxFeatures);
+    if (undefined !== features)
+      this.features = features;
   }
 }
 
