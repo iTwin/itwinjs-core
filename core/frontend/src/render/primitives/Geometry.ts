@@ -7,6 +7,7 @@ import {
   Range3d,
   Arc3d,
   LineSegment3d,
+  LineString3d,
   CurvePrimitive,
   ClipVector,
   Loop,
@@ -121,17 +122,15 @@ export class PrimitivePathGeometry extends Geometry {
   protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined { return undefined; }
 
   protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
-    return PrimitivePathGeometry.getStrokesForLoopOrPath(this.path, facetOptions, this.displayParams, this.isDisjoint);
+    return PrimitivePathGeometry.getStrokesForLoopOrPath(this.path, facetOptions, this.displayParams, this.isDisjoint, this.transform);
   }
 
-  public static getStrokesForLoopOrPath(loopOrPath: Loop | Path, facetOptions: StrokeOptions, params: DisplayParams, isDisjoint: boolean): StrokesPrimitiveList | undefined {
+  public static getStrokesForLoopOrPath(loopOrPath: Loop | Path, facetOptions: StrokeOptions, params: DisplayParams, isDisjoint: boolean, transform: Transform): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
 
     if (!loopOrPath.isAnyRegionType() || params.wantRegionOutline) {
       const strksPts: StrokesPrimitivePointLists = new StrokesPrimitivePointLists();
-      if (facetOptions.chordTol === undefined) { // shut up tslint
-      }
-      // PrimitiveGeometry.collectCurveStrokes(strksPts, chain, facetOptions, this.transform);
+      PrimitivePathGeometry.collectCurveStrokes(strksPts, loopOrPath, facetOptions, transform);
 
       if (strksPts.length > 0) {
         const isPlanar = loopOrPath.isAnyRegionType();
@@ -147,15 +146,13 @@ export class PrimitivePathGeometry extends Geometry {
     return strksList;
   }
 
-  /*
-  private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, chain: CurveChain, facetOptions: StrokeOptions, trans: Transform) {
-    const strokes: LineString3d = chain.cloneStroked(facetOptions) as LineString3d;
+  private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, loopOrPath: Loop | Path, facetOptions: StrokeOptions, trans: Transform) {
+    const strokes: LineString3d = loopOrPath.cloneStroked(facetOptions) as LineString3d;
     const pt: Point3d = Point3d.create(0, 0, 0);
     for (let i = 0; i < strokes.numPoints(); i++) {
       strokes.pointAt(i, pt);
     }
   }
-  */
 }
 
 export class PrimitiveLoopGeometry extends Geometry {
@@ -380,7 +377,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
     if (this.accum) {
       const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      if (isLoop)
+      if (isLoop) // ###TODO: surely there is a better way to do this
         this.accum.addLoop(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, this.currClip);
       else
         this.accum.addPath(curve, curve.hasNonLinearPrimitives(), displayParams, this.localToWorldTransform, false, this.currClip);
