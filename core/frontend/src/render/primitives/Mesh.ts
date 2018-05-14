@@ -486,10 +486,11 @@ export class MeshBuilderPolyface {
 }
 
 export class MeshList extends Array<Mesh> {
-  public readonly features: FeatureTable;
-  constructor(maxFeatures: number = 2014 * 1024, ...args: Mesh[]) {
+  public readonly features?: FeatureTable;
+  constructor(features?: FeatureTable, ...args: Mesh[]) {
     super(...args);
-    this.features = new FeatureTable(maxFeatures);
+    if (undefined !== features)
+      this.features = features;
   }
 }
 
@@ -525,7 +526,7 @@ export namespace MeshBuilderMap {
     }
 
     public static createFromMesh(mesh: Mesh): Key {
-      return new Key(mesh.displayParams, Mesh.PrimitiveType.Mesh, mesh.normals.length !== 0, mesh.isPlanar);
+      return new Key(mesh.displayParams, mesh.type, mesh.normals.length !== 0, mesh.isPlanar);
     }
 
     public compare(rhs: Key): number {
