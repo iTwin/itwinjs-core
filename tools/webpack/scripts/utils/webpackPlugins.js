@@ -234,11 +234,34 @@ LicenseExtractor.prototype.getLicenseText = function(packageJson, licenseName,  
   return baseGetLicenseText.call(this, packageJson, licenseName,  modulePrefix);
 }
 
+class WatchBackendPlugin {
+  constructor() {
+    this.isFirstRun = 0;
+    this.prevTimestamp = Date.now();
+  }
+
+  apply(compiler) {
+    compiler.hooks.emit.tap("WatchBackendPlugin", compilation => {
+      const newTimestamp = compilation.fileTimestamps.get(paths.appBuiltMainJs);
+      const didBackendChange = this.prevTimestamp < (newTimestamp || -Infinity);
+      if (didBackendChange) {
+        this.prevTimestamp = newTimestamp;
+        compilation.modifyHash(newTimestamp+"");
+        return true;
+      }
+    });
+    compiler.hooks.afterCompile.tap("WatchBackendPlugin", compilation => {
+      compilation.fileDependencies.add(paths.appBuiltMainJs);
+    });
+  }
+}
+
 module.exports = {
   BanFrontendImportsPlugin,
   BanBackendImportsPlugin,
   CopyNativeAddonsPlugin,
   CopyAppAssetsPlugin,
   CopyBentleyStaticResourcesPlugin,
-  PrettyLicenseWebpackPlugin
+  PrettyLicenseWebpackPlugin,
+  WatchBackendPlugin
 };
