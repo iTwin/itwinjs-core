@@ -61,19 +61,19 @@ exports.handler = async (argv) => {
   const quote = (s) => `"${s}"`;
 
   if (!argv.noWeb) {
-    args.push(["nodemon", "--no-colors", "--watch", paths.appBuiltMainJs, ...nodeDebugOptions, paths.appBuiltMainJs]);
+    args.push(["node", require.resolve("nodemon/bin/nodemon"), "--no-colors", "--watch", paths.appBuiltMainJs, ...nodeDebugOptions, paths.appBuiltMainJs]);
     names.push("web-serv");
     colors.push("cyan");
   }
   
   if (!argv.noElectron) {
-    args.push(["nodemon", "--no-colors", "--watch", paths.appBuiltMainJs, "node_modules/electron/cli.js", ...electronDebugOptions, ...electronRemoteDebugOptions, paths.appBuiltMainJs]);
+    args.push(["node", require.resolve("nodemon/bin/nodemon"), "--no-colors", "--watch", paths.appBuiltMainJs, "node_modules/electron/cli.js", ...electronDebugOptions, ...electronRemoteDebugOptions, paths.appBuiltMainJs]);
     names.push("electron");
     colors.push("magenta");
   }
 
   if (args.length > 0) {
-    spawn("concurrently", [
+    spawn(require.resolve("concurrently"), [
       ...args.map((a) => quote(a.join(" "))),
       "--color", "-c", colors.join(","),
       "--names", names.join(",")

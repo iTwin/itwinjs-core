@@ -16,7 +16,7 @@ exports.handler = async (argv) => {
   const startBackend = quote(["imodeljs-react-scripts", "start-backend", ...forwardedArgs].join(" "));
   const startFrontend = quote(["imodeljs-react-scripts", "start-frontend", ...forwardedArgs].join(" "));
 
-  spawn("concurrently", [
+  spawn(require.resolve("concurrently"), [
     "--color", "-k",
     "--names", "B,F",
     startBackend,
