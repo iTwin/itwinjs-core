@@ -72,11 +72,13 @@ exports.handler = async (argv) => {
     colors.push("magenta");
   }
 
-  spawn("concurrently", [
-    ...args.map((a) => quote(a.join(" "))),
-    "--color", "-c", colors.join(","),
-    "--names", names.join(",")
-  ]);
+  if (args.length > 0) {
+    spawn("concurrently", [
+      ...args.map((a) => quote(a.join(" "))),
+      "--color", "-c", colors.join(","),
+      "--names", names.join(",")
+    ]);
+  }
 };
 
 // This is required to correctly handle SIGINT on windows.
