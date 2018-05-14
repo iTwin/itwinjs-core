@@ -269,7 +269,7 @@ export class Viewport {
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
-  public get iModel(): IModelConnection | undefined { return this.view.iModel; }
+  public get iModel(): IModelConnection { return this.view.iModel; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
