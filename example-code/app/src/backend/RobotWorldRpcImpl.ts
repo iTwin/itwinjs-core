@@ -10,16 +10,6 @@ import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Point3d, Angle } from "@bentley/geometry-core";
 
-// RobotWorldEngine RPC Implementations
-
-// Definitions must be defined in the service (backend code).
-
-// The implementations 'implement' the definition. The definitions are common
-// to clients and this implementation. They definitions could be defined in a location
-// in the app's source tree that is common to both frontend and backend.
-// If these are service RPC interfaces, then they would have to be defined in package.
-// import { ROWriteRpcInterface, ROReadRpcInterface } from "@my-domain/RORpcInterface";
-
 // Implement ROWriteRpcInterface
 class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
   public static register() {

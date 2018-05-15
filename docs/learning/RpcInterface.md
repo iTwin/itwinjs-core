@@ -5,7 +5,7 @@ An `RpcInterface` is a set of operations exposed by a server that a client can c
 This article uses the terms *client* and *server* to identify the two roles in an `RpcInterface`:
 
 * *client* -- the code that uses an RpcInterface and calls its methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. It could be [frontend code](./Glossary.md#frontend) *or* [backend code](./Glossary.md#backend).
-* *server* -- the code that implements and exposes an RpcInterface to clients. A server could be a deployed, stand-alone service, or the backend of an app, or a package that used by backend code. It is always [backend code](./Glossary.md#backend).
+* *server* -- the code that implements and exposes an RpcInterface to clients. A server could be a deployed, stand-alone service, or the backend of an app. It is always [backend code](./Glossary.md#backend).
 
 See [the RpcInterface overview](../overview/App.md#rpcinterface) for more information on [app architecture](../overview/App.md) and the purpose of RpcInterfaces.
 
@@ -46,8 +46,6 @@ The definition class must be in a directory or package that is accessible to bot
 [[include:RpcInterface.definition]]
 ```
 
-Definitions are used by both [frontend code](./Glossary.md#frontend) and [backend code](./Glossary.md#backend).
-
 ## Client Stub
 
 The client stub is a TypeScript class that implements the interface, defining each method as an RPC. Usually, all of the methods of a client contain exactly the same single line of code: `return this.forward.apply(this, arguments);` The forward property is implemented by the base class, and its forward method sends the call and its arguments through the configured RPC mechanism to the server. The client stub could be customized in some way if necessary.
@@ -57,8 +55,6 @@ The client stub is a TypeScript class that implements the interface, defining ea
 ```ts
 [[include:RpcInterface.client-stub]]
 ```
-
-A client can be either [frontend code](./Glossary.md#frontend) or [backend code](./Glossary.md#backend).
 
 ## Server Implementation
 
@@ -82,9 +78,9 @@ A server must expose the RpcInterfaces that it implements or imports, so that cl
 
 First, the server must call [RpcManager.registerImpl]($common) to register the interfaces that it implements, if any.
 
-Next, the server must use configure the RPC mechanism for each interface that it wants to expose. It must choose the configuration to use, based on how the server itself is configured.
+Next, the server must decide which interfaces it wants to expose. A service can expose multiple interfaces. A service can expose both its own implementations, if any, and imported implementations. The service can decide at run time which interfaces to expose, perhaps based on deployment parameters.
 
-A service can expose multiple interfaces. A service can expose both its own implementations, if any, and imported implementations. The service can decide at run time which interfaces to expose, perhaps based on deployment parameters.
+Finally, the server must choose the appropriate RPC configuration for the interfaces. The choice of RPC configuration is simple and is based on how the server itself is configured, as shown in the example.
 
 *Example:*
 
@@ -92,9 +88,7 @@ A service can expose multiple interfaces. A service can expose both its own impl
 [[include:RpcInterface.initializeImpl]]
 ```
 
-This example shows how a service could configure and expose more than one interface, including imported interfaces.
-It also shows how to choose the appropriate configuration.
-It also shows how a service could use ($common/FeatureGates) to decide which interfaces to expose.
+This example shows how a service could configure and expose more than one interface, including imported interfaces. It also shows how to choose the appropriate configuration. It also shows how a service could use [FeatureGates]($common) to decide which interfaces to expose.
 
 ## Serving RpcInterfaces
 
@@ -102,8 +96,9 @@ A server must serve out its interfaces, so that in-coming client requests are fo
 
 ### Web Server
 
-When a server is configured as a Web service, it can use any Web server technology you like. A single function call is required to integrate all configured interfaces with the Web server. For example, if you use express, do this:
+When a server is configured as a Web service, it can use any Web server technology. A single function call is all that is required to integrate all configured interfaces with the Web server.
 
+For example, if a Web server uses express, it would serve its RpcInterfaces like this:
 ```ts
 const webServer = express();
 ...
@@ -124,6 +119,7 @@ When a server is the backend of a mobile app, TBD....
 ## Client-side Configuration
 
 A client (e.g., an app frontend) must configure the interfaces that it intends to use. And, it must specify the appropriate configuration for each interface, depending on the configuration of the app itself and relationship between the client and the server.
+
 |Type of server|Type of app|Configuration to use
 |---------------|-----------|--------------------
 |App-specific backend|Mobile app|[in-process RPC configuration](../overview/App.md#in-process-rpc-configuration).
@@ -131,13 +127,11 @@ A client (e.g., an app frontend) must configure the interfaces that it intends t
 |"|Web app|[cloud PRC configuration](../overview/App.md#cloud-rpc-configuration).
 |External service|*|The client will always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration) for services.
 
-*Example:*
+Here is a simple example of an app frontend registering to access interfaces that are exposed by its own app backend server:
 
 ```ts
 [[include:RpcInterface.initializeClient]]
 ```
-
-A client makes calls on a interface's client stub (which just forwards the calls to the server, via the configured RPC mechanism). The call signature for the client methods is the same as given in the definition.
 
 ## RpcInterface Performance
 
