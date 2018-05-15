@@ -11,10 +11,10 @@ though sometimes judgement calls are required where no established convention is
 
 From the same JavaScript codebase, it is possible to create:
 
-* [Agents and Services](./App.md#agents-and-services) that process iModels and respond to events from iModelHub
-* [Web Apps](./App.md#web-apps) that run in web browsers and communicate with backends
-* [Desktop Apps](./App.md#desktop-apps) that run on personal computers
-* [Mobile Apps](./App.md#mobile-apps) that run on tablets and phones
+* [Agents and Services](./SoftwareArchitecture.md#web) that process iModels and respond to events from iModelHub
+* [Web Apps](./SoftwareArchitecture.md#web) that run in web browsers and communicate with backends
+* [Desktop Apps](./SoftwareArchitecture.md#desktop) that run on personal computers
+* [Mobile Apps](./SoftwareArchitecture.md#mobile) that run on tablets and phones
 
 ## iModelJs vs. iModelHub
 
