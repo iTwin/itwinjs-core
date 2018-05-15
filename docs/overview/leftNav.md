@@ -10,4 +10,5 @@
 ##### [IModelHub](./IModelHub)
 ##### [iModel Bridges](./IModelBridges)
 ##### [BIS Introduction](../bis/intro/introduction)
+##### [iModelJs Architecture](./SoftwareArchitecture.md)
 ##### [iModelJs Packages](./index.md#imodeljs-organization)

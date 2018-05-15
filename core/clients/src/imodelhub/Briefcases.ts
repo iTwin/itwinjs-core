@@ -53,7 +53,7 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "isReadOnly")
   public isReadOnly?: boolean;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[0].relatedInstance.properties.DownloadUrl")
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
   @ECJsonTypeMap.propertyToJson("ecdb", "accessMode")
