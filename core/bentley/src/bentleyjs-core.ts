@@ -25,8 +25,7 @@ export * from "./Iterable";
  */
 /**
  * @docs-group-description BeSQLite
- * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb.
- * For more information on iModels, see [Executing ECSQL]($docs/learning/ECSQL.md)
+ * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Errors
@@ -42,7 +41,7 @@ export * from "./Iterable";
  */
 /**
  * @docs-group-description Logging
- * Classes for configuring and logging diagnostic messages. For more information, see [Logging]($docs/learning/Logging.md)
+ * Classes for configuring and logging diagnostic messages - see [Logging]($docs/learning/Logging.md)
  */
 /**
  * @docs-group-description Utils
