@@ -78,10 +78,10 @@ export class SeedFile extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.InitializationState")
   public initializationState?: SeedFileInitState;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[0].relatedInstance.properties.DownloadUrl")
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[0].relatedInstance.properties.UploadUrl")
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.UploadUrl")
   public uploadUrl?: string;
 }
 
