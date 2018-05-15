@@ -79,7 +79,7 @@ export namespace IModelTileIO {
         readStatus: this.readGltf(geometry),
         isLeaf,
         contentRange: header.contentRange,
-        geometry
+        geometry,
       };
     }
 
