@@ -64,11 +64,11 @@ The UI-specific part of an app is called the [frontend](https://en.wikipedia.org
 
 The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
-The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on nodejs.
+The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on Node.js.
 
 ### RpcInterface
 
-An *interface* is the boundary between two components, allowing them to communicate in a clearly defined way. A service implements an interface in order to make its operations available, and a client makes calls on a service's interface it in order to request operations. Since client and service do not run in the same JavaScript context and may not even be on the same machine, a call across the interface is always a [remote procedure call](../learning/Glossary.md#rpc). That is why the interfaces implemented by services and called by clients are called *RpcInterfaces*.
+An *interface* is the boundary between two components, allowing them to communicate in a clearly defined way. A service implements an interface in order to make its operations available, and a client makes calls on a service's interface it in order to request operations. Since client and service do not run in the same JavaScript context and may not even be on the same machine; a call across the interface is always a [remote procedure call](../learning/Glossary.md#rpc). That is why the interfaces implemented by services and called by clients are called *RpcInterfaces*.
 
 In iModelJs, an RpcInterface is a normal TypeScript class. Clients make calls using ordinary TypeScript method-calling syntax, and they pass parameters and get results as ordinary TypeScript types. Services implement an RpcInterface by writing a normal TypeScript classes. The details of the RPC mechanism are factored out into [RPC configurations](#rpc-configurations). That allows client and service code to focus entirely on the functionality of the interface.
 
@@ -96,7 +96,7 @@ See [BentleyCloudRpcManager]($common).
 
 Marshalls calls on an RpcInterface through high-bandwidth, low-latency pipes between cooperating processes on the same computer. Provides endpoint-processing and call dispatching in the service backend process.
 
-The iModelJs desktop RPC configuration is specific to Electron.
+The iModelJs desktop RPC configuration is specific to the Electron framework.
 
 See [ElectronRpcManager]($common).
 
@@ -106,7 +106,7 @@ Marshalls calls on an RpcInterface across threads within a single process. Provi
 
 ### Configuring RpcInterfaces at Runtime
 
-An app chooses the appropriate configuration for each RpcInterface that it uses. For example, while an app accesses both true services and app-specific backends through RpcInterfaces, the app must configure the RpcInterfaces differently: a cloud configuration is always uses for services and a configuration based on its own app configuration must be use for an app-specific backend.
+An app chooses the appropriate configuration for each RpcInterface that it uses. For example, while an app accesses both external services and app-specific backends through RpcInterfaces, the app must configure the RpcInterfaces differently: a cloud configuration is always uses for external services and a configuration based on its own app configuration must be use for an app-specific backend.
 
 ## Interactive App Configurations
 
