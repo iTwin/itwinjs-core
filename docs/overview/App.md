@@ -14,7 +14,7 @@ iModel agents and services are apps that have no interactive user interface. The
 
 Agents and services are [backend](../learning/Glossary.md#Backend) code. Their main concern is to access and process the content of iModels. They use [briefcases](../learning/Glossary.md#Briefcase) to access iModels.
 
-Agents and services are written in TypeScript/JavaScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
+Agents and services are written in TypeScript/JavaScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
 
 Agents and Services use [logging](./Logging.md) to enable users to monitor their operations and to help with diagnosing problems.
 
@@ -48,7 +48,7 @@ An app can use a pre-existing or general-purpose [service](#imodel-services) as 
 
 An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using [RpcInterfaces](#rpcinterface) and are encouraged.
 
-App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
+App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
 
 An app can use many services, both general-purpose and app-specific.
 
@@ -56,7 +56,7 @@ App backends may use [logging](./Logging.md) to help with diagnosing problems.
 
 #### Backends for Frontends
 
-Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs [RpcInterface](#rpcinterface) architecture encourages and supports the BFF pattern. It is easy to write and deploy app-specific backends, because a backend is just a TypeScript class that deals only with the app's functionality, not communciation details. It is easy for an app to choose the mix of backend services that match its configuration, because RpcInterfaces, as TypeScript classes, are first class objects that can be managed at runtime.
+Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs [RpcInterface](#rpcinterface) architecture encourages and supports the BFF pattern. It is easy to write and deploy app-specific backends, because a backend is just a TypeScript class that deals only with the app's functionality, not communication details. It is easy for an app to choose the mix of backend services that match its configuration, because RpcInterfaces, as TypeScript classes, are first class objects that can be managed at runtime.
 
 ### App Frontend
 
@@ -64,7 +64,7 @@ The UI-specific part of an app is called the [frontend](https://en.wikipedia.org
 
 The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
-The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on nodejs.
+The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on nodejs.
 
 ### RpcInterface
 
