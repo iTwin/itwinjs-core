@@ -2,16 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelDb, ECSqlStatement, PhysicalPartition, Subject } from "@bentley/imodeljs-backend";
+import { Id64, Id64Set, DbResult, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelDb, ECSqlStatement, Element, PhysicalPartition, Subject } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Id64Set, DbResult, OpenMode } from "@bentley/bentleyjs-core";
 
 /** Useful ECSQL queries organized as tests to make sure that they build and run successfully. */
 describe("Useful ECSQL queries", () => {
   let iModel: IModelDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModel("test.bim", {copyFilename: "ecsql-queries.bim", openMode: OpenMode.ReadWrite});
+    iModel = IModelTestUtils.openIModel("test.bim", { copyFilename: "ecsql-queries.bim", openMode: OpenMode.ReadWrite });
   });
 
   after(() => {
@@ -62,6 +62,42 @@ describe("Useful ECSQL queries", () => {
     for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue='Physical'" })) {
       assert.equal(iModel.elements.getElement(eidStr).code.getValue(), "Physical");
     }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("should select all elements in a model", () => {
+    // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-elements-in-model
+    const modelId: Id64 = IModelDb.repositoryModelId;
+    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`, (statement: ECSqlStatement) => {
+      statement.bindId("modelId", modelId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        // do something with each row
+      }
+    });
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("should select all top-level elements in a model", () => {
+    // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-top-level-elements-in-model
+    const modelId: Id64 = IModelDb.repositoryModelId;
+    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`, (statement: ECSqlStatement) => {
+      statement.bindId("modelId", modelId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        // do something with each row
+      }
+    });
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("should select all child elements of the specified element", () => {
+    // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-child-elements
+    const parentId: Id64 = IModelDb.rootSubjectId;
+    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id=:parentId`, (statement: ECSqlStatement) => {
+      statement.bindId("parentId", parentId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        // do something with each row
+      }
+    });
     // __PUBLISH_EXTRACT_END__
   });
 
