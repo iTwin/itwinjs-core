@@ -16,7 +16,7 @@ Agents and services are [backend](../learning/Glossary.md#Backend) code. Their m
 
 Agents and services are written in TypeScript/JavaScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
 
-Agents and Services use [logging](./Logging.md) to enable users to monitor their operations and to help with diagnosing problems.
+Agents and Services use [logging](../learning/Logging.md) to enable users to monitor their operations and to help with diagnosing problems.
 
 ### iModel Agents
 
@@ -70,21 +70,19 @@ The frontend makes requests on backend services in order to access iModel conten
 
 An *interface* is the boundary between two components, allowing them to communicate in a clearly defined way. A service implements an interface in order to make its operations available, and a client makes calls on a service's interface it in order to request operations. Since client and service do not run in the same JavaScript context and may not even be on the same machine, a call across the interface is always a [remote procedure call](../learning/Glossary.md#rpc). That is why the interfaces implemented by services and called by clients are called *RpcInterfaces*.
 
-In iModelJs, an RpcInterface is a normal TypeScript class. Clients make calls using ordinary TypeScript method-calling syntax, and they pass parameters and get results as ordinary TypeScript types. Services implement an RpcInterfaces by writing a normal TypeScript classes. The details of the RPC mechanism are factored out into [RPC configurations](#rpc-configurations). That allows client and service code to focus entirely on the functionality of the interface.
+In iModelJs, an RpcInterface is a normal TypeScript class. Clients make calls using ordinary TypeScript method-calling syntax, and they pass parameters and get results as ordinary TypeScript types. Services implement an RpcInterface by writing a normal TypeScript classes. The details of the RPC mechanism are factored out into [RPC configurations](#rpc-configurations). That allows client and service code to focus entirely on the functionality of the interface.
 
 See [learning RpcInterfaces](../learning/RpcInterface.md) for information on how to write and use RpcInterfaces.
 
 See [RPC configurations](#rpc-configurations) below for more on how interface calls are marshalled.
 
-An RpcInterface allows a client to make a request on a service and get a return value. Services never send requests to clients.
+RpcInterface method calls are always from a client to a service. Services never send requests to clients.
 
 RpcInterface methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
 
-The key imodeljs API class is [RpcInterface]($common).
-
 ### RPC Configurations
 
-An RpcInterface defines an interface in a way that is independent of how calls will be made. A  call is marshalled differently, depending on how the app itself is configured. iModelJs supplies transport mechanisms to marshall calls between client and service. These mechanisms are called *RPC configurations*. Configurations are applied to RpcInterfaces at runtime. Available configurations include: cloud, desktop, and in-process.
+iModelJs supplies transport mechanisms to marshall calls between client and service. These mechanisms are called *RPC configurations*. Configurations are applied to RpcInterfaces at runtime. Available configurations include: cloud, desktop, and in-process.
 
 #### Cloud RPC configuration
 

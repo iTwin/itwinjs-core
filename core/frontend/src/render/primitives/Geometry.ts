@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Iterable } from "@bentley/bentleyjs-core";
 import {
   Transform,
   Range3d,
@@ -26,13 +26,13 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
-import { PrimitiveBuilderContext } from "../../ViewContext";
+// import { PrimitiveBuilderContext } from "../../ViewContext";
 import { GeometryOptions } from "./Primitives";
 import { RenderSystem, RenderGraphic } from "../System";
 import { DisplayParams } from "./DisplayParams";
-import { ViewContext } from "../../ViewContext";
 import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "./Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
+import { MeshGraphicArgs, MeshList, MeshBuilderMap, Mesh, MeshBuilder } from "./Mesh";
 
 export type PrimitiveGeometryType = Loop | Path | IndexedPolyface;
 
@@ -195,8 +195,8 @@ export class PrimitivePolyfaceGeometry extends Geometry {
   protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined { return undefined; }
 }
 
-export class GeometryList {
-  private _list: Geometry[] = [];
+export class GeometryList extends Iterable<Geometry> {
+  constructor() { super(); }
   public get isEmpty(): boolean { return this._list.length === 0; }
   public push(geom: Geometry): number {
     return this._list.push(geom);
@@ -288,11 +288,127 @@ export class GeometryAccumulator {
     this._surfacesOnly = surfacesOnly;
   }
 
+  /** removed featureTable, ViewContext */
+  public toMeshBuilderMap(options: GeometryOptions, tolerance: number): MeshBuilderMap {
+    const { geometries } = this;
+    const range = geometries.computeRange();
+    const is2d = !range.isNull() && range.isAlmostZeroZ();
+    const builderMap = new MeshBuilderMap(tolerance, range, is2d);
+    const areaTolerance = builderMap.facetAreaTolerance;
+    let displayParams, key, type, isPlanar, builder, fillColor;
+
+    if (geometries.isEmpty)
+      return builderMap;
+
+    // This ensures the builder map is organized in the same order as the geometry list, and no meshes are merged.
+    // This is required to make overlay decorations render correctly.
+    let order = 0;
+    for (const geom of geometries) {
+      // ###TODO verify this is equivalent to: geom->GetPolyfaces(tolerance, options.m_normalMode, context);
+      const polyfaces = geom.getPolyfaces(StrokeOptions.createForFacets());
+
+      if (polyfaces === undefined || polyfaces.length === 0)
+        continue;
+
+      for (const tilePolyface of polyfaces) {
+        const polyface = tilePolyface.indexedPolyface;
+
+        if (polyface.pointCount === 0) // (polyface.IsNull() || 0 == polyface->GetPointCount())
+          continue;
+
+        displayParams = tilePolyface.displayParams;
+        const hasTexture = displayParams.isTextured;
+        type = Mesh.PrimitiveType.Mesh;
+        isPlanar = tilePolyface.isPlanar;
+        key = new MeshBuilderMap.Key(displayParams, type, polyface.normalCount > 0, isPlanar);
+
+        if (options.wantPreserveOrder)
+          key.order = order++;
+
+        builder = builderMap.get(key);
+        if (undefined === builder) {
+          builder = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+          builderMap.set(key, builder);
+        }
+
+        // ###TODO ignore edges for now
+        // const edgeOptions = (options.wantEdges && tilePolyface.displayEdges) ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges;
+        // meshBuilder.beginPolyface(polyface, edgeOptions);
+
+        fillColor = displayParams.fillColor.tbgr;
+        const visitor = polyface.createVisitor();
+
+        do {
+          const mappedTexture = displayParams.textureMapping;
+          const requireNormals = undefined !== visitor.normal;
+          builder.addFromPolyfaceVisitor({ visitor, mappedTexture, includeParams: hasTexture, fillColor, requireNormals });
+        } while (visitor.moveToNextFacet());
+
+        builder.endPolyface();
+      }
+
+      if (!options.wantSurfacesOnly) {
+        const tileStrokesArray = geom.getStrokes(StrokeOptions.createForFacets());
+        if (undefined !== tileStrokesArray) {
+          for (const tileStrokes of tileStrokesArray) {
+            displayParams = tileStrokes.displayParams;
+            type = tileStrokes.isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+            isPlanar = tileStrokes.isPlanar;
+            key = new MeshBuilderMap.Key(displayParams, type, false, isPlanar);
+
+            if (options.wantPreserveOrder)
+              key.order = order++;
+
+            builder = builderMap.get(key);
+            if (undefined === builder) {
+              builder = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+              builderMap.set(key, builder);
+            }
+
+            fillColor = displayParams.lineColor.tbgr;
+            for (const strokePoints of tileStrokes.strokes) {
+              if (tileStrokes.isDisjoint)
+                builder.addPointString(strokePoints.points, fillColor, strokePoints.startDistance);
+              else
+                builder.addPolyline(strokePoints.points, fillColor, strokePoints.startDistance);
+            }
+          }
+        }
+      }
+    }
+    return builderMap;
+  }
+
+  /** removed ViewContext */
+  public toMeshes(options: GeometryOptions, tolerance: number): MeshList {
+    const meshes = new MeshList();
+    if (this.geometries.isEmpty)
+      return meshes;
+    const builderMap = this.toMeshBuilderMap(options, tolerance);
+
+    for (const builder of builderMap.extractPairs()) {
+      const mesh = builder.value.mesh;
+      if (mesh.points.length !== 0)
+        meshes.push(mesh);
+    }
+
+    return meshes;
+  }
+
   /**
    * Populate a list of Graphic objects from the accumulated Geometry objects.
-   * #TODO: implement MeshBuilderMap
+   * removed ViewContext
    */
-  public saveToGraphicList(_graphics: RenderGraphic[], _options: GeometryOptions, _tolerance: number, _context: ViewContext): void { }
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number): void {
+    const meshes = this.toMeshes(options, tolerance);
+    const args = new MeshGraphicArgs();
+    for (const mesh of meshes) {
+      const graphic = mesh.getGraphics(args);
+      if (undefined !== graphic)
+        graphics.push(graphic);
+    }
+
+  }
 }
 
 export abstract class GeometryListBuilder extends GraphicBuilder {
@@ -398,9 +514,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this.params);
-      const context = PrimitiveBuilderContext.fromPrimitiveBuilder(this);
+      // const context = PrimitiveBuilderContext.fromPrimitiveBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      accum.saveToGraphicList(this.primitives, options, tolerance, context);
+      accum.saveToGraphicList(this.primitives, options, tolerance);
     }
     return (this.primitives.length !== 1) ? this.system.createGraphicList(this.primitives, this.iModel) : this.primitives.pop() as RenderGraphic;
   }

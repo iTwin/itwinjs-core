@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial } from "@bentley/imodeljs-common";
+import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
 import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
 
 /** This class is used to determine if things can be batched together for display. */
@@ -10,7 +10,10 @@ export class DisplayParams {
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
   public readonly material?: RenderMaterial; // meshes only
   public readonly gradient?: Gradient.Symb;
-  // ###TODO: public textureMapping: TextureMapping; // only if m_material is null (e.g. gradients, glyph bitmaps) // TextureMapping doesn't exist yet!!!
+  // ###TODO
+  // textureMapping should be a getter that uses material's textureMapping if defined otherwise uses gradient to create textureMapping
+  // for now just filling in a default map
+  public readonly textureMapping: TextureMapping = new TextureMapping(); // only if m_material is null (e.g. gradients, glyph bitmaps)
   public readonly lineColor: ColorDef; // all types of geometry (edge color for meshes)
   public readonly fillColor: ColorDef; // meshes only
   public readonly width: number = 0; // linear and mesh (edges)

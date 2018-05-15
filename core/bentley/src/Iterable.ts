@@ -8,9 +8,9 @@
  * @param list the wrapped array that this class support iteration over
  */
 export abstract class Iterable<T> {
-  constructor(protected list: T[]) { }
+  constructor(protected _list: T[] = []) { }
   public [Symbol.iterator]() {
     let key = 0;
-    return { next: (): IteratorResult<T> => { const result = key < this.list.length ? { value: this.list[key], done: false } : { value: this.list[key - 1], done: true }; key++; return result; } };
+    return { next: (): IteratorResult<T> => { const result = key < this._list.length ? { value: this._list[key], done: false } : { value: this._list[key - 1], done: true }; key++; return result; } };
   }
 }
