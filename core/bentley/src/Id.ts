@@ -90,9 +90,9 @@ export class Id64 {
       return;
     }
 
-    if (Array.isArray(prop) && prop.length >= 2) {
-      low = prop[0] | 0;
-      high = prop[1] | 0;
+    if (Array.isArray(prop) && prop.length >= 2 && "number" === typeof prop[0] && "number" === typeof prop[1]) {
+      low = Math.floor(prop[0]);
+      high = Math.floor(prop[1]);
     }
 
     if (low === 0) { // it is illegal to have a low value of 0
@@ -135,9 +135,9 @@ export class Id64 {
    * operation lowBytes | (highBytes << 32).
    */
   public static fromUint32Pair(lowBytes: number, highBytes: number): Id64 {
-    const localIdLow = lowBytes;
-    const localIdHigh = (highBytes & 0x000000ff) << 32;
-    const localId = localIdLow | localIdHigh >>> 0;
+    const localIdLow = lowBytes >>> 0;
+    const localIdHigh = (highBytes & 0x000000ff) * (0xffffffff + 1); // aka (highBytes & 0xff) << 32
+    const localId = localIdLow + localIdHigh; // aka localIdLow | localIdHigh
 
     const briefcaseId = (highBytes & 0xffffff00) >>> 8;
 
