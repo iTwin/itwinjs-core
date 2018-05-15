@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, Briefcase } from "@bentley/imodeljs-clients";
 import { ConnectClient, Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
 
 export class TestData {
@@ -18,10 +18,23 @@ export class TestData {
   public static testIModelId: string;
   public static testChangeSetId: string;
 
+  private static async purgeAcquiredBriefcases(accessToken: AccessToken, iModelId: string, acquireThreshold: number = 16): Promise<void> {
+    const briefcases: Briefcase[] = await TestData.hubClient.Briefcases().get(accessToken, iModelId);
+    if (briefcases.length > acquireThreshold) {
+      console.log(`Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`); // tslint:disable-line:no-console
+      const promises = new Array<Promise<void>>();
+      briefcases.forEach((briefcase: Briefcase) => {
+        promises.push(TestData.hubClient.Briefcases().delete(accessToken, iModelId, briefcase.briefcaseId!));
+      });
+      await Promise.all(promises);
+    }
+  }
+
   public static async load() {
     TestData.accessToken = await TestData.getTestUserAccessToken();
     TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
     TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ConnectionReadTest");
+    await TestData.purgeAcquiredBriefcases(TestData.accessToken, TestData.testIModelId);
   }
 
   public static async getTestUserAccessToken(): Promise<AccessToken> {
