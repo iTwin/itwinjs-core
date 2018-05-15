@@ -112,7 +112,7 @@ class PolylineTesselatorVertex {
   }
 }
 
-class PolylineTesselator {
+export class PolylineTesselator {
   private polylines: PolylineData[];
   private points: QPoint3dList;
   private doJoints: boolean;
