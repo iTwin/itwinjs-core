@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+
+import { DisplayParams } from "./DisplayParams";
 import { assert } from "@bentley/bentleyjs-core";
 import {
   Transform,
@@ -26,10 +28,9 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../GraphicBuilder";
-import { PrimitiveBuilderContext } from "../../ViewContext";
+import { Viewport } from "../../Viewport";
 import { GeometryOptions } from "./Primitives";
 import { RenderSystem, RenderGraphic } from "../System";
-import { DisplayParams } from "./DisplayParams";
 import { ViewContext } from "../../ViewContext";
 import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "./Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
@@ -196,20 +197,20 @@ export class PrimitivePolyfaceGeometry extends Geometry {
 }
 
 export class GeometryList {
-  private _list: Geometry[] = [];
-  public get isEmpty(): boolean { return this._list.length === 0; }
+  public list: Geometry[] = [];
+  public get isEmpty(): boolean { return this.list.length === 0; }
   public push(geom: Geometry): number {
-    return this._list.push(geom);
+    return this.list.push(geom);
   }
   public append(src: GeometryList): GeometryList {
-    this._list.push(...src._list);
+    this.list.push(...src.list);
     return this;
   }
-  public clear(): void { this._list.length = 0; }
+  public clear(): void { this.list.length = 0; }
   public computeRange(): Range3d {
     const range: Range3d = Range3d.createNull();
     const extendRange = (geom: Geometry) => range.extendRange(geom.tileRange);
-    this._list.forEach(extendRange);
+    this.list.forEach(extendRange);
     return range;
   }
   public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }
@@ -313,7 +314,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
     const graphic = this.finishGraphic(this.accum);
     this._isOpen = false;
-    if (this.accum) { this.accum.clear(); }
+    this.accum.clear();
     return graphic;
   }
 
@@ -344,13 +345,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       (gapSegment as any).markerBits = 0x00010000; // Set the CURVE_PRIMITIVE_BIT_GapCurve marker bit
       curve.children.push(gapSegment);
     }
-    if (this.accum) {
-      const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-      if (isLoop) // ###TODO: surely there is a better way to do this
-        this.accum.addLoop(curve, displayParams, this.localToWorldTransform, false);
-      else
-        this.accum.addPath(curve, displayParams, this.localToWorldTransform, false);
-    }
+    const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+    if (isLoop) // ###TODO: surely there is a better way to do this
+      this.accum.addLoop(curve, displayParams, this.localToWorldTransform, false);
+    else
+      this.accum.addPath(curve, displayParams, this.localToWorldTransform, false);
   }
 
   public addLineString(_points: Point3d[]): void {
@@ -375,12 +374,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public getLinearDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Linear); }
   public get textDisplayParams(): DisplayParams { return this.getDisplayParams(DisplayParams.Type.Text); }
 
-  public get system(): RenderSystem | undefined { return this.accum ? this.accum.system : undefined; }
+  public get system(): RenderSystem { return this.accum.system; }
 
   public add(geom: Geometry): void { this.accum.addGeometry(geom); }
 
   public reInitialize(localToWorld: Transform, accumTf: Transform = Transform.createIdentity()) {
-    if (this.accum) this.accum.reset(accumTf);
+    this.accum.reset(accumTf);
     this.activateGraphicParams(this.graphicParams);
     this.createParams.placement = localToWorld;
     this._isOpen = true;
@@ -390,7 +389,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
-  constructor(public system: RenderSystem, public params: GraphicBuilderCreateParams) { super(system, params); }
+  public params: GraphicBuilderCreateParams;
+  constructor(system: RenderSystem, params: GraphicBuilderCreateParams) {
+    super(system, params);
+    this.params = params;
+  }
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
     if (!accum.isEmpty) {
@@ -402,7 +405,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       const tolerance = this.computeTolerance(accum);
       accum.saveToGraphicList(this.primitives, options, tolerance, context);
     }
-    return (this.primitives.length !== 1) ? this.system.createGraphicList(this.primitives, this.iModel) : this.primitives.pop() as RenderGraphic;
+    return (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives, this.iModel) : this.primitives.pop() as RenderGraphic;
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {
@@ -421,4 +424,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   public addPolyface(_meshData: Polyface, _filled: boolean): void { } //tslint:disable-line
   public addShape(_numPoints: number, _points: Point3d[], _filled: boolean): void { } //tslint:disable-line
   public addShape2d(_numPoints: number, _points: Point2d[], _filled: boolean, _zDepth: number): void { } //tslint:disable-line
+}
+
+export class PrimitiveBuilderContext extends ViewContext {
+  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: RenderSystem) { super(viewport); }
+  public static fromPrimitiveBuilder(builder: PrimitiveBuilder): PrimitiveBuilderContext { return new PrimitiveBuilderContext(builder.viewport, builder.iModel, builder.system); }
 }
