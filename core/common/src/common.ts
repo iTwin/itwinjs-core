@@ -52,7 +52,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 /**
  * @docs-group-description BisCore
- * Classes for working with the major classes in the BisCore schema - see [BIS Overview]($docs/overview/BIS.md)
+ * Classes for working with the major classes in the BisCore schema - see [BIS Overview]($docs/bis)
  */
  /**
   * @docs-group-description Codes

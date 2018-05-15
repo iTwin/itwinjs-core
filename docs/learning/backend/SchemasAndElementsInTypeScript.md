@@ -9,6 +9,7 @@ ECSchemas typically define subclasses of bis:Element, bis:Aspect, and so on. The
 ## Importing the Schema
 
 An ECSchema must be imported into an iModel before apps can insert and query instances of the ECClasses that it defines.
+
 *Example:*
 ``` ts
 [[include:IModelDb.importSchema]]
@@ -17,6 +18,7 @@ An ECSchema must be imported into an iModel before apps can insert and query ins
 ECSchema.xml files must be in the app backend's install set, as part of its assets.
 
 The app can ensure that the underlying schema is imported by registering an onOpened event handler:
+
 *Example:*
 ``` ts
 [[include:Schema.importSchema]]
@@ -26,22 +28,27 @@ The app can ensure that the underlying schema is imported by registering an onOp
 
 Once an ECSchema has been imported into an iModel, you can work with Elements, Models, and ElementAspects from that schema without writing TypeScript classes to represent them. A JavaScript class will be generated dynamically to represent each ECClass that you access, if there is no pre-registered TypeScript class to represent it.
 
-You *may* write a TypeScript Schema class to represent an ECSchema and TypeScript Element-based or ElementAspect-based classes to represent some or all of its ECClasses. The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods and type-safe constructors for it, to provide and centralize the business logic that applications can use when working with that specific class. Note that you still have to import the underlying ECSchema before attempting to create instances of the ECClasses that it defines.
+You *may* write a TypeScript Schema class to represent an ECSchema and TypeScript Element-based or ElementAspect-based classes to represent some or all of its ECClasses. The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods and type-safe constructors for it, to provide and centralize the business logic that applications can use when working with that specific class.
 
 *Example:*
 ``` ts
 [[include:Element.subclass]]
 ```
+Note that the pre-written TypeScript class does not have to define accessors for the properties of the ECClass. The Element base class takes care of that automatically.
+
+Note that you still have to import the underlying ECSchema before attempting to create instances of the ECClasses that it defines.
 
 ## Schema Registration
 
 If an app backend wants to use a pre-written TypeScript Schema class, it must register the pre-written schema first.
+
 *Example:*
 ``` ts
 [[include:Schema.registerSchema]]
 ```
 
 The TypeScript Schema class itself must register all of the classes that it defines. The best practice is for the Schema class to do that in its constructor.
+
 *Example:*
 ``` ts
 [[include:ClassRegistry.registerModule]]
