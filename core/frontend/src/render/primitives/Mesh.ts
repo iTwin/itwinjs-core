@@ -16,8 +16,7 @@ import {
   Range3d,
   Polyface,
   Angle,
-  // PolyfaceQuery,
-  // IndxedPolyfaceVisitor,
+  PolyfaceVisitor,
 } from "@bentley/geometry-core";
 import { VertexMap, VertexKey } from "./VertexKey";
 import {
@@ -49,7 +48,7 @@ import { ColorMap } from "./ColorMap";
 // import { System } from "../webgl/System";
 import { Triangle, TriangleList, TriangleKey, TriangleSet, ToleranceRatio } from "./Primitives";
 import { Graphic } from "../webgl/Graphic";
-import { IModelConnection } from "../../IModelConnection";
+// import { IModelConnection } from "../../IModelConnection";
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
 export class PolylineArgs {
@@ -113,7 +112,7 @@ export class PolylineArgs {
     this.pointParams = mesh.points.params;
     this.points = mesh.points;
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
-    mesh.toFeatureIndex(this.features);
+    // mesh.toFeatureIndex(this.features);
   }
 }
 
@@ -180,7 +179,7 @@ export class MeshArgs {
       this.textureUv = mesh.uvParams;
 
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
-    mesh.toFeatureIndex(this.features);
+    // mesh.toFeatureIndex(this.features);
 
     // ###TODO this.texture = mesh.displayParams.GetTextureMapping().GetTexture());
     this.material = mesh.displayParams.material;
@@ -222,7 +221,7 @@ export class Mesh {
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
   public readonly colors: Uint16Array = new Uint16Array();
   public edges?: MeshEdges;
-  public readonly features: Mesh.Features;
+  public readonly features?: Mesh.Features;
   public readonly type: Mesh.PrimitiveType;
   public readonly is2d: boolean;
   public readonly isPlanar: boolean;
@@ -246,7 +245,7 @@ export class Mesh {
   public get triangles(): TriangleList | undefined { return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
   public get polylines(): PolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as PolylineList : undefined; }
 
-  public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
+  // public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
   public getGraphics(args: MeshGraphicArgs/*, system: System, iModel: IModelConnection*/): Graphic | undefined {
     const graphic = undefined;
     if (undefined !== this.triangles && this.triangles.length !== 0) {
@@ -339,7 +338,7 @@ export namespace Mesh {
 
   export interface Props {
     displayParams: DisplayParams;
-    features: Mesh.Features;
+    features?: Mesh.Features;
     type: Mesh.PrimitiveType;
     range: Range3d;
     is2d: boolean;
@@ -383,16 +382,88 @@ export class MeshBuilder {
     return new MeshBuilder(mesh, tolerance, areaTolerance, range);
   }
 
-  // public addFromPolyfaceVisitor(params: MeshBuilder.PolyfaceVisitorParams): void {
-  //   const { visitor, mappedTexture, iModel, feature, includeParams, fillColor, requireNormals, auxData } = params;
-  //   if (visitor.)
-  // }
+  public addFromPolyfaceVisitor(params: MeshBuilder.PolyfaceVisitorParams): void {
+    const { visitor, mappedTexture, /** iModel, feature, */ includeParams, fillColor, requireNormals /** , auxData */ } = params;
+    if (visitor.pointCount < 3)
+      return;
+
+    const points = visitor.point;
+    const visitorVisibility = visitor.edgeVisible;
+    const nTriangles = points.length - 2;
+    const normal = visitor.normal;
+
+    if (requireNormals && (normal === undefined || normal.length < points.length))
+      return; // TFS#790263: Degenerate triangle - no normals.
+
+    // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
+    for (let iTriangle = 0; iTriangle < nTriangles; iTriangle++) {
+      const triangle = new Triangle();
+      const param = visitor.param;
+      const visibility = [
+        (0 === iTriangle) ? visitorVisibility[0] : false,
+        visitorVisibility[iTriangle + 1],
+        (iTriangle === nTriangles - 1) ? visitorVisibility[iTriangle + 2] : false,
+      ];
+
+      assert(!includeParams || (param !== undefined && param.length > 0));
+      const haveParam = includeParams && (param !== undefined && param.length > 0);
+      assert(!haveParam || mappedTexture.isValid);
+      triangle.setEdgeVisibility(visibility[0], visibility[1], visibility[2]);
+
+      if (haveParam && mappedTexture.isValid) {
+        // const textureMapParams = mappedTexture.params;
+        // const computedParams = [];
+
+        assert(this.mesh.points.length === 0 || this.mesh.uvParams.length !== 0);
+        // ###TODO finish computeUVParams on TextureMapping
+        // if (SUCCESS == textureMapParams.ComputeUVParams (computedParams, visitor))
+        //     params = computedParams;
+        // else
+        //     BeAssert(false && "ComputeUVParams() failed");
+      }
+
+      const computeIndex = (i: number): number => 0 === i ? 0 : iTriangle + i;
+      const makeQPoint = (index: number): QPoint3d => QPoint3d.create(points.getPoint3dAt(index), this.mesh.points.params);
+      const makeOctEncodedNormal = (index: number): OctEncodedNormal | undefined => requireNormals ? new OctEncodedNormal(visitor.getNormal(index)) : undefined;
+      const makeVertexKey = (index: number) => new VertexKey(makeQPoint(index), fillColor, makeOctEncodedNormal(index), haveParam ? param![index] : undefined);
+      const indices = [computeIndex(0), computeIndex(1), computeIndex(2)];
+      const vertices = [makeVertexKey(indices[0]), makeVertexKey(indices[1]), makeVertexKey(indices[2])];
+
+      // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
+      // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
+      // Detect beforehand instead.
+      if (vertices[0].position === vertices[1].position || vertices[0].position === vertices[2].position || vertices[1].position === vertices[2].position)
+        continue;
+
+      for (let i = 0; i < 3; i++) {
+        // const index = indices[i];
+        const vertex = vertices[i];
+        // ###TODO implement MeshAuxData
+        // if (nullptr != auxData && visitor.GetAuxDataCP().IsValid())
+        //     {
+        //     // No deduplication with auxData (for now...)
+        //     newTriangle[i] = m_mesh->AddVertex(vertex.GetPosition(), vertex.GetNormal(), vertex.GetParam(), vertex.GetFillColor(), vertex.GetFeature());
+        //     m_mesh->AddAuxChannel(*auxData, visitor.GetAuxDataCP()->GetIndices().at(index));
+        //     }
+        // else
+        //     {
+        //     newTriangle[i] = AddVertex(vertex);
+        //     }
+        triangle.indices[i] = this.vertexMap.insert(vertex);
+        if (this.currentPolyface !== undefined)
+          this.currentPolyface.vertexIndexMap.set(triangle.indices[i], visitor.clientPointIndex(i));
+      }
+      this.addTriangle(triangle);
+    }
+  }
 
   /** removed Feature for now */
-  public addPolyline(points: QPoint3d[], fillColor: number, startDistance: number): void {
+  public addPolyline(pts: QPoint3dList | Point3d[], fillColor: number, startDistance: number): void {
+    const { mesh, addVertex } = this;
+    const points = pts instanceof QPoint3dList ? pts : QPoint3dList.createFrom(pts, mesh.points.params);
     const poly = new MeshPolyline(startDistance);
-    for (const point of points) poly.addIndex(this.addVertex(point, fillColor));
-    this.mesh.addPolyline(poly);
+    for (const point of points) poly.addIndex(addVertex(point, fillColor));
+    mesh.addPolyline(poly);
   }
 
   private createQPoint(point: Point3d): QPoint3d {
@@ -412,10 +483,26 @@ export class MeshBuilder {
     mesh.addPolyline(poly);
   }
 
-  // public beginPolyface(polyface: PolyfaceQuery, options: MeshEdgeCreationOptions): void;
-  // public endPolyface();
+  public beginPolyface(polyface: Polyface, options: MeshEdgeCreationOptions): void {
+    // ###TODO generateNoEdges no edges case
+    // maybe this --> (options.generateNoEdges && 0 === polyface.data.edgeVisible.length)
+    const triangles = this.mesh.triangles;
+    this._currentPolyface = new MeshBuilderPolyface(polyface, options, triangles === undefined ? 0 : triangles.length);
+  }
 
-  // #TODO: empty method declaration?
+  public endPolyface(): void {
+    const { currentPolyface, mesh } = this;
+    if (undefined === currentPolyface)
+      return;
+
+    if (mesh.edges === undefined)
+      mesh.edges = new MeshEdges();
+
+    // ###TODO
+    // MeshEdgesBuilder(m_tileRange, *m_mesh, *m_currentPolyface).BuildEdges(*m_mesh->m_edges, m_currentPolyface.get());
+  }
+
+  // ###TODO: empty method declaration?
   // public addMesh(triangle: Triangle): void;
 
   public addVertex(qpoint: QPoint3d, fillColor: number): number {
@@ -439,10 +526,10 @@ export namespace MeshBuilder {
     areaTolerance: number;
   }
   export interface PolyfaceVisitorParams {
-    // visitor: IndxedPolyfaceVisitor;
+    visitor: PolyfaceVisitor;
     mappedTexture: TextureMapping;
-    iModel: IModelConnection;
-    feature: Feature;
+    // iModel: IModelConnection;
+    // feature: Feature;
     includeParams: boolean;
     fillColor: number;
     requireNormals: boolean;
@@ -477,11 +564,12 @@ export namespace MeshEdgeCreationOptions {
 export class MeshBuilderPolyface {
   public readonly polyface: Polyface;
   public readonly edgeOptions: MeshEdgeCreationOptions;
-  public readonly vertexIndexMap: Map<number, number>;
-  constructor(polyface: Polyface, edgeOptions: MeshEdgeCreationOptions, vertexIndexMap = new Map<number, number>()) {
+  public readonly vertexIndexMap: Map<number, number> = new Map<number, number>();
+  public readonly baseTriangleIndex: number;
+  constructor(polyface: Polyface, edgeOptions: MeshEdgeCreationOptions, baseTriangleIndex: number) {
     this.polyface = polyface;
     this.edgeOptions = edgeOptions;
-    this.vertexIndexMap = vertexIndexMap;
+    this.baseTriangleIndex = baseTriangleIndex;
   }
 }
 
