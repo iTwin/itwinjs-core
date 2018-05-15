@@ -3,6 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TileIO } from "./TileIO";
+import { ModelState } from "../../ModelState";
+import { RenderSystem } from "../../render/System";
+import { DisplayParams } from "../../render/primitives/DisplayParams";
+import { ColorMap } from "../../render/primitives/ColorMap";
 import { assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 
 export namespace GltfTileIO {
@@ -118,17 +122,15 @@ export namespace GltfTileIO {
     }
   }
 
-  export type JsonValue = any;
-
   export class BufferView {
     public readonly data: Uint8Array;
     public readonly count: number;
     public readonly type: DataType;
-    public readonly accessor: JsonValue;
+    public readonly accessor: any;
 
     public get byteLength(): number { return this.data.length; }
 
-    public constructor(data: Uint8Array, count: number, type: DataType, accessor: JsonValue) {
+    public constructor(data: Uint8Array, count: number, type: DataType, accessor: any) {
       this.data = data;
       this.count = count;
       this.type = type;
@@ -145,18 +147,18 @@ export namespace GltfTileIO {
   export class ReaderProps {
     private constructor(public readonly buffer: TileIO.StreamBuffer,
                         public readonly binaryData: Uint8Array,
-                        public readonly accessors: JsonValue,
-                        public readonly bufferViews: JsonValue,
-                        public readonly scene: JsonValue,
-                        public readonly meshes: JsonValue,
-                        public readonly materials: JsonValue) { }
+                        public readonly accessors: any,
+                        public readonly bufferViews: any,
+                        public readonly scene: any,
+                        public readonly meshes: any,
+                        public readonly materials: any) { }
 
     public static create(buffer: TileIO.StreamBuffer): ReaderProps | undefined {
       const header = new Header(buffer);
       if (!header.isValid)
         return undefined;
 
-      const binaryData = new Uint8Array(buffer.arrayBuffer, buffer.currentOffset + header.sceneStrLength);
+      const binaryData = new Uint8Array(buffer.arrayBuffer, buffer.curPos + header.sceneStrLength);
 
       const sceneStrData = buffer.nextBytes(header.sceneStrLength);
       const sceneStr = StringUtils.utf8ToString(sceneStrData);
@@ -182,22 +184,24 @@ export namespace GltfTileIO {
 
   export class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
-    protected readonly accessors: JsonValue;
-    protected readonly bufferViews: JsonValue;
-    protected readonly meshes: JsonValue;
-    protected readonly batchData: JsonValue;
-    protected readonly materialValues: JsonValue;
-    protected readonly textures: JsonValue;
-    protected readonly namedTextures: JsonValue;
-    protected readonly images: JsonValue;
+    protected readonly accessors: any;
+    protected readonly bufferViews: any;
+    protected readonly meshes: any;
+    protected readonly batchData: any;
+    protected readonly materialValues: any;
+    protected readonly textures: any;
+    protected readonly namedTextures: any;
+    protected readonly images: any;
     protected readonly binaryData: Uint8Array;
+    protected readonly model: ModelState;
+    protected readonly system: RenderSystem;
 
-    public static create(buffer: TileIO.StreamBuffer): Reader | undefined {
+    public static createGltfReader(buffer: TileIO.StreamBuffer, model: ModelState, system: RenderSystem): Reader | undefined {
       const props = ReaderProps.create(buffer);
-      return undefined !== props ? new Reader(props) : undefined;
+      return undefined !== props ? new Reader(props, model, system) : undefined;
     }
 
-    public getBufferView(json: JsonValue, accessorName: string): BufferView | undefined {
+    public getBufferView(json: any, accessorName: string): BufferView | undefined {
       try {
         const accessorValue = JsonUtils.asString(json[accessorName]);
         const accessor = 0 < accessorValue.length ? this.accessors[accessorValue] : undefined;
@@ -225,14 +229,14 @@ export namespace GltfTileIO {
       }
     }
 
-    public readBufferData32(json: JsonValue, accessorName: string): BufferData | undefined {
+    public readBufferData32(json: any, accessorName: string): BufferData | undefined {
       return this.readBufferData(json, accessorName, DataType.UInt32);
     }
-    public readBufferData16(json: JsonValue, accessorName: string): BufferData | undefined {
+    public readBufferData16(json: any, accessorName: string): BufferData | undefined {
       return this.readBufferData(json, accessorName, DataType.UnsignedShort);
     }
 
-    protected constructor(props: ReaderProps) {
+    protected constructor(props: ReaderProps, model: ModelState, system: RenderSystem) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
@@ -243,11 +247,22 @@ export namespace GltfTileIO {
       this.textures = props.scene.textures;
       this.images = props.scene.images;
       this.namedTextures = props.scene.namedTextures;
+
+      this.model = model;
+      this.system = system;
     }
 
-    protected readBufferData(json: JsonValue, accessorName: string, type: DataType): BufferData | undefined {
+    protected readBufferData(json: any, accessorName: string, type: DataType): BufferData | undefined {
       const view = this.getBufferView(json, accessorName);
       return undefined !== view ? view.toBufferData(type) : undefined;
+    }
+
+    protected readFeatures(_json: any): Uint32Array | undefined { return undefined; }
+    protected readColorTable(_json: any): ColorMap | undefined { return undefined; }
+    protected createDisplayParams(_json: any): DisplayParams | undefined { return undefined; }
+
+    protected readGltf(_geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
+      return TileIO.ReadStatus.InvalidTileData; // ###TODO
     }
   }
 }

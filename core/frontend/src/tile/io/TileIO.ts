@@ -2,16 +2,18 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { Point3d } from "@bentley/geometry-core";
+import { MeshList } from "../../render/primitives/Mesh";
 
 export namespace TileIO {
   export const enum ReadStatus {
     Success = 0,
+    InvalidTileData,
     InvalidHeader,
-    ReadError,
-    BatchTableParseError,
+    InvalidBatchTable,
     InvalidScene,
-    FeatureTableError,
+    InvalidFeatureTable,
   }
 
   export const enum Format {
@@ -57,14 +59,15 @@ export namespace TileIO {
     public get nextUint32(): number { return this.read(4, (view) => view.getUint32(this.curPos, true)); }
     public get nextFloat32(): number { return this.read(4, (view) => view.getFloat32(this.curPos, true)); }
     public get nextFloat64(): number { return this.read(8, (view) => view.getFloat64(this.curPos, true)); }
+    public get nextPoint3d64(): Point3d { return new Point3d(this.nextFloat64, this.nextFloat64, this.nextFloat64); }
+    public get nextId64(): Id64 { return Id64.fromUint32Pair(this.nextUint32, this.nextUint32); }
 
     public nextBytes(numBytes: number): Uint8Array {
-      const bytes = new Uint8Array(this.arrayBuffer, this.currentOffset, numBytes);
+      const bytes = new Uint8Array(this.arrayBuffer, this.curPos, numBytes);
       this.advance(numBytes);
       return bytes;
     }
 
-    public get currentOffset(): number { return this._curPos; }
     public get arrayBuffer(): ArrayBuffer { return this._view.buffer; }
 
     private read(numBytes: number, read: (view: DataView) => number) {
@@ -87,5 +90,13 @@ export namespace TileIO {
     public get isValid(): boolean { return Format.Unknown !== this.format; }
 
     protected invalidate(): void { this._format = Format.Unknown; }
+  }
+
+  export class GeometryCollection {
+    public constructor(public readonly meshes: MeshList,
+                       public readonly isComplete: boolean,
+                       public readonly isCurved: boolean) { }
+
+    public get isEmpty(): boolean { return 0 === this.meshes.length; }
   }
 }

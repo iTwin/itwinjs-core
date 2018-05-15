@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert, Dictionary, Comparable, compare, compareNumbers, compareStrings } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -1133,7 +1133,7 @@ export namespace Hilite {
  * index of the Feature to which it belongs, where the index is determined by the
  * FeatureTable associated with the primitive.
  */
-export class Feature {
+export class Feature implements Comparable<Feature> {
   public readonly elementId: Id64;
   public readonly subCategoryId: Id64;
   public readonly geometryClass: GeometryClass;
@@ -1147,11 +1147,20 @@ export class Feature {
   public get isDefined(): boolean { return this.elementId.isValid() || this.subCategoryId.isValid() || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
 
-  public equals(other: Feature): boolean {
-    if (this === other)
-      return true;
-    else
-      return this.subCategoryId.equals(other.subCategoryId) && this.elementId.equals(other.elementId) && this.geometryClass === other.geometryClass;
+  public equals(other: Feature): boolean { return 0 === this.compare(other); }
+  public compare(rhs: Feature): number {
+    if (this === rhs)
+      return 0;
+
+    let cmp = compareNumbers(this.geometryClass, rhs.geometryClass);
+    if (0 === cmp) {
+      cmp = compareStrings(this.elementId.value, rhs.elementId.value);
+      if (0 === cmp) {
+        cmp = compareStrings(this.subCategoryId.value, rhs.subCategoryId.value);
+      }
+    }
+
+    return cmp;
   }
 }
 
@@ -1162,21 +1171,19 @@ export class Feature {
  * A FeatureTable can be shared amongst multiple primitives within a single RenderGraphic, and
  * amongst multiple sub-Graphics of a RenderGraphic.
  */
-export class FeatureTable {
-  // ###TODO use a sorted array to compensate for javascript's lack of support for custom map key comparator.
-  public readonly list: Feature[] = [];
+export class FeatureTable extends Dictionary<Feature, number> {
   public readonly maxFeatures: number;
   public readonly modelId: Id64;
 
   public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId) {
+    super(compare);
     this.maxFeatures = maxFeatures;
     this.modelId = modelId;
   }
 
-  public get length(): number { return this.list.length; }
   public get isFull(): boolean { assert(this.length <= this.maxFeatures); return this.length >= this.maxFeatures; }
   public get isUniform(): boolean { return this.length === 1; }
-  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this.list[0].isDefined); }
+  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._keys[0].isDefined); }
 
   /**
    * returns index of feature, unless it doesn't exist, then the feature is added and its key, which is the current numIndices is returned
@@ -1186,7 +1193,7 @@ export class FeatureTable {
     let index = this.findIndex(feature);
     if (-1 === index && !this.isFull) {
       index = this.length;
-      this.list.push(feature);
+      this.insert(feature, index);
     }
 
     return index;
@@ -1194,18 +1201,19 @@ export class FeatureTable {
 
   /** Returns the index of the Feature, or -1 if the Feature does not exist in the lookup table. */
   public findIndex(feature: Feature): number {
-    for (let i = 0; i < this.length; i++) {
-      if (this.list[i].equals(feature)) {
-        return i;
-      }
-    }
-
-    return -1;
+    const found = this.get(feature);
+    return undefined !== found ? found : -1;
   }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
-  public findFeature(index: number): Feature | undefined { return index < this.length ? this.list[index] : undefined; }
-  public clear(): void { this.list.length = 0; }
+  public findFeature(index: number): Feature| undefined {
+    for (let i = 0; i < this.length; i++) {
+      if (this._values[i] === index)
+        return this._keys[i];
+    }
+
+    return undefined;
+  }
 }
 
 export class TextureMapping {

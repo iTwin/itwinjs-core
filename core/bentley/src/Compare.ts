@@ -17,12 +17,12 @@ export function compareWithTolerance(a: number, b: number, tolerance = 0.1): num
 }
 
 export function compareNumbers(a: number, b: number): number { return a - b; }
-
 export function compareBooleans(a: boolean, b: boolean): number { return a !== b ? (a < b ? -1 : 1) : 0; }
+export function compareStrings(a: string, b: string): number { return a == b ? 0 : (a < b ? -1 : 1); }
 
 export interface Comparable<T> {
   equals(rhs: T): boolean;
   compare(rhs: T): number;
 }
 
-export function compareObj<T extends Comparable<T>>(lhs: T, rhs: T): number { return lhs.compare(rhs); }
+export function compare<T extends Comparable<T>>(lhs: T, rhs: T): number { return lhs.compare(rhs); }

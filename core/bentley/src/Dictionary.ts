@@ -105,7 +105,7 @@ export class Dictionary<K, V> {
     return pairs;
   }
 
-  /*
+  /**
    * Extracts the contents of this dictionary as a pair of { keys, values } arrays, and empties this dictionary.
    * The array of keys is sorted according to the comparison criterion.
    * The position of each value in the array of values corresponds the the position of the corresponding key in the array of keys.

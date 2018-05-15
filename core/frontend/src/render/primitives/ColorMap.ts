@@ -1,35 +1,33 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Dictionary, compareNumbers } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
 export class ColorMap {
-  // ###TODO: Use a sorted array
-  private readonly _list: number[] = [];
+  private readonly _dict = new Dictionary<number, number>(compareNumbers);
   private _hasAlpha: boolean = false;
 
   private static get maxIndex(): number { return 0xffff; }
   private static scratchColorDef = new ColorDef();
 
   public getIndex(color: number): number {
-    for (let i = 0; i < this.length; i++) {
-      if (this._list[i] === color) {
-        return i;
-      }
-    }
+    const found = this._dict.get(color);
+    if (undefined !== found)
+      return found;
 
     assert(!this.isFull);
 
     // The table should never contain a mix of opaque and translucent colors.
-    if (this.isEmpty) {
+    if (this.isEmpty)
       this._hasAlpha = ColorMap.hasAlpha(color);
-    } else {
+    else
       assert(ColorMap.hasAlpha(color) === this.hasTransparency);
-    }
 
-    this._list.push(color);
-    return this._list.length - 1;
+    const index = this._dict.length;
+    this._dict.insert(color, index);
+    assert(this._dict.length === index + 1);
+    return index;
   }
 
   private static hasAlpha(color: number) {
@@ -40,27 +38,26 @@ export class ColorMap {
   public get hasTransparency(): boolean { return this._hasAlpha; }
   public get isUniform(): boolean { return 1 === this.length; }
 
-  public get length(): number { return this._list.length; }
+  public get length(): number { return this._dict.length; }
   public get isEmpty(): boolean { return this.length === 0; }
   public get isFull(): boolean { return this.length >= ColorMap.maxIndex; }
 
   public toColorIndex(index: ColorIndex, indices: Uint16Array): void {
     index.reset();
-    switch (this.length) {
-      case 0: {
-        assert(false, "empty color map");
-        break;
-      }
-      case 1: {
-        index.initUniform(this._list[0]);
-        break;
-      }
-      default: {
-        assert(0 !== indices.length);
-        const colors = Uint32Array.from(this._list);
-        index.initNonUniform(colors, indices, this.hasTransparency);
-        break;
-      }
+    if (0 === this.length) {
+      assert(false, "empty color map");
+      return;
+    }
+
+    const { keys, values } = this._dict.extractArrays();
+    if (1 === keys.length) {
+      index.initUniform(keys[0]);
+    } else {
+      const colors = new Uint32Array(keys.length);
+      for (let i = 0; i < keys.length; i++)
+        colors[values[i]] = keys[i];
+
+      index.initNonUniform(colors, indices, this.hasTransparency);
     }
   }
 }

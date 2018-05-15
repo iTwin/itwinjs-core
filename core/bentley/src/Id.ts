@@ -121,12 +121,28 @@ export class Id64 {
    * @param a The first value, may be undefined
    * @param b The second value, may be undefined
    */
-  public static areEqual(a?: Id64, b?: Id64): boolean { return (a === b) || (a != null && b != null && a.equals(b)); }
+  public static areEqual(a?: Id64, b?: Id64): boolean { return (a === b) || (a !== undefined && b !== undefined && a.equals(b)); }
 
   /** Create an Id64 from a json object. If val is already an Id64, just return it since Id64s are immutable.
    * @param val the json object containing Id64Props. If val does not contain valid values, result will be an invalid Id64.
    */
   public static fromJSON(val?: Id64Props): Id64 { return val instanceof Id64 ? val : new Id64(val); }
+
+  /** Create an Id64 from a pair of unsigned 32-bit integers.
+   * @param lowBytes The lower 4 bytes of the ID
+   * @param highBytes The upper 4 bytes of the ID
+   * @returns an Id64 containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
+   * operation lowBytes | (highBytes << 32).
+   */
+  public static fromUint32Pair(lowBytes: number, highBytes: number): Id64 {
+    const localIdLow = lowBytes;
+    const localIdHigh = (highBytes & 0x000000ff) << 32;
+    const localId = localIdLow | localIdHigh >>> 0;
+
+    const briefcaseId = (highBytes & 0xffffff00) >>> 8;
+
+    return new Id64([localId, briefcaseId]);
+  }
 
   /** Convert an Id64Arg into an Id64Set.
    * This method can be used by functions that accept an Id64Arg to conveniently process the value(s).
