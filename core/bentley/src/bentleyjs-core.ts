@@ -5,17 +5,18 @@ export * from "./Assert";
 export * from "./BeEvent";
 export * from "./BentleyError";
 export * from "./BeSQLite";
+export * from "./Clone";
+export * from "./Compare";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
+export * from "./Iterable";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
 export * from "./SortedArray";
+export * from "./StringUtils";
 export * from "./Time";
-export * from "./Compare";
-export * from "./Clone";
-export * from "./Iterable";
 
 /** @module Utils */
 
