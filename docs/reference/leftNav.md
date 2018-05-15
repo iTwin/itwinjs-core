@@ -14,8 +14,10 @@
 - [Schema]($backend:Schema)
 - [Views]($backend:Views)
 
+&nbsp;
 ### ($frontend)
 
+&nbsp;
 ### ($common)
 - [App]($common:App)
 - [BisCore]($common:BisCore)
@@ -29,9 +31,10 @@
 - [RpcInterface]($common:RpcInterface)
 - [Schema]($common:Schema)
 
-
+&nbsp;
 ### ($clients)
 
+&nbsp;
 ## Support Packages
 ---
 ### ($bentleyjs-core)
@@ -42,6 +45,7 @@
 - [Logging]($bentleyjs-core:Logging)
 - [Utils]($bentleyjs-core:Utils)
 
+&nbsp;
 ### ($geometry-core)
 - [CartesianGeometry]($geometry-core:CartesianGeometry)
 - [ArraysAndInterfaces]($geometry-core:ArraysAndInterfaces)
