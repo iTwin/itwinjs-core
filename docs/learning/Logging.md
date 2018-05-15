@@ -1,6 +1,6 @@
 # Logging
 
-Logging allows libraries and apps to report potentially useful information about operations, and it allows apps and users to control how or if the logged information is displayed or collected. Logging information is primarily used to diagnose problems after the fact. Logging may also be used to monitor on overally application health.
+Logging allows libraries and apps to report potentially useful information about operations, and it allows apps and users to control how or if the logged information is displayed or collected. Logging information is primarily used to diagnose problems after the fact. Logging may also be used to monitor application health.
 
 Libraries and apps use the [Logger]($bentleyjs-core) and [LogLevel]($bentleyjs-core) classes to report logging messages. [BentleyError]($bentleyjs-core) is also integrated with logging.
 

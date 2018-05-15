@@ -16,6 +16,8 @@ Agents and services are [backend](../learning/Glossary.md#Backend) code. Their m
 
 Agents and services are written in TypeScript/JavaScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
 
+Agents and Services use [logging](./Logging.md) to enable users to monitor their operations and to help with diagnosing problems.
+
 ### iModel Agents
 
 An *iModel Agent* is a program that performs an unattended action upon being invoked by an event from iModelHub.
@@ -49,6 +51,8 @@ An app may require data-access operations that are specific to and intrinsically
 App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
 
 An app can use many services, both general-purpose and app-specific.
+
+App backends may use [logging](./Logging.md) to help with diagnosing problems.
 
 #### Backends for Frontends
 
