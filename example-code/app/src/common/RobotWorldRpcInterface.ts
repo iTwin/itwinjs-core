@@ -36,7 +36,8 @@ export abstract class RobotWorldReadRpcInterface extends RpcInterface {
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.client-stub
 
-export abstract class RobotWorldWriteRpcClient extends RpcInterface implements RobotWorldWriteRpcInterface {
+// The client stub for RobotWorldWriteRpcInterface that clients of RobotWorldEngine can use.
+export class RobotWorldWriteRpcClient extends RpcInterface implements RobotWorldWriteRpcInterface {
   public insertRobot(_iModelToken: IModelToken, _modelId: Id64, _name: string, _location: Point3d): Promise<Id64> {
     return this.forward.apply(this, arguments);
   }
@@ -54,8 +55,8 @@ export abstract class RobotWorldWriteRpcClient extends RpcInterface implements R
   }
 }
 
-// The "read" RPC interface that may be exposed by the RobotWorldEngine.
-export abstract class RobotWorldReadRpcClient extends RpcInterface implements RobotWorldReadRpcInterface {
+// The client stub for RobotWorldReadRpcInterface that clients of RobotWorldEngine can use.
+export class RobotWorldReadRpcClient extends RpcInterface implements RobotWorldReadRpcInterface {
   public countRobotsInArray(_iModelToken: IModelToken, _elemIds: Id64[]): Promise<number> {
     return this.forward.apply(this, arguments);
   }
