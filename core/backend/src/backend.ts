@@ -39,7 +39,7 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description BisCore
- * Classes for working with the major classes such as [BisCore]($backend), [Model]($backend), [Element]($backend), and [Category]($backend) in the BisCore schema - [BIS Overview]($docs/overview/BIS.md).
+ * Classes for working with the major classes such as [BisCore]($backend), [Model]($backend), [Element]($backend), and [Category]($backend) in the BisCore schema - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md) and [BIS Overview]($docs/bis).
  */
  /**
   * @docs-group-description Codes
@@ -71,9 +71,9 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Schema
- * Classes for working with ECSchemas - see [Executing ECSQL]($docs/learning/ECSQL.md)
+ * Classes for working with ECSchemas - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  */
 /**
  * @docs-group-description Views
- * Classes for working with views, such as[ViewDefinition]($backend)
+ * Classes for working with views, such as [ViewDefinition]($backend)
  */

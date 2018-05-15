@@ -27,17 +27,7 @@ import {
  * to hold a GUID, if the element was assigned that GUID by some other federated database. The iModel database enforces
  * uniqueness of id, code, and federationGuid.
  *
- * <h2>Element Subclasses</h2>
- *
- * Define a subclass of [[Element]] to represent a specialization, such as a specific type of physical thing,
- * a specific abstract idea, or a specific type of information record.
- * See [[Schema]] for an explanation of how ECClasses are defined and how to represent them in TypeScript.
- * As noted, you do not have to define a TypeScript class for each specialization of Element.
- * You would do that to hand-coded methods and type-safe constructors for it.
- * <p><em>Example:</em>
- * ``` ts
- * [[include:Element.subclass]]
- * ```
+ * See [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
  */
 export abstract class Element extends Entity implements ElementProps {
   /** the ModelId of the Model containing this element */

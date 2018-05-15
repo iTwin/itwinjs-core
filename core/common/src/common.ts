@@ -48,11 +48,11 @@ export * from "./rpc/StandaloneIModelRpcInterface";
 
 /**
  * @docs-group-description App
- * Classes for defining an app - see [App Overview]($docs/overview/overview/App.md).
+ * Classes for defining an app - see [App Overview]($docs/overview/App.md).
  */
 /**
  * @docs-group-description BisCore
- * Classes for working with the major classes in the BisCore schema - see [BIS Overview]($docs/overview/overview/BIS.md)
+ * Classes for working with the major classes in the BisCore schema - see [BIS Overview]($docs/overview/BIS.md)
  */
  /**
   * @docs-group-description Codes
@@ -80,7 +80,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 /**
  * @docs-group-description iModels
- * Classes for working with iModels - see [iModel Overview]($docs/overview/overview/IModels.md)
+ * Classes for working with iModels - see [iModel Overview]($docs/overview/IModels.md)
  */
 /**
  * @docs-group-description RpcInterface
@@ -88,5 +88,5 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 /**
  * @docs-group-description Schema
- * Classes for working with ECSchemas - see [Executing ECSQL]($docs/learning/ECSQL.md)
+ * Classes for working with ECSchemas - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  */

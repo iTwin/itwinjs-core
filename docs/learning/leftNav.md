@@ -5,6 +5,9 @@
 
 ### Helpful links
 ##### [ECSQL](./ECSQL.md)
+##### [FeatureGates](./FeatureGates)
+##### [RpcInterface](./RpcInterface)
+##### [Logging](./Logging)
 ##### [Wire Format](./WireFormat.md)
 ##### [Frequently asked Questions](./faq.md)
 ##### [Guidelines and Tips](./guidelines/index.md)

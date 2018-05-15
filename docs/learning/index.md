@@ -7,6 +7,7 @@ Table of Contents:
 * [Common](./common/index)
 * [ECSQL](./ECSQL)
 * [Change Summaries](./ChangeSummaries)
+* [FeatureGates](./FeatureGates)
 * [RpcInterface](./RpcInterface)
 * [Logging](./Logging)
 * [Frequently asked Questions](./faq)

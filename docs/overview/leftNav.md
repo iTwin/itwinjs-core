@@ -1,4 +1,5 @@
 ### Using iModelJs
+##### [App Architecture](./App.md)
 ##### [Agents and Services](./App.md#agents-and-services)
 ##### [Web Apps](./App.md#web-apps)
 ##### [Desktop Apps](./App.md#desktop-apps)

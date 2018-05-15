@@ -490,10 +490,6 @@ export class IModelDb extends IModel {
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
    * @see containsClass
-   * <p><em>Example:</em>
-   * ``` ts
-   * [[include:IModelDb.importSchema]]
-   * ```
    */
   public importSchema(schemaFileName: string) {
     if (!this.briefcase) throw this._newNotOpenError();
