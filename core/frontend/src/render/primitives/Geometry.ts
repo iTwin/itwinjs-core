@@ -197,6 +197,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
 
 export class GeometryList extends Iterable<Geometry> {
   constructor() { super(); }
+  public get first(): Geometry | undefined { return this._list[0]; }
   public get isEmpty(): boolean { return this._list.length === 0; }
   public push(geom: Geometry): number {
     return this._list.push(geom);
