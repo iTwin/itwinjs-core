@@ -5,25 +5,6 @@
 import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial } from "@bentley/imodeljs-common";
 import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
 
-export namespace DisplayParams {
-  export const enum Type {
-    Mesh,
-    Linear,
-    Text,
-  }
-
-  export const enum RegionEdgeType {
-    None,
-    Default,
-    Outline,
-  }
-
-  export const enum ComparePurpose {
-    Merge,  // considers colors equivalent if both have or both lack transparency
-    Strict, // compares all members
-  }
-}
-
 /** This class is used to determine if things can be batched together for display. */
 export class DisplayParams {
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
@@ -172,5 +153,24 @@ export class DisplayParams {
     }
 
     return diff;
+  }
+}
+
+export namespace DisplayParams {
+  export enum Type {
+    Mesh,
+    Linear,
+    Text,
+  }
+
+  export enum RegionEdgeType {
+    None,
+    Default,
+    Outline,
+  }
+
+  export enum ComparePurpose {
+    Merge,  // considers colors equivalent if both have or both lack transparency
+    Strict, // compares all members
   }
 }
