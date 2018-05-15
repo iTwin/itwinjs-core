@@ -68,7 +68,7 @@ The UI-specific part of an app is called the [frontend](https://en.wikipedia.org
 
 The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
-The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on nodejs.
+The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on Node.js.
 
 ## Interactive App Configurations
 
@@ -141,7 +141,7 @@ Transforms client calls on an [RpcInterface](#RpcInterface) into HTTP requests. 
 
 #### Desktop RPC configuration
 
-Marshalls calls on an [RpcInterface](#RpcInterface) through high-bandwidth, low-latency pipes between cooperating processes on the same computer. Provides endpoint-processing and call dispatching in the service backend process. The iModelJs desktop RPC configuration is specific to Electron.
+Marshalls calls on an [RpcInterface](#RpcInterface) through high-bandwidth, low-latency pipes between cooperating processes on the same computer. Provides endpoint-processing and call dispatching in the service backend process. The iModelJs desktop RPC configuration is specific to the Electron framework.
 
 #### In-process RPC configuration
 
