@@ -2,59 +2,75 @@
 
 An RpcInterface is a set of operations exposed by a service that a client can call, using configurable protocols, in a platform-independent way.
 
-An RpcInterface is made up of three classes:
-* An abstract TypeScript class that *defines* the interface as a set of abstract methods.
-* A concrete TypeScript class for clients to use. This class implements the interface, making each method an RPC.
-* A concrete TypeScript class that the service implements. This class extends implements the interface, making each method actually handle the corrsponding request.
+This article uses the terms client and service to identify the two roles in an RpcInterface:
+* *client* -- the code that uses an RpcInterface and calls its methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. It could be [frontend code](./Glossary.md#frontend) *or* [backend code](./Glossary.md#backend).
+* *service* -- the code that implements and exposes an RpcInterface to clients. A service could be a deployed, stand-alone service, or the backend of an app, or a package that used by backend code. It is always [backend code](./Glossary.md#backend).
 
-None of the classes that make up an RpcInterface contains any code that deals directly with communications. Instead, *RpcConfigurations* control how calls on an RpcInterface are marshalled. The key concept is that the interface and call marshalling are distinct concepts. Marshalling is factored out, so that clients and services can be written in a way that is independent of transport details, while transport can be configured at runtime to suit the requirements of the app's configuration.
+See [the RpcInterface overview](../overview/App.md#rpcinterface) for more information on [app architecture](../overview/App.md) and the purpose of RpcInterfaces.
 
-In this article, the term *client* is used to denote the code that uses an RpcInterface can calls its methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. The term *service* is used to denote the code that implements and exposes an RpcInterface to clients. A service could be a deployed, stand-alone service, or the backend of an app, or a package that used by backend code. The main point is that it is [backend code](./Glossary.md#backend).
+An RpcInterface is made up of three TypeScript classes:
+* The [definition](#defining-the-interface) - An abstract TypeScript class containing abstract methods.
+* The [client agent](#client-agent-implementation) - A concrete TypeScript class for clients to use. This class implements each method in the interface as an RPC.
+* The [service-side implementation](#service-implementation) - A concrete TypeScript class that implements each method to handle the corrsponding request.
 
-RpcInterface methods are always *asynchronous*. That is because the RpcInterface implementation and the client that calls it are never in the same JavaScript context. This follows from the [iModelJs app architecture](../overview/App.md#interactive-apps).
+All three classes extend [RpcInterface]($common). The client agent and service-side implementations also *implement* the interface definition. This is explained in detail below.
 
-For more information on the purpose of RpcInterfaces and their role in app architecture, see [RpcInterface](../overview/App.md#rpcinterface).
+The client-service RPC mechanism is implemented in [RpcConfigurations]($common). This allows clients and services to be written in a way that is independent of transport details, while allowing transport to be configured at runtime to suit the requirements of the app's configuration. See [service-side configuration](#service-side-configuration) and [client-side configuration](#client-side-configuration) below for details.
+
+RpcInterface methods are always *asynchronous*. That is because the RpcInterface implementation and the client that calls it are never in the same JavaScript context, as explained in [the app architecture overview](../overview/App.md#interactive-apps).
+
+### Parameter and Return Types
+
+RpcInterface methods can take and return just about any type. Most JavaScript primitive types are supported, such as number, string, bool, and any. A few primitive types cannot be used, including Set and Map.
+
+RpcInterfaces can also use TypeScript/JavaScript classes as parameter and return types. The [interface definition](#defining-the-interface) just has to declare the classes that it uses, so that the configurations can marshall them correctly. That is the purpose of the `types` property.
+
+RpcInterfaces are restricted to using types that are common to both frontends and backends. For example, the [IModelToken]($common) type must be used to specify an iModel. The client that makes a call on the interface must obtain the token from the IModelConnection or IModelDb that it has, and the service that implements the interface must translate the token into an IModelDb when it handles the call.
 
 ### Defining the Interface
 
-An RpcInterface *definition* is an abstract TypeScript class that extends [RpcInterface]($common).
+To define an interface, write an abstract TypeScript class that extends [RpcInterface]($common). This class should declare an abstract method for each operation that is to be exposed by the service. Each method must return a `Promise`.
 
-The definition class must define an abstract method for each operation that is to be exposed by the service.
+The definition class must also define two static properties:
+* `types`. Specifies any non-primitive types used in the methods of interface.
+* `version`. The interface version number.
 
-Each method must return a `Promise`.
-
-The definition class must also define:
-* `public static types`. This declares what classes are used in the methods in the RpcInterface,
- so that the chosen configuration can marshall them correctly. RpcInterface methods are not restricted to primitive types.
-* `public static version`. The interface version number.
-
-RpcInterface definition classes must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
+The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
 
 *Example:*
 ```ts
 [[include:RpcInterface.definition]]
 ```
 
-### Client Implementation
+Definitions are used by both [frontend code](./Glossary.md#frontend) and [backend code](./Glossary.md#backend).
 
-The client-side implementation class of an RpcInterface must implement the interface defining each method as an RPC. In practice, this means implementing each method with the same generic code: `return this.forward.apply(this, arguments);`
+### Client Agent Implementation
+
+The client agent is a TypeScript class that implements the interface, defining each method as an RPC. Usually, all of the methods of a client contain exactly the same single line of code: `return this.forward.apply(this, arguments);` The forward property is implemented by the base class, and its forward method sends the call and its arguments through the configured RPC mechanism to the service. The client agent could be customized in some way if necessary.
+
+*Example:*
+```ts
+[[include:RpcInterface.client-agent]]
+```
+
+A client can be either [frontend code](./Glossary.md#frontend) or [backend code](./Glossary.md#backend).
 
 ### Service Implementation
 
-The service-side implementation of an RpcInterface is a TypeScript class that implements the interface and extends [RpcInterface]($common).
+The service-side implementation of an RpcInterface is a TypeScript class that implements the interface and extends [RpcInterface]($common). The service-side implementation is also known as the "impl". An impl is always [backend code](./Glossary.md#backend).
 
-The implementation class must override each interface method by performing the operations. Each method must be asynchronous. The impl will also have to transform certain arguments, such as IModelTokens, before they can be used.
+The impl must override each method in the interface by performing the intended operation. Each method must return a Promise.
 
-A best practice is that the RpcInterface implementation should simply forward the calls, so that each method is a one-liner. The called methods that peform the real operations should be in the service class, not in the RpcInterface impl, and should be completely free of RpcInterface-specific details, such as the artificial types used in marshalling.
+As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 
-A RpcInterface impl class is always defined in backend code and is not exposed directly to clients.
+A best practice is that an impl should be a thin layer on top of normal classes in the service. Ideally, each method of an impl should be a one-line forwarding call. The impl wrapper should be concerned only with transforming types, not with functionality. The normal service class methods should be concerned only with functionality. The service class methods should be static.
 
 *Example:*
 ```ts
 [[include:RpcInterface.implementation]]
 ```
 
-### Configuration (Service Side)
+### Service-side Configuration
 
 A service must expose the RpcInterfaces that it implements or imports, so that clients can use them.
 
@@ -72,7 +88,7 @@ This example shows how a service could configure and expose more than one interf
 It also shows how to choose the appropriate configuration.
 It also shows how a service could use ($common/FeatureGates) to decide which interfaces to expose.
 
-### Serving RpcInterfaces (Service Side)
+### Serving RpcInterfaces
 
 A service must serve out its interfaces, so that in-coming client requests are forwarded to the implementations.
 
@@ -95,10 +111,15 @@ When a service is the backend of an Electron desktop app, no additional code is 
 
 When a service is the backend of a mobile app, <em>TBD...</em.
 
-### Configuring and Calling RpcInterfaces (Client side)
+### Client-side Configuration
 
-A client (e.g., an app frontend) must configure the interfaces that it intends to use.
-It must use the appropriate configuration for each interface, depending on how the client itself it configured and how the service that implements the interface is deployed.
+A client (e.g., an app frontend) must configure the interfaces that it intends to use. And, it must specify the appropriate configuration for each interface, depending on the configuration of the app itself and relationship between the client and the service.
+|Type of service|Type of app|Configuration to use
+|---------------|-----------|--------------------
+|App-specific backend|Mobile app|[in-process RPC configuration](../overview/App.md#in-process-rpc-configuration).
+|"|Desktop app|[desktop RPC configuration](../overview/App.md#desktop-rpc-configuration).
+|"|Web app|[cloud PRC configuration](../overview/App.md#cloud-rpc-configuration).
+|External service|*|The client will always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration) for services.
 
 *Example:*
 ```ts

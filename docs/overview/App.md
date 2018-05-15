@@ -3,9 +3,10 @@
 From the same JavaScript codebase, it is possible to create:
 
 * [Backend Agents and Services](#agents-and-services) that process iModels and respond to events from iModelHub
-* [Web Apps](#web-apps) that run in web browsers and communicate with backend code running in Web servers
-* [Desktop Apps](#desktop-apps) that run on personal computers
-* [Mobile Apps](#mobile-apps) that run on tablets and phones
+* [Interactive Apps](#interactive-apps) that have a GUI and access iModel content. Several kinds of apps are supported:
+* * [Web Apps](#web-apps) that run in web browsers and communicate with backend code running in Web servers
+* * [Desktop Apps](#desktop-apps) that run on personal computers
+* * [Mobile Apps](#mobile-apps) that run on tablets and phones
 
 ## Agents and Services
 
@@ -35,7 +36,7 @@ An iModel service or app backend exposes an *interface* that clients can use to 
 
 An interactive app has two parts: a *frontend* containing its UI and a *backend* containing its data-access logic. Frontends and backends have very different concerns and must be kept strictly separate. They are sometimes bundled together in a single install set or program, and they are sometimes deployed separately to different machines or processes.
 
-The backend implements operations that are used by the frontend. Following good design principles, the frontend may call the backend, but not the other way around.
+The backend implements operations that are used by the frontend. Following good design principles, the frontend may call the backend, but not the other way around. The frontend uses [RpcInterfaces](#rpcinterface) to call the backend.
 
 ### App Backend
 
@@ -43,7 +44,7 @@ The data-access part of an app is called the [backend](https://en.wikipedia.org/
 
 An app can use a pre-existing or general-purpose [service](#imodel-services) as its backend. For example, a family of viewing apps can use a general-purpose service that handles requests for data from a given iModel.
 
-An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using [RpcInterface](#rpcinterface) and are encouraged.
+An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using [RpcInterfaces](#rpcinterface) and are encouraged.
 
 App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentlejs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
 
@@ -65,16 +66,13 @@ The frontend makes requests on backend services in order to access iModel conten
 
 An *interface* is the boundary between two components, allowing them to communicate in a clearly defined way. A service implements an interface in order to make its operations available, and a client makes calls on a service's interface it in order to request operations. Since client and service do not run in the same JavaScript context and may not even be on the same machine, a call across the interface is always a [remote procedure call](../learning/Glossary.md#rpc). That is why the interfaces implemented by services and called by clients are called *RpcInterfaces*.
 
-An RpcInterface is made up of:
-* The interface - An abstract TypeScript class that defines the interface as a set of abstract methods.
-* The client agent - A concrete TypeScript class for clients to use. This class implements the interface, making each method an RPC.
-* The service-side implementation - A concrete TypeScript class that the service implements. This class extends implements the interface, making each method actually handle the corrsponding request.
+In iModelJs, an RpcInterface is a normal TypeScript class. Clients make calls using ordinary TypeScript method-calling syntax, and they pass parameters and get results as ordinary TypeScript types. Services implement an RpcInterfaces by writing a normal TypeScript classes. The details of the RPC mechanism are factored out into [RPC configurations](#rpc-configurations). That allows client and service code to focus entirely on the functionality of the interface.
 
-The interface is defined entirely in TypeScript. A client requests an operation on a service by selecting an RpcInterface, obtaining the client-side implementation of it, and calling a method on it. A service exposes its operations by defining and registering implementations of its RpcInterfaces.
+See [learning RpcInterfaces](../learning/RpcInterface.md) for information on how to write and use RpcInterfaces.
 
-As far as both client and service are concerned, service operations are TypeScript method calls. The section on [RPC configurations](#rpc-configurations) below describes how these calls are marshalled and dispatched.
+See [RPC configurations](#rpc-configurations) below for more on how interface calls are marshalled.
 
-An RpcInterface is unidirectional. It allows a client to make a request on a service and get a return value. Services never send requests to clients.
+An RpcInterface allows a client to make a request on a service and get a return value. Services never send requests to clients.
 
 RpcInterface methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
 
@@ -112,7 +110,7 @@ An app chooses the appropriate configuration for each RpcInterface that it uses.
 
 An iModelJs-based interactive app can be configured to run as a web app with a supporting web server, a desktop app, or a mobile app.
 
-In all configurations, the frontend UI must be written using Web technologies, including HTML, CSS, and JavaScript, as it will be rendered in a Web view in all configurations. (In some configurations, the Web view will be embedded in an app.) That allows an app developer to write a UI that works equally well everywhere. The developer can also [swap in a different GUI](#making-apps-fit-the-platform) to suit each configuration, perhaps using the same frontend JavaScript.
+In all configurations, the frontend UI must be written using Web technologies, including HTML, CSS, and JavaScript, as it will be rendered in a Web view in all configurations. (In some configurations, the Web view will be embedded in an app.) That allows an app developer to write a UI that works equally well everywhere. The developer can also [swap in a different GUI](#making-interactive-apps-fit-the-platform) to suit each configuration, perhaps using the same frontend JavaScript.
 
 The backend of the app can be the same in all configurations. An app developer can also employ the [backends for frontends](#backends-for-frontends) pattern to tailor the app to different configurations.  And, an app can use [platform-specific APIs](#making-apps-fit-the-platform).
 

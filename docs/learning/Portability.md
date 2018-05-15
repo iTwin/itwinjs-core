@@ -27,6 +27,17 @@ The frontend's main script must check the app's configuration to decide what Rpc
 
 The frontend will always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration) for services.
 
+### Using Plaform-specfic Modules in the Frontend
+In some cases, the Web view environment will provide platform-specific globals and modules. The frontend can use these modules in guarded code. To detect the platform of the frontend:
+```ts
+const isIos: bool = /iphone|ipod|ipad/.test(window.navigator.userAgent.toLowerCase());
+// ... other mobile platforms ...
+
+if (isIos) {
+  // ... use iOS-specific modules, such as camera ...
+}
+```
+
 ## Backend Portability
 
 ### Services and Agents
@@ -45,26 +56,43 @@ An app-specific backend's main script must check the app's configuration to deci
 [[include:RpcInterface.initializeImpl]]
 ```
 
-A backend can use node builtins, but only in guarded code.
+#### Using Platform-specific Modules in the Backend
+A backend can use platform-specific globals and modules, but only in guarded code. See [Platform](#backend) for methods to detect the platform.
 
-*TBD: Sample Code*
+For example, a backend can use node builtins in guarded code, like this:
+```ts
+  import { Platform } from "@bentley/imodeljs-backend";
 
+  if (Platform.isNodeJs()) {
+    // access nodejs-specific modules and/or globals
+    __dirname;
+    process.env;
+    require("fs");
+    // ...
+  }
+```
+
+### Avoiding Nodejs dependencies
 A backend can use the following portable imodeljs-backend classes to avoid unnecessary node dependencies:
 
 |Node builtin|imodeljs-backend portable substitute|
 |---|---|---|
-|fs|IModelJsFs
-|os|Platform
-|process|Platform
-|__dirname|KnownLocations
-|__filename|KnownLocations
-|console|Logger
-|path|path|
+|fs|[IModelJsFs]($backend)
+|os|[Platform]($backend)
+|process|[Platform]($backend)
+|__dirname|[KnownLocations]($backend)
+|__filename|[KnownLocations]($backend)
+|console|[Logger]($bentley-js)
+|path|[path](#path)|
 
-In most cases, the imodeljs-backend substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable. Only a partial implementation of `path` is provided on non-nodejs platforms.
+In most cases, the imodeljs-backend substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.
 
-An app backend must not *never* depend on node-specific packages, including any package that is based on native code. (For fs-extra, use IModelJsFs)
+#### path
 
-## Platform-specific Modules
+A partial implementation of `path` is provided on non-nodejs platforms. The methods that are available everywhere are:
+posix, win32, sep, delimiter, basename, dirname, extname, normalize, join, isAbsolute.
 
-A portable interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. These should be used in guarded code.
+Use only these methods in unguarded code.
+
+#### Unsupported
+An app backend must not *never* depend on node-specific *packages*, including any package that is based on native code. (For fs-extra, use IModelJsFs)
