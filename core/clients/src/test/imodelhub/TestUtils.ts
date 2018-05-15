@@ -12,6 +12,7 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ChangeSet } from "../../imodelhub/ChangeSets";
 import { Version } from "../../imodelhub/Versions";
+import { Thumbnail, SmallThumbnail, LargeThumbnail } from "../../imodelhub/Thumbnails";
 import { IModelQuery } from "../../imodelhub/IModels";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
@@ -90,6 +91,10 @@ export function createRequestUrl(scope: ScopeType, id: string, className: string
   }
 
   return requestUrl;
+}
+
+export function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function login(user?: UserCredentials): Promise<AccessToken> {
@@ -311,11 +316,13 @@ export function mockDeniedCodes(iModelId: string, ...codes: Code[]) {
 }
 
 /** Named versions */
-export function generateVersion(name?: string, changesetId?: string): Version {
+export function generateVersion(name?: string, changesetId?: string, smallThumbnailId?: string, largeThumbnailId?: string): Version {
   const result = new Version();
   result.wsgId = Guid.createValue();
   result.changeSetId = changesetId || generateChangeSetId();
   result.name = name || `TestVersion-${result.changeSetId!}`;
+  result.smallThumbnailId = smallThumbnailId;
+  result.largeThumbnailId = largeThumbnailId;
   return result;
 }
 
@@ -357,6 +364,44 @@ export function mockUpdateVersion(iModelId: string, version: Version) {
   const postBody = ResponseBuilder.generatePostBody<Version>(version);
   const requestResponse = ResponseBuilder.generatePostResponse<Version>(version);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+}
+
+/** Thumbnails */
+export function generateThumbnail(size: "Small" | "Large"): Thumbnail {
+  const result = size === "Small" ? new SmallThumbnail() : new LargeThumbnail();
+  result.wsgId = Guid.createValue();
+  return result;
+}
+
+function mockThumbnailResponse(requestPath: string, size: "Small" | "Large", ...thumbnails: Thumbnail[]) {
+  const requestResponse = size === "Small" ?
+    ResponseBuilder.generateGetArrayResponse<SmallThumbnail>(thumbnails) :
+    ResponseBuilder.generateGetArrayResponse<LargeThumbnail>(thumbnails);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
+export function mockGetThumbnails(imodelId: string, size: "Small" | "Large", ...thumbnails: Thumbnail[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, `${size}Thumbnail`);
+  mockThumbnailResponse(requestPath, size, ...thumbnails);
+}
+
+export function mockGetThumbnailById(imodelId: string, size: "Small" | "Large", thumbnail: Thumbnail) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, `${size}Thumbnail`, thumbnail.wsgId);
+  mockThumbnailResponse(requestPath, size, thumbnail);
+}
+
+export function mockGetThumbnailsByVersionId(imodelId: string, size: "Small" | "Large", versionId: string, ...thumbnails: Thumbnail[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, `${size}Thumbnail`, `?$filter=HasThumbnail-backward-Version.Id+eq+%27${versionId}%27`);
+  mockThumbnailResponse(requestPath, size, ...thumbnails);
 }
 
 /** Integration utilities */

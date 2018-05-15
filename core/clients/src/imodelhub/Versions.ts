@@ -7,6 +7,7 @@ import { IModelHubBaseHandler } from "./BaseHandler";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { InstanceIdQuery } from "./Query";
+import { ThumbnailSize } from "./Thumbnails";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -27,6 +28,12 @@ export class Version extends WsgInstance {
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
   public changeSetId?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")
+  public smallThumbnailId?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
+  public largeThumbnailId?: string;
 }
 
 /**
@@ -41,6 +48,21 @@ export class VersionQuery extends InstanceIdQuery {
    */
   public byName(name: string) {
     this.addFilter(`Name+eq+'${name}'`);
+    return this;
+  }
+
+  /**
+   * Query will additionally select given sizes ids of thumbnails.
+   * @returns This query.
+   */
+  public selectThumbnailId(...sizes: ThumbnailSize[]): this {
+    if (!this._query.$select)
+      this._query.$select = "*";
+
+    for (const size of sizes) {
+      this._query.$select += `,HasThumbnail-forward-${size}Thumbnail.*`;
+    }
+
     return this;
   }
 }
