@@ -13,4 +13,5 @@ export abstract class Iterable<T> {
     let key = 0;
     return { next: (): IteratorResult<T> => { const result = key < this._list.length ? { value: this._list[key], done: false } : { value: this._list[key - 1], done: true }; key++; return result; } };
   }
+  public get first(): T { return this._list[0]; }
 }

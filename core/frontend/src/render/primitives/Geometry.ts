@@ -200,17 +200,17 @@ export class GeometryList extends Iterable<Geometry> {
   constructor() { super(); }
   public get isEmpty(): boolean { return this._list.length === 0; }
   public push(geom: Geometry): number {
-    return this.list.push(geom);
+    return this._list.push(geom);
   }
   public append(src: GeometryList): GeometryList {
-    this.list.push(...src.list);
+    this._list.push(...src._list);
     return this;
   }
-  public clear(): void { this.list.length = 0; }
+  public clear(): void { this._list.length = 0; }
   public computeRange(): Range3d {
     const range: Range3d = Range3d.createNull();
     const extendRange = (geom: Geometry) => range.extendRange(geom.tileRange);
-    this.list.forEach(extendRange);
+    this._list.forEach(extendRange);
     return range;
   }
   public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }

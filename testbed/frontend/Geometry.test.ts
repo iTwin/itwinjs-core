@@ -193,7 +193,7 @@ describe("Geometry tests", () => {
 
     assert(!(primBuilder.accum.geometries.isEmpty));
 
-    const arcGeom: Geometry = primBuilder.accum.geometries.list[0];
+    const arcGeom: Geometry = primBuilder.accum.geometries.first();
 
     // query the arcGeom stroked with chordTol = 10
     const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
