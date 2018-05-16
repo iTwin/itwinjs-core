@@ -18,7 +18,7 @@ import {
   GraphicBuilderCreateParams,
   GraphicType,
 } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Loop, Path, LineString3d, Point3d, Transform, Range3d, StrokeOptions, IndexedPolyface, Arc3d, Angle } from "@bentley/geometry-core";
+import { Loop, Path, LineString3d, Point3d, Transform, Range3d, IndexedPolyface, Arc3d } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
@@ -85,8 +85,7 @@ describe("Geometry tests", () => {
     const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
 
     // query stroke list from loopGeom
-    const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
-    const strokesPrimList: StrokesPrimitiveList | undefined = loopGeom.getStrokes(facetOptions);
+    const strokesPrimList: StrokesPrimitiveList | undefined = loopGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)
@@ -137,8 +136,7 @@ describe("Geometry tests", () => {
     const pathGeom = Geometry.createFromPath(pth, Transform.createIdentity(), pathRange, displayParams, false);
 
     // query stroke list from pathGeom
-    const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
-    const strokesPrimList: StrokesPrimitiveList | undefined = pathGeom.getStrokes(facetOptions);
+    const strokesPrimList: StrokesPrimitiveList | undefined = pathGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)
@@ -185,10 +183,7 @@ describe("Geometry tests", () => {
     if (arcGeom === undefined)
       return;
 
-    const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
-    facetOptions.chordTol = 0.22;
-    facetOptions.angleTol = Angle.createDegrees(10.0);
-    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(facetOptions);
+    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)
@@ -204,8 +199,7 @@ describe("Geometry tests", () => {
     expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
     const numPointsA = strks.points.length;
 
-    facetOptions.chordTol = 0.12;
-    strokesPrimList = arcGeom.getStrokes(facetOptions);
+    strokesPrimList = arcGeom.getStrokes(0.12);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)

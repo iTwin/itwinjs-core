@@ -69,8 +69,10 @@ export abstract class Geometry {
     return this._getPolyfaces(facetOptions);
   }
 
-  public getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
-    return this._getStrokes(facetOptions);
+  public getStrokes(tolerance: number): StrokesPrimitiveList | undefined {
+    const strokeOptions = StrokeOptions.createForCurves();
+    strokeOptions.chordTol = tolerance;
+    return this._getStrokes(strokeOptions);
   }
 
   public get hasTexture() { return this.displayParams.isTextured; }
@@ -356,7 +358,7 @@ export class GeometryAccumulator {
       }
 
       if (!options.wantSurfacesOnly) {
-        const tileStrokesArray = geom.getStrokes(StrokeOptions.createForFacets());
+        const tileStrokesArray = geom.getStrokes(tolerance);
         if (undefined !== tileStrokesArray) {
           for (const tileStrokes of tileStrokesArray) {
             displayParams = tileStrokes.displayParams;
