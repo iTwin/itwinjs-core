@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 export * from "./render/primitives/ColorMap";
 export * from "./render/primitives/DisplayParams";
-export * from "./render/primitives/Geometry";
+export * from "./render/primitives/geometry";
 export * from "./render/primitives/Mesh";
 export * from "./render/primitives/Primitives";
 export * from "./render/primitives/Strokes";
