@@ -4,7 +4,8 @@
 import { expect} from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { ModelState } from "@bentley/imodeljs-frontend";
-import { RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderSystem, Mesh, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
+import { LinePixels } from "@bentley/imodeljs-common";
 
 // Binary data for a tile created for a model containing a single element: a green rectangle in the range [0, 0] to [5, 10]
 const rectangleTileBytes = new Uint8Array([
@@ -154,12 +155,60 @@ describe("TileIO", () => {
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
   });
 
-  it("should create a tile reader", () => {
+  it("should read an iModel tile", () => {
     // ###TODO: ModelState, RenderSystem...
     const model: ModelState | undefined = undefined;
     const system: RenderSystem | undefined = undefined;
     const stream = new TileIO.StreamBuffer(rectangleTileBytes.buffer);
     const reader = IModelTileIO.Reader.create(stream, model!, system!);
     expect(reader).not.to.be.undefined;
+
+    if (undefined !== reader) {
+      const result = reader.read();
+      expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+      expect(result.isLeaf).to.be.true;
+      expect(result.contentRange).not.to.be.undefined;
+      expect(result.geometry).not.to.be.undefined;
+
+      const low = result.contentRange!.low;
+      expect(delta(low.x, -2.5)).to.be.lessThan(0.0005);
+      expect(delta(low.y, -5.0)).to.be.lessThan(0.0005);
+      expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+
+      const high = result.contentRange!.high;
+      expect(delta(high.x, 2.5)).to.be.lessThan(0.0005);
+      expect(delta(high.y, 5.0)).to.be.lessThan(0.0005);
+      expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+
+      const geom = result.geometry!;
+      expect(geom.isEmpty).to.be.false;
+      expect(geom.isComplete).to.be.true;
+      expect(geom.isCurved).to.be.false;
+
+      const meshes = geom.meshes;
+      expect(meshes.length).to.equal(1);
+
+      const mesh = meshes[0];
+      expect(mesh.type).to.equal(Mesh.PrimitiveType.Mesh);
+      expect(mesh.points.length).to.equal(4);
+      expect(mesh.isPlanar).to.be.true;
+      expect(mesh.is2d).to.be.false;
+      expect(mesh.colorMap.length).to.equal(1);
+      expect(mesh.colorMap.isUniform).to.be.true;
+      expect(mesh.colorMap.getIndex(0x0000ff00)).to.equal(0); // green is first and only color in color table
+      expect(mesh.colors.length).to.equal(0);
+      expect(mesh.features).not.to.be.undefined;
+      expect(mesh.features!._indices.length).to.equal(0);
+      // expect(mesh.features!.uniform).to.equal(???);
+
+      const displayParams = mesh.displayParams;
+      expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
+      expect(displayParams.material).to.be.undefined;
+      expect(displayParams.lineColor.tbgr).to.equal(0x0000ff00);
+      expect(displayParams.fillColor.tbgr).to.equal(0x0000ff00);
+      expect(displayParams.width).to.equal(1);
+      expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+      expect(displayParams.ignoreLighting).to.be.false;
+    }
   });
 });

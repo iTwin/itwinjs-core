@@ -30,6 +30,18 @@ export namespace JsonUtils {
    */
   export function asString(json: any, defaultVal = ""): string { return isNullOrUndefined(json) ? defaultVal : json.toString(); }
 
+  /** Get a value as an array.
+   * @param json the input JSON object
+   * @returns the input JSON object if it is an array, otherwise undefined
+   */
+  export function asArray(json: any): any { return Array.isArray(json) ? json : undefined; }
+
+  /** Get a value as an object.
+   * @param json the input JSON object
+   * @returns the input JSON object if it is an object, otherwise undefined
+   */
+  export function asObject(json: any): any { return "object" === typeof json ? json : undefined; }
+
   /** Set or remove a number on a json object, given a key name, a value, and a default value. Sets `json[key] = val` if val is *not* equal to the default,
    * otherwise `delete json[key]`. This is used to omit values from JSON strings that are of known defaults.
    * @param json the JSON object to affect
