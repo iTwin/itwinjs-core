@@ -6,11 +6,12 @@ import { TileIO } from "./TileIO";
 import { ModelState } from "../../ModelState";
 import { RenderSystem } from "../../render/System";
 import { DisplayParams } from "../../render/primitives/DisplayParams";
+import { Triangle } from "../../render/primitives/primitives";
 import { Mesh } from "../../render/primitives/Mesh";
 import { ColorMap } from "../../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
+import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { Range3d, Point2d } from "@bentley/geometry-core";
 
 export namespace GltfTileIO {
   export const enum Versions {
@@ -232,12 +233,10 @@ export namespace GltfTileIO {
       }
     }
 
-    public readBufferData32(json: any, accessorName: string): BufferData | undefined {
-      return this.readBufferData(json, accessorName, DataType.UInt32);
-    }
-    public readBufferData16(json: any, accessorName: string): BufferData | undefined {
-      return this.readBufferData(json, accessorName, DataType.UnsignedShort);
-    }
+    public readBufferData32(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UInt32); }
+    public readBufferData16(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedShort); }
+    public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
+    public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
     protected constructor(props: ReaderProps, model: ModelState, system: RenderSystem) {
       this.buffer = props.buffer;
@@ -315,7 +314,25 @@ export namespace GltfTileIO {
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
         return undefined;
 
-      return mesh; // ###TODO etc...
+      switch (primitiveType) {
+        case Mesh.PrimitiveType.Mesh: {
+          if (!this.readMeshIndices(mesh, primitive))
+            return undefined;
+
+          if (!displayParams.ignoreLighting && !this.readNormals(mesh.normals, primitive.attributes, "NORMAL"))
+            return undefined;
+
+          this.readUVParams(mesh.uvParams, primitive.attributes, "TEXCOORD_0");
+          // ###TODO: read mesh edges...
+          break;
+        }
+        default: {
+          assert(false, "unhandled primitive type"); // ###TODO: points and polylines...
+          return undefined;
+        }
+      }
+
+      return mesh;
     }
 
     protected readVertices(positions: QPoint3dList, primitive: any): boolean {
@@ -379,6 +396,52 @@ export namespace GltfTileIO {
         colors[i] = data.buffer[i];
 
       return colors;
+    }
+
+    protected readMeshIndices(mesh: Mesh, json: any): boolean {
+      const data = this.readBufferData32(json, "indices");
+      if (undefined === data)
+        return false;
+
+      assert(0 === data.count % 3);
+
+      const triangle = new Triangle(false);
+
+      for (let i = 0; i < data.count; i += 3) {
+        triangle.setIndices(data.buffer[i], data.buffer[i + 1], data.buffer[i + 2]);
+        mesh.addTriangle(triangle);
+      }
+
+      return true;
+    }
+
+    protected readNormals(normals: OctEncodedNormal[], json: any, accessorName: string): boolean {
+      const data = this.readBufferData8(json, accessorName);
+      if (undefined === data)
+        return false;
+
+      // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
+      for (let i = 0; i < data.count; i++) {
+        // ###TODO? not clear why ray writes these as pairs of uint8...
+        const index = i * 2;
+        const normal = data.buffer[index] | (data.buffer[index + 1] << 8);
+        normals.push(new OctEncodedNormal(normal));
+      }
+
+      return true;
+    }
+
+    protected readUVParams(params: Point2d[], json: any, accessorName: string): boolean {
+      const data = this.readBufferDataFloat(json, accessorName);
+      if (undefined === data)
+        return false;
+
+      for (let i = 0; i < data.count; i++) {
+        const index = 2 * i; // 2 float per param...
+        params.push(new Point2d(data.buffer[index], data.buffer[index + 1]));
+      }
+
+      return true;
     }
   }
 }
