@@ -15,7 +15,7 @@ describe("RobotWorld", () => {
   it("should run robotworld", () => {
     RobotWorldEngine.initialize();
 
-    const iModel: IModelDb = IModelTestUtils.openIModel("empty.bim", {copyFilename: "should-run-robotworld.bim", deleteFirst: true, openMode: OpenMode.ReadWrite});
+    const iModel: IModelDb = IModelTestUtils.openIModel("empty.bim", { copyFilename: "should-run-robotworld.bim", deleteFirst: true, openMode: OpenMode.ReadWrite });
     assert.isTrue(iModel !== undefined);
 
     try {
@@ -78,5 +78,7 @@ describe("RobotWorld", () => {
 
     iModel.saveChanges();
     iModel.closeStandalone();
+
+    RobotWorldEngine.shutdown();
   });
 });

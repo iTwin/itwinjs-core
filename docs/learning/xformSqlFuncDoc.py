@@ -125,7 +125,7 @@ def processTypes(o):
                 typeName = decls[1]
                 if wasEmittingDecl:
                     docTypes = docTypes + "```\n"
-                docTypes = docTypes + "\n-------------\n"
+                docTypes = docTypes + "\n"
                 docTypes = docTypes + "## " + typeName + "\n"
                 docTypes = docTypes + typeDesc
                 docTypes = docTypes + "```\n"
@@ -250,7 +250,7 @@ def processFunction(doc):
 
     functionComment = detectTopicLinks(functionComment)
 
-    fdoc = "\n-------------------\n"
+    fdoc = "\n"
     fdoc = fdoc + "## " + fname + "\n"
     fdoc = fdoc + "\n```\n" + fdecl + "\n```\n"
     fdoc = fdoc + functionComment + "\n"

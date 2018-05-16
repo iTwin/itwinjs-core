@@ -21,7 +21,6 @@ type before you can work with it in script. See, for example, [Range3d.fromArray
 
 
 
--------------
 ## iModel_point
 A point in the iModel's Cartesian coordinate system. All coordinates are in meters. If the point represents a location in a 2D model, then the z-coordinate will be zero.
 @see [iModel_point_value](#iModel_point_value), [iModel_point_distance](#iModel_point_distance), [iModel_point_min_distance_to_bbox](#iModel_point_min_distance_to_bbox)
@@ -36,7 +35,6 @@ double z;   // The z-coordinate
 
 ```
 
--------------
 ## iModel_angles
 An object that contains Yaw, Pitch, and Roll angles in degrees. If this object represents a rotation in a 2D model, then the pitch and roll members will be zero.
 @see [iModel_angles_value](#iModel_angles_value), [iModel_angles_maxdiff](#iModel_angles_maxdiff)
@@ -51,7 +49,6 @@ double roll; // The Yaw angle in degrees
 
 ```
 
--------------
 ## iModel_bbox
 An object that defines a range.
 If the box represents a range in a 3-D model, then the box will have 8 corners and will have width(X), depth(Y), and height(Z).
@@ -72,7 +69,6 @@ double ZHigh; // The high Z coordinate of the bounding box
 
 ```
 
--------------
 ## iModel_placement
 An object that contains an origin and rotation angles, plus a bounding box.
 You can obtain an element's placement by selecting the placement column of the ElementGeom table.
@@ -101,7 +97,6 @@ reducing all of the values passed to them by the statement to a single resultant
 Also see [SQLite Aggregate Functions](https://sqlite.org/lang_aggfunc.html).
     
 
--------------------
 ## iModel_placement_aabb
 
 ```
@@ -121,7 +116,6 @@ Get the axis-aligned bounding box from a placement
 
 
 
--------------------
 ## iModel_placement_eabb
 
 ```
@@ -141,7 +135,6 @@ Get the element-aligned bounding box from a placement
 
 
 
--------------------
 ## iModel_placement_origin
 
 ```
@@ -161,7 +154,6 @@ Get the placement origin
 
 
 
--------------------
 ## iModel_placement_angles
 
 ```
@@ -181,7 +173,6 @@ Get the placement angles
 
 
 
--------------------
 ## iModel_angles
 
 ```
@@ -208,7 +199,6 @@ Construct a iModel_angles from 3 values
 
 
 
--------------------
 ## iModel_angles_value
 
 ```
@@ -229,7 +219,6 @@ Get a member of a iModel_angles object
 
 
 
--------------------
 ## iModel_angles_maxdiff
 
 ```
@@ -250,7 +239,6 @@ Return the maximum absolute difference among the angles in degrees.
 
 
 
--------------------
 ## iModel_bbox
 
 ```
@@ -280,7 +268,6 @@ Create a bounding box from 6 valuesAll coordinates are in meters.
 
 
 
--------------------
 ## iModel_bbox_width
 
 ```
@@ -300,7 +287,6 @@ Compute the "width" of a bounding box
 
 
 
--------------------
 ## iModel_bbox_height
 
 ```
@@ -320,7 +306,6 @@ Compute the "height" of a bounding box
 
 
 
--------------------
 ## iModel_bbox_depth
 
 ```
@@ -340,7 +325,6 @@ Compute the "depth" of a bounding box
 
 
 
--------------------
 ## iModel_bbox_volume
 
 ```
@@ -360,7 +344,6 @@ Compute the volume of the bounding box
 
 
 
--------------------
 ## iModel_bbox_areaxy
 
 ```
@@ -385,7 +368,6 @@ Compute the depth times the width of a bounding box
 
 
 
--------------------
 ## iModel_bbox_overlaps
 
 ```
@@ -406,7 +388,6 @@ Determine if the areas enclosed by two 3-D bounding boxes overlap
 
 
 
--------------------
 ## iModel_bbox_contains
 
 ```
@@ -427,7 +408,6 @@ Determine of the first bounding box contains the second bounding box
 
 
 
--------------------
 ## iModel_bbox_value
 
 ```
@@ -448,7 +428,6 @@ Get a member of a iModel_bbox object
 
 
 
--------------------
 ## iModel_bbox_union
 
 ```
@@ -472,7 +451,6 @@ iModel_bbox_union(X1)
 
 
 
--------------------
 ## iModel_point_distance
 
 ```
@@ -493,7 +471,6 @@ Compute the distance between two iModel_Points, in meters.
 
 
 
--------------------
 ## iModel_point_min_distance_to_bbox
 
 ```
@@ -514,7 +491,6 @@ Compute the minimum distance from a point to a bounding box, in meters.
 
 
 
--------------------
 ## iModel_point_value
 
 ```
@@ -535,7 +511,6 @@ Get a member of a iModel_Point object.
 
 
 
--------------------
 ## iModel_spatial_overlap_aabb
 
 ```

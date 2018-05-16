@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { StandaloneIModelRpcInterface, RpcInterfaceDefinition, RpcConfiguration, RpcManager } from "@bentley/imodeljs-common";
+import { StandaloneIModelRpcInterface, RpcInterfaceDefinition, RpcConfiguration } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { RobotWorldEngine } from "../RobotWorldEngine";
@@ -28,15 +28,19 @@ function simulateBackendDeployment() {
   RobotWorldEngine.initialize();
 }
 
-describe.only("RobotWorldRpc", () => {
+function simulateBackendShutdown() {
+  RobotWorldEngine.shutdown();
+}
 
-  // Simulate the deployment of the backend server
-  simulateBackendDeployment();
+describe("RobotWorldRpc", () => {
 
   // install mock of browser's XMLHttpRequest for unit tests
   (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
   it("should run robotworld through RPC as a client", async () => {
+    // Simulate the deployment of the backend server
+    simulateBackendDeployment();
+
     IModelApp.startup();
 
     // expose interfaces using a direct call mechanism
@@ -45,8 +49,12 @@ describe.only("RobotWorldRpc", () => {
     const iModel: IModelConnection = await IModelConnection.openStandalone(KnownTestLocations.assetsDir + "/empty.bim", OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
 
-    RpcManager.getClientForInterface(RobotWorldWriteRpcInterface).importSchema(iModel.iModelToken);
+    RobotWorldWriteRpcInterface.getClient().importSchema(iModel.iModelToken);
 
     iModel.closeStandalone();
+
+    IModelApp.shutdown();
+
+    simulateBackendShutdown();
   });
 });
