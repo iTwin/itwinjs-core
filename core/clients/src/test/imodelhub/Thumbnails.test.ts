@@ -18,12 +18,12 @@ function getThumbnailLength(size: ThumbnailSize) {
   return size === "Small" ? 1000 : 3500;
 }
 
-const pngPrefixStr = "data:image/png;base64,iVBORw0KGgo";
+const pngPrefixStr = "data:image/png;base64,";
 function mockDownloadThumbnail(requestPath: string, size: ThumbnailSize) {
   if (!TestConfig.enableMocks)
     return;
 
-  let response = pngPrefixStr; // From 64bit encoding of bytes [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+  let response = "";
   for (let i = 0; i < getThumbnailLength(size); i++) { response += "a"; }
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, { response });
 }
@@ -112,7 +112,7 @@ describe("iModelHub ThumbnailHandler", () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailById(iModelId, params.size, params.thumbnails[i]);
         const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(accessToken, iModelId, params.size, new ThumbnailQuery().byId(params.thumbnails[i].wsgId)))[0];
-        chai.expect(!!actualThumbnail);
+        chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.wsgId).to.be.equal(params.thumbnails[i].wsgId);
       }
     });
@@ -123,7 +123,7 @@ describe("iModelHub ThumbnailHandler", () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailsByVersionId(iModelId, params.size, versions[i].wsgId, params.thumbnails[i]);
         const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(accessToken, iModelId, params.size, new ThumbnailQuery().byVersionId(versions[i].wsgId)))[0];
-        chai.expect(!!actualThumbnail);
+        chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.wsgId).to.be.equal(params.thumbnails[i].wsgId);
       }
     });
@@ -133,19 +133,21 @@ describe("iModelHub ThumbnailHandler", () => {
     it(`should download latest iModel's ${params.size}Thumbnail as a PNG file`, async () => {
       mockDownloadLatestThumbnail(projectId, iModelId, params.size);
       const image: string = await imodelHubClient.Thumbnails().download(accessToken, iModelId, { projectId: projectId!, size: params.size });
+      chai.assert(image);
       chai.expect(image.length).greaterThan(getThumbnailLength(params.size));
-      chai.expect(image.startsWith(pngPrefixStr));
+      chai.assert(image.startsWith(pngPrefixStr));
     });
   });
 
   test.forEach((params: TestParameters) => {
-    it("should download ${params.size}Thumbnail by id as a PNG file", async () => {
+    it(`should download ${params.size}Thumbnail by id as a PNG file`, async () => {
       const expectedLength = getThumbnailLength(params.size);
       for (let i = 0; i < 3; i++) {
         mockDownloadThumbnailById(iModelId, params.thumbnails[i].wsgId, params.size);
         const image: string = await imodelHubClient.Thumbnails().download(accessToken, iModelId, params.thumbnails[i]);
+        chai.assert(image);
         chai.expect(image.length).greaterThan(expectedLength);
-        chai.expect(image.startsWith(pngPrefixStr));
+        chai.assert(image.startsWith(pngPrefixStr));
       }
     });
   });
