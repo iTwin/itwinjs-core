@@ -284,27 +284,8 @@ def main(sourceFile):
             else:
                 doc.append(line)
 
-    flinks = ""
-    allFdecls.sort()
-    sep = ""
-    for f in allFdecls:
-        flinks = flinks + sep + '[' + f + '](#' + f + ')'
-        sep = ", "
-
-    tlinks = ""
-    allFdecls.sort()
-    sep = ""
-    for t in allTypes:
-        tlinks = tlinks + sep + '[' + t + '](#' + f + ')'
-        sep = ", "
-
     print "# ECSQL Built-in Geometry Functions"
     print getIntro()
-    print "Types: "
-    print tlinks
-    print ""
-    print "Functions: "
-    print flinks
     print "# Types"
     print getTypesIntro()
     print tdocs

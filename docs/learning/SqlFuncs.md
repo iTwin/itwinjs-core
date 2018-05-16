@@ -4,11 +4,6 @@ ECSQL statements can use builtin functions to query and analyze element geometry
 These functions can be used in SELECT and WHERE clauses. The functions
 that return primtive types can be in expressions with other values.
     
-Types: 
-[iModel_placement](#iModel_spatial_overlap_aabb), [iModel_bbox](#iModel_spatial_overlap_aabb), [iModel_angles](#iModel_spatial_overlap_aabb), [iModel_point](#iModel_spatial_overlap_aabb)
-
-Functions: 
-[iModel_angles](#iModel_angles), [iModel_angles_maxdiff](#iModel_angles_maxdiff), [iModel_angles_value](#iModel_angles_value), [iModel_bbox](#iModel_bbox), [iModel_bbox_areaxy](#iModel_bbox_areaxy), [iModel_bbox_contains](#iModel_bbox_contains), [iModel_bbox_depth](#iModel_bbox_depth), [iModel_bbox_height](#iModel_bbox_height), [iModel_bbox_overlaps](#iModel_bbox_overlaps), [iModel_bbox_union](#iModel_bbox_union), [iModel_bbox_value](#iModel_bbox_value), [iModel_bbox_volume](#iModel_bbox_volume), [iModel_bbox_width](#iModel_bbox_width), [iModel_placement_aabb](#iModel_placement_aabb), [iModel_placement_angles](#iModel_placement_angles), [iModel_placement_eabb](#iModel_placement_eabb), [iModel_placement_origin](#iModel_placement_origin), [iModel_point_distance](#iModel_point_distance), [iModel_point_min_distance_to_bbox](#iModel_point_min_distance_to_bbox), [iModel_point_value](#iModel_point_value), [iModel_spatial_overlap_aabb](#iModel_spatial_overlap_aabb)
 # Types
 
 The geometry builtin functions work with custom data types, such as bounding boxes,
@@ -103,7 +98,7 @@ Most of the builtin functions just perform a function and return a result.
 ### Aggregate
 Some of the builtin geometry functions are *aggregate* functions. They accumulate results,
 reducing all of the values passed to them by the statement to a single resultant value.
-See [SQLite Aggregate Functions](https://sqlite.org/lang_aggfunc.html)
+Also see [SQLite Aggregate Functions](https://sqlite.org/lang_aggfunc.html).
     
 
 -------------------
