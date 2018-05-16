@@ -6,7 +6,7 @@ This schema describes the breakdown of `SpatialLocationElement`. It is intended 
 
 ## Design considerations
 
-- This schema does not specialize any of the two available breakdown mechanisms in `BIS` (`IParent` and models). The direct reason is legacy data uploaded by [iModel bridges](../intro/imodel-bridges.md). Reusing a `BIS` breakdown mechanism is desired but not currently available.
+- This schema does not specialize any of the two available breakdown mechanisms in `BIS` (`IParent` and models). The direct reason is legacy data uploaded by iModel bridges. Reusing a `BIS` breakdown mechanism is desired but not currently available.
 - Modeled after IFC.
 
 ## Naming considerations
