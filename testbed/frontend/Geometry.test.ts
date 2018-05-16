@@ -90,7 +90,7 @@ describe("Geometry tests", () => {
     const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
 
     // query stroke list from loopGeom
-    let facetOptions: StrokeOptions = StrokeOptions.createForCurves();
+    const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
     const strokesPrimList: StrokesPrimitiveList | undefined = loopGeom.getStrokes(facetOptions);
 
     assert(strokesPrimList !== undefined);
@@ -108,8 +108,7 @@ describe("Geometry tests", () => {
     }
 
     // query polyface list from loopGeom
-    facetOptions = StrokeOptions.createForFacets();
-    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(facetOptions);
+    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
 
     assert(pfPrimList !== undefined);
     if (pfPrimList === undefined)
@@ -149,7 +148,7 @@ describe("Geometry tests", () => {
     const pathGeom = Geometry.createFromPath(pth, Transform.createIdentity(), pathRange, displayParams, false);
 
     // query stroke list from pathGeom
-    let facetOptions: StrokeOptions = StrokeOptions.createForCurves();
+    const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
     const strokesPrimList: StrokesPrimitiveList | undefined = pathGeom.getStrokes(facetOptions);
 
     assert(strokesPrimList !== undefined);
@@ -167,8 +166,7 @@ describe("Geometry tests", () => {
     }
 
     // query polyface list from pathGeom (should be undefined - can't get polys from paths)
-    facetOptions = StrokeOptions.createForFacets();
-    const pfPrimList: PolyfacePrimitiveList | undefined = pathGeom.getPolyfaces(facetOptions);
+    const pfPrimList: PolyfacePrimitiveList | undefined = pathGeom.getPolyfaces(0);
     expect(pfPrimList).to.be.undefined;
   });
 

@@ -63,7 +63,9 @@ export abstract class Geometry {
   protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
   protected abstract _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined;
 
-  public getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
+  public getPolyfaces(tolerance: number): PolyfacePrimitiveList | undefined {
+    const facetOptions = StrokeOptions.createForFacets();
+    facetOptions.chordTol = tolerance;
     return this._getPolyfaces(facetOptions);
   }
 
@@ -200,6 +202,7 @@ export class GeometryList extends Iterable<Geometry> {
   constructor() { super(); }
   public get first(): Geometry | undefined { return this._list[0]; }
   public get isEmpty(): boolean { return this._list.length === 0; }
+  public get length(): number { return this._list.length; }
   public push(geom: Geometry): number {
     return this._list.push(geom);
   }
@@ -290,7 +293,10 @@ export class GeometryAccumulator {
     this._surfacesOnly = surfacesOnly;
   }
 
-  /** removed featureTable, ViewContext */
+  /**
+   * removed featureTable, ViewContext
+   * @param tolerance should derive from Viewport.getPixelSizeAtPoint
+   */
   public toMeshBuilderMap(options: GeometryOptions, tolerance: number): MeshBuilderMap {
     const { geometries } = this;
     const range = geometries.computeRange();
@@ -307,7 +313,7 @@ export class GeometryAccumulator {
     let order = 0;
     for (const geom of geometries) {
       // ###TODO verify this is equivalent to: geom->GetPolyfaces(tolerance, options.m_normalMode, context);
-      const polyfaces = geom.getPolyfaces(StrokeOptions.createForFacets());
+      const polyfaces = geom.getPolyfaces(tolerance);
 
       if (polyfaces === undefined || polyfaces.length === 0)
         continue;
