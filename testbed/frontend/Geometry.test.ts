@@ -22,6 +22,7 @@ import { Loop, Path, LineString3d, Point3d, Transform, Range3d, StrokeOptions, I
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
+import { WebGLTestContext } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -51,15 +52,15 @@ describe("Geometry tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup("QA", true);
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
+    WebGLTestContext.startup();
   });
 
   after(async () => {
+    WebGLTestContext.shutdown();
     if (imodel) await imodel.closeStandalone();
-    IModelApp.shutdown();
   });
 
   it("should produce PrimitiveLoopGeometry with strokes and polyface", () => {
