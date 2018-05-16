@@ -219,7 +219,7 @@ export class Mesh {
   public readonly normals: OctEncodedNormal[] = [];
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
-  public readonly colors: Uint16Array = new Uint16Array();
+  public colors: Uint16Array = new Uint16Array();
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: Mesh.PrimitiveType;

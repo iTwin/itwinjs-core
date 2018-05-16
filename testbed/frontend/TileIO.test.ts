@@ -4,7 +4,8 @@
 import { expect} from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { ModelState } from "@bentley/imodeljs-frontend";
-import { RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderSystem, Mesh, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
+import { LinePixels } from "@bentley/imodeljs-common";
 
 // Binary data for a tile created for a model containing a single element: a green rectangle in the range [0, 0] to [5, 10]
 const rectangleTileBytes = new Uint8Array([
@@ -188,7 +189,26 @@ describe("TileIO", () => {
       expect(meshes.length).to.equal(1);
 
       const mesh = meshes[0];
+      expect(mesh.type).to.equal(Mesh.PrimitiveType.Mesh);
       expect(mesh.points.length).to.equal(4);
+      expect(mesh.isPlanar).to.be.true;
+      expect(mesh.is2d).to.be.false;
+      expect(mesh.colorMap.length).to.equal(1);
+      expect(mesh.colorMap.isUniform).to.be.true;
+      expect(mesh.colorMap.getIndex(0x0000ff00)).to.equal(0); // green is first and only color in color table
+      expect(mesh.colors.length).to.equal(0);
+      expect(mesh.features).not.to.be.undefined;
+      expect(mesh.features!._indices.length).to.equal(0);
+      // expect(mesh.features!.uniform).to.equal(???);
+
+      const displayParams = mesh.displayParams;
+      expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
+      expect(displayParams.material).to.be.undefined;
+      expect(displayParams.lineColor.tbgr).to.equal(0x0000ff00);
+      expect(displayParams.fillColor.tbgr).to.equal(0x0000ff00);
+      expect(displayParams.width).to.equal(1);
+      expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+      expect(displayParams.ignoreLighting).to.be.false;
     }
   });
 });

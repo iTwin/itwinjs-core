@@ -303,7 +303,15 @@ export namespace GltfTileIO {
       if (!this.readVertices(mesh.points, primitive))
         return undefined;
 
-      // read color table and color indices
+      if (!this.readColorTable(mesh.colorMap, primitive))
+        return undefined;
+
+      const colorIndices = this.readColorIndices(primitive);
+      if (undefined !== colorIndices)
+        mesh.colors = colorIndices;
+      else if (mesh.colorMap.length !== 1)
+        return undefined;
+
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
         return undefined;
 
@@ -359,6 +367,18 @@ export namespace GltfTileIO {
 
       features.setIndices(indices);
       return true;
+    }
+
+    protected readColorIndices(json: any): Uint16Array | undefined {
+      const data = this.readBufferData16(json.attributes, "_COLORINDEX");
+      if (undefined === data)
+        return undefined;
+
+      const colors = new Uint16Array(data.count);
+      for (let i = 0; i < data.count; i++)
+        colors[i] = data.buffer[i];
+
+      return colors;
     }
   }
 }

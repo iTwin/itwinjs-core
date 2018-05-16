@@ -139,8 +139,14 @@ export namespace IModelTileIO {
         return this.readIndices(json, "featureIDs");
     }
 
-    protected readColorTable(_colorTable: ColorMap, _json: any): boolean {
-      return false; // ###TODO
+    protected readColorTable(colorTable: ColorMap, meshJson: any): boolean {
+      const json = JsonUtils.asArray(meshJson.colorTable);
+      if (undefined !== json) {
+        for (const color of json)
+          colorTable.getIndex(color as number);
+      }
+
+      return 0 < colorTable.length;
     }
 
     protected createDisplayParams(json: any): DisplayParams | undefined {
