@@ -63,12 +63,6 @@ describe("Geometry tests", () => {
   });
 
   it("should produce PrimitiveLoopGeometry with strokes and polyface", () => {
-    /*
-    if (!IModelApp.hasRenderSystem) {
-      return;
-    }
-    */
-
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -124,12 +118,6 @@ describe("Geometry tests", () => {
   });
 
   it("should produce PrimitivePathGeometry with strokes and no polyfaces", () => {
-    /*
-    if (!IModelApp.hasRenderSystem) {
-      return;
-    }
-    */
-
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -179,9 +167,9 @@ describe("Geometry tests", () => {
     const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
     const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
-    const pointA = new Point3d(-1, 0, 0);
-    const pointB = new Point3d(0, 1, 0);
-    const pointC = new Point3d(1, 0, 0);
+    const pointA = new Point3d(-100, 0, 0);
+    const pointB = new Point3d(0, 100, 0);
+    const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
     assert(arc !== undefined && arc instanceof Arc3d);
     if (arc === undefined || !(arc instanceof Arc3d))
@@ -197,7 +185,7 @@ describe("Geometry tests", () => {
       return;
 
     const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
-    facetOptions.chordTol = 2.0001;
+    facetOptions.chordTol = 0.22;
     facetOptions.angleTol = Angle.createDegrees(10.0);
     let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(facetOptions);
 
@@ -213,9 +201,9 @@ describe("Geometry tests", () => {
     // check that first and last point of stroking match first and last point of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
     expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-    const numPointsA = strks.points.length; // ###TODO: returns 2 - why?
+    const numPointsA = strks.points.length;
 
-    facetOptions.chordTol = 0.1;
+    facetOptions.chordTol = 0.12;
     strokesPrimList = arcGeom.getStrokes(facetOptions);
 
     assert(strokesPrimList !== undefined);
@@ -230,7 +218,7 @@ describe("Geometry tests", () => {
     // check that first and last point of stroking match first and last point of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
     expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-    const numPointsB = strks.points.length; // returns 18
+    const numPointsB = strks.points.length;
 
     expect(numPointsA).to.be.lessThan(numPointsB);
   });
