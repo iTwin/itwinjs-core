@@ -23,7 +23,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
-import { ProgressInfo } from "../..";
+import { ProgressInfo, Lock, MultiLock, LockLevel, LockType } from "../..";
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -315,6 +315,94 @@ export function mockDeniedCodes(iModelId: string, ...codes: Code[]) {
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 }
 
+/** Locks */
+export function incrementLockObjectId(objectId: string): string {
+  const objectIdNum = parseInt(objectId, 16) + 1;
+  return "0x" + objectIdNum.toString(16);
+}
+
+export async function getLastLockObjectId(accessToken: AccessToken, iModelId: string): Promise<string> {
+  if (TestConfig.enableMocks)
+    return "0x0";
+
+  const client = getDefaultClient();
+  const locks = await client.Locks().get(accessToken, iModelId);
+
+  locks.sort((lock1, lock2) => (parseInt(lock1.objectId!, 16) > parseInt(lock2.objectId!, 16) ? -1 : 1));
+
+  return (locks.length === 0 || locks[0].objectId === undefined) ? "0x0" : locks[0].objectId!;
+}
+
+export function generateLock(idRequired: boolean, briefcaseId?: number, objectId?: string,
+  lockType?: LockType, lockLevel?: LockLevel, seedFileId?: string, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string): Lock {
+  const result = new Lock();
+  if (idRequired)
+    result.wsgId = Guid.createValue();
+  result.briefcaseId = briefcaseId || 1;
+  result.seedFileId = seedFileId;
+  result.objectId = objectId || "0x0";
+  result.lockLevel = lockLevel || 1;
+  result.lockType = lockType || 1;
+  result.releasedWithChangeSet = releasedWithChangeSet;
+  result.releasedWithChangeSetIndex = releasedWithChangeSetIndex;
+  return result;
+}
+
+export function mockGetLocks(imodelId: string, ...locks: Lock[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Lock");
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<Lock>(locks);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
+export function mockUpdateLocks(iModelId: string, ...locks: Lock[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const multiLock = new MultiLock();
+  multiLock.changeState = "new";
+  multiLock.briefcaseId = locks[0].briefcaseId;
+  multiLock.seedFileId = locks[0].seedFileId;
+  multiLock.releasedWithChangeSet = locks[0].releasedWithChangeSet;
+  multiLock.releasedWithChangeSetIndex = locks[0].releasedWithChangeSetIndex;
+  multiLock.lockLevel = locks[0].lockLevel;
+  multiLock.lockType = locks[0].lockType;
+  multiLock.objectIds = locks.map((value) => value.objectId!);
+
+  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestResponse = ResponseBuilder.generateChangesetResponse<MultiLock>([multiLock]);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock]);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+}
+
+export function mockDeniedLocks(iModelId: string, ...locks: Lock[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const multiLock = new MultiLock();
+  multiLock.changeState = "new";
+  multiLock.briefcaseId = locks[0].briefcaseId;
+  multiLock.seedFileId = locks[0].seedFileId;
+  multiLock.releasedWithChangeSet = locks[0].releasedWithChangeSet;
+  multiLock.releasedWithChangeSetIndex = locks[0].releasedWithChangeSetIndex;
+  multiLock.lockLevel = locks[0].lockLevel;
+  multiLock.lockType = locks[0].lockType;
+  multiLock.objectIds = locks.map((value) => value.objectId!);
+
+  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestResponse = ResponseBuilder.generateError("iModelHub.LockOwnedByAnotherBriefcase", "", "",
+    new Map<string, any>([
+      ["ConflictingLocks", JSON.stringify(locks.map((value) => {
+        const obj = ECJsonTypeMap.toJson<Lock>("wsg", value);
+        return obj.properties;
+      }))],
+    ]));
+  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock]);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
+}
+
 /** Named versions */
 export function generateVersion(name?: string, changesetId?: string, smallThumbnailId?: string, largeThumbnailId?: string): Version {
   const result = new Version();
@@ -482,6 +570,24 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: strin
     result.push(changeSet);
   }
   return result;
+}
+
+export async function createLocks(accessToken: AccessToken, imodelId: string, briefcase: Briefcase, count = 1,
+  lockType: LockType = 1, lockLevel: LockLevel = 1, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string) {
+  if (TestConfig.enableMocks)
+    return;
+
+  const client = getDefaultClient();
+  let lastObjectId = await getLastLockObjectId(accessToken, imodelId);
+  const generatedLocks: Lock[] = [];
+
+  for (let i = 0; i < count; i++) {
+    generatedLocks.push(generateLock(false, briefcase.briefcaseId!,
+      lastObjectId = incrementLockObjectId(lastObjectId), lockType, lockLevel, briefcase.fileId,
+      releasedWithChangeSet, releasedWithChangeSetIndex));
+  }
+
+  await client.Locks().update(accessToken, imodelId, generatedLocks);
 }
 
 export class ProgressTracker {
