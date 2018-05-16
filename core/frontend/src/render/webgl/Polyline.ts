@@ -8,7 +8,7 @@ import { PolylineArgs, MeshArgs } from "../primitives/Mesh";
 import { Primitive } from "./Primitive";
 import { wantJointTriangles } from "./Graphic";
 import { Target } from "./Target";
-import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
+import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { AttributeHandle, BufferHandle } from "./Handle";
@@ -228,23 +228,18 @@ export class PolylineTesselator {
 export class PolylineGeometry extends LUTGeometry {
   public polyline: PolylineInfo;
   public lut: VertexLUT.Data;
-  public indices: BufferHandle;
   public numIndices: number;
-  public prevIndices: BufferHandle;
-  public nextIndicesAndParams: BufferHandle;
-  public distances: BufferHandle;
+  private buffers: PolylineBuffers;
 
-  public constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle,
-    distances: BufferHandle, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
+  public constructor(buffers: PolylineBuffers, numIndices: number, lut: VertexLUT.Data, info: PolylineInfo) {
     super();
     this.polyline = info;
     this.lut = lut;
-    this.indices = indices;
     this.numIndices = numIndices;
-    this.prevIndices = prevIndices;
-    this.nextIndicesAndParams = nextIndicesAndParams;
-    this.distances = distances;
+    this.buffers = buffers;
   }
+
+  public get polylineBuffers(): PolylineBuffers | undefined { return this.buffers; }
 
   private _computeEdgePass(target: Target, colorInfo: ColorInfo): RenderPass {
     const vf = target.currentViewFlags;
@@ -278,12 +273,12 @@ export class PolylineGeometry extends LUTGeometry {
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
 
   public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+    attr.enableArray(this.buffers.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
 
   public draw(): void {
     const gl = System.instance.context;
-    this.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    this.buffers.indices.bind(GL.Buffer.Target.ArrayBuffer);
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
   }
 
@@ -298,8 +293,10 @@ export class PolylineGeometry extends LUTGeometry {
       const pBuff = BufferHandle.createArrayBuffer(tp.prevIndex);
       const npBuff = BufferHandle.createArrayBuffer(tp.nextIndexAndParam);
       const dBuff = BufferHandle.createArrayBuffer(tp.distance);
-      if (undefined !== vBuff && undefined !== pBuff && undefined !== npBuff && undefined !== dBuff)
-        return new PolylineGeometry(vBuff, pBuff, npBuff, dBuff, tp.distance.length, lut, info);
+      if (undefined !== vBuff && undefined !== pBuff && undefined !== npBuff && undefined !== dBuff) {
+        const pb: PolylineBuffers = new PolylineBuffers(vBuff, pBuff, npBuff, dBuff);
+        return new PolylineGeometry(pb, tp.distance.length, lut, info);
+      }
     }
     return undefined;
   }
