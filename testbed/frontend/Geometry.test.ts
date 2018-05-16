@@ -18,7 +18,7 @@ import {
   GraphicBuilderCreateParams,
   GraphicType,
 } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Loop, Path, LineString3d, Point3d, Transform, Range3d, StrokeOptions, IndexedPolyface, Arc3d } from "@bentley/geometry-core";
+import { Loop, Path, LineString3d, Point3d, Transform, Range3d, StrokeOptions, IndexedPolyface, Arc3d, Angle } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
@@ -196,9 +196,9 @@ describe("Geometry tests", () => {
     if (arcGeom === undefined)
       return;
 
-    // query the arcGeom stroked with chordTol = 10
     const facetOptions: StrokeOptions = StrokeOptions.createForCurves();
-    facetOptions.chordTol = 10.0;
+    facetOptions.chordTol = 2.0001;
+    facetOptions.angleTol = Angle.createDegrees(10.0);
     let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(facetOptions);
 
     assert(strokesPrimList !== undefined);
@@ -213,10 +213,9 @@ describe("Geometry tests", () => {
     // check that first and last point of stroking match first and last point of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
     expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-    // const numPointsA = strks.points.length;
+    const numPointsA = strks.points.length; // ###TODO: returns 2 - why?
 
-    // query the arcGeom stroked with chordTol = 1
-    facetOptions.chordTol = 1.0;
+    facetOptions.chordTol = 0.1;
     strokesPrimList = arcGeom.getStrokes(facetOptions);
 
     assert(strokesPrimList !== undefined);
@@ -231,9 +230,8 @@ describe("Geometry tests", () => {
     // check that first and last point of stroking match first and last point of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
     expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-    // const numPointsB = strks.points.length;
+    const numPointsB = strks.points.length; // returns 18
 
-    // ###TODO
-    // expect(numPointsA).to.be.lessThan(numPointsB);
+    expect(numPointsA).to.be.lessThan(numPointsB);
   });
 });
