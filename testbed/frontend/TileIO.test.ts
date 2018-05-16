@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect} from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
+import { ModelState } from "@bentley/imodeljs-frontend";
+import { RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
 
 // Binary data for a tile created for a model containing a single element: a green rectangle in the range [0, 0] to [5, 10]
 const rectangleTileBytes = new Uint8Array([
@@ -150,5 +152,14 @@ describe("TileIO", () => {
     expect(delta(high.x, 2.5)).to.be.lessThan(0.0005);
     expect(delta(high.y, 5.0)).to.be.lessThan(0.0005);
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+  });
+
+  it("should create a tile reader", () => {
+    // ###TODO: ModelState, RenderSystem...
+    const model: ModelState | undefined = undefined;
+    const system: RenderSystem | undefined = undefined;
+    const stream = new TileIO.StreamBuffer(rectangleTileBytes.buffer);
+    const reader = IModelTileIO.Reader.create(stream, model!, system!);
+    expect(reader).not.to.be.undefined;
   });
 });

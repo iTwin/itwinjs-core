@@ -262,6 +262,7 @@ export namespace GltfTileIO {
     protected createDisplayParams(_json: any): DisplayParams | undefined { return undefined; }
 
     protected readGltf(_geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
+      this.buffer.curPos = this.binaryData.byteOffset;
       return TileIO.ReadStatus.InvalidTileData; // ###TODO
     }
   }

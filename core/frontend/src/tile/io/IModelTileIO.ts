@@ -57,8 +57,26 @@ export namespace IModelTileIO {
 
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, model: ModelState, system: RenderSystem): Reader | undefined {
+      const header = new Header(stream);
+      if (!header.isValid)
+        return undefined;
+
+      // The feature table follows the dgnT header
+      if (!this.skipFeatureTable(stream))
+        return undefined;
+
+      // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream);
       return undefined !== props ? new Reader(props, model, system) : undefined;
+    }
+
+    private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
+      const startPos = stream.curPos;
+      const header = FeatureTableHeader.readFrom(stream);
+      if (undefined !== header)
+        stream.curPos = startPos + header.length;
+
+      return undefined !== header;
     }
 
     public read(): Result {
