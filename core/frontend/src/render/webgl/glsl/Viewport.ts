@@ -5,7 +5,7 @@
 import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";
 import { ViewRect } from "../../../Viewport";
-import { addModelViewProjectionMatrix, } from "./Vertex";
+import { addModelViewProjectionMatrix } from "./Vertex";
 import { addRenderPass } from "./RenderPass";
 
 export function addViewport(shader: ShaderBuilder) {
