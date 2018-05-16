@@ -4,23 +4,28 @@
 import initLogging from "./logging";
 import { Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
-import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface, RpcOperation, IModelToken } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, StandaloneIModelRpcInterface, IModelReadRpcInterface, RpcOperation, IModelToken, BentleyCloudRpcParams } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
-import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
 // initialize logging
 initLogging();
 
-// initialize ECPresentation
+// __PUBLISH_EXTRACT_START__ Frontend.Initialization.ECPresentation
+import { ECPresentation } from "@bentley/ecpresentation-frontend";
 ECPresentation.initialize();
+// __PUBLISH_EXTRACT_END__
 
-// Initialize my application RPC for the frontend
-const interfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface, SampleRpcInterface];
-BentleyCloudRpcManager.initializeClient({ info: { title: "my-app", version: "v1.0" } }, interfaces);
+const rpcParams: BentleyCloudRpcParams = { info: { title: "my-app", version: "v1.0" } };
+const otherRpcInterfaces = [StandaloneIModelRpcInterface, IModelReadRpcInterface, SampleRpcInterface];
+// __PUBLISH_EXTRACT_START__ Frontend.Initialization.RpcInterface
+import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, ECPresentationRpcInterface]);
+// __PUBLISH_EXTRACT_END__
+
+const interfaces = [...otherRpcInterfaces, ECPresentationRpcInterface];
 for (const def of interfaces)
-  RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test")); // wtf?
+  RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test"));
 
 // Configure a CORS proxy in development mode.
 if (process.env.NODE_ENV === "development")

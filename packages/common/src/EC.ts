@@ -1,45 +1,54 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { Id64 } from "@bentley/bentleyjs-core";
 
 export type ClassId = Id64;
 
 export type InstanceId = Id64;
 
+/** A key that uniquely identifies an instance in an iModel */
 export interface InstanceKey {
   className: string;
   id: InstanceId;
 }
 
+/** A serialized version of InstanceKey */
 export interface InstanceKeyJSON {
   className: string;
   id: string;
 }
 
+/** Deserializes InstanceKey from InstanceKeyJSON */
 export const instanceKeyFromJSON = (json: InstanceKeyJSON): InstanceKey => {
   return { ...json, id: new Id64(json.id) };
 };
 
+/** An array of InstanceKey objects */
 export type InstanceKeysList = InstanceKey[];
 
-/** Information about an ECClass. */
+/** Information about an ECClass */
 export interface ClassInfo {
   id: ClassId;
   name: string;
   label: string;
 }
 
+/** A single choice in enumeration */
 export interface EnumerationChoice {
   label: string;
   value: string | number;
 }
 
+/** Enumeration information */
 export interface EnumerationInfo {
   choices: EnumerationChoice[];
   isStrict: boolean;
 }
 
+/** Kind of quantity information */
 export interface KindOfQuantityInfo {
   name: string;
   label: string;
@@ -47,6 +56,7 @@ export interface KindOfQuantityInfo {
   currentFusId: string;
 }
 
+/** A structure that describes an ECProperty */
 export interface PropertyInfo {
   classInfo: ClassInfo;
   name: string;

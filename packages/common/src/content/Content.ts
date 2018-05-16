@@ -1,19 +1,27 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Content */
+
 import Descriptor, { DescriptorJSON } from "./Descriptor";
 import Item, { ItemJSON } from "./Item";
 
+/**
+ * Serialized [[Content]] JSON representation.
+ */
 export interface ContentJSON {
   descriptor: DescriptorJSON;
   contentSet: ItemJSON[];
 }
 
-/** A struct that contains the Descriptor and a list of Item
+/**
+ * A data structure that contains the [[Descriptor]] and a list of [[Item]]
  * objects which are based on that descriptor.
  */
 export default class Content {
+  /** Descriptor used to create the content */
   public readonly descriptor!: Readonly<Descriptor>;
+  /** Content items */
   public readonly contentSet!: Array<Readonly<Item>>;
 
   /* istanbul ignore next */
@@ -26,6 +34,11 @@ export default class Content {
     };
   }*/
 
+  /**
+   * Deserialize Content from JSON
+   * @param json JSON or JSON serialized to string to deserialize from
+   * @returns Deserialized content or undefined if deserialization failed
+   */
   public static fromJSON(json: ContentJSON | string | undefined): Content | undefined {
     if (!json)
       return undefined;
@@ -38,6 +51,10 @@ export default class Content {
     });
   }
 
+  /**
+   * Reviver function that can be used as a second argument for
+   * `JSON.parse` method when parsing Content objects.
+   */
   public static reviver(key: string, value: any): any {
     return key === "" ? Content.fromJSON(value) : value;
   }

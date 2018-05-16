@@ -1,12 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Content */
+
 import * as ec from "../EC";
 import CategoryDescription from "./Category";
 import EditorDescription from "./Editor";
 import Property from "./Property";
 import { TypeDescription } from "./TypeDescription";
 
+/**
+ * Data structure for a [[Field]] serialized to JSON.
+ */
 export interface BaseFieldJSON {
   category: CategoryDescription;
   name: string;
@@ -17,10 +22,16 @@ export interface BaseFieldJSON {
   editor?: EditorDescription;
 }
 
+/**
+ * Data structure for a [[PropertiesField]] serialized to JSON.
+ */
 export interface PropertiesFieldJSON extends BaseFieldJSON {
   properties: Property[];
 }
 
+/**
+ * Data structure for a [[NestedContentField]] serialized to JSON.
+ */
 export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ec.ClassInfo;
   pathToPrimaryClass: ec.RelationshipPathInfo;
@@ -29,26 +40,48 @@ export interface NestedContentFieldJSON extends BaseFieldJSON {
 
 export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON;
 
+/** Is supplied field a properties field. */
 const isPropertiesField = (field: BaseFieldJSON | Field): field is PropertiesFieldJSON | PropertiesField => {
   return (field as any).properties;
 };
+
+/** Is supplied field a nested content field. */
 const isNestedContentField = (field: BaseFieldJSON | Field): field is NestedContentFieldJSON | NestedContentField => {
   return (field as any).nestedFields;
 };
 
-/** Describes a single content field. A field is usually represented as a grid column
+/**
+ * Describes a single content field. A field is usually represented as a grid column
  * or a property pane row.
  */
 export class Field {
+  /** Category information */
   public readonly category: Readonly<CategoryDescription>;
+  /** Unique name */
   public readonly name: string;
+  /** Display label */
   public readonly label: string;
+  /** Description of this field's values data type */
   public readonly type: Readonly<TypeDescription>;
+  /** Are values in this field read-only */
   public readonly isReadonly: boolean;
+  /** Priority of the field. Higher priority fields should appear first in the UI */
   public readonly priority: number;
+  /** Property editor used to edit values of this field */
   public readonly editor?: Readonly<EditorDescription>;
+  /** Parent field */
   private _parent?: Readonly<NestedContentField>;
 
+  /**
+   * Creates an instance of Field.
+   * @param category Category information
+   * @param name Unique name
+   * @param label Display label
+   * @param type Description of this field's values data type
+   * @param isReadonly Are values in this field read-only
+   * @param priority Priority of the field
+   * @param editor Property editor used to edit values of this field
+   */
   public constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription,
     isReadonly: boolean, priority: number, editor?: EditorDescription) {
     this.category = category;
@@ -60,9 +93,19 @@ export class Field {
     this.editor = editor;
   }
 
+  /**
+   * Is this a [[PropertiesField]]
+   */
   public isPropertiesField(): this is PropertiesField { return isPropertiesField(this); }
+
+  /**
+   * Is this a [[NestedContentField]]
+   */
   public isNestedContentField(): this is NestedContentField { return isNestedContentField(this); }
 
+  /**
+   * Get parent
+   */
   public get parent(): Readonly<NestedContentField> | undefined { return this._parent; }
 
   /*public toJSON(): BaseFieldJSON {
@@ -77,6 +120,11 @@ export class Field {
     };
   }*/
 
+  /**
+   * Deserialize Field from JSON
+   * @param json JSON or JSON serialized to string to deserialize from
+   * @returns Deserialized field or undefined if deserialization failed
+   */
   public static fromJSON(json: FieldJSON | string | undefined): Field | undefined {
     if (!json)
       return undefined;
@@ -90,6 +138,10 @@ export class Field {
     return Object.assign(field, json);
   }
 
+  /**
+   * Reviver function that can be used as a second argument for
+   * `JSON.parse` method when parsing Field objects.
+   */
   public static reviver(key: string, value: any): any {
     return key === "" ? Field.fromJSON(value) : value;
   }
@@ -105,10 +157,25 @@ export class Field {
   }
 }
 
-/** Describes a single content field that's based on one or more EC properties. */
+/**
+ * Describes a content field that's based on one or more similar
+ * EC properties.
+ */
 export class PropertiesField extends Field {
+  /** A list of properties this field is created from */
   public readonly properties: Array<Readonly<Property>>;
 
+  /**
+   * Creates an instance of PropertiesField.
+   * @param category Category information
+   * @param name Unique name
+   * @param label Display label
+   * @param type Description of this field's values data type
+   * @param isReadonly Are values in this field read-only
+   * @param priority Priority of the field
+   * @param properties A list of properties this field is created from
+   * @param editor Property editor used to edit values of this field
+   */
   public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
     isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription) {
     super(category, name, label, description, isReadonly, priority, editor);
@@ -122,6 +189,11 @@ export class PropertiesField extends Field {
     };
   }*/
 
+  /**
+   * Deserialize PropertiesField from JSON
+   * @param json JSON or JSON serialized to string to deserialize from
+   * @returns Deserialized properties field or undefined if deserialization failed
+   */
   public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined {
     if (!json)
       return undefined;
@@ -132,12 +204,30 @@ export class PropertiesField extends Field {
   }
 }
 
-/** Describes a single content field that contains nested content. */
+/**
+ * Describes a content field that contains [Nested content]($docs/learning/content/Terminology#nested-content).
+ */
 export class NestedContentField extends Field {
+  /** Information about an ECClass whose properties are nested inside this field */
   public readonly contentClassInfo: ec.ClassInfo;
+  /** Relationship path to [Primary class]($docs/learning/content/Terminology#primary-class) */
   public readonly pathToPrimaryClass: ec.RelationshipPathInfo;
+  /** Contained nested fields */
   public readonly nestedFields: Array<Readonly<Field>>;
 
+  /**
+   * Creates an instance of NestedContentField.
+   * @param category Category information
+   * @param name Unique name
+   * @param label Display label
+   * @param type Description of this field's values data type
+   * @param isReadonly Are values in this field read-only
+   * @param priority Priority of the field
+   * @param contentClassInfo Information about an ECClass whose properties are nested inside this field
+   * @param pathToPrimaryClass Relationship path to [Primary class]($docs/learning/content/Terminology#primary-class)
+   * @param nestedFields Contained nested fields
+   * @param editor Property editor used to edit values of this field
+   */
   public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
     isReadonly: boolean, priority: number, contentClassInfo: ec.ClassInfo, pathToPrimaryClass: ec.RelationshipPathInfo,
     nestedFields: Field[], editor?: EditorDescription) {
@@ -156,6 +246,11 @@ export class NestedContentField extends Field {
     };
   }*/
 
+  /**
+   * Deserialize NestedContentField from JSON
+   * @param json JSON or JSON serialized to string to deserialize from
+   * @returns Deserialized nested content field or undefined if deserialization failed
+   */
   public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined {
     if (!json)
       return undefined;
@@ -182,6 +277,7 @@ export class NestedContentField extends Field {
   }
 }
 
+/** Data structure that describes nested content value */
 export interface NestedContent {
   primaryKeys: Array<Readonly<ec.InstanceKey>>;
   values: any;

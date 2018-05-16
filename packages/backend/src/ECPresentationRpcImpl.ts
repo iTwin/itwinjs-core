@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module RPC */
+
 import { IModelToken } from "@bentley/imodeljs-common";
 import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
@@ -9,9 +11,21 @@ import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-comm
 import ECPresentation from "./ECPresentation";
 import ECPresentationManager from "./ECPresentationManager";
 
-/** The backend implementation of ECPresentationRpcInterface. */
+/**
+ * The backend implementation of ECPresentationRpcInterface. All it's basically
+ * responsible for is forwarding calls to [[ECPresentation.manager]].
+ *
+ * Consumers should not use this class. Instead, they should register
+ * [ECPresentationRpcInterface]($ecpresentation-common):
+ * ``` ts
+ * [[include:Backend.Initialization.RpcInterface]]
+ * ```
+ */
 export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
 
+  /**
+   * Get the ECPresentationManager used by this RPC impl.
+   */
   public getManager(): ECPresentationManager {
     return ECPresentation.manager;
   }

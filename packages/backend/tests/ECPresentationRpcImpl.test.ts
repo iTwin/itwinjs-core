@@ -34,7 +34,7 @@ describe("ECPresentationRpcImpl", () => {
     const mock = moq.Mock.ofType<ECPresentationManager>();
     beforeEach(() => {
       mock.reset();
-      ECPresentation.manager = mock.object;
+      ECPresentation.setManager(mock.object);
       testData = {
         imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.ReadWrite, "user id"),
         pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,

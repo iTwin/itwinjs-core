@@ -11,6 +11,7 @@
   "scripts": {
     "build": "",
     "cover": "nyc npm test -- --coverage",
+    "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../out/docs/extract",
     "lint": "tslint ./",
     "test": "node ../../scripts/run-tests.js --testsDir ./",
     "test+cover": "nyc npm test -- --coverage --report",

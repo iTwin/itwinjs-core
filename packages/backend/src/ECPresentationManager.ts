@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
@@ -10,17 +12,30 @@ import { NodeKey, Node } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Content, Descriptor } from "@bentley/ecpresentation-common";
 import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
 
+/**
+ * Properties that can be used to configure [[ECPresentationManager]]
+ */
 export interface Props {
   /** @hidden */
   addon?: NodeAddonDefinition;
+
+  /** Paths to directories which contain application rulesets */
   rulesetDirectories?: string[];
 }
 
+/**
+ * Backend ECPresentation manager which pulls the presentation data from
+ * an iModel.
+ */
 export default class ECPresentationManager implements ECPresentationManagerDefinition, IDisposable {
 
   private _addon?: NodeAddonDefinition;
   private _isDisposed: boolean;
 
+  /**
+   * Creates an instance of ECPresentationManager.
+   * @param props Optional configuration properties.
+   */
   constructor(props?: Props) {
     this._isDisposed = false;
     if (props && props.addon)
@@ -29,6 +44,9 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
+  /**
+   * Dispose the presentation manager. Must be called to clean up native resources.
+   */
   public dispose() {
     if (this._addon) {
       this.getNativePlatform().terminate();
@@ -157,7 +175,7 @@ const createAddonImpl = () => {
   };
 };
 
-/** @hidden @internal */
+/** @hidden */
 export enum NodeAddonRequestTypes {
   GetRootNodes = "GetRootNodes",
   GetRootNodesCount = "GetRootNodesCount",

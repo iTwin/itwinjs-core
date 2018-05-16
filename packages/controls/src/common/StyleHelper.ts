@@ -1,9 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { assert } from "@bentley/bentleyjs-core";
 import { Node } from "@bentley/ecpresentation-common";
 
+/** @hidden */
 export default class StyleHelper {
   private static getColor(name: string): number {
     name = name.trim();

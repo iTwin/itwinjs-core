@@ -1,12 +1,27 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PersistentKeysContainer, KeySet } from "@bentley/ecpresentation-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 
+/**
+ * Static class which can be used to convert between
+ * [KeySet]($ecpresentation-common) and
+ * [PersistentKeysContainer]($ecpresentation-common).
+ */
 export default class PersistenceHelper {
 
+  /* istanbul ignore next */
+  private constructor() { }
+
+  /**
+   * Create a [PersistentKeysContainer]($ecpresentation-common)
+   * @param imodel iModel whose keys are contained in the `keyset`
+   * @param keyset The keys to put into the persistent container
+   */
   public static async createPersistentKeysContainer(imodel: IModelConnection, keyset: KeySet): Promise<PersistentKeysContainer> {
     const instanceClassNames = Array.from(keyset.instanceKeys.keys());
     const instanceClassNameBindings = instanceClassNames.map(() => "?").join(",");
@@ -38,6 +53,11 @@ export default class PersistenceHelper {
     };
   }
 
+  /**
+   * Create a [KeySet]($ecpresentation-common)
+   * @param imodel iModel whose keys are contained in the `container`
+   * @param container Container of keys to put into the KeySet
+   */
   public static async createKeySet(imodel: IModelConnection, container: PersistentKeysContainer): Promise<KeySet> {
     const keyset = new KeySet();
     keyset.add(container.nodes);

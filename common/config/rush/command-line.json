@@ -49,6 +49,20 @@
       "documentation": "For each published packages creates a packed .tgz package in the out/packages directory",
       "parallelized": true,
       "ignoreMissingScript": true
+    },
+    {
+      "name": "extract",
+      "summary": "Extract code samples",
+      "documentation": "Extract code pieces that can be used in documentation",
+      "parallelized": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "name": "docs",
+      "summary": "Extract documentation",
+      "documentation": "Extract API documentation from source files",
+      "parallelized": true,
+      "ignoreMissingScript": true
     }
   ]
 }

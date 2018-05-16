@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Content */
+
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
@@ -12,7 +14,7 @@ export interface CacheInvalidationProps {
   content?: boolean;
 }
 
-/** Base class for all data providers that are based on @ref PresentationManager. */
+/** Base class for all ecpresentation-driven data providers. */
 export default abstract class ContentDataProvider {
   private _rulesetId: string;
   private _displayType: string;
@@ -23,7 +25,7 @@ export default abstract class ContentDataProvider {
 
   /** Constructor.
    * @param displayType The content display type which this provider is going to
-   * load data for. See @ref ContentDisplayType
+   * load data for.
    * @param imodelToken Token of the imodel to pull data from.
    */
   constructor(imodelToken: IModelToken, rulesetId: string, displayType: string) {
@@ -75,7 +77,8 @@ export default abstract class ContentDataProvider {
 
   /** Called to configure the content descriptor. This is the place where concrete
    * provider implementations can control things like sorting, filtering, hiding fields, etc.
-   * @warning The default method implementation takes care of hiding properties. Subclasses
+   *
+   * The default method implementation takes care of hiding properties. Subclasses
    * should call the base class method to not lose this functionality.
    */
   protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
@@ -115,7 +118,7 @@ export default abstract class ContentDataProvider {
   /** Get the number of content records.
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
-   * @note The method returns the total number of records (without paging).
+   * @returns The total number of records (without paging).
    */
   protected async getContentSetSize(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (undefined === this._contentSetSize) {
