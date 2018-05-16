@@ -33,6 +33,10 @@ export class RpcPendingResponse extends RpcControlResponse {
   }
 }
 
+/** A RPC operation response . */
+export class RpcNotFoundResponse extends RpcControlResponse {
+}
+
 /** Manages requests and responses for an RPC configuration. */
 export class RpcControlChannel {
   private configuration: RpcConfiguration;
