@@ -407,10 +407,10 @@ export class MeshBuilder {
 
       assert(!includeParams || (param !== undefined && param.length > 0));
       const haveParam = includeParams && (param !== undefined && param.length > 0);
-      assert(!haveParam || mappedTexture.isValid);
+      assert(!haveParam || undefined !== mappedTexture);
       triangle.setEdgeVisibility(visibility[0], visibility[1], visibility[2]);
 
-      if (haveParam && mappedTexture.isValid) {
+      if (haveParam && undefined !== mappedTexture) {
         // const textureMapParams = mappedTexture.params;
         // const computedParams = [];
 
@@ -527,7 +527,7 @@ export namespace MeshBuilder {
   }
   export interface PolyfaceVisitorParams {
     visitor: PolyfaceVisitor;
-    mappedTexture: TextureMapping;
+    mappedTexture?: TextureMapping;
     // iModel: IModelConnection;
     // feature: Feature;
     includeParams: boolean;

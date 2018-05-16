@@ -154,12 +154,41 @@ describe("TileIO", () => {
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
   });
 
-  it("should create a tile reader", () => {
+  it("should read an iModel tile", () => {
     // ###TODO: ModelState, RenderSystem...
     const model: ModelState | undefined = undefined;
     const system: RenderSystem | undefined = undefined;
     const stream = new TileIO.StreamBuffer(rectangleTileBytes.buffer);
     const reader = IModelTileIO.Reader.create(stream, model!, system!);
     expect(reader).not.to.be.undefined;
+
+    if (undefined !== reader) {
+      const result = reader.read();
+      expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+      expect(result.isLeaf).to.be.true;
+      expect(result.contentRange).not.to.be.undefined;
+      expect(result.geometry).not.to.be.undefined;
+
+      const low = result.contentRange!.low;
+      expect(delta(low.x, -2.5)).to.be.lessThan(0.0005);
+      expect(delta(low.y, -5.0)).to.be.lessThan(0.0005);
+      expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+
+      const high = result.contentRange!.high;
+      expect(delta(high.x, 2.5)).to.be.lessThan(0.0005);
+      expect(delta(high.y, 5.0)).to.be.lessThan(0.0005);
+      expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+
+      const geom = result.geometry!;
+      expect(geom.isEmpty).to.be.false;
+      expect(geom.isComplete).to.be.true;
+      expect(geom.isCurved).to.be.false;
+
+      const meshes = geom.meshes;
+      expect(meshes.length).to.equal(1);
+
+      const mesh = meshes[0];
+      expect(mesh.points.length).to.equal(4);
+    }
   });
 });

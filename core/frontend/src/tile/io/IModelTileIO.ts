@@ -9,7 +9,8 @@ import { RenderSystem } from "../../render/System";
 import { DisplayParams } from "../../render/primitives/DisplayParams";
 import { MeshList } from "../../render/primitives/Mesh";
 import { ColorMap } from "../../render/primitives/ColorMap";
-import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass } from "@bentley/imodeljs-common";
+import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 
 export namespace IModelTileIO {
   export const enum Flags {
@@ -80,6 +81,8 @@ export namespace IModelTileIO {
     }
 
     public read(): Result {
+      // ###TODO don't re-read the headers...
+      this.buffer.reset();
       const header = new Header(this.buffer);
       let isLeaf = true;
       if (!header.isValid)
@@ -111,7 +114,7 @@ export namespace IModelTileIO {
       if (undefined === header)
         return undefined;
 
-      const featureTable = new FeatureTable(header.maxFeatures, this.model.id);
+      const featureTable = new FeatureTable(header.maxFeatures, this.modelId);
       for (let i = 0; i < header.count; i++) {
         const elementId = this.buffer.nextId64;
         const subCategoryId = this.buffer.nextId64;
@@ -136,8 +139,17 @@ export namespace IModelTileIO {
       return undefined; // ###TODO
     }
 
-    protected createDisplayParams(_json: any): DisplayParams | undefined {
-      return undefined; // ###TODO
+    protected createDisplayParams(json: any): DisplayParams | undefined {
+      // ###TODO: gradient, category/subcategory IDs, geometry class, material from material ID, texture mapping
+      const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
+      const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
+      const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));
+      const width = JsonUtils.asInt(json.lineWidth);
+      const linePixels = JsonUtils.asInt(json.linePixels, LinePixels.Solid);
+      const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);
+      const ignoreLighting = JsonUtils.asBool(json.ignoreLighting);
+
+      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, undefined, undefined, undefined, ignoreLighting);
     }
   }
 }
