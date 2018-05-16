@@ -209,6 +209,9 @@ describe("TileIO", () => {
       expect(displayParams.width).to.equal(1);
       expect(displayParams.linePixels).to.equal(LinePixels.Solid);
       expect(displayParams.ignoreLighting).to.be.false;
+
+      expect(mesh.normals.length).to.equal(4);
+      expect(mesh.uvParams.length).to.equal(0);
     }
   });
 });
