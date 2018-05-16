@@ -4,7 +4,7 @@ An `RpcInterface` is a set of operations exposed by a server that a client can c
 
 This article uses the terms *client* and *server* to identify the two roles in an `RpcInterface`:
 
-* *client* -- the code that uses an RpcInterface and calls its methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. It could be [frontend code](./Glossary.md#frontend) *or* [backend code](./Glossary.md#backend).
+* *client* -- the code that uses an RpcInterface and calls its methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. It could be [frontend code](./Glossary.md#frontend) or [backend code](./Glossary.md#backend).
 * *server* -- the code that implements and exposes an RpcInterface to clients. A server could be a deployed, stand-alone service, or the backend of an app. It is always [backend code](./Glossary.md#backend).
 
 See [the RpcInterface overview](../overview/App.md#rpcinterface) for more information on the purpose of RpcInterfaces in the context of overall [app architecture](../overview/SoftwareArchitecture.md).
@@ -17,7 +17,7 @@ An RpcInterface is defined and implemented in TypeScript. Conceptually, the inte
 
 In practice, two TypeScript classes are needed, as explained below.
 
-Communication between a client and the server is via [RPC]($./glossary.md#rpc). The RPC mechanism is factored out into RpcConfiguration which are applied to RpcInterfaces. This design allows clients and servers to be written in a way that is independent of transport details, while allowing transport to be configured at runtime to suit app requirements. See [server-side configuration](#server-side-configuration) and [client-side configuration](#client-side-configuration) below for details.
+Communication between a client and the server is via [RPC](./Glossary.md#RPC). The RPC mechanism is factored out into RpcConfiguration which are applied to RpcInterfaces. This design allows clients and servers to be written in a way that is independent of transport details, while allowing transport to be configured at runtime to suit app requirements. See [server-side configuration](#server-side-configuration) and [client-side configuration](#client-side-configuration) below for details.
 
 RpcInterface methods are always [asynchronous](#asynchronous-nature-of-rpcInterfaces).
 
@@ -49,7 +49,7 @@ A best practice is that an interface definition class should be marked as `abstr
 [[include:RpcInterface.definition]]
 ```
 
-In a real RpcInterface, each method should be documented, including the purpose of each arguments, as this is the class that client app developers will see and use when writing code that makes calls on the interface.
+In a real interface definition class, each method and parameter should be commented, in order to provide documentation to client app developers that will try to use the interface.
 
 ## Client Stub
 
@@ -60,7 +60,7 @@ The client stub is an implementation of the interface that forwards method calls
 
 The server-side implementation is also known as the "impl". An impl is always [backend code](./Glossary.md#backend).
 
-To write an impl, write a concrete TypeScript class that extends [RpcInterface]($common) and *also* implements the interface definition class.
+To write an impl, write a concrete TypeScript class that extends [RpcInterface]($common) and also implements the interface definition class.
 
 The impl must override each method in the interface definition class. Each override must perform the intended operation.
 
@@ -143,5 +143,5 @@ Here is a simple example of an app frontend registering to access interfaces tha
 
 In some configurations, client and server may be in separate processes. Some configurations marshall calls over the Internet, where both bandwidth and latency can vary widely. Therefore, care must be taken to limit the number and size of round-trips between clients and servers. In other words, an interface's methods must be "chunky" and not "chatty".
 
-### Asynchronous Nature of RpcInterfaces
-The interface between a client and a server is intrinsically asynchronous. That is because the client and server are never in the same JavaScript context, as explained in [the app architecture overview](../overview/App.md#interactive-apps). Since a requested operation is carried out in a different thread of execution, it is asynchronous from the client's point of view, and so the client must treat the result as a Promise. As a result, the impl wrapper methods must also return Promises. Nevertheless, the static methods in the backend that actually perform the requested operations should *not* be asynchrnous, unless the operation itself requires it. The purpose of a backend is to do the work, not pass the buck. It is the client that must wait, not the server.
+## Asynchronous Nature of RpcInterfaces
+The interface between a client and a server is intrinsically asynchronous. That is because the client and server are never in the same JavaScript context, as explained in [the app architecture overview](../overview/App.md#interactive-apps). Since a requested operation is carried out in a different thread of execution, it is asynchronous from the client's point of view, and so the client must treat the result as a Promise. As a result, the impl wrapper methods must also return Promises. Nevertheless, the static methods in the backend that actually perform the requested operations should not be async, unless the operation itself requires it. The purpose of a backend is to do the work, not pass the buck. It is the client that must wait, not the server.
