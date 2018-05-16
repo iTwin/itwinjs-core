@@ -74,9 +74,11 @@ export function initializeRpcClient(interfaces: RpcInterfaceDefinition[], uriPre
 }
 // __PUBLISH_EXTRACT_END__
 
+import { TestRpcManager } from "./TestRpcManager";
+
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeImpl
 /* Configures the RPC implementations that are implemented by this service */
-export function initializeRpcImpl() {
+export function initializeRpcImpl(isTest: boolean) {
   // Register my own interfaces
   RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl);
   RpcManager.registerImpl(RobotWorldReadRpcInterface, RobotWorldReadRpcImpl);
@@ -91,18 +93,22 @@ export function initializeRpcImpl() {
 
   // This is an example of using a FeatureGate to decide at runtime if the
   // service should expose one or more interfaces.
-  if (RobotWorldEngine.features.check("readwrite")) {
+  if (RobotWorldEngine.features.check("imodel.readwrite")) {
     interfaces.push(IModelWriteRpcInterface);
     interfaces.push(RobotWorldWriteRpcInterface);
   }
 
   // Expose the RpcInterfaces using the appropriate configuration.
-  if (Platform.isMobile()) {
-    assert(false, "TBD: mobile RPC config");
-  } else if (Platform.electron !== undefined) {
-    ElectronRpcManager.initializeImpl({}, interfaces);
+  if (isTest) {
+    TestRpcManager.initialize(interfaces);
   } else {
-    BentleyCloudRpcManager.initializeImpl({ info: { title: "RobotWorldEngine", version: "v1.0" } }, interfaces);
+    if (Platform.isMobile()) {
+      assert(false, "TBD: mobile RPC config");
+    } else if (Platform.electron !== undefined) {
+      ElectronRpcManager.initializeImpl({}, interfaces);
+    } else {
+      BentleyCloudRpcManager.initializeImpl({ info: { title: "RobotWorldEngine", version: "v1.0" } }, interfaces);
+    }
   }
 }
 

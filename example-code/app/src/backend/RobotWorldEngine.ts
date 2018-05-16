@@ -15,9 +15,9 @@ import { Barrier } from "./BarrierElement";
 const defaultsCfg = {
   "ROBOT-WORLD-FEATURE-READWRITE": "true",
   "ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS": "false",
-  "RobotWorld-DEFAULT-LOG-LEVEL": "Error",
-  "RobotWorld-SEQ-URL": "http://localhost",
-  "RobotWorld-SEQ-PORT": "5341",
+  "ROBOT-WORLD-DEFAULT-LOG-LEVEL": "Error",
+  "ROBOT-WORLD-SEQ-URL": "http://localhost",
+  "ROBOT-WORLD-SEQ-PORT": "5341",
 };
 
 // An example of how to implement a service.
@@ -41,7 +41,9 @@ export class RobotWorldEngine {
 
     // Define the feature gates that were passed in the config parameters.
     if ("features" in config) {
-      RobotWorldEngine.features.setGate("features", config.features);
+      RobotWorldEngine.features.setGate("imodel", config.features.imodel);
+      RobotWorldEngine.features.setGate("experimental", config.features.experimental);
+      RobotWorldEngine.features.setGate("not_there", config.features.not_there);
     }
   }
   // __PUBLISH_EXTRACT_END__
@@ -111,7 +113,7 @@ export class RobotWorldEngine {
   // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
   // An experimental method. It is in the release build, but only turned on in some deployments.
   public static fuseRobots(iModelDb: IModelDb, r1Id: Id64, r2Id: Id64) {
-    if (!RobotWorldEngine.features.check("experimentalMethods"))
+    if (!RobotWorldEngine.features.check("experimental.methods"))
       return;
 
     // Create an assembly with r1 and r2 as the children and a new (hidden) element as the head.
@@ -137,7 +139,7 @@ export class RobotWorldEngine {
     return iModelDb.elements.insertElement(r);
   }
 
-  public static initialize() {
+  public static initialize(isTest: boolean) {
     const config = new IModelHostConfiguration();
     if (Platform.isNodeJs())
       config.appAssetsDir = path.join(__dirname, "assets");
@@ -147,7 +149,7 @@ export class RobotWorldEngine {
 
     RobotWorldEngine.readFeatureGates();
     // initializeLogging();
-    initializeRpcImpl();
+    initializeRpcImpl(isTest);
 
     // __PUBLISH_EXTRACT_START__ Schema.registerSchema
     // Register the TypeScript schema classes that I intend to use.
