@@ -23,7 +23,7 @@ RpcInterface methods are always *asynchronous*. That is because the RpcInterface
 
 ## Parameter and Return Types
 
-RpcInterface methods can take and return just about any type. Most JavaScript primitive types are supported, such as number, string, bool, and any. A few primitive types cannot be used, including Set and Map.
+RpcInterface methods can take and return just about any type. Most JavaScript primitive types are supported, such as number, string, bool, and any.
 
 RpcInterfaces can also use TypeScript/JavaScript classes as parameter and return types. The [interface definition](#defining-the-interface) just has to declare the classes that it uses, so that the configurations can marshall them correctly. That is the purpose of the `types` property.
 
@@ -64,7 +64,7 @@ The impl must override each method in the interface by performing the intended o
 
 As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 
-A best practice is that an impl should be a thin layer on top of normal classes in the service. Ideally, each method of an impl should be a one-line forwarding call. The impl wrapper should be concerned only with transforming types, not with functionality. The normal service class methods should be concerned only with functionality. The service class methods should be static.
+A best practice is that an impl should be a thin layer on top of normal classes in the service. Ideally, each method of an impl should be a one-line forwarding call that uses the public backend API of the service. The impl wrapper should be concerned only with transforming types, not with functionality. The normal service class methods should be concerned only with functionality. The service class methods should be static.
 
 *Example:*
 
@@ -76,7 +76,7 @@ A best practice is that an impl should be a thin layer on top of normal classes 
 
 A server must expose the RpcInterfaces that it implements or imports, so that clients can use them.
 
-First, the server must call [RpcManager.registerImpl]($common) to register the interfaces that it implements, if any.
+First, the server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
 
 Next, the server must decide which interfaces it wants to expose. A service can expose multiple interfaces. A service can expose both its own implementations, if any, and imported implementations. The service can decide at run time which interfaces to expose, perhaps based on deployment parameters.
 

@@ -1,9 +1,9 @@
 ### Using iModelJs
-- [App Architecture](./App.md)
-- [Agents and Services](./App.md#agents-and-services)
-- [Web Apps](./App.md#web-apps)
-- [Desktop Apps](./App.md#desktop-apps)
-- [Mobile Apps](./App.md#mobile-apps)
+- [App Architecture](./SoftwareArchitecture.md)
+- [Agents and Services](./SoftwareArchitecture.md#web)
+- [Web Apps](./SoftwareArchitecture.md#web)
+- [Desktop Apps](./SoftwareArchitecture.md#desktop)
+- [Mobile Apps](./SoftwareArchitecture.md#mobile)
 
 &nbsp;
 ### Helpful Background Information

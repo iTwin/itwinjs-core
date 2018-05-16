@@ -1125,32 +1125,8 @@ export abstract class ViewState3d extends ViewState {
   /**  Get the distance from the eyePoint to the focus plane for this view. */
   public getFocusDistance(): number { return this.camera.focusDist; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
-}
 
-/** Defines a view of one or more SpatialModels.
- * The list of viewed models is stored by the ModelSelector.
- */
-export class SpatialViewState extends ViewState3d {
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) {
-    super(props, iModel, arg3, displayStyle);
-    if (arg3 instanceof SpatialViewState) { // from clone
-      this.modelSelector = arg3.modelSelector.clone();
-    }
-  }
-  public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
-
-  public static get className() { return "SpatialViewDefinition"; }
-  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
-
-  public toJSON(): SpatialViewDefinitionProps {
-    const val = super.toJSON() as SpatialViewDefinitionProps;
-    val.modelSelectorId = this.modelSelector.id;
-    return val;
-  }
-  public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
-  public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
-
+  // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
   public drawDecorations(context: DecorateContext): void {
     this.drawSkyBox(context);
     this.drawGroundPlane(context);
@@ -1195,6 +1171,31 @@ export class SpatialViewState extends ViewState3d {
     if (undefined !== gf)
       context.addWorldDecoration(gf);
   }
+}
+
+/** Defines a view of one or more SpatialModels.
+ * The list of viewed models is stored by the ModelSelector.
+ */
+export class SpatialViewState extends ViewState3d {
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) {
+    super(props, iModel, arg3, displayStyle);
+    if (arg3 instanceof SpatialViewState) { // from clone
+      this.modelSelector = arg3.modelSelector.clone();
+    }
+  }
+  public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+
+  public static get className() { return "SpatialViewDefinition"; }
+  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
+  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
+
+  public toJSON(): SpatialViewDefinitionProps {
+    const val = super.toJSON() as SpatialViewDefinitionProps;
+    val.modelSelectorId = this.modelSelector.id;
+    return val;
+  }
+  public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
+  public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */

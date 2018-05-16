@@ -10,7 +10,7 @@ import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Point3d, Angle } from "@bentley/geometry-core";
 
-// Implement ROWriteRpcInterface
+// Implement RobotWorldWriteRpcInterface
 class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
   public static register() {
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl);
@@ -32,7 +32,7 @@ class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcI
   }
 }
 
-// Implement ROReadRpcInterface
+// Implement RobotWorldReadRpcInterface
 class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface {
   public static register() {
     RpcManager.registerImpl(RobotWorldReadRpcInterface, RobotWorldReadRpcImpl);
