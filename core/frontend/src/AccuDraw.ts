@@ -1833,12 +1833,13 @@ export class AccuDraw {
     }
   }
 
+  public enableDisplay: boolean = false; // ###TODO: Don't try to display yet...we will throw an exception...
   public display(context: DecorateContext) {
     // Make sure this is cleared even if we do nothing...redraw might have been to make compass go away...
     this.flags.redrawCompass = false;
 
     // Check that AccuDraw is enabled...
-    if (!this.isActive)
+    if (!this.isActive || !this.enableDisplay)
       return;
 
     const vp = context.viewport!;
