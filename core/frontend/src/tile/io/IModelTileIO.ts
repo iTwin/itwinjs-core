@@ -131,12 +131,16 @@ export namespace IModelTileIO {
       return featureTable;
     }
 
-    protected readFeatures(_json: any): Uint32Array | undefined {
-      return undefined; // ###TODO
+    protected readFeatureIndices(json: any): number[] | undefined {
+      const featureId = json.featureID;
+      if (undefined !== featureId)
+        return [ featureId as number ];
+      else
+        return this.readIndices(json, "featureIDs");
     }
 
-    protected readColorTable(_json: any): ColorMap | undefined {
-      return undefined; // ###TODO
+    protected readColorTable(_colorTable: ColorMap, _json: any): boolean {
+      return false; // ###TODO
     }
 
     protected createDisplayParams(json: any): DisplayParams | undefined {

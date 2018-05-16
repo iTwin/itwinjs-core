@@ -260,8 +260,8 @@ export namespace GltfTileIO {
       return undefined !== view ? view.toBufferData(type) : undefined;
     }
 
-    protected readFeatures(_json: any): Uint32Array | undefined { return undefined; }
-    protected readColorTable(_json: any): ColorMap | undefined { return undefined; }
+    protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
+    protected readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined { return false; }
     protected createDisplayParams(_json: any): DisplayParams | undefined { return undefined; }
 
     protected readGltf(geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
@@ -303,6 +303,10 @@ export namespace GltfTileIO {
       if (!this.readVertices(mesh.points, primitive))
         return undefined;
 
+      // read color table and color indices
+      if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
+        return undefined;
+
       return mesh; // ###TODO etc...
     }
 
@@ -333,6 +337,27 @@ export namespace GltfTileIO {
         positions.push(qpt);
       }
 
+      return true;
+    }
+
+    protected readIndices(json: any, accessorName: string): number[] | undefined {
+      const data = this.readBufferData32(json, accessorName);
+      if (undefined === data)
+        return undefined;
+
+      const indices = [];
+      for (let i = 0; i < data.count; i++)
+        indices.push(data.buffer[i]);
+
+      return indices;
+    }
+
+    protected readFeatures(features: Mesh.Features, json: any): boolean {
+      const indices = this.readFeatureIndices(json);
+      if (undefined === indices)
+        return false;
+
+      features.setIndices(indices);
       return true;
     }
   }
