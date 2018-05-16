@@ -12,14 +12,14 @@ import { ColorMap } from "../../render/primitives/ColorMap";
 import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass } from "@bentley/imodeljs-common";
 
 export namespace IModelTileIO {
-  const enum Flags {
+  export const enum Flags {
     None = 0,
     ContainsCurves = 1 << 0,
     Incomplete = 1 << 1,
     IsLeaf = 1 << 2,
   }
 
-  class Header extends GltfTileIO.Header {
+  export class Header extends TileIO.Header {
     public readonly flags: Flags;
     public readonly contentRange: ElementAlignedBox3d;
     public readonly length: number;
