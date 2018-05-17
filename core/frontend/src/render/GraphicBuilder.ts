@@ -137,13 +137,10 @@ export class GraphicBuilderCreateParams {
 
 /** Exposes methods for constructing a RenderGraphic from geometric primitives. */
 export abstract class GraphicBuilder {
-  protected _isOpen: boolean = false;
-
   /**
    * Get/Set the current GeometryStreamEntryId, which identifies the graphics that are currently being drawn.
    * Separated from _streamId to allow child classes to override the logic involved in setting the streamId
    */
-  public get isOpen(): boolean { return this._isOpen; }
   public get iModel(): IModelConnection { return this.createParams.iModel; }
   public get localToWorldTransform(): Transform { return this.createParams.placement; }
   public get viewport(): Viewport { return this.createParams.viewport!; }
@@ -158,8 +155,8 @@ export abstract class GraphicBuilder {
   public wantStrokePattern(_pattern: AreaPattern.Params): boolean { return true; }
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
-  public abstract _finish(): RenderGraphic | undefined;
-  public finish(): RenderGraphic | undefined { return this.isOpen ? this._finish() : undefined; }
+  public abstract _finish(): RenderGraphic;
+  public finish(): RenderGraphic { return this._finish(); }
 
   /**
    * Set a GraphicParams to be the "active" GraphicParams for this RenderGraphic.

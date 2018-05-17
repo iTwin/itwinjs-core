@@ -1,18 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
-import {
-  Transform,
-  Arc3d,
-  LineSegment3d,
-  CurvePrimitive,
-  Loop,
-  Path,
-  Point2d,
-  Point3d,
-  Polyface,
-} from "@bentley/geometry-core";
+import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../../GraphicBuilder";
@@ -35,13 +24,8 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.accum = new GeometryAccumulator(params.iModel, system, undefined, accumulatorTf);
   }
 
-  public _finish(): RenderGraphic | undefined {
-    if (!this.isOpen) {
-      assert(false);
-      return undefined;
-    }
+  public _finish(): RenderGraphic {
     const graphic = this.finishGraphic(this.accum);
-    this._isOpen = false;
     this.accum.clear();
     return graphic;
   }
@@ -49,6 +33,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public activateGraphicParams(graphicParams: GraphicParams): void {
     this.graphicParams = graphicParams;
   }
+
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
     if (0.0 === zDepth) {
       this.addArc(ellipse, isEllipse, filled);
@@ -58,6 +43,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       this.addArc(ell, isEllipse, filled);
     }
   }
+
   public addArc(ellipse: Arc3d, isEllipse: boolean, filled: boolean): void {
     let curve;
     let isLoop = false;
@@ -110,7 +96,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.accum.reset(accumTf);
     this.activateGraphicParams(this.graphicParams);
     this.createParams.placement = localToWorld;
-    this._isOpen = true;
     this.reset();
   }
 }
