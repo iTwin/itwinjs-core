@@ -39,7 +39,7 @@ export class RobotWorldEngine {
 
     // Read the configuration parameters for my service.
     // Some config params might be specified as envvars. Substitute actual values.
-    const config = require(path.join(IModelHost.appAssetsDir!, "this.config.json"));
+    const config = require(path.join(IModelHost.appAssetsDir!, "RobotWorldEngine.config.json"));
     EnvMacroSubst.replaceInProperties(config, true, defaultsCfg);
 
     // Define the feature gates that were passed in the config parameters.
