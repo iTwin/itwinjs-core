@@ -265,11 +265,11 @@ export class EventSubscriptionHandler {
    * @return Updated EventSubscription instance.
    */
   public async update(token: AccessToken, imodelId: string, subscription: EventSubscription): Promise<EventSubscription> {
-    Logger.logInfo(loggingCategory, `Updating event subscription on iModel ${subscription.id}`);
+    Logger.logInfo(loggingCategory, `Updating event subscription on iModel ${subscription.wsgId}`);
 
-    const updatedSubscription = await this._handler.postInstance<EventSubscription>(EventSubscription, token, this.getRelativeUrl(imodelId, subscription.id), subscription);
+    const updatedSubscription = await this._handler.postInstance<EventSubscription>(EventSubscription, token, this.getRelativeUrl(imodelId, subscription.wsgId), subscription);
 
-    Logger.logTrace(loggingCategory, `Updated event subscription on iModel ${subscription.id}`);
+    Logger.logTrace(loggingCategory, `Updated event subscription on iModel ${subscription.wsgId}`);
 
     return updatedSubscription;
   }
@@ -372,19 +372,10 @@ export class EventHandler extends EventBaseHandler {
 
     const result = await request(this.getEventUrl(baseAddress, subscriptionId, timeout), options);
 
-    if (result.status === 200) {
-      Logger.logTrace(loggingCategory, `Got event from subscription ${subscriptionId}`);
+    const event = ParseEvent(result);
+    Logger.logTrace(loggingCategory, `Got event from subscription ${subscriptionId}`);
 
-      return Promise.resolve(ParseEvent(result));
-    } else if (result.status === 204) {
-      Logger.logInfo(loggingCategory, `No events found on subscription ${subscriptionId}`);
-
-      return Promise.reject(result.status);
-    }
-
-    Logger.logWarning(loggingCategory, `Getting event from subscription ${subscriptionId} failed with status ${result.status}`);
-
-    return Promise.reject(result.status);
+    return Promise.resolve(event);
   }
 
   /**

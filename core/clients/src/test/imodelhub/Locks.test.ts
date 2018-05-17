@@ -3,11 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { TestConfig } from "../TestConfig";
+import { AccessToken } from "../../";
+import {
+  IModelHubClient, Lock, Briefcase, LockType, LockLevel, AggregateResponseError,
+  ConflictingLocksError,
+} from "../../";
 
-import { Lock, Briefcase, LockType, LockLevel, AggregateResponseError, ConflictingLocksError } from "../../imodelhub";
-import { IModelHubClient } from "../../imodelhub/Client";
-import { AccessToken } from "../../Token";
+import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 

@@ -8,6 +8,7 @@ export interface FileHandler {
   downloadFile(downloadUrl: string, downloadToPathname: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void>;
   uploadFile(uploadUrlString: string, uploadFromPathname: string, progress?: (progress: ProgressInfo) => void): Promise<void>;
   getFileSize(filePath: string): number;
+  isDirectory(filePath: string): boolean;
   exists(filePath: string): boolean;
   basename(filePath: string): string;
   join(...paths: string[]): string;

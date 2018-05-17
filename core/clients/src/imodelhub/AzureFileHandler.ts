@@ -2,8 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { request, RequestOptions, ProgressInfo } from "../Request";
-import { IModelHubRequestError } from "./Errors";
-import { Config } from "../Config";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FileHandler } from "./FileHandler";
 import * as fs from "fs";
@@ -39,9 +37,6 @@ export class AzureFileHandler implements FileHandler {
   public async downloadFile(downloadUrl: string, downloadToPathname: string, fileSize?: number,
     progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading file from ${downloadUrl}`);
-
-    if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
 
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
@@ -112,12 +107,6 @@ export class AzureFileHandler implements FileHandler {
   public async uploadFile(uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logTrace(loggingCategory, `Uploading file to ${uploadUrlString}`);
 
-    if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
-
-    if (!fs.existsSync(uploadFromPathname))
-      return Promise.reject(new Error("Could not find file at specified location: " + uploadFromPathname));
-
     const fileSize = this.getFileSize(uploadFromPathname);
     const file = fs.openSync(uploadFromPathname, "r");
     const chunkSize = 4 * 1024 * 1024;
@@ -154,6 +143,15 @@ export class AzureFileHandler implements FileHandler {
    */
   public getFileSize(filePath: string): number {
     return fs.statSync(filePath).size;
+  }
+
+  /**
+   * Gets size of a file.
+   * @param filePath Path of the file.
+   * @returns Size of the file.
+   */
+  public isDirectory(filePath: string): boolean {
+    return fs.statSync(filePath).isDirectory();
   }
 
   /**
