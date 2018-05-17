@@ -20,7 +20,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
 import { GraphicList } from "./render/System";
-import { MeshArgs } from "./render/primitives/Mesh";
+import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 
 export const enum GridOrientationType {

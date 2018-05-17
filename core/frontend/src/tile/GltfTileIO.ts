@@ -7,7 +7,7 @@ import { ModelState } from "../ModelState";
 import { RenderSystem } from "../render/System";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/primitives";
-import { Mesh } from "../render/primitives/Mesh";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
@@ -170,12 +170,12 @@ export namespace GltfTileIO {
   /** Data required for creating a Reader capable of deserializing glTF tile data. */
   export class ReaderProps {
     private constructor(public readonly buffer: TileIO.StreamBuffer,
-                        public readonly binaryData: Uint8Array,
-                        public readonly accessors: any,
-                        public readonly bufferViews: any,
-                        public readonly scene: any,
-                        public readonly meshes: any,
-                        public readonly materials: any) { }
+      public readonly binaryData: Uint8Array,
+      public readonly accessors: any,
+      public readonly bufferViews: any,
+      public readonly scene: any,
+      public readonly meshes: any,
+      public readonly materials: any) { }
 
     public static create(buffer: TileIO.StreamBuffer): ReaderProps | undefined {
       const header = new Header(buffer);
@@ -315,13 +315,13 @@ export namespace GltfTileIO {
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
       const mesh = Mesh.create({
-          displayParams,
-          features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
-          type: primitiveType,
-          range: Range3d.createNull(),
-          is2d: false, // ###TODO: obtain from model...
-          isPlanar,
-        });
+        displayParams,
+        features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
+        type: primitiveType,
+        range: Range3d.createNull(),
+        is2d: false, // ###TODO: obtain from model...
+        isPlanar,
+      });
 
       if (!this.readVertices(mesh.points, primitive))
         return undefined;
