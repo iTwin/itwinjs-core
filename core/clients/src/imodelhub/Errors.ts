@@ -160,6 +160,7 @@ export enum IModelHubResponseErrorId {
   ChangeSetAlreadyHasVersion,
   VersionAlreadyExists,
   QueryIdsNotSpecified,
+  ConflictsAggregate,
 }
 
 /**
@@ -194,6 +195,7 @@ export class IModelHubResponseError extends WsgError {
       case IModelHubResponseErrorId.PullIsRequired:
       case IModelHubResponseErrorId.CodeStateInvalid:
       case IModelHubResponseErrorId.CodeReservedByAnotherBriefcase:
+      case IModelHubResponseErrorId.ConflictsAggregate:
         return true;
 
       default:

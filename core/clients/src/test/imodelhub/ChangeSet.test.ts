@@ -8,10 +8,9 @@ import * as deepAssign from "deep-assign";
 
 import { TestConfig } from "../TestConfig";
 
-import { Briefcase, ChangeSet, Lock, UserInfo, ChangeSetQuery, UserInfoQuery } from "../../imodelhub";
+import { Briefcase, ChangeSet, Lock, UserInfo, ChangeSetQuery, UserInfoQuery, LockQuery } from "../../imodelhub";
 import { IModelHubClient } from "../../imodelhub/Client";
 import { AccessToken } from "../../Token";
-import { RequestQueryOptions } from "../../Request";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
@@ -52,6 +51,12 @@ describe("iModelHub ChangeSetHandler", () => {
 
     // Ensure that at least two exist
     await utils.createChangeSets(accessToken, iModelId, briefcase, 0, 2);
+
+    if (!TestConfig.enableMocks) {
+      const changesets = (await imodelHubClient.ChangeSets().get(accessToken, iModelId));
+      // Ensure that at least one lock exists
+      await utils.createLocks(accessToken, iModelId, briefcase, 1, 2, 2, changesets[0].id, changesets[0].string);
+    }
 
     if (!fs.existsSync(downloadToPath)) {
       fs.mkdirSync(downloadToPath);
@@ -168,14 +173,10 @@ describe("iModelHub ChangeSetHandler", () => {
     }
   });
 
-  // TODO: Requires locks management to have this working as integration test
   it("should find information on the ChangeSet a specific Element was last modified in", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
     const mockId = utils.generateChangeSetId();
     if (TestConfig.enableMocks) {
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$top=1");
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$filter=LockType+eq+2+and+LockLevel+eq+2&$top=1");
       const requestResponse = ResponseBuilder.generateGetResponse<Lock>(ResponseBuilder.generateObject<Lock>(Lock,
         new Map<string, any>([
           ["objectId", "123"],
@@ -186,16 +187,12 @@ describe("iModelHub ChangeSetHandler", () => {
     }
 
     // For a test case, find an element that was recently modified by looking at the first lock
-    let queryOptions: RequestQueryOptions = {
-      $top: 1,
-      // $filter: "LockType+eq+2+and+LockLevel+eq+2", // LockType=Element AND LockLevel=Exclusive
-    };
-    const elementLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, queryOptions);
+    const elementLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, new LockQuery().byLockType(2).byLockLevel(2).top(1));
     chai.expect(elementLocks.length).to.be.equal(1);
     const testElementId: string = elementLocks[0].objectId!; // Hex or Decimal
 
     if (TestConfig.enableMocks) {
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$top=1&$filter=ObjectId+eq+%27123%27");
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$filter=ObjectId+eq+%27123%27&$top=1");
       const requestResponse = ResponseBuilder.generateGetResponse<Lock>(ResponseBuilder.generateObject<Lock>(Lock,
         new Map<string, any>([
           ["objectId", "123"],
@@ -205,11 +202,7 @@ describe("iModelHub ChangeSetHandler", () => {
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
     }
     // Find the change set that the lock was modified in
-    queryOptions = {
-      $top: 1,
-      $filter: "ObjectId+eq+'" + testElementId + "'",
-    };
-    const queryLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, queryOptions);
+    const queryLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, new LockQuery().byObjectId(testElementId).top(1));
     chai.expect(queryLocks.length).to.be.equal(1);
 
     const changeSetId: string = queryLocks[0].releasedWithChangeSet!; // Can get changeSetIndex also if necessary to compare against current
