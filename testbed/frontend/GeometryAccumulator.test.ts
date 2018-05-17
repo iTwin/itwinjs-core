@@ -4,6 +4,7 @@
 
 import { expect, assert } from "chai";
 import {
+  IModelApp,
   IModelConnection,
   // Viewport,
   SpatialViewState,
@@ -64,6 +65,10 @@ describe("GeometryAccumulator tests", () => {
   });
 
   beforeEach(() => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
     accum = new GeometryAccumulator(iModel, System.instance);
   });
 
@@ -179,6 +184,8 @@ describe("GeometryAccumulator tests", () => {
 
   // ###TODO
   // it("saveToGraphicList works as expected", () => {
-
+  //   const viewport = new Viewport(canvas, spatialView);
+  //   const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
+  //   const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
   // });
 });
