@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TileIO } from "./TileIO";
-import { ModelState } from "../../ModelState";
-import { RenderSystem } from "../../render/System";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
-import { Triangle } from "../../render/primitives/primitives";
-import { Mesh } from "../../render/primitives/Mesh";
-import { ColorMap } from "../../render/primitives/ColorMap";
+import { ModelState } from "../ModelState";
+import { RenderSystem } from "../render/System";
+import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Triangle } from "../render/primitives/primitives";
+import { Mesh } from "../render/primitives/Mesh";
+import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d } from "@bentley/geometry-core";

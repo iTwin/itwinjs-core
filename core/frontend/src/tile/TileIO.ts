@@ -4,7 +4,7 @@
 
 import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { MeshList } from "../../render/primitives/Mesh";
+import { MeshList } from "../render/primitives/Mesh";
 
 /** Provides facilities for deserializing 3d tiles */
 export namespace TileIO {

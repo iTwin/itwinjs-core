@@ -4,11 +4,11 @@
 
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { ModelState } from "../../ModelState";
-import { RenderSystem } from "../../render/System";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
-import { MeshList } from "../../render/primitives/Mesh";
-import { ColorMap } from "../../render/primitives/ColorMap";
+import { ModelState } from "../ModelState";
+import { RenderSystem } from "../render/System";
+import { DisplayParams } from "../render/primitives/DisplayParams";
+import { MeshList } from "../render/primitives/Mesh";
+import { ColorMap } from "../render/primitives/ColorMap";
 import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
