@@ -10,11 +10,11 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { TestRpcManager } from "../TestRpcManager";
+import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
 import { RobotWorld } from "../RobotWorldSchema";
 
 function simulateBackendDeployment() {
-  RobotWorldEngine.initialize(true);
+  RobotWorldEngine.initialize();
 }
 
 function simulateBackendShutdown() {

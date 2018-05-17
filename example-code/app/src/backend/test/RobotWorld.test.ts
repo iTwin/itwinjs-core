@@ -13,7 +13,7 @@ import { Robot } from "../RobotElement";
 
 describe("RobotWorld", () => {
   it("should run robotworld", () => {
-    RobotWorldEngine.initialize(true);
+    RobotWorldEngine.initialize();
 
     const iModel: IModelDb = IModelTestUtils.openIModel("empty.bim", { copyFilename: "should-run-robotworld.bim", deleteFirst: true, openMode: OpenMode.ReadWrite });
     assert.isTrue(iModel !== undefined);
