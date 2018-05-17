@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { IModelApp, IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import * as path from "path";
 import {
   Geometry,
@@ -43,7 +43,7 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should produce proper arc strokes for specific tolerances", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
