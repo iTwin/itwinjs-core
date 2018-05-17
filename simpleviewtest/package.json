@@ -16,6 +16,7 @@
     "clean": "rimraf lib package-deps.json",
     "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
     "copy:ourpublic": "cpx public/**/* ./lib/backend/public",
+    "docs": "",
     "webpack:frontend": "webpack --config webpack.config.js",
     "start": "electron ./lib/backend/ElectronMain.js"
   },
