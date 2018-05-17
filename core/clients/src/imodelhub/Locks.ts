@@ -1,34 +1,146 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import * as clone from "clone";
+import * as deepAssign from "deep-assign";
+
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelHubBaseHandler } from "./BaseHandler";
 
-import { RequestQueryOptions } from "./../Request";
+import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
-import { isBriefcaseIdValid } from "./index";
-import { IModelHubRequestError } from "./Errors";
+import { isBriefcaseIdValid, AggregateResponseError, Query } from "./index";
+import { IModelHubRequestError, IModelHubResponseError, IModelHubResponseErrorId } from "./Errors";
+import { WsgRequestOptions } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
-/** Lock */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.Lock", {schemaPropertyName: "schemaName", classPropertyName: "className"})
-export class Lock extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectId")
-  public objectId?: string;
+/** Lock Type enumeration */
+export enum LockType {
+  Db,
+  Model,
+  Element,
+  Schemas,
+}
 
+/** Lock Level enumeration */
+export enum LockLevel {
+  None,
+  Shared,
+  Exclusive,
+}
+
+/**
+ * Gets encoded instance id for a lock to be used in an URI.
+ * @param lock Lock to get instance id for.
+ * @returns Encoded lock instance id.
+ */
+function getLockInstanceId(lock: Lock): string | undefined {
+  if (!lock || !lock.briefcaseId || !lock.lockType || !lock.objectId)
+    return undefined;
+
+  return `${lock.lockType}-${lock.objectId}-${lock.briefcaseId}`;
+}
+
+/**
+ * Object for specifying options when sending locks update requests.
+ */
+export interface LockUpdateOptions {
+  /** Return locks that couldn't be acquired. */
+  deniedLocks?: boolean;
+  /** Attempt to send all failed locks, ignoring iModel Hub limits. */
+  unlimitedReporting?: boolean;
+  /** Number of locks per single request. Multiple requests will be sent if there are more locks. */
+  locksPerRequest?: number;
+  /** If conflict happens, continue updating remaining locks instead of reverting everything. */
+  continueOnConflict?: boolean;
+}
+
+/**
+ * Provider for default LockUpdateOptions, used by LockHandler to set defaults.
+ */
+export class DefaultLockUpdateOptionsProvider {
+  protected defaultOptions: LockUpdateOptions;
+  /**
+   * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
+   */
+  constructor() {
+    this.defaultOptions = {
+      locksPerRequest: 10000,
+    };
+  }
+
+  /**
+   * Augments options with the provider's default values.
+   * @note The options passed in override any defaults where necessary.
+   * @param options Options that should be augmented.
+   */
+  public async assignOptions(options: LockUpdateOptions): Promise<void> {
+    const clonedOptions: LockUpdateOptions = clone(options, false);
+    deepAssign(options, this.defaultOptions);
+    deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
+    return Promise.resolve();
+  }
+}
+
+/** Error for conflicting locks */
+export class ConflictingLocksError extends IModelHubResponseError {
+  public conflictingLocks?: Lock[];
+
+  /**
+   * Create ConflictingLocksError from IModelHubResponseError instance.
+   * @param error IModelHubResponseError to get error data from.
+   * @returns Undefined if the error is not for a lock conflict, otherwise newly created error instance.
+   */
+  public static fromError(error: IModelHubResponseError): ConflictingLocksError | undefined {
+    if (error.id !== IModelHubResponseErrorId.LockOwnedByAnotherBriefcase
+      && error.id !== IModelHubResponseErrorId.ConflictsAggregate) {
+      return undefined;
+    }
+    const result = new ConflictingLocksError();
+    deepAssign(result, error);
+    result.addLocks(error);
+    return result;
+  }
+
+  /**
+   * Amends this error instance with conflicting locks from another IModelHubResponseError.
+   * @param error Error to get additional conflicting locks from.
+   */
+  public addLocks(error: IModelHubResponseError) {
+    if (!error.data || !error.data.ConflictingLocks) {
+      return;
+    }
+    if (!this.conflictingLocks) {
+      this.conflictingLocks = [];
+    }
+    for (const value of (error.data.ConflictingLocks as any[])) {
+      const instance = { className: "Lock", schemaName: "iModelScope", properties: value };
+      const lock = ECJsonTypeMap.fromJson<Lock>(Lock, "wsg", instance);
+      if (lock) {
+        this.conflictingLocks.push(lock);
+      }
+    }
+  }
+}
+
+/** Base class for Lock and MultiLock */
+export class LockBase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.LockType")
-  public lockType?: number;
+  public lockType?: LockType;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.LockLevel")
-  public lockLevel?: number;
+  public lockLevel?: LockLevel;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
   public briefcaseId?: number;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AcquiredDate")
   public acquiredDate?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
+  public seedFileId?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ReleasedWithChangeSet")
   public releasedWithChangeSet?: string;
@@ -37,11 +149,124 @@ export class Lock extends WsgInstance {
   public releasedWithChangeSetIndex?: string;
 }
 
+/** Lock */
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.Lock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class Lock extends LockBase {
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectId")
+  public objectId?: string;
+}
+
+/**
+ * MultiLock
+ * Data about locks grouped by BriefcaseId, LockLevel and LockType.
+ */
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiLock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class MultiLock extends LockBase {
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectIds")
+  public objectIds?: string[];
+}
+
+/**
+ * Query object for getting Locks. You can use this to modify the query.
+ * @see LockHandler.get()
+ */
+export class LockQuery extends Query {
+  /**
+   * Query Locks by Briefcase id.
+   * @param briefcaseId Id of the Briefcase.
+   * @returns This query.
+   */
+  public byBriefcaseId(briefcaseId: number) {
+    this.addFilter(`BriefcaseId+eq+${briefcaseId}`);
+    return this;
+  }
+
+  /**
+   * Query Locks by LockType.
+   * @param lockType lockType.
+   * @returns This query.
+   */
+  public byLockType(lockType: LockType) {
+    this.addFilter(`LockType+eq+${lockType}`);
+    return this;
+  }
+
+  /**
+   * Query Locks by LockLevel.
+   * @param lockLevel lockLevel.
+   * @returns This query.
+   */
+  public byLockLevel(lockLevel: LockLevel) {
+    this.addFilter(`LockLevel+eq+${lockLevel}`);
+    return this;
+  }
+
+  /**
+   * Query Locks by ObjectId.
+   * @param objectId Id of the object.
+   * @returns This query.
+   */
+  public byObjectId(objectId: string) {
+    this.addFilter(`ObjectId+eq+'${objectId}'`);
+    return this;
+  }
+
+  /**
+   * Query Locks by ReleasedWithChangeSet.
+   * @param changesetId Id of the changeSet.
+   * @returns This query.
+   */
+  public byReleasedWithChangeSet(changeSetId: string) {
+    this.addFilter(`ReleasedWithChangeSet+eq+${changeSetId}`);
+    return this;
+  }
+
+  /**
+   * Query Locks by ReleasedWithChangeSetIndex.
+   * @param changeSetIndex Index of the changeSet.
+   * @returns This query.
+   */
+  public byReleasedWithChangeSetIndex(changeSetIndex: number) {
+    this.addFilter(`ReleasedWithChangeSetIndex+eq+${changeSetIndex}`);
+    return this;
+  }
+
+  /**
+   * Query Locks by their instance ids.
+   * @param locks Locks to query. They must have their BriefcaseId, LockType and ObjectId set.
+   * @returns This query.
+   */
+  public byLocks(locks: Lock[]) {
+    if (locks.length < 1) {
+      throw IModelHubRequestError.invalidArgument("locks");
+    }
+
+    let filter = "$id+in+[";
+
+    let first = true;
+    for (const lock of locks) {
+      const id = getLockInstanceId(lock);
+
+      if (!id) {
+        throw IModelHubRequestError.invalidArgument("locks");
+      }
+
+      first ? first = false : filter += ",";
+      filter += id;
+    }
+
+    filter = "]";
+
+    return this;
+  }
+}
+
 /**
  * Handler for all methods related to @see Lock instances.
  */
 export class LockHandler {
   private _handler: IModelHubBaseHandler;
+  private static _defaultUpdateOptionsProvider: DefaultLockUpdateOptionsProvider;
 
   /**
    * Constructor for LockHandler. Should use @see IModelHubClient instead of directly constructing this.
@@ -60,17 +285,153 @@ export class LockHandler {
     return `/Repositories/iModel--${imodelId}/iModelScope/Lock/${lockId || ""}`;
   }
 
+  /** Convert Locks to MultiLocks. */
+  private static convertLocksToMultiLocks(locks: Lock[]): MultiLock[] {
+    const map = new Map<string, MultiLock>();
+    for (const lock of locks) {
+      const id: string = `${lock.lockType}-${lock.lockLevel}`;
+
+      if (map.has(id)) {
+        map.get(id)!.objectIds!.push(lock.objectId!);
+      } else {
+        const multiLock = new MultiLock();
+        multiLock.changeState = "new";
+        multiLock.briefcaseId = lock.briefcaseId;
+        multiLock.seedFileId = lock.seedFileId;
+        multiLock.releasedWithChangeSet = lock.releasedWithChangeSet;
+        multiLock.releasedWithChangeSetIndex = lock.releasedWithChangeSetIndex;
+        multiLock.lockLevel = lock.lockLevel;
+        multiLock.lockType = lock.lockType;
+        multiLock.objectIds = [lock.objectId!];
+        map.set(id, multiLock);
+      }
+    }
+    return Array.from(map.values());
+  }
+
+  /** Convert MultiLocks to Locks. */
+  private static convertMultiLocksToLocks(multiLocks: MultiLock[]): Lock[] {
+    const result: Lock[] = [];
+
+    for (const multiLock of multiLocks) {
+      for (const value of multiLock.objectIds!) {
+        const lock = new Lock();
+        lock.objectId = value;
+        lock.briefcaseId = multiLock.briefcaseId;
+        lock.seedFileId = multiLock.seedFileId;
+        lock.releasedWithChangeSet = multiLock.releasedWithChangeSet;
+        lock.releasedWithChangeSetIndex = multiLock.releasedWithChangeSetIndex;
+        lock.lockLevel = multiLock.lockLevel;
+        lock.lockType = multiLock.lockType;
+        result.push(lock);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Augments update options with defaults returned by the DefaultLockUpdateOptionsProvider.
+   * @note The options passed in by clients override any defaults where necessary.
+   * @param options Options the caller wants to eaugment with the defaults.
+   * @returns Promise resolves after the defaults are setup.
+   */
+  private async setupOptionDefaults(options: LockUpdateOptions): Promise<void> {
+    if (!LockHandler._defaultUpdateOptionsProvider)
+      LockHandler._defaultUpdateOptionsProvider = new DefaultLockUpdateOptionsProvider();
+    return LockHandler._defaultUpdateOptionsProvider.assignOptions(options);
+  }
+
+  /** Send partial request for lock updates */
+  private async updateInternal(token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+    let requestOptions: WsgRequestOptions | undefined;
+    if (updateOptions) {
+      requestOptions = {};
+      requestOptions.CustomOptions = {};
+      if (updateOptions.deniedLocks === false) {
+        requestOptions.CustomOptions.DetailedError_Codes = "false";
+      }
+      if (updateOptions.unlimitedReporting) {
+        requestOptions.CustomOptions.DetailedError_MaximumInstances = "-1";
+      }
+      if (updateOptions.continueOnConflict) {
+        requestOptions.CustomOptions.ConflictStrategy = "Continue";
+      }
+      if (Object.getOwnPropertyNames(requestOptions.CustomOptions).length === 0) {
+        requestOptions = undefined;
+      }
+    }
+
+    const result = await this._handler.postInstances<MultiLock>(MultiLock, token, `/Repositories/iModel--${imodelId}/$changeset`, LockHandler.convertLocksToMultiLocks(locks), requestOptions);
+    return LockHandler.convertMultiLocksToLocks(result);
+  }
+
+  /**
+   * Updates multiple locks.
+   * @param token Delegation token of the authorized user.
+   * @param imodelId Id of the iModel
+   * @param locks Locks to acquire. Requires briefcaseId, seedFileId to be set in the lock. Set queryOnly to true
+   * to just check if a lock is available.
+   * @param updateOptions Options for the update request.
+   * @returns The lock that was just obtained from the server.
+   */
+  public async update(token: AccessToken, imodelId: string, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+    Logger.logInfo(loggingCategory, `Requesting locks for iModel ${imodelId}`);
+
+    updateOptions = updateOptions || {};
+    this.setupOptionDefaults(updateOptions);
+
+    const result: Lock[] = [];
+    let conflictError: ConflictingLocksError | undefined;
+    const aggregateError = new AggregateResponseError();
+
+    for (let i = 0; i < locks.length; i += updateOptions.locksPerRequest!) {
+      const chunk = locks.slice(i, i + updateOptions.locksPerRequest!);
+      try {
+        result.push(...await this.updateInternal(token, imodelId, chunk, updateOptions));
+      } catch (error) {
+        if (error instanceof ResponseError) {
+          if (updateOptions && updateOptions.deniedLocks && error instanceof IModelHubResponseError
+            && (error.id === IModelHubResponseErrorId.LockOwnedByAnotherBriefcase || error.id === IModelHubResponseErrorId.ConflictsAggregate)) {
+            if (conflictError) {
+              conflictError.addLocks(error);
+            } else {
+              conflictError = ConflictingLocksError.fromError(error);
+            }
+            if (!updateOptions.continueOnConflict) {
+              return Promise.reject(conflictError);
+            }
+          } else {
+            aggregateError.errors.push(error);
+          }
+        }
+      }
+    }
+
+    if (conflictError) {
+      return Promise.reject(conflictError);
+    }
+
+    if (aggregateError.errors.length > 0) {
+      return Promise.reject(aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0]);
+    }
+
+    Logger.logTrace(loggingCategory, `Requested ${locks.length} locks for iModel ${imodelId}`);
+
+    return result;
+  }
+
   /**
    * Gets the locks that have been acquired for the iModel.
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
+   * @param query Object used to modify results of this query.
    * @returns Resolves to an array of locks.
    */
-  public async get(token: AccessToken, imodelId: string, queryOptions?: RequestQueryOptions): Promise<Lock[]> {
+  public async get(token: AccessToken, imodelId: string, query: LockQuery = new LockQuery()): Promise<Lock[]> {
     Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
 
-    const locks = await this._handler.getInstances<Lock>(Lock, token, this.getRelativeUrl(imodelId), queryOptions);
+    const locks = await this._handler.getInstances<Lock>(Lock, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
 
     Logger.logTrace(loggingCategory, `Queried ${locks.length} locks for iModel ${imodelId}`);
 
