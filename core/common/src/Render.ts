@@ -88,8 +88,16 @@ export class PolylineFlags {
 
 /* An individual polyline which indexes into a shared set of vertices */
 export class PolylineData {
-  public constructor(public vertIndices: number[] = [], public numIndices = 0, public startDistance = 0, public rangeCenter = new Point3d()) { }
-
+  public vertIndices: number[];
+  public numIndices: number;
+  public startDistance: number;
+  public rangeCenter: Point3d;
+  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0, rangeCenter = new Point3d()) {
+    this.vertIndices = vertIndices;
+    this.numIndices = numIndices;
+    this.startDistance = startDistance;
+    this.rangeCenter = rangeCenter;
+  }
   public isValid(): boolean { return 0 < this.numIndices; }
   public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
   public init(polyline: MeshPolyline) {
@@ -111,6 +119,8 @@ export class MeshPolyline {
   public addIndex(index: number) { if (this.indices.length === 0 || this.indices[this.indices.length - 1] !== index) this.indices.push(index); }
   public clear() { this.indices = []; }
 }
+
+export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }
 
 export class MeshEdge {
   public indices = [0, 0];
@@ -1206,7 +1216,7 @@ export class FeatureTable extends Dictionary<Feature, number> {
   }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
-  public findFeature(index: number): Feature| undefined {
+  public findFeature(index: number): Feature | undefined {
     for (let i = 0; i < this.length; i++) {
       if (this._values[i] === index)
         return this._keys[i];
