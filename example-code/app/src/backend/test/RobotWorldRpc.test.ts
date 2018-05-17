@@ -37,7 +37,8 @@ function setUpTest() {
 
 describe("RobotWorldRpc", () => {
 
-  // install mock of browser's XMLHttpRequest for unit tests
+  // This node-based implementation of XHR is *not* required by our RPC mechanism. It is required by our
+  // I18n module (specifically the i18next package).
   (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
   it("should run robotworld through RPC as a client", async () => {
