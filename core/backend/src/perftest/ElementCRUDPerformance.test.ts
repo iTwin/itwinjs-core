@@ -147,7 +147,7 @@ describe("PerformanceElementsTests", () => {
       fs.appendFileSync(csvPath, "DateTime,TestCaseName,TestName,ExecutionTime(s),opCount,TestDescription,OpType,InitialCount\n");
   });
 
-  it.skip("ElementsInsert", () => {
+  it("ElementsInsert", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
@@ -186,7 +186,7 @@ describe("PerformanceElementsTests", () => {
     }
   });
 
-  it.skip("ElementsDelete", () => {
+  it("ElementsDelete", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
@@ -248,7 +248,7 @@ describe("PerformanceElementsTests", () => {
     }
   });
 
-  it.skip("ElementsUpdate", () => {
+  it("ElementsUpdate", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
