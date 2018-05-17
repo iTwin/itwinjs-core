@@ -150,7 +150,7 @@ export namespace IModelTileIO {
     }
 
     protected createDisplayParams(json: any): DisplayParams | undefined {
-      // ###TODO: gradient, category/subcategory IDs, geometry class, material from material ID, texture mapping
+      // ###TODO: gradient, material from material ID, texture mapping
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
       const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
       const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));

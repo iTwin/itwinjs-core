@@ -5,7 +5,7 @@ import { expect} from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { ModelState } from "@bentley/imodeljs-frontend";
 import { RenderSystem, Mesh, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
-import { LinePixels } from "@bentley/imodeljs-common";
+import { LinePixels, GeometryClass } from "@bentley/imodeljs-common";
 
 // Binary data for a tile created for a model containing a single element: a green rectangle in the range [0, 0] to [5, 10]
 const rectangleTileBytes = new Uint8Array([
@@ -199,7 +199,6 @@ describe("TileIO", () => {
       expect(mesh.colors.length).to.equal(0);
       expect(mesh.features).not.to.be.undefined;
       expect(mesh.features!._indices.length).to.equal(0);
-      // expect(mesh.features!.uniform).to.equal(???);
 
       const displayParams = mesh.displayParams;
       expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
@@ -212,6 +211,26 @@ describe("TileIO", () => {
 
       expect(mesh.normals.length).to.equal(4);
       expect(mesh.uvParams.length).to.equal(0);
+
+      const features = meshes.features!;
+      expect(meshes.features).not.to.be.undefined;
+      expect(features.length).to.equal(1);
+      expect(features.isUniform).to.be.true;
+      expect(mesh.features!.uniform).to.equal(0);
+      const feature = features.findFeature(0);
+      expect(feature).not.to.be.undefined;
+      expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+      expect(feature!.elementId.value).to.equal("0x4e");
+      expect(feature!.subCategoryId.value).to.equal("0x18");
+
+      expect(mesh.triangles).not.to.be.undefined;
+      expect(mesh.triangles!.length).to.equal(2);
+
+      const indices = mesh.triangles!.indices;
+      const expectedIndices = [ 0, 1, 2, 0, 2, 3 ];
+      expect(indices.length).to.equal(6);
+      for (let i = 0; i < indices.length; i++)
+        expect(indices[i]).to.equal(expectedIndices[i]);
     }
   });
 });

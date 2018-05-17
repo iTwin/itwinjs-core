@@ -226,7 +226,8 @@ export namespace GltfTileIO {
             return undefined;
         }
 
-        const bytes = this.binaryData.subarray(bufferView.byteOffset + accessor.byteOffset, bufferView.byteLength);
+        const offset = bufferView.byteOffset + accessor.byteOffset;
+        const bytes = this.binaryData.subarray(offset, offset + bufferView.byteLength);
         return new BufferView(bytes, accessor.count as number, type, accessor);
       } catch (e) {
         return undefined;
