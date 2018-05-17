@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { IModelApp, IModelConnection, Viewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import * as path from "path";
 import {
   Geometry,
@@ -13,12 +13,8 @@ import {
   StrokesPrimitivePointList,
   PolyfacePrimitiveList,
   PolyfacePrimitive,
-  PrimitiveBuilder,
-  System,
-  GraphicBuilderCreateParams,
-  GraphicType,
 } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Loop, Path, LineString3d, Point3d, Transform, Range3d, IndexedPolyface, Arc3d } from "@bentley/geometry-core";
+import { Loop, Path, LineString3d, Point3d, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
@@ -42,7 +38,7 @@ function pointIsInPolyface(pt: Point3d, pf: IndexedPolyface): boolean {
   return false;
 }
 
-describe("Geometry tests", () => {
+describe("GeometryPrimitives tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
@@ -155,66 +151,5 @@ describe("Geometry tests", () => {
     // query polyface list from pathGeom (should be undefined - can't get polys from paths)
     const pfPrimList: PolyfacePrimitiveList | undefined = pathGeom.getPolyfaces(0);
     expect(pfPrimList).to.be.undefined;
-  });
-
-  it("PrimitiveBuilder should produce proper arc strokes for specific tolerances", () => {
-    if (!IModelApp.hasRenderSystem) {
-      return;
-    }
-
-    const viewport = new Viewport(canvas, spatialView);
-    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
-
-    const pointA = new Point3d(-100, 0, 0);
-    const pointB = new Point3d(0, 100, 0);
-    const pointC = new Point3d(100, 0, 0);
-    const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-    assert(arc !== undefined && arc instanceof Arc3d);
-    if (arc === undefined || !(arc instanceof Arc3d))
-      return;
-
-    primBuilder.addArc(arc, false, false);
-
-    assert(!(primBuilder.accum.geometries.isEmpty));
-
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
-    assert(arcGeom !== undefined);
-    if (arcGeom === undefined)
-      return;
-
-    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
-
-    assert(strokesPrimList !== undefined);
-    if (strokesPrimList === undefined)
-      return;
-
-    expect(strokesPrimList.length).to.be.greaterThan(0);
-    let strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
-    let strks: StrokesPrimitivePointList = strksPrims[0];
-
-    // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-    const numPointsA = strks.points.length;
-
-    strokesPrimList = arcGeom.getStrokes(0.12);
-
-    assert(strokesPrimList !== undefined);
-    if (strokesPrimList === undefined)
-      return;
-
-    expect(strokesPrimList.length).to.be.greaterThan(0);
-    strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
-    strks = strksPrims[0];
-
-    // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-    const numPointsB = strks.points.length;
-
-    expect(numPointsA).to.be.lessThan(numPointsB);
   });
 });
