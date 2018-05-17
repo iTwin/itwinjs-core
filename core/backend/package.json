@@ -49,7 +49,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/bentleyjs-tools": "3",
+    "@bentley/bentleyjs-tools": "4",
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",

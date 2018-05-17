@@ -7,7 +7,7 @@
   "typings": "lib/geometry-core",
   "repository": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "3",
+    "@bentley/bentleyjs-tools": "4",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
