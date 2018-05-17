@@ -9,6 +9,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/bentleyjs-tools",
+      "projectFolder": "tools/bentley",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@bentley/bentleyjs-core",
       "projectFolder": "core/bentley",
       "shouldPublish": true
