@@ -97,7 +97,7 @@ async function openView(state: SimpleViewState) {
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
 function startFit(_event: any) {
-  IModelApp.tools.run("View.Fit", true);
+  IModelApp.tools.run("View.Fit");
 }
 
 // starts Window Area
