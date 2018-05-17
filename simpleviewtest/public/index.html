@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <title>Simple View Test App</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+    }
+
+    #root {
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <div id="root">
+    <div class=topdiv>
+      <img class="simpleicon" src="fit-to-view.svg" id="startFit"/>
+      <img class="simpleicon" src="window-area.svg" id="startWindowArea"/>
+      <img class="simpleicon" src="zoom.svg" id="startZoom"/>
+      <img class="simpleicon" src="walk.svg" id="startWalk"/>
+      <img class="simpleicon" src="rotate-left.svg" id="startRotateView"/>
+      <span class="statusspan" id="showstatus" />
+    </div>
+    <canvas class="imodelview" id="imodelview"></canvas>
+  </div>  <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+    <script type="text/javascript" src="bundle.js"></script>
+</body>
+
+</html>

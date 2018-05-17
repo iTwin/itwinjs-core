@@ -1,0 +1,44 @@
+{
+  "name": "@bentley/simpleviewtest",
+  "description": "Simple View Testing interactive application.",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "version": "0.0.0",
+  "engines": {
+    "node": "8.9.1"
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:ourpublic && npm run webpack:frontend",
+    "clean": "rimraf lib package-deps.json",
+    "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
+    "copy:ourpublic": "cpx public/**/* ./lib/backend/public",
+    "webpack:frontend": "webpack --config webpack.config.js",
+    "start": "electron ./lib/backend/ElectronMain.js"
+  },
+  "repository": {},
+  "dependencies": {
+    "@bentley/bentleyjs-core": "8",
+    "@bentley/imodeljs-common": "0",
+    "@bentley/imodeljs-frontend": "0",
+    "@bentley/imodeljs-backend": "0",
+    "@bentley/imodeljs-native-platform-api": "~18.0.0",
+    "@bentley/imodeljs-native-platform-electron": "~18.0.0",
+    "@bentley/imodeljs-native-platform-node": "~18.0.0",
+    "electron-devtools-installer": "^2.2.4"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-tools": "^3.4.1",
+    "@types/lodash": "4.14.106",
+    "rimraf": "^2.6.2",
+    "typescript": "~2.7.2",
+    "electron": "1.6.11",
+    "electron-builder": "^20.13.3",
+    "webpack": "^3.10.0",
+    "node-glob": "^1.2.0"
+  },
+  "homepage": "http://localhost:3000/"
+}
