@@ -357,7 +357,7 @@ export function mockGetLocks(imodelId: string, ...locks: Lock[]) {
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockUpdateLocks(iModelId: string, ...locks: Lock[]) {
+export function mockUpdateLocks(iModelId: string, locks: Lock[], requestOptions?: object) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -373,11 +373,11 @@ export function mockUpdateLocks(iModelId: string, ...locks: Lock[]) {
 
   const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
   const requestResponse = ResponseBuilder.generateChangesetResponse<MultiLock>([multiLock]);
-  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock]);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock], requestOptions);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeniedLocks(iModelId: string, ...locks: Lock[]) {
+export function mockDeniedLocks(iModelId: string, locks: Lock[], requestOptions?: object) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -399,7 +399,7 @@ export function mockDeniedLocks(iModelId: string, ...locks: Lock[]) {
         return obj.properties;
       }))],
     ]));
-  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock]);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock], requestOptions);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 }
 

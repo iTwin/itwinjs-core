@@ -28,6 +28,7 @@ describe("iModelHubClient LockHandler", () => {
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
   let briefcases: Briefcase[];
   let lastObjectId: string;
+  const conflictStrategyOption = { CustomOptions: { ConflictStrategy: "Continue" } };
 
   before(async function (this: Mocha.IHookCallbackContext) {
     accessToken = await utils.login();
@@ -52,7 +53,7 @@ describe("iModelHubClient LockHandler", () => {
   it("should acquire one Lock", async function (this: Mocha.ITestCallbackContext) {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock = utils.generateLock(false, briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
-    utils.mockUpdateLocks(iModelId, generatedLock);
+    utils.mockUpdateLocks(iModelId, [generatedLock]);
     const lock = (await imodelHubClient.Locks().update(accessToken, iModelId, [generatedLock]))[0];
 
     chai.assert(lock);
@@ -67,7 +68,7 @@ describe("iModelHubClient LockHandler", () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock2 = utils.generateLock(false, briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
 
-    utils.mockUpdateLocks(iModelId, generatedLock1, generatedLock2);
+    utils.mockUpdateLocks(iModelId, [generatedLock1, generatedLock2]);
     const locks = (await imodelHubClient.Locks().update(accessToken, iModelId, [generatedLock1, generatedLock2]));
 
     chai.assert(locks);
@@ -81,13 +82,13 @@ describe("iModelHubClient LockHandler", () => {
 
     lock.seedFileId = briefcases[0].fileId!;
     lock.lockLevel = LockLevel.None;
-    utils.mockUpdateLocks(iModelId, lock);
+    utils.mockUpdateLocks(iModelId, [lock]);
     lock = (await imodelHubClient.Locks().update(accessToken, iModelId, [lock]))[0];
     chai.assert(lock);
     chai.expect(lock.lockLevel).equals(LockLevel.None);
 
     lock.lockLevel = LockLevel.Shared;
-    utils.mockUpdateLocks(iModelId, lock);
+    utils.mockUpdateLocks(iModelId, [lock]);
     lock = (await imodelHubClient.Locks().update(accessToken, iModelId, [lock]))[0];
     chai.assert(lock);
     chai.expect(lock.lockLevel).equals(LockLevel.Shared);
@@ -107,7 +108,7 @@ describe("iModelHubClient LockHandler", () => {
     const lock3 = utils.generateLock(false, briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock4 = utils.generateLock(false, briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
 
-    utils.mockUpdateLocks(iModelId, lock1, lock2, lock3);
+    utils.mockUpdateLocks(iModelId, [lock1, lock2, lock3]);
 
     const result = await imodelHubClient.Locks().update(accessToken, iModelId, [lock1, lock2, lock3]);
     chai.assert(result);
@@ -117,9 +118,9 @@ describe("iModelHubClient LockHandler", () => {
     lock3.briefcaseId = briefcases[1].briefcaseId;
     lock4.briefcaseId = briefcases[1].briefcaseId;
 
-    utils.mockDeniedLocks(iModelId, lock2);
-    utils.mockDeniedLocks(iModelId, lock3);
-    utils.mockUpdateLocks(iModelId, lock4);
+    utils.mockDeniedLocks(iModelId, [lock2]);
+    utils.mockDeniedLocks(iModelId, [lock3]);
+    utils.mockUpdateLocks(iModelId, [lock4]);
 
     let receivedError: Error | undefined;
     try {
@@ -139,7 +140,7 @@ describe("iModelHubClient LockHandler", () => {
     const lock3 = utils.generateLock(false, briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock4 = utils.generateLock(false, briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
 
-    utils.mockUpdateLocks(iModelId, lock1, lock2, lock3);
+    utils.mockUpdateLocks(iModelId, [lock1, lock2, lock3]);
 
     const result = await imodelHubClient.Locks().update(accessToken, iModelId, [lock1, lock2, lock3]);
     chai.assert(result);
@@ -149,9 +150,9 @@ describe("iModelHubClient LockHandler", () => {
     lock3.briefcaseId = briefcases[1].briefcaseId;
     lock4.briefcaseId = briefcases[1].briefcaseId;
 
-    utils.mockDeniedLocks(iModelId, lock2);
-    utils.mockDeniedLocks(iModelId, lock3);
-    utils.mockUpdateLocks(iModelId, lock4);
+    utils.mockDeniedLocks(iModelId, [lock2], conflictStrategyOption);
+    utils.mockDeniedLocks(iModelId, [lock3], conflictStrategyOption);
+    utils.mockUpdateLocks(iModelId, [lock4], conflictStrategyOption);
 
     let receivedError: ConflictingLocksError | undefined;
     try {

@@ -94,7 +94,8 @@ export class ConflictingLocksError extends IModelHubResponseError {
    * @returns Undefined if the error is not for a lock conflict, otherwise newly created error instance.
    */
   public static fromError(error: IModelHubResponseError): ConflictingLocksError | undefined {
-    if (error.id !== IModelHubResponseErrorId.LockOwnedByAnotherBriefcase) {
+    if (error.id !== IModelHubResponseErrorId.LockOwnedByAnotherBriefcase
+      && error.id !== IModelHubResponseErrorId.ConflictsAggregate) {
       return undefined;
     }
     const result = new ConflictingLocksError();
@@ -185,7 +186,7 @@ export class LockQuery extends Query {
    * @param lockType lockType.
    * @returns This query.
    */
-  public byLockType(lockType: number) {
+  public byLockType(lockType: LockType) {
     this.addFilter(`LockType+eq+${lockType}`);
     return this;
   }
@@ -195,7 +196,7 @@ export class LockQuery extends Query {
    * @param lockLevel lockLevel.
    * @returns This query.
    */
-  public byLockLevel(lockLevel: number) {
+  public byLockLevel(lockLevel: LockLevel) {
     this.addFilter(`LockLevel+eq+${lockLevel}`);
     return this;
   }
@@ -356,6 +357,9 @@ export class LockHandler {
       if (updateOptions.continueOnConflict) {
         requestOptions.CustomOptions.ConflictStrategy = "Continue";
       }
+      if (Object.getOwnPropertyNames(requestOptions.CustomOptions).length === 0) {
+        requestOptions = undefined;
+      }
     }
 
     const result = await this._handler.postInstances<MultiLock>(MultiLock, token, `/Repositories/iModel--${imodelId}/$changeset`, LockHandler.convertLocksToMultiLocks(locks), requestOptions);
@@ -384,10 +388,11 @@ export class LockHandler {
     for (let i = 0; i < locks.length; i += updateOptions.locksPerRequest!) {
       const chunk = locks.slice(i, i + updateOptions.locksPerRequest!);
       try {
-        result.push(...await this.updateInternal(token, imodelId, chunk));
+        result.push(...await this.updateInternal(token, imodelId, chunk, updateOptions));
       } catch (error) {
         if (error instanceof ResponseError) {
-          if (updateOptions && updateOptions.deniedLocks && error instanceof IModelHubResponseError && error.id === IModelHubResponseErrorId.LockOwnedByAnotherBriefcase) {
+          if (updateOptions && updateOptions.deniedLocks && error instanceof IModelHubResponseError
+            && (error.id === IModelHubResponseErrorId.LockOwnedByAnotherBriefcase || error.id === IModelHubResponseErrorId.ConflictsAggregate)) {
             if (conflictError) {
               conflictError.addLocks(error);
             } else {
