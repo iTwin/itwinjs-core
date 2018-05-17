@@ -36,7 +36,7 @@ Notice that the backend architecture is identical between Agents and interactive
 
 Web App frontends run in a web browser and use HTML GUI for presentation and APIs exposed from the `@bentley/imodeljs-frontend` package for *Remote Procedure Calls* (RPC) into functionality implemented on the backend. See [the RpcInterface overview](./RpcInterface.md) for more information.
 
-The frontend --> backend communication is over HTTPS for interactive web applications. See [the cloud RPC configuration overview](./App.md#cloud-rpc-configuration) for more information.
+The frontend --> backend communication is over HTTPS for interactive web applications. See [the Web RPC configuration overview](./App.md#web-rpc-configuration) for more information.
 
 ![SoftwareArchitecture-Web](./SoftwareArchitecture-Web.png)
 

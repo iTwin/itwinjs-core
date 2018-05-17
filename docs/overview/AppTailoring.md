@@ -16,6 +16,29 @@ An app backend will have a different "main" for each configuation. For example, 
 
 The last-mile packaging and deployment scripts select the main for frontend and backend.
 
+## RPC Configuration
+
+Both frontend and backend should configure *app-specific interfaces* in their configuration-specific mains, where it is clear how frontend and backend are deployed in relation to each other.
+
+|App Configuration|RPC Configuration for App-Specific RpcInterfaces
+|---------------|-----------|--------------------
+|Mobile app|[in-process RPC configuration](../overview/App.md#in-process-rpc-configuration)
+|Desktop app|[desktop RPC configuration](../overview/App.md#desktop-rpc-configuration)
+|Web app|a [Web PRC configuration](../overview/App.md#web-rpc-configuration)
+
+Frontends and backends must always use a [Web RPC configuration](./RpcInterface.md#web-rpc-configuration) for all remote services, regardless of app configuration or platform.
+
+## Serving RpcInterfaces
+
+When a backend is configured as a Web app, it must implement a Web server to serve out its interfaces, so that in-coming client requests are forwarded to the implementations. This is always true of services. A Web backend or a service can use any Web server technology. Normally, a single function call is all that is required to integrate all configured interfaces with the Web server. For example, if a Web server uses express, it would serve its RpcInterfaces like this:
+```ts
+const webServer = express();
+...
+webServer.post("*", async (request, response) => {
+  rpcConfiguration.protocol.handleOperationPostRequest(request, response);
+});
+```
+
 ## Change the GUI
 
 An app's UI is contained within its frontend. And, the look and feel of the GUI is largely contained within its HTML and CSS resources. Swapping in a different GUI can be a simple as swapping in a different style sheet or HTML page, leaving the supporting JavaScript the same. You can develop and test the various version of the GUI in a single development environment. You can also write the frontend JavaScript to tailor the GUI at run time.

@@ -106,44 +106,7 @@ Finally, the server must choose the appropriate RPC configuration for the interf
 [[include:RpcInterface.configureImpl]]
 ```
 
-## Serving RpcInterfaces
-
-A server must serve out its interfaces, so that in-coming client requests are forwarded to the implementations. This varies, depending on how the server is deployed in relation to clients.
-
-### Web Server
-
-When a server is configured as a Web service, it can use any Web server technology. A single function call is all that is required to integrate all configured interfaces with the Web server.
-
-For example, if a Web server uses express, it would serve its RpcInterfaces like this:
-```ts
-const webServer = express();
-...
-webServer.post("*", async (request, response) => {
-  rpcConfiguration.protocol.handleOperationPostRequest(request, response);
-});
-```
-
-### Electron Desktop App
-
-When a server is the backend of an Electron desktop app, no additional code is required to serve out its interfaces, beyond calling ElectronRpcManager to configure them.
-
-<!-- TODO:
-### Mobile App
-When a server is the backend of a mobile app, TBD....
--->
-
-## Client-side Configuration
-
-A client must configure the interfaces that it intends to use. To do this, the client must know how the server for each interface is deployed in relation to itself.
-
-|Type of server|Type of app|Configuration to use
-|---------------|-----------|--------------------
-|App-specific backend|Mobile app|[in-process RPC configuration](../overview/App.md#in-process-rpc-configuration)
-|"|Desktop app|[desktop RPC configuration](../overview/App.md#desktop-rpc-configuration) - must specify the server URL
-|"|Web app|[cloud PRC configuration](../overview/App.md#cloud-rpc-configuration)
-|External service|*|The client will always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration) for services and must specify the server URL
-
-Interface configuration is typically done in the client's initialization logic.
+A server configures its RpcInterfaces in its [configuration-specific main](./AppTailoring.md).
 
 ## RpcInterface Performance
 

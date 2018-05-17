@@ -34,7 +34,7 @@ A true service is a stand-alone program that is never bundled with the clients t
 
 An example of a service is a program that serves out spatial tiles that it extracts from a specified area of an iModel upon request.
 
-An iModel service or app backend exposes an *interface* that clients can use to make requests. An iModel service interface is an [RpcInterface](./RpcInterface.md). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
+An iModel service or app backend exposes an *interface* that clients can use to make requests. An iModel service interface is an [RpcInterface](./RpcInterface.md). A service always configures its interfaces using a [Web RPC configuration](./RpcInterface.md#web-rpc-configuration). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
 
 ## Interactive Apps
 
