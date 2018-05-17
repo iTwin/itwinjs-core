@@ -34,7 +34,7 @@ Portable application logic is written in TypeScript and calls TypeScript APIs ex
 
 Notice that the backend architecture is identical between Agents and interactive Web Applications.
 
-Web App frontends run in a web browser and use HTML GUI for presentation and APIs exposed from the `@bentley/imodeljs-frontend` package for *Remote Procedure Calls* (RPC) into functionality implemented on the backend. See [the RpcInterface overview](./App.md#rpcinterface) for more information.
+Web App frontends run in a web browser and use HTML GUI for presentation and APIs exposed from the `@bentley/imodeljs-frontend` package for *Remote Procedure Calls* (RPC) into functionality implemented on the backend. See [the RpcInterface overview](./RpcInterface.md) for more information.
 
 The frontend --> backend communication is over HTTPS for interactive web applications. See [the cloud RPC configuration overview](./App.md#cloud-rpc-configuration) for more information.
 

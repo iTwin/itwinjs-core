@@ -10,9 +10,13 @@ An example of the feature gate portion of a configuration .json file that is dep
 ``` json
 {
   "features": {
-     "readwrite": "${ROBOT-WORLD-FEATURE-READWRITE}",
-     "experimentalMethods": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
-   }
+    "imodel": {
+      "readwrite": "${ROBOT-WORLD-FEATURE-READWRITE}"
+    },
+    "experimental": {
+      "methods": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
+    }
+  }
 }
 ```
 
