@@ -15,7 +15,6 @@ import {
   AreaPattern,
   ColorDef,
   GraphicParams,
-  GeometryParams,
   LinePixels,
   LineStyle,
 } from "@bentley/imodeljs-common";
@@ -161,9 +160,8 @@ export abstract class GraphicBuilder {
   /**
    * Set a GraphicParams to be the "active" GraphicParams for this RenderGraphic.
    * @param graphicParams The new active GraphicParams. All geometry drawn via calls to this RenderGraphic will use them
-   * @param geomParams The source GeometryParams if graphicParams was created by cooking geomParams, nullptr otherwise.
    */
-  public abstract activateGraphicParams(graphicParams: GraphicParams, geomParams?: GeometryParams): void;
+  public abstract activateGraphicParams(graphicParams: GraphicParams): void;
 
   /**
    * Draw a 3D line string.
