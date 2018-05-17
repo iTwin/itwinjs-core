@@ -43,12 +43,10 @@ import {
   TextureMapping,
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "./DisplayParams";
-// import { IModelConnection } from "../../IModelConnection";
+import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
-// import { System } from "../webgl/System";
+import { RenderGraphic, RenderSystem } from "../System";
 import { Triangle, TriangleList, TriangleKey, TriangleSet, ToleranceRatio } from "./Primitives";
-import { Graphic } from "../webgl/Graphic";
-// import { IModelConnection } from "../../IModelConnection";
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
 export class PolylineArgs {
@@ -246,14 +244,15 @@ export class Mesh {
   public get polylines(): PolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as PolylineList : undefined; }
 
   // public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
-  public getGraphics(args: MeshGraphicArgs/*, system: System, iModel: IModelConnection*/): Graphic | undefined {
-    const graphic = undefined;
+  public getGraphics(args: MeshGraphicArgs, system: RenderSystem, iModel: IModelConnection): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {
-      // if (args.meshArgs.init(this)) { graphic = system.createTriMesh(args.meshArgs, iModel); }
+      if (args.meshArgs.init(this))
+        return system.createTriMesh(args.meshArgs, iModel);
     } else if (undefined !== this.polylines && this.polylines.length !== 0 && args.polylineArgs.init(this)) {
-      // graphic = system.createIndexedPolylines(args.polylineArgs, iModel);
+      return system.createIndexedPolylines(args.polylineArgs, iModel);
     }
-    return graphic;
+
+    return undefined;
   }
 
   public addPolyline(poly: MeshPolyline): void {

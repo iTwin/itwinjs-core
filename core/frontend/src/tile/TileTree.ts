@@ -6,30 +6,30 @@ import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d /*, Frustum */ } from "@bentley/imodeljs-common";
 import { Point3d, Transform, ClipVector } from "@bentley/geometry-core";
 
-export class TileTree {
-}
-
-export abstract class Tile {
+export class Tile {
   public readonly root: TileTree;
   public readonly range: ElementAlignedBox3d;
-  public parent: Tile | undefined;
+  public readonly parent: Tile | undefined;
   public readonly depth: number;
   public loadStatus: Tile.LoadStatus;
   public readonly id: string;
   public readonly maximumSize: number;
-  protected childIds: string[];
-  protected childrenLastUsed: BeTimePoint;
+  private readonly _childIds: string[];
+  private _childrenLastUsed: BeTimePoint;
+  private _children?: Tile[];
+  private readonly _contentRange?: ElementAlignedBox3d;
 
-  protected constructor(props: Tile.Props) {
+  public constructor(props: Tile.Props) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
     this.depth = 1 + (undefined !== this.parent ? this.parent.depth : 0);
     this.loadStatus = Tile.LoadStatus.NotLoaded;
     this.id = props.id;
-    this.childIds = props.childIds;
     this.maximumSize = props.maximumSize;
-    this.childrenLastUsed = BeTimePoint.now();
+    this._childIds = props.childIds;
+    this._childrenLastUsed = BeTimePoint.now();
+    this._contentRange = props.contentRange;
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
@@ -43,7 +43,7 @@ export abstract class Tile {
   public setNotLoaded(): void { this.loadStatus = Tile.LoadStatus.NotLoaded; }
   public setNotFound(): void { this.loadStatus = Tile.LoadStatus.NotFound; }
   public setAbandoned(): void {
-    const children = this.getChildren(false);
+    const children = this.children;
     if (undefined !== children)
       for (const child of children)
         child.setAbandoned();
@@ -54,13 +54,13 @@ export abstract class Tile {
   public get radius(): number { return 0.5 * this.range.low.distance(this.range.high); }
   public get radiusSquared(): number { return 0.5 * this.range.low.distanceSquared(this.range.high); }
   public get center(): Point3d { return this.range.low.interpolate(0.5, this.range.high); }
-  public get hasContentRange(): boolean { return this.contentRange !== this.range && !this.contentRange.isAlmostEqual(this.range); }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
 
-  public abstract get hasGraphics(): boolean;
-  public abstract getChildren(create: boolean): Tile[] | undefined;
-  public abstract drawGraphics(args: Tile.DrawArgs): void;
+  public get hasGraphics(): boolean { return false; } // ###TODO
+  public get children(): Tile[] | undefined { return this._children; }
+  // ###TODO public loadChildren()
 
+  public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
   public computeVisibility(_args: Tile.DrawArgs): Tile.Visibility {
@@ -68,25 +68,8 @@ export abstract class Tile {
   }
 
   // Override the following methods if desired...
-  public get hasChildren(): boolean { return 0 !== this.childIds.length; }
-  public get contentRange(): ElementAlignedBox3d { return this.range; }
-  protected onChildrenUnloaded(): void { }
-  protected unloadChildren(olderThan: BeTimePoint): void {
-    const children = this.getChildren(false);
-    if (undefined === children)
-      return;
-    else if (this.childrenLastUsed.milliseconds > olderThan.milliseconds) {
-      // this node has been used recently. Keep it, but potentially unload its grandchildren.
-      for (const child of children)
-        child.unloadChildren(olderThan);
-    } else {
-      for (const child of children)
-        child.setAbandoned();
-
-      this.onChildrenUnloaded();
-      children.length = 0;
-    }
-  }
+  public get hasChildren(): boolean { return 0 !== this._childIds.length; }
+  public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
 
   public selectTiles(selected: Tile[], args: Tile.DrawArgs): Tile.SelectParent {
     // ###TODO: selectTiles()
@@ -95,6 +78,26 @@ export abstract class Tile {
 
     selected.push(this);
     return Tile.SelectParent.No;
+  }
+
+  public drawGraphics(_args: Tile.DrawArgs): void {
+    // ###TODO...
+  }
+
+  private unloadChildren(olderThan: BeTimePoint): void {
+    const children = this.children;
+    if (undefined === children)
+      return;
+    else if (this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
+      // this node has been used recently. Keep it, but potentially unload its grandchildren.
+      for (const child of children)
+        child.unloadChildren(olderThan);
+    } else {
+      for (const child of children)
+        child.setAbandoned();
+
+      children.length = 0;
+    }
   }
 
   // private static scratchWorldFrustum = new Frustum();
@@ -150,8 +153,13 @@ export namespace Tile {
     root: TileTree;
     parent?: Tile;
     range: ElementAlignedBox3d;
+    contentRange?: ElementAlignedBox3d;
     id: string;
     maximumSize: number;
     childIds: string[];
   }
+}
+
+export class TileTree {
+  // ###TODO: define interface for communicating with backend
 }
