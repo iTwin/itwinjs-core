@@ -12,6 +12,11 @@ import { Arc3d } from "./Arc3d";
 import { Point3d } from "../PointVector";
 import { LineString3d } from "./LineString3d";
 
+/**
+ * Context for constructing a curve that is interpolated between two other curves.
+ * * The only callable method is the static `InterpolateBetween`.
+ * * Other methods are called only by `dispatchToGeometryHandler`
+ */
 export class ConstructCurveBetweenCurves extends NullGeometryHandler {
   // private geometry0: GeometryQuery;  <-- Never used
   private geometry1: GeometryQuery;
@@ -23,6 +28,11 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     this.fraction = _fraction;
   }
 
+  /**
+   * * To be directly called only by double displatcher
+   * * Assumes this.geometry1 was set by calling context.
+   * * Construct the interpoalted curve between this.geomtry1 and the supplied segment0.
+   */
   public handleLineSegment3d(segment0: LineSegment3d): any {
     if (this.geometry1 instanceof LineSegment3d) {
       const segment1 = this.geometry1 as LineSegment3d;
@@ -32,7 +42,11 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     }
     return undefined;
   }
-
+  /**
+   * * To be directly called only by double displatcher
+   * * Assumes this.geometry1 was set by calling context.
+   * * Construct the interpoalted curve between this.geomtry1 and the supplied ls0.
+   */
   public handleLineString3d(ls0: LineString3d): any {
     if (this.geometry1 instanceof LineString3d) {
       const ls1 = this.geometry1 as LineString3d;
@@ -52,7 +66,11 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     }
     return undefined;
   }
-
+  /**
+   * * To be directly called only by double displatcher
+   * * Assumes this.geometry1 was set by calling context.
+   * * Construct the interpoalted curve between this.geomtry1 and the supplied arc0.
+   */
   public handleArc3d(arc0: Arc3d): any {
     if (this.geometry1 instanceof Arc3d) {
       const arc1 = this.geometry1 as Arc3d;
@@ -64,7 +82,16 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     }
     return undefined;
   }
-
+/**
+ * Construct a geometry item which is fractionally interpolated btween two others.
+ * * The construction is only supported between certain types:
+ * * * LineSegment3d+LineSegment3d -- endpoints are interpolated
+ * * * LineString3d+LineString3d with matching counts.  Each point is interpolated.
+ * * * Arc3d+Arc3d -- center, vector0, vector90, and limit angles of the sweep are interpolated.
+ * @param geometry0 geometry "at fraction 0"
+ * @param fraction  fractional positon
+ * @param geometry1 geometry "at fraction 1"
+ */
   public static InterpolateBetween(geometry0: GeometryQuery, fraction: number, geometry1: GeometryQuery): GeometryQuery | undefined {
     const handler = new ConstructCurveBetweenCurves(geometry0, fraction, geometry1);
     return geometry0.dispatchToGeometryHandler(handler);

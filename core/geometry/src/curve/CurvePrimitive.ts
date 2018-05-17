@@ -15,6 +15,9 @@ import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { LineString3d } from "./LineString3d";
 import { ClipperMethods } from "../numerics/ClipPlanes";
 
+/**
+ * An enumeration of special conditions being described by a CurveLocationDetail.
+ */
 export enum CurveIntervalRole {
   /** This point is an isolated point NOT at a primary vertex. */
   isolated = 0,
@@ -32,13 +35,23 @@ export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: Cu
 export type AnnounceNumberNumber = (a0: number, a1: number) => void;
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 
+/**
+ * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.
+ */
 export class CurveLocationDetail {
+  /** The curve being evaluated */
   public curve?: CurvePrimitive;
+  /** The fractional position along the curve */
   public fraction: number;
+  /** Deail condition of the role this point has in some context */
   public intervalRole?: CurveIntervalRole;
+  /** The point on the curve */
   public point: Point3d;
+  /** A vector (e.g. tangent vector) in context */
   public vector: Vector3d;
-  public a: number;   // typically a distance relevant to a search.
+  /** A context-specific numeric value.  (E.g. a distance) */
+  public a: number;
+  /** A context-specific addtional point */
   public pointQ: Point3d;  // extra point for use in computations
 
   public constructor() {
@@ -126,7 +139,7 @@ export class CurveLocationDetail {
   }
 
 }
-
+/** A pair of CurveLocationDetail. */
 export class CurveLocationDetailPair {
   public detailA: CurveLocationDetail;
   public detailB: CurveLocationDetail;

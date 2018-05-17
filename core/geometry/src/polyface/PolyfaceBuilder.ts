@@ -338,7 +338,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const lineStringA = cone.strokeConstantVSection(0.0, strokeCount ? strokeCount : this.options);
     const lineStringB = cone.strokeConstantVSection(1.0, strokeCount ? strokeCount : this.options);
     this.addBetweenLineStrings(lineStringA, lineStringB, false);
-    if (cone.getCapped()) {
+    if (cone.capped) {
       this.addTrianglesInUncheckedPolygon(lineStringA, true);  // lower triangles flip
       this.addTrianglesInUncheckedPolygon(lineStringB, false); // upper triangles to not flip.
     }
@@ -354,7 +354,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.addUVGrid(surface,
       phiStrokeCount ? phiStrokeCount : 8,
       thetaStrokeCount ? thetaStrokeCount : Math.ceil(16 * surface.getThetaFraction()),
-      surface.getCapped());
+      surface.capped);
     this.toggleReversedFacetFlag();
   }
 
@@ -401,7 +401,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.addBetweenTransformedLineStrings(strokes, transformA, transformB);
       transformA.setFrom(transformB);
     }
-    if (surface.getCapped()) {
+    if (surface.capped) {
       const contour = surface.getSweepContourRef();
       contour.emitFacets(this, this.options, true, undefined);
       contour.emitFacets(this, this.options, false, transformB);
@@ -416,7 +416,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addLinearSweep(surface: LinearSweep) {
     const baseStrokes = surface.getCurvesRef().cloneStroked();
     this.addLinearSweepLineStrings(baseStrokes, surface.cloneSweepVector());
-    if (surface.getCapped()) {
+    if (surface.capped) {
       const contour = surface.getSweepContourRef();
       contour.emitFacets(this, this.options, true, undefined);
       contour.emitFacets(this, this.options, false, Transform.createTranslation(surface.cloneSweepVector()));
@@ -445,7 +445,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const numLongitudeStroke = strokeCount ? strokeCount : this.options.defaultCircleStrokes;
     const numLatitudeStroke = Geometry.clampToStartEnd(numLongitudeStroke * 0.5, 4, 32);
     let lineStringA = sphere.strokeConstantVSection(0.0, numLongitudeStroke);
-    if (sphere.getCapped() && !Geometry.isSmallMetricDistance(lineStringA.quickLength()))
+    if (sphere.capped && !Geometry.isSmallMetricDistance(lineStringA.quickLength()))
       this.addTrianglesInUncheckedPolygon(lineStringA, true);  // lower triangles flip
     for (let i = 1; i <= numLatitudeStroke; i++) {
       const lineStringB = sphere.strokeConstantVSection(i / numLatitudeStroke, numLongitudeStroke);
@@ -453,7 +453,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       lineStringA = lineStringB;
     }
 
-    if (sphere.getCapped() && !Geometry.isSmallMetricDistance(lineStringA.quickLength()))
+    if (sphere.capped && !Geometry.isSmallMetricDistance(lineStringA.quickLength()))
       this.addTrianglesInUncheckedPolygon(lineStringA, true);  // upper triangles do not flip
 
   }
@@ -462,7 +462,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const lineStringA = box.strokeConstantVSection(0.0);
     const lineStringB = box.strokeConstantVSection(1.0);
     this.addBetweenLineStrings(lineStringA, lineStringB);
-    if (box.getCapped()) {
+    if (box.capped) {
       this.addTrianglesInUncheckedPolygon(lineStringA, true);  // lower triangles flip
       this.addTrianglesInUncheckedPolygon(lineStringB, false); // upper triangles to not flip.
     }

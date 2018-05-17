@@ -4,7 +4,7 @@
 import { QParams3d, QPoint3dList, PolylineFlags, PolylineData, RenderMode } from "@bentley/imodeljs-common";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../../IModelConnection";
-import { PolylineArgs, MeshArgs } from "../primitives/Mesh";
+import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { Primitive } from "./Primitive";
 import { wantJointTriangles } from "./Graphic";
 import { Target } from "./Target";
