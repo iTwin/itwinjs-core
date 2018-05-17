@@ -18,6 +18,7 @@
     "copy:ourpublic": "cpx public/**/* ./lib/backend/public",
     "docs": "",
     "webpack:frontend": "webpack --config webpack.config.js",
+    "docs": "",
     "start": "electron ./lib/backend/ElectronMain.js"
   },
   "repository": {},
