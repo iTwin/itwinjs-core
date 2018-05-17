@@ -56,7 +56,7 @@ describe("Useful ECSQL spatial queries", () => {
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ EcsqlGeometryFunctions.iModel_bbox_union
-    // This is an example of accumlating the union of bounding boxes.
+    // This is an example of accumulating the union of bounding boxes.
     const bboxUnionStmtECSQL = `
       SELECT
         iModel_bbox_union(

@@ -219,7 +219,7 @@ export class Mesh {
   public readonly normals: OctEncodedNormal[] = [];
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
-  public readonly colors: Uint16Array = new Uint16Array();
+  public colors: Uint16Array = new Uint16Array();
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: Mesh.PrimitiveType;
@@ -284,7 +284,7 @@ export namespace Mesh {
 
   export class Features {
     public readonly table: FeatureTable;
-    public readonly _indices: number[] = [];
+    public _indices: number[] = [];
     public uniform = 0;
     public initialized = false;
 
@@ -310,18 +310,17 @@ export namespace Mesh {
       }
     }
 
-    /*
     public setIndices(indices: number[]) {
       this._indices.length = 0;
       this.uniform = 0;
       this.initialized = 0 < indices.length;
 
       assert(0 < indices.length);
-      if (1 == indices.length)
+      if (1 === indices.length)
         this.uniform = indices[0];
       else if (1 < indices.length)
         this._indices = indices;
-    } */
+    }
 
     public toFeatureIndex(index: FeatureIndex): void {
       if (!this.initialized) {
@@ -407,10 +406,10 @@ export class MeshBuilder {
 
       assert(!includeParams || (param !== undefined && param.length > 0));
       const haveParam = includeParams && (param !== undefined && param.length > 0);
-      assert(!haveParam || mappedTexture.isValid);
+      assert(!haveParam || undefined !== mappedTexture);
       triangle.setEdgeVisibility(visibility[0], visibility[1], visibility[2]);
 
-      if (haveParam && mappedTexture.isValid) {
+      if (haveParam && undefined !== mappedTexture) {
         // const textureMapParams = mappedTexture.params;
         // const computedParams = [];
 
@@ -527,7 +526,7 @@ export namespace MeshBuilder {
   }
   export interface PolyfaceVisitorParams {
     visitor: PolyfaceVisitor;
-    mappedTexture: TextureMapping;
+    mappedTexture?: TextureMapping;
     // iModel: IModelConnection;
     // feature: Feature;
     includeParams: boolean;

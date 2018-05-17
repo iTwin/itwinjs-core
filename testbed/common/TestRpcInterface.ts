@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken, RpcNotFoundResponse } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 
 export class TestOp1Params {
@@ -18,6 +18,20 @@ export class TestOp1Params {
   }
 }
 
+export enum TestNotFoundResponseCode {
+  CanRecover,
+  Fatal,
+}
+
+export class TestNotFoundResponse extends RpcNotFoundResponse {
+  public code: TestNotFoundResponseCode;
+
+  constructor(code: TestNotFoundResponseCode) {
+    super();
+    this.code = code;
+  }
+}
+
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
   public static readonly OP8_PENDING_MESSAGE = "Initializing op8";
@@ -30,6 +44,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     Date,
     Map,
     Set,
+    TestNotFoundResponse,
   ]
 
   public static getClient(): TestRpcInterface {
@@ -85,6 +100,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public async op10(): Promise<void> {
+    return this.forward.apply(this, arguments);
+  }
+
+  public op11(_input: string, _call: number): Promise<string> {
     return this.forward.apply(this, arguments);
   }
 }

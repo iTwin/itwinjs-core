@@ -182,10 +182,10 @@ namespace ViewportQuad {
   let _viewportQuad: ViewportQuad | undefined;
 
   export function getInstance(): ViewportQuad {
-  if (undefined === _viewportQuad)
-    _viewportQuad = new ViewportQuad();
+    if (undefined === _viewportQuad)
+      _viewportQuad = new ViewportQuad();
 
-  return _viewportQuad;
+    return _viewportQuad;
   }
 }
 
@@ -296,4 +296,16 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
 export abstract class EdgeGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
 export abstract class MaterialData { /* ###TODO */ }
-export abstract class PolylineBuffers { /* ###TODO */ }
+
+export class PolylineBuffers {
+  public indices: BufferHandle;
+  public prevIndices: BufferHandle;
+  public nextIndicesAndParams: BufferHandle;
+  public distances: BufferHandle;
+  public constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
+    this.indices = indices;
+    this.prevIndices = prevIndices;
+    this.nextIndicesAndParams = nextIndicesAndParams;
+    this.distances = distances;
+  }
+}

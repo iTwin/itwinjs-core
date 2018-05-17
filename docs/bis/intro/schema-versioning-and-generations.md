@@ -1,4 +1,4 @@
-# Schema Versioning and BIS Generations
+# Schema Versioning and Generations
 
 ## Schema Versions
 

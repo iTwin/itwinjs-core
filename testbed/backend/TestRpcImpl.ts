@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3 } from "../common/TestRpcInterface";
+import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
 import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, IModelToken, RpcInvocation } from "@bentley/imodeljs-common";
 import { BentleyError, BentleyStatus, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
@@ -75,6 +75,20 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async op10(): Promise<void> {
     throw new BentleyError(BentleyStatus.ERROR);
+  }
+
+  public async op11(input: string, call: number): Promise<string> {
+    if (input === "oldvalue") {
+      throw new TestNotFoundResponse(TestNotFoundResponseCode.CanRecover);
+    } else if (input === "newvalue") {
+      if (call === 1) {
+        throw new TestNotFoundResponse(TestNotFoundResponseCode.Fatal);
+      } else {
+        return input;
+      }
+    } else {
+      throw new Error("Invalid.");
+    }
   }
 }
 

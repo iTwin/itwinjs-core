@@ -163,4 +163,8 @@ export class RobotWorldEngine {
 
   }
 
+  public static shutdown() {
+    IModelHost.shutdown();
+  }
+
 }

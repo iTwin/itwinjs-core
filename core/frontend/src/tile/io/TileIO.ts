@@ -44,7 +44,7 @@ export namespace TileIO {
     private readonly _view: DataView;
     private _curPos: number = 0;
 
-    public constructor(buffer: ArrayBuffer) { this._view = new DataView(buffer); }
+    public constructor(buffer: ArrayBuffer | SharedArrayBuffer) { this._view = new DataView(buffer); }
 
     public get length(): number { return this._view.byteLength; }
     public get isPastTheEnd(): boolean { return this.curPos > this.length; }
@@ -53,6 +53,8 @@ export namespace TileIO {
     public set curPos(pos: number) { this._curPos = pos; assert(!this.isPastTheEnd); }
 
     public advance(numBytes: number): boolean { this.curPos = (this.curPos + numBytes); return !this.isPastTheEnd; }
+    public rewind(numBytes: number): boolean { if (this.curPos - numBytes < 0) return false; this.curPos = this.curPos - numBytes; return true; }
+    public reset(): void { this.curPos = 0; }
 
     public get nextUint8(): number { return this.read(1, (view) => view.getUint8(this.curPos)); }
     public get nextUint16(): number { return this.read(2, (view) => view.getUint16(this.curPos, true)); }
@@ -68,7 +70,7 @@ export namespace TileIO {
       return bytes;
     }
 
-    public get arrayBuffer(): ArrayBuffer { return this._view.buffer; }
+    public get arrayBuffer(): ArrayBuffer | SharedArrayBuffer { return this._view.buffer; }
 
     private read(numBytes: number, read: (view: DataView) => number) {
       const result = read(this._view);

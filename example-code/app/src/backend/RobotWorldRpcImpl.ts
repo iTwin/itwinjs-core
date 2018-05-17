@@ -9,6 +9,7 @@ import { Platform, IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Point3d, Angle } from "@bentley/geometry-core";
+import { RobotWorld } from "./RobotWorldSchema";
 
 // Implement RobotWorldWriteRpcInterface
 class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
@@ -29,6 +30,10 @@ class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcI
 
   public async insertBarrier(iModelToken: IModelToken, modelId: Id64, location: Point3d, angle: Angle, length: number): Promise<Id64> {
     return RobotWorldEngine.insertBarrier(IModelDb.find(iModelToken), modelId, location, angle, length);
+  }
+
+  public async importSchema(iModelToken: IModelToken): Promise<void> {
+    return RobotWorld.importSchema(IModelDb.find(iModelToken));
   }
 }
 

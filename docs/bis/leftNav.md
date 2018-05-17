@@ -15,6 +15,7 @@
 - [Information Models and Elements](./intro/information-models-and-elements.md)
 - [Categories](./intro/categories.md)
 - [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time.md)
+- [Schema Versioning and Generations](./intro/schema-versioning-and-generations.md)
 - [Glossary](./intro/glossary.md)
 
 <!-- TODO: The following are not linked in...?
@@ -26,11 +27,9 @@
 ./intro/dynamic-data.md
 ./intro/forms-profiles-and-features.md
 ./intro/functional-models-and-elements.md
-./intro/imodel-bridges.md
 ./intro/information-models-and-elements.md
 ./intro/mixins.md
 ./intro/requirements.md
-./intro/schema-versioning-and-generations.md
 ./intro/types-instances-and-catalogs.md
 ./intro/units.md
 -->
