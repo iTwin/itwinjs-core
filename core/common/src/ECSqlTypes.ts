@@ -3,8 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { Id64Props, BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "./IModelError";
+import { assert, Id64Props } from "@bentley/bentleyjs-core";
 
 /** Describes the different data types an ECSQL value can be of.
  *
@@ -132,34 +131,99 @@ export enum ECSqlSystemProperty {
   PointZ,
 }
 
-/** Utility to format ECProperty names according to the iModelJs formatting rules. */
+/** Utility to format ECProperty names according to the iModelJs formatting rules.
+ *
+ *  See also [ECSQL Row Format]($docs/learning/ECSQLRowFormat).
+ */
 export class ECJsNames {
+
   /** Formats the specified ECProperty name according to the iModelJs formatting rules.
    *
-   * #### Rules
+   *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    *
-   * - System properties:
-   *    - [ECSqlSystemProperty.ECInstanceId]($common): id
-   *    - [ECSqlSystemProperty.ECClassId]($common): className
-   *    - [ECSqlSystemProperty.SourceECInstanceId]($common): sourceId
-   *    - [ECSqlSystemProperty.SourceECClassId]($common): sourceClassName
-   *    - [ECSqlSystemProperty.TargetECInstanceId]($common): targetId
-   *    - [ECSqlSystemProperty.TargetECClassId]($common): targetClassName
-   *    - [ECSqlSystemProperty.NavigationId]($common): id
-   *    - [ECSqlSystemProperty.NavigationRelClassId]($common): relClassName
-   *    - [ECSqlSystemProperty.PointX]($common): x
-   *    - [ECSqlSystemProperty.PointY]($common): y
-   *    - [ECSqlSystemProperty.PointZ]($common): z
-   *  - Ordinary properties: first character is lowered.
-   *
-   * @param ecProperty Either the property name as defined in the ECSchema for regular ECProperties.
-   *         Or an [ECSqlSystemProperty]($common) value for ECSQL system properties
+   * @param ecProperty Property name as defined in the ECSchema for regular ECProperties
+   *        or the name of an ECSQL system properties
+   * @param isSystemProperty if ommitted, the method will try to find out whether the given property
+   *        is a system property or not. If true is specified, the method will throw if the property name
+   *        is not a known system property. If false is specified, the method will not attempt to recognize
+   *        the property name as system property.
    */
-  public static toJsName(ecProperty: ECSqlSystemProperty | string): string {
-    if (typeof (ecProperty) === "string")
-      return ECJsNames.lowerFirstChar(ecProperty);
+  public static toJsName(propName: string, isSystemProperty?: boolean) {
+    assert(propName !== undefined, "propName must not be undefined");
 
-    switch (ecProperty) {
+    const propTypeUnknown: boolean = isSystemProperty === undefined || isSystemProperty === null;
+
+    const accessStringTokens: string[] = propName.split(".");
+    const tokenCount: number = accessStringTokens.length;
+    assert(tokenCount > 0);
+
+    if (tokenCount === 1) {
+      if (propTypeUnknown || isSystemProperty!) {
+        if (propName === "ECInstanceId")
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.ECInstanceId);
+
+        if (propName === "ECClassId")
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.ECClassId);
+
+        if (propName === "SourceECInstanceId")
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.SourceECInstanceId);
+
+        if (propName === "TargetECInstanceId")
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.TargetECInstanceId);
+
+        if (propName === "SourceECClassId")
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.SourceECClassId);
+
+        if (propName === "TargetECClassId")
+          return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.TargetECClassId);
+
+        if (propTypeUnknown)
+          return ECJsNames.lowerFirstChar(propName);
+
+        throw new Error(`Property ${propName} is no ECSQL system property.`);
+      }
+
+      return ECJsNames.lowerFirstChar(propName);
+    }
+
+    // parse access string and convert the leaf tokens if they are system props
+    // The first char of the access string is lowered.
+    let jsName: string = ECJsNames.lowerFirstChar(accessStringTokens[0] + ".");
+    for (let j = 1; j < tokenCount - 1; j++) {
+      jsName += accessStringTokens[j] + ".";
+    }
+
+    const leafToken: string = accessStringTokens[tokenCount - 1];
+
+    if (propTypeUnknown || isSystemProperty!) {
+      if (leafToken === "Id")
+        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.NavigationId);
+      else if (leafToken === "RelECClassId")
+        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.NavigationRelClassId);
+      else if (leafToken === "X")
+        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointX);
+      else if (leafToken === "Y")
+        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointY);
+      else if (leafToken === "Z")
+        jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.PointZ);
+      else if (propTypeUnknown)
+        jsName += ECJsNames.lowerFirstChar(leafToken);
+      else
+        throw new Error(`Property ${leafToken} of access string ${propName} is no ECSQL system property.`);
+    } else
+      jsName += leafToken;
+
+    return jsName;
+  }
+
+  /** Returns the name of the specified ECSQL system property according to the
+   *  iModelJs formatting rules.
+   *
+   *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
+   * @param systemPropertyType System property type
+   */
+  public static systemPropertyToJsName(systemPropertyType: ECSqlSystemProperty): string {
+    switch (systemPropertyType) {
       case ECSqlSystemProperty.ECInstanceId:
       case ECSqlSystemProperty.NavigationId:
         return "id";
@@ -182,7 +246,7 @@ export class ECJsNames {
       case ECSqlSystemProperty.PointZ:
         return "z";
       default:
-        throw new IModelError(BentleyStatus.ERROR, `Unknown ECSqlSystemProperty enum value ${ecProperty}.`);
+        throw new Error(`Unknown ECSqlSystemProperty enum value ${systemPropertyType}.`);
     }
   }
 
