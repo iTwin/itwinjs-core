@@ -134,4 +134,6 @@ exports.handler = async (argv) => {
     console.log(`   ${chalk.bold("Webpack Analyse:")} ${chalk.underline(chalk.cyan("http://webpack.github.io/analyse/"))}`);
     console.log(`   ${chalk.bold("Webpack Visualizer:")} ${chalk.underline(chalk.cyan("https://chrisbateman.github.io/webpack-visualizer/"))}`);
   }
+
+  process.exit();
 };
