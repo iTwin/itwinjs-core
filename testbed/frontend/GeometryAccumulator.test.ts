@@ -64,20 +64,18 @@ describe("GeometryAccumulator tests", () => {
     WebGLTestContext.startup();
   });
 
-  beforeEach(() => {
-    if (!IModelApp.hasRenderSystem) {
-      return;
-    }
-
-    accum = new GeometryAccumulator(iModel, System.instance);
-  });
-
   after(async () => {
     WebGLTestContext.shutdown();
     if (iModel) await iModel.closeStandalone();
   });
 
   it("addPath works as expected", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    accum = new GeometryAccumulator(iModel, System.instance);
+
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -97,6 +95,12 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addLoop works as expected", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    accum = new GeometryAccumulator(iModel, System.instance);
+
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -119,6 +123,12 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPolyface works as expected", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    accum = new GeometryAccumulator(iModel, System.instance);
+
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -157,6 +167,12 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addGeometry works as expected", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    accum = new GeometryAccumulator(iModel, System.instance);
+
     expect(accum.geometries.isEmpty).to.be.true;
     expect(accum.isEmpty).to.be.true;
     const fkGeom = new FakeGeometry();
@@ -165,6 +181,12 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("clear works as expected", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    accum = new GeometryAccumulator(iModel, System.instance);
+
     expect(accum.isEmpty).to.be.true;
     accum.addGeometry(new FakeGeometry());
     expect(accum.isEmpty).to.be.false;
