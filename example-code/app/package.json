@@ -9,10 +9,10 @@
     "clean": "rimraf lib package-deps.json ../../generated-docs",
     "copy:backend-assets": "cpx ./src/backend/assets/**/* ./lib/backend/assets",
     "copy:test-backend-assets": "cpx ./src/backend/test/assets/**/* ./lib/backend/test/assets",
-    "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
+    "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
     "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets && npm run build-code",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/backend/test\""
+    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/backend/test\""
   },
   "repository": {},
   "//dependencies": [
@@ -41,7 +41,9 @@
     "webpack": "^3.10.0"
   },
   "devDependencies": {
+    "@bentley/bentleyjs-tools": "3",
     "cpx": "^1.5.0",
+    "mocha": "^3.5.3",
     "rimraf": "^2.6.2",
     "typescript": "~2.7.2",
     "xmlhttprequest": "^1.8.0"
