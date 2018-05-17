@@ -841,7 +841,7 @@ export class Sample {
     result.push(Sphere.createCenterRadius(Point3d.create(1, 2, 3), 3.0));
     const s1 = Sphere.createCenterRadius(Point3d.create(1, 2, 3), 2.0,
       AngleSweep.createStartEndDegrees(-45, 80));
-    s1.setCapped(true);
+    s1.capped = true;
     result.push(s1);
     // still a sphere, but with axes KIJ . .
     const s2 = Sphere.createFromAxesAndScales(

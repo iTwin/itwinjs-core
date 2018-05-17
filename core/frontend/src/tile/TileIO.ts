@@ -4,7 +4,7 @@
 
 import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { MeshList } from "../render/primitives/Mesh";
+import { MeshList } from "../render/primitives/mesh/MeshPrimitives";
 
 /** Provides facilities for deserializing 3d tiles */
 export namespace TileIO {
@@ -115,8 +115,8 @@ export namespace TileIO {
 
   export class GeometryCollection {
     public constructor(public readonly meshes: MeshList,
-                       public readonly isComplete: boolean,
-                       public readonly isCurved: boolean) { }
+      public readonly isComplete: boolean,
+      public readonly isCurved: boolean) { }
 
     public get isEmpty(): boolean { return 0 === this.meshes.length; }
   }

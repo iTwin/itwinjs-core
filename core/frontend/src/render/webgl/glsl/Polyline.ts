@@ -21,6 +21,7 @@ import { addShaderFlags } from "./Common";
 // import { System } from "../System";
 import { TextureHandle } from "../Texture";
 import { TextureUnit } from "../RenderFlags";
+import { addHiliter } from "./FeatureSymbology";
 
 const checkForDiscard = `return discardByLineCode;`;
 
@@ -370,5 +371,13 @@ export function createPolylineBuilder(clip: WithClipVolume): ProgramBuilder {
   addColor(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
+  return builder;
+}
+
+export function createPolylineHiliter(clip: WithClipVolume): ProgramBuilder {
+  const builder = new ProgramBuilder(true);
+  addCommon(builder, clip);
+  addFrustum(builder);
+  addHiliter(builder);
   return builder;
 }

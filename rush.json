@@ -57,6 +57,11 @@
       "packageName": "example-code-app",
       "projectFolder": "example-code/app",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/simpleviewtest",
+      "projectFolder": "simpleviewtest",
+      "shouldPublish": false
     }
   ],
   "eventHooks": {

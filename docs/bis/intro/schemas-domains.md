@@ -13,7 +13,7 @@ With Domains being the main concept in BIS behind how the world is divided in, a
 
 ## A Layered Approach
 
-Domains are [organized into layers](./intro/bis-organization) based on how generic or specialized the subject matter of the ECSchema in a domain is. The most generic ECSchema in BIS, which lies at the base of this hierarchy – depicted in the figure below – is BisCore.
+Domains are [organized into layers](./bis-organization) based on how generic or specialized the subject matter of the ECSchema in a domain is. The most generic ECSchema in BIS, which lies at the base of this hierarchy – depicted in the figure below – is BisCore.
 
 Schemas in any layer may be dependent upon schemas in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
 

@@ -1126,7 +1126,7 @@ export namespace IModelJson {
         && Geometry.isSameCoordinate(vectorY.magnitude(), 1.0)) {
         return {
           "cylinder": {
-            "capped": data.getCapped(),
+            "capped": data.capped,
             "start": data.getCenterA().toJSON(),
             "end": data.getCenterB().toJSON(),
             "radius": radiusA,
@@ -1134,7 +1134,7 @@ export namespace IModelJson {
         };
       } else {
         const coneProps: ConeProps = {
-          "capped": data.getCapped(),
+          "capped": data.capped,
           "start": data.getCenterA().toJSON(),
           "end": data.getCenterB().toJSON(),
           "startRadius": data.getRadiusA(),
@@ -1162,8 +1162,8 @@ export namespace IModelJson {
           value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
         const fullSweep = latitudeSweep.isFullLatitudeSweep();
 
-        if (data.getCapped() && !fullSweep)
-          value.capped = data.getCapped();
+        if (data.capped && !fullSweep)
+          value.capped = data.capped;
 
         if (Geometry.isSameCoordinate(rX, rY) && Geometry.isSameCoordinate(rX, rZ))
           value.radius = rX;
@@ -1198,7 +1198,7 @@ export namespace IModelJson {
       };
       if (!sweep.isFullCircle()) {
         value.sweepAngle = sweep.degrees;
-        value.capped = data.getCapped();
+        value.capped = data.capped;
       }
       return { "torusPipe": value };
 
@@ -1254,7 +1254,7 @@ export namespace IModelJson {
     public handleLinearSweep(data: LinearSweep): any {
       const extrusionVector = data.cloneSweepVector();
       const curves = data.getCurvesRef();
-      const capped = data.getCapped();
+      const capped = data.capped;
       if (extrusionVector
         && curves
         && capped !== undefined) {
@@ -1271,7 +1271,7 @@ export namespace IModelJson {
 
     public handleRuledSweep(data: RuledSweep): any {
       const contours = data.cloneContours();
-      const capped = data.getCapped();
+      const capped = data.capped;
       if (contours
         && contours.length > 1
         && capped !== undefined) {
@@ -1292,7 +1292,7 @@ export namespace IModelJson {
     public handleRotationalSweep(data: RotationalSweep): any {
       const axisRay = data.cloneAxisRay();
       const curves = data.getCurves();
-      const capped = data.getCapped();
+      const capped = data.capped;
       const sweepAngle = data.getSweep();
       return {
         "rotationalSweep": {
@@ -1311,7 +1311,7 @@ export namespace IModelJson {
           "baseOrigin": box.getBaseOrigin().toJSON(),
           "baseX": box.getBaseX(),
           "baseY": box.getBaseY(),
-          "capped": box.getCapped(),
+          "capped": box.capped,
           "topOrigin": box.getTopOrigin().toJSON(),
         },
       };

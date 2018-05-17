@@ -2056,18 +2056,23 @@ export class Transform implements BeJSONFunctions {
 
   /** transform each of the 8 corners of a range. Return the range of the transformed corers */
   public multiplyRange(range: Range3d, result?: Range3d): Range3d {
-
+    // snag current values to allow aliasing.
+    const lowx = range.low.x;
+    const lowy = range.low.y;
+    const lowz = range.low.z;
+    const highx = range.high.x;
+    const highy = range.high.y;
+    const highz = range.high.z;
     result = Range3d.createNull(result);
+    result.extendTransformedXYZ(this, lowx, lowy, lowz);
+    result.extendTransformedXYZ(this, highx, lowy, lowz);
+    result.extendTransformedXYZ(this, lowx, highy, lowz);
+    result.extendTransformedXYZ(this, highx, highy, lowz);
 
-    result.extendTransformedXYZ(this, range.low.x, range.low.y, range.low.z);
-    result.extendTransformedXYZ(this, range.high.x, range.low.y, range.low.z);
-    result.extendTransformedXYZ(this, range.low.x, range.high.y, range.low.z);
-    result.extendTransformedXYZ(this, range.high.x, range.high.y, range.low.z);
-
-    result.extendTransformedXYZ(this, range.low.x, range.low.y, range.high.z);
-    result.extendTransformedXYZ(this, range.high.x, range.low.y, range.high.z);
-    result.extendTransformedXYZ(this, range.low.x, range.high.y, range.high.z);
-    result.extendTransformedXYZ(this, range.high.x, range.high.y, range.high.z);
+    result.extendTransformedXYZ(this, lowx, lowy, highz);
+    result.extendTransformedXYZ(this, highx, lowy, highz);
+    result.extendTransformedXYZ(this, lowx, highy, highz);
+    result.extendTransformedXYZ(this, highx, highy, highz);
     return result;
   }
   /**
