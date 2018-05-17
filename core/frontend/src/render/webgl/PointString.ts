@@ -11,7 +11,7 @@ import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { WithClipVolume } from "./TechniqueFlags";
-import { PolylineArgs } from "../primitives/Mesh";
+import { PolylineArgs } from "../primitives/mesh/MeshPrimitives";
 import { VertexLUT } from "./VertexLUT";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { addHiliter } from "./glsl/FeatureSymbology";

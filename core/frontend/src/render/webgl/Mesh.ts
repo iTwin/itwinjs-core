@@ -5,7 +5,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { SurfaceType, RenderPass } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { MaterialData, LUTGeometry } from "./CachedGeometry";
-import { MeshArgs } from "../primitives/Mesh";
+import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";

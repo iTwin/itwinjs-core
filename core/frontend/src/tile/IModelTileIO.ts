@@ -7,7 +7,7 @@ import { GltfTileIO } from "./GltfTileIO";
 import { ModelState } from "../ModelState";
 import { RenderSystem } from "../render/System";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { MeshList } from "../render/primitives/Mesh";
+import { MeshList } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
@@ -46,8 +46,8 @@ export namespace IModelTileIO {
     }
 
     private constructor(public readonly length: number,
-                        public readonly maxFeatures: number,
-                        public readonly count: number) { }
+      public readonly maxFeatures: number,
+      public readonly count: number) { }
   }
 
   /** The result of Reader.read(). */
@@ -137,7 +137,7 @@ export namespace IModelTileIO {
     protected readFeatureIndices(json: any): number[] | undefined {
       const featureId = json.featureID;
       if (undefined !== featureId)
-        return [ featureId as number ];
+        return [featureId as number];
       else
         return this.readIndices(json, "featureIDs");
     }

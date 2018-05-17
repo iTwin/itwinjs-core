@@ -6,7 +6,9 @@ import { IModelConnection } from "../../../IModelConnection";
 import { GeometryOptions } from "../Primitives";
 import { RenderSystem, RenderGraphic } from "../../System";
 import { DisplayParams } from "../DisplayParams";
-import { MeshGraphicArgs, MeshList, MeshBuilderMap, Mesh, MeshBuilder } from "../Mesh";
+import { MeshGraphicArgs, MeshList, Mesh } from "../mesh/MeshPrimitives";
+import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
+import { MeshBuilder } from "../mesh/MeshBuilder";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 import { GeometryList } from "./GeometryList";
 
