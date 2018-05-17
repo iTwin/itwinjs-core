@@ -3,24 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import * as path from "path";
-import {
-  Geometry,
-  DisplayParams,
-  StrokesPrimitiveList,
-  StrokesPrimitivePointLists,
-  StrokesPrimitivePointList,
-  PolyfacePrimitiveList,
-  PolyfacePrimitive,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+import { Geometry, DisplayParams, StrokesPrimitiveList, StrokesPrimitivePointLists, StrokesPrimitivePointList, PolyfacePrimitiveList, PolyfacePrimitive } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Loop, Path, LineString3d, Point3d, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { CONSTANTS } from "../common/Testbed";
-import { WebGLTestContext } from "./WebGLTestContext";
-
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {
   for (const arrPt of arr) {
@@ -39,26 +25,6 @@ function pointIsInPolyface(pt: Point3d, pf: IndexedPolyface): boolean {
 }
 
 describe("GeometryPrimitives tests", () => {
-  let imodel: IModelConnection;
-  let spatialView: SpatialViewState;
-
-  const canvas = document.createElement("canvas") as HTMLCanvasElement;
-  assert(null !== canvas);
-  canvas!.width = canvas!.height = 1000;
-  document.body.appendChild(canvas!);
-
-  before(async () => {   // Create a ViewState to load into a Viewport
-    imodel = await IModelConnection.openStandalone(iModelLocation);
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.RightIso);
-    WebGLTestContext.startup();
-  });
-
-  after(async () => {
-    WebGLTestContext.shutdown();
-    if (imodel) await imodel.closeStandalone();
-  });
-
   it("should produce PrimitiveLoopGeometry with strokes and polyface", () => {
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
