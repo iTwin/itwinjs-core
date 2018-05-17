@@ -284,19 +284,10 @@ export class GlobalEventHandler extends EventBaseHandler {
 
     const result = await request(this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
 
-    if (result.status === 200) {
-      Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);
+    const event = ParseGlobalEvent(result);
+    Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);
 
-      return Promise.resolve(ParseGlobalEvent(result));
-    } else if (result.status === 204) {
-      Logger.logInfo(loggingCategory, `No Global Events found on subscription with instance id: ${subscriptionInstanceId}`);
-
-      return Promise.reject(result.status);
-    }
-
-    Logger.logWarning(loggingCategory, `Getting Global Event from subscription with instance id: ${subscriptionInstanceId} failed with status ${result.status}`);
-
-    return Promise.reject(result.status);
+    return Promise.resolve(event);
   }
 
   /**

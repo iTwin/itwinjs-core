@@ -3,17 +3,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TileIO } from "./TileIO";
-import { ModelState } from "../../ModelState";
-import { RenderSystem } from "../../render/System";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
-import { Triangle } from "../../render/primitives/primitives";
-import { Mesh } from "../../render/primitives/Mesh";
-import { ColorMap } from "../../render/primitives/ColorMap";
+import { ModelState } from "../ModelState";
+import { RenderSystem } from "../render/System";
+import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Triangle } from "../render/primitives/primitives";
+import { Mesh } from "../render/primitives/Mesh";
+import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d } from "@bentley/geometry-core";
 
+/** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
+  /** Known version of the glTF format. */
   export const enum Versions {
     Version1 = 1,
     Version2 = 2,
@@ -21,6 +23,7 @@ export namespace GltfTileIO {
     SceneFormat = 0,
   }
 
+  /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
     public readonly gltfLength: number;
     public readonly sceneStrLength: number;
@@ -77,6 +80,11 @@ export namespace GltfTileIO {
 
   export type DataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
+  /**
+   * A chunk of binary data exposed as a typed array.
+   * The count member indicates how many elements exist. This may be less than this.buffer.length due to padding added to the
+   * binary stream to ensure correct alignment.
+   */
   export class BufferData {
     public readonly buffer: DataBuffer;
     public readonly count: number;
@@ -86,6 +94,11 @@ export namespace GltfTileIO {
       this.count = count;
     }
 
+    /**
+     * Create a BufferData of the desired type. The actual type may differ from the desired type - for example, small 32-bit integers
+     * may be represented as 8-bit or 16-bit integers instead.
+     * If the actual data type is not convertible to the desired type, this function returns undefined.
+     */
     public static create(bytes: Uint8Array, actualType: DataType, expectedType: DataType, count: number): BufferData | undefined {
       if (expectedType !== actualType) {
         // Some data is stored in smaller data types to save space if no values exceed the maximum of the smaller type.
@@ -126,6 +139,14 @@ export namespace GltfTileIO {
     }
   }
 
+  /**
+   * A view of a chunk of a tile's binary data containing an array of elements of a specific data type.
+   * The count member indicates how many elements exist; this may be smaller than this.data.length.
+   * The count member may also indicate the number of elements of a type containing more than one value of the
+   * underlying type. For example, a buffer of 4 32-bit floating point 'vec2' elements will have a count of 4,
+   * but its data member will contain 8 32-bit floating point values (2 per vec2).
+   * The accessor member may contain additional JSON data specific to a particular buffer.
+   */
   export class BufferView {
     public readonly data: Uint8Array;
     public readonly count: number;
@@ -146,6 +167,7 @@ export namespace GltfTileIO {
     }
   }
 
+  /** Data required for creating a Reader capable of deserializing glTF tile data. */
   export class ReaderProps {
     private constructor(public readonly buffer: TileIO.StreamBuffer,
                         public readonly binaryData: Uint8Array,
@@ -184,6 +206,7 @@ export namespace GltfTileIO {
     }
   }
 
+  /** Deserializes glTF tile data. */
   export class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
     protected readonly accessors: any;
@@ -226,7 +249,8 @@ export namespace GltfTileIO {
             return undefined;
         }
 
-        const bytes = this.binaryData.subarray(bufferView.byteOffset + accessor.byteOffset, bufferView.byteLength);
+        const offset = bufferView.byteOffset + accessor.byteOffset;
+        const bytes = this.binaryData.subarray(offset, offset + bufferView.byteLength);
         return new BufferView(bytes, accessor.count as number, type, accessor);
       } catch (e) {
         return undefined;
@@ -295,7 +319,7 @@ export namespace GltfTileIO {
           features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
           type: primitiveType,
           range: Range3d.createNull(),
-          is2d: false, // ###TODO...
+          is2d: false, // ###TODO: obtain from model...
           isPlanar,
         });
 

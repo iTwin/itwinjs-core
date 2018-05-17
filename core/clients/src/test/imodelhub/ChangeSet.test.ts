@@ -8,24 +8,16 @@ import * as deepAssign from "deep-assign";
 
 import { TestConfig } from "../TestConfig";
 
-import { Briefcase, ChangeSet, Lock, UserInfo, ChangeSetQuery, UserInfoQuery, LockQuery } from "../../imodelhub";
-import { IModelHubClient } from "../../imodelhub/Client";
-import { AccessToken } from "../../Token";
+import { AccessToken } from "../../";
+import {
+  IModelHubClient, Briefcase, ChangeSet, Lock, LockQuery, UserInfo, ChangeSetQuery,
+  UserInfoQuery, IModelHubRequestError, IModelHubRequestErrorId,
+} from "../../imodelhub";
+
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
-declare const __dirname: string;
-
 chai.should();
-
-function mockGetChangeSetById(imodelId: string, changeSet: ChangeSet) {
-  if (!TestConfig.enableMocks)
-    return;
-
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet", changeSet.wsgId);
-  const requestResponse = ResponseBuilder.generateGetResponse<ChangeSet>(changeSet);
-  ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-}
 
 describe("iModelHub ChangeSetHandler", () => {
   let accessToken: AccessToken;
@@ -33,7 +25,6 @@ describe("iModelHub ChangeSetHandler", () => {
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients ChangeSets test";
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
-  const downloadToPath: string = __dirname + "/../assets/";
 
   before(async () => {
     accessToken = await utils.login();
@@ -58,8 +49,8 @@ describe("iModelHub ChangeSetHandler", () => {
       await utils.createLocks(accessToken, iModelId, briefcase, 1, 2, 2, changesets[0].id, changesets[0].string);
     }
 
-    if (!fs.existsSync(downloadToPath)) {
-      fs.mkdirSync(downloadToPath);
+    if (!fs.existsSync(utils.workDir)) {
+      fs.mkdirSync(utils.workDir);
     }
   });
 
@@ -107,7 +98,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should create a new ChangeSet", async function (this: Mocha.ITestCallbackContext) {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
 
-    utils.mockGetChangeSet(iModelId, false, mockChangeSets[0], mockChangeSets[1]);
+    utils.mockGetChangeSet(iModelId, false, undefined, mockChangeSets[0], mockChangeSets[1]);
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId);
 
     const index = changeSets.length;
@@ -122,15 +113,15 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should get information on ChangeSets", async () => {
-    const mockedChangeSets = Array(3).fill(0).map(() => utils.generateChangeSet());
-    utils.mockGetChangeSet(iModelId, true, ...mockedChangeSets);
+    const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+    utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
 
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(1);
 
     let i = 0;
     for (const changeSet of changeSets) {
-      mockGetChangeSetById(iModelId, mockedChangeSets[i++]);
+      utils.mockGetChangeSet(iModelId, false, changeSet.wsgId, mockedChangeSets[i++]);
 
       const fileName: string = changeSet.fileName!;
       chai.expect(fileName.length).to.be.greaterThan(0);
@@ -144,7 +135,8 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(changeSet.index).to.be.equal(changeSet2.index);
     }
 
-    const lastButOneId = changeSets[changeSets.length - 2].wsgId;
+    const lastButOneChangeSet = changeSets[changeSets.length - 2];
+    const lastButOneId = lastButOneChangeSet.id || lastButOneChangeSet.wsgId;
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
         `?$filter=FollowingChangeSet-backward-ChangeSet.Id+eq+%27${lastButOneId}%27`);
@@ -155,10 +147,10 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   it("should download ChangeSets", async () => {
-    utils.mockGetChangeSet(iModelId, true, utils.generateChangeSet(), utils.generateChangeSet());
+    utils.mockGetChangeSet(iModelId, true, undefined, utils.generateChangeSet(), utils.generateChangeSet());
     const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
 
-    const downloadChangeSetsToPath: string = path.join(downloadToPath, iModelId);
+    const downloadChangeSetsToPath: string = path.join(utils.workDir, iModelId);
 
     utils.mockFileResponse(2);
     const progressTracker = new utils.ProgressTracker();
@@ -171,6 +163,102 @@ describe("iModelHub ChangeSetHandler", () => {
 
       fs.existsSync(downloadedPathname).should.be.equal(true);
     }
+  });
+
+  it("should get ChangeSets skipping the first one", async () => {
+    const mockChangeSets = utils.getMockChangeSets(briefcase);
+    utils.mockGetChangeSet(iModelId, false, "?$skip=1", mockChangeSets[2]);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().skip(1));
+    chai.assert(changeSets);
+    chai.expect(parseInt(changeSets[0].index!, 10)).to.be.greaterThan(1);
+  });
+
+  it("should get latest ChangeSets", async () => {
+    const mockChangeSets = utils.getMockChangeSets(briefcase);
+    utils.mockGetChangeSet(iModelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().latest().top(2));
+    chai.assert(changeSets);
+    chai.expect(changeSets.length).to.be.equal(2);
+    chai.expect(parseInt(changeSets[0].index!, 10)).to.be.greaterThan(parseInt(changeSets[1].index!, 10));
+    utils.mockGetChangeSet(iModelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
+
+    const changeSets2: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().orderBy("Index+desc").top(2));
+    chai.assert(changeSets);
+    chai.expect(changeSets).to.be.deep.equal(changeSets2);
+  });
+
+  it("should fail getting a ChangeSet by invalid id", async () => {
+    let error: IModelHubRequestError | undefined;
+    try {
+      await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId("InvalidId"));
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+  });
+
+  it("should fail downloading ChangeSets with no file handler", async () => {
+    let error: IModelHubRequestError | undefined;
+    const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
+    try {
+      await invalidClient.ChangeSets().download([], utils.workDir);
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+  });
+
+  it("should fail downloading ChangeSets with no file url", async () => {
+    let error: IModelHubRequestError | undefined;
+    try {
+      await imodelHubClient.ChangeSets().download([new ChangeSet()], utils.workDir);
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.MissingDownloadUrlError);
+  });
+
+  it("should fail creating a ChangeSet with no file handler", async () => {
+    let error: IModelHubRequestError | undefined;
+    const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
+    try {
+      await invalidClient.ChangeSets().create(accessToken, iModelId, new ChangeSet(), utils.workDir);
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+  });
+
+  it("should fail creating a ChangeSet with no file", async () => {
+    let error: IModelHubRequestError | undefined;
+    try {
+      await imodelHubClient.ChangeSets().create(accessToken, iModelId, new ChangeSet(), utils.workDir + "InvalidChangeSet.cs");
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
+  });
+
+  it("should fail creating a ChangeSet with directory path", async () => {
+    let error: IModelHubRequestError | undefined;
+    try {
+      await imodelHubClient.ChangeSets().create(accessToken, iModelId, new ChangeSet(), utils.workDir);
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
   });
 
   it("should find information on the ChangeSet a specific Element was last modified in", async function (this: Mocha.ITestCallbackContext) {

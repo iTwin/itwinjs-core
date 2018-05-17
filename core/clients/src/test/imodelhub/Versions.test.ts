@@ -3,16 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { TestConfig } from "../TestConfig";
+import { AccessToken } from "../../";
+import {
+  IModelHubClient, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
+  ThumbnailQuery, ThumbnailSize,
+} from "../../imodelhub";
 
-import { Version, VersionQuery, Briefcase, ChangeSet } from "../../imodelhub";
-import { Thumbnail, ThumbnailQuery, ThumbnailSize } from "../../imodelhub/Thumbnails";
-import { IModelHubClient } from "../../imodelhub/Client";
-import { AccessToken } from "../../Token";
+import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-
-chai.should();
 
 function getSelectStatement(thumbnailSizes: ThumbnailSize[]) {
   let selectStatement: string = "*";
@@ -50,19 +49,20 @@ describe("iModelHub VersionHandler", () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
+    briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
     if (!TestConfig.enableMocks) {
       const changeSetCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
         await utils.createIModel(accessToken, imodelName, undefined, true);
         iModelId = await utils.getIModelId(accessToken, imodelName);
+        briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
       }
       const versionsCount = (await imodelHubClient.Versions().get(accessToken, iModelId)).length;
       if (versionsCount === 0) {
         // Create at least 1 named version
         let changeSet: ChangeSet;
         if (changeSetCount === 0 || changeSetCount > 9) {
-          briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
           changeSet = (await utils.createChangeSets(accessToken, iModelId, briefcase, 0, 1))[0];
         } else {
           changeSet = (await imodelHubClient.ChangeSets().get(accessToken, iModelId))[0];
@@ -78,7 +78,6 @@ describe("iModelHub VersionHandler", () => {
         }
       }
     }
-    briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
   });
 
   afterEach(() => {
@@ -87,7 +86,7 @@ describe("iModelHub VersionHandler", () => {
 
   it("should create named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
-    utils.mockGetChangeSet(iModelId, false, ...mockedChangeSets);
+    utils.mockGetChangeSet(iModelId, false, undefined, ...mockedChangeSets);
     const changeSetsCount = (await imodelHubClient.ChangeSets().get(accessToken, iModelId)).length;
 
     // creating changeset for new named version

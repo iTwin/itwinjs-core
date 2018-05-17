@@ -1,29 +1,26 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Code, CodeState, MultiCode } from "../../imodelhub/Codes";
-import { Briefcase } from "../../imodelhub/Briefcases";
-import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
-import { ECJsonTypeMap } from "../../ECJsonTypeMap";
-import { TestConfig, UserCredentials } from "../TestConfig";
-import { Guid } from "@bentley/bentleyjs-core";
-import { UrlDescriptor, DeploymentEnv } from "../../Client";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
-
-import { ChangeSet } from "../../imodelhub/ChangeSets";
-import { Version } from "../../imodelhub/Versions";
-import { Thumbnail, SmallThumbnail, LargeThumbnail } from "../../imodelhub/Thumbnails";
-import { IModelQuery } from "../../imodelhub/IModels";
-import { IModelHubClient } from "../../imodelhub/Client";
-import { AccessToken } from "../../Token";
-import { UserProfile } from "../../UserProfile";
-import { ConnectClient, Project } from "../../ConnectClients";
-
 import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
+
+import { Guid } from "@bentley/bentleyjs-core";
+
+import {
+  ECJsonTypeMap, AccessToken, UserProfile, ConnectClient, Project,
+  ProgressInfo, UrlDescriptor, DeploymentEnv,
+} from "../../";
+import {
+  IModelHubClient, Code, CodeState, MultiCode, Briefcase, ChangeSet, Version,
+  Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
+  MultiLock, Lock,
+} from "../../imodelhub/";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
-import { ProgressInfo, Lock, MultiLock, LockLevel, LockType } from "../..";
+import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
+
+import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
+import { TestConfig, UserCredentials } from "../TestConfig";
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -60,7 +57,8 @@ export function getDefaultClient() {
   return imodelHubClient;
 }
 
-export const assetsPath = __dirname + "/../assets/";
+export const assetsPath = __dirname + "/../../../lib/test/assets/";
+export const workDir = __dirname + "/../../../lib/test/output/";
 
 /**
  * Generates request URL.
@@ -238,7 +236,7 @@ export function generateChangeSet(id?: string): ChangeSet {
   return changeSet;
 }
 
-export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, ...changeSets: ChangeSet[]) {
+export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, query?: string, ...changeSets: ChangeSet[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -248,10 +246,12 @@ export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, ...c
       value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
       value.fileSize = getMockFileSize();
     }
-    value.index = `${i++}`;
+    if (!value.index) {
+      value.index = `${i++}`;
+    }
   });
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : undefined);
+    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
@@ -269,6 +269,15 @@ export function randomCode(briefcase: number): Code {
   code.state = CodeState.Reserved;
   code.value = randomCodeValue("TestCode");
   return code;
+}
+
+export function mockGetCodes(iModelId: string, query?: string, ...codes: Code[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Code", query);
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<Code>(codes);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
 export function mockUpdateCodes(iModelId: string, ...codes: Code[]) {
@@ -290,7 +299,7 @@ export function mockUpdateCodes(iModelId: string, ...codes: Code[]) {
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeniedCodes(iModelId: string, ...codes: Code[]) {
+export function mockDeniedCodes(iModelId: string, requestOptions?: object, ...codes: Code[]) {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -311,8 +320,16 @@ export function mockDeniedCodes(iModelId: string, ...codes: Code[]) {
         return obj.properties;
       }))],
     ]));
-  const postBody = ResponseBuilder.generateChangesetBody<MultiCode>([multiCode]);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiCode>([multiCode], requestOptions);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
+}
+
+export function mockDeleteAllCodes(iModelId: string, briefcaseId: number) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Code", `DiscardReservedCodes-${briefcaseId}`);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Delete, requestPath, {});
 }
 
 /** Locks */
@@ -534,10 +551,12 @@ export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
     const result = new ChangeSet();
     const fileName = path.basename(file, ".cs");
     result.id = fileName.substr(2);
+    result.index = fileName.slice(0, 1);
     result.fileSize = fs.statSync(path.join(dir, file)).size.toString();
     result.briefcaseId = briefcase.briefcaseId;
     result.seedFileId = briefcase.fileId;
     result.parentId = parentId;
+    result.fileName = result.id + ".cs";
     parentId = result.id;
     return result;
   });

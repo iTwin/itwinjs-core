@@ -172,15 +172,17 @@ export class ChangeSetHandler {
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());
 
+    changeSets.forEach((changeSet) => {
+      if (!changeSet.downloadUrl)
+        throw IModelHubRequestError.missingDownloadUrl("changeSets");
+    });
+
     const promises = new Array<Promise<void>>();
     let totalSize = 0;
     let downloadedSize = 0;
     changeSets.forEach((value) => totalSize += parseInt(value.fileSize!, 10));
     for (const changeSet of changeSets) {
-      if (!changeSet.downloadUrl)
-        return Promise.reject(IModelHubRequestError.missingDownloadUrl("changeSets"));
-
-      const downloadUrl: string = changeSet.downloadUrl;
+      const downloadUrl: string = changeSet.downloadUrl!;
       const downloadToPathname: string = this._fileHandler.join(downloadToPath, changeSet.fileName!);
 
       let previouslyDownloaded = 0;
@@ -215,6 +217,9 @@ export class ChangeSetHandler {
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());
 
+    if (!this._fileHandler.exists(changeSetPathname) || this._fileHandler.isDirectory(changeSetPathname))
+      return Promise.reject(IModelHubRequestError.fileNotFound());
+
     const postChangeSet = await this._handler.postInstance<ChangeSet>(ChangeSet, token, this.getRelativeUrl(imodelId), changeSet);
 
     await this._fileHandler.uploadFile(postChangeSet.uploadUrl!, changeSetPathname, progressCallback);
@@ -224,9 +229,6 @@ export class ChangeSetHandler {
     postChangeSet.isUploaded = true;
 
     const confirmChangeSet = await this._handler.postInstance<ChangeSet>(ChangeSet, token, this.getRelativeUrl(imodelId, postChangeSet.wsgId), postChangeSet);
-
-    if (!confirmChangeSet.isUploaded)
-      return Promise.reject(new Error("Error uploading change set"));
 
     changeSet.isUploaded = true;
 
