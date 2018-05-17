@@ -89,7 +89,8 @@ async function openView(state: SimpleViewState) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
   if (htmlCanvas) {
-    const viewport = new Viewport(htmlCanvas, state.viewState!);
+    const target = IModelApp.renderSystem.createTarget(htmlCanvas);
+    const viewport = new Viewport(htmlCanvas, state.viewState!, target);
     await viewport.changeView(state.viewState!);
     IModelApp.viewManager.addViewport(viewport);
   }
@@ -156,7 +157,7 @@ async function main() {
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
-  IModelApp.startup();
+  IModelApp.startup("QA", true);
 
   if (ElectronRpcConfiguration.isElectron)
     ElectronRpcManager.initializeClient({}, [IModelReadRpcInterface]);
