@@ -244,6 +244,7 @@ export class Mesh {
   public get polylines(): PolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as PolylineList : undefined; }
 
   // public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
+
   public getGraphics(args: MeshGraphicArgs, system: RenderSystem, iModel: IModelConnection): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {
       if (args.meshArgs.init(this))
@@ -434,19 +435,7 @@ export class MeshBuilder {
         continue;
 
       for (let i = 0; i < 3; i++) {
-        // const index = indices[i];
         const vertex = vertices[i];
-        // ###TODO implement MeshAuxData
-        // if (nullptr != auxData && visitor.GetAuxDataCP().IsValid())
-        //     {
-        //     // No deduplication with auxData (for now...)
-        //     newTriangle[i] = m_mesh->AddVertex(vertex.GetPosition(), vertex.GetNormal(), vertex.GetParam(), vertex.GetFillColor(), vertex.GetFeature());
-        //     m_mesh->AddAuxChannel(*auxData, visitor.GetAuxDataCP()->GetIndices().at(index));
-        //     }
-        // else
-        //     {
-        //     newTriangle[i] = AddVertex(vertex);
-        //     }
         triangle.indices[i] = this.vertexMap.insert(vertex);
         if (this.currentPolyface !== undefined)
           this.currentPolyface.vertexIndexMap.set(triangle.indices[i], visitor.clientPointIndex(i));
@@ -531,7 +520,6 @@ export namespace MeshBuilder {
     includeParams: boolean;
     fillColor: number;
     requireNormals: boolean;
-    // auxData: MeshAuxData;
   }
 }
 
