@@ -205,7 +205,7 @@ export class GeometryAccumulator {
     const meshes = this.toMeshes(options, tolerance);
     const args = new MeshGraphicArgs();
     for (const mesh of meshes) {
-      const graphic = mesh.getGraphics(args);
+      const graphic = mesh.getGraphics(args, this.system, this.iModel);
       if (undefined !== graphic)
         graphics.push(graphic);
     }

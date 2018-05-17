@@ -1,9 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+export * from "./render/primitives/geometry/GeometryPrimitives";
+export * from "./render/primitives/geometry/GeometryList";
+export * from "./render/primitives/geometry/GeometryListBuilder";
+export * from "./render/primitives/geometry/GeometryAccumulator";
 export * from "./render/primitives/ColorMap";
 export * from "./render/primitives/DisplayParams";
-export * from "./render/primitives/geometry";
 export * from "./render/primitives/Mesh";
 export * from "./render/primitives/Primitives";
 export * from "./render/primitives/Strokes";

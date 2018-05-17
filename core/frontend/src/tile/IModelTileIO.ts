@@ -4,14 +4,15 @@
 
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { ModelState } from "../../ModelState";
-import { RenderSystem } from "../../render/System";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
-import { MeshList } from "../../render/primitives/Mesh";
-import { ColorMap } from "../../render/primitives/ColorMap";
+import { ModelState } from "../ModelState";
+import { RenderSystem } from "../render/System";
+import { DisplayParams } from "../render/primitives/DisplayParams";
+import { MeshList } from "../render/primitives/Mesh";
+import { ColorMap } from "../render/primitives/ColorMap";
 import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
+/** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
   export const enum Flags {
     None = 0,
@@ -49,6 +50,7 @@ export namespace IModelTileIO {
                         public readonly count: number) { }
   }
 
+  /** The result of Reader.read(). */
   export interface Result {
     readStatus: TileIO.ReadStatus;
     isLeaf: boolean;
@@ -56,6 +58,7 @@ export namespace IModelTileIO {
     geometry?: TileIO.GeometryCollection;
   }
 
+  /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, model: ModelState, system: RenderSystem): Reader | undefined {
       const header = new Header(stream);
