@@ -68,6 +68,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   after(async () => {
+    WebGLTestContext.shutdown();
     if (iModel) await iModel.closeStandalone();
   });
 
