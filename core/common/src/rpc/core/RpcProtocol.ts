@@ -56,6 +56,7 @@ export enum RpcProtocolEvent {
   RequestReceived,
   BackendResponseCreated,
   BackendReportedPending,
+  BackendReportedNotFound,
   BackendErrorOccurred,
   AcknowledgementCreated,
   ReleaseResources,

@@ -3,16 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { TestConfig } from "../TestConfig";
+import { IModelHubClient, ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../imodelhub";
+import { AccessToken } from "../../";
 
-import { IModelHubClient } from "../../imodelhub/Client";
-import { AccessToken } from "../../Token";
+import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { ChangeSet, Version } from "../../imodelhub";
-import { Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../imodelhub/Thumbnails";
-
-chai.should();
 
 function getThumbnailLength(size: ThumbnailSize) {
   return size === "Small" ? 1000 : 3500;

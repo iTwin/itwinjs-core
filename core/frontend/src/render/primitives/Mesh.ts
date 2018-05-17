@@ -43,12 +43,10 @@ import {
   TextureMapping,
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "./DisplayParams";
-// import { IModelConnection } from "../../IModelConnection";
+import { IModelConnection } from "../../IModelConnection";
 import { ColorMap } from "./ColorMap";
-// import { System } from "../webgl/System";
+import { RenderGraphic, RenderSystem } from "../System";
 import { Triangle, TriangleList, TriangleKey, TriangleSet, ToleranceRatio } from "./Primitives";
-import { Graphic } from "../webgl/Graphic";
-// import { IModelConnection } from "../../IModelConnection";
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
 export class PolylineArgs {
@@ -219,7 +217,7 @@ export class Mesh {
   public readonly normals: OctEncodedNormal[] = [];
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
-  public readonly colors: Uint16Array = new Uint16Array();
+  public colors: Uint16Array = new Uint16Array();
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: Mesh.PrimitiveType;
@@ -246,14 +244,16 @@ export class Mesh {
   public get polylines(): PolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as PolylineList : undefined; }
 
   // public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
-  public getGraphics(args: MeshGraphicArgs/*, system: System, iModel: IModelConnection*/): Graphic | undefined {
-    const graphic = undefined;
+
+  public getGraphics(args: MeshGraphicArgs, system: RenderSystem, iModel: IModelConnection): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {
-      // if (args.meshArgs.init(this)) { graphic = system.createTriMesh(args.meshArgs, iModel); }
+      if (args.meshArgs.init(this))
+        return system.createTriMesh(args.meshArgs, iModel);
     } else if (undefined !== this.polylines && this.polylines.length !== 0 && args.polylineArgs.init(this)) {
-      // graphic = system.createIndexedPolylines(args.polylineArgs, iModel);
+      return system.createIndexedPolylines(args.polylineArgs, iModel);
     }
-    return graphic;
+
+    return undefined;
   }
 
   public addPolyline(poly: MeshPolyline): void {
@@ -284,7 +284,7 @@ export namespace Mesh {
 
   export class Features {
     public readonly table: FeatureTable;
-    public readonly _indices: number[] = [];
+    public _indices: number[] = [];
     public uniform = 0;
     public initialized = false;
 
@@ -310,18 +310,17 @@ export namespace Mesh {
       }
     }
 
-    /*
     public setIndices(indices: number[]) {
       this._indices.length = 0;
       this.uniform = 0;
       this.initialized = 0 < indices.length;
 
       assert(0 < indices.length);
-      if (1 == indices.length)
+      if (1 === indices.length)
         this.uniform = indices[0];
       else if (1 < indices.length)
         this._indices = indices;
-    } */
+    }
 
     public toFeatureIndex(index: FeatureIndex): void {
       if (!this.initialized) {
@@ -407,10 +406,10 @@ export class MeshBuilder {
 
       assert(!includeParams || (param !== undefined && param.length > 0));
       const haveParam = includeParams && (param !== undefined && param.length > 0);
-      assert(!haveParam || mappedTexture.isValid);
+      assert(!haveParam || undefined !== mappedTexture);
       triangle.setEdgeVisibility(visibility[0], visibility[1], visibility[2]);
 
-      if (haveParam && mappedTexture.isValid) {
+      if (haveParam && undefined !== mappedTexture) {
         // const textureMapParams = mappedTexture.params;
         // const computedParams = [];
 
@@ -436,19 +435,7 @@ export class MeshBuilder {
         continue;
 
       for (let i = 0; i < 3; i++) {
-        // const index = indices[i];
         const vertex = vertices[i];
-        // ###TODO implement MeshAuxData
-        // if (nullptr != auxData && visitor.GetAuxDataCP().IsValid())
-        //     {
-        //     // No deduplication with auxData (for now...)
-        //     newTriangle[i] = m_mesh->AddVertex(vertex.GetPosition(), vertex.GetNormal(), vertex.GetParam(), vertex.GetFillColor(), vertex.GetFeature());
-        //     m_mesh->AddAuxChannel(*auxData, visitor.GetAuxDataCP()->GetIndices().at(index));
-        //     }
-        // else
-        //     {
-        //     newTriangle[i] = AddVertex(vertex);
-        //     }
         triangle.indices[i] = this.vertexMap.insert(vertex);
         if (this.currentPolyface !== undefined)
           this.currentPolyface.vertexIndexMap.set(triangle.indices[i], visitor.clientPointIndex(i));
@@ -527,13 +514,12 @@ export namespace MeshBuilder {
   }
   export interface PolyfaceVisitorParams {
     visitor: PolyfaceVisitor;
-    mappedTexture: TextureMapping;
+    mappedTexture?: TextureMapping;
     // iModel: IModelConnection;
     // feature: Feature;
     includeParams: boolean;
     fillColor: number;
     requireNormals: boolean;
-    // auxData: MeshAuxData;
   }
 }
 

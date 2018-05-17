@@ -1,6 +1,8 @@
 # Wire Format
 
-Below are examples of how different entities are serialized to JSON which is the basis of the *wire format*.
+The *wire format* is the way how entities are serialized to JSON. It is described here: [Wire Format](./ECSQLRowFormat.md).
+
+Below are examples of how different entities look like in the wire format.
 
 ## Root Subject
 

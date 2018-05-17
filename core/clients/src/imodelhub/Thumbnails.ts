@@ -98,12 +98,12 @@ export class ThumbnailHandler {
     const options: RequestOptions = {
       method: "GET",
       headers: { authorization: token.toTokenString() },
-      responseType: "blob",
+      responseType: "arraybuffer",
     };
 
     const response = await request(url, options);
 
-    const byteArray: Uint8Array | undefined = response.body;
+    const byteArray = new Uint8Array(response.body);
     if (!byteArray || byteArray.length === 0) {
       return Promise.reject(new Error("Expected an image to be returned from the query"));
     }

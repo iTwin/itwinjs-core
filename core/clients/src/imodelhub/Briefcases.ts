@@ -7,6 +7,7 @@ import { IModelHubRequestError } from "./Errors";
 
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
+import { Config } from "../Config";
 import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "./FileHandler";
 import { ProgressInfo } from "../Request";
@@ -210,6 +211,9 @@ export class BriefcaseHandler {
    */
   public async download(briefcase: Briefcase, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
+
+    if (Config.isBrowser())
+      return Promise.reject(IModelHubRequestError.browser());
 
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());

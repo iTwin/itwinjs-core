@@ -1217,14 +1217,12 @@ export class FeatureTable extends Dictionary<Feature, number> {
 }
 
 export class TextureMapping {
-  private _texture?: RenderTexture;
-  private _params?: TextureMapping.Params;
-  public get texture(): RenderTexture | undefined { return this._texture; }
-  public get params(): TextureMapping.Params | undefined { return this._params; }
-  public get isValid(): boolean { return undefined !== this.texture; }
-  constructor(texture?: RenderTexture, params?: TextureMapping.Params) {
-    this._texture = texture;
-    this._params = params;
+  public readonly texture: RenderTexture;
+  public readonly params: TextureMapping.Params;
+
+  public constructor(tx: RenderTexture, params: TextureMapping.Params) {
+    this.texture = tx;
+    this.params = params;
   }
 }
 

@@ -64,7 +64,7 @@ export class StrokeOptions {
   public applyChordTol(minCount: number, radius: number, sweepRadians: number): number {
     if (this.chordTol && this.chordTol > 0.0) {
       const a = this.chordTol;
-      const stepRadians = 2.0 * Math.acos((a + radius) / a);
+      const stepRadians = 2.0 * Math.acos((1.0 - a / radius));
       minCount = Geometry.stepCount(stepRadians, sweepRadians, minCount);
     }
     return minCount;

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RpcManager, RpcRequestEvent, RpcRequest, RpcOperation } from "@bentley/imodeljs-common";
+import { RpcRequestEvent, RpcRequest, RpcOperation } from "@bentley/imodeljs-common";
 import { TestRpcInterface, TestOp1Params } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -30,7 +30,7 @@ if (TestbedConfig.cloudRpc) {
         (request as any)[COUNT] = pendingsReceived;
       });
 
-      RpcManager.getClientForInterface(TestRpcInterface).configuration.pendingOperationRetryInterval = 1;
+      op1.policy.retryInterval = () => 1;
 
       assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE, value: expectedPendings }));
 

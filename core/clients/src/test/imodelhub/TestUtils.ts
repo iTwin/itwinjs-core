@@ -1,29 +1,26 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Code, CodeState, MultiCode } from "../../imodelhub/Codes";
-import { Briefcase } from "../../imodelhub/Briefcases";
-import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
-import { ECJsonTypeMap } from "../../ECJsonTypeMap";
-import { TestConfig, UserCredentials } from "../TestConfig";
-import { Guid } from "@bentley/bentleyjs-core";
-import { UrlDescriptor, DeploymentEnv } from "../../Client";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
-
-import { ChangeSet } from "../../imodelhub/ChangeSets";
-import { Version } from "../../imodelhub/Versions";
-import { Thumbnail, SmallThumbnail, LargeThumbnail } from "../../imodelhub/Thumbnails";
-import { IModelQuery } from "../../imodelhub/IModels";
-import { IModelHubClient } from "../../imodelhub/Client";
-import { AccessToken } from "../../Token";
-import { UserProfile } from "../../UserProfile";
-import { ConnectClient, Project } from "../../ConnectClients";
-
 import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
+
+import { Guid } from "@bentley/bentleyjs-core";
+
+import {
+  ECJsonTypeMap, AccessToken, UserProfile, ConnectClient, Project,
+  ProgressInfo, UrlDescriptor, DeploymentEnv,
+} from "../../";
+import {
+  IModelHubClient, Code, CodeState, MultiCode, Briefcase, ChangeSet, Version,
+  Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
+  MultiLock, Lock,
+} from "../../imodelhub/";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
-import { ProgressInfo } from "../..";
+import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
+
+import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
+import { TestConfig, UserCredentials } from "../TestConfig";
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
@@ -60,7 +57,8 @@ export function getDefaultClient() {
   return imodelHubClient;
 }
 
-export const assetsPath = __dirname + "/../assets/";
+export const assetsPath = __dirname + "/../../../lib/test/assets/";
+export const workDir = __dirname + "/../../../lib/test/output/";
 
 /**
  * Generates request URL.
@@ -238,7 +236,7 @@ export function generateChangeSet(id?: string): ChangeSet {
   return changeSet;
 }
 
-export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, ...changeSets: ChangeSet[]) {
+export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, query?: string, ...changeSets: ChangeSet[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -248,10 +246,12 @@ export function mockGetChangeSet(iModelId: string, getDownloadUrl: boolean, ...c
       value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
       value.fileSize = getMockFileSize();
     }
-    value.index = `${i++}`;
+    if (!value.index) {
+      value.index = `${i++}`;
+    }
   });
   const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : undefined);
+    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
@@ -269,6 +269,15 @@ export function randomCode(briefcase: number): Code {
   code.state = CodeState.Reserved;
   code.value = randomCodeValue("TestCode");
   return code;
+}
+
+export function mockGetCodes(iModelId: string, query?: string, ...codes: Code[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Code", query);
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<Code>(codes);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
 export function mockUpdateCodes(iModelId: string, ...codes: Code[]) {
@@ -290,7 +299,7 @@ export function mockUpdateCodes(iModelId: string, ...codes: Code[]) {
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeniedCodes(iModelId: string, ...codes: Code[]) {
+export function mockDeniedCodes(iModelId: string, requestOptions?: object, ...codes: Code[]) {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -311,7 +320,103 @@ export function mockDeniedCodes(iModelId: string, ...codes: Code[]) {
         return obj.properties;
       }))],
     ]));
-  const postBody = ResponseBuilder.generateChangesetBody<MultiCode>([multiCode]);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiCode>([multiCode], requestOptions);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
+}
+
+export function mockDeleteAllCodes(iModelId: string, briefcaseId: number) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, iModelId, "Code", `DiscardReservedCodes-${briefcaseId}`);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Delete, requestPath, {});
+}
+
+/** Locks */
+export function incrementLockObjectId(objectId: string): string {
+  const objectIdNum = parseInt(objectId, 16) + 1;
+  return "0x" + objectIdNum.toString(16);
+}
+
+export async function getLastLockObjectId(accessToken: AccessToken, iModelId: string): Promise<string> {
+  if (TestConfig.enableMocks)
+    return "0x0";
+
+  const client = getDefaultClient();
+  const locks = await client.Locks().get(accessToken, iModelId);
+
+  locks.sort((lock1, lock2) => (parseInt(lock1.objectId!, 16) > parseInt(lock2.objectId!, 16) ? -1 : 1));
+
+  return (locks.length === 0 || locks[0].objectId === undefined) ? "0x0" : locks[0].objectId!;
+}
+
+export function generateLock(idRequired: boolean, briefcaseId?: number, objectId?: string,
+  lockType?: LockType, lockLevel?: LockLevel, seedFileId?: string, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string): Lock {
+  const result = new Lock();
+  if (idRequired)
+    result.wsgId = Guid.createValue();
+  result.briefcaseId = briefcaseId || 1;
+  result.seedFileId = seedFileId;
+  result.objectId = objectId || "0x0";
+  result.lockLevel = lockLevel || 1;
+  result.lockType = lockType || 1;
+  result.releasedWithChangeSet = releasedWithChangeSet;
+  result.releasedWithChangeSetIndex = releasedWithChangeSetIndex;
+  return result;
+}
+
+export function mockGetLocks(imodelId: string, ...locks: Lock[]) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Lock");
+  const requestResponse = ResponseBuilder.generateGetArrayResponse<Lock>(locks);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
+}
+
+export function mockUpdateLocks(iModelId: string, locks: Lock[], requestOptions?: object) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const multiLock = new MultiLock();
+  multiLock.changeState = "new";
+  multiLock.briefcaseId = locks[0].briefcaseId;
+  multiLock.seedFileId = locks[0].seedFileId;
+  multiLock.releasedWithChangeSet = locks[0].releasedWithChangeSet;
+  multiLock.releasedWithChangeSetIndex = locks[0].releasedWithChangeSetIndex;
+  multiLock.lockLevel = locks[0].lockLevel;
+  multiLock.lockType = locks[0].lockType;
+  multiLock.objectIds = locks.map((value) => value.objectId!);
+
+  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestResponse = ResponseBuilder.generateChangesetResponse<MultiLock>([multiLock]);
+  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock], requestOptions);
+  ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
+}
+
+export function mockDeniedLocks(iModelId: string, locks: Lock[], requestOptions?: object) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const multiLock = new MultiLock();
+  multiLock.changeState = "new";
+  multiLock.briefcaseId = locks[0].briefcaseId;
+  multiLock.seedFileId = locks[0].seedFileId;
+  multiLock.releasedWithChangeSet = locks[0].releasedWithChangeSet;
+  multiLock.releasedWithChangeSetIndex = locks[0].releasedWithChangeSetIndex;
+  multiLock.lockLevel = locks[0].lockLevel;
+  multiLock.lockType = locks[0].lockType;
+  multiLock.objectIds = locks.map((value) => value.objectId!);
+
+  const requestPath = `/v2.5/Repositories/iModel--${iModelId}/$changeset`;
+  const requestResponse = ResponseBuilder.generateError("iModelHub.LockOwnedByAnotherBriefcase", "", "",
+    new Map<string, any>([
+      ["ConflictingLocks", JSON.stringify(locks.map((value) => {
+        const obj = ECJsonTypeMap.toJson<Lock>("wsg", value);
+        return obj.properties;
+      }))],
+    ]));
+  const postBody = ResponseBuilder.generateChangesetBody<MultiLock>([multiLock], requestOptions);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 }
 
@@ -446,10 +551,12 @@ export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
     const result = new ChangeSet();
     const fileName = path.basename(file, ".cs");
     result.id = fileName.substr(2);
+    result.index = fileName.slice(0, 1);
     result.fileSize = fs.statSync(path.join(dir, file)).size.toString();
     result.briefcaseId = briefcase.briefcaseId;
     result.seedFileId = briefcase.fileId;
     result.parentId = parentId;
+    result.fileName = result.id + ".cs";
     parentId = result.id;
     return result;
   });
@@ -482,6 +589,24 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: strin
     result.push(changeSet);
   }
   return result;
+}
+
+export async function createLocks(accessToken: AccessToken, imodelId: string, briefcase: Briefcase, count = 1,
+  lockType: LockType = 1, lockLevel: LockLevel = 1, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string) {
+  if (TestConfig.enableMocks)
+    return;
+
+  const client = getDefaultClient();
+  let lastObjectId = await getLastLockObjectId(accessToken, imodelId);
+  const generatedLocks: Lock[] = [];
+
+  for (let i = 0; i < count; i++) {
+    generatedLocks.push(generateLock(false, briefcase.briefcaseId!,
+      lastObjectId = incrementLockObjectId(lastObjectId), lockType, lockLevel, briefcase.fileId,
+      releasedWithChangeSet, releasedWithChangeSetIndex));
+  }
+
+  await client.Locks().update(accessToken, imodelId, generatedLocks);
 }
 
 export class ProgressTracker {

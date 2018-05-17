@@ -19,8 +19,8 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
-import { GraphicList } from "./Render/System";
-import { MeshArgs } from "./Render/Primitives/Mesh";
+import { GraphicList } from "./render/System";
+import { MeshArgs } from "./render/primitives/Mesh";
 import { IModelApp } from "./IModelApp";
 
 export const enum GridOrientationType {
@@ -1135,26 +1135,33 @@ export abstract class ViewState3d extends ViewState {
   protected drawSkyBox(context: DecorateContext): void {
     // ###TODO: Check if skybox enabled in display style; draw actual skybox instead of this fake thing
     const rect = context.viewport.viewRect;
-    const points = [ new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height) ];
+    const points = [new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height)];
     const args = new MeshArgs();
     args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
       args.points.add(point);
 
-    args.vertIndices = [ 3, 2, 0, 2, 1, 0 ];
+    args.vertIndices = [3, 2, 0, 2, 1, 0];
 
-    const colors = new Uint32Array([ ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue ]);
+    const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
     args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
 
     const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
     if (undefined !== gf)
       context.setViewBackground(gf);
+
+    // ###TODO: Remove this...we're using it to debug failure to blend translucent overlay decorations
+    args.vertIndices = [3, 2, 0];
+    args.colors.initUniform(0x7f7f7f7f);
+    const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    if (undefined !== triangle)
+      context.addViewOverlay(triangle);
   }
 
   protected drawGroundPlane(context: DecorateContext): void {
     // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
     const extents = this.getViewedExtents(); // the project extents
-    const pts = [ extents.low, extents.low.clone(), extents.high.clone(), extents.low.clone() ];
+    const pts = [extents.low, extents.low.clone(), extents.high.clone(), extents.low.clone()];
     pts[1].x = extents.high.x;
     pts[2].z = extents.low.z;
     pts[3].y = extents.high.y;
@@ -1164,7 +1171,7 @@ export abstract class ViewState3d extends ViewState {
     for (const point of pts)
       args.points.add(point);
 
-    args.vertIndices = [ 3, 2, 0, 2, 1, 0 ];
+    args.vertIndices = [3, 2, 0, 2, 1, 0];
     args.colors.initUniform(ColorByName.darkGreen);
 
     const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);

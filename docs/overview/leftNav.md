@@ -7,9 +7,9 @@
 
 &nbsp;
 ### Helpful Background Information
-- [iModels](./iModels)
-- [IModelHub](./IModelHub)
-- [iModel Bridges](./IModelBridges)
-- [BIS Introduction](../bis/intro/introduction)
+- [iModels](./iModels.md)
+- [IModelHub](./IModelHub.md)
+- [iModel Bridges](./imodel-bridges.md)
+- [BIS Introduction](../bis/intro/introduction.md)
 - [iModelJs Architecture](./SoftwareArchitecture.md)
 - [iModelJs Packages](./index.md#imodeljs-organization)

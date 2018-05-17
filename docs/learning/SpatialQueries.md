@@ -1,6 +1,6 @@
 # Spatial Queries
 
-ECSQL allows you to use the BisCore.SpatialIndex to include spatial criteria when selecting [SpatialElement]($backend). There are also [functions](./SqlFuncs.md) that allow you to include an element's geometric properties in a where clause.
+[ECSQL](./ECSQL.md) allows you to use the BisCore.SpatialIndex to include spatial criteria when selecting [SpatialElement]($backend). There are also [functions](./SqlFuncs.md) that allow you to include an element's geometric properties in a where clause.
 
 The [SpatialElement]($backend) in an iModel are index by a [spatial index](https://sqlite.org/rtree.html). This indexes elements by area. Each node in the spatial index is conceptually a bounding box, plus the ECInstanceId of an element that is enclosed by it.
 

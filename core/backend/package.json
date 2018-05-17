@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.84.0",
+  "version": "0.85.1",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -73,9 +73,9 @@
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~18.0.0",
-    "@bentley/imodeljs-native-platform-node": "~18.0.0",
-    "@bentley/imodeljs-native-platform-electron": "~18.0.0",
+    "@bentley/imodeljs-native-platform-api": "~19.0.0",
+    "@bentley/imodeljs-native-platform-node": "~19.0.0",
+    "@bentley/imodeljs-native-platform-electron": "~19.0.0",
     "fs-extra": "^5.0.0",
     "js-base64": "^2.4.0"
   },

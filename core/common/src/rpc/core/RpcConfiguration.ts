@@ -21,6 +21,13 @@ export abstract class RpcConfiguration {
    */
   public static developmentMode: boolean = false;
 
+  /**
+   * Whether strict mode is enabled.
+   * This parameter determines system behaviors relating to strict checking:
+   * - Whether an error is thrown if the type marshaling system encounters an unregistered type (only in strict mode).
+   */
+  public static strictMode: boolean = false;
+
   /** Sets the configuration supplier for an RPC interface class. */
   public static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void {
     definition.prototype.configurationSupplier = supplier;

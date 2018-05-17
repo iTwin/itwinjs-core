@@ -125,7 +125,7 @@ def processTypes(o):
                 typeName = decls[1]
                 if wasEmittingDecl:
                     docTypes = docTypes + "```\n"
-                docTypes = docTypes + "\n-------------\n"
+                docTypes = docTypes + "\n"
                 docTypes = docTypes + "## " + typeName + "\n"
                 docTypes = docTypes + typeDesc
                 docTypes = docTypes + "```\n"
@@ -250,7 +250,7 @@ def processFunction(doc):
 
     functionComment = detectTopicLinks(functionComment)
 
-    fdoc = "\n-------------------\n"
+    fdoc = "\n"
     fdoc = fdoc + "## " + fname + "\n"
     fdoc = fdoc + "\n```\n" + fdecl + "\n```\n"
     fdoc = fdoc + functionComment + "\n"
@@ -284,27 +284,8 @@ def main(sourceFile):
             else:
                 doc.append(line)
 
-    flinks = ""
-    allFdecls.sort()
-    sep = ""
-    for f in allFdecls:
-        flinks = flinks + sep + '[' + f + '](#' + f + ')'
-        sep = ", "
-
-    tlinks = ""
-    allFdecls.sort()
-    sep = ""
-    for t in allTypes:
-        tlinks = tlinks + sep + '[' + t + '](#' + f + ')'
-        sep = ", "
-
     print "# ECSQL Built-in Geometry Functions"
     print getIntro()
-    print "Types: "
-    print tlinks
-    print ""
-    print "Functions: "
-    print flinks
     print "# Types"
     print getTypesIntro()
     print tdocs

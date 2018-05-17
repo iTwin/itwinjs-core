@@ -4,22 +4,24 @@
 
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { ModelState } from "../../ModelState";
-import { RenderSystem } from "../../render/System";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
-import { MeshList } from "../../render/primitives/Mesh";
-import { ColorMap } from "../../render/primitives/ColorMap";
-import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass } from "@bentley/imodeljs-common";
+import { ModelState } from "../ModelState";
+import { RenderSystem } from "../render/System";
+import { DisplayParams } from "../render/primitives/DisplayParams";
+import { MeshList } from "../render/primitives/Mesh";
+import { ColorMap } from "../render/primitives/ColorMap";
+import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { JsonUtils } from "@bentley/bentleyjs-core";
 
+/** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
-  const enum Flags {
+  export const enum Flags {
     None = 0,
     ContainsCurves = 1 << 0,
     Incomplete = 1 << 1,
     IsLeaf = 1 << 2,
   }
 
-  class Header extends GltfTileIO.Header {
+  export class Header extends TileIO.Header {
     public readonly flags: Flags;
     public readonly contentRange: ElementAlignedBox3d;
     public readonly length: number;
@@ -48,6 +50,7 @@ export namespace IModelTileIO {
                         public readonly count: number) { }
   }
 
+  /** The result of Reader.read(). */
   export interface Result {
     readStatus: TileIO.ReadStatus;
     isLeaf: boolean;
@@ -55,13 +58,34 @@ export namespace IModelTileIO {
     geometry?: TileIO.GeometryCollection;
   }
 
+  /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, model: ModelState, system: RenderSystem): Reader | undefined {
+      const header = new Header(stream);
+      if (!header.isValid)
+        return undefined;
+
+      // The feature table follows the dgnT header
+      if (!this.skipFeatureTable(stream))
+        return undefined;
+
+      // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream);
       return undefined !== props ? new Reader(props, model, system) : undefined;
     }
 
+    private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
+      const startPos = stream.curPos;
+      const header = FeatureTableHeader.readFrom(stream);
+      if (undefined !== header)
+        stream.curPos = startPos + header.length;
+
+      return undefined !== header;
+    }
+
     public read(): Result {
+      // ###TODO don't re-read the headers...
+      this.buffer.reset();
       const header = new Header(this.buffer);
       let isLeaf = true;
       if (!header.isValid)
@@ -93,7 +117,7 @@ export namespace IModelTileIO {
       if (undefined === header)
         return undefined;
 
-      const featureTable = new FeatureTable(header.maxFeatures, this.model.id);
+      const featureTable = new FeatureTable(header.maxFeatures, this.modelId);
       for (let i = 0; i < header.count; i++) {
         const elementId = this.buffer.nextId64;
         const subCategoryId = this.buffer.nextId64;
@@ -110,16 +134,35 @@ export namespace IModelTileIO {
       return featureTable;
     }
 
-    protected readFeatures(_json: any): Uint32Array | undefined {
-      return undefined; // ###TODO
+    protected readFeatureIndices(json: any): number[] | undefined {
+      const featureId = json.featureID;
+      if (undefined !== featureId)
+        return [ featureId as number ];
+      else
+        return this.readIndices(json, "featureIDs");
     }
 
-    protected readColorTable(_json: any): ColorMap | undefined {
-      return undefined; // ###TODO
+    protected readColorTable(colorTable: ColorMap, meshJson: any): boolean {
+      const json = JsonUtils.asArray(meshJson.colorTable);
+      if (undefined !== json) {
+        for (const color of json)
+          colorTable.getIndex(color as number);
+      }
+
+      return 0 < colorTable.length;
     }
 
-    protected createDisplayParams(_json: any): DisplayParams | undefined {
-      return undefined; // ###TODO
+    protected createDisplayParams(json: any): DisplayParams | undefined {
+      // ###TODO: gradient, material from material ID, texture mapping
+      const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
+      const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
+      const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));
+      const width = JsonUtils.asInt(json.lineWidth);
+      const linePixels = JsonUtils.asInt(json.linePixels, LinePixels.Solid);
+      const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);
+      const ignoreLighting = JsonUtils.asBool(json.ignoreLighting);
+
+      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, undefined, undefined, undefined, ignoreLighting);
     }
   }
 }

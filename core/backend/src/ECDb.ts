@@ -105,7 +105,7 @@ export class ECDb implements IDisposable {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param cb The callback to invoke on the prepared statement

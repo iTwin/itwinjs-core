@@ -44,7 +44,7 @@ export class ECSqlInsertResult {
  *
  * See also
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iModelJs API.
- * - [Code samples]($docs/learning/backend/ExecutingECSQL#code-examples) illustrate the use of iModelJs API for executing and working with ECSQL
+ * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iModelJs API for executing and working with ECSQL
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: NativeECSqlStatement | undefined;
@@ -190,7 +190,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /**
    * Gets a binder to bind a value for an ECSQL parameter
    * > This is the most low-level API to bind a value to a specific parameter. Alternatively you can use the ECSqlStatement.bindXX methods
-   * > or [ECSqlStatement.bindValues]()$backend/ECSqlStatement.bindValues).
+   * > or [ECSqlStatement.bindValues]($backend).
    * @param parameter Index (1-based) or name of the parameter
    */
   public getBinder(parameter: string | number): ECSqlBinder { return new ECSqlBinder(this._stmt!.getBinder(parameter)); }
@@ -204,7 +204,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * The section "[iModelJs Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
    * iModelJs types to be used for the different ECSQL parameter types.
    *
-   * See also these [Code Samples]($docs/learning/backend/ExecutingECSQL#binding-to-all-parameters-at-once)
+   * See also these [Code Samples]($docs/learning/backend/ECSQLCodeExamples#binding-to-all-parameters-at-once)
    */
   public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
@@ -251,7 +251,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    *  >  Insert statements can be used with ECDb only, not with IModelDb.
    *
-   * See also: [Code Samples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples)
    */
   public step(): DbResult { return this._stmt!.step(); }
 
@@ -279,7 +279,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * See also:
    * - [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
-   * - [Code Samples]($docs/learning/backend/ExecutingECSQL#working-with-the-query-result)
+   * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
   public getRow(): any {
     const colCount: number = this.getColumnCount();
@@ -321,7 +321,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of ECSQL column in query result (0-based)
    *
-   * See also: [Code Samples]($docs/learning/backend/ExecutingECSQL#working-with-the-query-result)
+   * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
   public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
 }
@@ -486,7 +486,7 @@ export class ECSqlBinder {
  *
  * - [ECSqlStatement]($backend)
  * - [ECSqlStatement.getValue]($backend)
- * - [Code Samples]($docs/learning/backend/ExecutingECSQL#working-with-the-query-result)
+ * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  */
 export class ECSqlValue {
   private _val: NativeECSqlValue;

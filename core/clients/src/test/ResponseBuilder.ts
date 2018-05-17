@@ -145,10 +145,11 @@ export class ResponseBuilder {
 
   /**
    * Generates Changeset body for POST request.
-   * @param classObjects Class objects from which body will be generated.
-   * @returns Created POST body in JSON.
+   * @param classObjects Class objects from which body will be generated.
+   * @param requestOptions Extended options for request.
+   * @returns Created POST body in JSON.
    */
-  public static generateChangesetBody<T extends ECInstance>(classObjects: T[]): object {
+  public static generateChangesetBody<T extends ECInstance>(classObjects: T[], requestOptions?: object): object {
     let body: string = '{"instances":[';
     let i = 0;
     for (const obj of classObjects) {
@@ -158,7 +159,11 @@ export class ResponseBuilder {
       body += this.convertToJson(obj, 1);
     }
 
-    body += "]}";
+    body += "]";
+    if (requestOptions) {
+      body += `,"requestOptions":${JSON.stringify(requestOptions)}`;
+    }
+    body += "}";
     return JSON.parse(body);
   }
 

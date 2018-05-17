@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface } from "@bentley/imodeljs-common";
-import { TestRpcInterface, TestOp1Params, TestRpcInterface2 } from "../common/TestRpcInterface";
+import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -143,12 +143,13 @@ describe("RpcInterface", () => {
       if (type !== RpcRequestEvent.PendingUpdateReceived || request.operation !== op8)
         return;
 
+      request.retryInterval = 1;
       assert.isFalse(receivedPending);
       receivedPending = true;
       assert.equal(request.extendedStatus, TestRpcInterface.OP8_PENDING_MESSAGE);
     });
 
-    RpcManager.getClientForInterface(TestRpcInterface).configuration.pendingOperationRetryInterval = 1;
+    op8.policy.retryInterval = () => 1;
 
     const response1 = await TestRpcInterface.getClient().op8(1, 1);
     assert.equal(response1.initializer, TestRpcInterface.OP8_INITIALIZER);
@@ -230,5 +231,35 @@ describe("RpcInterface", () => {
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();
+  });
+
+  it("should allow resolving a 'not found' state for a request", async () => {
+    const removeResolver = RpcRequest.notFoundHandlers.addListener((request, response, resubmit, reject) => {
+      if (!(response instanceof TestNotFoundResponse))
+        return;
+
+      setTimeout(() => {
+        if (response.code === TestNotFoundResponseCode.CanRecover) {
+          assert.strictEqual("oldvalue", request.parameters[0]);
+          request.parameters[0] = "newvalue";
+          resubmit();
+        } else if (response.code === TestNotFoundResponseCode.Fatal) {
+          reject(response.code);
+        }
+      }, 0);
+    });
+
+    const opResponse = await TestRpcInterface.getClient().op11("oldvalue", 0);
+    assert.strictEqual(opResponse, "newvalue");
+
+    try {
+      await TestRpcInterface.getClient().op11("newvalue", 1); // op11 is hard-coded to fail fatally the second time to test reject()
+      assert(false);
+    } catch (err) {
+      assert.strictEqual(err, TestNotFoundResponseCode.Fatal);
+      assert(true);
+    }
+
+    removeResolver();
   });
 });

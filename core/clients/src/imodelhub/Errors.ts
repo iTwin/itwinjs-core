@@ -15,6 +15,7 @@ export enum IModelHubRequestErrorId {
   MissingDownloadUrlError,
   NotSupportedInBrowser,
   FileHandlerNotSet,
+  FileNotFound,
 }
 
 /**
@@ -108,6 +109,22 @@ export class IModelHubRequestError extends Error {
   }
 
   /**
+   * Create error for a missing file.
+   * @returns Created error.
+   */
+  public static fileNotFound(): IModelHubRequestError {
+    const error = new IModelHubRequestError();
+
+    error.name = "File Not Found";
+    error.id = IModelHubRequestErrorId.FileNotFound;
+    error.message = "Could not find the file to upload.";
+
+    error.log();
+
+    return error;
+  }
+
+  /**
    * Log this error.
    */
   private log(): void {
@@ -160,6 +177,7 @@ export enum IModelHubResponseErrorId {
   ChangeSetAlreadyHasVersion,
   VersionAlreadyExists,
   QueryIdsNotSpecified,
+  ConflictsAggregate,
 }
 
 /**
@@ -194,6 +212,7 @@ export class IModelHubResponseError extends WsgError {
       case IModelHubResponseErrorId.PullIsRequired:
       case IModelHubResponseErrorId.CodeStateInvalid:
       case IModelHubResponseErrorId.CodeReservedByAnotherBriefcase:
+      case IModelHubResponseErrorId.ConflictsAggregate:
         return true;
 
       default:
