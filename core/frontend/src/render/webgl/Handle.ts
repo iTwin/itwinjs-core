@@ -174,7 +174,7 @@ export class AttributeHandle {
   public static create(program: WebGLProgram, name: string, required: boolean = false): AttributeHandle | undefined {
     const glId = System.instance.context.getAttribLocation(program, name);
     if (-1 === glId) {
-      assert(!required);
+      assert(!required, "getAttribLocation failed for " + name);
       return undefined;
     }
 
@@ -205,7 +205,7 @@ export class UniformHandle {
   public static create(program: WebGLProgram, name: string, required: boolean = true): UniformHandle | undefined {
     const location = System.instance.context.getUniformLocation(program, name);
     if (null === location) {
-      assert(!required);
+      assert(!required, "getUniformLocation failed for " + name);
       return undefined;
     }
 

@@ -31,7 +31,7 @@ if (v_texc.x >= 0.0) { // v_texc = (-1,-1) for solid lines - don't bother with a
   discardByLineCode = (0.0 == texColor.r);
 }
 
-if (v_lnInfo.w > 0.5) {} // line needs pixel trimming
+if (v_lnInfo.w > 0.5) { // line needs pixel trimming
   // calculate pixel distance from pixel center to expected line center, opposite dir from major
   vec2 dxy = gl_FragCoord.xy - v_lnInfo.xy;
   if (v_lnInfo.w < 1.5)  // not x-major
