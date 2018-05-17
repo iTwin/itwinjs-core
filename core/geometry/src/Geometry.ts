@@ -445,13 +445,39 @@ export class Angle implements BeJSONFunctions {
   private _degrees?: number;
   private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
   public clone(): Angle { return new Angle(this._radians, this._degrees); }
+  /**
+   * Return a new Angle object for angle given in degrees.
+   * @param degrees angle in degrees
+   */
   public static createDegrees(degrees: number) { return new Angle(Angle.degreesToRadians(degrees), degrees); }
+  /**
+   * Return a (new) Angle object for a value given in radians.
+   * @param radians angle in radians
+   */
   public static createRadians(radians: number) { return new Angle(radians); }
+  /**
+   * Set this angle to a value given in radians.
+   * @param radians angle given in radians
+   */
   public setRadians(radians: number) { this._radians = radians; this._degrees = undefined; }
+  /**
+   * Set this angle to a value given in degrees.
+   * @param degrees angle given in degrees.
+   */
   public setDegrees(degrees: number) { this._radians = Angle.degreesToRadians(degrees); this._degrees = degrees; }
   /** Create an angle for a full circle. */
   public static create360() { return new Angle(Math.PI * 2.0, 360.0); }
+  /**
+   * @return a (strongly typed) Angle whose tangent is `numerator/denominator`, using the signs of both in determining the (otherwise ambiguous)
+   * quadrant.
+   * @param numerator numererator for tangent
+   * @param denominator denominator for tangent
+   */
   public static createAtan2(numerator: number, denominator: number): Angle { return new Angle(Math.atan2(numerator, denominator)); }
+  /**
+   * Copy all contents of `other` to this Angle.
+   * @param other source data
+   */
   public setFrom(other: Angle) { this._radians = other._radians; this._degrees = other._degrees; }
   /**
    * Create an Angle from a JSON object

@@ -20,6 +20,8 @@ export class StrokeOptions {
   public angleTol?: Angle;
   /** maximum length of a single stroke. */
   public maxEdgeLength?: number;
+  /** caller expects convex facets.  */
+  public needConvexFacets?: boolean;
   /** minimum strokes on a primitive */
   public minStrokesPerPrimitive?: number;
 
@@ -62,9 +64,9 @@ export class StrokeOptions {
 
   // return stroke count which is the larger of existing count or count needed for circular arc chord tolerance condition.
   public applyChordTol(minCount: number, radius: number, sweepRadians: number): number {
-    if (this.chordTol && this.chordTol > 0.0) {
+    if (this.chordTol && this.chordTol > 0.0 && this.chordTol < radius) {
       const a = this.chordTol;
-      const stepRadians = 2.0 * Math.acos((a + radius) / a);
+      const stepRadians = 2.0 * Math.acos((1.0 - a / radius));
       minCount = Geometry.stepCount(stepRadians, sweepRadians, minCount);
     }
     return minCount;
