@@ -120,7 +120,7 @@ export class IModelConnection extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/frontend/ExecutingECSQL#code-examples)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
@@ -130,7 +130,7 @@ export class IModelConnection extends IModel {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
-   * @throws [[IModelError]] if the ECSQL is invalid
+   * @throws [IModelError]($common) if the ECSQL is invalid
    */
   public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
     Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));

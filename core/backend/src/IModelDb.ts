@@ -285,7 +285,7 @@ export class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param callback the callback to invoke on the prepared statement
@@ -310,7 +310,7 @@ export class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL SELECT statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).

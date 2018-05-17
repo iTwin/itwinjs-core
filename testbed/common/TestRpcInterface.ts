@@ -84,10 +84,6 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   /** exposed in test RPC interface so that this functionality can be tested from the frontend perspective */
-  public async attachChangeCache(_iModelToken: IModelToken): Promise<void> {
-    return this.forward.apply(this, arguments);
-  }
-
   public async extractChangeSummaries(_iModelToken: IModelToken, _options: any): Promise<void> {
     return this.forward.apply(this, arguments);
   }

@@ -50,8 +50,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     }
   }
 
-  public async attachChangeCache(iModelToken: IModelToken): Promise<void> { return ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken)); }
-
   public async extractChangeSummaries(iModelToken: IModelToken, options: any): Promise<void> {
     await ChangeSummaryManager.extractChangeSummaries(IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
   }
