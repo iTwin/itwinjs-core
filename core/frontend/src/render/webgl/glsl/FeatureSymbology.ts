@@ -350,7 +350,7 @@ vec2 readDepthAndOrder(vec2 tc) {
   return vec2(order, decodeDepthRgb(pdo.yzw));
 }`;
 
-const computeEyeSpace = `v_eyeSpace = (u_mv * rawPosition).xyz;`;
+export const computeEyeSpace = `v_eyeSpace = (u_mv * rawPosition).xyz;`;
 
 const checkForEarlySurfaceDiscard = `
 if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
@@ -442,7 +442,7 @@ function addEdgeWidth(builder: ShaderBuilder) {
   });
 }
 
-const computeElementId = `
+export const computeElementId = `
 if (u_featureInfo.x <= kFeatureDimension_SingleUniform) {
   v_element_id0 = u_element_id0;
   v_element_id1 = u_element_id1;
@@ -466,7 +466,7 @@ function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_PlanarSilhouette", VariableType.Float, "13.0");
 }
 
-function addRenderOrder(builder: ShaderBuilder) {
+export function addRenderOrder(builder: ShaderBuilder) {
   builder.addUniform("u_renderOrder", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_renderOrder", (uniform, params) => {
       uniform.setUniform1f(params.geometry.renderOrder);
@@ -513,7 +513,7 @@ vec2 computeElementIdTextureCoords() {
   return compute_elementId_coords(getFeatureIndex());
 }`;
 
-function addElementId(builder: ProgramBuilder) {
+export function addElementId(builder: ProgramBuilder) {
   builder.addVarying("v_element_id0", VariableType.Vec4);
   builder.addVarying("v_element_id1", VariableType.Vec4);
 
