@@ -26,6 +26,8 @@ Both frontend and backend should configure *app-specific interfaces* in their co
 |Desktop app|[desktop RPC configuration](../overview/App.md#desktop-rpc-configuration)
 |Web app|a [Web PRC configuration](../overview/App.md#web-rpc-configuration)
 
+Frontend and backend must use *the same* RPC configuration for a given RpcInterface.
+
 Frontends and backends must always use a [Web RPC configuration](./RpcInterface.md#web-rpc-configuration) for all remote services, regardless of app configuration or platform.
 
 ## Serving RpcInterfaces
