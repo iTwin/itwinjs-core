@@ -164,36 +164,21 @@ class SeedFileHandler {
   public async uploadSeedFile(token: AccessToken, imodelId: string, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
     Logger.logInfo(loggingCategory, `Uploading seed file to iModel ${imodelId}`);
 
-    if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
-
-    if (!this._fileHandler)
-      return Promise.reject(IModelHubRequestError.fileHandler());
-
-    if (!this._fileHandler.exists(seedPathname))
-      return Promise.reject(new Error("Could not find the SeedFile at specified location: " + seedPathname));
-
     const seedFile = new SeedFile();
-    seedFile.fileName = this._fileHandler.basename(seedPathname);
-    seedFile.fileSize = this._fileHandler.getFileSize(seedPathname).toString();
+    seedFile.fileName = this._fileHandler!.basename(seedPathname);
+    seedFile.fileSize = this._fileHandler!.getFileSize(seedPathname).toString();
     if (seedFileDescription)
       seedFile.fileDescription = seedFileDescription;
 
     const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(SeedFile, token, this.getRelativeUrl(imodelId), seedFile);
 
-    if (!createdSeedFile.uploadUrl)
-      return Promise.reject(new Error("Error setting up a URL to upload the SeedFile"));
-
-    await this._fileHandler.uploadFile(createdSeedFile.uploadUrl, seedPathname, progressCallback);
+    await this._fileHandler!.uploadFile(createdSeedFile.uploadUrl!, seedPathname, progressCallback);
 
     createdSeedFile.uploadUrl = undefined;
     createdSeedFile.downloadUrl = undefined;
     createdSeedFile.isUploaded = true;
 
     const confirmSeedFile = await this._handler.postInstance<SeedFile>(SeedFile, token, this.getRelativeUrl(imodelId, createdSeedFile.wsgId), createdSeedFile);
-
-    if (!confirmSeedFile.isUploaded)
-      return Promise.reject(new Error("Error uploading seed file"));
 
     Logger.logTrace(loggingCategory, `Uploaded seed file ${seedFile.wsgId} to iModel ${imodelId}`);
 
@@ -342,58 +327,52 @@ export class IModelHandler {
     timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<IModel> {
     Logger.logInfo(loggingCategory, `Creating iModel in project ${projectId}`);
 
+    if (Config.isBrowser())
+      return Promise.reject(IModelHubRequestError.browser());
+
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());
 
-    if (!this._fileHandler.exists(pathName)) {
-      return Promise.reject(new Error(`Local iModel file not found`));
-    }
+    if (!this._fileHandler.exists(pathName) || this._fileHandler.isDirectory(pathName))
+      return Promise.reject(IModelHubRequestError.fileNotFound());
 
     const iModel = await this.createIModelInstance(token, projectId, name, description);
 
-    await this._seedFileHandler.uploadSeedFile(token, iModel.wsgId, pathName, description, progressCallback)
-      .catch(async (err) => {
-        await this.delete(token, projectId, iModel.wsgId);
-        return Promise.reject(err);
-      });
+    try {
+      await this._seedFileHandler.uploadSeedFile(token, iModel.wsgId, pathName, description, progressCallback);
+    } catch (err) {
+      await this.delete(token, projectId, iModel.wsgId);
+      return Promise.reject(err);
+    }
 
-    return new Promise<IModel>((resolve, reject) => {
-      let numRetries: number = 10;
-      const retryDelay = timeOutInMilliseconds / numRetries;
-      const errorMessage = "Cannot upload SeedFile " + pathName;
+    const errorMessage = "Cannot upload SeedFile " + pathName;
+    const retryDelay = timeOutInMilliseconds / 10;
+    for (let retries = 10; retries > 0; --retries) {
+      try {
+        const confirmUploadSeedFiles: SeedFile[] = await this._seedFileHandler.get(token, iModel.wsgId);
 
-      const attempt = () => {
-        numRetries--;
-        if (numRetries === 0) {
-          Logger.logWarning(loggingCategory, errorMessage);
-          Promise.reject(new Error(errorMessage));
-          return;
+        const initState = confirmUploadSeedFiles[0].initializationState!;
+
+        if (initState === SeedFileInitState.Successful) {
+          Logger.logTrace(loggingCategory, `Created iModel with id ${iModel.wsgId} in project ${projectId}`);
+          iModel.initialized = true;
+          return iModel;
         }
 
-        this._seedFileHandler.get(token, iModel.wsgId)
-          .then((confirmUploadSeedFiles: SeedFile[]) => {
-            const initState = confirmUploadSeedFiles[0].initializationState;
+        if (initState !== SeedFileInitState.NotStarted && initState !== SeedFileInitState.Scheduled) {
+          Logger.logWarning(loggingCategory, errorMessage);
+          return Promise.reject(new IModelHubResponseError(`Seed file initialization failed with status ${SeedFileInitState[initState]}`));
+        }
 
-            if (initState === SeedFileInitState.Successful) {
-              Logger.logTrace(loggingCategory, `Created iModel with id ${iModel.wsgId} in project ${projectId}`);
-              iModel.initialized = true;
-              return resolve(iModel);
-            }
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      } catch (err) {
+        Logger.logWarning(loggingCategory, errorMessage);
+        return Promise.reject(err);
+      }
+    }
 
-            if (initState !== SeedFileInitState.NotStarted && initState !== SeedFileInitState.Scheduled) {
-              Logger.logWarning(loggingCategory, errorMessage);
-              return reject(new Error(errorMessage));
-            }
-
-            setTimeout(() => attempt(), retryDelay);
-          })
-          .catch(() => {
-            Logger.logWarning(loggingCategory, errorMessage);
-            return reject(new Error(errorMessage));
-          });
-      };
-      attempt();
-    });
+    Logger.logWarning(loggingCategory, errorMessage);
+    return Promise.reject(new Error("Timed out waiting for seed file initialization."));
   }
 
   /**
@@ -406,6 +385,9 @@ export class IModelHandler {
    */
   public async download(accessToken: AccessToken, imodelId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
+
+    if (Config.isBrowser())
+      return Promise.reject(IModelHubRequestError.browser());
 
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());

@@ -255,8 +255,8 @@ export class LockQuery extends Query {
       filter += id;
     }
 
-    filter = "]";
-
+    filter += "]";
+    this.addFilter(filter);
     return this;
   }
 }

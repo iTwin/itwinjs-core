@@ -47,7 +47,7 @@ export class ImsFederatedAuthentiationClient extends Client {
    * Parses the response from the token request to obtain the token and the user profile.
    * @param authTokenResponse Response for the token request.
    */
-  public static parseTokenResponse(authTokenResponse: string): AuthorizationToken|undefined {
+  public static parseTokenResponse(authTokenResponse: string): AuthorizationToken | undefined {
     const select: xpath.XPathSelect = xpath.useNamespaces({
       trust: "http://docs.oasis-open.org/ws-sx/ws-trust/200512",
     });
@@ -60,7 +60,7 @@ export class ImsFederatedAuthentiationClient extends Client {
   }
 }
 
- /** Client API for the IMS Active Secure Token Service. */
+/** Client API for the IMS Active Secure Token Service. */
 export class ImsActiveSecureTokenClient extends Client {
   public static readonly searchKey: string = "Mobile.ImsStsAuth";
 
@@ -122,11 +122,11 @@ export class ImsActiveSecureTokenClient extends Client {
     return request(url, options)
       .then((res: Response): Promise<AuthorizationToken> => {
         if (!res.body.RequestedSecurityToken)
-          Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
+          return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
 
-        const token: AuthorizationToken|undefined = AuthorizationToken.fromSamlAssertion(res.body.RequestedSecurityToken);
+        const token: AuthorizationToken | undefined = AuthorizationToken.fromSamlAssertion(res.body.RequestedSecurityToken);
         if (!token)
-          Promise.reject(new Error("Could not parse the authorization token"));
+          return Promise.reject(new Error("Could not parse the authorization token"));
 
         return Promise.resolve(token!);
       });
@@ -196,11 +196,11 @@ export class ImsDelegationSecureTokenClient extends Client {
     return request(url, options)
       .then((res: Response): Promise<AccessToken> => {
         if (!res.body.RequestedSecurityToken)
-          Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
+          return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
 
-        const accessToken: AccessToken|undefined = AccessToken.fromSamlAssertion(res.body.RequestedSecurityToken);
+        const accessToken: AccessToken | undefined = AccessToken.fromSamlAssertion(res.body.RequestedSecurityToken);
         if (!accessToken)
-          Promise.reject(new Error("Could not parse the accessToken token"));
+          return Promise.reject(new Error("Could not parse the accessToken token"));
 
         return Promise.resolve(accessToken!);
       });

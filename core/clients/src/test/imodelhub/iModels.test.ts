@@ -5,17 +5,17 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
-import { TestConfig } from "../TestConfig";
 import { Guid } from "@bentley/bentleyjs-core";
 
-import { IModel, SeedFile, IModelHubResponseError, IModelHubResponseErrorId, IModelQuery } from "../../imodelhub";
-import { IModelHubClient } from "../../imodelhub/Client";
-import { AccessToken } from "../../Token";
-import { WsgError } from "../../WsgClient";
+import { AccessToken, WsgError } from "../../";
+import {
+  IModelHubClient, IModel, SeedFile, IModelHubResponseError, IModelHubResponseErrorId,
+  IModelQuery, IModelHubRequestError, IModelHubRequestErrorId,
+} from "../../imodelhub";
+
+import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-
-declare const __dirname: string;
 
 function mockGetIModelByName(projectId: string, name: string, imodelId?: string, initialized = true) {
   if (!TestConfig.enableMocks)
@@ -33,24 +33,30 @@ function mockGetIModelByName(projectId: string, name: string, imodelId?: string,
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-function mockPostiModel(projectId: string, imodelId: string, imodelName: string) {
+function mockPostiModel(projectId: string, imodelId: string, imodelName: string, description: string) {
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
   const postBody = ResponseBuilder.generatePostBody<IModel>(
-    ResponseBuilder.generateObject<IModel>(IModel, new Map<string, any>([["name", imodelName]])));
+    ResponseBuilder.generateObject<IModel>(IModel,
+      new Map<string, any>([
+        ["name", imodelName],
+        ["description", description],
+      ])));
   const requestResponse = ResponseBuilder.generatePostResponse<IModel>(ResponseBuilder.generateObject<IModel>(IModel,
     new Map<string, any>([
       ["wsgId", imodelId],
       ["name", imodelName],
+      ["description", description],
       ["initialized", false],
     ])));
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockPostNewSeedFile(imodelId: string, fileId: string, filePath: string) {
+function mockPostNewSeedFile(imodelId: string, fileId: string, filePath: string, description?: string) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
   const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
     new Map<string, any>([
       ["fileName", path.basename(filePath)],
+      ["fileDescription", description],
       ["fileSize", fs.statSync(filePath).size.toString()],
     ])));
   const requestResponse = ResponseBuilder.generatePostResponse<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
@@ -58,15 +64,22 @@ function mockPostNewSeedFile(imodelId: string, fileId: string, filePath: string)
       ["wsgId", fileId],
       ["fileId", fileId],
       ["fileName", path.basename(filePath)],
+      ["fileDescription", description],
       ["uploadUrl", `${utils.defaultUrl}/imodelhub-${imodelId}/123456`],
     ])));
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockPostUpdatedSeedFile(imodelId: string, fileId: string, filePath: string) {
+function mockPostUpdatedSeedFile(imodelId: string, fileId: string, filePath: string, description?: string) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile", fileId);
   const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
-    new Map<string, any>([["wsgId", fileId], ["fileName", path.basename(filePath)], ["fileId", fileId], ["isUploaded", true]])));
+    new Map<string, any>([
+      ["wsgId", fileId],
+      ["fileName", path.basename(filePath)],
+      ["fileId", fileId],
+      ["isUploaded", true],
+      ["fileDescription", description],
+    ])));
 
   const requestResponse = ResponseBuilder.generatePostResponse<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
     new Map<string, any>([
@@ -77,22 +90,32 @@ function mockPostUpdatedSeedFile(imodelId: string, fileId: string, filePath: str
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockGetSeedFile(imodelId: string) {
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
-  const requestResponse = ResponseBuilder.generateGetResponse<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
-    new Map<string, any>([["initializationState", 0]])));
+function mockGetSeedFile(imodelId: string, getFileUrl = false) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile",
+    getFileUrl ? "?$select=*,FileAccessKey-forward-AccessKey.DownloadURL&$orderby=Index+desc" : undefined);
+  const values = new Map<string, any>();
+  if (getFileUrl) {
+    values.set("downloadUrl", "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile");
+    values.set("fileSize", utils.getMockFileSize());
+  } else {
+    values.set("initializationState", 0);
+  }
+  const requestResponse = ResponseBuilder.generateGetResponse<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile, values));
   ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
 
-function mockCreateiModel(projectId: string, imodelId: string, imodelName: string, filePath: string, chunks = 1) {
+function mockCreateiModel(projectId: string, imodelId: string, imodelName: string, description: string, filePath: string, chunks = 1) {
   if (!TestConfig.enableMocks)
     return;
 
   const fileId = Guid.createValue();
-  mockPostiModel(projectId, imodelId, imodelName);
-  mockPostNewSeedFile(imodelId, fileId, filePath);
+  mockPostiModel(projectId, imodelId, imodelName, description);
+  mockPostNewSeedFile(imodelId, fileId, filePath, description);
   utils.mockUploadFile(imodelId, chunks);
-  mockPostUpdatedSeedFile(imodelId, fileId, filePath);
+  mockPostUpdatedSeedFile(imodelId, fileId, filePath, description);
   mockGetSeedFile(imodelId);
 }
 
@@ -112,17 +135,16 @@ describe("iModelHub iModelHandler", () => {
   const imodelName = "imodeljs-clients iModels test";
   const createIModelName = "imodeljs-client iModels Create test";
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
-  const downloadToPath: string = __dirname + "/../assets/";
 
   before(async () => {
     projectId = await utils.getProjectId();
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
     iModelId = await utils.getIModelId(accessToken, imodelName);
-    utils.deleteIModelByName(accessToken, projectId, createIModelName);
+    await utils.deleteIModelByName(accessToken, projectId, createIModelName);
 
-    if (!fs.existsSync(downloadToPath)) {
-      fs.mkdirSync(downloadToPath);
+    if (!fs.existsSync(utils.workDir)) {
+      fs.mkdirSync(utils.workDir);
     }
   });
 
@@ -130,8 +152,8 @@ describe("iModelHub iModelHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  after(() => {
-    utils.deleteIModelByName(accessToken, projectId, createIModelName);
+  after(async () => {
+    await utils.deleteIModelByName(accessToken, projectId, createIModelName);
   });
 
   it("should get list of IModels", async () => {
@@ -240,9 +262,11 @@ describe("iModelHub iModelHandler", () => {
 
   it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
-    mockCreateiModel(projectId, Guid.createValue(), createIModelName, filePath, 2);
+    const description = "Test iModel created by imodeljs-clients tests";
+    mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
-    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, filePath, undefined, progressTracker.track());
+    const iModel = await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, filePath,
+      description, progressTracker.track());
 
     chai.expect(iModel.name).to.be.equal(createIModelName);
     chai.expect(iModel.initialized).to.be.equal(true);
@@ -265,9 +289,9 @@ describe("iModelHub iModelHandler", () => {
 
       const fileId = Guid.createValue();
       mockGetIModelByName(projectId, imodelName, iModelId, false);
-      mockPostNewSeedFile(iModelId, fileId, filePath);
+      mockPostNewSeedFile(iModelId, fileId, filePath, undefined);
       utils.mockUploadFile(iModelId, 1);
-      mockPostUpdatedSeedFile(iModelId, fileId, filePath);
+      mockPostUpdatedSeedFile(iModelId, fileId, filePath, undefined);
       mockGetSeedFile(iModelId);
     }
 
@@ -277,5 +301,66 @@ describe("iModelHub iModelHandler", () => {
     chai.expect(iModel.wsgId).to.be.equal(iModelId);
     chai.expect(iModel.name).to.be.equal(imodelName);
     chai.expect(iModel.initialized).to.be.equal(true);
+  });
+
+  it("should download a Seed File", async () => {
+    mockGetSeedFile(iModelId, true);
+    const downloadToPathname: string = path.join(utils.workDir, iModelId);
+    utils.mockFileResponse();
+
+    const progressTracker = new utils.ProgressTracker();
+    await imodelHubClient.IModels().download(accessToken, iModelId, downloadToPathname, progressTracker.track());
+    progressTracker.check();
+    fs.existsSync(downloadToPathname).should.be.equal(true);
+  });
+
+  it("should fail downloading the Seed File with no file handler", async () => {
+    let error: IModelHubRequestError | undefined;
+    const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
+    try {
+      await invalidClient.IModels().download(accessToken, iModelId, utils.workDir);
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+  });
+
+  it("should fail creating an iModel with no file handler", async () => {
+    let error: IModelHubRequestError | undefined;
+    const invalidClient = new IModelHubClient(TestConfig.deploymentEnv);
+    try {
+      await invalidClient.IModels().create(accessToken, projectId, createIModelName, utils.workDir);
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+  });
+
+  it("should fail creating an iModel with no file", async () => {
+    let error: IModelHubRequestError | undefined;
+    try {
+      await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, utils.workDir + "InvalidiModel.bim");
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
+  });
+
+  it("should fail creating an iModel with directory path", async () => {
+    let error: IModelHubRequestError | undefined;
+    try {
+      await imodelHubClient.IModels().create(accessToken, projectId, createIModelName, utils.workDir);
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
   });
 });

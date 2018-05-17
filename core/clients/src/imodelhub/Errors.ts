@@ -15,6 +15,7 @@ export enum IModelHubRequestErrorId {
   MissingDownloadUrlError,
   NotSupportedInBrowser,
   FileHandlerNotSet,
+  FileNotFound,
 }
 
 /**
@@ -101,6 +102,22 @@ export class IModelHubRequestError extends Error {
     error.name = "File Handler Not Set";
     error.id = IModelHubRequestErrorId.FileHandlerNotSet;
     error.message = "File handler is required to be set for file download / upload.";
+
+    error.log();
+
+    return error;
+  }
+
+  /**
+   * Create error for a missing file.
+   * @returns Created error.
+   */
+  public static fileNotFound(): IModelHubRequestError {
+    const error = new IModelHubRequestError();
+
+    error.name = "File Not Found";
+    error.id = IModelHubRequestErrorId.FileNotFound;
+    error.message = "Could not find the file to upload.";
 
     error.log();
 
