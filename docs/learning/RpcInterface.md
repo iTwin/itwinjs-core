@@ -17,7 +17,7 @@ An RpcInterface is defined and implemented in TypeScript. Conceptually, the inte
 
 In practice, two TypeScript classes are needed, as explained below.
 
-Communication between a client and the server is via [RPC](./Glossary.md#RPC). The RPC mechanism is factored out into RpcConfiguration which are applied to RpcInterfaces. This design allows clients and servers to be written in a way that is independent of transport details, while allowing transport to be configured at runtime to suit app requirements. See [server-side configuration](#server-side-configuration) and [client-side configuration](#client-side-configuration) below for details.
+Communication between a client and the server is via [RPC](./Glossary.md#RPC). Many RPC mechanisms are [available](../overview/RpcInterface.md). Each RPC mechanism is encapsulated in an RpcConfiguration. [RpcManager]($common) is used by clients and servers to [apply configurations to RpcInterfaces](../overview/AppTailoring.md#rpc-configuration).
 
 RpcInterface methods are always [asynchronous](#asynchronous-nature-of-rpcInterfaces).
 
