@@ -51,9 +51,10 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return await this.getManager().getChildrenCount(token, parentKey, options);
   }
 
-  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
     const descriptor = await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
-    descriptor.resetParentship();
+    if (descriptor)
+      descriptor.resetParentship();
     return descriptor;
   }
 

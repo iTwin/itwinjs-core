@@ -119,6 +119,15 @@ describe("ECPresentationRpcImpl", () => {
         descriptorMock.verifyAll();
         expect(actualResult).to.eq(result);
       });
+      it("handles undefined descriptor response", async () => {
+        mock.setup((x) => x.getContentDescriptor(testData.imodelToken, testData.displayType, testData.inputKeys, undefined, testData.extendedOptions))
+          .returns(async () => undefined)
+          .verifiable();
+        const actualResult = await impl.getContentDescriptor(testData.imodelToken, testData.displayType,
+          testData.inputKeys, undefined, testData.extendedOptions);
+        mock.verifyAll();
+        expect(actualResult).to.be.undefined;
+      });
     });
 
     describe("getContentSetSize", () => {

@@ -126,12 +126,23 @@ describe("ECPresentationManager", () => {
       const result = descriptorMock.object;
       interfaceMock
         .setup((x) => x.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData))
-        .returns(() => Promise.resolve(result))
+        .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship, moq.Times.once());
+    });
+
+    it("handles undefined descriptor", async () => {
+      const keyset = new KeySet();
+      interfaceMock
+        .setup((x) => x.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData))
+        .returns(async () => undefined)
+        .verifiable();
+      const actualResult = await manager.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData);
+      expect(actualResult).to.be.undefined;
+      interfaceMock.verifyAll();
     });
 
   });

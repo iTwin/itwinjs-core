@@ -66,9 +66,10 @@ export default class ECPresentationManager implements ECPInterface {
     return await ECPresentationRpcInterface.getClient().getChildrenCount(token, parentKey, options);
   }
 
-  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
     const descriptor = await ECPresentationRpcInterface.getClient().getContentDescriptor(token, displayType, keys, selection, options);
-    descriptor.rebuildParentship();
+    if (descriptor)
+      descriptor.rebuildParentship();
     return descriptor;
   }
 

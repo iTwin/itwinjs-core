@@ -44,7 +44,7 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   public getChildrenCount(_token: Readonly<IModelToken>, _parentKey: Readonly<NodeKey>, _options: object): Promise<number> { return this.forward.apply(this, arguments); }
 
   /** See [[ECPresentationManager.getContentDescriptor]] */
-  public getContentDescriptor(_token: Readonly<IModelToken>, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined, _options: object): Promise<Readonly<Descriptor>> { return this.forward.apply(this, arguments); }
+  public getContentDescriptor(_token: Readonly<IModelToken>, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined, _options: object): Promise<Readonly<Descriptor> | undefined> { return this.forward.apply(this, arguments); }
   /** See [[ECPresentationManager.getContentSetSize]] */
   public getContentSetSize(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _options: object): Promise<number> { return this.forward.apply(this, arguments); }
   /** See [[ECPresentationManager.getContent]] */

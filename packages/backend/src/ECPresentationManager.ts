@@ -5,10 +5,10 @@
 
 import * as path from "path";
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
-import { ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
+import { ECPresentationManager as ECPresentationManagerDefinition, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import { NodeKey, Node } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Content, Descriptor } from "@bentley/ecpresentation-common";
 import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
@@ -68,7 +68,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
    */
   public dispose() {
     if (this._addon) {
-      this.getNativePlatform().terminate();
+      this.getNativePlatform().dispose();
       this._addon = undefined;
     }
     this._isDisposed = true;
@@ -77,7 +77,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
   /** @hidden */
   public getNativePlatform(): NodeAddonDefinition {
     if (this._isDisposed)
-      throw new Error("Attempting to use ECPresentation manager after disposal");
+      throw new ECPresentationError(ECPresentationStatus.UseAfterDisposal, "Attempting to use ECPresentation manager after disposal");
     if (!this._addon) {
       const addonImpl = createAddonImpl();
       this._addon = new addonImpl();
@@ -145,7 +145,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.request(token, params);
   }
 
-  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
@@ -174,11 +174,11 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.request(token, params, Content.reviver);
   }
 
-  private request(token: Readonly<IModelToken>, params: string, reviver?: (key: string, value: any) => any) {
+  private request<T>(token: Readonly<IModelToken>, params: string, reviver?: (key: string, value: any) => any): T {
     const imodelAddon = this.getNativePlatform().getImodelAddon(token);
     const serializedResponse = this.getNativePlatform().handleRequest(imodelAddon, params);
     if (!serializedResponse)
-      throw new Error("Received invalid response from the addon: " + serializedResponse);
+      throw new ECPresentationError(ECPresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
     return JSON.parse(serializedResponse, reviver);
   }
 
@@ -192,8 +192,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
 }
 
 /** @hidden */
-export interface NodeAddonDefinition {
-  terminate(): void;
+export interface NodeAddonDefinition extends IDisposable {
   handleRequest(db: any, options: string): string;
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
@@ -206,14 +205,35 @@ const createAddonImpl = () => {
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NodeAddonDefinition {
     private _nativeAddon: NativeECPresentationManager = new (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager();
-    public terminate() {
-      this._nativeAddon.terminate();
+    private getStatus(responseStatus: NativeECPresentationStatus): ECPresentationStatus {
+      switch (responseStatus) {
+        case NativeECPresentationStatus.InvalidArgument: return ECPresentationStatus.InvalidArgument;
+        default: return ECPresentationStatus.Error;
+      }
+    }
+    private handleResult<T>(response: ErrorStatusOrResult<NativeECPresentationStatus, T>): T {
+      if (!response)
+        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+      if (response.error)
+        throw new ECPresentationError(this.getStatus(response.error.status), response.error.message);
+      if (!response.result)
+        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+      return response.result;
+    }
+    private handleVoidResult(response: ErrorStatusOrResult<NativeECPresentationStatus, void>): void {
+      if (!response)
+        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+      if (response.error)
+        throw new ECPresentationError(this.getStatus(response.error.status), response.error.message);
+    }
+    public dispose() {
+      this._nativeAddon.dispose();
     }
     public handleRequest(db: any, options: string): string {
-      return this._nativeAddon.handleRequest(db, options);
+      return this.handleResult(this._nativeAddon.handleRequest(db, options));
     }
     public setupRulesetDirectories(directories: string[]): void {
-      this._nativeAddon.setupRulesetDirectories(directories);
+      this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
     }
     public setupLocaleDirectories(directories: string[]): void {
       this._nativeAddon.setupLocaleDirectories(directories);
@@ -224,7 +244,7 @@ const createAddonImpl = () => {
     public getImodelAddon(token: IModelToken): any {
       const imodel = IModelDb.find(token);
       if (!imodel || !imodel.nativeDb)
-        throw new IModelError(IModelStatus.NotOpen, "IModelDb not open");
+        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "token");
       return imodel.nativeDb;
     }
   };
@@ -236,10 +256,7 @@ export enum NodeAddonRequestTypes {
   GetRootNodesCount = "GetRootNodesCount",
   GetChildren = "GetChildren",
   GetChildrenCount = "GetChildrenCount",
-  GetFilteredNodesPaths = "GetFilteredNodesPaths",
-  GetNodePaths = "GetNodePaths",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
-  GetDistinctValues = "GetDistinctValues",
 }

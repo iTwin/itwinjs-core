@@ -6,27 +6,42 @@ import * as moq from "typemoq";
 import * as faker from "faker";
 import * as path from "path";
 import { OpenMode, using } from "@bentley/bentleyjs-core";
-import { IModelToken, IModelError } from "@bentley/imodeljs-common";
-import { NativePlatformRegistry, IModelDb } from "@bentley/imodeljs-backend";
-import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
-import { PageOptions, SelectionInfo, KeySet } from "@bentley/ecpresentation-common";
-import { Node, NodeKey, ECInstanceNodeKey } from "@bentley/ecpresentation-common";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
+import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-native-platform-api";
+import { PageOptions, SelectionInfo, KeySet, ECPresentationError } from "@common/index";
+import { Node, NodeKey, ECInstanceNodeKey } from "@common/index";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@src/ECPresentationManager";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomECInstanceKey, createRandomECClassInfo } from "@helpers/random/EC";
 import { createRandomDescriptor, createRandomCategory } from "@helpers/random/Content";
-import { RelatedClassInfo, SelectClassInfo } from "@bentley/ecpresentation-common";
-import { Property, PropertyInfo, KindOfQuantityInfo } from "@bentley/ecpresentation-common";
-import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@bentley/ecpresentation-common";
-import { ContentJSON } from "@bentley/ecpresentation-common/lib/content/Content";
-import { DescriptorJSON } from "@bentley/ecpresentation-common/lib/content/Descriptor";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/ecpresentation-common/lib/content/Fields";
-import { ItemJSON } from "@bentley/ecpresentation-common/lib/content/Item";
+import { RelatedClassInfo, SelectClassInfo } from "@common/index";
+import { Property, PropertyInfo, KindOfQuantityInfo } from "@common/index";
+import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@common/index";
+import { ContentJSON } from "@common/content/Content";
+import { DescriptorJSON } from "@common/content/Descriptor";
+import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@common/content/Fields";
+import { ItemJSON } from "@common/content/Item";
 import "@helpers/Snapshots";
 import "@helpers/Promises";
 import "./IModeHostSetup";
 
 describe("ECPresentationManager", () => {
+
+  beforeEach(() => {
+    IModelHost.shutdown();
+    try {
+      IModelHost.startup();
+    } catch (e) {
+      let isLoaded = false;
+      try {
+        NativePlatformRegistry.getNativePlatform();
+        isLoaded = true;
+      } catch (_e) { }
+      if (!isLoaded)
+        throw e; // re-throw if startup() failed to set up NativePlatform
+    }
+  });
 
   describe("constructor", () => {
 
@@ -80,19 +95,18 @@ describe("ECPresentationManager", () => {
 
   describe("dispose", () => {
 
-    it("calls native platform terminate when disposed", () => {
+    it("calls native platform dispose when manager is disposed", () => {
       const mock = moq.Mock.ofType<NodeAddonDefinition>();
       const manager = new ECPresentationManager({ addon: mock.object });
       manager.dispose();
-      manager.dispose(); // to verify the addon gets terminated only once
-      mock.verify((x) => x.terminate(), moq.Times.once());
+      mock.verify((x) => x.dispose(), moq.Times.once());
     });
 
     it("throws when attempting to use native platform after disposal", () => {
       const mock = moq.Mock.ofType<NodeAddonDefinition>();
       const manager = new ECPresentationManager({ addon: mock.object });
       manager.dispose();
-      expect(() => manager.getNativePlatform()).to.throw();
+      expect(() => manager.getNativePlatform()).to.throw(ECPresentationError);
     });
 
   });
@@ -106,27 +120,54 @@ describe("ECPresentationManager", () => {
       addonMock.reset();
       // we're replacing the native addon with our mock - make sure the original
       // one gets terminated
-      (manager.getNativePlatform() as any)._nativeAddon.terminate();
+      (manager.getNativePlatform() as any)._nativeAddon.dispose();
       (manager.getNativePlatform() as any)._nativeAddon = addonMock.object;
     });
     afterEach(() => {
       manager.dispose();
     });
 
-    it("calls addon's terminate", async () => {
-      addonMock.setup((x) => x.terminate()).verifiable();
-      manager.getNativePlatform().terminate();
+    it("calls addon's dispose", async () => {
+      addonMock.setup((x) => x.dispose()).verifiable();
+      manager.getNativePlatform().dispose();
       addonMock.verifyAll();
     });
 
     it("calls addon's handleRequest", async () => {
-      addonMock.setup((x) => x.handleRequest(moq.It.isAny(), "")).returns(() => "0").verifiable();
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: "0" }))
+        .verifiable();
       manager.getNativePlatform().handleRequest(undefined, "");
       addonMock.verifyAll();
     });
 
+    it("throws on invalid handleRequest response", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => (undefined as any));
+      expect(() => manager.getNativePlatform().handleRequest(undefined, "")).to.throw(ECPresentationError);
+    });
+
+    it("throws on handleRequest error response", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ error: { status: NativeECPresentationStatus.Error, message: "test" } }));
+      expect(() => manager.getNativePlatform().handleRequest(undefined, "")).to.throw(ECPresentationError, "test");
+    });
+
+    it("throws on handleRequest success response without result", async () => {
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: undefined }));
+      expect(() => manager.getNativePlatform().handleRequest(undefined, "")).to.throw(ECPresentationError);
+    });
+
     it("calls addon's setupRulesetDirectories", async () => {
-      addonMock.setup((x) => x.setupRulesetDirectories(moq.It.isAny())).verifiable();
+      addonMock
+        .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
+        .returns(() => ({}))
+        .verifiable();
       manager.getNativePlatform().setupRulesetDirectories([]);
       addonMock.verifyAll();
     });
@@ -145,6 +186,20 @@ describe("ECPresentationManager", () => {
       addonMock.verify((x) => x.setActiveLocale(""), moq.Times.once());
     });
 
+    it("throws on invalid void response", async () => {
+      addonMock
+        .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
+        .returns(() => (undefined as any));
+      expect(() => manager.getNativePlatform().setupRulesetDirectories([])).to.throw(ECPresentationError);
+    });
+
+    it("throws on void error response", async () => {
+      addonMock
+        .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
+        .returns(() => ({ error: { status: NativeECPresentationStatus.InvalidArgument, message: "test" } }));
+      expect(() => manager.getNativePlatform().setupRulesetDirectories([])).to.throw(ECPresentationError, "test");
+    });
+
     it("returns imodel addon from IModelDb", () => {
       const mock = moq.Mock.ofType<IModelDb>();
       mock.setup((x) => x.nativeDb).returns(() => ({})).verifiable(moq.Times.atLeastOnce());
@@ -157,7 +212,7 @@ describe("ECPresentationManager", () => {
       const mock = moq.Mock.ofType<IModelDb>();
       mock.setup((x) => x.nativeDb).returns(() => undefined).verifiable(moq.Times.atLeastOnce());
       IModelDb.find = (_token: IModelToken) => mock.object;
-      expect(() => manager.getNativePlatform().getImodelAddon(new IModelToken())).to.throw(IModelError);
+      expect(() => manager.getNativePlatform().getImodelAddon(new IModelToken())).to.throw(ECPresentationError);
       mock.verifyAll();
     });
 

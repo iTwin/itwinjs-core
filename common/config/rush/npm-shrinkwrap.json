@@ -2557,11 +2557,12 @@
     },
     "@rush-temp/ecpresentation-backend": {
       "version": "file:projects/ecpresentation-backend.tgz",
-      "integrity": "sha1-en3G3UNaduSwzSA/E9D+enwhUeE=",
+      "integrity": "sha1-d1YUam/ucD+4MFlN6rl9HpW7Jcg=",
       "requires": {
         "@bentley/bentleyjs-core": "8.2.0",
         "@bentley/imodeljs-backend": "0.85.1",
         "@bentley/imodeljs-common": "0.85.0",
+        "cpx": "1.5.0",
         "cross-env": "5.1.5",
         "nyc": "11.8.0",
         "rimraf": "2.6.2",
@@ -2573,7 +2574,7 @@
     },
     "@rush-temp/ecpresentation-common": {
       "version": "file:projects/ecpresentation-common.tgz",
-      "integrity": "sha1-0VEqBVAD8OdjVIy64r8jJ9KbigE=",
+      "integrity": "sha1-VZt0SFWzoldBw/SSmInOejK92GE=",
       "requires": {
         "@bentley/bentleyjs-core": "8.2.0",
         "@bentley/imodeljs-common": "0.85.0",
@@ -2588,7 +2589,7 @@
     },
     "@rush-temp/ecpresentation-controls": {
       "version": "file:projects/ecpresentation-controls.tgz",
-      "integrity": "sha1-7ph5sSsfswJEoNRcjS3Zws4DO4M=",
+      "integrity": "sha1-q2EUPu26DoGpzyWjwRfkOEggP60=",
       "requires": {
         "@bentley/bentleyjs-core": "8.2.0",
         "@bentley/imodeljs-common": "0.85.0",
@@ -2606,7 +2607,7 @@
     },
     "@rush-temp/ecpresentation-frontend": {
       "version": "file:projects/ecpresentation-frontend.tgz",
-      "integrity": "sha1-aUz6V37OLJfSH0sHIO1OPH41jHE=",
+      "integrity": "sha1-l2BFct3TSApg+kB09smoYgG/azY=",
       "requires": {
         "@bentley/bentleyjs-core": "8.2.0",
         "@bentley/imodeljs-common": "0.85.0",
@@ -2622,7 +2623,7 @@
     },
     "@rush-temp/integration-tests": {
       "version": "file:projects/integration-tests.tgz",
-      "integrity": "sha1-GkhN6vdyyvEpfMPn3rv56pg/0CE=",
+      "integrity": "sha1-X+4mdQJgtiOauMRGdyDEofewTIc=",
       "requires": {
         "@bentley/bentleyjs-core": "8.2.0",
         "@bentley/geometry-core": "8.0.0",
@@ -2641,7 +2642,7 @@
     },
     "@rush-temp/main": {
       "version": "file:projects/main.tgz",
-      "integrity": "sha1-mpGHt/NBULuuLJBBU8sh9I6hUHU=",
+      "integrity": "sha1-OWNpJgsryiw7CjUoq5xMbonyLr8=",
       "requires": {
         "@bentley/bemetalsmith": "2.2.7",
         "@bentley/bentleyjs-tools": "3.4.1",
@@ -2693,7 +2694,7 @@
     },
     "@rush-temp/sample": {
       "version": "file:projects/sample.tgz",
-      "integrity": "sha1-vjqxLtjPVIZQ1KzQGzn0X9qsMiA=",
+      "integrity": "sha1-AcLyOJMBO9Uc3kudqBK4pz/l51c=",
       "requires": {
         "@bentley/bentleyjs-core": "8.2.0",
         "@bentley/geometry-core": "8.0.0",

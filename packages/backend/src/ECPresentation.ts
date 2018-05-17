@@ -5,7 +5,7 @@
 
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { ECPresentationRpcInterface, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import ECPresentationRpcImpl from "./ECPresentationRpcImpl";
 import ECPresentationManager, { Props as ECPresentationManagerProps } from "./ECPresentationManager";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
@@ -70,7 +70,7 @@ export default class ECPresentation {
    */
   public static get manager(): ECPresentationManager {
     if (!ECPresentation._manager)
-      throw new Error("ECPresentation must be first initialized by calling ECPresentation.initialize");
+      throw new ECPresentationError(ECPresentationStatus.NotInitialized, "ECPresentation must be first initialized by calling ECPresentation.initialize");
     return ECPresentation._manager;
   }
 
