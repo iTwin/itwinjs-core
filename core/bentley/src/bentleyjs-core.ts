@@ -5,12 +5,17 @@ export * from "./Assert";
 export * from "./BeEvent";
 export * from "./BentleyError";
 export * from "./BeSQLite";
+export * from "./Clone";
+export * from "./Compare";
+export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
+export * from "./Iterable";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
 export * from "./SortedArray";
+export * from "./StringUtils";
 export * from "./Time";
 
 /** @module Utils */
@@ -21,8 +26,7 @@ export * from "./Time";
  */
 /**
  * @docs-group-description BeSQLite
- * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb.
- * For more information on iModels, see [Executing ECSQL]($docs/learning/ECSQL.md)
+ * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Errors
@@ -38,7 +42,7 @@ export * from "./Time";
  */
 /**
  * @docs-group-description Logging
- * Classes for configuring and logging diagnostic messages. For more information, see [Logging]($docs/learning/Logging.md)
+ * Classes for configuring and logging diagnostic messages - see [Logging]($docs/learning/Logging.md)
  */
 /**
  * @docs-group-description Utils

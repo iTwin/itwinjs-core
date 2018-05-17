@@ -2,96 +2,66 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial } from "@bentley/imodeljs-common";
-
-export namespace DisplayParams {
-  export const enum Type {
-    Mesh,
-    Linear,
-    Text,
-  }
-
-  export const enum RegionEdgeType {
-    None,
-    Default,
-    Outline,
-  }
-
-  export const enum ComparePurpose {
-    Merge,  // considers colors equivalent if both have or both lack transparency
-    Strict, // compares all members
-  }
-}
+import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
+import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
 
 /** This class is used to determine if things can be batched together for display. */
 export class DisplayParams {
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
   public readonly material?: RenderMaterial; // meshes only
   public readonly gradient?: Gradient.Symb;
-  // ###TODO: public textureMapping: TextureMapping; // only if m_material is null (e.g. gradients, glyph bitmaps) // TextureMapping doesn't exist yet!!!
+  // ###TODO
+  // textureMapping should be a getter that uses material's textureMapping if defined otherwise uses gradient to create textureMapping
+  // for now just filling in a default map
+  public readonly textureMapping?: TextureMapping; // only if m_material is null (e.g. gradients, glyph bitmaps)
   public readonly lineColor: ColorDef; // all types of geometry (edge color for meshes)
   public readonly fillColor: ColorDef; // meshes only
-  public readonly width: number = 0; // linear and mesh (edges)
-  public readonly linePixels: LinePixels = LinePixels.Solid; // linear and mesh (edges)
-  public readonly fillFlags: FillFlags = FillFlags.None; // meshes only
-  public readonly ignoreLighting: boolean = false; // always true for text and linear geometry; true for meshes only if normals not desired
+  public readonly width: number; // linear and mesh (edges)
+  public readonly linePixels: LinePixels; // linear and mesh (edges)
+  public readonly fillFlags: FillFlags; // meshes only
+  public readonly ignoreLighting: boolean; // always true for text and linear geometry; true for meshes only if normals not desired
 
-  /** Instantiates the class based on DisplayParams.Type and GraphicParams. */
-  private constructor(type: DisplayParams.Type, gf: GraphicParams) {
+  public constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width: number = 0, linePixels: LinePixels = LinePixels.Solid,
+      fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, textureMapping?: TextureMapping, ignoreLighting: boolean = false) {
     this.type = type;
-    this.lineColor = gf.lineColor.clone();
-    switch (type) {
-      case DisplayParams.Type.Mesh:
-        this.material = gf.material;
-        this.gradient = gf.gradient;
-        // ###TODO: set texturemapping if m_material is undefined, and base it on gradient
-        this.fillColor = gf.fillColor.clone();
-        this.fillFlags = gf.fillFlags;
-        this.width = gf.rasterWidth;
-        this.linePixels = gf.linePixels;
-        break;
-
-      case DisplayParams.Type.Linear:
-        this.fillColor = this.lineColor;
-        this.width = gf.rasterWidth;
-        this.linePixels = gf.linePixels;
-        break;
-
-      default: // DisplayParams.Type.Text
-        this.fillColor = this.lineColor;
-        this.ignoreLighting = true;
-        this.fillFlags = FillFlags.Always;
-        break;
-    }
+    this.material = material;
+    this.gradient = gradient;
+    this.textureMapping = textureMapping;
+    this.lineColor = lineColor;
+    this.fillColor = fillColor;
+    this.width = width;
+    this.linePixels = linePixels;
+    this.fillFlags = fillFlags;
+    this.ignoreLighting = ignoreLighting;
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
   public static createForType(type: DisplayParams.Type, gf: GraphicParams): DisplayParams {
+    const lineColor = gf.lineColor.clone();
     switch (type) {
       case DisplayParams.Type.Mesh:
-        return this.createForMesh(gf);
-
+        // ###TODO: set texturemapping if m_material is undefined, and base it on gradient
+        return new DisplayParams(type, lineColor, gf.fillColor.clone(), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, undefined);
       case DisplayParams.Type.Linear:
-        return this.createForLinear(gf);
-
-      case DisplayParams.Type.Text:
-        return this.createForText(gf);
+        return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
+      default: // DisplayParams.Type.Text
+        return new DisplayParams(type, lineColor, lineColor, 0, LinePixels.Solid, FillFlags.Always, undefined, undefined, undefined, true);
     }
   }
 
   /** Creates a DisplayParams object that describes mesh geometry based on the specified GraphicParams. */
   public static createForMesh(gf: GraphicParams): DisplayParams {
-    return new DisplayParams(DisplayParams.Type.Mesh, gf);
+    return DisplayParams.createForType(DisplayParams.Type.Mesh, gf);
   }
 
   /** Creates a DisplayParams object that describes linear geometry based on the specified GraphicParams. */
   public static createForLinear(gf: GraphicParams): DisplayParams {
-    return new DisplayParams(DisplayParams.Type.Linear, gf);
+    return DisplayParams.createForType(DisplayParams.Type.Linear, gf);
   }
 
   /** Creates a DisplayParams object that describes text geometry based on the specified GraphicParams. */
   public static createForText(gf: GraphicParams): DisplayParams {
-    return new DisplayParams(DisplayParams.Type.Text, gf);
+    return DisplayParams.createForType(DisplayParams.Type.Text, gf);
   }
 
   public get regionEdgeType(): DisplayParams.RegionEdgeType {
@@ -119,7 +89,9 @@ export class DisplayParams {
 
   /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
   public equals(rhs: DisplayParams, purpose: DisplayParams.ComparePurpose = DisplayParams.ComparePurpose.Strict): boolean {
-    if (rhs === this)
+    if (DisplayParams.ComparePurpose.Merge === purpose)
+      return 0 === this.compareForMerge(rhs);
+    else if (rhs === this)
       return true;
 
     if (this.type !== rhs.type) return false;
@@ -131,15 +103,62 @@ export class DisplayParams {
     // ###TODO: if (this.textureMapping.texture !== rhs.textureMapping.texture) return false;
     if (this.wantRegionOutline !== rhs.wantRegionOutline) return false;
 
-    if (DisplayParams.ComparePurpose.Merge === purpose) {
-      if (this.hasFillTransparency !== rhs.hasFillTransparency) return false;
-      if (this.hasLineTransparency !== rhs.hasLineTransparency) return false;
-      // ###TODO: if texture mapping, test fillColor to match // Textures may use color so they can't be merged. (could test if texture actually uses color).
-      return true;
-    }
-
     if (!this.fillColor.equals(rhs.fillColor)) return false;
     if (!this.lineColor.equals(rhs.lineColor)) return false;
     return true;
+  }
+
+  public compareForMerge(rhs: DisplayParams): number {
+    if (rhs === this)
+      return 0;
+
+    let diff = compareNumbers(this.type, rhs.type);
+    if (0 === diff) {
+      diff = compareBooleans(this.ignoreLighting, rhs.ignoreLighting);
+      if (0 === diff) {
+        diff = compareNumbers(this.width, rhs.width);
+        if (0 === diff) {
+          // ###TODO texture mapping
+          // ###TODO: Define ordering between materials...
+          if (this.material !== rhs.material)
+            return -1;
+
+          diff = compareNumbers(this.linePixels, rhs.linePixels);
+          if (0 === diff) {
+            diff = compareNumbers(this.fillFlags, rhs.fillFlags);
+            if (0 === diff) {
+              diff = compareBooleans(this.wantRegionOutline, rhs.wantRegionOutline);
+              if (0 === diff) {
+                diff = compareBooleans(this.hasFillTransparency, rhs.hasFillTransparency);
+                if (0 === diff) {
+                  diff = compareBooleans(this.hasLineTransparency, rhs.hasLineTransparency);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return diff;
+  }
+}
+
+export namespace DisplayParams {
+  export enum Type {
+    Mesh,
+    Linear,
+    Text,
+  }
+
+  export enum RegionEdgeType {
+    None,
+    Default,
+    Outline,
+  }
+
+  export enum ComparePurpose {
+    Merge,  // considers colors equivalent if both have or both lack transparency
+    Strict, // compares all members
   }
 }

@@ -1,6 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+if (typeof (WebGLRenderingContext) === "undefined") {
+  (global as any).WebGLRenderingContext = new Proxy({}, { get: () => 0 });
+}
 
 export namespace GL {
   export enum BlendEquation {

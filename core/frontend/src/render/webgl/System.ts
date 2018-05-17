@@ -6,8 +6,8 @@ import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
-import { PrimitiveBuilder } from "../primitives/Geometry";
-import { PolylineArgs } from "../primitives/Mesh";
+import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
+import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
@@ -20,7 +20,8 @@ import { RenderBuffer } from "./RenderBuffer";
 import { TextureHandle } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
-import { PointStringPrimitive, PointStringGeometry } from "./PointString";
+import { PointStringPrimitive } from "./PointString";
+import { MeshGraphic } from "./Mesh";
 
 export const enum ContextState {
   Uninitialized,
@@ -149,6 +150,7 @@ export class Capabilities {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
 
     const fbStatus: number = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.deleteFramebuffer(fb);
     gl.deleteTexture(tex);
 
@@ -219,13 +221,12 @@ export class System extends RenderSystem {
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
   public createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined {
-    if (args.flags.isDisjoint) {
-      const cachedGeom = PointStringGeometry.createGeometry(args);
-      return undefined !== cachedGeom ? new PointStringPrimitive(cachedGeom, imodel) : undefined;
-    } else {
+    if (args.flags.isDisjoint)
+      return PointStringPrimitive.create(args, imodel);
+    else
       return PolylinePrimitive.create(args, imodel);
-    }
   }
+  public createTriMesh(args: MeshArgs, iModel: IModelConnection) { return MeshGraphic.create(args, iModel); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
 

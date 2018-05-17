@@ -7,9 +7,12 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
+import { RpcConfiguration } from "@bentley/imodeljs-common";
 
 let pendingsSent = 0;
 let pendingResponseQuota = 0;
+
+RpcConfiguration.developmentMode = true;
 
 // tslint:disable-next-line:no-var-requires
 const { ipcMain } = require("electron");
@@ -25,6 +28,9 @@ ipcMain.on("testbed", (event: any, arg: any) => {
     event.returnValue = true;
   } else if (msg.name === CONSTANTS.REPLACE_TEST_RPCIMPL2_INSTANCE_MESSAGE) {
     TestRpcImpl2.instantiate();
+    event.returnValue = true;
+  } else if (msg.name === CONSTANTS.UNREGISTER_TEST_RPCIMPL2_CLASS_MESSAGE) {
+    TestRpcImpl2.unregister();
     event.returnValue = true;
   }
 });

@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, Arc3d, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d } from "@bentley/geometry-core";
+import { Point3d, YawPitchRollAngles, Arc3d, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d, Geometry } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
   Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity,
@@ -185,7 +185,7 @@ describe("GeometryStream", () => {
     assert.isTrue(styles.length === stylesUsed.length);
     for (let iStyle = 0; iStyle < styles.length; ++iStyle) {
       assert.isTrue(stylesUsed[iStyle].equals(styles[iStyle]));
-      //      assert.isTrue(Geometry.isSameCoordinate(widthsUsed[iStyle], widths[iStyle])); <- styleMod missing when running full set of tests???
+      assert.isTrue(Geometry.isSameCoordinate(widthsUsed[iStyle], widths[iStyle]));
     }
   });
 
@@ -404,6 +404,52 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(newId.isValid());
     imodel.saveChanges();
+
+    // Extract and test value returned...
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    let iShape = 0;
+    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    for (const entry of itLocal) {
+      assert.isDefined(entry.geometryQuery);
+      switch (iShape++) {
+        case 0:
+          assert.isTrue(undefined === entry.geomParams.fillDisplay || FillDisplay.Never === entry.geomParams.fillDisplay);
+          break;
+        case 1:
+          assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
+          assert.isTrue(entry.geomParams.lineColor!.equals(entry.geomParams.fillColor!));
+          break;
+        case 2:
+          assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
+          assert.isFalse(entry.geomParams.lineColor!.equals(entry.geomParams.fillColor!));
+          break;
+        case 3:
+          assert.isTrue(FillDisplay.Always === entry.geomParams.fillDisplay);
+          assert.isFalse(0.0 === entry.geomParams.fillTransparency);
+          break;
+        case 4:
+          assert.isTrue(FillDisplay.Always === entry.geomParams.fillDisplay);
+          assert.isTrue(BackgroundFill.Solid === entry.geomParams.backgroundFill);
+          break;
+        case 5:
+          assert.isTrue(FillDisplay.Always === entry.geomParams.fillDisplay);
+          assert.isTrue(BackgroundFill.Outline === entry.geomParams.backgroundFill);
+          break;
+        case 6:
+          assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
+          assert.isDefined(entry.geomParams.gradient);
+          assert.isTrue(0 === (Gradient.Flags.Outline & entry.geomParams.gradient!.flags!));
+          break;
+        case 7:
+          assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
+          assert.isDefined(entry.geomParams.gradient);
+          assert.isFalse(0 === (Gradient.Flags.Outline & entry.geomParams.gradient!.flags!));
+          break;
+      }
+    }
+    assert.isTrue(8 === iShape);
   });
 
   it("create GeometricElement3d using shapes with patterns", async () => {
@@ -503,6 +549,38 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(newId.isValid());
     imodel.saveChanges();
+
+    // Extract and test value returned...
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    let iShape = 0;
+    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    for (const entry of itLocal) {
+      assert.isDefined(entry.geometryQuery);
+      assert.isDefined(entry.geomParams.pattern);
+      switch (iShape++) {
+        case 0:
+          assert.isTrue(undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 && undefined === entry.geomParams.pattern!.space2 && undefined === entry.geomParams.pattern!.angle2);
+          break;
+        case 1:
+          assert.isTrue(undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 && undefined !== entry.geomParams.pattern!.space2 && undefined !== entry.geomParams.pattern!.angle2);
+          break;
+        case 2:
+          assert.isTrue(undefined !== entry.geomParams.pattern!.symbolId && undefined === entry.geomParams.pattern!.color);
+          break;
+        case 3:
+          assert.isTrue(undefined !== entry.geomParams.pattern!.symbolId && undefined !== entry.geomParams.pattern!.color);
+          break;
+        case 4:
+          assert.isTrue(undefined !== entry.geomParams.pattern!.defLines && undefined === entry.geomParams.pattern!.color);
+          break;
+        case 5:
+          assert.isTrue(undefined !== entry.geomParams.pattern!.defLines && undefined !== entry.geomParams.pattern!.color);
+          break;
+      }
+    }
+    assert.isTrue(6 === iShape);
   });
 
   it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
@@ -620,6 +698,18 @@ describe("GeometryStream", () => {
     // Extract and test value returned
     const value = imodel.elements.getElementProps({ id: partId, wantGeometry: true });
     assert.isDefined(value.geom);
+
+    const geomArrayOut: Arc3d[] = [];
+    const itLocal = GeometryStreamIterator.fromGeometryPart(value as GeometryPartProps);
+    for (const entry of itLocal) {
+      assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
+      geomArrayOut.push(entry.geometryQuery! as Arc3d);
+    }
+
+    assert.isTrue(geomArrayOut.length === geomArray.length);
+    for (let i = 0; i < geomArrayOut.length; i++) {
+      assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
+    }
   });
 
   it("create GeometricElement3d from arcs", async () => {
@@ -659,15 +749,13 @@ describe("GeometryStream", () => {
     assert.isDefined(value.geom);
 
     const geomArrayOut: Arc3d[] = [];
-    for (const entry of value.geom) {
-      assert.isDefined(entry.arc);
-      const geometryQuery = GeomJson.Reader.parse(entry);
-      assert.isTrue(geometryQuery instanceof Arc3d, "GeometricPrimitive correctly returned Arc3d data");
-      if (geometryQuery !== undefined)
-        geomArrayOut.push(geometryQuery);
+    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    for (const entry of itLocal) {
+      assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
+      geomArrayOut.push(entry.geometryQuery! as Arc3d);
     }
 
-    assert.equal(geomArrayOut.length, geomArray.length, "All elements extracted from buffer");
+    assert.isTrue(geomArrayOut.length === geomArray.length);
     for (let i = 0; i < geomArrayOut.length; i++) {
       assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
     }

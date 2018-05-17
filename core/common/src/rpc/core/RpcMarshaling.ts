@@ -8,6 +8,7 @@
 import { RpcRegistry } from "./RpcRegistry";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
+import { RpcConfiguration } from "./RpcConfiguration";
 
 let marshalingScope = "";
 
@@ -31,6 +32,10 @@ export class RpcMarshaling {
 
   /** Serializes a value. */
   public static serialize(operation: RpcOperation, _protocol: RpcProtocol, value: any) {
+    if (typeof (value) === "undefined") {
+      return "";
+    }
+
     marshalingScope = operation.interfaceDefinition.name;
     return JSON.stringify(value, RpcMarshaling.marshal);
   }
@@ -94,7 +99,12 @@ export class RpcMarshaling {
 
             const errorMessage = value.message;
             value.message = "[Backend to Frontend Transition]";
-            (value as any)[RpcMarshalingDirective.ErrorStack] = value.stack;
+
+            let stack = value.stack;
+            if (typeof (stack) === "undefined")
+              stack = "[Backend to Frontend Transition]\n[Backend Implementation]";
+
+            (value as any)[RpcMarshalingDirective.ErrorStack] = stack;
 
             value.message = errorMessage;
             (value as any)[RpcMarshalingDirective.ErrorMessage] = value.message;
@@ -121,10 +131,15 @@ export class RpcMarshaling {
   /** JSON.parse reviver callback that unmarshals JavaScript class instances. */
   private static unmarshal(_key: string, value: any) {
     if (typeof (value) === "object" && value !== null && value[RpcMarshalingDirective.Name]) {
-      const name = value[RpcMarshalingDirective.Name];
+      const name: string = value[RpcMarshalingDirective.Name];
       delete value[RpcMarshalingDirective.Name];
 
-      delete value[RpcMarshalingDirective.Unregistered]; // may use this information later
+      if (RpcConfiguration.strictMode && value[RpcMarshalingDirective.Unregistered]) {
+        const [className, typeName] = name.split("_", 2);
+        throw new Error(`Cannot unmarshal type "${typeName} for this RPC interface. Ensure this type is listed in ${className}.types or suppress using RpcConfiguration.strictMode.`);
+      }
+
+      delete value[RpcMarshalingDirective.Unregistered];
 
       const type = RpcRegistry.instance.types.get(name);
 

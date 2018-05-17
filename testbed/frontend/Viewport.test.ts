@@ -3,17 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { Cartographic, FontType, FontMap, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, FontType, FontMap, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode } from "@bentley/imodeljs-frontend";
+import { SpatialViewState, ViewState, StandardViewId, IModelConnection, Viewport, IModelApp, PanTool, CompassMode, FitViewTool } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { RenderPlan, Target } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderTarget, RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
 class TestViewport extends Viewport {
-  public constructor(canvas: HTMLCanvasElement, viewState: ViewState) {
-    super(canvas, viewState);
+  public constructor(canvas: HTMLCanvasElement, viewState: ViewState, target?: RenderTarget) {
+    super(canvas, viewState, target);
     this.setupFromView();
   }
 }
@@ -203,16 +203,14 @@ describe("RenderLoop tests", () => {
     if (!doRenderLoopTests)
       return;
 
+    spatialView.displayStyle.backgroundColor = new ColorDef(ColorByName.darkBlue);
     const target = IModelApp.renderSystem.createTarget(canvas);
-    const viewport = new Viewport(canvas, spatialView, target);
-    viewport.setupFromView();
+    const viewport = new TestViewport(canvas, spatialView, target);
     IModelApp.viewManager.addViewport(viewport);
 
-    const plan = new RenderPlan(viewport);
-    plan.bgColor.tbgr = ColorByName.darkBlue;
-    target.changeRenderPlan(plan);
-    expect((target as Target).bgColor.tbgr).to.equal(ColorByName.darkBlue);
-
-    target.drawFrame();
+    const fitView = IModelApp.tools.create("View.Fit", viewport);
+    expect(fitView).not.to.be.undefined;
+    expect(fitView instanceof FitViewTool).to.be.true;
+    (fitView as FitViewTool).run();
   });
 });

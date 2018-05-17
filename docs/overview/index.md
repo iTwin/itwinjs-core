@@ -11,10 +11,10 @@ though sometimes judgement calls are required where no established convention is
 
 From the same JavaScript codebase, it is possible to create:
 
-* [Agents and Services](./App.md#agents-and-services) that process iModels and respond to events from iModelHub
-* [Web Apps](./App.md#web-apps) that run in web browsers and communicate with backends
-* [Desktop Apps](./App.md#desktop-apps) that run on personal computers
-* [Mobile Apps](./App.md#mobile-apps) that run on tablets and phones
+* [Agents and Services](./SoftwareArchitecture.md#web) that process iModels and respond to events from iModelHub
+* [Web Apps](./SoftwareArchitecture.md#web) that run in web browsers and communicate with backends
+* [Desktop Apps](./SoftwareArchitecture.md#desktop) that run on personal computers
+* [Mobile Apps](./SoftwareArchitecture.md#mobile) that run on tablets and phones
 
 ## iModelJs vs. iModelHub
 
@@ -54,7 +54,7 @@ The iModelJs library is divided into these sub-packages:
 |---|---
 |**@bentley/bentleyjs-core**|General utilities that can be run in either the frontend or the backend.
 |**@bentley/geometry-core**|Operations on 2d and 3d geometry.
-|**@bentley/imodeljs-backend** |Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code communicates with the frontend via a Gateway. .
+|**@bentley/imodeljs-backend** |Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface. .
 |**@bentley/imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tool) that modify iModels.
 |**@bentley/imodeljs-common** |Common between the frontend and backend.
 |**@bentley/imodeljs-native**|Performs low-level I/O to an iModel. @bentley/imodeljs-backend depends on this package.

@@ -2,8 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Id64, Guid } from "../bentleyjs-core";
+
+class Uint64Id {
+  public constructor(public readonly high: number,
+                     public readonly low: number,
+                     public readonly localId: number,
+                     public readonly briefcaseId: number,
+                     public readonly str: string) { }
+}
 
 describe("Ids", () => {
 
@@ -94,6 +102,22 @@ describe("Ids", () => {
 
     const idset2 = Id64.toIdSet(idset);
     assert.equal(idset2, idset, "from IdSet");
+  });
+
+  it("should construct an Id64 from two 32-bit integers", () => {
+    const ids: Uint64Id[] = [
+      new Uint64Id(0, 0, 0, 0, "0"),
+      new Uint64Id(0x01234567, 0x89abcdef, 0x6789abcdef, 0x00012345, "0x123456789abcdef"),
+      new Uint64Id(0xfedcba98, 0x76543210, 0x9876543210, 0x00fedcba, "0xfedcba9876543210"),
+      new Uint64Id(0x00000100, 0x00000001, 0x0000000001, 0x00000001, "0x10000000001"),
+    ];
+
+    for (const id of ids) {
+      const id64 = Id64.fromUint32Pair(id.low, id.high);
+      expect(id64.value).to.equal(id.str);
+      expect(id64.getLow()).to.equal(id.localId);
+      expect(id64.getHigh()).to.equal(id.briefcaseId);
+    }
   });
 
   it("Guid should construct properly", () => {

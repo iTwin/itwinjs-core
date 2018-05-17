@@ -7,7 +7,7 @@
 Change Summaries are generated per changeset. Every generated Change Summary is therefore uniquely associated
 to the Changeset it was generated from.
 
-iModelJs persists the generated Change Summaries in a local ECDb file called **Changes Cache File** next to the briefcase it belongs to.
+iModelJs persists the generated Change Summaries in a local ECDb file called **Change Cache File** next to the briefcase it belongs to.
 
 > Change Summaries can only be generated from the iModelJs backend. See the [ChangeSummaryManager]($backend/ChangeSummaryManager) API for how to do it.
 

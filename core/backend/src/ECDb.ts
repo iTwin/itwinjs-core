@@ -35,7 +35,7 @@ export class ECDb implements IDisposable {
 
   /** Create an ECDb
    * @param pathName The path to the ECDb file to create.
-   * @throws [IModelError]($common/IModelError) if the operation failed.
+   * @throws [IModelError]($common) if the operation failed.
    */
   public createDb(pathName: string): void {
     const status: DbResult = this.nativeDb.createDb(pathName);
@@ -46,7 +46,7 @@ export class ECDb implements IDisposable {
   /** Open the ECDb.
    * @param pathName The path to the ECDb file to open
    * @param openMode Open mode
-   * @throws [IModelError]($common/IModelError) if the operation failed.
+   * @throws [IModelError]($common) if the operation failed.
    */
   public openDb(pathName: string, openMode: OpenMode = OpenMode.Readonly): void {
     const status: DbResult = this.nativeDb.openDb(pathName, openMode);
@@ -58,7 +58,7 @@ export class ECDb implements IDisposable {
   public isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Close the Db after saving any uncommitted changes.
-   * @throws [IModelError]($common/IModelError) if the database is not open.
+   * @throws [IModelError]($common) if the database is not open.
    */
   public closeDb(): void {
     this._statementCache.clear();
@@ -67,7 +67,7 @@ export class ECDb implements IDisposable {
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
    * @param changeSetName The name of the operation that generated these changes.
-   * @throws [IModelError]($common/IModelError) if the database is not open or if the operation failed.
+   * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public saveChanges(changeSetName?: string): void {
     const status: DbResult = this.nativeDb.saveChanges(changeSetName);
@@ -76,7 +76,7 @@ export class ECDb implements IDisposable {
   }
 
   /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the transaction.
-   * @throws [IModelError]($common/IModelError) if the database is not open or if the operation failed.
+   * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public abandonChanges(): void {
     const status: DbResult = this.nativeDb.abandonChanges();
@@ -88,7 +88,7 @@ export class ECDb implements IDisposable {
    *
    * If the import was successful, the database is automatically saved to disk.
    * @param pathName Path to ECSchema XML file to import.
-   * @throws [IModelError]($common/IModelError) if the database is not open or if the operation failed.
+   * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public importSchema(pathName: string): void {
     const status: DbResult = this.nativeDb.importSchema(pathName);
@@ -105,7 +105,7 @@ export class ECDb implements IDisposable {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ExecutingECSQL#code-examples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param cb The callback to invoke on the prepared statement
@@ -127,7 +127,7 @@ export class ECDb implements IDisposable {
   /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
    * @param ecsql The ECSQL statement to prepare
    * @returns Returns the prepared statement
-   * @throws [IModelError]($common/IModelError) if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or
+   * @throws [IModelError]($common) if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or
    * references to tables or properties that do not exist. The error.message property will provide details.
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
@@ -147,7 +147,7 @@ export class ECDb implements IDisposable {
   }
   /** Prepare an ECSQL statement.
    * @param ecsql The ECSQL statement to prepare
-   * @throws [IModelError]($common/IModelError) if there is a problem preparing the statement.
+   * @throws [IModelError]($common) if there is a problem preparing the statement.
    */
   public prepareStatement(ecsql: string): ECSqlStatement {
     const stmt = new ECSqlStatement();

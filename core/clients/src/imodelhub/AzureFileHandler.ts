@@ -1,9 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { request, RequestOptions } from "../Request";
-import { IModelHubRequestError } from "./Errors";
-import { Config } from "../Config";
+import { request, RequestOptions, ProgressInfo } from "../Request";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FileHandler } from "./FileHandler";
 import * as fs from "fs";
@@ -31,14 +29,14 @@ export class AzureFileHandler implements FileHandler {
    * If there is a error in the operation any incomplete file is deleted from disk.
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
+   * @param fileSize Size of the file that's being downloaded.
+   * @param progressCallback Callback for tracking progress.
    * @throws [[RequestError]] if the file cannot be downloaded.
    * @throws [[IModelHubRequestError]] if this method is used incorrectly.
    */
-  public async downloadFile(downloadUrl: string, downloadToPathname: string): Promise<void> {
+  public async downloadFile(downloadUrl: string, downloadToPathname: string, fileSize?: number,
+    progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading file from ${downloadUrl}`);
-
-    if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
 
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
@@ -46,6 +44,14 @@ export class AzureFileHandler implements FileHandler {
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
 
     const writeStream: fs.WriteStream = fs.createWriteStream(downloadToPathname, { encoding: "binary" });
+    if (progressCallback) {
+      writeStream.on("drain", () => {
+        progressCallback({ loaded: writeStream.bytesWritten, total: fileSize, percent: fileSize ? writeStream.bytesWritten / fileSize : 0 });
+      });
+      writeStream.on("finish", () => {
+        progressCallback({ loaded: writeStream.bytesWritten, total: fileSize, percent: fileSize ? writeStream.bytesWritten / fileSize : 0 });
+      });
+    }
 
     const options: RequestOptions = {
       method: "GET",
@@ -70,7 +76,7 @@ export class AzureFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(uploadUrlString: string, fileDescriptor: number, blockId: number) {
+  private async uploadChunk(uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: (progress: ProgressInfo) => void) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = new Buffer(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -84,6 +90,7 @@ export class AzureFileHandler implements FileHandler {
         "Content-Length": buffer.length,
       },
       body: buffer,
+      progressCallback: callback,
     };
 
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
@@ -94,24 +101,24 @@ export class AzureFileHandler implements FileHandler {
    * Uploads a file to AzureBlobStorage for the iModelHub
    * @param uploadUrl URL to upload the fille to.
    * @param uploadFromPathname Pathname to upload the file from.
+   * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubRequestError]] if this method is used incorrectly.
    */
-  public async uploadFile(uploadUrlString: string, uploadFromPathname: string): Promise<void> {
+  public async uploadFile(uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logTrace(loggingCategory, `Uploading file to ${uploadUrlString}`);
-
-    if (Config.isBrowser())
-      return Promise.reject(IModelHubRequestError.browser());
-
-    if (!fs.existsSync(uploadFromPathname))
-      return Promise.reject(new Error("Could not find file at specified location: " + uploadFromPathname));
 
     const fileSize = this.getFileSize(uploadFromPathname);
     const file = fs.openSync(uploadFromPathname, "r");
     const chunkSize = 4 * 1024 * 1024;
 
     let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
-    for (let i = 0; i * chunkSize < fileSize; ++i) {
-      await this.uploadChunk(uploadUrlString, file, i);
+    let i = 0;
+    const callback = (progress: ProgressInfo) => {
+      const uploaded = i * chunkSize + progress.loaded;
+      progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
+    };
+    for (; i * chunkSize < fileSize; ++i) {
+      await this.uploadChunk(uploadUrlString, file, i, progressCallback ? callback : undefined);
       blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
     }
     blockList += "</BlockList>";
@@ -136,6 +143,15 @@ export class AzureFileHandler implements FileHandler {
    */
   public getFileSize(filePath: string): number {
     return fs.statSync(filePath).size;
+  }
+
+  /**
+   * Gets size of a file.
+   * @param filePath Path of the file.
+   * @returns Size of the file.
+   */
+  public isDirectory(filePath: string): boolean {
+    return fs.statSync(filePath).isDirectory();
   }
 
   /**

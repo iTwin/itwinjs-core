@@ -16,6 +16,11 @@ export class RpcManager {
     RpcRegistry.instance.initializeRpcInterface(definition);
   }
 
+  /** Terminates an RPC interface class. */
+  public static terminateInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
+    RpcRegistry.instance.terminateRpcInterface(definition);
+  }
+
   /** Returns the RPC client instance for the frontend. */
   public static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {
     return RpcRegistry.instance.getClientForInterface(definition);
@@ -23,11 +28,16 @@ export class RpcManager {
 
   /** Registers the RPC implementation class for the backend. */
   public static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void {
-    RpcRegistry.instance.registerImplementation(definition, implementation);
+    RpcRegistry.instance.registerImpl(definition, implementation);
   }
 
   /** Supply the instance of the RPC interface implementation class for the backend (optional). */
   public static supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, instance: TImplementation): void {
-    RpcRegistry.instance.setImplementationInstance(definition, instance);
+    RpcRegistry.instance.supplyImplInstance(definition, instance);
+  }
+
+  /** Unregisters the RPC implementation class for the backend. */
+  public static unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void {
+    RpcRegistry.instance.unregisterImpl(definition);
   }
 }

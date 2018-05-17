@@ -54,15 +54,15 @@ export interface ECSqlTypedString {
   value: string;
 }
 
-/** Type of an [ECSqlTypedString]($common/ECSqlTypedString) */
+/** Type of an [ECSqlTypedString]($common) */
 export enum ECSqlStringType {
   /** The string represents a BLOB value, formatted as Base64 string. */
   Blob,
   /** The string represents a DateTime value, formatted as ISO8601 string. */
   DateTime,
-  /** The string represents a GUID value, formatted as GUID string (see [Guid]($bentleyjs-core.Guid)). */
+  /** The string represents a GUID value, formatted as GUID string (see [Guid]($bentleyjs-core)). */
   Guid,
-  /** The string represents an Id value, formatted as hexadecimal string (see [Id64]($bentleyjs-core.Id64)). */
+  /** The string represents an Id value, formatted as hexadecimal string (see [Id64]($bentleyjs-core)). */
   Id,
   /** The string is not specifically typed. */
   String,
@@ -139,21 +139,21 @@ export class ECJsNames {
    * #### Rules
    *
    * - System properties:
-   *    - [ECSqlSystemProperty.ECInstanceId]($common/ECSqlSystemProperty.ECInstanceId): id
-   *    - [ECSqlSystemProperty.ECClassId]($common/ECSqlSystemProperty.ECClassId): className
-   *    - [ECSqlSystemProperty.SourceECInstanceId]($common/ECSqlSystemProperty.SourceECInstanceId): sourceId
-   *    - [ECSqlSystemProperty.SourceECClassId]($common/ECSqlSystemProperty.SourceECClassId): sourceClassName
-   *    - [ECSqlSystemProperty.TargetECInstanceId]($common/ECSqlSystemProperty.TargetECInstanceId): targetId
-   *    - [ECSqlSystemProperty.TargetECClassId]($common/ECSqlSystemProperty.TargetECClassId): targetClassName
-   *    - [ECSqlSystemProperty.NavigationId]($common/ECSqlSystemProperty.NavigationId): id
-   *    - [ECSqlSystemProperty.NavigationRelClassId]($common/ECSqlSystemProperty.NavigationRelClassId): relClassName
-   *    - [ECSqlSystemProperty.PointX]($common/ECSqlSystemProperty.PointX): x
-   *    - [ECSqlSystemProperty.PointY]($common/ECSqlSystemProperty.PointY): y
-   *    - [ECSqlSystemProperty.PointZ]($common/ECSqlSystemProperty.PointZ): z
+   *    - [ECSqlSystemProperty.ECInstanceId]($common): id
+   *    - [ECSqlSystemProperty.ECClassId]($common): className
+   *    - [ECSqlSystemProperty.SourceECInstanceId]($common): sourceId
+   *    - [ECSqlSystemProperty.SourceECClassId]($common): sourceClassName
+   *    - [ECSqlSystemProperty.TargetECInstanceId]($common): targetId
+   *    - [ECSqlSystemProperty.TargetECClassId]($common): targetClassName
+   *    - [ECSqlSystemProperty.NavigationId]($common): id
+   *    - [ECSqlSystemProperty.NavigationRelClassId]($common): relClassName
+   *    - [ECSqlSystemProperty.PointX]($common): x
+   *    - [ECSqlSystemProperty.PointY]($common): y
+   *    - [ECSqlSystemProperty.PointZ]($common): z
    *  - Ordinary properties: first character is lowered.
    *
    * @param ecProperty Either the property name as defined in the ECSchema for regular ECProperties.
-   *         Or an [ECSqlSystemProperty]($common/ECSqlSystemProperty) value for ECSQL system properties
+   *         Or an [ECSqlSystemProperty]($common) value for ECSQL system properties
    */
   public static toJsName(ecProperty: ECSqlSystemProperty | string): string {
     if (typeof (ecProperty) === "string")

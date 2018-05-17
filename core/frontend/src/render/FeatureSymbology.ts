@@ -246,7 +246,7 @@ export namespace FeatureSymbology {
       if (replaceExisting || !appearance.overridesSymbology) this._defaultOverrides = appearance.clone();
     }
 
-    /** #TODO */
+    /** ###TODO */
     public async updateFromIModel(_iModel: IModelConnection): Promise<void> {
       // Features are defined by subcategory, which only implies category...
       // A subcategory is visible if it belongs to a viewed category and its appearance's visibility flag is set

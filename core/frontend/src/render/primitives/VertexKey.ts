@@ -1,21 +1,11 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { SortedArray, assert } from "@bentley/bentleyjs-core";
+import { SortedArray, Comparable, assert, compareWithTolerance } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import { QPoint3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 
-function compareWithTolerance(a: number, b: number): number {
-  const tolerance = 0.1;
-  if (a < b - tolerance)
-    return -1;
-  else if (a > b + tolerance)
-    return 1;
-  else
-    return 0;
-}
-
-export class VertexKey {
+export class VertexKey implements Comparable<VertexKey> {
   public readonly position: QPoint3d;
   public readonly octEncodedNormal: number = 0;
   public readonly uvParam?: Point2d;
@@ -23,7 +13,7 @@ export class VertexKey {
   public readonly normalValid: boolean = false;
 
   public constructor(position: QPoint3d, fillColor: number, normal?: OctEncodedNormal, uvParam?: Point2d) {
-    this.position = position.clone();
+    this.position = position.clone(); // #TODO clone from scratch to prevent calling new
     this.fillColor = fillColor;
 
     if (undefined !== normal) {
@@ -57,7 +47,7 @@ export class VertexKey {
     let diff = this.position.compare(rhs.position);
     if (0 === diff) {
       diff = this.octEncodedNormal - rhs.octEncodedNormal;
-      if (0 === diff ) {
+      if (0 === diff) {
         diff = this.fillColor - rhs.fillColor;
         if (0 === diff && undefined !== this.uvParam) {
           assert(undefined !== rhs.uvParam);

@@ -15,6 +15,19 @@ export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
  * RpcConfiguration is the base class for specific configurations.
  */
 export abstract class RpcConfiguration {
+  /**
+   * Whether development mode is enabled.
+   * @note This parameter determines whether developer convenience features like backend stack traces are available.
+   */
+  public static developmentMode: boolean = false;
+
+  /**
+   * Whether strict mode is enabled.
+   * This parameter determines system behaviors relating to strict checking:
+   * - Whether an error is thrown if the type marshaling system encounters an unregistered type (only in strict mode).
+   */
+  public static strictMode: boolean = false;
+
   /** Sets the configuration supplier for an RPC interface class. */
   public static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void {
     definition.prototype.configurationSupplier = supplier;
@@ -66,6 +79,16 @@ export abstract class RpcConfiguration {
   public onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
     this.protocol.onRpcImplInitialized(definition, impl);
   }
+
+  /** @hidden @internal */
+  public onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void {
+    this.protocol.onRpcClientTerminated(definition, client);
+  }
+
+  /** @hidden @internal */
+  public onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
+    this.protocol.onRpcImplTerminated(definition, impl);
+  }
 }
 
 // A default configuration that can be used for basic testing within a library.
@@ -90,7 +113,7 @@ export class RpcDirectRequest extends RpcRequest {
     const request = this.protocol.serialize(this);
 
     this.protocol.fulfill(request).then((fulfillment) => {
-      this.fulfillment = fulfillment;
+      this.fulfillment = JSON.parse(JSON.stringify(fulfillment));
       this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
     });
   }

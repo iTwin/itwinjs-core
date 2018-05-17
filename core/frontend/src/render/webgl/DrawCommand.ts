@@ -32,7 +32,6 @@ export class ShaderProgramParams {
     } else {
       this.projectionMatrix = Matrix4.fromMatrix4d(target.projectionMatrix);
     }
-    this.projectionMatrix = Matrix4.fromIdentity();
   }
 
   public get isViewCoords() { return RenderPass.ViewOverlay === this.renderPass || RenderPass.Background === this.renderPass; }

@@ -10,9 +10,7 @@ import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./rende
 import { ViewFlags, Npc } from "@bentley/imodeljs-common";
 
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
-import { IModelConnection } from "./IModelConnection";
-import { PrimitiveBuilder } from "./render/primitives/Geometry";
-import { DecorationList, Decorations, RenderGraphic, RenderTarget, RenderSystem } from "./render/System";
+import { DecorationList, Decorations, RenderGraphic, RenderTarget } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
 const gridConstants = { maxGridDotsInRow: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225, maxGridPoints: 90, maxGridRefs: 40 };
@@ -367,9 +365,4 @@ export class DecorateContext extends RenderContext {
     //   context.AddWorldOverlay(* graphic -> Finish());
   }
 
-}
-
-export class PrimitiveBuilderContext extends ViewContext {
-  constructor(public viewport: Viewport, public imodel: IModelConnection, public system: RenderSystem) { super(viewport); }
-  public static fromPrimitiveBuilder(builder: PrimitiveBuilder): PrimitiveBuilderContext { return new PrimitiveBuilderContext(builder.viewport, builder.iModel, builder.system); }
 }

@@ -39,12 +39,7 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description BisCore
- * Classes for working with the major classes in the BisCore schema. The key classes are:
- * * [BisCore]($backend/BisCore)
- * * [Model]($backend/Model)
- * * [Element]($backend/Element)
- * * [Category]($backend/Category)
- * For more information, see [BIS Overview]($docs/overview/BIS.md)
+ * Classes for working with the major classes such as [BisCore]($backend), [Model]($backend), [Element]($backend), and [Category]($backend) in the BisCore schema - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md) and [BIS Overview]($docs/bis).
  */
  /**
   * @docs-group-description Codes
@@ -56,40 +51,29 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description ECSQL
- * Classes for working with ECSQL. The key classes are:
- * * [ECSqlStatement]($backend/ECSqlStatement)
- * * [ECSqlValue]($backend/ECSqlValue)
- *
- * For more information, see [Executing ECSQL]($docs/learning/ECSQL.md)
+ * Classes for working with ECSQL using [ECSqlStatement]($backend) and [ECSqlValue]($backend) - see [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
  * @docs-group-description FontsAndSymbology
  * Classes for working with fonts, colors, and other symbology.
  */
 /**
- * @docs-group-description Gateway
- * Classes for working with Gateways.
- * For more information, see [Gateway Overview]($docs/overview/App.md#gateways).
- */
-/**
  * @docs-group-description iModels
- * Classes for working with iModels. The key classes are:
- * * [IModelDb]($backend/IModelDb)
- * * [ConcurrencyControl]($backend/ConcurrencyControl)
- * For more information, see [iModel Overview]($docs/overview/IModels.md)
+ * Classes for working with iModels, such as [IModelDb]($backend) and [ConcurrencyControl]($backend) - see [iModel Overview]($docs/overview/IModels.md)
  */
 /**
  * @docs-group-description Portability
- * Classes to help write portable apps and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps.
- * For more information, see [Portability Overview]($docs/learning/Portability.md)
+ * Classes to help write portable apps and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps - see [Portability Overview]($docs/learning/Portability.md)
  */
 /**
- * @docs-group-description Schemas
- * Classes for working with ECSchemas.
- * For more information: [Executing ECSQL]($docs/learning/ECSQL.md)
+ * @docs-group-description RpcInterface
+ * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/App.md#rpcinterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
+ */
+/**
+ * @docs-group-description Schema
+ * Classes for working with ECSchemas - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  */
 /**
  * @docs-group-description Views
- * Classes for working with views of models and elements. The key classes are:
- * * [ViewDefinition]($backend)
+ * Classes for working with views, such as [ViewDefinition]($backend)
  */

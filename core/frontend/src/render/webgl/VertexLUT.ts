@@ -6,7 +6,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex, QPoint2d, QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { LUTDimensions } from "./FeatureDimensions";
 import { ColorInfo } from "./ColorInfo";
-import { MeshArgs, PolylineArgs } from "../Primitives/Mesh";
+import { MeshArgs, PolylineArgs } from "../Primitives/mesh/MeshPrimitives";
 import { TextureHandle } from "./Texture";
 import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
 

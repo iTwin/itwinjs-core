@@ -4,6 +4,39 @@
 /** @module Utils */
 
 /**
+ * An identity function which given a value of type T, returns the same value.
+ * Useful as a default argument for functions which can alternatively accept custom logic for cloning values of object type.
+ * @param value The value to clone.
+ * @returns the input value.
+ */
+export function defaultClone<T>(value: T) { return value; }
+
+/**
+ * Computes the position at which the specified value should be inserted in order to maintain sorted order within a sorted array.
+ * @param value The value whose position is to be computed.
+ * @param list An array of T already sorted according to the comparison criterion.
+ * @param compare A function accepting two values of type T and returning a negative value if lhs < rhs,
+ *        zero if lhs == rhs, and a positive value otherwise.
+ * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
+ */
+export function lowerBound<T>(value: T, list: T[], compare: (lhs: T, rhs: T) => number): { index: number, equal: boolean } {
+  let low = 0;
+  let high = list.length;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    const comp = compare(value, list[mid]);
+    if (0 === comp)
+      return { index: mid, equal: true };
+    else if (comp < 0)
+      high = mid;
+    else
+      low = mid + 1;
+  }
+
+  return { index: low, equal: false };
+}
+
+/**
  * Maintains an array of some type T in sorted order. The ordering is specified by a function supplied
  * by the user.
  * By default, only unique elements are permitted; attempting to insert a new element which compares
@@ -45,7 +78,7 @@ export class SortedArray<T> {
    *        This function is invoked when a new element is inserted into the array.
    *        The default implementation simply returns its input.
    */
-  public constructor(compare: (lhs: T, rhs: T) => number, allowDuplicates: boolean = false, clone: (src: T) => T = (src: T) => src) {
+  public constructor(compare: (lhs: T, rhs: T) => number, allowDuplicates: boolean = false, clone: (src: T) => T = defaultClone) {
     this._compare = compare;
     this._clone = clone;
     this._allowDuplicates = allowDuplicates;
@@ -54,12 +87,15 @@ export class SortedArray<T> {
   /** The number of elements in the array */
   public get length(): number { return this._array.length; }
 
+  /** Clears the contents of the sorted array. */
+  public clear(): void { this._array = []; }
+
   /** Extracts the sorted array as a T[] and empties the contents of this SortedArray.
    * @returns the contents of this SortedArray as a T[].
    */
   public extractArray(): T[] {
     const result = this._array;
-    this._array = [];
+    this.clear();
     return result;
   }
 
@@ -117,20 +153,5 @@ export class SortedArray<T> {
    * @param value The value whose position is to be computed.
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
    */
-  protected lowerBound(value: T): { index: number, equal: boolean } {
-    let low = 0;
-    let high = this.length;
-    while (low < high) {
-      const mid = Math.floor((low + high) / 2);
-      const comp = this._compare(value, this._array[mid]);
-      if (0 === comp)
-        return { index: mid, equal: true };
-      else if (comp < 0)
-        high = mid;
-      else
-        low = mid + 1;
-    }
-
-    return { index: low, equal: false };
-  }
+  protected lowerBound(value: T): { index: number, equal: boolean } { return lowerBound(value, this._array, this._compare); }
 }

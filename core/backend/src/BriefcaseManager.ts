@@ -1230,7 +1230,7 @@ export class BriefcaseManager {
   private static async upload(accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
     hubName = hubName || path.basename(pathname, ".bim");
 
-    const iModel: HubIModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, hubName, pathname, hubDescription, timeOutInMilliseconds);
+    const iModel: HubIModel = await BriefcaseManager.hubClient.IModels().create(accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
     return iModel.wsgId;
   }
 

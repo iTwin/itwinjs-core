@@ -7,10 +7,23 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocol, SerializedRpcRequest, RpcProtocolEvent, RpcRequestFulfillment } from "../core/RpcProtocol";
+import { RpcRegistry } from "../core/RpcRegistry";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
 const instances: Map<string, ElectronRpcProtocol> = new Map();
+
+const lookupInstance = (request: SerializedRpcRequest) => {
+  const interfaceName = request.operation.interfaceDefinition;
+
+  let protocol = instances.get(interfaceName) as ElectronRpcProtocol;
+  if (!protocol) {
+    RpcRegistry.instance.lookupImpl(interfaceName);
+    protocol = instances.get(interfaceName) as ElectronRpcProtocol;
+  }
+
+  return protocol;
+};
 
 /** @hidden @internal */
 export const CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol";
@@ -29,8 +42,7 @@ export const interop = (() => {
 if (interop) {
   if (interop.ipcMain) {
     interop.ipcMain.on(CHANNEL, async (evt: any, request: SerializedRpcRequest) => {
-      const protocol = instances.get(request.operation.interfaceDefinition) as ElectronRpcProtocol;
-      const response = await protocol.fulfill(request);
+      const response = await lookupInstance(request).fulfill(request);
       evt.sender.send(CHANNEL, response);
     });
   } else if (interop.ipcRenderer) {
@@ -63,10 +75,24 @@ export class ElectronRpcProtocol extends RpcProtocol {
     this.registerInterface(definition);
   }
 
+  /** @hidden @internal */
+  public onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
+    this.purgeInterface(definition);
+  }
+
+  /** @hidden @internal */
+  public onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
+    this.purgeInterface(definition);
+  }
+
   private registerInterface(definition: RpcInterfaceDefinition) {
     if (instances.has(definition.name))
       throw new IModelError(BentleyStatus.ERROR, `RPC interface "${definition.name}"" is already associated with a protocol.`);
 
     instances.set(definition.name, this);
+  }
+
+  private purgeInterface(definition: RpcInterfaceDefinition) {
+    instances.delete(definition.name);
   }
 }

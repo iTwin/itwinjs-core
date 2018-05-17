@@ -7,8 +7,10 @@ import { IModelHubRequestError } from "./Errors";
 
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
+import { Config } from "../Config";
 import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "./FileHandler";
+import { ProgressInfo } from "../Request";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -19,8 +21,8 @@ export enum BriefcaseAccessMode {
 }
 
 /** Briefcase */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.Briefcase", {schemaPropertyName: "schemaName", classPropertyName: "className"})
-@ECJsonTypeMap.classToJson("ecdb", "ServiceStore.Briefcase", {classKeyPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.Briefcase", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+@ECJsonTypeMap.classToJson("ecdb", "ServiceStore.Briefcase", { classKeyPropertyName: "className" })
 export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileName")
   public fileName?: string;
@@ -52,7 +54,7 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "isReadOnly")
   public isReadOnly?: boolean;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[0].relatedInstance.properties.DownloadUrl")
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
   @ECJsonTypeMap.propertyToJson("ecdb", "accessMode")
@@ -203,11 +205,15 @@ export class BriefcaseHandler {
    * If there is a error in the operation any incomplete briefcase is deleted from disk.
    * @param briefcase Briefcase to download. This needs to include a download link. @see BriefcaseQuery.selectDownloadUrl().
    * @param downloadToPathname Directory where the briefcase should be downloaded.
+   * @param progressCallback Callback for tracking progress.
    * @throws [[ResponseError]] if the briefcase cannot be downloaded.
    * @throws [[IModelHubRequestError]] if this method is used incorrectly.
    */
-  public async download(briefcase: Briefcase, downloadToPathname: string): Promise<void> {
+  public async download(briefcase: Briefcase, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
+
+    if (Config.isBrowser())
+      return Promise.reject(IModelHubRequestError.browser());
 
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());
@@ -215,7 +221,7 @@ export class BriefcaseHandler {
     if (!briefcase.downloadUrl)
       return Promise.reject(IModelHubRequestError.missingDownloadUrl("briefcase"));
 
-    await this._fileHandler.downloadFile(briefcase.downloadUrl, downloadToPathname);
+    await this._fileHandler.downloadFile(briefcase.downloadUrl, downloadToPathname, parseInt(briefcase.fileSize!, 10), progressCallback);
 
     Logger.logTrace(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
   }

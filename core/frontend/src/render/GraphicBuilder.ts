@@ -2,31 +2,22 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "../IModelConnection";
-import { Transform,
-         Point3d,
-         Point2d,
-         ClipVector,
-         CurveCollection,
-         Range3d,
-         Range2d,
-         Vector3d,
-         Arc3d,
-         BSplineCurve3d,
-         BSplineSurface3d,
-         SolidPrimitive,
-         Polyface,
-         TorusPipe,
-         Angle,
-         Box,
-         StrokeOptions } from "@bentley/geometry-core";
-import { AreaPattern,
-         ColorDef,
-         GraphicParams,
-         AsThickenedLine,
-         GeometryParams,
-         LinePixels,
-         TextString,
-         LineStyle} from "@bentley/imodeljs-common";
+import {
+  Transform,
+  Point3d,
+  Point2d,
+  Range3d,
+  Arc3d,
+  Polyface,
+  StrokeOptions,
+} from "@bentley/geometry-core";
+import {
+  AreaPattern,
+  ColorDef,
+  GraphicParams,
+  LinePixels,
+  LineStyle,
+} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./System";
 
@@ -68,8 +59,12 @@ export class GraphicBuilderTileCorners extends Iterable<Point3d> {
   constructor(public pts: [Point3d, Point3d, Point3d, Point3d]) { super(pts); }
 }
 
+const identityTransform = Transform.createIdentity();
+Object.freeze(identityTransform);
+
 /** Parameters used to construct a GraphicBuilder. */
 export class GraphicBuilderCreateParams {
+
   public get placement(): Transform { return this._placement; }
   public set placement(tf: Transform) { this._placement.setFrom(tf); }
 
@@ -79,19 +74,22 @@ export class GraphicBuilderCreateParams {
   public get isViewBackground(): boolean { return this.type === GraphicType.ViewBackground; }
   public get isOverlay(): boolean { return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay; }
 
-  constructor(private readonly _placement: Transform = Transform.createIdentity(),
-              public readonly type: GraphicType,
-              public viewport?: Viewport,
-              public iModel?: IModelConnection,
-              ) {}
+  private readonly _placement: Transform;
+  public readonly type: GraphicType;
+  public readonly viewport: Viewport;
+  public get iModel(): IModelConnection { return this.viewport.iModel; }
+
+  constructor(placement: Transform = identityTransform, type: GraphicType, viewport: Viewport) {
+    this._placement = placement;
+    this.type = type;
+    this.viewport = viewport;
+  }
 
   /**
    * consolidates viewport and imodel parameters, as we would always want to use the imodel of the viewport if the viewport was passed
    */
-  public static create(type: GraphicType, vpOrIModel?: Viewport | IModelConnection, placement?: Transform): GraphicBuilderCreateParams {
-    const vp = vpOrIModel instanceof Viewport ? vpOrIModel : undefined;
-    const imodel = !!vp && !!vp.view.iModel ? vp.view.iModel :  vpOrIModel instanceof IModelConnection ? vpOrIModel : undefined;
-    return new GraphicBuilderCreateParams(placement, type, vp, imodel);
+  public static create(type: GraphicType, vp: Viewport, placement?: Transform): GraphicBuilderCreateParams {
+    return new GraphicBuilderCreateParams(placement, type, vp);
   }
 
   /**
@@ -101,15 +99,15 @@ export class GraphicBuilderCreateParams {
    * If this function is used outside of tile generation context, a default coarse tolerance will be used.
    * To get a tolerance appropriate to a viewport, use the overload accepting a Viewport.
    */
-  public static scene(vp?: Viewport, placement?: Transform, iModel?: IModelConnection) {
-    return new GraphicBuilderCreateParams(placement, GraphicType.Scene, vp, iModel);
+  public static scene(vp: Viewport, placement?: Transform) {
+    return new GraphicBuilderCreateParams(placement, GraphicType.Scene, vp);
   }
 
   /**
    * Create params for a subgraphic
    */
   public subGraphic(placement?: Transform): GraphicBuilderCreateParams {
-    return new GraphicBuilderCreateParams(placement, this.type, this.viewport, this.iModel );
+    return new GraphicBuilderCreateParams(placement, this.type, this.viewport);
   }
 
   /**
@@ -138,22 +136,17 @@ export class GraphicBuilderCreateParams {
 
 /** Exposes methods for constructing a RenderGraphic from geometric primitives. */
 export abstract class GraphicBuilder {
-  protected _isOpen: boolean = false;
-
-  public currClip?: ClipVector;
-
   /**
    * Get/Set the current GeometryStreamEntryId, which identifies the graphics that are currently being drawn.
    * Separated from _streamId to allow child classes to override the logic involved in setting the streamId
    */
-  public get isOpen(): boolean { return this._isOpen; }
-  public get iModel(): IModelConnection { return this.createParams.iModel!; }
+  public get iModel(): IModelConnection { return this.createParams.iModel; }
   public get localToWorldTransform(): Transform { return this.createParams.placement; }
   public get viewport(): Viewport { return this.createParams.viewport!; }
   public get isWorldCoordinates(): boolean { return this.createParams.isWorldCoordinates; }
   public get isViewCoordinates(): boolean { return this.createParams.isViewCoordinates; }
 
-  constructor(public readonly createParams: GraphicBuilderCreateParams) {}
+  constructor(public readonly createParams: GraphicBuilderCreateParams) { }
 
   /** IFacetOptions => StrokeOptions */
   public wantStrokeLineStyle(_symb: LineStyle.Info, _facetOptions: StrokeOptions): boolean { return true; }
@@ -161,15 +154,14 @@ export abstract class GraphicBuilder {
   public wantStrokePattern(_pattern: AreaPattern.Params): boolean { return true; }
 
   // public abstract wantPreBakedBody(body: IBRepEntityCR): boolean;
-  public abstract _finish(): RenderGraphic | undefined;
-  public finish(): RenderGraphic | undefined { return this.isOpen ? this._finish() : undefined; }
+  public abstract _finish(): RenderGraphic;
+  public finish(): RenderGraphic { return this._finish(); }
 
   /**
    * Set a GraphicParams to be the "active" GraphicParams for this RenderGraphic.
    * @param graphicParams The new active GraphicParams. All geometry drawn via calls to this RenderGraphic will use them
-   * @param geomParams The source GeometryParams if graphicParams was created by cooking geomParams, nullptr otherwise.
    */
-  public abstract activateGraphicParams(graphicParams: GraphicParams, geomParams?: GeometryParams): void;
+  public abstract activateGraphicParams(graphicParams: GraphicParams): void;
 
   /**
    * Draw a 3D line string.
@@ -241,79 +233,8 @@ export abstract class GraphicBuilder {
    */
   public abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
 
-  /** Draw a BSpline curve. */
-  public abstract addBSplineCurve(curve: BSplineCurve3d, filled: boolean): void;
-
-  /**
-   * Draw a BSpline curve as 2d geometry with display priority.
-   * @note Only necessary for non-ICachedDraw calls to support non-zero display priority.
-   */
-  public abstract addBSplineCurve2d(curve: BSplineCurve3d, filled: boolean, zDepth: number): void;
-
-  /** Draw a curve vector */
-  public abstract addCurveVector(curves: CurveCollection, filled: boolean): void;
-  // public abstract addCurveVector(curves: CurveVector, filled: boolean, zDepth: number): void;
-
-  /**
-   * Draw a curve vector as 2d geometry with display priority.
-   * @note Only necessary for non-ICachedDraw calls to support non-zero display priority.
-   */
-  // public abstract addCurveVector2d(curves: CurveVector, filled: boolean, zDepth: number): void;
-
-  /**
-   * Draw a light-weight surface or solid primitive.
-   * @note Solid primitives can be capped or uncapped, they include cones, torus, box, spheres, and sweeps.
-   */
-  public abstract addSolidPrimitive(primitive: SolidPrimitive): void;
-
-  /** Draw a BSpline surface. */
-  public abstract addBSplineSurface(surface: BSplineSurface3d): void;
-
   /** @note Wireframe fill display supported for non-illuminated meshes. */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
-
-  /** Draw a BRep surface/solid entity from the solids kernel. */
-  // public abstract addBody(entity: IBRepEntityCR): void;
-
-  /**
-   * Draw a series of Glyphs.
-   * @param text Text drawing parameters
-   */
-  public abstract addTextString(text: TextString): void;
-
-  /**
-   * Draw a series of Glyphs with display priority.
-   * @param text Text drawing parameters
-   * @param zDepth Priority value in 2d
-   */
-  public abstract addTextString2d(text: TextString, zDepth: number): void;
-
-  /**
-   * Draw a filled triangle strip from 3D points.
-   * @param numPoints Number of vertices in \c points array.
-   * @param points Array of vertices.
-   *  @param asThickenedLine whether the tri-strip represents a thickened line.
-   */
-  public abstract addTriStrip(numPoints: number, points: Point3d[], asThickenedLine: AsThickenedLine): void;
-
-  /**
-   * Draw a filled triangle strip from 2D points.
-   * @param numPoints Number of vertices in \c points array.
-   * @param points Array of vertices.
-   * @param asThickenedLine whether the tri-strip represents a thickened line.
-   * @param zDepth Z depth value.
-   */
-  public abstract addTriStrip2d(numPoints: number, points: Point2d[], asThickenedLine: AsThickenedLine, zDepth: number): void;
-
-  /** Helper Method to draw TorusPipe. */
-  public addTorus(center: Point3d, vectorX: Vector3d, vectorY: Vector3d, majorRadius: number, minorRadius: number, sweepAngle: Angle, capped: boolean): void {
-    this.addSolidPrimitive(TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, sweepAngle, capped)!);
-  }
-
-  /** Helper Method to draw Box. */
-  public addBox(primary: Vector3d, secondary: Vector3d, basePoint: Point3d, topPoint: Point3d, baseWidth: number, baseLength: number, topWidth: number, topLength: number, capped: boolean): void {
-    this.addSolidPrimitive(Box.createDgnBox(basePoint, primary, secondary, topPoint, baseWidth, baseLength, topWidth, topLength, capped)!);
-  }
 
   /** Add DRange3d edges */
   public addRangeBox(range: Range3d) {
@@ -334,21 +255,6 @@ export abstract class GraphicBuilder {
 
     this.addLineStrings([9, tmpPts], [2, [p[0], p[3]]], [2, [p[4], p[5]]], [2, [p[1], p[7]]], [2, [p[2], p[6]]]);
   }
-
-  /** Add DRange2d edges */
-  public addRangeBox2d(range: Range2d, zDepth: number) {
-    const tmpPts: Point2d[] = [];
-    tmpPts[0] = new Point2d(range.low.x, range.low.y);
-    tmpPts[1] = new Point2d(range.high.x, range.low.y);
-    tmpPts[2] = new Point2d(range.high.x, range.high.y);
-    tmpPts[3] = new Point2d(range.low.x, range.high.y);
-    tmpPts[4] = tmpPts[0];
-    this.addLineString2d(tmpPts, zDepth);
-  }
-
-  public abstract addSubGraphic(graphic: RenderGraphic, trans: Transform, params: GraphicParams, clip?: ClipVector): void;
-
-  public abstract createSubGraphic(trans: Transform, clip?: ClipVector): GraphicBuilder;
 
   /**
    * Set symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize

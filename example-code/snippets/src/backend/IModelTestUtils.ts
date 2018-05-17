@@ -9,7 +9,6 @@ import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 
-// Initialize the gateway classes used by tests
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {

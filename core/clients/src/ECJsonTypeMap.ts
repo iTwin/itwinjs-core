@@ -43,7 +43,9 @@
  *         IsReadOnly: false,
  *         },
  *       relationshipInstances: [{
+ *         className: "FileAccessKey",
  *         relatedInstance: {
+ *           className: "AccessKey",
  *           properties: {
  *           DownloadUrl: "https://imodelhubqasa01.blob.core.windows.net/imodelhub-5018f11f-...",
  *           },
@@ -137,7 +139,7 @@
  *       @ECJsonTypeMap.propertyToJson("ecdb", "isReadOnly")
  *       public isReadOnly: boolean;
  *
- *       @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[0].relatedInstance.properties.DownloadUrl")
+ *       @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
  *       public downloadUrl?: string;
  *
  *       @ECJsonTypeMap.propertyToJson("ecdb", "accessMode")
@@ -158,6 +160,7 @@ import { assert } from "@bentley/bentleyjs-core/lib/Assert";
 export type ConstructorType = new () => any;
 
 const loggingCategory = "ECJson";
+const className = "className";
 
 export interface ClassKeyMapInfo {
   /** The key of the JSON property that stores the schema name - e.g., set to"schemaName" in the case of JSON consumed/supplied by WSG */
@@ -339,9 +342,9 @@ export class ECJsonTypeMap {
       applicationEntry.propertiesByAccessString.forEach((propertyEntry: PropertyEntry, propertyAccessString: string) => {
         let ecValue: any = ecJsonInstance;
 
-        const ecNameParts: string[] = propertyAccessString.split("."); // e.g., "relationshipInstances[0].relatedInstance.properties.DownloadUrl"
-        for (const ecNamePart of ecNameParts) {
-          const ecNameSubParts: string[] | null = ecNamePart.match(/[^\[\]]+/g);
+        const ecNameParts: string[] = propertyAccessString.split("."); // e.g., "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId"
+        for (let i = 0; i < ecNameParts.length; i++) {
+          const ecNameSubParts: string[] | null = ecNameParts[i].match(/[^\[\]]+/g);
           if (!ecNameSubParts || ecNameSubParts.length === 0 || ecNameSubParts.length > 2)
             return;
 
@@ -350,11 +353,32 @@ export class ECJsonTypeMap {
           if (typeof ecValue === "undefined")
             return;
 
-          if (ecNameSubParts.length === 2) { // array value
-            const arrayIndex: number = Number(ecNameSubParts[1]);
-            ecValue = ecValue[arrayIndex];
-            if (typeof ecValue === "undefined")
+          if (ecNameSubParts.length === 2 && subAccessString === "relationshipInstances" && i < ecNameParts.length - 1) {
+            const nextEcNameSubParts: string[] | null = ecNameParts[i + 1].match(/[^\[\]]+/g);
+            if (!nextEcNameSubParts || nextEcNameSubParts.length !== 2)
               return;
+
+            const expectedRelationshipInstanceClass: any = ecNameSubParts[1];
+            const relatedInstanceAccessString: any = nextEcNameSubParts[0];
+            const expectedRelatedInstanceClass: any = nextEcNameSubParts[1];
+
+            let arrayIndex: number = 0;
+            let arrayValue: any;
+            let actualRelatedInstanceClass: any;
+            while (expectedRelatedInstanceClass !== actualRelatedInstanceClass) {
+              arrayValue = ecValue[arrayIndex++];
+              if (typeof arrayValue === "undefined")
+                return;
+
+              if (expectedRelationshipInstanceClass === arrayValue[className]) {
+                const relatedInstance: any = arrayValue[relatedInstanceAccessString];
+                if (relatedInstance !== "undefined")
+                  actualRelatedInstanceClass = relatedInstance[className];
+              }
+            }
+
+            ecValue = arrayValue[relatedInstanceAccessString];
+            i++;
           }
         }
         typedInstance[propertyEntry.typedPropertyName] = ecValue;
@@ -402,7 +426,7 @@ export class ECJsonTypeMap {
         if (typeof typedValue === "undefined")
           return;
 
-        const ecNameParts: string[] = propertyAccessString.split("."); // e.g., "relationshipInstances[0].relatedInstance.properties.DownloadUrl"
+        const ecNameParts: string[] = propertyAccessString.split("."); // e.g., "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId"
         let untypedInstanceCursor: any = untypedInstance;
         ecNameParts.forEach((ecNamePart, index) => {
           const ecNameSubParts: string[] | null = ecNamePart.match(/[^\[\]]+/g);
@@ -412,19 +436,31 @@ export class ECJsonTypeMap {
           const accessString: string = ecNameSubParts[0];
           const isLastPart: boolean = index >= ecNameParts.length - 1;
 
-          const arrayIndex: number = (ecNameSubParts.length === 2) ? Number(ecNameSubParts[1]) : -1;
-          if (arrayIndex < 0) {
+          if (ecNameSubParts.length !== 2) {
             if (!untypedInstanceCursor[accessString])
               untypedInstanceCursor[accessString] = isLastPart ? typedValue : {};
             untypedInstanceCursor = untypedInstanceCursor[accessString];
             return;
           }
 
-          if (!untypedInstanceCursor[accessString])
-            untypedInstanceCursor[accessString] = [];
-          if (!untypedInstanceCursor[accessString][arrayIndex])
-            untypedInstanceCursor[accessString][arrayIndex] = isLastPart ? typedValue : {};
-          untypedInstanceCursor = untypedInstanceCursor[accessString][arrayIndex];
+          const expectedclassName: string = ecNameSubParts[1];
+
+          if (accessString === "relationshipInstances") {
+            if (!untypedInstanceCursor[accessString])
+              untypedInstanceCursor[accessString] = [];
+
+            let relationshipCount: number = 0;
+            while (untypedInstanceCursor[accessString][relationshipCount])
+              relationshipCount++;
+
+            untypedInstanceCursor[accessString][relationshipCount] = isLastPart ? typedValue : {};
+            untypedInstanceCursor = untypedInstanceCursor[accessString][relationshipCount];
+          } else {
+            untypedInstanceCursor[accessString] = isLastPart ? typedValue : {};
+            untypedInstanceCursor = untypedInstanceCursor[accessString];
+          }
+
+          untypedInstanceCursor[className] = expectedclassName;
         });
       });
     });

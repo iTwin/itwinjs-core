@@ -84,7 +84,7 @@ export class RenderStateBlend {
   public apply(previousBlend?: RenderStateBlend): void {
     const gl: WebGLRenderingContext = System.instance.context;
 
-    if (previousBlend === undefined || previousBlend.color !== this.color) {
+    if (previousBlend === undefined || !this.equalColors(previousBlend)) {
       gl.blendColor(this.color[0], this.color[1], this.color[2], this.color[3]);
     }
     if (previousBlend === undefined || previousBlend.equationRgb !== this.equationRgb || previousBlend.equationAlpha !== this.equationAlpha) {
@@ -116,13 +116,20 @@ export class RenderStateBlend {
   }
 
   public equals(rhs: RenderStateBlend): boolean {
-    return this.color[0] === rhs.color[0] && this.color[1] === rhs.color[1] && this.color[2] === rhs.color[2] && this.color[3] === rhs.color[3]
+    return this.equalColors(rhs)
         && this.equationRgb === rhs.equationRgb
         && this.equationAlpha === rhs.equationAlpha
         && this.functionSourceRgb === rhs.functionSourceRgb
         && this.functionSourceAlpha === rhs.functionSourceAlpha
         && this.functionDestRgb === rhs.functionDestRgb
         && this.functionDestAlpha === rhs.functionDestAlpha;
+  }
+
+  public equalColors(rhs: RenderStateBlend): boolean {
+    return this.color[0] === rhs.color[0] &&
+      this.color[1] === rhs.color[1] &&
+      this.color[2] === rhs.color[2] &&
+      this.color[3] === rhs.color[3];
   }
 
   public setColor(color: [number, number, number, number]) {

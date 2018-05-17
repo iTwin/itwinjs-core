@@ -20,54 +20,79 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 Since an iModelJs app [frontend](../overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
-The frontend's main script must check the app's configuration to decide what gateway configuration to use for its app-specific backend(s):
-* Mobile app - [in-process gateway configuration](../overview/App.md#in-process-gateway-configuration).
-* Desktop app - [desktop gateway configuration](../overview/App.md#desktop-gateway-configuration).
-* Web app - [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration).
+The frontend's main script must check the app's configuration to decide what RpcInterface configuration to use for its app-specific backend(s):
+* Mobile app - [in-process RPC configuration](../overview/App.md#in-process-rpc-configuration).
+* Desktop app - [desktop RPC configuration](../overview/App.md#desktop-rpc-configuration).
+* Web app - [cloud PRC configuration](../overview/App.md#cloud-rpc-configuration).
 
-The frontend will always use the [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration) for gateways to services.
+The frontend will always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration) for services.
+
+### Using Plaform-specfic Modules in the Frontend
+In some cases, the Web view environment will provide platform-specific globals and modules. The frontend can use these modules in guarded code. To detect the platform of the frontend:
+```ts
+const isIos: bool = /iphone|ipod|ipad/.test(window.navigator.userAgent.toLowerCase());
+// ... other mobile platforms ...
+
+if (isIos) {
+  // ... use iOS-specific modules, such as camera ...
+}
+```
 
 ## Backend Portability
 
 ### Services and Agents
-Services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use the [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
+True services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
 
 ### App Backends
 App-specific backends do not always run in nodejs, and they do not always run on a server. This section describes how to make an app-specific backend portable and adaptable to multiple app configurations.
 
 An app-specific backend's main script must check the app's configuration to decide how it should initialize and run:
-* Mobile app - the backend should run the in-process gateway request processor and use the [in-process gateway configuration](../overview/App.md#in-process-gateway-configuration).
-* Desktop app - the backend should run a Web server and use the [desktop gateway configuration](../overview/App.md#desktop-gateway-configuration).
-* Web app - the backend should run a Web server and use the [cloud gateway configuration](../overview/App.md#cloud-gateway-configuration).
+* Mobile app - the backend should run the in-process RPC request processor and use the [in-process RPC configuration](../overview/App.md#in-process-rpc-configuration).
+* Desktop app - the backend should run a Web server and use the [desktop RPC configuration](../overview/App.md#desktop-rpc-configuration).
+* Web app - the backend should run a Web server and use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration).
 
-*TBD: Sample Code*
+*Example:*
+```ts
+[[include:RpcInterface.initializeImpl]]
+```
 
-A backend can use node builtins, but only in guarded code.
+#### Using Platform-specific Modules in the Backend
+A backend can use platform-specific globals and modules, but only in guarded code. See [Platform](#backend) for methods to detect the platform.
 
-*TBD: Sample Code*
+For example, a backend can use node builtins in guarded code, like this:
+```ts
+  import { Platform } from "@bentley/imodeljs-backend";
 
+  if (Platform.isNodeJs()) {
+    // access nodejs-specific modules and/or globals
+    __dirname;
+    process.env;
+    require("fs");
+    // ...
+  }
+```
+
+### Avoiding Nodejs dependencies
 A backend can use the following portable imodeljs-backend classes to avoid unnecessary node dependencies:
 
 |Node builtin|imodeljs-backend portable substitute|
 |---|---|---|
-|fs|IModelJsFs
-|os|Platform
-|process|Platform
-|__dirname|KnownLocations
-|__filename|KnownLocations
-|console|Logger
-|path|path|
+|fs|[IModelJsFs]($backend)
+|os|[Platform]($backend)
+|process|[Platform]($backend)
+|__dirname|[KnownLocations]($backend)
+|__filename|[KnownLocations]($backend)
+|console|[Logger]($bentley-js)
+|path|[path](#path)|
 
-In most cases, the imodeljs-backend substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable. Only a partial implementation of `path` is provided on non-nodejs platforms.
+In most cases, the imodeljs-backend substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.
 
-An app backend must not *never* depend on node-specific packages, including any package that is based on native code. (For fs-extra, use IModelJsFs)
+#### path
 
-## Gateway Portability
+A partial implementation of `path` is provided on non-nodejs platforms. The methods that are available everywhere are:
+posix, win32, sep, delimiter, basename, dirname, extname, normalize, join, isAbsolute.
 
-Since frontends talk to backends via a [gateways](../../overview/App.md#gateways) and gateways are TypeScript classes, and since gateway transport configuration does not affect the frontend or the backend code, frontend-backend communication is inherently portable.
+Use only these methods in unguarded code.
 
-That said, the initialization logic of both frontend and backend must choose the correct gateway configurations, based on the app's configuration.
-
-## Platform-specific Modules
-
-A portable interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. These should be used in guarded code.
+#### Unsupported
+An app backend must not *never* depend on node-specific *packages*, including any package that is based on native code. (For fs-extra, use IModelJsFs)

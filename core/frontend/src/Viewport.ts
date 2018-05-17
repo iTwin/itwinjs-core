@@ -218,7 +218,6 @@ export class DecorationAnimator implements ViewportAnimator {
  * the viewing parameters.
  */
 export class Viewport {
-  private iModel?: IModelConnection;
   /** Called whenever this viewport is synchronized with its ViewState */
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   private readonly viewCorners: Range3d = new Range3d();
@@ -269,6 +268,8 @@ export class Viewport {
   public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
+
+  public get iModel(): IModelConnection { return this.view.iModel; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
@@ -394,7 +395,6 @@ export class Viewport {
   public changeView(view: ViewState) {
     this.clearUndo();
     this._view = view;
-    this.iModel = view.iModel;
     this.setupFromView();
     this.saveViewUndo();
 
@@ -651,7 +651,7 @@ export class Viewport {
     this.rootToView.setFrom(this.calcNpcToView().multiplyMapMap(this.rootToNpc));
 
     this.sync.invalidateRenderPlan();
-    this.sync.setValidController;
+    this.sync.setValidController();
 
     this.onViewChanged.raiseEvent(this);
     return ViewStatus.Success;
@@ -1054,7 +1054,7 @@ export class Viewport {
 
   public computeViewRange(): Range3d {
     this.setupFromView();
-    const viewRange = new Range3d();
+    const viewRange = this.view.computeFitRange();
     // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
     // const geomRange = this.geometry.range;
     // const geomMatrix = this.geometry.modelMatrix;

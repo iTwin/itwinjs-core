@@ -137,7 +137,7 @@ describe("IModelConnection", () => {
   it("Change cache file generation when attaching change cache (#integration)", async () => {
     assert.exists(iModel);
     await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken);
-    await TestRpcInterface.getClient().attachChangeCache(iModel.iModelToken);
+    await iModel.attachChangeCache();
     const changeSummaryRows: any[] = await iModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
     assert.equal(changeSummaryRows.length, 1);
     assert.equal(changeSummaryRows[0].cnt, 0);
@@ -155,7 +155,7 @@ describe("IModelConnection", () => {
     try {
       await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken);
       await TestRpcInterface.getClient().extractChangeSummaries(testIModel.iModelToken, { currentChangeSetOnly: true });
-      await TestRpcInterface.getClient().attachChangeCache(testIModel.iModelToken);
+      await testIModel.attachChangeCache();
 
       const changeSummaryRows: any[] = await testIModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
       assert.equal(changeSummaryRows.length, 1);

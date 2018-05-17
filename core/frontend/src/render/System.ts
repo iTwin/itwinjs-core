@@ -18,7 +18,7 @@ import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { HilitedSet } from "../SelectionSet";
 import { FeatureSymbology } from "./FeatureSymbology";
-import { PolylineArgs } from "./primitives/Mesh";
+import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 
 /**
  * A RenderPlan holds a Frustum and the render settings for displaying a Render::Scene into a Render::Target.
@@ -190,7 +190,7 @@ export abstract class RenderSystem {
   // public abstract createViewlet(branch: GraphicBranch, plan: Plan, position: ViewletPosition): Graphic;
 
   // /** Create a triangle mesh primitive */
-  // public abstract createTriMesh(args: TriMeshArgs, imodel: IModel): Graphic;
+  public abstract createTriMesh(args: MeshArgs, imodel: IModelConnection): RenderGraphic | undefined;
 
   // /** Create an indexed polyline primitive */
   public abstract createIndexedPolylines(args: PolylineArgs, imodel: IModelConnection): RenderGraphic | undefined;
@@ -243,7 +243,7 @@ export abstract class RenderSystem {
   // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;
 
   // /** Create a Light from Light::Parameters */
-  // public abstract createLIght(params: LightingParameters, direction: Vector3d, location: Point3d): Light;
+  // public abstract createLight(params: LightingParameters, direction: Vector3d, location: Point3d): Light;
 
   /**
    * Perform some small unit of work (or do nothing) during an idle frame.
@@ -252,4 +252,6 @@ export abstract class RenderSystem {
   public idle(): void { }
 
   public onInitialized(): void { }
+
+  public onShutDown(): void { }
 }

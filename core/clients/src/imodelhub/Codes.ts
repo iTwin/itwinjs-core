@@ -148,7 +148,8 @@ export class ConflictingCodesError extends IModelHubResponseError {
    * @returns Undefined if the error is not for a code conflict, otherwise newly created error instance.
    */
   public static fromError(error: IModelHubResponseError): ConflictingCodesError | undefined {
-    if (error.id !== IModelHubResponseErrorId.CodeReservedByAnotherBriefcase) {
+    if (error.id !== IModelHubResponseErrorId.CodeReservedByAnotherBriefcase &&
+      error.id !== IModelHubResponseErrorId.ConflictsAggregate) {
       return undefined;
     }
     const result = new ConflictingCodesError();
@@ -199,7 +200,7 @@ export class CodeQuery extends Query {
    * @returns This query.
    */
   public byCodeSpecId(codeSpecId: string) {
-    this.addFilter(`CodeSpecId+eq+${codeSpecId}`);
+    this.addFilter(`CodeSpecId+eq+'${codeSpecId}'`);
     return this;
   }
 
@@ -209,7 +210,7 @@ export class CodeQuery extends Query {
    * @returns This query.
    */
   public byCodeScope(codeScope: string) {
-    this.addFilter(`CodeScope+eq+${codeScope}`);
+    this.addFilter(`CodeScope+eq+'${codeScope}'`);
     return this;
   }
 
@@ -237,8 +238,9 @@ export class CodeQuery extends Query {
       filter += id;
     }
 
-    filter = "]";
+    filter += "]";
 
+    this.addFilter(filter);
     return this;
   }
 }
@@ -335,6 +337,8 @@ export class CodeHandler {
       if (updateOptions.continueOnConflict) {
         requestOptions.CustomOptions.ConflictStrategy = "Continue";
       }
+      if (Object.getOwnPropertyNames(requestOptions.CustomOptions).length === 0)
+        requestOptions = undefined;
     }
 
     const result = await this._handler.postInstances<MultiCode>(MultiCode, token, `/Repositories/iModel--${imodelId}/$changeset`, CodeHandler.convertCodesToMultiCodes(codes), requestOptions);
@@ -363,10 +367,12 @@ export class CodeHandler {
     for (let i = 0; i < codes.length; i += updateOptions.codesPerRequest!) {
       const chunk = codes.slice(i, i + updateOptions.codesPerRequest!);
       try {
-        result.push(...await this.updateInternal(token, imodelId, chunk));
+        result.push(...await this.updateInternal(token, imodelId, chunk, updateOptions));
       } catch (error) {
         if (error instanceof ResponseError) {
-          if (updateOptions && updateOptions.deniedCodes && error instanceof IModelHubResponseError && error.id === IModelHubResponseErrorId.CodeReservedByAnotherBriefcase) {
+          if (updateOptions && updateOptions.deniedCodes && error instanceof IModelHubResponseError && (
+            error.id === IModelHubResponseErrorId.CodeReservedByAnotherBriefcase ||
+            error.id === IModelHubResponseErrorId.ConflictsAggregate)) {
             if (conflictError) {
               conflictError.addCodes(error);
             } else {
@@ -422,7 +428,7 @@ export class CodeHandler {
     Logger.logInfo(loggingCategory, `Deleting all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);
 
     if (!isBriefcaseIdValid(briefcaseId))
-      Promise.reject(IModelHubRequestError.invalidArgument("briefcaseId"));
+      return Promise.reject(IModelHubRequestError.invalidArgument("briefcaseId"));
 
     await this._handler.delete(token, this.getRelativeUrl(imodelId, `DiscardReservedCodes-${briefcaseId}`));
 

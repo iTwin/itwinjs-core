@@ -11,13 +11,18 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
 import { RpcRequestStatus } from "./RpcRequest";
 import { RpcProtocol, RpcProtocolEvent, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
+import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling } from "./RpcMarshaling";
-import { RpcPendingResponse } from "./RpcControl";
+import { RpcPendingResponse, RpcNotFoundResponse } from "./RpcControl";
+
+/** Notification callback for an RPC invocation. */
+export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 
 /** An RPC operation invocation in response to a request. */
 export class RpcInvocation {
-  private _threw: boolean;
+  private _threw: boolean = false;
   private _pending: boolean = false;
+  private _notFound: boolean = false;
 
   /** The protocol for this invocation. */
   public readonly protocol: RpcProtocol;
@@ -31,19 +36,18 @@ export class RpcInvocation {
   /** The implementation response. */
   public readonly result: Promise<any>;
 
-  /** Whether an exception occured. */
-  public get threw() { return this._threw; }
-
   /** The fulfillment for this request. */
   public readonly fulfillment: Promise<RpcRequestFulfillment>;
 
   /** The status for this request. */
   public get status(): RpcRequestStatus {
-    if (this.threw) {
+    if (this._threw) {
       return RpcRequestStatus.Rejected;
     } else {
       if (this._pending)
         return RpcRequestStatus.Pending;
+      else if (this._notFound)
+        return RpcRequestStatus.NotFound;
       else
         return RpcRequestStatus.Resolved;
     }
@@ -62,44 +66,62 @@ export class RpcInvocation {
     this.protocol = protocol;
     this.request = request;
     this.operation = RpcOperation.lookup(request.operation.interfaceDefinition, request.operation.operationName);
+    this.operation.policy.invocationCallback(this);
     protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
     try {
-      this._threw = false;
-
-      const parameters = RpcMarshaling.deserialize(this.operation, protocol, request.parameters);
-      const impl = RpcRegistry.instance.getImplementationForInterface(this.operation.interfaceDefinition);
-      const op = this.lookupOperationFunction(impl);
-      (impl as any)[CURRENT_INVOCATION] = this;
-      this.result = op.call(impl, ...parameters);
+      this.result = this.resolve();
     } catch (error) {
-      this._threw = true;
-      this.result = Promise.reject(error);
-      protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
+      this.result = this.reject(error);
     }
 
-    this.fulfillment = this.result.then((value) => {
-      const result = RpcMarshaling.serialize(this.operation, protocol, value);
-      const status = protocol.getCode(this.status);
-      protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-      return this.createFulfillment(result, status);
-    }, (reason) => {
-      if (reason instanceof RpcPendingResponse) {
-        this._pending = true;
-        protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);
-        return this.createFulfillment(reason.message, protocol.getCode(this.status));
-      }
-
-      this._threw = true;
-      const result = RpcMarshaling.serialize(this.operation, protocol, reason);
-      const status = protocol.getCode(this.status);
-      protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
-      return this.createFulfillment(result, status);
-    });
+    this.fulfillment = this.result.then((value) => this.fulfillResolved(value), (reason) => this.fulfillRejected(reason));
   }
 
-  private createFulfillment(result: string, status: number): RpcRequestFulfillment {
-    return { result, status, id: this.request.id, interfaceName: this.operation.interfaceDefinition.name };
+  private resolve(): Promise<any> {
+    const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
+    const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
+    const op = this.lookupOperationFunction(impl);
+    (impl as any)[CURRENT_INVOCATION] = this;
+    return Promise.resolve(op.call(impl, ...parameters));
+  }
+
+  private reject(error: any): Promise<any> {
+    this._threw = true;
+    this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
+    return Promise.reject(error);
+  }
+
+  private fulfillResolved(value: any): RpcRequestFulfillment {
+    this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
+
+    const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
+    return this.createFulfillment(result);
+  }
+
+  private fulfillRejected(reason: any): RpcRequestFulfillment {
+    if (!RpcConfiguration.developmentMode)
+      reason.stack = undefined;
+
+    let result = RpcMarshaling.serialize(this.operation, this.protocol, reason);
+
+    if (reason instanceof RpcPendingResponse) {
+      this._pending = true;
+      result = reason.message;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);
+    } else if (reason instanceof RpcNotFoundResponse) {
+      this._notFound = true;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedNotFound, this);
+    } else {
+      this._threw = true;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
+    }
+
+    return this.createFulfillment(result);
+  }
+
+  private createFulfillment(result: string): RpcRequestFulfillment {
+    return { result, status: this.protocol.getCode(this.status), id: this.request.id, interfaceName: this.operation.interfaceDefinition.name };
   }
 
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {

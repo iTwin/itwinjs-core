@@ -96,7 +96,11 @@ describe("BriefcaseManager", () => {
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
     } else {
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
+
+      // Clearing the briefcases for frontend tests here since the frontend is not setup with the CORS proxy.
+      await HubTestUtils.purgeAcquiredBriefcases(accessToken, "iModelJsTest", "ConnectionReadTest");
     }
+
   });
 
   after(() => {

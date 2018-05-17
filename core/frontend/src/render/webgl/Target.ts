@@ -158,7 +158,7 @@ export abstract class Target extends RenderTarget {
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
-  public readonly bgColor = ColorDef.white.clone();
+  public readonly bgColor = ColorDef.red.clone();
   public readonly monoColor = ColorDef.white.clone();
   public readonly hiliteSettings = new Hilite.Settings();
   public readonly planFrustum = new Frustum();
@@ -175,7 +175,8 @@ export abstract class Target extends RenderTarget {
     super();
     this._renderCommands = new RenderCommands(this, this._stack);
     this._overlayRenderState = new RenderState();
-    this._overlayRenderState.flags.depthMask = this._overlayRenderState.flags.blend = true;
+    this._overlayRenderState.flags.depthMask = false;
+    this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
     this.compositor = new SceneCompositor(this);
   }
@@ -621,8 +622,11 @@ export class OnScreenTarget extends Target {
 
     // Ensure off-screen canvas dimensions match on-screen canvas dimensions
     const viewRect = this.viewRect;
-    system.canvas.width = viewRect.width;
-    system.canvas.height = viewRect.height;
+    if (system.canvas.width !== viewRect.width)
+      system.canvas.width = viewRect.width;
+
+    if (system.canvas.height !== viewRect.height)
+      system.canvas.height = viewRect.height;
   }
   protected _endPaint(): void {
     const onscreenContext = this._canvas.getContext("2d");
@@ -641,6 +645,8 @@ export class OnScreenTarget extends Target {
     system.techniques.draw(params);
 
     // Copy off-screen canvas contents to on-screen canvas
+    // ###TODO: Determine if clearRect() actually required...seems to leave some leftovers from prev image if not...
+    onscreenContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
     onscreenContext.drawImage(system.canvas, 0, 0);
   }
   public onResized(): void {

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// __PUBLISH_EXTRACT_START__ Gateway.implementation
+// __PUBLISH_EXTRACT_START__ RpcInterface.implementation
 import { RpcInterface, RpcInterfaceDefinition, RpcManager, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, BentleyCloudRpcManager, ElectronRpcManager } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { assert } from "@bentley/bentleyjs-core/lib/Assert";
@@ -9,18 +9,9 @@ import { Platform, IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Point3d, Angle } from "@bentley/geometry-core";
+import { RobotWorld } from "./RobotWorldSchema";
 
-// RobotWorldEngine RPC Implementations
-
-// Definitions must be defined in the service (backend code).
-
-// The implementations 'implement' the definition. The definitions are common
-// to clients and this implementation. They definitions could be defined in a location
-// in the app's source tree that is common to both frontend and backend.
-// If these are service RPC interfaces, then they would have to be defined in package.
-// import { ROWriteRpcInterface, ROReadRpcInterface } from "@my-domain/RORpcInterface";
-
-// Implement ROWriteRpcInterface
+// Implement RobotWorldWriteRpcInterface
 class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
   public static register() {
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl);
@@ -40,9 +31,13 @@ class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcI
   public async insertBarrier(iModelToken: IModelToken, modelId: Id64, location: Point3d, angle: Angle, length: number): Promise<Id64> {
     return RobotWorldEngine.insertBarrier(IModelDb.find(iModelToken), modelId, location, angle, length);
   }
+
+  public async importSchema(iModelToken: IModelToken): Promise<void> {
+    return RobotWorld.importSchema(IModelDb.find(iModelToken));
+  }
 }
 
-// Implement ROReadRpcInterface
+// Implement RobotWorldReadRpcInterface
 class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface {
   public static register() {
     RpcManager.registerImpl(RobotWorldReadRpcInterface, RobotWorldReadRpcImpl);
@@ -66,7 +61,7 @@ class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInt
 }
 // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.configure
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClient
 /* Initialize the RPC clients used by this service. */
 export function initializeRpcClient(interfaces: RpcInterfaceDefinition[], uriPrefix?: string) {
   if (Platform.isMobile()) {
@@ -77,7 +72,9 @@ export function initializeRpcClient(interfaces: RpcInterfaceDefinition[], uriPre
     BentleyCloudRpcManager.initializeClient({ info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix }, interfaces);
   }
 }
+// __PUBLISH_EXTRACT_END__
 
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeImpl
 /* Configures the RPC implementations that are implemented by this service */
 export function initializeRpcImpl() {
   // Register my own interfaces
@@ -99,7 +96,7 @@ export function initializeRpcImpl() {
     interfaces.push(RobotWorldWriteRpcInterface);
   }
 
-  // Expose the gateways using the appropriate configuration.
+  // Expose the RpcInterfaces using the appropriate configuration.
   if (Platform.isMobile()) {
     assert(false, "TBD: mobile RPC config");
   } else if (Platform.electron !== undefined) {

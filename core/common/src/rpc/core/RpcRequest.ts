@@ -8,9 +8,10 @@ import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcProtocol, RpcProtocolEvent } from "./RpcProtocol";
+import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling } from "./RpcMarshaling";
 import { OPERATION, CURRENT_REQUEST } from "./RpcRegistry";
-import { aggregateLoad } from "./RpcControl";
+import { aggregateLoad, RpcNotFoundResponse } from "./RpcControl";
 import { IModelToken } from "../../IModel";
 
 /** Supplies an IModelToken for an RPC request. */
@@ -18,6 +19,12 @@ export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | u
 
 /** Supplies a unique identifier for an RPC request. */
 export type RpcRequestIdSupplier_T = (request: RpcRequest) => string;
+
+/** Supplies the initial retry interval for an RPC request. */
+export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
+
+/** Notification callback for an RPC request. */
+export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
 /** Runtime information related to the operation load of one or more RPC interfaces. */
 export interface RpcOperationsProfile {
@@ -38,6 +45,7 @@ export enum RpcRequestStatus {
   Acknowledged,
   Finalized,
   Disposed,
+  NotFound,
 }
 
 /** RPC request event types. */
@@ -49,6 +57,9 @@ export enum RpcRequestEvent {
 /** Handles RPC request events. */
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
+/** Resolves "not found" responses for RPC requests. */
+export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
+
 /** A RPC operation request. */
 export class RpcRequest<TResponse = any> {
   private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
@@ -58,9 +69,13 @@ export class RpcRequest<TResponse = any> {
   private _status: RpcRequestStatus = RpcRequestStatus.Unknown;
   private _extendedStatus: string = "";
   private _connecting: boolean = false;
+  private _active: boolean = true;
 
   /** Events raised by RpcRequest. See [[RpcRequestEvent]] */
   public static readonly events: BeEvent<RpcRequestEventHandler> = new BeEvent();
+
+  /** Resolvers for "not found" requests. See [[RpcRequestNotFoundHandler]] */
+  public static readonly notFoundHandlers: BeEvent<RpcRequestNotFoundHandler> = new BeEvent();
 
   /** The aggregate operations profile of all active RPC interfaces. */
   public static get aggregateLoad(): RpcOperationsProfile { return aggregateLoad; }
@@ -104,7 +119,7 @@ export class RpcRequest<TResponse = any> {
   public get lastUpdated() { return this._lastUpdated; }
 
   /** The target interval (in milliseconds) between submission attempts for this request. */
-  public readonly retryInterval: number;
+  public retryInterval: number;
 
   /** Whether this request is finalized. */
   public get finalized() { return this.status === RpcRequestStatus.Finalized; }
@@ -143,11 +158,12 @@ export class RpcRequest<TResponse = any> {
     this.protocol = client.configuration.protocol;
     this.operation = (client.constructor.prototype as any)[operation][OPERATION];
     this.parameters = parameters;
-    this.retryInterval = client.configuration.pendingOperationRetryInterval;
+    this.retryInterval = this.operation.policy.retryInterval(client.configuration);
     this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
     this.id = this.operation.policy.requestId(this);
     this.protocol.events.addListener(this.handleProtocolEvent, this);
     this.setStatus(RpcRequestStatus.Created);
+    this.operation.policy.requestCallback(this);
   }
 
   /** Override to initialize the request communication channel. */
@@ -167,6 +183,9 @@ export class RpcRequest<TResponse = any> {
 
   /* @hidden @internal */
   public submit(): void {
+    if (!this._active)
+      return;
+
     this._lastSubmitted = new Date().getTime();
 
     if (this.status === RpcRequestStatus.Created) {
@@ -242,10 +261,20 @@ export class RpcRequest<TResponse = any> {
       case RpcRequestStatus.Pending: {
         return this.setPending(status, this.getResponseText());
       }
+
+      case RpcRequestStatus.NotFound: {
+        const response = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
+        RpcRequest.notFoundHandlers.raiseEvent(this, response, () => this.submit(), (reason: any) => this.reject(reason));
+        return;
+      }
     }
   }
 
   private resolve(value: TResponse): void {
+    if (!this._active)
+      return;
+
+    this._active = false;
     this._lastUpdated = new Date().getTime();
     this._resolve(value);
     this.setStatus(RpcRequestStatus.Resolved);
@@ -258,6 +287,10 @@ export class RpcRequest<TResponse = any> {
   }
 
   private reject(reason: any): void {
+    if (!this._active)
+      return;
+
+    this._active = false;
     this._lastUpdated = new Date().getTime();
     this._reject(reason);
     this.setStatus(RpcRequestStatus.Rejected);
@@ -283,6 +316,9 @@ export class RpcRequest<TResponse = any> {
   }
 
   private setPending(status: RpcRequestStatus.Provisioning | RpcRequestStatus.Pending, extendedStatus: string): void {
+    if (!this._active)
+      return;
+
     this._lastUpdated = new Date().getTime();
     this._extendedStatus = extendedStatus;
     this.setStatus(status);

@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement } from "@bentley/imodeljs-common";
+import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
@@ -29,6 +29,8 @@ export class Timer {
     console.timeEnd(this.label);
   }
 }
+
+RpcConfiguration.developmentMode = true;
 
 Logger.initializeToConsole();
 if (process.env.imodeljs_test_logging_config === undefined) {
@@ -261,7 +263,7 @@ export class IModelTestUtils {
   //
   public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64[] {
     const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
-    const modeledElementRef = new RelatedElement({id: eid});
+    const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
     return [eid, mid];
   }

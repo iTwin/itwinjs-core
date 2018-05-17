@@ -284,19 +284,10 @@ export class GlobalEventHandler extends EventBaseHandler {
 
     const result = await request(this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
 
-    if (result.status === 200) {
-      Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);
+    const event = ParseGlobalEvent(result);
+    Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);
 
-      return Promise.resolve(ParseGlobalEvent(result));
-    } else if (result.status === 204) {
-      Logger.logInfo(loggingCategory, `No Global Events found on subscription with instance id: ${subscriptionInstanceId}`);
-
-      return Promise.reject(result.status);
-    }
-
-    Logger.logWarning(loggingCategory, `Getting Global Event from subscription with instance id: ${subscriptionInstanceId} failed with status ${result.status}`);
-
-    return Promise.reject(result.status);
+    return Promise.resolve(event);
   }
 
   /**
@@ -309,8 +300,9 @@ export class GlobalEventHandler extends EventBaseHandler {
   public createListener(authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
-    subscription.getEvent = this.getEvent;
-    subscription.getSASToken = this.getSASToken;
+    subscription.getEvent = (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
+      this.getEvent(sasToken, baseAddress, id, timeout);
+    subscription.getSASToken = (accessToken: AccessToken) => this.getSASToken(accessToken);
     subscription.id = subscriptionId;
     return EventListener.create(subscription, listener);
   }

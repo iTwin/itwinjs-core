@@ -10,6 +10,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "./index";
+import { ProgressInfo } from "../Request";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -19,7 +20,7 @@ export const enum ContainsSchemaChanges {
 }
 
 /** ChangeSet */
-@ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", {schemaPropertyName: "schemaName", classPropertyName: "className"})
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Id")
   public id?: string;
@@ -57,10 +58,10 @@ export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.IsUploaded")
   public isUploaded?: boolean;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[0].relatedInstance.properties.DownloadUrl")
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[0].relatedInstance.properties.UploadUrl")
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.UploadUrl")
   public uploadUrl?: string;
 
   /** Pathname of the download change set on disk */
@@ -160,9 +161,9 @@ export class ChangeSetHandler {
    * If there is an error in downloading some ChangeSet, throws an error and any incomplete ChangeSet is deleted from disk.
    * @param changeSets Change sets to download. These need to include a download link. @see ChangeSetQuery.selectDownloadUrl().
    * @param downloadToPath Directory where the ChangeSets should be downloaded.
-   * @throws [[Error]] if the change sets cannot be downloaded.
+   * @param progressCallback Callback for tracking progress.
    */
-  public async download(changeSets: ChangeSet[], downloadToPath: string): Promise<void> {
+  public async download(changeSets: ChangeSet[], downloadToPath: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     Logger.logInfo(loggingCategory, `Downloading ${changeSets.length} changesets`);
 
     if (Config.isBrowser())
@@ -171,15 +172,26 @@ export class ChangeSetHandler {
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());
 
-    const promises = new Array<Promise<void>>();
-    for (const changeSet of changeSets) {
+    changeSets.forEach((changeSet) => {
       if (!changeSet.downloadUrl)
-        return Promise.reject(IModelHubRequestError.missingDownloadUrl("changeSets"));
+        throw IModelHubRequestError.missingDownloadUrl("changeSets");
+    });
 
-      const downloadUrl: string = changeSet.downloadUrl;
+    const promises = new Array<Promise<void>>();
+    let totalSize = 0;
+    let downloadedSize = 0;
+    changeSets.forEach((value) => totalSize += parseInt(value.fileSize!, 10));
+    for (const changeSet of changeSets) {
+      const downloadUrl: string = changeSet.downloadUrl!;
       const downloadToPathname: string = this._fileHandler.join(downloadToPath, changeSet.fileName!);
 
-      promises.push(this._fileHandler.downloadFile(downloadUrl, downloadToPathname));
+      let previouslyDownloaded = 0;
+      const callback = (progress: ProgressInfo) => {
+        downloadedSize += (progress.loaded - previouslyDownloaded);
+        previouslyDownloaded = progress.loaded;
+        progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
+      };
+      promises.push(this._fileHandler.downloadFile(downloadUrl, downloadToPathname, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined));
     }
 
     await Promise.all(promises);
@@ -193,9 +205,10 @@ export class ChangeSetHandler {
    * @param imodelId Id of the iModel
    * @param changeSet Information of the ChangeSet to be uploaded.
    * @param changeSetPathname Pathname of the ChangeSet to be uploaded.
+   * @param progressCallback Callback for tracking progress.
    * @throws [[ResponseError]] if the upload fails.
    */
-  public async create(token: AccessToken, imodelId: string, changeSet: ChangeSet, changeSetPathname: string): Promise<ChangeSet> {
+  public async create(token: AccessToken, imodelId: string, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
 
     if (Config.isBrowser())
@@ -204,18 +217,18 @@ export class ChangeSetHandler {
     if (!this._fileHandler)
       return Promise.reject(IModelHubRequestError.fileHandler());
 
+    if (!this._fileHandler.exists(changeSetPathname) || this._fileHandler.isDirectory(changeSetPathname))
+      return Promise.reject(IModelHubRequestError.fileNotFound());
+
     const postChangeSet = await this._handler.postInstance<ChangeSet>(ChangeSet, token, this.getRelativeUrl(imodelId), changeSet);
 
-    await this._fileHandler.uploadFile(postChangeSet.uploadUrl!, changeSetPathname);
+    await this._fileHandler.uploadFile(postChangeSet.uploadUrl!, changeSetPathname, progressCallback);
 
     postChangeSet.uploadUrl = undefined;
     postChangeSet.downloadUrl = undefined;
     postChangeSet.isUploaded = true;
 
     const confirmChangeSet = await this._handler.postInstance<ChangeSet>(ChangeSet, token, this.getRelativeUrl(imodelId, postChangeSet.wsgId), postChangeSet);
-
-    if (!confirmChangeSet.isUploaded)
-      return Promise.reject(new Error("Error uploading change set"));
 
     changeSet.isUploaded = true;
 

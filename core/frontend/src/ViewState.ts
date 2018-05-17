@@ -9,6 +9,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
+  QParams3d, QPoint3dList, ColorByName,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -18,7 +19,9 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
-import { GraphicList } from "./Render/System";
+import { GraphicList } from "./render/System";
+import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
+import { IModelApp } from "./IModelApp";
 
 export const enum GridOrientationType {
   View = 0,
@@ -267,6 +270,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   public abstract allow3dManipulations(): boolean;
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
   public abstract getViewedExtents(): AxisAlignedBox3d;
+  public computeFitRange(): Range3d { return this.getViewedExtents(); } // ###TODO
 
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
@@ -453,13 +457,16 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     return error;
   }
 
-  /** Get the current value of a view detail */
+  /** Peek to see if a detail is defined. May return undefined. */
+  public peekDetail(name: string): any { return this.getDetails()[name]; }
+
+  /** Get the current value of a view detail. If not present, return empty object. */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
 
-  /** Change the value of a view detail */
+  /** Change the value of a view detail. */
   public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
 
-  /** Remove a view detail */
+  /** Remove a view detail. */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
 
   /** Set the CategorySelector for this view. */
@@ -475,7 +482,9 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** Get the AuxiliaryCoordinateSystem for this ViewDefinition */
   public getAuxiliaryCoordinateSystemId(): Id64 { return Id64.fromJSON(this.getDetail("acs")); }
 
-  /** Set the AuxiliaryCoordinateSystem for this view. */
+  /** Set or clear the AuxiliaryCoordinateSystem for this view.
+   * @param acs the new AuxiliaryCoordinateSystem for this view. If undefined, no AuxiliaryCoordinateSystem will be used.
+   */
   public setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState) {
     this._auxCoordSystem = acs;
     if (acs)
@@ -484,16 +493,16 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       this.removeDetail("acs");
   }
 
-  /** Query if the specified Category is displayed in this view */
+  /** Determine whether the specified Category is displayed in this view */
   public viewsCategory(id: Id64): boolean { return this.categorySelector.isCategoryViewed(id); }
 
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
 
-  /** Get the aspect ratio skew (x/y, usually 1.0) that can be used to exaggerate one axis of the view. */
+  /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate one axis of the view. */
   public getAspectRatioSkew(): number { return JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0); }
 
-  /** Set the aspect ratio skew for this view */
+  /** Set the aspect ratio skew (x/y) for this view. To remove aspect ratio skew, pass 1.0 for val. */
   public setAspectRatioSkew(val: number) {
     if (!val || val === 1.0) {
       this.removeDetail("aspectSkew");
@@ -502,16 +511,24 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     }
   }
 
-  /** Get the unit vector that points in the view X (left-to-right) direction. */
+  /** Get the unit vector that points in the view X (left-to-right) direction.
+   * @param result optional Vector3d to be used for output. If undefined, a new object is created.
+   */
   public getXVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(0, result); }
 
-  /** Get the unit vector that points in the view Y (bottom-to-top) direction. */
+  /** Get the unit vector that points in the view Y (bottom-to-top) direction.
+   * @param result optional Vector3d to be used for output. If undefined, a new object is created.
+   */
   public getYVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(1, result); }
 
-  /** Get the unit vector that points in the view Z (front-to-back) direction. */
+  /** Get the unit vector that points in the view Z (front-to-back) direction.
+   * @param result optional Vector3d to be used for output. If undefined, a new object is created.
+   */
   public getZVector(result?: Vector3d): Vector3d { return this.getRotation().getRow(2, result); }
 
-  /** Set the clipping volume for this view. */
+  /** Set or clear the clipping volume for this view.
+   * @param clip the new clipping volume. If undefined, clipping is removed from view.
+   */
   public setViewClip(clip?: ClipVector) {
     if (clip && clip.isValid())
       this.setDetail("clip", clip.toJSON());
@@ -519,10 +536,13 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       this.removeDetail("clip");
   }
 
-  /** Get the clipping volume for this view */
+  /** Get the clipping volume for this view, if defined */
   public getViewClip(): ClipVector | undefined {
-    const clip = ClipVector.fromJSON(this.getDetail("clip"));
-    return clip.isValid() ? clip : undefined;
+    const clip = this.peekDetail("clip");
+    if (clip === undefined)
+      return undefined;
+    const clipVector = ClipVector.fromJSON(clip);
+    return clipVector.isValid() ? clipVector : undefined;
   }
 
   /** Set the grid settings for this view */
@@ -1105,6 +1125,59 @@ export abstract class ViewState3d extends ViewState {
   /**  Get the distance from the eyePoint to the focus plane for this view. */
   public getFocusDistance(): number { return this.camera.focusDist; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
+
+  // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
+  public drawDecorations(context: DecorateContext): void {
+    this.drawSkyBox(context);
+    this.drawGroundPlane(context);
+  }
+
+  protected drawSkyBox(context: DecorateContext): void {
+    // ###TODO: Check if skybox enabled in display style; draw actual skybox instead of this fake thing
+    const rect = context.viewport.viewRect;
+    const points = [new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height)];
+    const args = new MeshArgs();
+    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+    for (const point of points)
+      args.points.add(point);
+
+    args.vertIndices = [3, 2, 0, 2, 1, 0];
+
+    const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
+    args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
+
+    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    if (undefined !== gf)
+      context.setViewBackground(gf);
+
+    // ###TODO: Remove this...we're using it to debug failure to blend translucent overlay decorations
+    args.vertIndices = [3, 2, 0];
+    args.colors.initUniform(0x7f7f7f7f);
+    const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    if (undefined !== triangle)
+      context.addViewOverlay(triangle);
+  }
+
+  protected drawGroundPlane(context: DecorateContext): void {
+    // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
+    const extents = this.getViewedExtents(); // the project extents
+    const pts = [extents.low, extents.low.clone(), extents.high.clone(), extents.low.clone()];
+    pts[1].x = extents.high.x;
+    pts[2].z = extents.low.z;
+    pts[3].y = extents.high.y;
+
+    const args = new MeshArgs();
+    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(pts)));
+    for (const point of pts)
+      args.points.add(point);
+
+    args.vertIndices = [3, 2, 0, 2, 1, 0];
+    args.colors.initUniform(ColorByName.darkGreen);
+
+    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    if (undefined !== gf)
+      context.addWorldDecoration(gf);
+  }
 }
 
 /** Defines a view of one or more SpatialModels.
