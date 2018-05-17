@@ -40,7 +40,13 @@ export class ModelState extends EntityState implements ModelProps {
   public getExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
 }
 
-export class GeometricModelState extends ModelState { }
+/** the state of a geometric model */
+export abstract class GeometricModelState extends ModelState {
+  public abstract get is3d(): boolean;
+  public get is2d(): boolean { return !this.is3d; }
+
+  protected constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
+}
 
 /** the state of a 2d Geometric Model */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
@@ -50,6 +56,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }
 
+  public get is3d(): boolean { return false; }
+
   public toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
     val.globalOrigin = this.globalOrigin;
@@ -57,7 +65,14 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   }
 }
 
-export class SpatialModelState extends GeometricModelState { }
+/** the state of a 3d geometric model */
+export class GeometricModel3dState extends GeometricModelState {
+  public get is3d(): boolean { return true; }
+
+  public constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
+}
+
+export class SpatialModelState extends GeometricModel3dState { }
 export class DrawingModelState extends GeometricModel2dState { }
 export class SectionDrawingModelState extends DrawingModelState { }
 export class SheetModelState extends GeometricModel2dState { }

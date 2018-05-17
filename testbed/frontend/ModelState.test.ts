@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect, assert } from "chai";
 import * as path from "path";
-import { ModelSelectorState, IModelConnection, DrawingModelState, SheetModelState, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { ModelSelectorState, IModelConnection, DrawingModelState, SheetModelState, SpatialModelState, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
@@ -43,6 +43,13 @@ describe("ModelState", () => {
     assert.instanceOf(models.get("0x2c"), DrawingModelState);
     assert.instanceOf(models.get("0x11"), SpatialModelState);
     assert.instanceOf(models.get("0x34"), DrawingModelState);
+
+    models.forEach((model) => {
+      const geomModel = model as GeometricModelState;
+      expect(geomModel.is3d).to.equal(model instanceof SpatialModelState);
+      expect(geomModel.is2d).to.equal(!geomModel.is3d);
+    });
+
     models.forEach((model) => assert.deepEqual(model.clone(), model, "clone of ModelState should work"));
 
     await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);

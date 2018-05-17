@@ -4,7 +4,6 @@
 
 import { expect, assert } from "chai";
 import {
-  IModelApp,
   IModelConnection,
   // Viewport,
   SpatialViewState,
@@ -24,12 +23,14 @@ import {
   // GraphicBuilderCreateParams,
   // GraphicType,
   GeometryAccumulator,
+  //  GeometryOptions,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
+// import { FakeGraphic } from "./Graphic.test";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -70,7 +71,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPath works as expected", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -95,7 +96,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addLoop works as expected", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -123,7 +124,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPolyface works as expected", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -167,7 +168,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addGeometry works as expected", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -181,7 +182,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("clear works as expected", () => {
-    if (!IModelApp.hasRenderSystem) {
+    if (!WebGLTestContext.isInitialized) {
       return;
     }
 
@@ -206,8 +207,22 @@ describe("GeometryAccumulator tests", () => {
 
   // ###TODO
   // it("saveToGraphicList works as expected", () => {
+  //   if (!WebGLTestContext.isInitialized) {
+  //     return;
+  //   }
+
+  //   accum = new GeometryAccumulator(iModel, System.instance);
+
   //   const viewport = new Viewport(canvas, spatialView);
   //   const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
   //   const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+
+  //   const tol = primBuilder.computeTolerance(accum);
+  //   const graphics = [new FakeGraphic(iModel)];
+  //   const fkGeom = new FakeGeometry();
+  //   accum.addGeometry(fkGeom);
+  //   const meshes = accum.toMeshes(new GeometryOptions(), tol);
+  //   expect(accum.saveToGraphicList(graphics, new GeometryOptions(), tol)).to.not.throw;
+  //   console.log(meshes); // tslint:disable-line
   // });
 });
