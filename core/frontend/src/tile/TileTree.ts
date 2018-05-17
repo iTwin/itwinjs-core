@@ -2,9 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ElementAlignedBox3d /*, Frustum */ } from "@bentley/imodeljs-common";
+import { Id64, BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
+import { ElementAlignedBox3d, ViewFlag /*, Frustum */ } from "@bentley/imodeljs-common";
 import { Point3d, Transform, ClipVector } from "@bentley/geometry-core";
+import { RenderContext } from "../ViewContext";
+import { GeometricModelState } from "../ModelState";
+import { RenderSystem } from "../render/System";
+import { IModelConnection } from "../IModelConnection";
+
+export class SceneContext extends RenderContext {
+}
 
 export class Tile {
   public readonly root: TileTree;
@@ -19,7 +26,7 @@ export class Tile {
   private _children?: Tile[];
   private readonly _contentRange?: ElementAlignedBox3d;
 
-  public constructor(props: Tile.Props) {
+  public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
@@ -149,7 +156,7 @@ export namespace Tile {
   }
 
   /** Parameters used to construct a Tile. */
-  export interface Props {
+  export interface Params {
     root: TileTree;
     parent?: Tile;
     range: ElementAlignedBox3d;
@@ -161,5 +168,63 @@ export namespace Tile {
 }
 
 export class TileTree {
-  // ###TODO: define interface for communicating with backend
+  public readonly model: GeometricModelState;
+  public readonly location: Transform;
+  private _rootTile?: Tile;
+  public readonly renderSystem: RenderSystem;
+  public readonly expirationTime: BeDuration;
+  public readonly clipVector?: ClipVector;
+  public readonly rootResource: string;
+  public readonly viewFlagsOverrides: ViewFlag.Overrides;
+
+  public static create(props: TileTree.Params) {
+    const tree = new TileTree(props);
+    tree.loadRootTile(props.rootTileId);
+    return undefined === tree._rootTile ? undefined : tree;
+  }
+
+  public get is3d(): boolean { return this.model.is3d; }
+  public get is2d(): boolean { return this.model.is2d; }
+  public get modelId(): Id64 { return this.model.id; }
+  public get iModel(): IModelConnection { return this.model.iModel; }
+  public get range(): ElementAlignedBox3d { return this.rootTile.range; }
+  public get rootTile(): Tile { return this.rootTile!; }
+
+  public selectTilesForScene(_context: SceneContext): Tile[] { return []; }
+  public selectTiles(_args: Tile.DrawArgs): Tile[] { return []; } // ###TODO
+
+  public drawScene(_context: SceneContext): void { }
+  public draw(_args: Tile.DrawArgs): void { } // ###TODO
+
+  // ###TODO: requestTile(), requestTiles()
+
+  // ###TODO public const createDrawArgs(context: SceneContext): Tile.DrawArgs { }
+
+  public constructTileResource(tileId: string): string { return this.rootResource + tileId; }
+
+  private constructor(props: TileTree.Params) {
+    this.model = props.model;
+    this.location = props.location;
+    this.renderSystem = props.renderSystem;
+    this.expirationTime = props.expirationTime;
+    this.clipVector = props.clipVector;
+    this.rootResource = props.rootResource;
+    this.viewFlagsOverrides = undefined !== props.viewFlagsOverrides ? props.viewFlagsOverrides : new ViewFlag.Overrides();
+  }
+
+  private loadRootTile(_tileId: string): Tile | undefined { return undefined; } // ###TODO
+}
+
+export namespace TileTree {
+  /** Parameters used to construct a TileTree */
+  export interface Params {
+    rootResource: string;
+    rootTileId: string;
+    model: GeometricModelState;
+    location: Transform;
+    renderSystem: RenderSystem;
+    expirationTime: BeDuration;
+    clipVector?: ClipVector;
+    viewFlagsOverrides?: ViewFlag.Overrides;
+  }
 }
