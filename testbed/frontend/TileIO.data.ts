@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 // This file contains binary data for element tiles, to be used in TileIO tests.
+// All of these tiles are 'leaf' tiles (have no children).
 
 export namespace TileData {
   // Binary data for a tile created for a model containing a single element: a green rectangle in the range [0, 0] to [5, 10]

@@ -42,7 +42,7 @@ describe("TileIO", () => {
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
   });
 
-  it("should read an iModel tile", () => {
+  it("should read an iModel tile containing a single rectangle", () => {
     const stream = new TileIO.StreamBuffer(rectangle);
     const reader = IModelTileIO.Reader.create(stream, model, system);
     expect(reader).not.to.be.undefined;
@@ -54,6 +54,7 @@ describe("TileIO", () => {
       expect(result.contentRange).not.to.be.undefined;
       expect(result.geometry).not.to.be.undefined;
 
+      // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
       const low = result.contentRange!.low;
       expect(delta(low.x, -2.5)).to.be.lessThan(0.0005);
       expect(delta(low.y, -5.0)).to.be.lessThan(0.0005);
@@ -64,6 +65,7 @@ describe("TileIO", () => {
       expect(delta(high.y, 5.0)).to.be.lessThan(0.0005);
       expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
 
+      // Confirm GeometryCollection
       const geom = result.geometry!;
       expect(geom.isEmpty).to.be.false;
       expect(geom.isComplete).to.be.true;
@@ -72,18 +74,33 @@ describe("TileIO", () => {
       const meshes = geom.meshes;
       expect(meshes.length).to.equal(1);
 
+      // Validate mesh data
       const mesh = meshes[0];
       expect(mesh.type).to.equal(Mesh.PrimitiveType.Mesh);
       expect(mesh.points.length).to.equal(4);
       expect(mesh.isPlanar).to.be.true;
       expect(mesh.is2d).to.be.false;
+      expect(mesh.normals.length).to.equal(4);
+      expect(mesh.uvParams.length).to.equal(0);
+      expect(mesh.features).not.to.be.undefined;
+      expect(mesh.features!._indices.length).to.equal(0);
+
+      // Validate mesh triangles
+      expect(mesh.triangles).not.to.be.undefined;
+      expect(mesh.triangles!.length).to.equal(2);
+      const indices = mesh.triangles!.indices;
+      const expectedIndices = [ 0, 1, 2, 0, 2, 3 ];
+      expect(indices.length).to.equal(6);
+      for (let i = 0; i < indices.length; i++)
+        expect(indices[i]).to.equal(expectedIndices[i]);
+
+      // Validate color table (uniform - green)
       expect(mesh.colorMap.length).to.equal(1);
       expect(mesh.colorMap.isUniform).to.be.true;
       expect(mesh.colorMap.getIndex(0x0000ff00)).to.equal(0); // green is first and only color in color table
       expect(mesh.colors.length).to.equal(0);
-      expect(mesh.features).not.to.be.undefined;
-      expect(mesh.features!._indices.length).to.equal(0);
 
+      // Validate display params
       const displayParams = mesh.displayParams;
       expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
       expect(displayParams.material).to.be.undefined;
@@ -93,9 +110,7 @@ describe("TileIO", () => {
       expect(displayParams.linePixels).to.equal(LinePixels.Solid);
       expect(displayParams.ignoreLighting).to.be.false;
 
-      expect(mesh.normals.length).to.equal(4);
-      expect(mesh.uvParams.length).to.equal(0);
-
+      // Validate feature table (uniform - one element)
       const features = meshes.features!;
       expect(meshes.features).not.to.be.undefined;
       expect(features.length).to.equal(1);
@@ -106,15 +121,6 @@ describe("TileIO", () => {
       expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
       expect(feature!.elementId.value).to.equal("0x4e");
       expect(feature!.subCategoryId.value).to.equal("0x18");
-
-      expect(mesh.triangles).not.to.be.undefined;
-      expect(mesh.triangles!.length).to.equal(2);
-
-      const indices = mesh.triangles!.indices;
-      const expectedIndices = [ 0, 1, 2, 0, 2, 3 ];
-      expect(indices.length).to.equal(6);
-      for (let i = 0; i < indices.length; i++)
-        expect(indices[i]).to.equal(expectedIndices[i]);
     }
   });
 });
