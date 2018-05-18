@@ -3,6 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ECPresentationError, ECPresentationStatus } from "@common/Error";
 import ECPresentationManager, { Props as ECPresentationManagerProps } from "./ECPresentationManager";
 import SelectionManager from "./selection/SelectionManager";
 
@@ -30,9 +32,22 @@ export default class ECPresentation {
    *
    * The method should be called after a call
    * to [IModelApp.startup]($imodeljs-frontend)
+   *
+   * @param props Optional properties to use when creating [[ECPresentationManager]]. If not provided
+   * or provided with `activeLocale` unset, `IModelApp.i18n.languageList()[0]` is used as active locale.
    */
   public static initialize(props?: ECPresentationManagerProps): void {
-    presentationManager = new ECPresentationManager(props);
+    if (!IModelApp.initialized) {
+      throw new ECPresentationError(ECPresentationStatus.NotInitialized,
+        "IModelApp.startup must be called before calling ECPresentation.initialize");
+    }
+    if (!props)
+      props = {};
+    if (!props.activeLocale) {
+      const languages = IModelApp.i18n.languageList();
+      props.activeLocale = (languages.length ? languages[0] : undefined);
+    }
+    presentationManager = ECPresentationManager.create(props);
     selectionManager = new SelectionManager();
   }
 

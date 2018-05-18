@@ -6,7 +6,7 @@ import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { KeySet, Content, Descriptor, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { KeySet, Content, Descriptor, ECPresentationRpcInterface } from "@common/index";
 import { ECPresentationManager } from "@src/index";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
@@ -27,14 +27,14 @@ describe("ECPresentationManager", () => {
     initializeRpcInterface(ECPresentationRpcInterface);
     interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
     ECPresentationRpcInterface.getClient = () => interfaceMock.object;
-    manager = new ECPresentationManager();
+    manager = ECPresentationManager.create();
   });
 
   describe("constructor", () => {
 
     it("sets active locale if supplied with props", async () => {
       const props = { activeLocale: faker.locale };
-      const mgr = new ECPresentationManager(props);
+      const mgr = ECPresentationManager.create(props);
       expect(mgr.activeLocale).to.eq(props.activeLocale);
     });
 

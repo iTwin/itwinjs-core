@@ -29,9 +29,17 @@ export default class ECPresentationManager implements ECPInterface {
 
   private _activeLocale?: string;
 
-  constructor(props?: Props) {
+  private constructor(props?: Props) {
     if (props)
       this.activeLocale = props.activeLocale;
+  }
+
+  /**
+   * Create a new ECPresentationManager instance
+   * @param props Optional properties used to configure the manager
+   */
+  public static create(props?: Props) {
+    return new ECPresentationManager(props);
   }
 
   /**

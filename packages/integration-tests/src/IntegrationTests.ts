@@ -1,8 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// a hack to get imodeljs-frontend import working
-(global as any).WebGLRenderingContext = require("gl"); // tslint:disable-line:no-var-requires
+import "@helpers/MockFrontendEnvironment";
 // common includes
 import TestRpcManager from "@helpers/TestRpcManager";
 // backend includes
@@ -20,9 +19,6 @@ let isInitialized = false;
 export const initialize = () => {
   if (isInitialized)
     return;
-
-  // install mock of browser's XMLHttpRequest for unit tests
-  (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
   // init backend
   IModelHost.startup();
