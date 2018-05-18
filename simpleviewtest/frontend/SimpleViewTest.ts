@@ -84,7 +84,7 @@ async function selectView(state: SimpleViewState, viewName: string) {
   }
 }
 
-let g_viewport: Viewport | undefined;
+let theViewport: Viewport | undefined;
 
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
@@ -92,35 +92,35 @@ async function openView(state: SimpleViewState) {
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
   if (htmlCanvas) {
     const target = IModelApp.renderSystem.createTarget(htmlCanvas);
-    g_viewport = new Viewport(htmlCanvas, state.viewState!, target);
-    await g_viewport.changeView(state.viewState!);
-    IModelApp.viewManager.addViewport(g_viewport);
+    theViewport = new Viewport(htmlCanvas, state.viewState!, target);
+    await theViewport.changeView(state.viewState!);
+    IModelApp.viewManager.addViewport(theViewport);
   }
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
 function startFit(_event: any) {
-  IModelApp.tools.run("View.Fit", g_viewport!, true);
+  IModelApp.tools.run("View.Fit", theViewport!, true);
 }
 
 // starts Window Area
 function startWindowArea(_event: any) {
-  IModelApp.tools.run("View.WindowArea", g_viewport!);
+  IModelApp.tools.run("View.WindowArea", theViewport!);
 }
 
 // starts View Scroll (I don't see a Zoom command)
 function startZoom(_event: any) {
-  IModelApp.tools.run("View.Scroll", g_viewport!);
+  IModelApp.tools.run("View.Scroll", theViewport!);
 }
 
 // starts walk command
 function startWalk(_event: any) {
-  IModelApp.tools.run("View.Walk", g_viewport!);
+  IModelApp.tools.run("View.Walk", theViewport!);
 }
 
 // start rotate view.
 function startRotateView(_event: any) {
-  IModelApp.tools.run("View.Rotate", g_viewport!);
+  IModelApp.tools.run("View.Rotate", theViewport!);
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.

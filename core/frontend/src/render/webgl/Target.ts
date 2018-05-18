@@ -653,7 +653,7 @@ export class OnScreenTarget extends Target {
     // ###TODO remove fillStyle and fillRect - for debugging only
     onscreenContext.fillStyle = "green";
     onscreenContext.fillRect(10, 10, this._canvas.clientWidth - 20, this._canvas.clientHeight - 20);
-    const debugImageScale = 1.0
+    const debugImageScale = 1.0;
     onscreenContext.drawImage(system.canvas, 0, 0, this._canvas.clientWidth * debugImageScale, this._canvas.clientHeight * debugImageScale);
   }
   public onResized(): void {
