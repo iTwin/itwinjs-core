@@ -6,9 +6,9 @@ Multiple Views may be simultaneously visible on the same web page, and are coord
 
 ## ViewDefinition Elements
 
-A *View* is saved in an iModel via elements of the ($backend/ViewDefinition) class. `ViewDefinition`s hold the information necessary to show the same content across sessions.
+A *View* is saved in an iModel via elements of the [ViewDefinition]($backend) class. `ViewDefinition`s hold the information necessary to show the same content across sessions.
 
-Views are opened by loading a ViewDefinition into memory via the [ViewState](#the-viewstate-class) class. They begin showing the content as it was saved in the iModel, but users may modify what they're seeing using [Viewing tools](#viewing-tools). These changes are only temporary (in-memory) unless they are saved back to the iModel via ($backend/IModelDb.updateElement).
+Views are opened by loading a ViewDefinition into memory via the [ViewState](#the-viewstate-class) class. They begin showing the content as it was saved in the iModel, but users may modify what they're seeing using [Viewing tools](#viewing-tools). These changes are only temporary (in-memory) unless they are saved back to the iModel via [IModelDbElements.updateElement]($backend).
 P#
 ### Types of ViewDefinitions
 
@@ -24,7 +24,7 @@ There are subclasses of ViewDefinition to show different types of `Models` in va
 
 ## Using Viewports
 
-> Note: before creating a `Viewport`, be sure to call ($frontend/IModelApp.startup). See [IModelApp](./IModelApp.md).
+> Note: before creating a `Viewport`, be sure to call [IModelApp.startup]($frontend). See [IModelApp](./IModelApp.md).
 
 ## Viewing Tools
 
