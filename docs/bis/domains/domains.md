@@ -2,12 +2,12 @@
 
 ## Shared across disciplines
 
-### [SpatialComposition](./bis/domains/building-spatial.md)
+### [SpatialComposition](./building-spatial.md)
 
-### [ClassificationSystems](./bis/domains/classifications)
+### [ClassificationSystems](./classifications)
 
-### [Grids](./bis/domains/grids)
+### [Grids](./grids)
 
 ## Building discipline
 
-## [BuildingSpatial](./bis/domains/building-spatial)
+## [BuildingSpatial](./building-spatial)

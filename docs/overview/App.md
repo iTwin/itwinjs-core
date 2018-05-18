@@ -34,23 +34,37 @@ A true service is a stand-alone program that is never bundled with the clients t
 
 An example of a service is a program that serves out spatial tiles that it extracts from a specified area of an iModel upon request.
 
-An iModel service or app backend exposes an *interface* that clients can use to make requests. An iModel service interface is an [RpcInterface](#rpcinterface). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
+An iModel service or app backend exposes an *interface* that clients can use to make requests. An iModel service interface is an [RpcInterface](./RpcInterface.md). A service always configures its interfaces using a [Web RPC configuration](./RpcInterface.md#web-rpc-configuration). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
 
 ## Interactive Apps
 
-An interactive app has two parts: a *frontend* containing its UI and a *backend* containing its data-access logic. Frontends and backends have very different concerns and must be kept strictly separate. They are sometimes bundled together in a single install set or program, and they are sometimes deployed separately to different machines or processes.
+An interactive app obtains information from an iModel and presents that information in a user interface. It has a [frontend](#app-frontend) and a [backend](#app-backend), which communication through [RpcInterfaces](./RpcInterface.md). An iModelJs-based interactive app can be configured to run as a Web app, a desktop app, or a mobile app.
 
-The backend implements operations that are used by the frontend. Following good design principles, the frontend may call the backend, but not the other way around. The frontend uses [RpcInterfaces](#rpcinterface) to call the backend.
+### Configurations
 
-See the [diagram of a interactive app architecture](./SoftwareArchitecture.md#comparison) for an overview of the software components found in interactive apps and for basic app architecture.
+#### Web Apps
 
-### App Backend
+When configured as a Web app, the [frontend](#app-frontend) will run in a Web browser and the [backend](#app-backend) will run on a server. The frontend's assets (HTML pages and js files) will be served out by a server (generally different from the backend). The frontend and backend will use a [Web configuration](./RpcInterface.md#web-rpc-configuration) for all RpcInterfaces. See the [diagram of a Web app](./SoftwareArchitecture.md#web) for an overview. Also see [app tailoring](./AppTailoring.md).
 
-The data-access part of an app is called the [backend](https://en.wikipedia.org/wiki/Front_and_back_ends) of the app.
+#### Desktop Apps
+
+[Electron](https://electronjs.org/) is used to package an iModelJs app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](./RpcInterface.md#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a desktop app](./SoftwareArchitecture.md#desktop) for an overview. Also see [app tailoring](./AppTailoring.md).
+
+#### Mobile Apps
+
+When configured as a mobile app, the [frontend](#app-frontend) and [backend](#app-backend) will be bundled into a single app. The app will run as a single process, with frontend and backend in separate threads. The app will use the [in-process configuration](./RpcInterface.md#in-process-rpc-configuration) for efficient in-process calls on app-specific RpcInterfaces and a [Web configuration](./RpcInterface.md#web-rpc-configuration) for remote services. See the [diagram of a mobile app](./SoftwareArchitecture.md#mobile) for an overview. Also see [app tailoring](./AppTailoring.md).
+
+### Architecture
+
+The two concerns of an interactive app are cleanly separated in the [iModelJs app architecture](./SoftwareArchitecture.md) into frontend and backend.
+
+#### App Backend
+
+The data-access part of an app is called the [backend](https://en.wikipedia.org/wiki/Front_and_back_ends).
 
 An app can use a pre-existing or general-purpose [service](#imodel-services) as its backend. For example, a family of viewing apps can use a general-purpose service that handles requests for data from a given iModel.
 
-An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](#backends-for-frontends). App-specific backends are easy to write using [RpcInterfaces](#rpcinterface) and are encouraged.
+An app may require data-access operations that are specific to and intrinsically part of the app. One reason is performance. An analysis that must make many related queries on iModel content, perhaps based on knowledge of a domain schema, in order to produce a single, combined result should be done close to the data. Another reason for app-specific backends is the [backends-for-frontends pattern](./AppTailoring.md#backends-for-frontends). App-specific backends are easy to write using [RpcInterfaces](./RpcInterface.md) and are encouraged.
 
 App-specific backends are written in TypeScript/JavaScript and depend on `@bentley/imodeljs-backend`. A backend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. See [backend portability](../learning/Portability.md#backend-portability).
 
@@ -58,91 +72,10 @@ An app can use many services, both general-purpose and app-specific.
 
 App backends may use [logging](./Logging.md) to help with diagnosing problems.
 
-#### Backends for Frontends
-
-Following the [backends-for-frontends pattern](https://samnewman.io/patterns/architectural/bff/), an app would ideally use different backend services for different configurations, rather than trying to rely on a one-size-fits-all backend service. The iModelJs [RpcInterface](#rpcinterface) architecture encourages and supports the BFF pattern. It is easy to write and deploy app-specific backends, because a backend is just a TypeScript class that deals only with the app's functionality, not communication details. It is easy for an app to choose the mix of backend services that match its configuration, because RpcInterfaces, as TypeScript classes, are first class objects that can be managed at runtime.
-
-### App Frontend
+#### App Frontend
 
 The UI-specific part of an app is called the [frontend](https://en.wikipedia.org/wiki/Front_and_back_ends). The frontend should be concerned only with display and user interaction.
 
 The frontend must be written in TypeScript or JavaScript. The frontend should use Web technologies only, including HTML, CSS, and JavaScript. The frontend can use any Web app framework, such as React or Angular.
 
-The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](#RpcInterface) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. The frontend must not depend on anything that requires native code or is dependent on Node.js.
-
-## Interactive App Configurations
-
-An iModelJs-based interactive app can be configured to run as a web app with a supporting web server, a desktop app, or a mobile app.
-
-In all configurations, the frontend UI must be written using Web technologies, including HTML, CSS, and JavaScript, as it will be rendered in a Web view in all configurations. (In some configurations, the Web view will be embedded in an app.) That allows an app developer to write a UI that works equally well everywhere. The developer can also [swap in a different GUI](#making-interactive-apps-fit-the-platform) to suit each configuration, perhaps using the same frontend JavaScript.
-
-The backend of the app can be the same in all configurations. An app developer can also employ the [backends for frontends](#backends-for-frontends) pattern to tailor the app to different configurations.  And, an app can use [platform-specific APIs](#making-apps-fit-the-platform).
-
-### Web Apps
-
-When configured as a Web app, the [frontend](#app-frontend) will run in a Web browser and the [backend](#app-backend) will run on a server. The frontend's assets (HTML pages and js files) will be served out by a server (generally different from the backend). The frontend and backend will use the [cloud configuration](#cloud-rpc-configuration) for all RpcInterfaces. As noted, RPCS will run through whatever router infrastructure surrounds each service.
-
-See the [diagram of a Web app](./SoftwareArchitecture.md#web) for an overview.
-
-### Desktop Apps
-
-[Electron](https://electronjs.org/) is used to package an iModelJs app as a desktop app. In this case, the [frontend](#app-frontend) and [backend](#app-backend) will be in the same install set. There are still two processes, one for the backend and one for the frontend, but they physically reside on the same computer. The app will use the [desktop configuration](#desktop-rpc-configuration) for efficient local calls on app-specific RpcInterfaces and [cloud configuration](#cloud-rpc-configuration) for remote services.
-
-See the [diagram of a desktop app](./SoftwareArchitecture.md#desktop) for an overview.
-
-### Mobile Apps
-
-When configured as a mobile app, the [frontend](#app-frontend) and [backend](#app-backend) will be bundled into a single app. The app will run as a single process, with frontend and backend in separate threads. The app will use the [in-process configuration](#in-process-rpc-configuration) for efficient in-process calls on app-specific RpcInterfaces and [cloud configuration](#cloud-rpc-configuration) for remote services.
-
-See the [diagram of a mobile app](./SoftwareArchitecture.md#mobile) for an overview.
-
-### Making Interactive Apps Fit the Platform
-
-You may want to tailor the UI and function of an app for each configuration. For example, a mobile app will usually have a simpler UI than a desktop app, and a mobile app might offer mobile-specific features such as camera or GPS. Tailoring is relatively easy, because of the highly factored architecture of an iModelJs app. As a result, you can:
-
-* Change the GUI
-* Use the [backends for frontends pattern](#backends-for-frontends)
-* Use platform-specific modules
-
-Some of these adaptations involve swapping in different resources, such as HTML pages, at packaging time, while some merely require run-time checks. Run-time checks may be based on the `Platform.platformName` property.
-
-### Change the GUI
-
-An app's UI is contained within its frontend. And, the look and feel of the GUI is largely contained within its HTML and CSS resources. Swapping in a different GUI can be a simple as swapping in a different style sheet or HTML page, leaving the supporting JavaScript the same. You can develop and test the various version of the GUI in a single development environment. You can also write the frontend JavaScript to tailor the GUI at run time.
-
-### Platform-specific Modules
-
-An interactive app can use platform-specific modules that are supplied by the host platform in JavaScript. Mobile platforms such as iOS and Android, provide JavaScript classes for services that are specific to mobile apps. The Electron desktop platform provides all of the features of nodejs. Platform-specific modules must be used in [guarded code](../learning/Portability.md).
-
-
-### RpcInterface
-
-An *interface* is the boundary between two components, allowing them to communicate in a clearly defined way. A service implements an interface in order to make its operations available, and a client makes calls on a service's interface it in order to request operations. Since client and service do not run in the same JavaScript context and may not even be on the same machine, a call across the interface is always a [remote procedure call](../learning/Glossary.md#rpc). That is why the interfaces implemented by services and called by clients are called *RpcInterfaces*.
-
-In iModelJs, an RpcInterface is a normal TypeScript class. Clients make calls using ordinary TypeScript method-calling syntax, and they pass parameters and get results as ordinary TypeScript types. Services implement an RpcInterface by writing a normal TypeScript classes. The details of the RPC mechanism are factored out into [RPC configurations](#rpc-configurations). That allows client and service code to focus entirely on the functionality of the interface.
-
-See [learning RpcInterfaces](../learning/RpcInterface.md) for information on how to write and use RpcInterfaces.
-
-See [RPC configurations](#rpc-configurations) below for more on how interface calls are marshalled.
-
-RpcInterface method calls are always from a client to a service. Services never send requests to clients.
-
-RpcInterface methods must be "chunky" and not "chatty". In the case where a service or app backend is accessed over the Internet, both bandwidth and latency can vary widely. Therefore, care must be taken to limit number and size of round-trips between clients and services.
-
-### RPC Configurations
-
-iModelJs supplies transport mechanisms to marshall calls between client and service. These mechanisms are called *RPC configurations*. Configurations are applied to [RpcInterface](#RpcInterface) at runtime. Available configurations include: cloud, desktop, and in-process. An app chooses the appropriate configuration for each RpcInterface that it uses.
-
-See [learning RpcInterfaces](../learning/RpcInterface.md) for information on how to configure RPCs.
-
-#### Cloud RPC configuration
-
-Transforms client calls on an [RpcInterface](#RpcInterface) into HTTP requests. Provides endpoint-processing and call dispatching in the service process. The iModelJs cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure.
-
-#### Desktop RPC configuration
-
-Marshalls calls on an [RpcInterface](#RpcInterface) through high-bandwidth, low-latency pipes between cooperating processes on the same computer. Provides endpoint-processing and call dispatching in the service backend process. The iModelJs desktop RPC configuration is specific to the Electron framework.
-
-#### In-process RPC configuration
-
-Marshalls calls on an [RpcInterface](#RpcInterface) across threads within a single process. Provides call dispatching in the backend thread.
+The frontend makes requests on backend services in order to access iModel content. The frontend uses [RpcInterfaces](./RpcInterface.md) to communicate with the app's backend(s) and other services. The frontend should depend on `@bentley/imodeljs-frontend`. The frontend may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. It may also depend on Web-specific packages. Both the UI and functionality of the app frontend [can be tailored](./AppTailoring.md) to best fit each desired configuration and target platform.

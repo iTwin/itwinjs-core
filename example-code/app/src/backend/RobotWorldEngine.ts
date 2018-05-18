@@ -1,23 +1,26 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { FeatureGates, RelatedElement } from "@bentley/imodeljs-common";
+import { FeatureGates, RelatedElement, RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { IModelDb, IModelHost, Element, ECSqlStatement, InformationRecordElement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { EnvMacroSubst, Id64, DbResult } from "@bentley/bentleyjs-core";
-import { IModelDb, Element, ECSqlStatement, IModelHost, IModelHostConfiguration, Platform, KnownLocations, InformationRecordElement } from "@bentley/imodeljs-backend";
-import { initializeRpcImpl } from "./RobotWorldRpcImpl";
+import { } from "@bentley/imodeljs-common";
 // import { initializeLogging } from "./Logging";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
 import { Robot } from "./RobotElement";
 import * as path from "path";
 import { Barrier } from "./BarrierElement";
+import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
+import { RobotWorldWriteRpcInterface, RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
+import { RobotWorldWriteRpcImpl, RobotWorldReadRpcImpl } from "./RobotWorldRpcImpl";
 
 const defaultsCfg = {
   "ROBOT-WORLD-FEATURE-READWRITE": "true",
   "ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS": "false",
-  "RobotWorld-DEFAULT-LOG-LEVEL": "Error",
-  "RobotWorld-SEQ-URL": "http://localhost",
-  "RobotWorld-SEQ-PORT": "5341",
+  "ROBOT-WORLD-DEFAULT-LOG-LEVEL": "Error",
+  "ROBOT-WORLD-SEQ-URL": "http://localhost",
+  "ROBOT-WORLD-SEQ-PORT": "5341",
 };
 
 // An example of how to implement a service.
@@ -32,7 +35,7 @@ export class RobotWorldEngine {
   public static features: FeatureGates = new FeatureGates();
 
   private static readFeatureGates(): void {
-    RobotWorldEngine.features = new FeatureGates();
+    this.features = new FeatureGates();
 
     // Read the configuration parameters for my service.
     // Some config params might be specified as envvars. Substitute actual values.
@@ -41,7 +44,9 @@ export class RobotWorldEngine {
 
     // Define the feature gates that were passed in the config parameters.
     if ("features" in config) {
-      RobotWorldEngine.features.setGate("features", config.features);
+      this.features.setGate("imodel", config.features.imodel);
+      this.features.setGate("experimental", config.features.experimental);
+      this.features.setGate("not_there", config.features.not_there);
     }
   }
   // __PUBLISH_EXTRACT_END__
@@ -111,7 +116,7 @@ export class RobotWorldEngine {
   // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
   // An experimental method. It is in the release build, but only turned on in some deployments.
   public static fuseRobots(iModelDb: IModelDb, r1Id: Id64, r2Id: Id64) {
-    if (!RobotWorldEngine.features.check("experimentalMethods"))
+    if (!this.features.check("experimental.methods"))
       return;
 
     // Create an assembly with r1 and r2 as the children and a new (hidden) element as the head.
@@ -145,9 +150,13 @@ export class RobotWorldEngine {
       config.appAssetsDir = KnownLocations.platformAssetsDir;
     IModelHost.startup(config);
 
-    RobotWorldEngine.readFeatureGates();
+    this.readFeatureGates();
+
+    // Can't to this, as our logging config uses Bunyan/Seq, and we don't really want to do that here.
     // initializeLogging();
-    initializeRpcImpl();
+    this.registerImpls();
+    const interfaces = this.chooseInterfacesToExpose();
+    TestRpcManager.initialize(interfaces);
 
     // __PUBLISH_EXTRACT_START__ Schema.registerSchema
     // Register the TypeScript schema classes that I intend to use.
@@ -163,8 +172,35 @@ export class RobotWorldEngine {
 
   }
 
+  // __PUBLISH_EXTRACT_START__ RpcInterface.registerImpls
+  private static registerImpls() {
+    RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl);
+    RpcManager.registerImpl(RobotWorldReadRpcInterface, RobotWorldReadRpcImpl);
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  // __PUBLISH_EXTRACT_START__ RpcInterface.selectInterfacesToExpose
+  private static chooseInterfacesToExpose(): RpcInterfaceDefinition[] {
+    const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface];
+
+    if (this.features.check("imodel.readwrite")) {
+      interfaces.push(IModelWriteRpcInterface);
+      interfaces.push(RobotWorldWriteRpcInterface);
+    }
+
+    return interfaces;
+  }
+  // __PUBLISH_EXTRACT_END__
+
   public static shutdown() {
     IModelHost.shutdown();
   }
 
 }
+
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloud
+export function initializeRpcClient(interfaces: RpcInterfaceDefinition[], webServerUrl?: string) {
+  // ElectronRpcManager.initializeClient({}, interfaces);
+  BentleyCloudRpcManager.initializeClient({ info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: webServerUrl }, interfaces);
+}
+// __PUBLISH_EXTRACT_END__

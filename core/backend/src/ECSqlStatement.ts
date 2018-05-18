@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { DbResult, BentleyStatus, Id64, Id64Props, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
-import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECSqlSystemProperty, ECJsNames } from "@bentley/imodeljs-common";
+import { DbResult, Id64, Id64Props, Guid, GuidProps, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { IModelError, ECSqlValueType, ECSqlTypedString, ECSqlStringType, NavigationValue, NavigationBindingValue, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -288,12 +288,29 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     for (let i = 0; i < colCount; i++) {
       const ecsqlValue = this.getValue(i);
       if (!ecsqlValue.isNull()) {
-        const propName: string = ECSqlValueHelper.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
+        const propName: string = ECSqlStatement.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
         const val: any = ecsqlValue.value;
         Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
       }
     }
     return row;
+  }
+
+  private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
+    const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
+    let jsName: string = ECJsNames.toJsName(colInfo.getAccessString(), colInfo.isSystemProperty());
+
+    // now check duplicates. If there are, append a numeric suffix to the duplicates
+    let suffix: number | undefined = duplicatePropNames.get(jsName);
+    if (suffix === undefined)
+      duplicatePropNames.set(jsName, 0);
+    else {
+      suffix++;
+      duplicatePropNames.set(jsName, suffix);
+      jsName += "_" + suffix;
+    }
+
+    return jsName;
   }
 
   /** Calls step when called as an iterator.
@@ -774,66 +791,6 @@ class ECSqlValueHelper {
       default:
         return ECSqlValueHelper.getPrimitiveValue(ecsqlValue);
     }
-  }
-
-  public static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
-    const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
-    let propName: string;
-
-    const colAccessString: string = colInfo.getAccessString();
-
-    // only top-level system properties need to be treated separately. For other system properties
-    // we need the full access string to be returned
-    if (colInfo.isSystemProperty()) {
-      if (colAccessString === "ECInstanceId")
-        propName = ECJsNames.toJsName(ECSqlSystemProperty.ECInstanceId);
-      else if (colAccessString === "ECClassId")
-        propName = ECJsNames.toJsName(ECSqlSystemProperty.ECClassId);
-      else if (colAccessString === "SourceECInstanceId")
-        propName = ECJsNames.toJsName(ECSqlSystemProperty.SourceECInstanceId);
-      else if (colAccessString === "TargetECInstanceId")
-        propName = ECJsNames.toJsName(ECSqlSystemProperty.TargetECInstanceId);
-      else if (colAccessString === "SourceECClassId")
-        propName = ECJsNames.toJsName(ECSqlSystemProperty.SourceECClassId);
-      else if (colAccessString === "TargetECClassId")
-        propName = ECJsNames.toJsName(ECSqlSystemProperty.TargetECClassId);
-      else {
-        // now handle nested system props: output them with full access string, but
-        // replace the system portion of it
-        const accessStringTokens: string[] = colAccessString.split(".");
-        const tokenCount: number = accessStringTokens.length;
-        const leafToken: string = accessStringTokens[tokenCount - 1];
-        propName = ECJsNames.toJsName(accessStringTokens[0] + ".");
-        for (let j = 1; j < tokenCount - 1; j++) {
-          propName += accessStringTokens[j] + ".";
-        }
-
-        if (leafToken === "Id")
-          propName += ECJsNames.toJsName(ECSqlSystemProperty.NavigationId);
-        else if (leafToken === "RelECClassId")
-          propName += ECJsNames.toJsName(ECSqlSystemProperty.NavigationRelClassId);
-        else if (leafToken === "X")
-          propName += ECJsNames.toJsName(ECSqlSystemProperty.PointX);
-        else if (leafToken === "Y")
-          propName += ECJsNames.toJsName(ECSqlSystemProperty.PointY);
-        else if (leafToken === "Z")
-          propName += ECJsNames.toJsName(ECSqlSystemProperty.PointZ);
-        else throw new IModelError(BentleyStatus.ERROR, "Unhandled ECSQL system property: " + colInfo.getAccessString());
-      }
-    } else
-      propName = ECJsNames.toJsName(colAccessString);
-
-    // now check duplicates. If there are, append a numeric suffix to the duplicates
-    let suffix: number | undefined = duplicatePropNames.get(propName);
-    if (suffix === undefined)
-      duplicatePropNames.set(propName, 0);
-    else {
-      suffix++;
-      duplicatePropNames.set(propName, suffix);
-      propName += "_" + suffix;
-    }
-
-    return propName;
   }
 
   public static getStruct(ecsqlValue: ECSqlValue): any {

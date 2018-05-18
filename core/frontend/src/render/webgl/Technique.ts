@@ -6,7 +6,7 @@ import { assert, using, IDisposable } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags, WithClipVolume, FeatureMode } from "./TechniqueFlags";
-import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent } from "./ShaderBuilder";
+import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "./ShaderBuilder";
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { RenderPass, CompositeFlags } from "./RenderFlags";
@@ -19,6 +19,13 @@ import { createClipMaskProgram } from "./glsl/ClipMask";
 import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
+import { createPointStringBuilder, createPointStringHiliter } from "./PointString";
+import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { GLSLFragment } from "./glsl/Fragment";
+import { GLSLDecode } from "./glsl/Decode";
+import { addFrustum } from "./glsl/Common";
+import { addModelViewMatrix } from "./glsl/Vertex";
+import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -91,6 +98,25 @@ export abstract class VariedTechnique implements Technique {
     this.addShader(builder, flags, gl);
   }
 
+  protected addElementId(builder: ProgramBuilder, feat: FeatureMode) {
+    const frag = builder.frag;
+    if (FeatureMode.None === feat)
+      frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+    else {
+      const vert = builder.vert;
+      vert.set(VertexShaderComponent.AddComputeElementId, computeElementId);
+      addFrustum(builder);
+      builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
+      addModelViewMatrix(vert);
+      addRenderOrder(frag);
+      addElementId(builder);
+      frag.addExtension("GL_EXT_draw_buffers");
+      frag.addFunction(GLSLDecode.encodeDepthRgb);
+      frag.addFunction(GLSLFragment.computeLinearDepth);
+      frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragData);
+    }
+  }
+
   private getShaderIndex(flags: TechniqueFlags) {
     assert(!flags.isHilite || (!flags.isTranslucent && flags.hasFeatures), "invalid technique flags");
     const index = this.computeShaderIndex(flags);
@@ -138,6 +164,118 @@ class SurfaceTechnique extends VariedTechnique {
     index += SurfaceTechnique.kFeature * flags.featureMode;
     if (flags.hasClipVolume) {
       index += SurfaceTechnique.kClip;
+    }
+
+    return index;
+  }
+}
+
+class PolylineTechnique extends VariedTechnique {
+  private static readonly kOpaque = 0;
+  private static readonly kTranslucent = 1;
+  private static readonly kFeature = 2;
+  private static readonly kHilite = numFeatureVariants(PolylineTechnique.kFeature);
+  private static readonly kClip = PolylineTechnique.kHilite + 1;
+
+  public constructor(gl: WebGLRenderingContext) {
+    super((numFeatureVariants(2) + numHiliteVariants) * 2);
+
+    const flags = scratchTechniqueFlags;
+    for (const clip of clips) {
+      this.addHiliteShader(clip, gl, createPolylineHiliter);
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode, clip);
+        const builder = createPolylineBuilder(clip);
+        addMonochrome(builder.frag);
+
+        // The translucent shaders do not need the element IDs.
+        const builderTrans = createPolylineBuilder(clip);
+        addMonochrome(builderTrans.frag);
+        if (FeatureMode.Overrides === featureMode) {
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          this.addTranslucentShader(builderTrans, flags, gl);
+        } else {
+          this.addTranslucentShader(builderTrans, flags, gl);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+        }
+        this.addElementId(builder, featureMode);
+        flags.reset(featureMode, clip);
+        this.addShader(builder, flags, gl);
+      }
+    }
+  }
+
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    if (flags.isHilite) {
+      assert(flags.hasFeatures);
+      let hIndex = PolylineTechnique.kHilite;
+      if (flags.hasClipVolume) {
+        hIndex += PolylineTechnique.kClip;
+      }
+      return hIndex;
+    }
+
+    let index = flags.isTranslucent ? PolylineTechnique.kTranslucent : PolylineTechnique.kOpaque;
+    index += PolylineTechnique.kFeature * flags.featureMode;
+    if (flags.hasClipVolume) {
+      index += PolylineTechnique.kClip;
+    }
+
+    return index;
+  }
+}
+
+class PointStringTechnique extends VariedTechnique {
+  private static readonly kOpaque = 0;
+  private static readonly kTranslucent = 1;
+  private static readonly kFeature = 2;
+  private static readonly kHilite = numFeatureVariants(PointStringTechnique.kFeature);
+  private static readonly kClip = PointStringTechnique.kHilite + 1;
+
+  public constructor(gl: WebGLRenderingContext) {
+    super((numFeatureVariants(2) + numHiliteVariants) * 2);
+
+    const flags = scratchTechniqueFlags;
+    for (const clip of clips) {
+      this.addHiliteShader(clip, gl, createPointStringHiliter);
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode, clip);
+        const builder = createPointStringBuilder(clip);
+        addMonochrome(builder.frag);
+
+        // The translucent shaders do not need the element IDs.
+        const builderTrans = createPointStringBuilder(clip);
+        addMonochrome(builderTrans.frag);
+        if (FeatureMode.Overrides === featureMode) {
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          this.addTranslucentShader(builderTrans, flags, gl);
+        } else {
+          this.addTranslucentShader(builderTrans, flags, gl);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+        }
+        this.addElementId(builder, featureMode);
+        flags.reset(featureMode, clip);
+        this.addShader(builder, flags, gl);
+      }
+    }
+  }
+
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    if (flags.isHilite) {
+      assert(flags.hasFeatures);
+      let hIndex = PointStringTechnique.kHilite;
+      if (flags.hasClipVolume) {
+        hIndex += PointStringTechnique.kClip;
+      }
+      return hIndex;
+    }
+
+    let index = flags.isTranslucent ? PointStringTechnique.kTranslucent : PointStringTechnique.kOpaque;
+    index += PointStringTechnique.kFeature * flags.featureMode;
+    if (flags.hasClipVolume) {
+      index += PointStringTechnique.kClip;
     }
 
     return index;
@@ -275,6 +413,8 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
+    this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
+    this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;

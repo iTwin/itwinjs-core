@@ -9,8 +9,7 @@
     "build": "tsc 1>&2 && npm run copy:public",
     "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
     "copy:public": "cpx ./src/public/**/* ./lib/public",
-    "test": "echo \"Error: run tests from the '../test' directory.\" && exit 1",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/frontend/json/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%"
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/frontend/json/file.json --tsIndexFile=./frontend.ts --onlyJson %TYPEDOC_THEME%"
   },
   "repository": {},
   "keywords": [
@@ -34,6 +33,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
+    "@bentley/bentleyjs-tools": "4",
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",

@@ -27,14 +27,14 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
   public abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
-/** Coordinates usage of RPC interfaces for an Electron-based application. */
+/** Coordinates usage of RPC interfaces for Bentley cloud deployments. */
 export class BentleyCloudRpcManager extends RpcManager {
-  /** Initializes ElectronRpcManager for the frontend of an application. */
+  /** Initializes BentleyCloudRpcManager for the frontend of an application. */
   public static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration {
     return BentleyCloudRpcManager.performInitialization(params, interfaces);
   }
 
-  /** Initializes ElectronRpcManager for the backend of an application. */
+  /** Initializes BentleyCloudRpcManager for the backend of an application. */
   public static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration {
     return BentleyCloudRpcManager.performInitialization(params, interfaces);
   }

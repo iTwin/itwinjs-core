@@ -49,7 +49,11 @@
     "port": "${ROBOT-WORLD-SEQ-PORT}"
   },
   "features": {
-    "readwrite": "${ROBOT-WORLD-FEATURE-READWRITE}",
-    "experimentalMethods": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
+    "imodel": {
+      "readwrite": "${ROBOT-WORLD-FEATURE-READWRITE}"
+    },
+    "experimental": {
+      "methods": "${ROBOT-WORLD-FEATURE-EXPERIMENTAL-METHODS}"
+    }
   }
 }

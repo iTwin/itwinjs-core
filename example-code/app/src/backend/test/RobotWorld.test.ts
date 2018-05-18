@@ -54,8 +54,7 @@ describe("RobotWorld", () => {
     assert.equal(RobotWorldEngine.countRobots(iModel), 1);
 
     const hits0 = RobotWorldEngine.queryObstaclesHitByRobot(iModel, robot1Id);
-    hits0;
-    // assert.equal(hits0.length, 0, "no collisions initially");
+    assert.equal(hits0.length, 0, "no collisions initially");
 
     //  Move Robot1 up, so that it touches barrier1 but not barrier2
     //

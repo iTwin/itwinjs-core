@@ -21,6 +21,7 @@ import { addShaderFlags } from "./Common";
 // import { System } from "../System";
 import { TextureHandle } from "../Texture";
 import { TextureUnit } from "../RenderFlags";
+import { addHiliter } from "./FeatureSymbology";
 
 const checkForDiscard = `return discardByLineCode;`;
 
@@ -30,7 +31,7 @@ if (v_texc.x >= 0.0) { // v_texc = (-1,-1) for solid lines - don't bother with a
   discardByLineCode = (0.0 == texColor.r);
 }
 
-if (v_lnInfo.w > 0.5) {} // line needs pixel trimming
+if (v_lnInfo.w > 0.5) { // line needs pixel trimming
   // calculate pixel distance from pixel center to expected line center, opposite dir from major
   vec2 dxy = gl_FragCoord.xy - v_lnInfo.xy;
   if (v_lnInfo.w < 1.5)  // not x-major
@@ -370,5 +371,13 @@ export function createPolylineBuilder(clip: WithClipVolume): ProgramBuilder {
   addColor(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
+  return builder;
+}
+
+export function createPolylineHiliter(clip: WithClipVolume): ProgramBuilder {
+  const builder = new ProgramBuilder(true);
+  addCommon(builder, clip);
+  addFrustum(builder);
+  addHiliter(builder);
   return builder;
 }

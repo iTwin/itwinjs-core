@@ -6,7 +6,9 @@ import { IModelConnection } from "../../../IModelConnection";
 import { GeometryOptions } from "../Primitives";
 import { RenderSystem, RenderGraphic } from "../../System";
 import { DisplayParams } from "../DisplayParams";
-import { MeshGraphicArgs, MeshList, MeshBuilderMap, Mesh, MeshBuilder } from "../Mesh";
+import { MeshGraphicArgs, MeshList, Mesh } from "../mesh/MeshPrimitives";
+import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
+import { MeshBuilder } from "../mesh/MeshBuilder";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 import { GeometryList } from "./GeometryList";
 
@@ -205,7 +207,7 @@ export class GeometryAccumulator {
     const meshes = this.toMeshes(options, tolerance);
     const args = new MeshGraphicArgs();
     for (const mesh of meshes) {
-      const graphic = mesh.getGraphics(args);
+      const graphic = mesh.getGraphics(args, this.system, this.iModel);
       if (undefined !== graphic)
         graphics.push(graphic);
     }

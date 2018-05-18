@@ -4,7 +4,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
-import { MeshArgs } from "../primitives/Mesh";
+import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { MaterialData } from "./CachedGeometry";
 import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { MeshData, MeshGeometry, MeshPrimitive, MeshGraphic } from "./Mesh";
