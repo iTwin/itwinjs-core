@@ -11,9 +11,9 @@ export namespace ToleranceRatio {
 
 // Specifies under what circumstances a GeometryAccumulator should generate normals.
 export const enum NormalMode {
-    Never,              // Never generate normals
-    Always,             // Always generate normals
-    CurvedSurfacesOnly, // Generate normals only for curved surfaces
+  Never,              // Never generate normals
+  Always,             // Always generate normals
+  CurvedSurfacesOnly, // Generate normals only for curved surfaces
 }
 
 export const enum SurfacesOnly { Yes = 1, No = 0 }  // Yes indicates polylines will not be generated, only meshes.
@@ -21,10 +21,13 @@ export const enum PreserveOrder { Yes = 1, No = 0 } // Yes indicates primitives 
 export const enum GenerateEdges { Yes = 1, No = 0 } // Yes indicates edges will be generated for surfaces
 
 export class GeometryOptions {
-  constructor(public readonly normals: NormalMode = NormalMode.Always,
-              public readonly surfaces: SurfacesOnly = SurfacesOnly.No,
-              public readonly preserveOrder: PreserveOrder = PreserveOrder.No,
-              public readonly edges: GenerateEdges = GenerateEdges.Yes) {}
+  public readonly normals: NormalMode;
+  public readonly surfaces: SurfacesOnly;
+  public readonly preserveOrder: PreserveOrder;
+  public readonly edges: GenerateEdges;
+  constructor(normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No, preserveOrder: PreserveOrder = PreserveOrder.No, edges: GenerateEdges = GenerateEdges.Yes) {
+    this.normals = normals; this.surfaces = surfaces; this.preserveOrder = preserveOrder; this.edges = edges;
+  }
 
   public get wantSurfacesOnly(): boolean { return this.surfaces === SurfacesOnly.Yes; }
   public get wantPreserveOrder(): boolean { return this.preserveOrder === PreserveOrder.Yes; }
