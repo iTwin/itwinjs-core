@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "ECPresentationManager.getContentDescriptor may return no descriptor if there is none with the specified parameters.",
+      "type": "minor"
+    },
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Use ECPresentationError instead of generic Error.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}
