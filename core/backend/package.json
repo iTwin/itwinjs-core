@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.85.4",
+  "version": "0.85.5",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -32,16 +32,11 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "//peerDependencies": [
-    "NOTE: The @bentley/imodeljs-native-platform-api dependency is REPEATED here, so that clients such as protogist",
-    "will see a warning from NPM INSTALL in case they depend on an incompatible version of the addon and/or API version."
-  ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "8",
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
-    "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-native-platform-api": "~19.0.0"
+    "@bentley/imodeljs-common": "0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
