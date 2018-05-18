@@ -3,15 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect} from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
-import { ModelState } from "@bentley/imodeljs-frontend";
-import { RenderSystem, Mesh, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Mesh, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
 import { LinePixels, GeometryClass } from "@bentley/imodeljs-common";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
 
 function delta(a: number, b: number): number { return Math.abs(a - b); }
 
 describe("TileIO", () => {
   const rectangle = TileData.rectangle.buffer;
+  const model = { id: Id64.invalidId, is2d: false };
+  const system = { dummy: false };
 
   it("should read tile headers", () => {
     const stream = new TileIO.StreamBuffer(rectangle);
@@ -41,11 +43,8 @@ describe("TileIO", () => {
   });
 
   it("should read an iModel tile", () => {
-    // ###TODO: ModelState, RenderSystem...
-    const model: ModelState | undefined = undefined;
-    const system: RenderSystem | undefined = undefined;
     const stream = new TileIO.StreamBuffer(rectangle);
-    const reader = IModelTileIO.Reader.create(stream, model!, system!);
+    const reader = IModelTileIO.Reader.create(stream, model, system);
     expect(reader).not.to.be.undefined;
 
     if (undefined !== reader) {
