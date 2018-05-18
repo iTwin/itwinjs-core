@@ -4,10 +4,10 @@
 
 import { Id64, BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag /*, Frustum */ } from "@bentley/imodeljs-common";
-import { Point3d, Transform, ClipVector } from "@bentley/geometry-core";
+import { Range3d, Point3d, Transform, ClipVector } from "@bentley/geometry-core";
 import { RenderContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
-import { RenderSystem } from "../render/System";
+import { RenderSystem, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 
 export class SceneContext extends RenderContext {
@@ -21,6 +21,8 @@ export class Tile {
   public loadStatus: Tile.LoadStatus;
   public readonly id: string;
   public readonly maximumSize: number;
+  public readonly center: Point3d;
+  public readonly radius: number;
   private readonly _childIds: string[];
   private _childrenLastUsed: BeTimePoint;
   private _children?: Tile[];
@@ -37,6 +39,9 @@ export class Tile {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
+
+    this.center = this.range.low.interpolate(0.5, this.range.high);
+    this.radius = 0.5 * this.range.low.distance(this.range.high);
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
@@ -58,10 +63,10 @@ export class Tile {
     this.loadStatus = Tile.LoadStatus.Abandoned;
   }
 
-  public get radius(): number { return 0.5 * this.range.low.distance(this.range.high); }
-  public get radiusSquared(): number { return 0.5 * this.range.low.distanceSquared(this.range.high); }
-  public get center(): Point3d { return this.range.low.interpolate(0.5, this.range.high); }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
+  public get hasChildren(): boolean { return 0 !== this._childIds.length; }
+  public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
+  public get isLeaf(): boolean { return !this.hasChildren; }
 
   public get hasGraphics(): boolean { return false; } // ###TODO
   public get children(): Tile[] | undefined { return this._children; }
@@ -73,10 +78,6 @@ export class Tile {
   public computeVisibility(_args: Tile.DrawArgs): Tile.Visibility {
     return Tile.Visibility.Visible; // ###TODO
   }
-
-  // Override the following methods if desired...
-  public get hasChildren(): boolean { return 0 !== this._childIds.length; }
-  public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
 
   public selectTiles(selected: Tile[], args: Tile.DrawArgs): Tile.SelectParent {
     // ###TODO: selectTiles()
@@ -146,12 +147,30 @@ export namespace Tile {
     public readonly location: Transform;
     public readonly root: TileTree;
     public clip?: ClipVector;
-    // ###TODO SceneContext, MissingNodes, GraphicBranch, ViewFlagsOverrides
+    public readonly context: SceneContext;
+    public readonly graphics: GraphicBranch = new GraphicBranch();
+    public readonly now: BeTimePoint;
+    public readonly purgeOlderThan: BeTimePoint;
+    // ###TODO: public readonly missing: MissingNodes;
 
-    public constructor(location: Transform, root: TileTree, clip?: ClipVector) {
+    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
       this.location = location;
       this.root = root;
       this.clip = clip;
+      this.context = context;
+      this.now = now;
+      this.purgeOlderThan = purgeOlderThan;
+      this.graphics.viewFlagOverrides = root.viewFlagOverrides;
+      // ###TODO this.missing = context.requests.getMissing(root)
+    }
+
+    public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint(tile.center); }
+
+    private static scratchRange = new Range3d();
+    public getTileRadius(tile: Tile): number {
+      let range = tile.range.clone(DrawArgs.scratchRange);
+      range = this.location.multiplyRange(range, range);
+      return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
     }
   }
 
@@ -175,7 +194,7 @@ export class TileTree {
   public readonly expirationTime: BeDuration;
   public readonly clipVector?: ClipVector;
   public readonly rootResource: string;
-  public readonly viewFlagsOverrides: ViewFlag.Overrides;
+  public readonly viewFlagOverrides: ViewFlag.Overrides;
 
   public static create(props: TileTree.Params) {
     const tree = new TileTree(props);
@@ -209,7 +228,7 @@ export class TileTree {
     this.expirationTime = props.expirationTime;
     this.clipVector = props.clipVector;
     this.rootResource = props.rootResource;
-    this.viewFlagsOverrides = undefined !== props.viewFlagsOverrides ? props.viewFlagsOverrides : new ViewFlag.Overrides();
+    this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
   }
 
   private loadRootTile(_tileId: string): Tile | undefined { return undefined; } // ###TODO
@@ -225,6 +244,6 @@ export namespace TileTree {
     renderSystem: RenderSystem;
     expirationTime: BeDuration;
     clipVector?: ClipVector;
-    viewFlagsOverrides?: ViewFlag.Overrides;
+    viewFlagOverrides?: ViewFlag.Overrides;
   }
 }
