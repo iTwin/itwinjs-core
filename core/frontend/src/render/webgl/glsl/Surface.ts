@@ -66,7 +66,7 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_matAlpha", (uniform, _params) => {
       // ###TODO Materials...
-      const matAlpha = [1, 1];
+      const matAlpha = [1, 0];
       uniform.setUniform2fv(matAlpha);
     });
   });
