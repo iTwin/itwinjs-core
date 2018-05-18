@@ -47,6 +47,22 @@ describe("ECPresentationRpcInterface", () => {
       mock.verify((x) => x(locale), moq.Times.once());
     });
 
+    it("forwards addRuleSet call", async () => {
+      const ruleset = { ruleSetId: "" };
+      await rpcInterface.addRuleSet(ruleset);
+      mock.verify((x) => x((ruleset as any)), moq.Times.once());
+    });
+
+    it("forwards removeRuleSet call", async () => {
+      await rpcInterface.removeRuleSet("test id");
+      mock.verify((x) => x("test id"), moq.Times.once());
+    });
+
+    it("forwards clearRuleSets call", async () => {
+      await rpcInterface.clearRuleSets();
+      mock.verify((x) => x((undefined as any)), moq.Times.once());
+    });
+
     it("forwards getRootNodes call", async () => {
       await rpcInterface.getRootNodes(testData.imodelToken, undefined, {});
       mock.verify((x) => x(moq.It.isAny(), undefined, {}), moq.Times.once());

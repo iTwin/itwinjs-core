@@ -54,6 +54,30 @@ describe("ECPresentationRpcImpl", () => {
       });
     });
 
+    describe("addRuleSet", () => {
+      it("calls manager", async () => {
+        mock.setup((x) => x.addRuleSet(moq.It.isAny())).verifiable();
+        await impl.addRuleSet({ ruleSetId: "" });
+        mock.verifyAll();
+      });
+    });
+
+    describe("removeRuleSet", () => {
+      it("calls manager", async () => {
+        mock.setup((x) => x.removeRuleSet(moq.It.isAny())).verifiable();
+        await impl.removeRuleSet("");
+        mock.verifyAll();
+      });
+    });
+
+    describe("clearRuleSets", () => {
+      it("calls manager", async () => {
+        mock.setup((x) => x.clearRuleSets()).verifiable();
+        await impl.clearRuleSets();
+        mock.verifyAll();
+      });
+    });
+
     describe("getRootNodes", () => {
       it("calls manager", async () => {
         const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];

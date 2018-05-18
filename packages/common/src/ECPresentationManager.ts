@@ -7,6 +7,7 @@ import { Node, NodeKey } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content } from "./content";
 import { IModelToken } from "@bentley/imodeljs-common";
 import KeySet from "./KeySet";
+import { PresentationRuleSet } from "./rules";
 
 /** Paging options. */
 export interface PageOptions {
@@ -22,6 +23,23 @@ export interface ECPresentationManager {
    * Currently active locale used to localize presentation data.
    */
   activeLocale: string | undefined;
+
+  /**
+   * Register a ruleset
+   * @param ruleSet Ruleset to register
+   */
+  addRuleSet(ruleSet: PresentationRuleSet): Promise<void>;
+
+  /**
+   * Unregister a ruleset.
+   * @param ruleSetId Id of a ruleset to unregister.
+   */
+  removeRuleSet(ruleSetId: string): Promise<void>;
+
+  /**
+   * Removes all rulesets added with addRuleSet.
+   */
+  clearRuleSets(): Promise<void>;
 
   /** Retrieves root nodes.
    * @param token Token of imodel to pull data from.

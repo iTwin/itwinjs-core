@@ -4,6 +4,7 @@
 /** @module RPC */
 
 import { RpcInterface, IModelToken, RpcManager } from "@bentley/imodeljs-common";
+import { PresentationRuleSet } from "./rules";
 import { Node, NodeKey } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
 import { PageOptions } from "./ECPresentationManager";
@@ -33,6 +34,13 @@ export default class ECPresentationRpcInterface extends RpcInterface {
 
   /** Change active locale used by the backend */
   public setActiveLocale(_locale: string | undefined): Promise<void> { return this.forward.apply(this, arguments); }
+
+  /** See [[ECPresentationManager.addRuleSet]] */
+  public addRuleSet(_ruleSet: PresentationRuleSet): Promise<void> { return this.forward.apply(this, arguments); }
+  /** See [[ECPresentationManager.removeRuleSet]] */
+  public removeRuleSet(_ruleSetId: string): Promise<void> { return this.forward.apply(this, arguments); }
+  /** See [[ECPresentationManager.clearRuleSets]] */
+  public clearRuleSets(): Promise<void> { return this.forward.apply(this, arguments); }
 
   /** See [[ECPresentationManager.getRootNodes]] */
   public getRootNodes(_token: Readonly<IModelToken>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<ReadonlyArray<Readonly<Node>>> { return this.forward.apply(this, arguments); }

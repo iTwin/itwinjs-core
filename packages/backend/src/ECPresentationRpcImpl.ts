@@ -8,6 +8,7 @@ import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
+import { PresentationRuleSet } from "@bentley/ecpresentation-common";
 import ECPresentation from "./ECPresentation";
 import ECPresentationManager from "./ECPresentationManager";
 
@@ -33,6 +34,18 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
   public setActiveLocale(locale: string | undefined): Promise<void> {
     this.getManager().activeLocale = locale;
     return Promise.resolve();
+  }
+
+  public async addRuleSet(ruleSet: PresentationRuleSet): Promise<void> {
+    return await this.getManager().addRuleSet(ruleSet);
+  }
+
+  public async removeRuleSet(ruleSetId: string): Promise<void> {
+    return await this.getManager().removeRuleSet(ruleSetId);
+  }
+
+  public async clearRuleSets(): Promise<void> {
+    return await this.getManager().clearRuleSets();
   }
 
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {

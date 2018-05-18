@@ -8,6 +8,7 @@ import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationManager as ECPInterface, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { PresentationRuleSet } from "@bentley/ecpresentation-common";
 
 /**
  * Properties used to configure [[ECPresentationManager]].
@@ -48,6 +49,27 @@ export default class ECPresentationManager implements ECPInterface {
       this._activeLocale = locale;
       ECPresentationRpcInterface.getClient().setActiveLocale(locale);
     }
+  }
+
+  /**
+   * Register a presentation ruleset.
+   */
+  public async addRuleSet(ruleSet: PresentationRuleSet): Promise<void> {
+    return await ECPresentationRpcInterface.getClient().addRuleSet(ruleSet);
+  }
+
+  /**
+   * Unregister presentation ruleset with the specified id.
+   */
+  public async removeRuleSet(ruleSetId: string): Promise<void> {
+    return await ECPresentationRpcInterface.getClient().removeRuleSet(ruleSetId);
+  }
+
+  /**
+   * Unregister all registered presentation ruleset
+   */
+  public async clearRuleSets(): Promise<void> {
+    return await ECPresentationRpcInterface.getClient().clearRuleSets();
   }
 
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {

@@ -11,7 +11,7 @@ import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { ECPresentationManager as ECPresentationManagerDefinition, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import { NodeKey, Node } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Content, Descriptor } from "@bentley/ecpresentation-common";
-import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
+import { PageOptions, KeySet, PresentationRuleSet } from "@bentley/ecpresentation-common";
 
 /**
  * Properties that can be used to configure [[ECPresentationManager]]
@@ -113,6 +113,27 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     }
   }
 
+  /**
+   * Register a presentation rule set.
+   */
+  public async addRuleSet(ruleSet: PresentationRuleSet): Promise<void> {
+    return this.getNativePlatform().addRuleSet(JSON.stringify(ruleSet));
+  }
+
+  /**
+   * Register presentation rule set with the specified ID.
+   */
+  public async removeRuleSet(ruleSetId: string): Promise<void> {
+    return this.getNativePlatform().removeRuleSet(ruleSetId);
+  }
+
+  /**
+   * Unregister all presentation rule sets.
+   */
+  public async clearRuleSets(): Promise<void> {
+    return this.getNativePlatform().clearRuleSets();
+  }
+
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
@@ -198,6 +219,9 @@ export interface NodeAddonDefinition extends IDisposable {
   setupLocaleDirectories(directories: string[]): void;
   setActiveLocale(locale: string): void;
   getImodelAddon(token: IModelToken): any;
+  addRuleSet(ruleSetJson: string): void;
+  removeRuleSet(ruleSetId: string): void;
+  clearRuleSets(): void;
 }
 
 const createAddonImpl = () => {
@@ -236,10 +260,19 @@ const createAddonImpl = () => {
       this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
     }
     public setupLocaleDirectories(directories: string[]): void {
-      this._nativeAddon.setupLocaleDirectories(directories);
+      this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));
     }
     public setActiveLocale(locale: string): void {
-      this._nativeAddon.setActiveLocale(locale);
+      this.handleVoidResult(this._nativeAddon.setActiveLocale(locale));
+    }
+    public addRuleSet(ruleSetJson: string): void {
+      this.handleVoidResult(this._nativeAddon.addRuleSet(ruleSetJson));
+    }
+    public removeRuleSet(ruleSetId: string): void {
+      this.handleVoidResult(this._nativeAddon.removeRuleSet(ruleSetId));
+    }
+    public clearRuleSets(): void {
+      this.handleVoidResult(this._nativeAddon.clearRuleSets());
     }
     public getImodelAddon(token: IModelToken): any {
       const imodel = IModelDb.find(token);

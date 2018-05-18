@@ -11,3 +11,4 @@ export * from "./content";
 export * from "./hierarchy";
 export * from "./ECPresentationManager";
 export { default as ECPresentationRpcInterface } from "./ECPresentationRpcInterface";
+export * from "./rules";

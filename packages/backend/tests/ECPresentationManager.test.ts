@@ -99,6 +99,8 @@ describe("ECPresentationManager", () => {
       const mock = moq.Mock.ofType<NodeAddonDefinition>();
       const manager = new ECPresentationManager({ addon: mock.object });
       manager.dispose();
+      manager.dispose();
+      // note: verify native platform's `dispose` called only once
       mock.verify((x) => x.dispose(), moq.Times.once());
     });
 
@@ -173,13 +175,14 @@ describe("ECPresentationManager", () => {
     });
 
     it("calls addon's setupLocaleDirectories", async () => {
-      addonMock.setup((x) => x.setupLocaleDirectories(moq.It.isAny())).verifiable();
+      addonMock.setup((x) => x.setupLocaleDirectories(moq.It.isAny())).returns(() => ({})).verifiable();
       manager.getNativePlatform().setupLocaleDirectories([]);
       addonMock.verifyAll();
     });
 
     it("calls addon's setActiveLocale", async () => {
       const locale = faker.locale;
+      addonMock.setup((x) => x.setActiveLocale(moq.It.isAnyString())).returns(() => ({})).verifiable();
       manager.activeLocale = locale;
       addonMock.verify((x) => x.setActiveLocale(locale), moq.Times.once());
       manager.activeLocale = undefined;
@@ -198,6 +201,25 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
         .returns(() => ({ error: { status: NativeECPresentationStatus.InvalidArgument, message: "test" } }));
       expect(() => manager.getNativePlatform().setupRulesetDirectories([])).to.throw(ECPresentationError, "test");
+    });
+
+    it("calls addon's addRuleSet", async () => {
+      const ruleset = { ruleSetId: "" };
+      addonMock.setup((x) => x.addRuleSet(JSON.stringify(ruleset))).returns(() => ({})).verifiable();
+      await manager.addRuleSet(ruleset);
+      addonMock.verifyAll();
+    });
+
+    it("calls addon's removeRuleSet", async () => {
+      addonMock.setup((x) => x.removeRuleSet("test id")).returns(() => ({})).verifiable();
+      await manager.removeRuleSet("test id");
+      addonMock.verifyAll();
+    });
+
+    it("calls addon's clearRuleSets", async () => {
+      addonMock.setup((x) => x.clearRuleSets()).returns(() => ({})).verifiable();
+      await manager.clearRuleSets();
+      addonMock.verifyAll();
     });
 
     it("returns imodel addon from IModelDb", () => {

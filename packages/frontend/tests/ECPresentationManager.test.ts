@@ -20,6 +20,7 @@ describe("ECPresentationManager", () => {
     imodelToken: new IModelToken(),
     pageOptions: { pageStart: 1, pageSize: 2 },
     extendedData: { some: "test object" },
+    presentationRuleSet: { ruleSetId: "testRuleset" },
   };
 
   beforeEach(() => {
@@ -182,6 +183,39 @@ describe("ECPresentationManager", () => {
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship(), moq.Times.once());
+    });
+
+  });
+
+  describe("addRuleSet", () => {
+
+    it("calls addRuleSet through proxy", async () => {
+      interfaceMock.setup((x) => x.addRuleSet(testData.presentationRuleSet))
+        .verifiable();
+      await manager.addRuleSet(testData.presentationRuleSet);
+      interfaceMock.verifyAll();
+    });
+
+  });
+
+  describe("removeRuleSets", () => {
+
+    it("calls removeRuleSets through proxy", async () => {
+      interfaceMock.setup((x) => x.removeRuleSet(testData.presentationRuleSet.ruleSetId))
+        .verifiable();
+      await manager.removeRuleSet(testData.presentationRuleSet.ruleSetId);
+      interfaceMock.verifyAll();
+    });
+
+  });
+
+  describe("clearRuleSets", () => {
+
+    it("calls clearRuleSets through proxy", async () => {
+      interfaceMock.setup((x) => x.clearRuleSets())
+        .verifiable();
+      await manager.clearRuleSets();
+      interfaceMock.verifyAll();
     });
 
   });
