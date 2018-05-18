@@ -4,7 +4,7 @@
 /** @module Core */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ECPresentationError, ECPresentationStatus } from "@common/Error";
+import { ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import ECPresentationManager, { Props as ECPresentationManagerProps } from "./ECPresentationManager";
 import SelectionManager from "./selection/SelectionManager";
 
