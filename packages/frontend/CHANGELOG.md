@@ -1,6 +1,20 @@
 # Change Log - @bentley/ecpresentation-frontend
 
-This log was last generated on Fri, 11 May 2018 06:59:50 GMT and should not be manually modified.
+This log was last generated on Fri, 18 May 2018 14:15:29 GMT and should not be manually modified.
+
+## 0.3.0
+Fri, 18 May 2018 14:15:29 GMT
+
+### Minor changes
+
+- Implemented functionality to create presentation ruleset at runtime.
+- ECPresentationManager.getContentDescriptor may return no descriptor if there is none with the specified parameters.
+
+### Patches
+
+- Add missing documentation
+- Add ability to set active locale used by presentation manager.
+- Set active locale to IModelApp's current locale by default when initializing ECPresentation
 
 ## 0.2.0
 Fri, 11 May 2018 06:57:38 GMT

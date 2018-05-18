@@ -2,6 +2,37 @@
   "name": "@bentley/ecpresentation-frontend",
   "entries": [
     {
+      "version": "0.3.0",
+      "tag": "@bentley/ecpresentation-frontend_v0.3.0",
+      "date": "Fri, 18 May 2018 14:15:29 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add missing documentation"
+          },
+          {
+            "comment": "Add ability to set active locale used by presentation manager."
+          },
+          {
+            "comment": "Set active locale to IModelApp's current locale by default when initializing ECPresentation"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Implemented functionality to create presentation ruleset at runtime."
+          },
+          {
+            "comment": "ECPresentationManager.getContentDescriptor may return no descriptor if there is none with the specified parameters."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.2.0` to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.0",
       "tag": "@bentley/ecpresentation-frontend_v0.2.0",
       "date": "Fri, 11 May 2018 06:57:38 GMT",

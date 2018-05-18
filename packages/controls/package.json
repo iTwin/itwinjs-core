@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-controls",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Frontend controls based on ECPresentation library",
   "keywords": [
     "Bentley",
@@ -34,8 +34,8 @@
     "watch": "npm test -- --watch"
   },
   "dependencies": {
-    "@bentley/ecpresentation-common": "^0.2.0",
-    "@bentley/ecpresentation-frontend": "^0.2.0",
+    "@bentley/ecpresentation-common": "^0.3.0",
+    "@bentley/ecpresentation-frontend": "^0.3.0",
     "lodash": "^4.14.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecpresentation-backend",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Backend of ECPresentation library",
   "keywords": [
     "Bentley",
@@ -34,7 +34,7 @@
     "watch": "npm test -- --watch"
   },
   "dependencies": {
-    "@bentley/ecpresentation-common": "^0.2.0"
+    "@bentley/ecpresentation-common": "^0.3.0"
   },
   "//peerDependencies": [
     "No need to repeat all of the dependencies that I have in common with backend."

@@ -1,6 +1,20 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Fri, 11 May 2018 06:59:50 GMT and should not be manually modified.
+This log was last generated on Fri, 18 May 2018 14:15:29 GMT and should not be manually modified.
+
+## 0.3.0
+Fri, 18 May 2018 14:15:29 GMT
+
+### Minor changes
+
+- Implemented functionality to create presentation ruleset at runtime.
+- ECPresentationManager.getContentDescriptor may return no descriptor if there is none with the specified parameters.
+
+### Patches
+
+- Add missing documentation
+- Localization: add ability to set locale directories and active locale.
+- Use ECPresentationError instead of generic Error.
 
 ## 0.2.0
 Fri, 11 May 2018 06:57:38 GMT
