@@ -7,7 +7,7 @@
 Change Summaries are generated per changeset. Every generated Change Summary is therefore uniquely associated
 to the Changeset it was generated from.
 
-iModelJs persists the generated Change Summaries in a local ECDb file called **Change Cache File** next to the briefcase it belongs to.
+iModelJs persists the generated Change Summaries in a local ECDb file called **Change Cache file** next to the briefcase it belongs to.
 
 > Change Summaries can only be generated from the iModelJs backend. See the [ChangeSummaryManager]($backend/ChangeSummaryManager) API for how to do it.
 
@@ -15,9 +15,9 @@ iModelJs persists the generated Change Summaries in a local ECDb file called **C
 
 Working with Change Summaries really means to unleash the power of ECSQL. Change Summaries by itself are just ECInstances of the built-in ECSchemas **ECDbChange** and **IModelChange**. That means you can simply use [ECSQL](./ECSQL) and all its flexibility to retrieve just that information from the Change Summaries which you are interested in.
 
-### Attaching the Changes Cache File to the local briefcase
+### Attaching the Change Cache file to the local briefcase
 
-As the Change Summaries are not persisted in the iModel itself but in the *Changes Cache File*, you need to attach the *Changes Cache File*
+As the Change Summaries are not persisted in the iModel itself but in the *Change Cache file*, you need to attach the *Change Cache file*
 to the local briefcase of the iModel first.
 
 Once done, the Change Summaries can be accessed by ECSQL from the iModel as if they were persisted in the iModel itself. It is visible from ECSQL under the table space **ecchange**.

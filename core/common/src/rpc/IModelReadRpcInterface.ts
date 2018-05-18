@@ -55,5 +55,14 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> { return this.forward.apply(this, arguments); }
   public readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward.apply(this, arguments); }
   public isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
+  /** Attaches the Change Cache file to the specified iModel.
+   * @throws [IModelError]($common) if a Change Cache file has already been attached before.
+   */
   public attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
+  /** Detaches the Change Cache file to the specified iModel, if it has been attached before.
+   *  > Does not throw if no Change Cache file was attached before. This is a different behavior from the
+   *  > backend method to make the RPC call chunkier by not requiring clients to call
+   *  > [IModelReadRpcInterface.isChangeCacheAttached]($common).
+   */
+  public detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
 }
