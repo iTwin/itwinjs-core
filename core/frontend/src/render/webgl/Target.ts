@@ -570,8 +570,8 @@ export class OnScreenTarget extends Target {
   }
 
   public get viewRect(): ViewRect {
-    const clientRect = this._canvas.getBoundingClientRect();
-    this._viewRect.init(0, 0, clientRect.width, clientRect.height);
+    this._viewRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    assert(Math.floor(this._viewRect.width) === this._viewRect.width && Math.floor(this._viewRect.height) === this._viewRect.height, "fractional view rect dimensions");
     return this._viewRect;
   }
 
@@ -627,6 +627,9 @@ export class OnScreenTarget extends Target {
 
     if (system.canvas.height !== viewRect.height)
       system.canvas.height = viewRect.height;
+
+    assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
   }
   protected _endPaint(): void {
     const onscreenContext = this._canvas.getContext("2d");
@@ -646,8 +649,12 @@ export class OnScreenTarget extends Target {
 
     // Copy off-screen canvas contents to on-screen canvas
     // ###TODO: Determine if clearRect() actually required...seems to leave some leftovers from prev image if not...
-    onscreenContext.clearRect(0, 0, this._canvas.width, this._canvas.height);
-    onscreenContext.drawImage(system.canvas, 0, 0);
+    onscreenContext.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    // ###TODO remove fillStyle and fillRect - for debugging only
+    onscreenContext.fillStyle = "green";
+    onscreenContext.fillRect(10, 10, this._canvas.clientWidth - 20, this._canvas.clientHeight - 20);
+    const debugImageScale = 1.0
+    onscreenContext.drawImage(system.canvas, 0, 0, this._canvas.clientWidth * debugImageScale, this._canvas.clientHeight * debugImageScale);
   }
   public onResized(): void {
     this._dcAssigned = false;

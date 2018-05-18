@@ -1152,7 +1152,7 @@ export abstract class ViewState3d extends ViewState {
 
     // ###TODO: Remove this...we're using it to debug failure to blend translucent overlay decorations
     args.vertIndices = [3, 2, 0];
-    args.colors.initUniform(0x7f7f7f7f);
+    args.colors.initUniform(0x7f007f7f);
     const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel);
     if (undefined !== triangle)
       context.addViewOverlay(triangle);

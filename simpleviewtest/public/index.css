@@ -16,8 +16,8 @@
 }
 .imodelview {
   position: relative;
-  width: 98%;
-  height: 90%;
+  /* width: 98%;*/
+  /* height: 90%;*/
   border-color: black;
   border-style: solid;
   border-width: 1px;
