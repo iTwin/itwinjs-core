@@ -19,7 +19,7 @@ import { createClipMaskProgram } from "./glsl/ClipMask";
 import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
-import { createPointStringBuilder, createPointStringHiliter } from "./PointString";
+import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
