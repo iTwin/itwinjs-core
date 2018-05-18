@@ -17,7 +17,8 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src",
+    "build": "tsc -p ./src && npm run build:assets",
+    "build:assets": "cpx ./assets/**/* ./lib/assets && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
     "docs": "npm run docs:reference && npm run docs:changelog",
@@ -26,6 +27,7 @@
     "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
+    "pseudolocalize": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
     "test": "node ../../scripts/run-tests.js --testsDir ./tests",
     "test+cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
     "validatePackageJson": "validjson ./package.json",
@@ -38,12 +40,13 @@
     "No need to repeat all of the dependencies that I have in common with backend."
   ],
   "peerDependencies": {
-    "@bentley/imodeljs-backend": "^0.82"
+    "@bentley/imodeljs-backend": "^0.85.1"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
-    "@bentley/imodeljs-backend": "^0.82",
-    "@bentley/imodeljs-common": "^0.82",
+    "@bentley/imodeljs-backend": "^0.85.1",
+    "@bentley/imodeljs-common": "^0.85",
+    "cpx": "^1.5",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",

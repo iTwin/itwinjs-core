@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 import "./IModelSelector.css";
 
@@ -52,11 +52,11 @@ export default class IModelSelector extends React.Component<Props, State> {
   public render() {
     let error = null;
     if (this.state.error)
-      error = (<div className="Error">Error: {this.state.error.message}</div>);
+      error = (<div className="Error">{IModelApp.i18n.translate("Sample:controls.notifications.error")}: {this.state.error.message}</div>);
 
     return (
       <div className="IModelSelector">
-        Select an imodel:
+        {IModelApp.i18n.translate("Sample:controls.notifications.select-imodel")}:
         <select onChange={this.onImodelSelected}>
           {this.state.availableImodels.map((path: string) => (
             <option key={path} value={path}>{path.split(/[\\/]/).pop()}</option>

@@ -18,6 +18,7 @@ export interface CacheInvalidationProps {
 export default abstract class ContentDataProvider {
   private _rulesetId: string;
   private _displayType: string;
+  private _requestedDescriptor!: boolean;
   private _descriptor: Readonly<content.Descriptor> | undefined;
   private _contentSetSize: number | undefined;
   private _content: Readonly<content.Content> | undefined;
@@ -46,8 +47,10 @@ export default abstract class ContentDataProvider {
    * selection changes.
    */
   protected invalidateCache(props: CacheInvalidationProps): void {
-    if (props.descriptor)
+    if (props.descriptor) {
+      this._requestedDescriptor = false;
       this._descriptor = undefined;
+    }
     if (props.size)
       this._contentSetSize = undefined;
     if (props.content)
@@ -67,12 +70,15 @@ export default abstract class ContentDataProvider {
    * @param keys Keys of ECInstances to get content for.
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    */
-  protected async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor>> {
-    if (!this._descriptor) {
+  protected async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor> | undefined> {
+    if (!this._requestedDescriptor) {
       this._descriptor = await ECPresentation.presentation.getContentDescriptor(this.imodelToken, this._displayType, keys,
         selectionInfo, this.createRequestOptions());
+      this._requestedDescriptor = true;
     }
-    return this.configureContentDescriptor(this._descriptor);
+    if (this._descriptor)
+      return this.configureContentDescriptor(this._descriptor);
+    return undefined;
   }
 
   /** Called to configure the content descriptor. This is the place where concrete
@@ -106,9 +112,11 @@ export default abstract class ContentDataProvider {
    * @param selectionInfo Info about selection in case the content is requested due to selection change.
    * @param pageOptions Paging options.
    */
-  protected async getContent(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo, pageOptions?: PageOptions): Promise<Readonly<content.Content>> {
+  protected async getContent(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo, pageOptions?: PageOptions): Promise<Readonly<content.Content> | undefined> {
     if (!this._content) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
+      if (!descriptor)
+        return undefined;
       this._content = await ECPresentation.presentation.getContent(this.imodelToken, descriptor, keys,
         pageOptions, this.createRequestOptions());
     }
@@ -123,6 +131,8 @@ export default abstract class ContentDataProvider {
   protected async getContentSetSize(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<number> {
     if (undefined === this._contentSetSize) {
       const descriptor = await this.getContentDescriptor(keys, selectionInfo);
+      if (!descriptor)
+        return 0;
       this._contentSetSize = await ECPresentation.presentation.getContentSetSize(this.imodelToken, descriptor,
         keys, this.createRequestOptions());
     }

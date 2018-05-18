@@ -6,8 +6,10 @@ import { spy } from "@helpers/Spies";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
+import { ECPresentationError } from "@common/Error";
 import ECPresentation from "@src/ECPresentation";
 import ECPresentationManager from "@src/ECPresentationManager";
+import "./IModeHostSetup";
 
 describe("ECPresentation", () => {
 
@@ -30,7 +32,7 @@ describe("ECPresentation", () => {
     });
 
     it("creates a manager instance", () => {
-      expect(() => ECPresentation.manager).to.throw();
+      expect(() => ECPresentation.manager).to.throw(ECPresentationError);
       ECPresentation.initialize();
       expect(ECPresentation.manager).to.be.instanceof(ECPresentationManager);
     });
@@ -43,7 +45,7 @@ describe("ECPresentation", () => {
       ECPresentation.initialize();
       expect(ECPresentation.manager).to.be.not.null;
       ECPresentation.terminate();
-      expect(() => ECPresentation.manager).to.throw;
+      expect(() => ECPresentation.manager).to.throw(ECPresentationError);
     });
 
   });

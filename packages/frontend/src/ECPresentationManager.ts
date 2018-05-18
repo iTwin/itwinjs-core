@@ -10,10 +10,46 @@ import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-comm
 import { ECPresentationManager as ECPInterface, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 
 /**
+ * Properties used to configure [[ECPresentationManager]].
+ */
+export interface Props {
+  /**
+   * Sets the active locale to use when localizing presentation-related
+   * strings. It can later be changed through [[ECPresentationManager]].
+   */
+  activeLocale?: string;
+}
+
+/**
  * Frontend ECPresentation manager which basically just forwards all calls to
  * the backend implementation.
  */
 export default class ECPresentationManager implements ECPInterface {
+
+  private _activeLocale?: string;
+
+  constructor(props?: Props) {
+    if (props)
+      this.activeLocale = props.activeLocale;
+  }
+
+  /**
+   * Get currently active locale
+   */
+  public get activeLocale(): string | undefined {
+    return this._activeLocale;
+  }
+
+  /**
+   * Set active locale
+   */
+  public set activeLocale(locale: string | undefined) {
+    if (this._activeLocale !== locale) {
+      this._activeLocale = locale;
+      ECPresentationRpcInterface.getClient().setActiveLocale(locale);
+    }
+  }
+
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     return await ECPresentationRpcInterface.getClient().getRootNodes(token, pageOptions, options);
   }
@@ -30,9 +66,10 @@ export default class ECPresentationManager implements ECPInterface {
     return await ECPresentationRpcInterface.getClient().getChildrenCount(token, parentKey, options);
   }
 
-  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
     const descriptor = await ECPresentationRpcInterface.getClient().getContentDescriptor(token, displayType, keys, selection, options);
-    descriptor.rebuildParentship();
+    if (descriptor)
+      descriptor.rebuildParentship();
     return descriptor;
   }
 

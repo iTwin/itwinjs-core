@@ -7,6 +7,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
 import { NodeKey, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
+import { ECPresentationError, ECPresentationStatus } from "./Error";
 
 /** A single key that identifies something that can be selected */
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
@@ -146,7 +147,7 @@ export default class KeySet {
    */
   public add(value: Keys | Key): KeySet {
     if (!value)
-      throw new Error("Invalid argument");
+      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     if (this.isKeySet(value)) {
       this.addKeySet(value);
     } else if (this.isKeySetJSON(value)) {
@@ -163,7 +164,7 @@ export default class KeySet {
     } else if (this.isEntityProps(value)) {
       this.add({ className: value.classFullName, id: new Id64(value.id) } as InstanceKey);
     } else {
-      throw new Error("Invalid argument");
+      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
     return this;
   }
@@ -201,7 +202,7 @@ export default class KeySet {
    */
   public delete(value: Keys | Key): KeySet {
     if (!value)
-      throw new Error("Invalid argument");
+      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     if (this.isKeySet(value)) {
       this.deleteKeySet(value);
     } else if (this.isKeySetJSON(value)) {
@@ -218,7 +219,7 @@ export default class KeySet {
     } else if (this.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else {
-      throw new Error("Invalid argument");
+      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
     return this;
   }
@@ -229,7 +230,7 @@ export default class KeySet {
    */
   public has(value: Key): boolean {
     if (!value)
-      throw new Error("Invalid argument");
+      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     if (this.isNodeKey(value))
       return this._nodeKeys.has(JSON.stringify(value));
     if (this.isInstanceKey(value)) {
@@ -238,7 +239,7 @@ export default class KeySet {
     }
     if (this.isEntityProps(value))
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
-    throw new Error("Invalid argument");
+    throw new ECPresentationError(ECPresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
   }
 
   /**

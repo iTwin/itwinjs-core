@@ -9,7 +9,7 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyDescription } from "../common/ContentBuilder";
 import * as content from "@bentley/ecpresentation-common/lib/content";
-import { InstanceKey, KeySet, PageOptions } from "@bentley/ecpresentation-common";
+import { InstanceKey, KeySet, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 
 // wip: workaround for TS4029 and TS6133
 export type MemoizedFunction = MemoizedFunction;
@@ -52,10 +52,10 @@ interface PagePosition {
 
 class Page {
   private readonly _position: PagePosition;
-  private readonly _content: Promise<content.Content>;
+  private readonly _content: Promise<Readonly<content.Content> | undefined>;
   private _rows: Array<Readonly<RowItem>> | undefined;
 
-  constructor(position: PagePosition, contentPromise: Promise<content.Content>) {
+  constructor(position: PagePosition, contentPromise: Promise<Readonly<content.Content> | undefined>) {
     this._position = position;
     this._content = contentPromise;
   }
@@ -66,6 +66,8 @@ class Page {
 
   public getRows = memoize(async (): Promise<Array<Readonly<RowItem>>> => {
     const c = await this._content;
+    if (!c)
+      throw new ECPresentationError(ECPresentationStatus.NoContent);
     this._rows = this.createRows(c);
     return this._rows;
   });
@@ -196,7 +198,7 @@ class PageContainer {
     };
   }
 
-  public createPage(position: PagePosition, contentPromise: Promise<content.Content>): Page {
+  public createPage(position: PagePosition, contentPromise: Promise<Readonly<content.Content> | undefined>): Page {
     // create the new page
     const newPage = new Page(position, contentPromise);
     this._pages.splice(position.index, 0, newPage);
@@ -296,6 +298,8 @@ export default class GridDataProvider extends ContentDataProvider {
   /** Returns column definitions for the content. */
   public getColumns = memoize(async (): Promise<Array<Readonly<ColumnDescription>>> => {
     const descriptor = await this.getContentDescriptor(this.keys);
+    if (!descriptor)
+      return [];
     const sortedFields = descriptor.fields.slice();
     sortedFields.sort((a: content.Field, b: content.Field): number => {
       if (a.priority > b.priority)
@@ -332,8 +336,9 @@ export default class GridDataProvider extends ContentDataProvider {
     let page = this._pages.getPage(rowIndex);
     if (!page) {
       const position = this._pages.reservePage(rowIndex);
-      page = this._pages.createPage(position, this.getContent(this.keys, undefined,
-        { pageStart: position.start, pageSize: position.end - position.start } as PageOptions));
+      const contentPromise = this.getContent(this.keys, undefined,
+        { pageStart: position.start, pageSize: position.end - position.start });
+      page = this._pages.createPage(position, contentPromise);
     }
     const rows = await page.getRows();
     return rows[rowIndex - page.position.start];

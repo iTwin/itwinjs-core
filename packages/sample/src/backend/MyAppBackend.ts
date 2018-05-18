@@ -15,6 +15,7 @@ IModelHost.startup();
 // __PUBLISH_EXTRACT_START__ Backend.Initialization.ECPresentation
 import { ECPresentation } from "@bentley/ecpresentation-backend";
 ECPresentation.initialize({
-  rulesetDirectories: [path.resolve(__dirname, "assets/presentation_rules")],
+  rulesetDirectories: [path.join("assets", "presentation_rules")],
+  localeDirectories: [path.join("assets", "locales")],
 });
 // __PUBLISH_EXTRACT_END__

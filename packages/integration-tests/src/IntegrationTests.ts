@@ -14,6 +14,7 @@ import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ECPresentation as ECPresentationFrontend } from "@bentley/ecpresentation-frontend";
 
+process.env.NODE_ENV = "development";
 let isInitialized = false;
 
 export const initialize = () => {
@@ -26,15 +27,18 @@ export const initialize = () => {
   // init backend
   IModelHost.startup();
   ECPresentationBackend.initialize({
-    rulesetDirectories: ["assets/rulesets/"],
+    rulesetDirectories: ["assets/rulesets"],
+    localeDirectories: ["assets/locales"],
   });
-
-  // init frontend
-  IModelApp.startup();
-  ECPresentationFrontend.initialize();
 
   // set up rpc interfaces
   TestRpcManager.initializeClient([StandaloneIModelRpcInterface, IModelReadRpcInterface, ECPresentationRpcInterface]);
+
+  // init frontend
+  IModelApp.startup();
+  ECPresentationFrontend.initialize({
+    activeLocale: IModelApp.i18n.languageList()[0],
+  });
 
   isInitialized = true;
 };

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionChangeEventArgs, ISelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
 import { GridDataProvider } from "@bentley/ecpresentation-controls";
@@ -19,7 +19,7 @@ export default class GridWidget extends React.Component<Props> {
   public render() {
     return (
       <div className="GridWidget">
-        <h3>Grid</h3>
+        <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
         <div className="ContentContainer">
           <Grid imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} />
         </div>
@@ -165,11 +165,11 @@ class Grid extends React.Component<GridProps, GridState> {
 
   public render() {
     if (this.state.error)
-      return (<div className="Error">{this.state.error}</div>);
+      return (<div className="Error">{IModelApp.i18n.translate("Sample:controls.notifications.error")}: {this.state.error}</div>);
     if (!this._hasSelection)
-      return (<div className="NoData">Nothing selected</div>);
+      return (<div className="NoData">{IModelApp.i18n.translate("Sample:controls.notifications.nothing-selected")}</div>);
     if (!this.state.columns || 0 === this.state.columns.length)
-      return (<div className="NoData">No data</div>);
+      return (<div className="NoData">{IModelApp.i18n.translate("Sample:controls.notifications.no-data")}</div>);
     return (
       <table>
         <thead>

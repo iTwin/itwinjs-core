@@ -7,7 +7,7 @@ import { memoize, MemoizedFunction } from "lodash";
 import { IModelToken } from "@bentley/imodeljs-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder, { PropertyRecord, isValueEmpty, isArrayValue, isStructValue } from "../common/ContentBuilder";
-import { KeySet, CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item } from "@bentley/ecpresentation-common";
+import { KeySet, CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 
 // wip: workaround for TS4029 and TS6133
 export type MemoizedFunction = MemoizedFunction;
@@ -254,7 +254,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
   public getData = memoize(async (): Promise<PropertyPaneData> => {
     const content = await this.getContent(this._keys);
     if (!content || 0 === content.contentSet.length)
-      throw new Error("No content");
+      throw new ECPresentationError(ECPresentationStatus.NoContent);
 
     const contentItem = content.contentSet[0];
     const callbacks: PropertyPaneCallbacks = {

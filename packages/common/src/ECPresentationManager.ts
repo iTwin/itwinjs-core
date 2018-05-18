@@ -18,6 +18,11 @@ export interface PageOptions {
  * tree and content controls
  */
 export interface ECPresentationManager {
+  /**
+   * Currently active locale used to localize presentation data.
+   */
+  activeLocale: string | undefined;
+
   /** Retrieves root nodes.
    * @param token Token of imodel to pull data from.
    * @param pageOptions  Page options for the requested nodes.
@@ -58,7 +63,7 @@ export interface ECPresentationManager {
    * @param options  An options object that depends on the used presentation manager implementation.
    * @return A promise object that returns either a descriptor on success or an error string on error.
    */
-  getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>>;
+  getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined>;
 
   /** Retrieves the content set size based on the supplied content descriptor override.
    * @param token Token of imodel to pull data from

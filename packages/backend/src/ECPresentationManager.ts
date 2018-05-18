@@ -3,11 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import * as path from "path";
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { IModelToken, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { NativeECPresentationManager } from "@bentley/imodeljs-native-platform-api";
+import { IModelToken } from "@bentley/imodeljs-common";
+import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
-import { ECPresentationManager as ECPresentationManagerDefinition } from "@bentley/ecpresentation-common";
+import { ECPresentationManager as ECPresentationManagerDefinition, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import { NodeKey, Node } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Content, Descriptor } from "@bentley/ecpresentation-common";
 import { PageOptions, KeySet } from "@bentley/ecpresentation-common";
@@ -19,8 +20,22 @@ export interface Props {
   /** @hidden */
   addon?: NodeAddonDefinition;
 
-  /** Paths to directories which contain application rulesets */
+  /**
+   * A list of directories containing presentation rulesets.
+   */
   rulesetDirectories?: string[];
+
+  /**
+   * A list of directories containing locale-specific localized
+   * string files (in simplified i18next v3 format)
+   */
+  localeDirectories?: string[];
+
+  /**
+   * Sets the active locale to use when localizing presentation-related
+   * strings. It can later be changed through ECPresentationManager.
+   */
+  activeLocale?: string;
 }
 
 /**
@@ -30,6 +45,7 @@ export interface Props {
 export default class ECPresentationManager implements ECPresentationManagerDefinition, IDisposable {
 
   private _addon?: NodeAddonDefinition;
+  private _activeLocale?: string;
   private _isDisposed: boolean;
 
   /**
@@ -42,6 +58,9 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       this._addon = props.addon;
     if (props && props.rulesetDirectories)
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
+    if (props)
+      this.activeLocale = props.activeLocale;
+    this.setupLocaleDirectories(props);
   }
 
   /**
@@ -49,7 +68,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
    */
   public dispose() {
     if (this._addon) {
-      this.getNativePlatform().terminate();
+      this.getNativePlatform().dispose();
       this._addon = undefined;
     }
     this._isDisposed = true;
@@ -58,12 +77,40 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
   /** @hidden */
   public getNativePlatform(): NodeAddonDefinition {
     if (this._isDisposed)
-      throw new Error("Attempting to use ECPresentation manager after disposal");
+      throw new ECPresentationError(ECPresentationStatus.UseAfterDisposal, "Attempting to use ECPresentation manager after disposal");
     if (!this._addon) {
       const addonImpl = createAddonImpl();
       this._addon = new addonImpl();
     }
     return this._addon!;
+  }
+
+  private setupLocaleDirectories(props?: Props) {
+    const localeDirectories = [path.join(__dirname, "assets", "locales")];
+    if (props && props.localeDirectories) {
+      props.localeDirectories.forEach((dir) => {
+        if (-1 === localeDirectories.indexOf(dir))
+          localeDirectories.push(dir);
+      });
+    }
+    this.getNativePlatform().setupLocaleDirectories(localeDirectories);
+  }
+
+  /**
+   * Get currently active locale
+   */
+  public get activeLocale(): string | undefined {
+    return this._activeLocale;
+  }
+
+  /**
+   * Set active locale
+   */
+  public set activeLocale(locale: string | undefined) {
+    if (this.activeLocale !== locale) {
+      this._activeLocale = locale;
+      this.getNativePlatform().setActiveLocale(locale ? locale : "");
+    }
   }
 
   public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
@@ -98,7 +145,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.request(token, params);
   }
 
-  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor>> {
+  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
@@ -127,11 +174,11 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.request(token, params, Content.reviver);
   }
 
-  private request(token: Readonly<IModelToken>, params: string, reviver?: (key: string, value: any) => any) {
+  private request<T>(token: Readonly<IModelToken>, params: string, reviver?: (key: string, value: any) => any): T {
     const imodelAddon = this.getNativePlatform().getImodelAddon(token);
     const serializedResponse = this.getNativePlatform().handleRequest(imodelAddon, params);
     if (!serializedResponse)
-      throw new Error("Received invalid response from the addon: " + serializedResponse);
+      throw new ECPresentationError(ECPresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
     return JSON.parse(serializedResponse, reviver);
   }
 
@@ -145,10 +192,11 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
 }
 
 /** @hidden */
-export interface NodeAddonDefinition {
-  terminate(): void;
+export interface NodeAddonDefinition extends IDisposable {
   handleRequest(db: any, options: string): string;
   setupRulesetDirectories(directories: string[]): void;
+  setupLocaleDirectories(directories: string[]): void;
+  setActiveLocale(locale: string): void;
   getImodelAddon(token: IModelToken): any;
 }
 
@@ -157,19 +205,46 @@ const createAddonImpl = () => {
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NodeAddonDefinition {
     private _nativeAddon: NativeECPresentationManager = new (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager();
-    public terminate() {
-      this._nativeAddon.terminate();
+    private getStatus(responseStatus: NativeECPresentationStatus): ECPresentationStatus {
+      switch (responseStatus) {
+        case NativeECPresentationStatus.InvalidArgument: return ECPresentationStatus.InvalidArgument;
+        default: return ECPresentationStatus.Error;
+      }
+    }
+    private handleResult<T>(response: ErrorStatusOrResult<NativeECPresentationStatus, T>): T {
+      if (!response)
+        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+      if (response.error)
+        throw new ECPresentationError(this.getStatus(response.error.status), response.error.message);
+      if (!response.result)
+        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+      return response.result;
+    }
+    private handleVoidResult(response: ErrorStatusOrResult<NativeECPresentationStatus, void>): void {
+      if (!response)
+        throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
+      if (response.error)
+        throw new ECPresentationError(this.getStatus(response.error.status), response.error.message);
+    }
+    public dispose() {
+      this._nativeAddon.dispose();
     }
     public handleRequest(db: any, options: string): string {
-      return this._nativeAddon.handleRequest(db, options);
+      return this.handleResult(this._nativeAddon.handleRequest(db, options));
     }
     public setupRulesetDirectories(directories: string[]): void {
-      this._nativeAddon.setupRulesetDirectories(directories);
+      this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
+    }
+    public setupLocaleDirectories(directories: string[]): void {
+      this._nativeAddon.setupLocaleDirectories(directories);
+    }
+    public setActiveLocale(locale: string): void {
+      this._nativeAddon.setActiveLocale(locale);
     }
     public getImodelAddon(token: IModelToken): any {
       const imodel = IModelDb.find(token);
       if (!imodel || !imodel.nativeDb)
-        throw new IModelError(IModelStatus.NotOpen, "IModelDb not open");
+        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "token");
       return imodel.nativeDb;
     }
   };
@@ -181,10 +256,7 @@ export enum NodeAddonRequestTypes {
   GetRootNodesCount = "GetRootNodesCount",
   GetChildren = "GetChildren",
   GetChildrenCount = "GetChildrenCount",
-  GetFilteredNodesPaths = "GetFilteredNodesPaths",
-  GetNodePaths = "GetNodePaths",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
-  GetDistinctValues = "GetDistinctValues",
 }

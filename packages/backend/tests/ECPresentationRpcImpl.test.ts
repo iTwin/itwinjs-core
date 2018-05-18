@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
+import * as faker from "faker";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { PageOptions, KeySet } from "@common/index";
@@ -14,6 +15,7 @@ import { createRandomDescriptor } from "@helpers/random/Content";
 import ECPresentationManager from "@src/ECPresentationManager";
 import ECPresentationRpcImpl from "@src/ECPresentationRpcImpl";
 import ECPresentation from "@src/ECPresentation";
+import "./IModeHostSetup";
 
 describe("ECPresentationRpcImpl", () => {
 
@@ -42,6 +44,14 @@ describe("ECPresentationRpcImpl", () => {
         inputKeys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
         extendedOptions: { rulesetId: "aaa", someOtherOption: 789 },
       };
+    });
+
+    describe("setActiveLocale", () => {
+      it("sets managers active locale", async () => {
+        const locale = faker.locale;
+        await impl.setActiveLocale(locale);
+        mock.verify((x) => x.activeLocale = moq.It.isValue(locale), moq.Times.once());
+      });
     });
 
     describe("getRootNodes", () => {
@@ -108,6 +118,15 @@ describe("ECPresentationRpcImpl", () => {
         mock.verifyAll();
         descriptorMock.verifyAll();
         expect(actualResult).to.eq(result);
+      });
+      it("handles undefined descriptor response", async () => {
+        mock.setup((x) => x.getContentDescriptor(testData.imodelToken, testData.displayType, testData.inputKeys, undefined, testData.extendedOptions))
+          .returns(async () => undefined)
+          .verifiable();
+        const actualResult = await impl.getContentDescriptor(testData.imodelToken, testData.displayType,
+          testData.inputKeys, undefined, testData.extendedOptions);
+        mock.verifyAll();
+        expect(actualResult).to.be.undefined;
       });
     });
 
