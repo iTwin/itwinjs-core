@@ -17,7 +17,7 @@ As discussed in [Model Hierarchy](model-hierarchy.md), every `Model` contains `E
 The high-level goals - sometimes conflicting - of an organization for the `PhysicalModel` hierarchy are to:
 - Allow the users to organize their data in a way that is helpful to them.
 - Guide the users to organize their data in a way that will facilitate their long-term success.
-- Automatically organize the data in away that is helpful to the users.
+- Automatically organize the data in a way that is helpful to the users.
 - Ease the creation of products and services by organizing the data in a manner that is conducive to writing software.
 - Provide mechanisms for the users to direct the software, and for the software to understand the users' intent (*if A is placed in B, X will (or will not) happen*).
 
@@ -35,7 +35,7 @@ This page provides an overview of the basis of those validation rules and the me
 
 ### PhysicalModels and the Elements that they Model
 
-As described in [Model Hierarchy](model-hierarchy.md), every `Model` models an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
+As described in [Model Hierarchy](model-hierarchy.md), every `Model` breaks-down an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
 
 In the `PhysicalModel` hierarchy, the `Element` that represents the Entity is of an `PhysicalElement` subclass that corresponds to the type of real-world Entity (e.g. `Building` class corresponds to real world building), but the `PhysicalModel` that corresponds to the real-world Entity is just a `PhysicalModel` (e.g. `PhysicalModel` class corresponds to real-world building). To determine the type of real world Entity that a `PhysicalModel` represents, the class of `Element` that the `PhysicalModel` breaks down must be determined.
 
@@ -82,6 +82,8 @@ Here is an example of the `ModelAffinity` custom attribute in use:
 ```
 ### Inherited ModelAffinity
 
+xxxxxxxxx needs better explanation xxxxx
+
 `ModelAffinity` cannot be overridden in subclasses. The effective affinity setting for a class is the sum of all the defined `ModelAffinity` attributes in the class and all of its superclasses.
 
 For example, if a xxxxxxxxxxxxxxx
@@ -122,16 +124,15 @@ While `ModelAffinity` provides a mechanism to declare and enforce a PhysicalMode
 
 
 
-| Classification | Affinity to  | Example Classess |
+| Classification | Affinity to  | Example Classes |
 |----------------|----------------|--------------|----------|
 | Site           | PhysicalPartition, Site | Site     |
-| Facility       | PhysicalPartition, Site, Facility, System            | Building, Bridge, Tunnel     |
-| System         | PhysicalPartition, Site, Facility, System            | SewerSystem, StructuralSystem, etc.     |
-| *System | (inherited from System)        | SewerSystem, StructuralSystem     |
+| IFacility       | PhysicalPartition, Site, IFacility, System            | Building, Bridge, Tunnel     |
+| System         | PhysicalPartition, Site, IFacility, ISystem            | SewerSystem, StructuralSystem, etc.     |
+| *System | (inherited from ISystem)        | SewerSystem, StructuralSystem     |
 | *SystemComponent| *System         | SewerPipe, Beam     |
 | General-Use Component   | (none)          | Bolt, Chair    |
 
- **TODO: I selected that we should have specific classes for Site, Facility and System (Not mixins). Do we all agree?**
 
 These types and their behaviors are explained below, along with the behaviors of their breakdown `PhysicalModel`s if they have breakdown `Model`s.
 
@@ -143,37 +144,40 @@ These types and their behaviors are explained below, along with the behaviors of
 
 `Site` `Models` are `Model`s that break down `Site` Elements. By convention, the top-most `Model` in a `PhysicalModel` hierarchy is considered a Site `Model`, even though it breaks down `PhysicalPartition`.
 
-`Site` `Model`s typically contain `Site`, `Facility`, `System` and `General-Use` `PhysicalElement`s.
+`Site` `Model`s typically contain `Site`, `IFacility`, `ISystem` and General-Use `PhysicalElement`s.
 
 `Site` `Elements` should only be placed in `Site` `Model`s (and `PhysicalPartition` `Model`s). `Site` `Elements` placed in any other `Model` will generate validation warnings.
 
-### Facility
+### IFacility
 
-`Facility` is an abstract class that represents a significant multi-disciplinary infrastructure Entity that corresponds well to user concepts. Buildings, bridges, tunnels, wharves, and towers are all examples of Entities that are modeled with `Facility` subclasses.
+`IFacility` is a mixin class that represents a significant multi-disciplinary infrastructure Entity that corresponds well to user concepts. Buildings, bridges, tunnels, wharves, and towers are all examples of Entities that modeled with a `PhysicalElement` that includes the `IFacility` mixin.
 
 
-`Facility` `Models` are `Model`s that break down `Facility` Elements. These `Model`s are usually referred to by their more-specific `Element` types (`Building` `Model`s are `Model`s that break down `Building` `Elements`.).
+`IFacility` `Models` are `Model`s that break down `IFacility` Elements. These `Model`s are usually referred to by their more-specific `Element` types (e.g. `Building` `Model`s are `Model`s that break down `Building` `Elements`.).
 
-`Facility` `Model`s typically contain `Facility`, `System` and `General-Use` `PhysicalElement`s.
+`IFacility` `Model`s typically contain `IFacility`, `ISystem` and `General-Use` `PhysicalElement`s.
 
-`Facility` `Elements` may be placed in `Site`, `Facility` and `System` `Model`s. `Facility` `Element`s placed in any other `Model` will generate validation warnings.
+`IFacility` `Elements` may be placed in `Site`, `IFacility` and `ISystem` `Model`s. `IFacility` `Element`s placed in any other `Model` will generate validation warnings.
 
-### System
+*To implement this behavior every class that includes the `IFacility` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `Site`, `IFacility` and `ISystem`.*
 
-`System` is an abstract class that represents a significant discipline-specific arrangement of Entities intended to fulfill one or more functions. Sewers, roadways, HVAC and fire-suppression are all examples of real-world Entities that are modeled with `System` subclasses. `System` subclasses tend to be suffixed with 'System'.
+### ISystem
 
-Architecture is also considered a `System`, as it is discipline-specific and has the same general behaviors at the other `System`s.
+`ISystem` is an abstract class that represents a significant discipline-specific arrangement of Entities intended to fulfill one or more functions. Sewers, roadways, HVAC and fire-suppression are all examples of real-world Entities that are modeled with `System` subclasses. `System` subclasses tend to be suffixed with 'System'.
 
-`System` `Models` are `Model`s that break down `System` Elements. These `Model`s are usually referred to by their more-specific `Element` types (`SewerSystem` `Model`s are `Model`s that break down `SewerSystem` `PhysicalElements`.)
+Architecture is also considered an `ISystem`, as it is discipline-specific and has the same general behaviors at the other `ISystem`s.
 
-`System` `Model`s may contain Facility, System and General-Use PhysicalElements, as well as components specific to the particular `System` (e.g. `SewerPipe` in `SewerSystem`)
+`ISystem` `Models` are `Model`s that break down `ISystem` Elements. These `Model`s are usually referred to by their more-specific `Element` types (e.g. `SewerSystem` `Model`s are `Model`s that break down `SewerSystem` `PhysicalElements`.)
 
-`System` `Elements` may be placed in `Site`, `Facility` and `System` `Model`s. `System` `Element`s placed in any other `Model` will generate validation warnings.
+`ISystem` `Model`s may contain `IFacility`, `ISystem` and General-Use `PhysicalElement`s, as well as components specific to the particular `ISystem` (e.g. `SewerPipe` in `SewerSystem`)
 
+`ISystem` `Elements` may be placed in `Site`, `IFacility` and `ISystem` `Model`s. `ISystem` `Element`s placed in any other `Model` will generate validation warnings.
+
+*To implement this behavior every class that includes the `ISystem` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `Site`, `IFacility` and `ISystem`.*
 
 ### System Components
 
-`System Component` represents an Entity that is part of a specific `System` and generally does not makes sense outside of the specific system (e.g. sewer pipe outside of sewer system). `System Component` is not a BIS class.
+System Component represents an Entity that is part of a specific `ISystem` and generally does not makes sense outside of the specific system (e.g. sewer pipe outside of sewer system). System Component is not a BIS class, nor mixin.
 
 System Components are identified by their `ModelAffinity` with a specific `System` subclass.
 
