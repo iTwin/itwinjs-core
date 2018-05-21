@@ -146,7 +146,7 @@ export abstract class RenderTarget {
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
   public abstract queueReset(): void;
   public abstract onResized(): void;
-  public abstract hasResized(): boolean; // has a RenderTarget resized since it was last drawn to?
+  public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
 
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
   // ###TODO public abstract setMinimumFrameRate(minimumFrameRate: number): number;

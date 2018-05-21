@@ -563,6 +563,7 @@ export class OnScreenTarget extends Target {
   private readonly _canvas: HTMLCanvasElement;
   private _fbo?: FrameBuffer;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
+  private _prevViewRect: ViewRect = new ViewRect();
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -613,11 +614,14 @@ export class OnScreenTarget extends Target {
     context!.drawImage(canvas, 0, 0);
   }
 
-  public hasResized(): boolean {
-    const system = System.instance;
+  public updateViewRect(): boolean {
     const viewRect = this.viewRect;
 
-    if (system.canvas.width !== viewRect.width || system.canvas.height !== viewRect.height) {
+    if (this._prevViewRect.width !== viewRect.width || this._prevViewRect.height !== viewRect.height) {
+      // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
+      this._canvas.width = viewRect.width;
+      this._canvas.height = viewRect.height;
+      this._prevViewRect = new ViewRect(0, 0, viewRect.width, viewRect.height);
       return true;
     }
     return false;
@@ -632,15 +636,11 @@ export class OnScreenTarget extends Target {
 
     const viewRect = this.viewRect;
 
-    if (this.hasResized()) {
-      // Ensure off-screen canvas dimensions match on-screen canvas dimensions
+    // Ensure off-screen canvas dimensions match on-screen canvas dimensions
+    if (system.canvas.width !== viewRect.width)
       system.canvas.width = viewRect.width;
+    if (system.canvas.height !== viewRect.height)
       system.canvas.height = viewRect.height;
-
-      // Also must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
-      this._canvas.width = viewRect.width;
-      this._canvas.height = viewRect.height;
-    }
 
     assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
     assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
@@ -709,7 +709,7 @@ export class OffScreenTarget extends Target {
   protected _beginPaint(): void { }
   protected _endPaint(): void { }
   public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
-  public hasResized(): boolean {
+  public updateViewRect(): boolean {
     return false;
   }
 }

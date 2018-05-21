@@ -1386,7 +1386,7 @@ export class Viewport {
     let isRedrawNeeded = sync.isRedrawPending;
     sync.invalidateRedrawPending();
 
-    if (target.hasResized()) {
+    if (target.updateViewRect()) {
       target.onResized();
       sync.invalidateRenderPlan();
     }
