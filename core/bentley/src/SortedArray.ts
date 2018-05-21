@@ -50,9 +50,6 @@ export function lowerBound<T>(value: T, list: T[], compare: (lhs: T, rhs: T) => 
  *
  * The user can also specify how the SortedArray takes ownership of inserted values, e.g., by cloning them.
  *
- * Inserting an element returns its index (or the index of an equivalent existing element, if duplicates are
- * not permitted), allowing a SortedArray<T> to behave like a Map<T, number> with more flexible comparison logic.
- *
  * The comparison function must meet the following criteria, given 'lhs' and 'rhs' of type T:
  *  - If lhs is equal to rhs, returns 0
  *  - If lhs is less than rhs, returns a negative value
@@ -111,7 +108,7 @@ export class SortedArray<T> {
    *  - The actual index of the newly-inserted element is returned.
    * If the element is to be inserted, then the supplied value will be passed to the clone function supplied to the constructor and the result will be inserted into the array.
    * @param value The value to insert
-   * @returns the index in the array of the newly-insert value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
+   * @returns the index in the array of the newly-inserted value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
    */
   public insert(value: T): number {
     const bound = this.lowerBound(value);
