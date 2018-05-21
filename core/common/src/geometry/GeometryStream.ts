@@ -259,7 +259,7 @@ export class GeometryStreamBuilder {
   }
 
   /** Append a GeometryQuery supplied in either local or world coordinates to the GeometryStreamProps array */
-  public appendGeometryQuery(geometry: GeometryQuery): boolean {
+  public appendGeometry(geometry: GeometryQuery): boolean {
     if (undefined === this.worldToLocal) {
       const geomData = GeomJson.Writer.toIModelJson(geometry);
       if (undefined === geomData)

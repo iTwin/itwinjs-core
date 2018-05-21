@@ -26,14 +26,14 @@ export class Robot extends SpatialLocationElement {
 
     const builder = new GeometryStreamBuilder();  // I know what graphics represent a robot.
     const circle = Arc3d.createXY(Point3d.createZero(), radius);
-    builder.appendGeometryQuery(circle);
+    builder.appendGeometry(circle);
 
     const props: GeometricElement3dProps = {      // I know what class and category to use.
       model: model.id,
       classFullName: RobotWorld.Class.Robot,
       category: RobotWorld.getCategory(iModel, RobotWorld.Class.Robot).id,
       geom: builder.geometryStream,
-      placement: { origin: location, angles: new YawPitchRollAngles()},
+      placement: { origin: location, angles: new YawPitchRollAngles() },
     };
 
     const r = new Robot(props, iModel);           // construct the Robot instance

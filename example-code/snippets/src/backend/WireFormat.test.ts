@@ -73,8 +73,8 @@ describe("Wire Format Snippets", () => {
 
     // Construct a GeometryStream containing the Arc3d and LineString3d created above (local coordinates)
     const builder = new GeometryStreamBuilder();
-    builder.appendGeometryQuery(arc);
-    builder.appendGeometryQuery(lineString);
+    builder.appendGeometry(arc);
+    builder.appendGeometry(lineString);
     const geometryStreamJson: string = JSON.stringify(builder.geometryStream, undefined, 2);
 
     // Construct a Placement (world coordinates)
