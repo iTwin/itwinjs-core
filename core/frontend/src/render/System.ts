@@ -114,6 +114,7 @@ export class GraphicBranch {
   public set viewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides.copyFrom(ovr); }
 
   public clear() { this.entries.length = 0; }
+  public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 
 /**

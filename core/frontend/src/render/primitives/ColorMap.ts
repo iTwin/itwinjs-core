@@ -11,6 +11,10 @@ export class ColorMap {
   private static get maxIndex(): number { return 0xffff; }
   private static scratchColorDef = new ColorDef();
 
+  public hasColor(color: number): boolean {
+    return undefined !== this._dict.get(color);
+  }
+
   public getIndex(color: number): number {
     const found = this._dict.get(color);
     if (undefined !== found)

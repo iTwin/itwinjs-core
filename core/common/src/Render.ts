@@ -110,14 +110,20 @@ export class PolylineData {
 }
 
 export class MeshPolyline {
-  public indices: number[] = [];
-  public rangeCenter = new Point3d();
-  public constructor(public startDistance = 0, rangeCenter?: Point3d, indices?: number[]) {
-    if (rangeCenter) { this.rangeCenter = rangeCenter; }
-    if (indices) { this.indices = indices.slice(); }
+  public readonly indices: number[];
+  public readonly rangeCenter: Point3d;
+  public readonly startDistance: number;
+  public constructor(startDistance: number = 0, rangeCenter: Point3d = new Point3d(), indices: number[] = []) {
+    this.rangeCenter = rangeCenter;
+    this.indices = indices.slice();
+    this.startDistance = startDistance;
   }
-  public addIndex(index: number) { if (this.indices.length === 0 || this.indices[this.indices.length - 1] !== index) this.indices.push(index); }
-  public clear() { this.indices = []; }
+  public addIndex(index: number) {
+    const { indices } = this;
+    if (indices.length === 0 || indices[indices.length - 1] !== index)
+      indices.push(index);
+  }
+  public clear() { this.indices.length = 0; }
 }
 
 export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }

@@ -54,6 +54,20 @@ export class MeshBuilder {
     this.tileRange = tileRange;
   }
 
+  /**
+   * create instance of MeshBuilder without a predefined mesh instance
+   * @param props
+   * props to create mesh:
+   *    props.displayParams : DisplayParams
+   *    props.features? : Mesh.Features | undefined
+   *    props.type : Mesh.PrimitiveType
+   *    props.range : Range3d
+   *    props.is2d : boolean
+   *    props.isPlanar : boolean
+   * additional props:
+   *    props.tolerance : number
+   *    props.areaTolerance : number
+   */
   public static create(props: MeshBuilder.Props): MeshBuilder {
     const mesh = Mesh.create(props);
     const { tolerance, areaTolerance, range } = props;
@@ -66,13 +80,13 @@ export class MeshBuilder {
    * @param isDisjoint if true add point string, else add polyline
    * @param fillColor
    */
-  public loadStrokePointLists(strokes: StrokesPrimitivePointLists, isDisjoint: boolean, fillColor: number): void {
+  public addStrokePointLists(strokes: StrokesPrimitivePointLists, isDisjoint: boolean, fillColor: number): void {
     for (const strokePoints of strokes) {
-      const { startDistance } = strokePoints;
+      const { startDistance, points } = strokePoints;
       if (isDisjoint)
-        this.addPointString(strokePoints.points, fillColor, startDistance);
+        this.addPointString(points, fillColor, startDistance);
       else
-        this.addPolyline(strokePoints.points, fillColor, startDistance);
+        this.addPolyline(points, fillColor, startDistance);
     }
   }
 
@@ -160,27 +174,33 @@ export class MeshBuilder {
 
   /** removed Feature for now */
   public addPolyline(pts: QPoint3dList | Point3d[], fillColor: number, startDistance: number): void {
-    const { mesh, addVertex } = this;
-    const points = pts instanceof QPoint3dList ? pts : QPoint3dList.createFrom(pts, mesh.points.params);
+    const { mesh } = this;
+
     const poly = new MeshPolyline(startDistance);
-    for (const point of points) poly.addIndex(addVertex(point, fillColor));
+    const points = pts instanceof QPoint3dList ? pts : QPoint3dList.createFrom(pts, mesh.points.params);
+
+    for (const point of points)
+      poly.addIndex(this.addVertex(point, fillColor));
+
     mesh.addPolyline(poly);
   }
 
-  private createQPoint(point: Point3d): QPoint3d {
-    const params = this.mesh.points.params;
-    return QPoint3d.create(point, params);
-  }
-
   /** removed Feature for now */
-  public addPointString(points: Point3d[], fillColor: number, startDistance: number): void {
-    const { addVertex, createQPoint, mesh } = this;
+  public addPointString(pts: Point3d[], fillColor: number, startDistance: number): void {
+    const { mesh } = this;
+
     // Assume no duplicate points in point strings (or, too few to matter).
     // Why? Because drawGridDots() potentially sends us tens of thousands of points (up to 83000 on my large monitor in top view), and wants to do so every frame.
     // The resultant map lookups/inserts/rebalancing kill performance in non-optimized builds.
     // NB: startDistance currently unused - Ray claims they will be used in future for non-cosmetic line styles? If not let's jettison them...
     const poly = new MeshPolyline(startDistance);
-    for (const point of points) poly.addIndex(addVertex(createQPoint(point), fillColor));
+    const points = QPoint3dList.createFrom(pts, mesh.points.params);
+
+    for (const point of points) {
+      mesh.addVertex(point, fillColor); // ###TODO is this only distinction between addPolyline and addPointString?
+      poly.addIndex(this.addVertex(point, fillColor));
+    }
+
     mesh.addPolyline(poly);
   }
 
@@ -206,14 +226,16 @@ export class MeshBuilder {
   // ###TODO: empty method declaration?
   // public addMesh(triangle: Triangle): void;
 
-  public addVertex(qpoint: QPoint3d, fillColor: number): number {
-    return this.vertexMap.insert(new VertexKey(qpoint, fillColor));
+  public addVertex(qPoint: QPoint3d, fillColor: number): number {
+    return this.vertexMap.add(qPoint, fillColor);
   }
 
   public addTriangle(triangle: Triangle): void {
     const { triangleSet, mesh } = this;
+
     // Prefer to avoid adding vertices originating from degenerate triangles before we get here...
     assert(!triangle.isDegenerate);
+
     const key = new TriangleKey(triangle);
     if (triangleSet.findEqual(key) === undefined) {
       triangleSet.insert(key);
@@ -226,15 +248,6 @@ export namespace MeshBuilder {
   export interface Props extends Mesh.Props {
     tolerance: number;
     areaTolerance: number;
-  }
-  export interface PolyfaceVisitorParams {
-    visitor: PolyfaceVisitor;
-    mappedTexture?: TextureMapping;
-    // iModel: IModelConnection;
-    // feature: Feature;
-    includeParams: boolean;
-    fillColor: number;
-    requireNormals: boolean;
   }
 }
 
