@@ -563,6 +563,7 @@ export class OnScreenTarget extends Target {
   private readonly _canvas: HTMLCanvasElement;
   private _fbo?: FrameBuffer;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
+  private _prevViewRect: ViewRect = new ViewRect();
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -613,6 +614,19 @@ export class OnScreenTarget extends Target {
     context!.drawImage(canvas, 0, 0);
   }
 
+  public updateViewRect(): boolean {
+    const viewRect = this.viewRect;
+
+    if (this._prevViewRect.width !== viewRect.width || this._prevViewRect.height !== viewRect.height) {
+      // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
+      this._canvas.width = viewRect.width;
+      this._canvas.height = viewRect.height;
+      this._prevViewRect = new ViewRect(0, 0, viewRect.width, viewRect.height);
+      return true;
+    }
+    return false;
+  }
+
   protected _beginPaint(): void {
     assert(undefined !== this._fbo);
 
@@ -620,20 +634,13 @@ export class OnScreenTarget extends Target {
     const system = System.instance;
     system.frameBufferStack.push(this._fbo!, true);
 
-    // Ensure off-screen canvas dimensions match on-screen canvas dimensions
     const viewRect = this.viewRect;
+
+    // Ensure off-screen canvas dimensions match on-screen canvas dimensions
     if (system.canvas.width !== viewRect.width)
       system.canvas.width = viewRect.width;
-
     if (system.canvas.height !== viewRect.height)
       system.canvas.height = viewRect.height;
-
-    // Also must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
-    if (this._canvas.width !== viewRect.width)
-      this._canvas.width = viewRect.width;
-
-    if (this._canvas.height !== viewRect.height)
-      this._canvas.height = viewRect.height;
 
     assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
     assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
@@ -702,6 +709,9 @@ export class OffScreenTarget extends Target {
   protected _beginPaint(): void { }
   protected _endPaint(): void { }
   public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
+  public updateViewRect(): boolean {
+    return false;
+  }
 }
 
 function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3d {
