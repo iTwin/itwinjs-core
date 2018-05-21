@@ -70,3 +70,12 @@ Standard markdown applies: `[label](URL)`
 ## `leftNav.md` Files
 
 A file in the root directory of every section of the website called `leftNav.md` creates the navigation pane on the left side of all web pages for that section.
+
+## Ignoring a markdown file
+There are cases when a markdown file should not end up in the final site. For example, a file that is under construction, a feature that has not been turned on, or a readme markdown file. In these cases a file can be ignored by adding an ignore tag to the frontmatter:
+```markdown
+---
+ignore: true
+---
+```
+The markdown will not be processed and will not be present in the final output.
