@@ -64,6 +64,7 @@ export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFo
 export class RpcRequest<TResponse = any> {
   private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
   private _reject: (reason?: any) => void = () => undefined;
+  private _created: number = 0;
   private _lastSubmitted: number = 0;
   private _lastUpdated: number = 0;
   private _status: RpcRequestStatus = RpcRequestStatus.Unknown;
@@ -142,6 +143,11 @@ export class RpcRequest<TResponse = any> {
     }
   }
 
+  /** The elapsed time for this request. */
+  public get elapsed(): number {
+    return this._lastUpdated - this._created;
+  }
+
   /** Finds the first parameter of a given type if present. */
   public findParameterOfType<T>(constructor: { new(...args: any[]): T }): T | undefined {
     for (const param of this.parameters) {
@@ -154,6 +160,7 @@ export class RpcRequest<TResponse = any> {
 
   /** Constructs an RPC request. */
   public constructor(client: RpcInterface, operation: string, parameters: any[]) {
+    this._created = new Date().getTime();
     this.client = client;
     this.protocol = client.configuration.protocol;
     this.operation = (client.constructor.prototype as any)[operation][OPERATION];

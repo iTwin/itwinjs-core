@@ -175,19 +175,20 @@ export class TextureHandle implements IDisposable {
   }
 
   /** Creates a texture for storing data accessed by shaders. */
-  public static createForData(width: number, height: number, data: Uint8Array, wantPreserveData = false) {
+  public static createForData(width: number, height: number, data: Uint8Array, wantPreserveData = false,
+    wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
     }
 
     const params: TextureCreateParams = new TextureCreateParams();
-    params.format = GL.Texture.Format.Rgba;
+    params.format = format;
     params.dataType = GL.Texture.DataType.UnsignedByte;
     params.width = width;
     params.height = height;
     params.imageBytes = data;
-    params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
+    params.wrapMode = wrapMode;
     params.wantPreserveData = wantPreserveData;
 
     return new TextureHandle(glTex, params);
