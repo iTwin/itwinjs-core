@@ -19,7 +19,7 @@ export class WebAppRpcLogging {
     if (object instanceof WebAppRpcRequest) {
       switch (event) {
         case RpcProtocolEvent.RequestCreated: return WebAppRpcLogging.logRequest("RpcInterface.frontend.request", object);
-        case RpcProtocolEvent.ResponseLoaded: return WebAppRpcLogging.logResponse("RpcInterface.frontend.response", object, object.getResponseStatusCode());
+        case RpcProtocolEvent.ResponseLoaded: return WebAppRpcLogging.logResponse("RpcInterface.frontend.response", object, object.getResponseStatusCode(), object.elapsed);
         case RpcProtocolEvent.ConnectionErrorReceived: return WebAppRpcLogging.logErrorFrontend("RpcInterface.frontend.connectionError", object);
         case RpcProtocolEvent.ConnectionAborted: return WebAppRpcLogging.logErrorFrontend("RpcInterface.frontend.connectionAborted", object);
       }
@@ -27,7 +27,7 @@ export class WebAppRpcLogging {
       switch (event) {
         case RpcProtocolEvent.RequestReceived: return WebAppRpcLogging.logRequest("RpcInterface.backend.request", object.request);
         case RpcProtocolEvent.BackendErrorOccurred: return WebAppRpcLogging.logErrorBackend("RpcInterface.backend.error", object);
-        case RpcProtocolEvent.BackendResponseCreated: return WebAppRpcLogging.logResponse("RpcInterface.backend.response", object.request, object.status);
+        case RpcProtocolEvent.BackendResponseCreated: return WebAppRpcLogging.logResponse("RpcInterface.backend.response", object.request, object.status, object.elapsed);
       }
     }
   }
@@ -55,7 +55,7 @@ export class WebAppRpcLogging {
     }));
   }
 
-  private static logResponse(message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number): void {
+  private static logResponse(message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number, elapsed: number): void {
     Logger.logTrace(loggingCategory, message, () => ({
       method: object.method,
       path: object.path,
@@ -63,6 +63,7 @@ export class WebAppRpcLogging {
       rpcInterface: WebAppRpcLogging.getRpcInterfaceName(object.operation.interfaceDefinition),
       status,
       activityId: object.id,
+      elapsed,
     }));
   }
 

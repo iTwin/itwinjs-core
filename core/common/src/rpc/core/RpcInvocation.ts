@@ -23,6 +23,8 @@ export class RpcInvocation {
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
+  private _timeIn: number = 0;
+  private _timeOut: number = 0;
 
   /** The protocol for this invocation. */
   public readonly protocol: RpcProtocol;
@@ -53,6 +55,11 @@ export class RpcInvocation {
     }
   }
 
+  /** The elapsed time for this invocation. */
+  public get elapsed(): number {
+    return this._timeOut - this._timeIn;
+  }
+
   /**
    * The invocation for the current RPC operation.
    * @note The return value of this function is only reliable in an RPC interface class member function where program control was received from the RpcInvocation constructor function.
@@ -63,6 +70,7 @@ export class RpcInvocation {
 
   /** Constructs an invocation. */
   public constructor(protocol: RpcProtocol, request: SerializedRpcRequest) {
+    this._timeIn = new Date().getTime();
     this.protocol = protocol;
     this.request = request;
     this.operation = RpcOperation.lookup(request.operation.interfaceDefinition, request.operation.operationName);
@@ -96,7 +104,7 @@ export class RpcInvocation {
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
 
     const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
-    return this.createFulfillment(result);
+    return this.fulfill(result);
   }
 
   private fulfillRejected(reason: any): RpcRequestFulfillment {
@@ -117,11 +125,19 @@ export class RpcInvocation {
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
     }
 
-    return this.createFulfillment(result);
+    return this.fulfill(result);
   }
 
-  private createFulfillment(result: string): RpcRequestFulfillment {
-    return { result, status: this.protocol.getCode(this.status), id: this.request.id, interfaceName: this.operation.interfaceDefinition.name };
+  private fulfill(result: string): RpcRequestFulfillment {
+    const fulfillment = {
+      result,
+      status: this.protocol.getCode(this.status),
+      id: this.request.id,
+      interfaceName: this.operation.interfaceDefinition.name
+    };
+
+    this._timeOut = new Date().getTime();
+    return fulfillment;
   }
 
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
