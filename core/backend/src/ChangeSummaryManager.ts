@@ -128,7 +128,7 @@ export class ChangeSummaryManager {
    * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
    * the iModel is moved back to the original changeset.
    * @param options Extraction options
-   * @throws [IModelError]($common) if the iModel is standalone,r was not opened in readwrite mode.
+   * @throws [IModelError]($common/IModelError) if the iModel is standalone
    */
   public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
     // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)

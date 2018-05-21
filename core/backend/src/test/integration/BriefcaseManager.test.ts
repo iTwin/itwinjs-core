@@ -1,39 +1,14 @@
 import * as TypeMoq from "typemoq";
 import { expect, assert } from "chai";
-import { Id64, OpenMode, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
-import { Code, IModelVersion, Appearance, IModel, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, Element, DictionaryModel, SpatialCategory, IModelHost, IModelHostConfiguration, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType, BriefcaseManager } from "../../backend";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
+import { IModelJsFs } from "../../IModelJsFs";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { KeepBriefcase, IModelDb, OpenParams, AccessMode, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
 import { HubTestUtils } from "./HubTestUtils";
 import { TestConfig } from "../TestConfig";
-import { AccessToken, CodeState, ChangeSet, ConnectClient, IModel as HubIModel, Code as HubCode, IModelHubClient, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
-
-let lastPushTimeMillis = 0;
-let lastAutoPushEventType: AutoPushEventType | undefined;
-
-export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
-  // Create a new physical model.
-  let modelId: Id64;
-  [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
-
-  // Find or create a SpatialCategory.
-  const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
-
-  // Reserve all of the codes that are required by the new model and category.
-  try {
-    await rwIModel.concurrencyControl.request(accessToken);
-  } catch (err) {
-    if (err instanceof ConcurrencyControl.RequestError) {
-      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
-    }
-  }
-
-  return { modelId, spatialCategoryId };
-}
+import { AccessToken, ChangeSet, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
 
 describe("BriefcaseManager", () => {
   const index = process.argv.indexOf("--offline");
@@ -59,6 +34,13 @@ describe("BriefcaseManager", () => {
     return count;
   };
 
+  const validateCache = () => {
+    (BriefcaseManager as any).cache.briefcases.forEach((value: BriefcaseEntry, key: string) => {
+      assert.isTrue(IModelJsFs.existsSync(value.pathname), `File corresponding to briefcase cache entry not found: ${value.pathname}`);
+      assert.strictEqual<string>(value.getKey(), key, `Cached key ${key} doesn't match the current generated key ${value.getKey()}`);
+    });
+  };
+
   before(async () => {
     if (offline) {
       MockAssetUtil.setupMockAssets(assetDir);
@@ -77,143 +59,36 @@ describe("BriefcaseManager", () => {
       MockAssetUtil.tearDownOfflineFixture();
   });
 
-  it.skip("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
-    const firstUser = accessToken;
-    const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
-    const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.user2);
-
-    const firstIModel: IModelDb = await IModelDb.open(firstUser, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
-    const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
-    const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUser, testProjectId, testIModels[1].id, OpenMode.Readonly);
-    assert.notEqual(firstIModel, secondIModel);
-
-    // Set up optimistic concurrency. Note the defaults are:
-    firstIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-    secondIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-    // Note: neutralObserver's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
-
-    // firstUser: create model, category, and element el1
-    const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(firstIModel, firstUser);
-    const el1 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
-    // const el2 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
-    firstIModel.saveChanges("firstUser created model, category, and two elements");
-    await firstIModel.pushChanges(firstUser);
-
-    // secondUser: pull and merge
-    await secondIModel.pullAndMergeChanges(secondUser);
-
-    // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
-
-    // firstUser: modify el1.userLabel
-    if (true) {
-      const el1cc: Element = firstIModel.elements.getElement(el1);
-      el1cc.userLabel = el1cc.userLabel + " -> changed by firstUser";
-      firstIModel.elements.updateElement(el1cc);
-      firstIModel.saveChanges("firstUser modified el1.userLabel");
-      await firstIModel.pushChanges(firstUser);
-    }
-
-    // secondUser: modify el1.userLabel
-    let expectedValueofEl1UserLabel: string;
-    if (true) {
-      const el1before: Element = (secondIModel.elements.getElement(el1));
-      expectedValueofEl1UserLabel = el1before.userLabel + " -> changed by secondUser";
-      el1before.userLabel = expectedValueofEl1UserLabel;
-      secondIModel.elements.updateElement(el1before);
-      secondIModel.saveChanges("secondUser modified el1.userLabel");
-
-      // pull + merge => take secondUser's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
-      await secondIModel.pullAndMergeChanges(secondUser);
-      const el1after = secondIModel.elements.getElement(el1);
-      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
-
-      await secondIModel.pushChanges(secondUser);
-    }
-
-    // Make sure a neutral observer sees secondUser's change.
-    if (true) {
-      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
-      const elobj = neutralObserverIModel.elements.getElement(el1);
-      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
-    }
-
-    // firstUser: pull and see that secondUser has overridden my change
-    if (true) {
-      await firstIModel.pullAndMergeChanges(firstUser);
-      const elobj = firstIModel.elements.getElement(el1);
-      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
-    }
-
-    // --- Test 2: Overlapping changes that are not conflicts  ---
-
-    // firstUser: modify el1.userLabel
-    const wasExpectedValueofEl1UserLabel = expectedValueofEl1UserLabel;
-    if (true) {
-      const el1cc: Element = firstIModel.elements.getElement(el1);
-      assert.equal(el1cc.userLabel, wasExpectedValueofEl1UserLabel);
-      expectedValueofEl1UserLabel = el1cc.userLabel + " -> changed again by firstUser";
-      el1cc.userLabel = expectedValueofEl1UserLabel;
-      firstIModel.elements.updateElement(el1cc);
-      firstIModel.saveChanges("firstUser modified el1.userLabel");
-      await firstIModel.pushChanges(firstUser);
-    }
-
-    // Make sure a neutral observer sees firstUser's changes.
-    if (true) {
-      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
-      const elobj = neutralObserverIModel.elements.getElement(el1);
-      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
-    }
-
-    // secondUser: modify el1.userProperties
-    const secondUserPropNs = "secondUser";
-    const secondUserPropName = "property";
-    const expectedValueOfSecondUserProp: string = "x";
-    if (true) {
-      const el1before: Element = secondIModel.elements.getElement(el1);
-      assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel);
-      el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp }); // secondUser changes userProperties
-      secondIModel.elements.updateElement(el1before);
-      secondIModel.saveChanges("secondUser modified el1.userProperties");
-      assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel, "secondUser does not change userLabel");
-
-      // pull + merge => no conflict + both changes should be intact
-      await secondIModel.pullAndMergeChanges(secondUser);
-      const el1after = secondIModel.elements.getElement(el1);
-      assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
-      assert.equal(el1after.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
-
-      await secondIModel.pushChanges(secondUser);
-    }
-
-    // firstUser: pull and see both changes
-    if (true) {
-      await firstIModel.pullAndMergeChanges(firstUser);
-      const elobj = firstIModel.elements.getElement(el1);
-      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
-      assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
-    }
-
-    // Make sure a neutral observer sees both changes.
-    if (true) {
-      await neutralObserverIModel.pullAndMergeChanges(neutralObserverUser);
-      const elobj = neutralObserverIModel.elements.getElement(el1);
-      assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
-      assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
-    }
-
-    // --- Test 3: Non-overlapping changes ---
-
+  afterEach(() => {
+    validateCache();
   });
 
-  it("should be able to open an IModel from the Hub in Readonly mode", async () => {
+  it("The same promise can have two subscribers, and it will notify both.", async () => {
+    const testPromise = new Promise((resolve, _reject) => {
+      setTimeout(() => resolve("Success!"), 250);
+    });
+
+    let callbackcount = 0;
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+
+    await testPromise;
+
+    assert.equal(callbackcount, 2);
+  });
+
+  it("should open and close an iModel from the Hub", async () => {
     let onOpenCalled: boolean = false;
-    const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openModeIn: OpenMode, _versionIn: IModelVersion) => {
+    const onOpenListener = (accessTokenIn: AccessToken, contextIdIn: string, iModelIdIn: string, openParams: OpenParams, _version: IModelVersion) => {
       onOpenCalled = true;
       assert.deepEqual(accessTokenIn, accessToken);
       assert.equal(contextIdIn, testProjectId);
       assert.equal(iModelIdIn, testIModels[0].id);
-      assert.equal(openModeIn, OpenMode.Readonly);
+      assert.equal(openParams.openMode, OpenMode.Readonly);
     };
     IModelDb.onOpen.addListener(onOpenListener);
 
@@ -224,14 +99,33 @@ describe("BriefcaseManager", () => {
     };
     IModelDb.onOpened.addListener(onOpenedListener);
 
-    try {
-      const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
+    let onBeforeCloseCalled: boolean = false;
+    const onBeforeCloseListener = () => {
+      onBeforeCloseCalled = true;
+    };
 
+    try {
+      const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.latest());
       assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
-      assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
+
+      iModel.onBeforeClose.addListener(onBeforeCloseListener);
+
+      // Validate that the IModelDb is readonly
+      assert(iModel.openParams.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
+
+      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(accessToken, testIModels[0].id, BriefcaseManager.hubClient);
+      assert.strictEqual<string>(iModel.briefcase.changeSetId, expectedChangeSetId);
+      assert.strictEqual<string>(iModel.iModelToken.changeSetId!, expectedChangeSetId);
 
       assert.isTrue(onOpenedCalled);
       assert.isTrue(onOpenCalled);
+
+      const pathname = iModel.briefcase.pathname;
+      assert.isTrue(IModelJsFs.existsSync(pathname));
+      await iModel.close(accessToken, KeepBriefcase.No);
+      assert.equal(iModel.briefcase, undefined);
+      assert.isFalse(IModelJsFs.existsSync(pathname));
+      assert.isTrue(onBeforeCloseCalled);
     } finally {
 
       IModelDb.onOpen.removeListener(onOpenListener);
@@ -239,39 +133,208 @@ describe("BriefcaseManager", () => {
     }
   });
 
-  it("should be able to open an IModel from the Hub in ReadWrite mode", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite); // Note: No frontend support for ReadWrite open yet
-    assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
-    assert(iModel.openMode === OpenMode.ReadWrite, "iModel not set to ReadWrite mode");
-    iModel.close(accessToken);
+  it("should reuse briefcases", async () => {
+    const iModel1: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
+    assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
+
+    const iModel2: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
+    assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
+    assert.equal(iModel1, iModel2, "previously open briefcase was expected to be shared");
+
+    const iModel3: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("SecondVersion"));
+    assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
+    assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
+    assert.notEqual(iModel3.briefcase, iModel2.briefcase, "opening two different versions should not cause briefcases to be shared when the older one is open");
+
+    const briefcase2 = iModel2.briefcase;
+    const pathname2 = briefcase2.pathname;
+    await iModel2.close(accessToken);
+    assert.equal(iModel2.briefcase, undefined);
+    assert.isTrue(IModelJsFs.existsSync(pathname2));
+
+    const briefcase3 = iModel3.briefcase;
+    const pathname3 = briefcase3.pathname;
+    await iModel3.close(accessToken);
+    assert.equal(iModel3.briefcase, undefined);
+    assert.isTrue(IModelJsFs.existsSync(pathname3));
+
+    const iModel4: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
+    assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
+    assert.equal(iModel4.briefcase, briefcase2, "previously closed briefcase was expected to be shared");
+
+    const iModel5: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("SecondVersion"));
+    assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
+    assert.equal(iModel5.briefcase, briefcase3, "previously closed briefcase was expected to be shared");
+
+    await iModel4.close(accessToken, KeepBriefcase.No);
+    assert.isFalse(IModelJsFs.existsSync(pathname2));
+
+    await iModel5.close(accessToken, KeepBriefcase.No);
+    assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
-  it("should open briefcases of specific versions in Readonly mode", async () => {
-
-    const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.first());
+  it("should open iModels of specific versions from the Hub", async () => {
+    const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.first());
     assert.exists(iModelFirstVersion);
 
     for (const [arrayIndex, versionName] of testVersionNames.entries()) {
-      const iModelFromVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.asOfChangeSet(testIModels[0].changeSets[arrayIndex].wsgId));
+      const iModelFromVersion = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testIModels[0].changeSets[arrayIndex].wsgId));
       assert.exists(iModelFromVersion);
 
-      const iModelFromChangeSet: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.named(versionName));
+      const iModelFromChangeSet = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
 
+      assert.strictEqual(iModelFromVersion, iModelFromChangeSet);
       const elementCount = getElementCount(iModelFromVersion);
       assert.equal(elementCount, testElementCounts[arrayIndex]);
+
+      await iModelFromVersion.close(accessToken, KeepBriefcase.Yes);
     }
 
-    const iModelLatestVersion: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
+    const iModelLatestVersion: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelLatestVersion);
+
+    await iModelFirstVersion.close(accessToken, KeepBriefcase.No);
+    await iModelLatestVersion.close(accessToken, KeepBriefcase.No);
   });
 
-  it("should open a briefcase of an iModel with no versions", async () => {
-    const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly);
+  it("should open an iModel with no versions", async () => {
+    const iModelNoVer: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenParams.fixedVersion());
     assert.exists(iModelNoVer);
+    assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
   });
 
-  it.skip("should open briefcase of an iModel in both DEV and QA", async () => {
+  it("should be able to pull or reverse changes only if allowed", async () => {
+    const secondChangeSetId = testIModels[0].changeSets[1].wsgId;
+
+    const iModelFixed: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.asOfChangeSet(secondChangeSetId));
+    assert.exists(iModelFixed);
+    assert.strictEqual<string>(iModelFixed.briefcase.changeSetId, secondChangeSetId);
+
+    const iModelPullOnly: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Shared), IModelVersion.asOfChangeSet(secondChangeSetId));
+    assert.exists(iModelPullOnly);
+    assert.strictEqual<string>(iModelPullOnly.briefcase.changeSetId, secondChangeSetId);
+
+    assert.notStrictEqual<string>(iModelPullOnly.briefcase.pathname, iModelFixed.briefcase.pathname, "pull only and fixed versions should not share the same briefcase");
+
+    const thirdChangeSetId = testIModels[0].changeSets[2].wsgId;
+
+    await iModelPullOnly.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(thirdChangeSetId));
+    assert.strictEqual<string>(iModelPullOnly.briefcase.changeSetId, thirdChangeSetId);
+
+    let exceptionThrown = false;
+    try {
+      await iModelFixed.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(thirdChangeSetId));
+    } catch (error) {
+      exceptionThrown = true;
+    }
+    assert.isTrue(exceptionThrown);
+    assert.strictEqual<string>(iModelFixed.briefcase.changeSetId, secondChangeSetId);
+
+    try {
+      const firstChangeSetId = testIModels[0].changeSets[1].wsgId;
+      await iModelFixed.reverseChanges(accessToken, IModelVersion.asOfChangeSet(firstChangeSetId));
+    } catch (error) {
+      exceptionThrown = true;
+    }
+    assert.isTrue(exceptionThrown);
+
+    await iModelPullOnly.close(accessToken, KeepBriefcase.No);
+    await iModelFixed.close(accessToken, KeepBriefcase.No);
+  });
+
+  it("should be able to edit and push only if it's allowed", async () => {
+    const iModelFixed: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    assert.exists(iModelFixed);
+
+    let rootEl: Element = iModelFixed.elements.getRootSubject();
+    rootEl.userLabel = rootEl.userLabel + "changed";
+    assert.throws(() => iModelFixed.elements.updateElement(rootEl));
+
+    const iModelPullOnly: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Shared), IModelVersion.latest());
+    assert.exists(iModelPullOnly);
+
+    rootEl = iModelPullOnly.elements.getRootSubject();
+    rootEl.userLabel = rootEl.userLabel + "changed";
+    iModelPullOnly.elements.updateElement(rootEl);
+    iModelPullOnly.saveChanges();
+
+    let exceptionThrown = false;
+    try {
+      await iModelPullOnly.pushChanges(accessToken);
+    } catch (error) {
+      exceptionThrown = true;
+    }
+    assert.isTrue(exceptionThrown);
+
+    const iModelPullAndPush: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    assert.exists(iModelPullAndPush);
+
+    rootEl = iModelPullAndPush.elements.getRootSubject();
+    rootEl.userLabel = rootEl.userLabel + "changed";
+    iModelPullAndPush.elements.updateElement(rootEl);
+
+    iModelPullAndPush.saveChanges(); // Push is tested out in a separate test
+
+    await iModelFixed.close(accessToken, KeepBriefcase.No);
+    await iModelPullOnly.close(accessToken, KeepBriefcase.No);
+    await iModelPullAndPush.close(accessToken, KeepBriefcase.No);
+  });
+
+  it("should be able to allow exclusive access to iModels", async () => {
+    const iModelShared: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    assert.exists(iModelShared);
+
+    const iModelFixed: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModelFixed);
+    assert.notStrictEqual(iModelFixed.briefcase, iModelShared.briefcase);
+
+    const iModelPullOnly: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
+    assert.exists(iModelPullOnly);
+    assert.notStrictEqual(iModelPullOnly.briefcase, iModelShared.briefcase);
+    assert.notStrictEqual(iModelPullOnly.briefcase, iModelFixed.briefcase);
+
+    const iModelPullAndPush: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    assert.exists(iModelPullAndPush);
+    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelShared.briefcase);
+    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelFixed.briefcase);
+    assert.notStrictEqual(iModelPullAndPush.briefcase, iModelPullOnly.briefcase);
+
+    await iModelShared.close(accessToken, KeepBriefcase.No);
+    await iModelFixed.close(accessToken, KeepBriefcase.No);
+    await iModelPullOnly.close(accessToken, KeepBriefcase.No);
+    await iModelPullAndPush.close(accessToken, KeepBriefcase.No);
+  });
+
+  it("should be able to reuse existing briefcases from a previous session", async () => {
+    let iModelShared: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    assert.exists(iModelShared);
+    const sharedPathname = iModelShared.briefcase.pathname;
+
+    let iModelExclusive: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    assert.exists(iModelExclusive);
+    const exclusivePathname = iModelExclusive.briefcase.pathname;
+
+    IModelHost.shutdown();
+
+    assert.isTrue(IModelJsFs.existsSync(sharedPathname));
+    assert.isTrue(IModelJsFs.existsSync(exclusivePathname));
+
+    IModelHost.startup();
+
+    iModelShared = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    assert.exists(iModelShared);
+    assert.strictEqual<string>(iModelShared.briefcase.pathname, sharedPathname);
+
+    iModelExclusive = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    assert.exists(iModelExclusive);
+    assert.strictEqual<string>(iModelExclusive.briefcase.pathname, exclusivePathname);
+
+    await iModelShared.close(accessToken, KeepBriefcase.No);
+    await iModelExclusive.close(accessToken, KeepBriefcase.No);
+  });
+
+  it.skip("should open briefcase of an iModel in both DEV and QA (#integration)", async () => {
     // Note: This test is commented out since it causes the entire cache to be discarded and is therefore expensive.
     const config = new IModelHostConfiguration();
 
@@ -286,7 +349,7 @@ describe("BriefcaseManager", () => {
     assert(devIModelId);
     const devChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, devIModelId);
     expect(devChangeSets.length).equals(0); // needs change sets
-    const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const devIModel: IModelDb = await IModelDb.open(accessToken, devProjectId, devIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(devIModel);
 
     IModelHost.shutdown();
@@ -299,19 +362,12 @@ describe("BriefcaseManager", () => {
     assert(qaIModelId);
     const qaChangeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, qaIModelId);
     expect(qaChangeSets.length).greaterThan(0);
-    const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const qaIModel: IModelDb = await IModelDb.open(accessToken, qaProjectId, qaIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(qaIModel);
   });
 
-  it("should open a briefcase of an iModel with no versions", async () => {
-    const iModelNoVer = await IModelDb.open(accessToken, testProjectId, testIModels[2].id, OpenMode.Readonly, IModelVersion.latest());
-    assert.exists(iModelNoVer);
-    assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
-
-  });
-
   it("Should track the AccessTokens that are used to open IModels", async () => {
-    await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly);
+    await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion());
     assert.deepEqual(IModelDb.getAccessToken(testIModels[0].id), accessToken);
 
     try {
@@ -323,7 +379,7 @@ describe("BriefcaseManager", () => {
   });
 
   it("should be able to reverse and reinstate changes", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(), IModelVersion.latest());
 
     let arrayIndex: number;
     for (arrayIndex = testVersionNames.length - 1; arrayIndex >= 0; arrayIndex--) {
@@ -340,381 +396,4 @@ describe("BriefcaseManager", () => {
 
     await iModel.reinstateChanges(accessToken, IModelVersion.latest());
   });
-
-  it("should build concurrency control request", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenMode.ReadWrite);
-
-    const el: Element = iModel.elements.getRootSubject();
-    el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
-    const reqAsAny: any = ConcurrencyControl.convertRequestToAny(iModel.concurrencyControl.pendingRequest);
-    assert.isDefined(reqAsAny);
-    assert.isArray(reqAsAny.Locks);
-    assert.equal(reqAsAny.Locks.length, 3, " we expect to need a lock on the element (exclusive), its model (shared), and the db itself (shared)");
-    assert.isArray(reqAsAny.Codes);
-    assert.equal(reqAsAny.Codes.length, 0, " since we didn't add or change the element's code, we don't expect to need a code reservation");
-
-    iModel.close(accessToken);
-  });
-
-  it("should push changes with codes (#integration)", async () => {
-    const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
-    let timer = new Timer("delete iModels");
-    // Delete any existing iModels with the same name as the read-write test iModel
-    const iModelName = "CodesPushTest";
-    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
-    for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
-    }
-    timer.end();
-
-    // Create a new iModel on the Hub (by uploading a seed file)
-    timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
-    assert.isNotEmpty(rwIModelId);
-    timer.end();
-
-    timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
-    timer.end();
-
-    timer = new Timer("make local changes");
-    let newModelId: Id64;
-    const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
-
-    rwIModel.saveChanges("inserted generic objects");
-    timer.end();
-
-    timer = new Timer("push changes");
-
-    // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(adminAccessToken);
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
-
-    timer.end();
-
-    timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
-    timer.end();
-    expect(codes.length > initialCodes.length);
-  });
-
-  it.skip("should push changes with code conflicts (#integration)", async () => {
-    const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
-    let timer = new Timer("delete iModels");
-    // Delete any existing iModels with the same name as the read-write test iModel
-    const iModelName = "CodesConflictTest";
-    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
-    for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
-    }
-    timer.end();
-
-    // Create a new iModel on the Hub (by uploading a seed file)
-    timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
-    assert.isNotEmpty(rwIModelId);
-    timer.end();
-
-    const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await BriefcaseManager.hubClient.Briefcases().create(adminAccessToken, rwIModelId!);
-    const hubCode = new HubCode();
-    hubCode.value = code.value;
-    hubCode.codeSpecId = code.spec.toString();
-    hubCode.codeScope = code.scope;
-    hubCode.briefcaseId = otherBriefcase.briefcaseId;
-    hubCode.state = CodeState.Reserved;
-    await BriefcaseManager.hubClient.Codes().update(adminAccessToken, rwIModelId!, [hubCode]);
-
-    timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.hubClient.Codes().get(adminAccessToken, rwIModelId!);
-    timer.end();
-
-    timer = new Timer("make local changes");
-    let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
-
-    rwIModel.saveChanges("inserted generic objects");
-    timer.end();
-
-    timer = new Timer("push changes");
-
-    // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(adminAccessToken);
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
-
-    timer.end();
-
-    timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.hubClient.Codes().get(accessToken, rwIModelId!);
-    timer.end();
-    expect(codes.length === initialCodes.length);
-    expect(codes[0].state === CodeState.Reserved);
-  });
-
-  it.skip("should write to briefcase with optimistic concurrency (#integration)", async () => {
-    let timer = new Timer("delete iModels");
-    // Delete any existing iModels with the same name as the read-write test iModel
-    const iModelName = "ReadWriteTest";
-    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
-    for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
-    }
-    timer.end();
-
-    // Create a new iModel on the Hub (by uploading a seed file)
-    timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
-    const rwIModelId = rwIModel.iModelToken.iModelId;
-    assert.isNotEmpty(rwIModelId);
-    timer.end();
-
-    timer = new Timer("make local changes");
-
-    // Turn on optimistic concurrency control. This allows the app to modify elements, models, etc. without first acquiring locks.
-    // Later, when the app downloads and merges changeSets from the Hub into the briefcase, BriefcaseManager will merge changes and handle conflicts.
-    // The app still has to reserve codes.
-    rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-
-    // Show that we can modify the properties of an element. In this case, we modify the root element itself.
-    const rootEl: Element = rwIModel.elements.getRootSubject();
-    rootEl.userLabel = rootEl.userLabel + "changed";
-    rwIModel.elements.updateElement(rootEl);
-
-    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests());
-
-    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
-
-    // Create a new physical model.
-    let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
-
-    // Find or create a SpatialCategory.
-    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new Appearance({ color: 0xff0000 }));
-
-    timer.end();
-
-    timer = new Timer("query Codes I");
-
-    // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
-    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
-    assert.isTrue(await rwIModel.concurrencyControl.areAvailable(accessToken));
-
-    timer.end();
-    timer = new Timer("reserve Codes");
-
-    // Reserve all of the codes that are required by the new model and category.
-    try {
-      await rwIModel.concurrencyControl.request(accessToken);
-    } catch (err) {
-      if (err instanceof ConcurrencyControl.RequestError) {
-        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
-      }
-    }
-
-    timer.end();
-    timer = new Timer("query Codes II");
-
-    // Verify that the codes are reserved.
-    const category = rwIModel.elements.getElement(spatialCategoryId);
-    assert.isTrue(category.code.value !== undefined);
-    const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
-    const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
-    assert.equal(foundCode.length, 1);
-
-    /* NEEDS WORK - query just this one code
-  assert.isTrue(category.code.value !== undefined);
-  const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
-  assert.equal(codeStates2.length, 1);
-  assert.equal(codeStates2[0].values.length, 1);
-  assert.equal(codeStates2[0].values[0], category.code.value!);
-  */
-
-    timer.end();
-
-    timer = new Timer("make more local changes");
-
-    // Create a couple of physical elements.
-    const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
-    rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
-
-    // Commit the local changes to a local transaction in the briefcase.
-    // (Note that this ends the bulk operation automatically, so there's no need to call endBulkOperation.)
-    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "inserted generic objects" }));
-
-    rwIModel.elements.getElement(elid1); // throws if elid1 is not found
-    rwIModel.elements.getElement(spatialCategoryId); // throws if spatialCategoryId is not found
-
-    timer.end();
-
-    timer = new Timer("pullmergepush");
-
-    // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(accessToken);
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
-
-    timer.end();
-
-    // Open a readonly copy of the iModel
-    const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenMode.Readonly, IModelVersion.latest());
-    assert.exists(roIModel);
-
-    rwIModel.close(accessToken, KeepBriefcase.No);
-    roIModel.close(accessToken);
-  });
-
-  it.skip("should make change sets (#integration)", async () => {
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.ReadWrite);
-    assert.exists(iModel);
-
-    const dictionary: DictionaryModel = iModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-
-    let newModelId: Id64;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
-
-    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert();
-
-    // Insert a few elements
-    const elements: Element[] = [
-      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
-      IModelTestUtils.createPhysicalObject(iModel, newModelId, spatialCategoryId),
-    ];
-
-    for (const el of elements) {
-      el.buildConcurrencyControlRequest(DbOpcode.Insert);    // make a list of the resources that will be needed to insert this element (e.g., a shared lock on the model and a code)
-    }
-
-    await iModel.concurrencyControl.request(accessToken); // In a pessimistic concurrency regime, we must request locks and codes *before* writing to the local IModelDb.
-
-    for (const el of elements)
-      iModel.elements.insertElement(el);
-
-    iModel.saveChanges("inserted generic objects");
-
-    iModel.close(accessToken);
-  });
-
-  it.skip("should test AutoPush (#integration)", async () => {
-    let isIdle: boolean = true;
-    const activityMonitor = {
-      isIdle: () => isIdle,
-    };
-
-    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
-    const millisToWaitForAutoPush = (5 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
-
-    const iModel = {
-      pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, to simulate time spent doing push
-        lastPushTimeMillis = Date.now();
-      },
-      iModelToken: {
-        changeSetId: "",
-      },
-      concurrencyControl: {
-        request: async (_clientAccessToken: AccessToken) => { },
-      },
-      onBeforeClose: new BeEvent<() => void>(),
-      Txns: {
-        hasLocalChanges: () => true,
-      },
-    };
-    lastPushTimeMillis = 0;
-    lastAutoPushEventType = undefined;
-
-    // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, activityMonitor);
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.isFalse(autoPush.autoSchedule);
-
-    // Schedule the next push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // Wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-
-    // Verify that push happened during the time that I was asleep.
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.isAtLeast(autoPush.durationOfLastPushMillis, fakePushTimeRequired);
-    assert.isUndefined(lastAutoPushEventType);  // not listening to events yet.
-
-    // Cancel the next scheduled push
-    autoPush.cancel();
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "cancel does NOT automatically schedule the next push");
-
-    // Register an event handler
-    const autoPushEventHandler: AutoPushEventHandler = (etype: AutoPushEventType, _theAutoPush: AutoPush) => { lastAutoPushEventType = etype; };
-    autoPush.event.addListener(autoPushEventHandler);
-
-    lastPushTimeMillis = 0;
-
-    // Explicitly schedule the next auto-push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
-
-    // Just verify that this doesn't blow up.
-    autoPush.reserveCodes();
-
-    // Now turn on auto-schedule and verify that we get a few auto-pushes
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    lastPushTimeMillis = 0;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    autoPush.cancel();
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert(autoPush.state === AutoPushState.NotRunning);
-    assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
-
-    // Test auto-push when isIdle returns false
-    isIdle = false;
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-    isIdle = true;
-
-    // Test auto-push when Txn.hasLocalChanges returns false
-    iModel.Txns.hasLocalChanges = () => false;
-    lastPushTimeMillis = 0;
-    autoPush.cancel();
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-
-    // ... now turn it back on
-    iModel.Txns.hasLocalChanges = () => true;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
-
-  });
-
 });

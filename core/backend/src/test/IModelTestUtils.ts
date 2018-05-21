@@ -105,7 +105,6 @@ export class TestUsers {
     email: "bentleyvilnius@gmail.com",
     password: "Q!w2e3r4t5",
   };
-
 }
 
 export class IModelTestUtils {

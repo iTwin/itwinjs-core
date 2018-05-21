@@ -11,7 +11,7 @@ import { IModel as HubIModel, IModelQuery, AccessToken } from "@bentley/imodeljs
 import { HubTestUtils } from "./HubTestUtils";
 import * as utils from "./../../../../clients/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients/lib/test/ResponseBuilder";
-import { createNewModelAndCategory } from "./BriefcaseManager.test";
+import { createNewModelAndCategory } from "./IModelWrite.test";
 import { TestConfig } from "../TestConfig";
 
 describe.skip("PushRetry", () => {

@@ -54,7 +54,7 @@ export class TestbedConfig {
 
   private static initializeBentleyCloudCommon() {
     for (const definition of TestbedConfig.rpcInterfaces) {
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test"));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test"));
     }
   }
 }
