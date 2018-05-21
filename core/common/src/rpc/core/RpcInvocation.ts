@@ -133,7 +133,7 @@ export class RpcInvocation {
       result,
       status: this.protocol.getCode(this.status),
       id: this.request.id,
-      interfaceName: this.operation.interfaceDefinition.name
+      interfaceName: this.operation.interfaceDefinition.name,
     };
 
     this._timeOut = new Date().getTime();
