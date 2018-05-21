@@ -22,6 +22,7 @@ import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
+import { LineCode } from "./EdgeOverrides";
 
 export const enum ContextState {
   Uninitialized,
@@ -186,6 +187,9 @@ export class System extends RenderSystem {
 
   public readonly drawBuffersExtension?: WEBGL_draw_buffers;
 
+  private _lineCodeTexture: TextureHandle | undefined;
+  public get lineCodeTexture() { return this._lineCodeTexture; }
+
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public static identityTransform = Transform.createIdentity();
@@ -215,6 +219,11 @@ export class System extends RenderSystem {
     }
 
     return new System(canvas, context, techniques, capabilities);
+  }
+
+  public onInitialized(): void {
+    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
   }
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
