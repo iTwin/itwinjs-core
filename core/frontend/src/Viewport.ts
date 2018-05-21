@@ -1386,6 +1386,11 @@ export class Viewport {
     let isRedrawNeeded = sync.isRedrawPending;
     sync.invalidateRedrawPending();
 
+    if (target.hasResized()) {
+      target.onResized();
+      sync.invalidateRenderPlan();
+    }
+
     if (view.isSelectionSetDirty) {
       target.setHiliteSet(view.iModel.hilited);
       view.setSelectionSetDirty(false);
@@ -1433,7 +1438,7 @@ export class Viewport {
     // }
 
     if (isRedrawNeeded)
-      this.target.drawFrame();
+      target.drawFrame();
 
     return true;
   }
