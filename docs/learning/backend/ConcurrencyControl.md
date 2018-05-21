@@ -8,7 +8,7 @@ Concurrency control is a way to coordinate simultaneous transactions (briefcases
 
 An iModel has a concurrency control policy that specifies how multiple briefcases may modify models and elements. The policy may stipulate that locks must be used, forcing transactions to be sequential (pessimistic), or it may specify change-merging with conflict-resolution to combine the results of simultaneous transactions (optimistic).
 
-An app uses [IModelDb]($backend/IModelDb) and [ConcurrencyControl]($backend) to follow concurrency control rules.
+An app uses [IModelDb]($backend) and [ConcurrencyControl]($backend) to follow concurrency control rules.
 
 Locks and code reservations are associated with a briefcase while it is making changes and are released when it pushes.
 

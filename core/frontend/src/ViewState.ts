@@ -159,7 +159,7 @@ export class SpecialElements implements DrawnElementSets {
 /**
  * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  * Subclasses of ViewDefinition determine which model(s) are viewed.
- * * @see ($docs/learning/frontend/Views.md)
+ * * @see [Views]($docs/learning/frontend/Views.md)
  */
 export abstract class ViewState extends ElementState implements DrawnElementSets {
   protected _featureOverridesDirty = false;
@@ -202,7 +202,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   /** Asynchronously load any required data for this ViewState from the backend.
    * @note callers should await the Promise returned by this method before using this ViewState.
-   * @see ($docs/learning/frontend/Views.md)
+   * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
     this._auxCoordSystem = undefined;
@@ -1149,13 +1149,6 @@ export abstract class ViewState3d extends ViewState {
     const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
     if (undefined !== gf)
       context.setViewBackground(gf);
-
-    // ###TODO: Remove this...we're using it to debug failure to blend translucent overlay decorations
-    args.vertIndices = [3, 2, 0];
-    args.colors.initUniform(0x7f7f7f7f);
-    const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel);
-    if (undefined !== triangle)
-      context.addViewOverlay(triangle);
   }
 
   protected drawGroundPlane(context: DecorateContext): void {

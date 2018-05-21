@@ -84,7 +84,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 /**
  * @docs-group-description RpcInterface
- * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/App.md#rpcinterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
+ * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/RpcInterface.md) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
  */
 /**
  * @docs-group-description Schema

@@ -148,7 +148,7 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("ECSqlStatementCache after detaching Change Cache", async () => {
+  it("ECSqlStatementCache after detaching Changes Cache", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 

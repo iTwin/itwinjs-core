@@ -549,7 +549,7 @@ export class Viewport {
 
   private readonly _viewRange: ViewRect = new ViewRect();
   /** get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.right = rect.width; r.top = rect.height; return r; }
+  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this.backStack.length; }

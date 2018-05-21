@@ -7,17 +7,17 @@
 Change Summaries are generated per changeset. Every generated Change Summary is therefore uniquely associated
 to the Changeset it was generated from.
 
-iModelJs persists the generated Change Summaries in a local ECDb file called **Change Cache File** next to the briefcase it belongs to.
+iModelJs persists the generated Change Summaries in a local ECDb file called **Change Cache file** next to the briefcase it belongs to.
 
-> Change Summaries can only be generated from the iModelJs backend. See the [ChangeSummaryManager]($backend/ChangeSummaryManager) API for how to do it.
+> Change Summaries can only be generated from the iModelJs backend. See the [ChangeSummaryManager]($backend) API for how to do it.
 
 ## Working with Change Summaries
 
 Working with Change Summaries really means to unleash the power of ECSQL. Change Summaries by itself are just ECInstances of the built-in ECSchemas **ECDbChange** and **IModelChange**. That means you can simply use [ECSQL](./ECSQL) and all its flexibility to retrieve just that information from the Change Summaries which you are interested in.
 
-### Attaching the Changes Cache File to the local briefcase
+### Attaching the Change Cache file to the local briefcase
 
-As the Change Summaries are not persisted in the iModel itself but in the *Changes Cache File*, you need to attach the *Changes Cache File*
+As the Change Summaries are not persisted in the iModel itself but in the *Change Cache file*, you need to attach the *Change Cache file*
 to the local briefcase of the iModel first.
 
 Once done, the Change Summaries can be accessed by ECSQL from the iModel as if they were persisted in the iModel itself. It is visible from ECSQL under the table space **ecchange**.
@@ -44,7 +44,7 @@ This is achieved by executing ECSQL queries against the **ECDbChange** and **IMo
 ECSQL | Description
 --- | ---
 `SELECT Summary.Id,ParentWsgId,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the date when the changeset was pushed and by who
-`SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [OpCode]($common/OpCode) (e.g. whether the instance was inserted, updated or deleted)
+`SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [ChangeOpCode]($common) (e.g. whether the instance was inserted, updated or deleted)
 
 ### Find out *how* values have changed
 
@@ -55,7 +55,7 @@ Querying for the changed values is done with the ECSQL function **Changes**.
 `SELECT ... FROM MySchema.MyClass.Changes(ChangeSummaryId, ChangedValueState) ...`
 
 - `ChangeSummaryId`: The ECInstanceId of the Change Summary.
-- `ChangedValueState`: corresponds to the values of the enum [ChangedValueState]($common/ChangedValueState).
+- `ChangedValueState`: corresponds to the values of the enum [ChangedValueState]($common).
 
  > You can format the *ChangedValueState* in the ECSQL either by the enum's integral values or by the enum value's name.
  > The following two ECSQL statements are equivalent:
@@ -64,7 +64,7 @@ Querying for the changed values is done with the ECSQL function **Changes**.
 
 `SELECT ... FROM MySchema.MyClass.Changes(12, 'AfterInsert')`
 
-> Notes when specifying [ChangedValueState.BeforeUpdate]($common/ChangedValueState.BeforeUpdate) or [ChangedValueState.AfterUpdate]($common/ChangedValueState.AfterUpdate):
+> Notes when specifying [ChangedValueState.BeforeUpdate]($common) or [ChangedValueState.AfterUpdate]($common):
 >
 > For any property in the ECSQL select clause the value of which has not changed in the specified change summary,
 > the **value of the current state of the file** is returned. The function does **NOT** return the value it was at the
@@ -140,7 +140,7 @@ After having extracting Change Summaries for each of the three Changesets the fo
 3            | 1                    | 4 (Delete)
 
 > - `ChangedInstance.Id` is the ECInstanceId of the changed instance, i.e. the changed `Person` instance in this example.
-> - The `OpCode` values refer to the [OpCode]($common/ChangeOpCode) enumeration as defined in the **ECDbChange** ECSchema.
+> - The `OpCode` values refer to the [ChangeOpCode]($common) enumeration as defined in the **ECDbChange** ECSchema.
 
 #### Example
 

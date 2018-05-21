@@ -71,9 +71,9 @@ class ChangeSummaryExtractContext {
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
-  /** Determines whether the *Changes Cache File* is attached to the specified iModel or not
-   * @param iModel iModel to check whether a *Changes Cache File* is attached
-   * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
+  /** Determines whether the *Change Cache file* is attached to the specified iModel or not
+   * @param iModel iModel to check whether a *Change Cache file* is attached
+   * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
     if (!iModel || !iModel.nativeDb)
@@ -82,9 +82,9 @@ export class ChangeSummaryManager {
     return iModel.nativeDb.isChangeCacheAttached();
   }
 
-  /** Attaches the *Changes Cache File* to the specified iModel if it hasn't been attached yet.
-   * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
-   * @param iModel iModel to attach the *Changes Cache File* file to
+  /** Attaches the *Change Cache file* to the specified iModel if it hasn't been attached yet.
+   * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
+   * @param iModel iModel to attach the *Change Cache file* file to
    * @throws [IModelError]($common)
    */
   public static attachChangeCache(iModel: IModelDb): void {
@@ -104,12 +104,12 @@ export class ChangeSummaryManager {
     assert(IModelJsFs.existsSync(changesCacheFilePath));
     const res: DbResult = iModel.nativeDb.attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to attach Changes Cache file to ${iModel.briefcase.pathname}.`);
+      throw new IModelError(res, `Failed to attach Change Cache file to ${iModel.briefcase.pathname}.`);
   }
 
-  /** Detaches the *Changes Cache File* from the specified iModel.
-   * @param iModel iModel to detach the *Changes Cache File* to
-   * @throws [IModelError]($common) in case of errors, e.g. if no *Changes Cache File* was attached before.
+  /** Detaches the *Change Cache file* from the specified iModel.
+   * @param iModel iModel to detach the *Change Cache file* to
+   * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.briefcase || !iModel.nativeDb)
@@ -118,7 +118,7 @@ export class ChangeSummaryManager {
     iModel.clearStatementCache();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to detach Changes Cache file from ${iModel.briefcase.pathname}.`);
+      throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.briefcase.pathname}.`);
   }
 
   /** Extracts change summaries from the specified iModel.
@@ -156,7 +156,7 @@ export class ChangeSummaryManager {
     const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(ctx, startChangeSetId, endChangeSetId);
     perfLogger.dispose();
 
-    perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Changes file");
+    perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
     perfLogger.dispose();
 

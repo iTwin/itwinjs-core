@@ -82,7 +82,7 @@ Impls must be registered at runtime, as explained next.
 
 A server must expose the RpcInterfaces that it implements or imports, so that clients can use them.
 
-First, the server must call [RpcManager#registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
+First, the server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
 
 *Example:*
 

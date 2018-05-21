@@ -8,6 +8,7 @@ import {
   Polyface,
   PolyfaceVisitor,
   Angle,
+  IndexedPolyface,
 } from "@bentley/geometry-core";
 import { VertexMap, VertexKey } from "../VertexKey";
 import {
@@ -21,6 +22,7 @@ import {
 import { DisplayParams } from "../DisplayParams";
 import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
 import { Mesh } from "./MeshPrimitives";
+import { StrokesPrimitivePointLists } from "../Strokes";
 
 export class MeshBuilder {
   private _vertexMap?: VertexMap;
@@ -58,39 +60,73 @@ export class MeshBuilder {
     return new MeshBuilder(mesh, tolerance, areaTolerance, range);
   }
 
-  public addFromPolyfaceVisitor(params: MeshBuilder.PolyfaceVisitorParams): void {
-    const { visitor, mappedTexture, /** iModel, feature, */ includeParams, fillColor, requireNormals /** , auxData */ } = params;
-    if (visitor.pointCount < 3)
+  /**
+   * iterate through each point list of the strokes primitive and either load the point string or polyline into builder
+   * @param strokes lists of stroke primitive point lists to iterate
+   * @param isDisjoint if true add point string, else add polyline
+   * @param fillColor
+   */
+  public loadStrokePointLists(strokes: StrokesPrimitivePointLists, isDisjoint: boolean, fillColor: number): void {
+    for (const strokePoints of strokes) {
+      const { startDistance } = strokePoints;
+      if (isDisjoint)
+        this.addPointString(strokePoints.points, fillColor, startDistance);
+      else
+        this.addPolyline(strokePoints.points, fillColor, startDistance);
+    }
+  }
+
+  public addFromPolyface(polyface: IndexedPolyface, hasTexture: boolean, fillColor: number, mappedTexture?: TextureMapping): void {
+    const visitor = polyface.createVisitor();
+    const requireNormals = undefined !== visitor.normal;
+
+    do {
+      this.addFromPolyfaceVisitor(visitor, hasTexture, fillColor, requireNormals, mappedTexture);
+    } while (visitor.moveToNextFacet());
+
+    this.endPolyface();
+  }
+
+  /**
+   * addFromPolyfaceVisitor
+   * @param visitor PolyfaceVisitor
+   * @param includeParams derives from displayParams isTextured
+   * @param fillColor
+   * @param requireNormals
+   * @param mappedTexture
+   */
+  public addFromPolyfaceVisitor(visitor: PolyfaceVisitor, includeParams: boolean, fillColor: number, requireNormals: boolean, mappedTexture?: TextureMapping): void {
+    const { mesh, vertexMap, currentPolyface } = this;
+    const { point, pointCount, edgeVisible, normalCount, param, paramCount } = visitor;
+
+    if (pointCount < 3)
       return;
 
-    const points = visitor.point;
-    const visitorVisibility = visitor.edgeVisible;
-    const nTriangles = points.length - 2;
-    const normal = visitor.normal;
+    const haveParam = includeParams && paramCount > 0;
+    const nTriangles = pointCount - 2;
 
-    if (requireNormals && (normal === undefined || normal.length < points.length))
+    if (requireNormals && normalCount < pointCount)
       return; // TFS#790263: Degenerate triangle - no normals.
+
+    assert(!includeParams || paramCount > 0);
+    assert(!haveParam || undefined !== mappedTexture);
 
     // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
     for (let iTriangle = 0; iTriangle < nTriangles; iTriangle++) {
-      const triangle = new Triangle();
-      const param = visitor.param;
-      const visibility = [
-        (0 === iTriangle) ? visitorVisibility[0] : false,
-        visitorVisibility[iTriangle + 1],
-        (iTriangle === nTriangles - 1) ? visitorVisibility[iTriangle + 2] : false,
-      ];
 
-      assert(!includeParams || (param !== undefined && param.length > 0));
-      const haveParam = includeParams && (param !== undefined && param.length > 0);
-      assert(!haveParam || undefined !== mappedTexture);
-      triangle.setEdgeVisibility(visibility[0], visibility[1], visibility[2]);
+      const triangle = new Triangle();
+
+      triangle.setEdgeVisibility(
+        0 === iTriangle ? edgeVisible[0] : false,
+        edgeVisible[iTriangle + 1],
+        iTriangle === nTriangles - 1 ? edgeVisible[iTriangle + 2] : false,
+      );
 
       if (haveParam && undefined !== mappedTexture) {
         // const textureMapParams = mappedTexture.params;
         // const computedParams = [];
 
-        assert(this.mesh.points.length === 0 || this.mesh.uvParams.length !== 0);
+        assert(mesh.points.length === 0 || mesh.uvParams.length !== 0);
         // ###TODO finish computeUVParams on TextureMapping
         // if (SUCCESS == textureMapParams.ComputeUVParams (computedParams, visitor))
         //     params = computedParams;
@@ -99,7 +135,7 @@ export class MeshBuilder {
       }
 
       const computeIndex = (i: number): number => 0 === i ? 0 : iTriangle + i;
-      const makeQPoint = (index: number): QPoint3d => QPoint3d.create(points.getPoint3dAt(index), this.mesh.points.params);
+      const makeQPoint = (index: number): QPoint3d => QPoint3d.create(point.getPoint3dAt(index), mesh.points.params);
       const makeOctEncodedNormal = (index: number): OctEncodedNormal | undefined => requireNormals ? new OctEncodedNormal(visitor.getNormal(index)) : undefined;
       const makeVertexKey = (index: number) => new VertexKey(makeQPoint(index), fillColor, makeOctEncodedNormal(index), haveParam ? param![index] : undefined);
       const indices = [computeIndex(0), computeIndex(1), computeIndex(2)];
@@ -113,10 +149,11 @@ export class MeshBuilder {
 
       for (let i = 0; i < 3; i++) {
         const vertex = vertices[i];
-        triangle.indices[i] = this.vertexMap.insert(vertex);
-        if (this.currentPolyface !== undefined)
-          this.currentPolyface.vertexIndexMap.set(triangle.indices[i], visitor.clientPointIndex(i));
+        triangle.indices[i] = vertexMap.insert(vertex);
+        if (currentPolyface !== undefined)
+          currentPolyface.vertexIndexMap.set(triangle.indices[i], visitor.clientPointIndex(i));
       }
+
       this.addTriangle(triangle);
     }
   }
@@ -172,6 +209,7 @@ export class MeshBuilder {
   public addVertex(qpoint: QPoint3d, fillColor: number): number {
     return this.vertexMap.insert(new VertexKey(qpoint, fillColor));
   }
+
   public addTriangle(triangle: Triangle): void {
     const { triangleSet, mesh } = this;
     // Prefer to avoid adding vertices originating from degenerate triangles before we get here...

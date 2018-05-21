@@ -3,22 +3,142 @@
  *--------------------------------------------------------------------------------------------*/
 import { Comparable, compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
+import { PolyfacePrimitive } from "../Polyface";
 import { DisplayParams } from "../DisplayParams";
 import { ToleranceRatio } from "../Primitives";
 import { MeshBuilder } from "./MeshBuilder";
 import { Mesh } from "./MeshPrimitives";
+import { Geometry } from "../geometry/GeometryPrimitives";
+import { GeometryList } from "../geometry/GeometryList";
+import { StrokesPrimitive } from "../Strokes";
 
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
-  public readonly range: Range3d;
-  public readonly vertexTolerance: number;
-  public readonly facetAreaTolerance: number;
-  public readonly is2d: boolean;
-  constructor(tolerance: number, range: Range3d, is2d: boolean) {
+  private readonly range: Range3d;
+  // @ts-ignore (vertexTolerance unused so far)
+  private readonly vertexTolerance: number;
+  private readonly facetAreaTolerance: number;
+  private readonly tolerance: number;
+  private readonly is2d: boolean;
+
+  /** if true the order of keys created to store meshBuilders maintain order */
+  private readonly preserveKeyOrder: boolean;
+  private keyOrder: number = 0;
+
+  constructor(tolerance: number, range: Range3d, is2d: boolean, preserveKeyOrder: boolean = false) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
+    this.tolerance = tolerance;
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
     this.facetAreaTolerance = tolerance * ToleranceRatio.facetArea;
     this.range = range;
     this.is2d = is2d;
+    this.preserveKeyOrder = preserveKeyOrder;
+  }
+
+  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, wantSurfacesOnly: boolean, wantPreserveOrder: boolean): MeshBuilderMap {
+    const map = new MeshBuilderMap(tolerance, range, is2d, wantPreserveOrder);
+    if (geometries.isEmpty)
+      return map;
+    for (const geom of geometries) map.loadGeometry(geom, wantSurfacesOnly);
+    return map;
+  }
+
+  /**
+   * extract polyfaces and strokes from geometry into MeshBuilder stored in builderMap
+   * @param geom Geometry instance to extract polyfaces and strokes from
+   * @param wantSurfacesOnly if true prevent strokes from being loaded into builders
+   */
+  public loadGeometry(geom: Geometry, wantSurfacesOnly: boolean): void {
+    this.loadPolyfacePrimitiveList(geom);
+
+    if (!wantSurfacesOnly)
+      this.loadStrokePrimitiveList(geom);
+  }
+
+  /**
+   * extract polyface primitives from geometry in meshBuilder stored in builderMap
+   * @param geom Geometry instance to extract polyfaces from
+   */
+  public loadPolyfacePrimitiveList(geom: Geometry): void {
+    const polyfaces = geom.getPolyfaces(this.tolerance);
+
+    if (polyfaces !== undefined)
+      for (const polyface of polyfaces)
+        this.loadIndexedPolyface(polyface);
+  }
+
+  /**
+   * extract indexed polyfaces into meshBuilder stored in builderMap
+   * @param polyface PolyfacePrimitive to extract indexed polyfaces from
+   */
+  public loadIndexedPolyface(polyface: PolyfacePrimitive): void {
+    const { indexedPolyface, displayParams, isPlanar } = polyface;
+    const { pointCount, normalCount } = indexedPolyface;
+    const { fillColor, textureMapping, isTextured } = displayParams;
+
+    if (pointCount === 0)
+      return;
+
+    const builder = this.getBuilder(displayParams, Mesh.PrimitiveType.Mesh, normalCount > 0, isPlanar);
+
+    // ###TODO: is displayParams.fillColor.tbgr equivalent to displayParams->GetFillColor() ?
+    builder.addFromPolyface(indexedPolyface, isTextured, fillColor.tbgr, textureMapping);
+  }
+
+  /**
+   * extract stroke primitives from geometry in meshBuilder stored in builderMap
+   * @param geom Geometry instance to extract strokes from
+   */
+  public loadStrokePrimitiveList(geom: Geometry): void {
+    const strokes = geom.getStrokes(this.tolerance);
+
+    if (undefined !== strokes)
+      for (const stroke of strokes)
+        this.loadStrokesPrimitive(stroke);
+  }
+
+  /**
+   * extract strokes primitive into meshBuilder stored in builderMap
+   * @param strokePrimitive StrokesPrimitive instance to extractfrom
+   */
+  public loadStrokesPrimitive(strokePrimitive: StrokesPrimitive): void {
+    const { displayParams, isDisjoint, isPlanar, strokes } = strokePrimitive;
+
+    const type = isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const builder = this.getBuilder(displayParams, type, false, isPlanar);
+
+    // ###TODO: is displayParams.fillColor.tbgr equivalent to displayParams->GetFillColor() ?
+    builder.loadStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr);
+  }
+
+  public getBuilder(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilder {
+    const { facetAreaTolerance, tolerance, is2d, range } = this;
+    const key = this.getKey(displayParams, type, hasNormals, isPlanar);
+
+    return this.getBuilderFromKey(key, { displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance: facetAreaTolerance });
+  }
+
+  public getKey(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilderMap.Key {
+    const key = new MeshBuilderMap.Key(displayParams, type, hasNormals, isPlanar);
+
+    if (this.preserveKeyOrder)
+      key.order = this.keyOrder++;
+
+    return key;
+  }
+
+  /**
+   * gets builder associated with key if defined, otherwise creates a new builder and sets that with key
+   * @param key MeshBuilderMap.Key to associate with builder
+   * @param props MeshBuilder.Props required to create builder if it does not already exist
+   * @returns builder reference, changes will update instance stored in builderMap
+   */
+  public getBuilderFromKey(key: MeshBuilderMap.Key, props: MeshBuilder.Props): MeshBuilder {
+    let builder = this.get(key);
+    if (undefined === builder) {
+      builder = MeshBuilder.create(props);
+      this.set(key, builder);
+    }
+    return builder;
   }
 }
 

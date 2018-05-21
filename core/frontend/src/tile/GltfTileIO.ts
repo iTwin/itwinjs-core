@@ -3,8 +3,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TileIO } from "./TileIO";
-import { ModelState } from "../ModelState";
-import { RenderSystem } from "../render/System";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -206,6 +204,17 @@ export namespace GltfTileIO {
     }
   }
 
+  // Expected: GeometricModelState. Defined for mocking purposes.
+  export interface Model {
+    id: Id64;
+    is2d: boolean;
+  }
+
+  // Expected: RenderSystem. Defined for mocking purposes.
+  export interface System {
+    dummy: boolean; // because tslint: "An empty interface is equivalent to '{}'". We will add to this interface later.
+  }
+
   /** Deserializes glTF tile data. */
   export class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
@@ -218,12 +227,12 @@ export namespace GltfTileIO {
     protected readonly namedTextures: any;
     protected readonly images: any;
     protected readonly binaryData: Uint8Array;
-    protected readonly model: ModelState;
-    protected readonly system: RenderSystem;
+    protected readonly model: Model;
+    protected readonly system: System;
 
-    public get modelId(): Id64 { return /* this.model.id */ Id64.invalidId; } // ###TODO ModelState...
+    public get modelId(): Id64 { return this.model.id; }
 
-    public static createGltfReader(buffer: TileIO.StreamBuffer, model: ModelState, system: RenderSystem): Reader | undefined {
+    public static createGltfReader(buffer: TileIO.StreamBuffer, model: Model, system: System): Reader | undefined {
       const props = ReaderProps.create(buffer);
       return undefined !== props ? new Reader(props, model, system) : undefined;
     }
@@ -262,7 +271,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: ModelState, system: RenderSystem) {
+    protected constructor(props: ReaderProps, model: Model, system: System) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
@@ -319,7 +328,7 @@ export namespace GltfTileIO {
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
         type: primitiveType,
         range: Range3d.createNull(),
-        is2d: false, // ###TODO: obtain from model...
+        is2d: this.model.is2d,
         isPlanar,
       });
 

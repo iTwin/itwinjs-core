@@ -937,7 +937,7 @@ export class CachedECSqlStatement {
 
 /** A cache for ECSqlStatements.
  *
- * Preparing [ECSqlStatements]($backend) can be costly. This class provides a way to
+ * Preparing [ECSqlStatement]($backend)s can be costly. This class provides a way to
  * save previously prepared ECSqlStatements for reuse.
  *
  * > Both [IModelDb]($backend)s and [ECDb]($backend)s have a built-in ECSqlStatementCache.

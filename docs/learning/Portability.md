@@ -65,7 +65,7 @@ A backend can use the following portable imodeljs-backend classes to avoid unnec
 |process|[Platform]($backend)
 |__dirname|[KnownLocations]($backend)
 |__filename|[KnownLocations]($backend)
-|console|[Logger]($bentley-js)
+|console|[Logger]($bentley)
 |path|[path](#path)|
 
 In most cases, the imodeljs-backend substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.

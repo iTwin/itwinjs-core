@@ -7,7 +7,7 @@ import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegat
 import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, Platform,
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestIModelInfo } from "./MockAssetUtil";
@@ -44,10 +44,13 @@ if (IModelJsFs.existsSync(loggingConfigFile)) {
   Logger.configureLevels(require(loggingConfigFile));
 }
 
-let nativePlatformForTestsDir = __dirname;
-while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatformForTests")))
-  nativePlatformForTestsDir = path.join(nativePlatformForTestsDir, "..");
-const nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
+let nativePlatformDir: string | undefined;
+if (!Platform.isMobile()) {
+  let nativePlatformForTestsDir = __dirname;
+  while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatformForTests")))
+    nativePlatformForTestsDir = path.join(nativePlatformForTestsDir, "..");
+  nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
+}
 NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
 
 // Initialize the RPC interface classes used by tests

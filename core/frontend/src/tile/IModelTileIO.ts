@@ -4,8 +4,6 @@
 
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { ModelState } from "../ModelState";
-import { RenderSystem } from "../render/System";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshList } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
@@ -60,7 +58,7 @@ export namespace IModelTileIO {
 
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: ModelState, system: RenderSystem): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, model: GltfTileIO.Model, system: GltfTileIO.System): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -107,7 +105,7 @@ export namespace IModelTileIO {
       };
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, model: ModelState, system: RenderSystem) {
+    private constructor(props: GltfTileIO.ReaderProps, model: GltfTileIO.Model, system: GltfTileIO.System) {
       super(props, model, system);
     }
 
