@@ -82,7 +82,7 @@ describe("MeshPrimitive Tests", () => {
     let m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
 
     expect(m.polylines!.length).to.equal(0);
-    let mp = new MeshPolyline(undefined, undefined, [1, 2, 3]);
+    let mp = new MeshPolyline(undefined, [1, 2, 3]);
     m.addPolyline(mp);
     expect(m.polylines!.length).to.equal(1);
 
@@ -95,7 +95,7 @@ describe("MeshPrimitive Tests", () => {
     type = Mesh.PrimitiveType.Polyline;
     m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
     expect(m.polylines!.length).to.equal(0);
-    mp = new MeshPolyline(undefined, undefined, [1]);
+    mp = new MeshPolyline(undefined, [1]);
     m.addPolyline(mp);
     expect(m.polylines!.length).to.equal(0);
   });

@@ -91,12 +91,10 @@ export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
   public startDistance: number;
-  public rangeCenter: Point3d;
-  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0, rangeCenter = new Point3d()) {
+  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0) {
     this.vertIndices = vertIndices;
     this.numIndices = numIndices;
     this.startDistance = startDistance;
-    this.rangeCenter = rangeCenter;
   }
   public isValid(): boolean { return 0 < this.numIndices; }
   public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
@@ -104,17 +102,14 @@ export class PolylineData {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
     this.startDistance = polyline.startDistance;
-    this.rangeCenter = polyline.rangeCenter;
     return this.isValid();
   }
 }
 
 export class MeshPolyline {
   public readonly indices: number[];
-  public readonly rangeCenter: Point3d;
   public readonly startDistance: number;
-  public constructor(startDistance: number = 0, rangeCenter: Point3d = new Point3d(), indices: number[] = []) {
-    this.rangeCenter = rangeCenter;
+  public constructor(startDistance: number = 0, indices: number[] = []) {
     this.indices = indices.slice();
     this.startDistance = startDistance;
   }

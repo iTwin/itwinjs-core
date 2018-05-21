@@ -87,7 +87,7 @@ function testCreateGeometry() {
   const pa2 = new PolylineArgs(pList);
   pa2.colors.initUniform(ColorDef.from(255, 255, 255, 0));
   pa2.width = 5;
-  const pd = new PolylineData(indices, indices.length, 0.0, range.high.interpolate(0.5, range.low));
+  const pd = new PolylineData(indices, indices.length, 0.0);
   pa.polylines.push(pd);
   pa2.polylines.push(pd);
 
