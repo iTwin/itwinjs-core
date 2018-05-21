@@ -24,6 +24,6 @@ rush command `rush publish --regenerate-changelogs`.
 
 6. The `ecpresentation` CI job is automatically started. A successful CI build can
 be released following one the below ways:
-   - Open the job and tag it with a "Release" tag. This will start a release job
+   - Open the job and tag it with a **Release** tag. This will start a release job
    after a successful build.
-   - After the build is complete go to it's VSTS site and press "Release".
+   - After the build is complete go to it's VSTS site and press **Release**.
