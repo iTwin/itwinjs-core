@@ -423,10 +423,11 @@ export class ChangeSummaryManager {
         }
       });
 
-    propValECSql += " FROM main." + instanceChange.changedInstance.className + ".Changes(?," + changedValueState + ") WHERE ECInstanceId=?";
+    // Avoiding parameters in the Changes function speeds up performance because ECDb can do optimizations
+    // if it knows the function args at prepare time
+    propValECSql += " FROM main." + instanceChange.changedInstance.className + ".Changes(" + instanceChange.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=?";
     return iModel.withPreparedStatement(propValECSql, (stmt: ECSqlStatement) => {
-      stmt.bindId(1, instanceChange.summaryId);
-      stmt.bindId(2, instanceChange.changedInstance.id);
+      stmt.bindId(1, instanceChange.changedInstance.id);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
         throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChange.id.value}.`);
 
