@@ -8,11 +8,11 @@ And app is prepared for deployment by "last mile" scripts. Different scripts wil
 
 ## App Initialization
 
-An app frontend typically has a different "main" for each configuration. That allows the app's UI and functionality to vary by configuration and platform, as explained below.
+An app frontend typically has a different "main" for each configuration. That allows the app's UI and functionality to vary by configuration and platform, as explained below. The frontend's configuration-specific main is where you [configure interfaces on the client side](../learning/RpcInterface.md#client-side-configuration).
 
 An app frontend also generally has different initialization logic for each platform within a configuration. That allows the app to create the right UI "chrome" and to do any necessary platform-specific initialization logic, such as asserting entitlements.
 
-An app backend typically has a different "main" for each configuation. For example, the main for a Web app must contain its (simple) Web server, while the main for an Electron app must do something comparable but specific to Electron. The main for a mobile app is very simple but different from the Web or Electron versions.
+An app backend typically has a different "main" for each configuation. For example, the main for a Web app must contain its (simple) Web server, while the main for an Electron app must do something comparable but specific to Electron. The main for a mobile app is very simple but different from the Web or Electron versions. The backend configuration-specific main is where you [configure interfaces on the server side](../learning/RpcInterface.md#server-side-configuration)
 
 The last-mile packaging and deployment scripts select the main for frontend and backend.
 

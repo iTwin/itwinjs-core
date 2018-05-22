@@ -163,4 +163,19 @@ describe("Example Code", () => {
 
   });
 
+  it("should get elements by id and code", () => {
+    // __PUBLISH_EXTRACT_START__ Elements.getRootSubject
+    const root = iModel.elements.getRootSubject();
+    // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ Elements.getElement
+    const el = iModel.elements.getElement(root.id);
+    assert.deepEqual(el.id, root.id);
+
+    const el2 = iModel.elements.getElement(root.code);
+    assert.deepEqual(el2.id, root.id);
+    assert.deepEqual(el2.code, root.code);
+    // __PUBLISH_EXTRACT_END__
+
+  });
+
 });
