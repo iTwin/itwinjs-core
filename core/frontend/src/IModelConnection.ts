@@ -437,11 +437,11 @@ export class IModelConnectionTiles {
     return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids);
   }
 
-  public async getTileProps(...ids: TileId[]): Promise<TileProps[]> {
+  public async getTileProps(ids: TileId[]): Promise<TileProps[]> {
     return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids);
   }
 
-  public async getTileGeometry(...ids: TileId[]): Promise<TileGeometryProps[]> {
+  public async getTileGeometry(ids: TileId[]): Promise<TileGeometryProps[]> {
     return IModelTileRpcInterface.getClient().getTileGeometry(this._iModel.iModelToken, ids);
   }
 }

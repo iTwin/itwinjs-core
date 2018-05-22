@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Id64, OpenMode } from "@bentley/bentleyjs-core";
 import { XYAndZ } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement, TileId } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
@@ -87,6 +87,21 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
 
+  });
+
+  // WIP: this is currently just testing that I hooked everything up correctly...
+  it("should be able to request tiles from an IModelConnection", async () => {
+    const treeIds = new Set<string>();
+    treeIds.add(Id64.invalidId.value);
+    const tileTreeProps = await iModel.tiles.getTileTreeProps(treeIds);
+    expect(tileTreeProps.length).to.equal(0);
+
+    const tileIds: TileId[] = [ new TileId(Id64.invalidId, "not a real tile ID") ];
+    const tileProps = await iModel.tiles.getTileProps(tileIds);
+    expect(tileProps.length).to.equal(0);
+
+    const tileGeom = await iModel.tiles.getTileGeometry(tileIds);
+    expect(tileGeom.length).to.equal(0);
   });
 
   it("Parameterized ECSQL (#integration)", async () => {
