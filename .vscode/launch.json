@@ -159,7 +159,7 @@
         "--debug-brk=5858",
         "--remote-debugging-port=9223"
       ],
-      "protocol": "legacy",
+      "protocol": "inspector",
       "port": 5858,
       "sourceMaps": true,
       "outFiles": [
