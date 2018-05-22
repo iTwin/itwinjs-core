@@ -113,7 +113,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
  #### Conflicts
  Working without locks also opens up the possibility that local changes may overlap with in-coming ChangeSets. When ChangeSets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
 
- If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [IModelDb.concurrencyControl]($backend) property. The policy object includes a [ConcurrencyControl.ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [ConcurrencyControl.OnConflict]($backend). The default conflict-resolution policies are:
+ If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [IModelDb.concurrencyControl]($backend) property. The policy object includes a [ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [OnConflict]($backend). The default conflict-resolution policies are:
 
  |Local Change|RemoteChange|Resolution|
  |------------|------------|--------|
@@ -149,7 +149,7 @@ Note that sending a request to iModelHub is a relatively expensive operation. Th
  1. Insert or update models and elements.
 
  1. Call [ConcurrencyControl.request]($backend) to request the locks and codes that those local operations require.
- 1. If the request fails, call [IModelDb.cancelChanges]($backend) to roll back the local transaction.
+ 1. If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
  1. If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
 
  Using bulk mode is simpler than using the preemptive approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.

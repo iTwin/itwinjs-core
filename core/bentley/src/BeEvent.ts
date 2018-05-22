@@ -51,9 +51,9 @@ export class BeEvent<T extends Listener> {
   /**
    * Un-register a previously registered listener.
    * @param listener The listener to be unregistered.
-   * @param  scope The scope that was originally passed to addEventListener.
+   * @param  scope The scope that was originally passed to addListener.
    * @returns 'true' if the listener was removed; 'false' if the listener and scope are not registered with the event.
-   * @see [[BeEvent.raiseEvent]], [[BeEvent.addEventListener]]
+   * @see [[BeEvent.raiseEvent]], [[BeEvent.addListener]]
    */
   public removeListener(listener: T, scope?: any): boolean {
     const listeners = this._listeners;
@@ -75,7 +75,7 @@ export class BeEvent<T extends Listener> {
   /**
    * Raises the event by calling each registered listener with the supplied arguments.
    * @param args This method takes any number of parameters and passes them through to the listeners.
-   * @see [[BeEvent.removeListener]], [[BeEvent.addEventListener]]
+   * @see [[BeEvent.removeListener]], [[BeEvent.addListener]]
    */
   public raiseEvent(..._args: any[]) {
     this._insideRaiseEvent = true;
