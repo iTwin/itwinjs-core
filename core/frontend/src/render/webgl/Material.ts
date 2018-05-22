@@ -1,7 +1,7 @@
 import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
 
 export class Material extends RenderMaterial {
-  public static readonly material: Material = new Material(RenderMaterial.Params.defaults());
+  public static readonly material: Material = new Material(RenderMaterial.Params.defaults);
 
   public color?: ColorDef;
   public specularColor?: ColorDef;

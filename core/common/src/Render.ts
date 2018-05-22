@@ -254,9 +254,7 @@ export namespace RenderMaterial {
     private constructor() { }
 
     /** Create a RenderMaterial params object with QVision default values. */
-    public static defaults(): Params {
-      return new Params();
-    }
+    public static readonly defaults = new Params();
 
     /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
     public static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params {
@@ -937,6 +935,8 @@ export namespace Gradient {
         return false;
       if (this.angle && !this.angle.isAlmostEqualNoPeriodShift(other.angle!))
         return false;
+      if (this.keys.length !== other.keys.length)
+        return false;
       for (let i = 0; i < this.keys.length; ++i) {
         if (this.keys[i].value !== other.keys[i].value)
           return false;
@@ -947,27 +947,36 @@ export namespace Gradient {
     }
 
     public static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb) {
-      if (lhs.isEqualTo(rhs))
-        return 0;
+      if (lhs === rhs)
+        return 0; // Same pointer
       if (lhs.mode !== rhs.mode)
         return lhs.mode - rhs.mode;
       if (lhs.flags !== rhs.flags)
-        if (lhs.flags === undefined || rhs.flags === undefined)
+        if (lhs.flags === undefined)
+          return -1;
+        else if (rhs.flags === undefined)
           return 1;
         else
           return lhs.flags - rhs.flags;
       if (lhs.tint !== rhs.tint)
-        if (lhs.tint === undefined || rhs.tint === undefined)
+        if (lhs.tint === undefined)
+          return -1;
+        else if (rhs.tint === undefined)
           return 1;
         else
           return lhs.tint - rhs.tint;
       if (lhs.shift !== rhs.shift)
-        if (lhs.shift === undefined || rhs.shift === undefined)
+        if (lhs.shift === undefined)
+          return -1;
+        else if (rhs.shift === undefined)
           return 1;
         else
           return lhs.shift - rhs.shift;
       if ((lhs.angle === undefined) !== (rhs.angle === undefined))
-        return 1;
+        if (lhs.angle === undefined)
+          return -1;
+        else
+          return 1;
       if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!))
         return lhs.angle.radians - rhs.angle!.radians;
       for (let i = 0; i < lhs.keys.length; i++) {
