@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module BisCore */
 
-import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
+import { Id64, Id64Props, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
-  BisCodeSpec, Code, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
   InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
@@ -302,6 +302,16 @@ export abstract class Document extends InformationContentElement {
 
 export class Drawing extends Document {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a Drawing given a name that is meant to be unique within the scope of the specified DocumentListModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
+   * @param codeValue The Drawing name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.drawing);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 export class SectionDrawing extends Drawing {
@@ -418,7 +428,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 }
 
 /**
- * Information Partition is an abstract base class for elements that indicate that there is a new modeling
+ * Information Partition is an abstract base class for elements that introduce a new modeling
  * perspective within the overall iModel information hierarchy. An Information Partition is always parented
  * to a Subject and broken down by a Model.
  *
@@ -435,11 +445,10 @@ export abstract class InformationPartitionElement extends InformationContentElem
   /** Create a code that can be used for any kind of InformationPartitionElement.
    * See the example in [[InformationPartitionElement]].
    */
-  public static createCode(scopeElement: Element, codeValue: string): Code {
-    const codeSpec = scopeElement.iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
-    return new Code({ spec: codeSpec.id, scope: scopeElement.id.toString(), value: codeValue });
+  public static createCode(iModel: IModelDb, scopeElementId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement);
+    return new Code({ spec: codeSpec.id, scope: scopeElementId, value: codeValue });
   }
-
 }
 
 /**
@@ -568,12 +577,12 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
 
   /** Create a Code for a LineStyle definition given a name that is meant to be unique within the scope of the specified model.
    * @param iModel The IModel
-   * @param scopeModelId The scope of the LineStyle.
+   * @param scopeModelId The Id of the DefinitionModel that contains the LineStyle and provides the scope for its name.
    * @param codeValue The name of the LineStyle
    * @return A LineStyle Code
    */
-  public static createCode(iModel: IModelDb, scopeModelId: Id64, codeValue: string): Code {
-    return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId.value, value: codeValue });
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId, value: codeValue });
   }
 }
 

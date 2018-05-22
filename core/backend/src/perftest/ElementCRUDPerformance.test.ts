@@ -126,7 +126,7 @@ describe("PerformanceElementsTests", () => {
           const dictionary: DictionaryModel = seedIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
           assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
-          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
           if (undefined === spatialCategoryId) {
             spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
           }
@@ -157,7 +157,7 @@ describe("PerformanceElementsTests", () => {
           const dictionary: DictionaryModel = perfimodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
           let newModelId: Id64;
           [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
-          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
           if (undefined === spatialCategoryId) {
             spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: new ColorDef("rgb(255,0,0)") }));
           }

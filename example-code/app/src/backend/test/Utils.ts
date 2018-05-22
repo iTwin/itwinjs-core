@@ -112,7 +112,7 @@ export class IModelTestUtils {
     const outputImodel = parentElement.iModel;
 
     // The modeled element's code
-    const modelCode = InformationPartitionElement.createCode(parentElement, modelName);
+    const modelCode = InformationPartitionElement.createCode(outputImodel, parentElement.id, modelName);
 
     //  The modeled element
     const modeledElementProps: ElementProps = {
@@ -125,7 +125,7 @@ export class IModelTestUtils {
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
     const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
 
-    const modeledElementRef = new RelatedElement({id: modeledElementId});
+    const modeledElementRef = new RelatedElement({ id: modeledElementId });
 
     // The model
     const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });

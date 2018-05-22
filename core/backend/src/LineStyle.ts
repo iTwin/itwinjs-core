@@ -4,7 +4,7 @@
 /** @module FontsAndSymbology */
 
 import { Id64Props, DbResult, Id64, IModelStatus } from "@bentley/bentleyjs-core";
-import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
+import { CodeScopeProps, FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { LineStyle } from "./backend";
 
@@ -140,7 +140,7 @@ export namespace LineStyleDefinition {
     Is3d = 0x01,
     /** Symbol does not allow scaling */
     NoScale = 0x02,
-    }
+  }
 
   /** Point symbol component defintion [[ComponentType.PointSymbol]].
    * A point symbol component identifies a GeometryPart for reference by a [[SymbolProps]].
@@ -356,14 +356,14 @@ export namespace LineStyleDefinition {
     }
 
     /** Query for an existing line style with the supplied name. */
-    public static queryStyle(imodel: IModelDb, scopeModelId: Id64, name: string): Id64 | undefined {
+    public static queryStyle(imodel: IModelDb, scopeModelId: Id64Props, name: string): Id64 | undefined {
       return imodel.elements.queryElementIdByCode(LineStyle.createCode(imodel, scopeModelId, name));
     }
 
     /** Insert a new line style with the supplied name.
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
-    public static createStyle(imodel: IModelDb, scopeModelId: Id64, name: string, props: StyleProps): Id64 {
+    public static createStyle(imodel: IModelDb, scopeModelId: Id64Props, name: string, props: StyleProps): Id64 {
       if (undefined === props.flags)
         props.flags = StyleFlags.NoSnap; // If flags weren't supplied, default to not snapping to stroke geometry.
 
