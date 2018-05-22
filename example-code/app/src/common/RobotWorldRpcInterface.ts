@@ -21,7 +21,7 @@ import { Point3d, Angle } from "@bentley/geometry-core";
 // The RPC write interface that may be exposed by the RobotWorldEngine.
 export abstract class RobotWorldWriteRpcInterface extends RpcInterface {
   public static version = "1.0.0"; // The API version of the interface
-  public static types = () => [IModelToken, Point3d]; // Types used
+  public static types = () => [IModelToken, Point3d, Angle]; // Types used
   public static getClient() { return RpcManager.getClientForInterface(this); }
   public insertRobot(_iModelToken: IModelToken, _modelId: Id64Props, _name: string, _location: Point3d): Promise<Id64Props> { return this.forward.apply(this, arguments); }
   public moveRobot(_iModelToken: IModelToken, _id: Id64Props, _location: Point3d): Promise<void> { return this.forward.apply(this, arguments); }
