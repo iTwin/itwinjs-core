@@ -125,7 +125,7 @@ describe("TileIO", () => {
     }
   });
 
-  it("should read an iModel tile containing a multiple meshes and non-uniform feature/color tables", () => {
+  it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", () => {
     const stream = new TileIO.StreamBuffer(triangles);
     const reader = IModelTileIO.Reader.create(stream, model, system);
     expect(reader).not.to.be.undefined;
@@ -195,7 +195,7 @@ describe("TileIO", () => {
       // Validate color table (3 colors, red, green, blue - no alpha)
       expect(mesh.colorMap.length).to.equal(3);
       expect(mesh.colorMap.isUniform).to.be.false;
-      //expect(mesh.colorMap.hasTransparency).to.be.false;
+      // expect(mesh.colorMap.hasTransparency).to.be.false;
       expect(mesh.colorMap.indexOf(0x00ff0000)).to.equal(0); // red is first color in color table
       expect(mesh.colorMap.indexOf(0x0000ff00)).to.equal(1); // green is 2nd color in color table
       expect(mesh.colorMap.indexOf(0x000000ff)).to.equal(2); // blue is 3rd color in color table
