@@ -97,7 +97,7 @@ describe("TileIO", () => {
       // Validate color table (uniform - green)
       expect(mesh.colorMap.length).to.equal(1);
       expect(mesh.colorMap.isUniform).to.be.true;
-      expect(mesh.colorMap.getIndex(0x0000ff00)).to.equal(0); // green is first and only color in color table
+      expect(mesh.colorMap.indexOf(0x0000ff00)).to.equal(0); // green is first and only color in color table
       expect(mesh.colors.length).to.equal(0);
 
       // Validate display params

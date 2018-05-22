@@ -13,31 +13,31 @@ describe("ColorMap", () => {
     expect(a.hasTransparency).to.be.false;
   });
 
-  it("test getIndex function", () => {
+  it("test insert function", () => {
     /** Test static getMaxIndex function */
     const a: ColorMap = new ColorMap();
-    assert.isTrue(a.getIndex(0xFF0000) === 0);
+    assert.isTrue(a.insert(0xFF0000) === 0);
     assert.isTrue(a.length === 1);
     assert.isTrue(a.hasTransparency);
-    assert.isTrue(a.getIndex(0x0000FF) === 1);
+    assert.isTrue(a.insert(0x0000FF) === 1);
     assert.isTrue(a.length === 2);
     assert.isTrue(a.hasTransparency);
-    assert.isTrue(a.getIndex(0x0000FF) === 1);
+    assert.isTrue(a.insert(0x0000FF) === 1);
     assert.isTrue(a.length === 2);
     assert.isTrue(a.hasTransparency);
-    assert.isTrue(a.getIndex(0xFF0000) === 0);
+    assert.isTrue(a.insert(0xFF0000) === 0);
     assert.isTrue(a.length === 2);
     assert.isTrue(a.hasTransparency);
-    assert.isTrue(a.getIndex(0xFFFFFF) === 2);
+    assert.isTrue(a.insert(0xFFFFFF) === 2);
     assert.isTrue(a.length === 3);
     assert.isTrue(a.hasTransparency);
-    assert.isTrue(a.getIndex(0x0000FF) === 1);
+    assert.isTrue(a.insert(0x0000FF) === 1);
     assert.isTrue(a.length === 3);
     assert.isTrue(a.hasTransparency);
-    assert.isTrue(a.getIndex(0xFF0000) === 0);
+    assert.isTrue(a.insert(0xFF0000) === 0);
     assert.isTrue(a.length === 3);
     assert.isTrue(a.hasTransparency);
-    assert.isTrue(a.getIndex(0xFFFFFF) === 2);
+    assert.isTrue(a.insert(0xFFFFFF) === 2);
     assert.isTrue(a.length === 3);
     assert.isTrue(a.hasTransparency);
   });
@@ -46,17 +46,17 @@ describe("ColorMap", () => {
     /** Test hasTransparency function */
     let a: ColorMap = new ColorMap();
     assert.isFalse(a.hasTransparency);
-    a.getIndex(0xFF0000);
+    a.insert(0xFF0000);
     assert.isTrue(a.hasTransparency);
 
     /** Test isUniform function */
     a = new ColorMap();
     assert.isFalse(a.isUniform);
-    a.getIndex(0xFF0000);
+    a.insert(0xFF0000);
     assert.isTrue(a.isUniform);
-    a.getIndex(0x00FF00);
+    a.insert(0x00FF00);
     assert.isFalse(a.isUniform);
-    a.getIndex(0x0000FF);
+    a.insert(0x0000FF);
     assert.isFalse(a.isUniform);
 
     /** Test isFull function */
@@ -64,7 +64,7 @@ describe("ColorMap", () => {
     assert.isFalse(a.isFull);
     for (let i = 0; a.length !== 0xffff; i++) {
       assert.isFalse(a.isFull);
-      a.getIndex(i);
+      a.insert(i);
     }
     assert.isTrue(a.length === 0xffff);
     assert.isTrue(a.isFull);
@@ -74,7 +74,7 @@ describe("ColorMap", () => {
     assert.isTrue(a.length === 0);
     for (let i = 0; a.length !== 0xffff; i++) {
       assert.isTrue(a.length === i);
-      a.getIndex(i);
+      a.insert(i);
     }
     assert.isTrue(a.length === 0xffff);
 
@@ -83,18 +83,18 @@ describe("ColorMap", () => {
     assert.isTrue(a.length === 0);
     for (let i = 0; a.length !== 0xffff; i++) {
       assert.isTrue(a.length === i);
-      a.getIndex(i);
+      a.insert(i);
     }
     assert.isTrue(a.length === 0xffff);
 
     /** Test empty function */
     a = new ColorMap();
     assert.isTrue(a.isEmpty);
-    a.getIndex(0x00FFFF);
+    a.insert(0x00FFFF);
     assert.isFalse(a.isEmpty);
-    a.getIndex(0xFFFF00);
+    a.insert(0xFFFF00);
     assert.isFalse(a.isEmpty);
-    a.getIndex(0xFFFFFF);
+    a.insert(0xFFFFFF);
     assert.isFalse(a.isEmpty);
   });
 
@@ -104,7 +104,7 @@ describe("ColorMap", () => {
     const uint16: Uint16Array = new Uint16Array(2);
     let colorIndex = new ColorIndex();
 
-    a.getIndex(0xFFFFFF);
+    a.insert(0xFFFFFF);
     a.toColorIndex(colorIndex, uint16);
     expect(colorIndex.uniform!.tbgr).to.equal(0xFFFFFF);
     assert.isTrue(colorIndex.numColors === 1);
@@ -113,15 +113,15 @@ describe("ColorMap", () => {
     colorIndex = new ColorIndex();
     expect(colorIndex.uniform!.tbgr).to.equal(ColorDef.white.tbgr);
     assert.isTrue(colorIndex.numColors === 1);
-    a.getIndex(0x0000FFFF);
+    a.insert(0x0000FFFF);
     a.toColorIndex(colorIndex, uint16);
     expect(colorIndex.isUniform).to.equal(true);
     assert.isTrue(colorIndex.uniform!.tbgr === 0x0000FFFF);
     assert.isTrue(colorIndex.numColors === 1);
 
     a = new ColorMap();
-    a.getIndex(0x0000FFFF);
-    a.getIndex(0x000000FF);
+    a.insert(0x0000FFFF);
+    a.insert(0x000000FF);
     colorIndex = new ColorIndex();
     colorIndex.initUniform(0x00FF00FF);
     assert.isTrue(colorIndex.numColors === 1);
@@ -135,9 +135,9 @@ describe("ColorMap", () => {
     assert.isTrue(colorIndex.numColors === 2);
 
     a = new ColorMap();
-    a.getIndex(0x00000000);
-    a.getIndex(0x0000FFFF);
-    a.getIndex(0x000000FF);
+    a.insert(0x00000000);
+    a.insert(0x0000FFFF);
+    a.insert(0x000000FF);
     colorIndex = new ColorIndex();
     assert.isTrue(colorIndex.numColors === 1);
     a.toColorIndex(colorIndex, uint16);
