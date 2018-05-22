@@ -9,7 +9,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
-import { Range3d, Point2d } from "@bentley/geometry-core";
+import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -388,7 +388,7 @@ export namespace GltfTileIO {
         return false;
 
       const qpt = QPoint3d.fromScalars(0, 0, 0);
-      positions.reset(QParams3d.fromRange(Range3d.create(rangeMin[0], rangeMin[1], rangeMin[2], rangeMax[0], rangeMax[1], rangeMax[2])));
+      positions.reset(QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2]))));
       for (let i = 0; i < view.count; i++) {
         const index = i * 3; // 3 uint16 per QPoint3d...
         qpt.setFromScalars(buffer.buffer[index], buffer.buffer[index + 1], buffer.buffer[index + 2]);
