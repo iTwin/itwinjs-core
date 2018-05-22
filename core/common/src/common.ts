@@ -21,6 +21,7 @@ export * from "./ModelProps";
 export * from "./OctEncodedNormal";
 export * from "./QPoint";
 export * from "./SubCategoryAppearance";
+export * from "./TileProps";
 export * from "./ViewProps";
 export * from "./Render";
 export * from "./Utility";
