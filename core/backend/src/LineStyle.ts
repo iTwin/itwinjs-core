@@ -4,7 +4,7 @@
 /** @module FontsAndSymbology */
 
 import { Id64Props, DbResult, Id64, IModelStatus } from "@bentley/bentleyjs-core";
-import { CodeScopeProps, FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
+import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { LineStyle } from "./backend";
 

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module BisCore */
 
-import { Id64, Id64Props, Guid, DbOpcode } from "@bentley/bentleyjs-core";
+import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
