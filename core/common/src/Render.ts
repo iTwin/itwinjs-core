@@ -223,8 +223,53 @@ export namespace RenderTexture {
   }
 }
 
-/** Defines material properties for rendering */
-export class RenderMaterial {
+/** A Material for rendering */
+export abstract class RenderMaterial {
+  public readonly key?: string;
+  public readonly textureMapping?: TextureMapping;
+
+  protected constructor(params: RenderMaterial.Params) {
+    this.key = params.key;
+    this.textureMapping = params.textureMapping;
+  }
+}
+
+export namespace RenderMaterial {
+  export class Params {
+    public key?: string; // The ID of the renderable material
+    public diffuseColor?: ColorDef;
+    public specularColor?: ColorDef;
+    public emissiveColor?: ColorDef;
+    public reflectColor?: ColorDef;
+    public textureMapping?: TextureMapping;
+    public diffuse: number = 0.6;
+    public specular: number = .4;
+    public specularExponent: number = 13.5;
+    public reflect: number = 0.0;
+    public transparency: number = 0.0;
+    public refract: number = 1.0;
+    public ambient: number = .3;
+    public shadows = true;
+
+    private constructor() { }
+
+    /** Create a RenderMaterial params object with QVision default values. */
+    public static defaults(): Params {
+      return new Params();
+    }
+
+    /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
+    public static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params {
+      const materialParams = new Params();
+      materialParams.key = key;
+      materialParams.diffuseColor = diffuseColor;
+      materialParams.specularColor = specularColor;
+      materialParams.emissiveColor = emissiveColor;
+      materialParams.reflectColor = reflectColor;
+      materialParams.textureMapping = textureMap;
+      return materialParams;
+    }
+  }
 }
 
 export namespace ImageLight {
@@ -899,6 +944,43 @@ export namespace Gradient {
           return false;
       }
       return true;
+    }
+
+    public static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb) {
+      if (lhs.isEqualTo(rhs))
+        return 0;
+      if (lhs.mode !== rhs.mode)
+        return lhs.mode - rhs.mode;
+      if (lhs.flags !== rhs.flags)
+        if (lhs.flags === undefined || rhs.flags === undefined)
+          return 1;
+        else
+          return lhs.flags - rhs.flags;
+      if (lhs.tint !== rhs.tint)
+        if (lhs.tint === undefined || rhs.tint === undefined)
+          return 1;
+        else
+          return lhs.tint - rhs.tint;
+      if (lhs.shift !== rhs.shift)
+        if (lhs.shift === undefined || rhs.shift === undefined)
+          return 1;
+        else
+          return lhs.shift - rhs.shift;
+      if ((lhs.angle === undefined) !== (rhs.angle === undefined))
+        return 1;
+      if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!))
+        return lhs.angle.radians - rhs.angle!.radians;
+      for (let i = 0; i < lhs.keys.length; i++) {
+        if (lhs.keys[i].value !== rhs.keys[i].value)
+          return lhs.keys[i].value - rhs.keys[i].value;
+        if (!lhs.keys[i].color.equals(rhs.keys[i].color))
+          return lhs.keys[i].color.getRgb() - rhs.keys[i].color.getRgb();
+      }
+      return 0;
+    }
+
+    public compare(other: Symb): number {
+      return Gradient.Symb.compareSymb(this, other);
     }
   }
 }
