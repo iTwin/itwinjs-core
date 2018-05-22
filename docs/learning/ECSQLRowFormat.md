@@ -8,7 +8,7 @@ If the ECSQL select clause item
 
 - has a column alias, the alias, with the first character lowered, becomes the property name.
 - has no alias and is no ECSQL system property, the ECSQL select clause item, with the **first character lowered**, becomes the property name.
-- is an ECSQL system property (see also enum [ECSqlSystemProperty]($commmon)):
+- is an ECSQL system property (see also enum [ECSqlSystemProperty]($common)):
 
   System property | JavaScript Type
   --- | ---

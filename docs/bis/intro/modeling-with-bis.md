@@ -25,7 +25,7 @@ BIS also supports modeling an Object at multiple [Granularities](./glossary.md#g
 
 ## The BIS Building Blocks and How to Use Them
 
-The fundamental building blocks for a Digital Twin in a BIS Repository are information records called: [Model](./glossary.md#model), [Element](./glossary.md#element), [ElementAspect](./glossary.md#element-aspect), and [Relationship](./glossary.md#relationship).
+The fundamental building blocks for a Digital Twin in a BIS Repository are information records called: [Model](./glossary.md#model), [Element](./glossary.md#element), [ElementAspect](./glossary.md#elementaspect), and [Relationship](./glossary.md#relationship).
 
 ### Element
 
@@ -64,11 +64,11 @@ These two rules imply that a given class of Element cannot be both sub-modeled *
 
 ### ElementAspect
 
-[ElementAspects](./glossary.md#element-aspect) are a flexible way to augment the properties of an Element. They are sets of properties that typically hold information needed only in certain contexts, e.g. during the construction phase or when we have a link to information about the modeled Entity in a different repository. ElementAspects are not individually identifiable (thus relationships cannot point to them), but they may be the "source" of a relationship pointing to an Element.
+[ElementAspects](./glossary.md#elementaspect) are a flexible way to augment the properties of an Element. They are sets of properties that typically hold information needed only in certain contexts, e.g. during the construction phase or when we have a link to information about the modeled Entity in a different repository. ElementAspects are not individually identifiable (thus relationships cannot point to them), but they may be the "source" of a relationship pointing to an Element.
 
 ### Element Identity
 
-Elements have three primary identifiers: [ElementId](./glossary.md#element-id), [Code](./glossary.md#code), and [FederationGuid](./glossary.md#federation-guid).
+Elements have three primary identifiers: [ElementId](./glossary.md#elementid), [Code](./glossary.md#code), and [FederationGuid](./glossary.md#federationguid).
 
 The ElementId is a 64-bit integer that must be unique within the BIS Repository. Different implementations of BIS Repository manage this identifier differently.
 

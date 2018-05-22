@@ -6,7 +6,7 @@ The [IModelDb]($backend) class class provides methods for opening, closing, and 
 
 An IModelDb is used by a service or by the backend of an iModelJs app.
 
-> Frontend code uses an [IModelConnection]($backend) to access an iModel indirectly, via a service or backend.
+> Frontend code uses an [IModelConnection]($frontend) to access an iModel indirectly, via a service or backend.
 
 Use [IModelDb.open]($backend) to obtain and open an IModelDb from iModelHub.
 

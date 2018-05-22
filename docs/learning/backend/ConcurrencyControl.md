@@ -19,7 +19,7 @@ This article assumes that you already know that:
 * An iModel is a multi-user database
 * An app works with a [briefcase](../Glossary.md#Briefcase) using the [IModelDb]($backend) class.
 * A briefcase has a unique identity that is issued and tracked by [iModelHub](../../overview/IModelHub.md).
-* Changes are captured and distributed in the form of [ChangeSets](../Glossary.md#ChangeSets).
+* Changes are captured and distributed in the form of [ChangeSets](../Glossary.md#ChangeSet).
 * ChangeSets are ordered in a sequence that is called the [timeline](../../overview/IModelHub.md#the-timeline-of-changes) of the iModel.
 * ChangeSets are stored in iModelHub
 * A [Code](../Glossary.md#Code) is an identifier that is assigned to an element and is managed by a central Code Service.
@@ -44,7 +44,7 @@ This article assumes that you already know that:
 |**Rebase**|Adjust a ChangeSet so that its pre-change state matches the post-change state of some other ChangeSet.
 |**Revision**|The state of an iModel as of a specific point in its [timeline](../../overview/IModelHub.md#the-timeline-of-changes), that is, the result of the ChangeSets up to that point.
 |**Tip**|The most recent revision of an iModel. Also, the most recent ChangeSet in the [timeline](../../overview/IModelHub.md#the-timeline-of-changes).
-|**Transaction**|A set of changes that are committed or abandoned atomically, making up a unit of work. Multiple transactions to a briefcase are combined into a [ChangeSet](../Glossary.md#ChangeSets).
+|**Transaction**|A set of changes that are committed or abandoned atomically, making up a unit of work. Multiple transactions to a briefcase are combined into a [ChangeSet](../Glossary.md#ChangeSet).
 
 ## Code Reservation
 

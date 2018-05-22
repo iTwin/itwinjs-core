@@ -28,7 +28,7 @@ As an example, consider an iModelJs Agent that receives notifications from iMode
 
 ### iModel Services
 
-An *iModel Service* is a program that responds to requests from other apps. A service runs on a server and waits for requests. A service may receive requests from [Web Apps](./WebApps) (frontend or backend) or from other services.
+An *iModel Service* is a program that responds to requests from other apps. A service runs on a server and waits for requests. A service may receive requests from [Web Apps](#web-apps) (frontend or backend) or from other services.
 
 A true service is a stand-alone program that is never bundled with the clients that use it. An [app-specific backend](#app-backend) is a special kind of service that is logically part of an app and is often bundled with it. This distinction is important for [portability reasons](../learning/Portability.md#backend-portability).
 
@@ -70,7 +70,7 @@ App-specific backends are written in TypeScript/JavaScript and depend on `@bentl
 
 An app can use many services, both general-purpose and app-specific.
 
-App backends may use [logging](./Logging.md) to help with diagnosing problems.
+App backends may use [logging](../learning/Logging.md) to help with diagnosing problems.
 
 #### App Frontend
 

@@ -10,7 +10,7 @@ This degree of portability and configurability is possible because of the techno
 
 The key technology that makes an app portable is JavaScript. JavaScript engines are available on many operating systems and Web browsers. TypeScript compiles to JavaScript.
 
-[Nodejs](./Glossary.md#Node.js) is an execution environment for agents, services, and servers. Nodejs runs JavaScript programs. Nodejs itself runs on many platforms, including Windows and Linux. Nodejs is also widely supported by cloud infrastructures and deployment mechanisms.
+[Nodejs](./Glossary.md#Nodejs) is an execution environment for agents, services, and servers. Nodejs runs JavaScript programs. Nodejs itself runs on many platforms, including Windows and Linux. Nodejs is also widely supported by cloud infrastructures and deployment mechanisms.
 
 Web UI technology, including HTML and CSS, makes it possible to write a cross-platform user interface that looks and behaves the same everywhere, in every configuration. Web UI technology is supported by Web browsers and Web view renderers on many platforms. Web UI technology also simplifies the task of reconfiguring or even swapping out an app's GUI.
 
@@ -34,7 +34,7 @@ if (isIos) {
 ## Backend Portability
 
 ### Services and Agents
-True services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use [Web RPC configuration](../overview/App.md#web-rpc-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
+True services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
 
 ### App Backends
 App-specific backends do not always run in nodejs, and they do not always run on a server. This section describes how to make an app-specific backend portable and adaptable to multiple app configurations.
