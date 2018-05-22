@@ -125,7 +125,7 @@ export namespace IModelTileIO {
         if (this.buffer.isPastTheEnd)
           return undefined;
 
-        featureTable.insert(new Feature(elementId, subCategoryId, geometryClass), index);
+        featureTable.insertWithIndex(new Feature(elementId, subCategoryId, geometryClass), index);
       }
 
       this.buffer.curPos = startPos + header.length;
@@ -144,7 +144,7 @@ export namespace IModelTileIO {
       const json = JsonUtils.asArray(meshJson.colorTable);
       if (undefined !== json) {
         for (const color of json)
-          colorTable.getIndex(color as number);
+          colorTable.insert(color as number);
       }
 
       return 0 < colorTable.length;

@@ -156,11 +156,9 @@
       "runtimeArgs": [
         "${workspaceFolder}/testbed/floss/electron/index.js",
         "{\"debug\":true, \"noDevTools\":true, \"path\":\"bootstrap.js\", \"grep\":\"\", \"fgrep\":\"\"}",
-        "--debug-brk=5858",
         "--remote-debugging-port=9223"
       ],
-      "protocol": "legacy",
-      "port": 5858,
+      "protocol": "inspector",
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/testbed/lib/{backend,common}/**/*.js",

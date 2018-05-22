@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, JsonUtils, assert, Dictionary, Comparable, compare, compareNumbers, compareStrings } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -1182,48 +1182,34 @@ export class Feature implements Comparable<Feature> {
  * A FeatureTable can be shared amongst multiple primitives within a single RenderGraphic, and
  * amongst multiple sub-Graphics of a RenderGraphic.
  */
-export class FeatureTable extends Dictionary<Feature, number> {
-  public readonly maxFeatures: number;
+export class FeatureTable extends IndexMap<Feature> {
   public readonly modelId: Id64;
 
   public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId) {
-    super(compare);
-    this.maxFeatures = maxFeatures;
+    super(compare, maxFeatures);
     this.modelId = modelId;
   }
 
-  public get isFull(): boolean { assert(this.length <= this.maxFeatures); return this.length >= this.maxFeatures; }
-  public get isUniform(): boolean { return this.length === 1; }
-  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._keys[0].isDefined); }
-
-  /**
-   * returns index of feature, unless it doesn't exist, then the feature is added and its key, which is the current numIndices is returned
-   */
-  public getIndex(feature: Feature): number {
-    assert(!this.isFull);
-    let index = this.findIndex(feature);
-    if (-1 === index && !this.isFull) {
-      index = this.length;
-      this.insert(feature, index);
-    }
-
-    return index;
-  }
-
-  /** Returns the index of the Feature, or -1 if the Feature does not exist in the lookup table. */
-  public findIndex(feature: Feature): number {
-    const found = this.get(feature);
-    return undefined !== found ? found : -1;
-  }
+  public get maxFeatures(): number { return this.maximumSize; }
+  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this.array[0].value.isDefined); }
+  public get isUniform(): boolean { return 1 === this.length; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {
-    for (let i = 0; i < this.length; i++) {
-      if (this._values[i] === index)
-        return this._keys[i];
-    }
+    for (const entry of this.array)
+      if (entry.index === index)
+        return entry.value;
 
     return undefined;
+  }
+
+  // Internal use only (for tile reader)
+  public insertWithIndex(feature: Feature, index: number): void {
+    const bound = this.lowerBound(feature);
+    assert(!bound.equal);
+    assert(!this.isFull);
+    const entry = new IndexedValue<Feature>(feature, index);
+    this.array.splice(bound.index, 0, entry);
   }
 }
 
