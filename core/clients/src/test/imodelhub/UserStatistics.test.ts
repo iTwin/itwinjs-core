@@ -165,7 +165,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     chai.expect(briefcasesLocksStatistics.briefcasesCount).to.be.equal(user1BriefcasesCount);
   });
 
-  it.only("should get all iModel users Briefcases count", async function (this: Mocha.ITestCallbackContext) {
+  it("should get all iModel users Briefcases count", async function (this: Mocha.ITestCallbackContext) {
     const query = new UserStatisticsQuery().selectBriefcasesCount();
     mockGetUserStatistics(iModelId, query,
       generateUsersStatistics(2, [accessToken2.getUserProfile()!.userId, accessToken.getUserProfile()!.userId],
