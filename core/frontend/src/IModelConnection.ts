@@ -433,15 +433,15 @@ export class IModelConnectionTiles {
     assert(undefined !== this._iModel); // unused variable...
   }
 
-  public async queryTileTreeProps(..._ids: Id64Props[]): Promise<TileTreeProps[]> {
+  public async getTileTreeProps(_ids: Id64Set): Promise<TileTreeProps[]> {
     return Promise.reject(new IModelError(BentleyStatus.ERROR, "not implemented"));
   }
 
-  public async queryTileProps(..._ids: TileId[]): Promise<TileProps[]> {
+  public async getTileProps(..._ids: TileId[]): Promise<TileProps[]> {
     return Promise.reject(new IModelError(BentleyStatus.ERROR, "not implemented"));
   }
 
-  public async queryTileGeometry(..._ids: TileId[]): Promise<TileGeometryProps[]> {
+  public async getTileGeometry(..._ids: TileId[]): Promise<TileGeometryProps[]> {
     return Promise.reject(new IModelError(BentleyStatus.ERROR, "not implemented"));
   }
 }

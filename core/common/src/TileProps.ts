@@ -2,15 +2,16 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Id64Props } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { ElementAlignedBox3d } from "./geometry/Primitives";
 
-export interface TileId {
-  /** The unique identifer of this tile's TileTree among within the iModel */
-  treeId: Id64Props;
-  /** The unique identifier of this tile within its TileTree. */
-  tileId: string;
+export class TileId {
+  public constructor(
+    /** The unique identifer of this tile's TileTree among within the iModel */
+    public readonly treeId: Id64,
+    /** The unique identifier of this tile within its TileTree. */
+    public readonly tileId: string) { }
 }
 
 /** The metadata describing a single Tile */
@@ -41,7 +42,7 @@ export interface TileGeometryProps {
 /** The metdata describing a TileTree */
 export interface TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
-  id: Id64Props;
+  id: Id64;
   /** Metadata describing the tree's root Tile. */
   rootTile: TileProps;
   /** Transform tile coordinates to iModel world coordinates. */
