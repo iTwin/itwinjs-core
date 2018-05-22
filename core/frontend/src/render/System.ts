@@ -114,6 +114,7 @@ export class GraphicBranch {
   public set viewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides.copyFrom(ovr); }
 
   public clear() { this.entries.length = 0; }
+  public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 
 /**
@@ -145,6 +146,7 @@ export abstract class RenderTarget {
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
   public abstract queueReset(): void;
   public abstract onResized(): void;
+  public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
 
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
   // ###TODO public abstract setMinimumFrameRate(minimumFrameRate: number): number;

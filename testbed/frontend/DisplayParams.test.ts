@@ -7,6 +7,10 @@ import { GraphicParams, ColorDef, ColorByName, LinePixels } from "@bentley/imode
 import { LineCode, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
 LineCode; // Needs investigation! Webpack skips the rendering import without this :-(
 
+export class FakeDisplayParams extends DisplayParams {
+  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
+}
+
 describe("DisplayParams creation tests", () => {
   it("should create mesh DisplayParams and be of type mesh", () => {
     const gf: GraphicParams = new GraphicParams();

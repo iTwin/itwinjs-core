@@ -67,4 +67,7 @@ function compareVertexKeys(lhs: VertexKey, rhs: VertexKey): number { return lhs.
 
 export class VertexMap extends SortedArray<VertexKey> {
   public constructor() { super(compareVertexKeys); }
+  public add(position: QPoint3d, fillColor: number, normal?: OctEncodedNormal, uvParam?: Point2d): number {
+    return this.insert(new VertexKey(position, fillColor, normal, uvParam));
+  }
 }

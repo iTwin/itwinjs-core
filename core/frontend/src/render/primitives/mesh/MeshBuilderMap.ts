@@ -107,7 +107,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     const builder = this.getBuilder(displayParams, type, false, isPlanar);
 
     // ###TODO: is displayParams.fillColor.tbgr equivalent to displayParams->GetFillColor() ?
-    builder.loadStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr);
+    builder.addStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr);
   }
 
   public getBuilder(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilder {

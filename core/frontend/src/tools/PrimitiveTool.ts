@@ -250,7 +250,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!ev.viewport || !IModelApp.viewManager.inDynamicsMode)
       return;
 
-    const context = new DynamicsContext(); // NEEDS_WORK * ev.GetViewport(), Render:: Task:: Priority:: Highest());
+    const context = new DynamicsContext(ev.viewport);
     this.onDynamicFrame(ev, context);
   }
 }

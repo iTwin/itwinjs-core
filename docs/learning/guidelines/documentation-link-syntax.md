@@ -66,7 +66,3 @@ For example:
 ## Linking to external Urls
 
 Standard markdown applies: `[label](URL)`
-
-## `leftNav.md` Files
-
-A file in the root directory of every section of the website called `leftNav.md` creates the navigation pane on the left side of all web pages for that section.

@@ -30,13 +30,10 @@ import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
+import { FakeDisplayParams } from "./DisplayParams.test";
 // import { FakeGraphic } from "./Graphic.test";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
-
-export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
-}
 
 export class FakeGeometry extends Geometry {
   public constructor() { super(Transform.createIdentity(), Range3d.createNull(), new FakeDisplayParams()); }

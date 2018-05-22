@@ -91,12 +91,10 @@ export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
   public startDistance: number;
-  public rangeCenter: Point3d;
-  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0, rangeCenter = new Point3d()) {
+  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0) {
     this.vertIndices = vertIndices;
     this.numIndices = numIndices;
     this.startDistance = startDistance;
-    this.rangeCenter = rangeCenter;
   }
   public isValid(): boolean { return 0 < this.numIndices; }
   public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
@@ -104,20 +102,23 @@ export class PolylineData {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
     this.startDistance = polyline.startDistance;
-    this.rangeCenter = polyline.rangeCenter;
     return this.isValid();
   }
 }
 
 export class MeshPolyline {
-  public indices: number[] = [];
-  public rangeCenter = new Point3d();
-  public constructor(public startDistance = 0, rangeCenter?: Point3d, indices?: number[]) {
-    if (rangeCenter) { this.rangeCenter = rangeCenter; }
-    if (indices) { this.indices = indices.slice(); }
+  public readonly indices: number[];
+  public readonly startDistance: number;
+  public constructor(startDistance: number = 0, indices: number[] = []) {
+    this.indices = indices.slice();
+    this.startDistance = startDistance;
   }
-  public addIndex(index: number) { if (this.indices.length === 0 || this.indices[this.indices.length - 1] !== index) this.indices.push(index); }
-  public clear() { this.indices = []; }
+  public addIndex(index: number) {
+    const { indices } = this;
+    if (indices.length === 0 || indices[indices.length - 1] !== index)
+      indices.push(index);
+  }
+  public clear() { this.indices.length = 0; }
 }
 
 export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }

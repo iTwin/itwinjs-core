@@ -308,7 +308,7 @@ export class TentativePoint {
 
     // Construct each active point snap mode
     const snaps = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.TentativeSnap);
-    const snapContext = new SnapContext();
+    const snapContext = new SnapContext(this.viewport!);
     for (const snap of snaps) {
       this.testHitsForSnapMode(snapContext, snap);
     }

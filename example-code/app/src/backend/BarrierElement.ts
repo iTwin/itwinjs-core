@@ -26,9 +26,9 @@ export class Barrier extends SpatialLocationElement {
 
     const builder = new GeometryStreamBuilder();  // I know what graphics represent a robot.
     const p1 = Point3d.createZero();
-    const p2 = Point3d.createFrom({x: length, y: 0.0, z: 0.0});
+    const p2 = Point3d.createFrom({ x: length, y: 0.0, z: 0.0 });
     const circle = LineSegment3d.create(p1, p2);
-    builder.appendGeometryQuery(circle);
+    builder.appendGeometry(circle);
 
     const props: GeometricElement3dProps = {      // I know what class and category to use.
       model: model.id,
