@@ -35,7 +35,7 @@ See [learning RpcInterfaces](../learning/RpcInterface.md) for information on how
 
 ## RPC Configuration
 
-The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, resuable app components. The configuration uses a different transport mechanism in each configuration.
+The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, resuable app components. A different transport mechanism in each configuration. RpcManager is used by clients and servers to [apply configurations to RpcInterfaces](../overview/AppTailoring.md#rpc-configuration).
 
 ### Web RPC configuration
 
