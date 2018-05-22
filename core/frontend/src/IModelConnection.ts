@@ -6,7 +6,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
-  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface,
+  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
   TileId, TileTreeProps, TileProps, TileGeometryProps,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
@@ -433,15 +433,15 @@ export class IModelConnectionTiles {
     assert(undefined !== this._iModel); // unused variable...
   }
 
-  public async getTileTreeProps(_ids: Id64Set): Promise<TileTreeProps[]> {
-    return Promise.reject(new IModelError(BentleyStatus.ERROR, "not implemented"));
+  public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> {
+    return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids);
   }
 
-  public async getTileProps(..._ids: TileId[]): Promise<TileProps[]> {
-    return Promise.reject(new IModelError(BentleyStatus.ERROR, "not implemented"));
+  public async getTileProps(...ids: TileId[]): Promise<TileProps[]> {
+    return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids);
   }
 
-  public async getTileGeometry(..._ids: TileId[]): Promise<TileGeometryProps[]> {
-    return Promise.reject(new IModelError(BentleyStatus.ERROR, "not implemented"));
+  public async getTileGeometry(...ids: TileId[]): Promise<TileGeometryProps[]> {
+    return IModelTileRpcInterface.getClient().getTileGeometry(this._iModel.iModelToken, ids);
   }
 }

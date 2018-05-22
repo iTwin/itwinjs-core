@@ -40,6 +40,7 @@ export * from "./rpc/core/RpcControl";
 export * from "./rpc/electron/ElectronRpcManager";
 export * from "./rpc/web/BentleyCloudRpcManager";
 export * from "./rpc/IModelReadRpcInterface";
+export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
 
