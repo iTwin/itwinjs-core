@@ -14,12 +14,12 @@ export function defaultClone<T>(value: T) { return value; }
 /**
  * Computes the position at which the specified value should be inserted in order to maintain sorted order within a sorted array.
  * @param value The value whose position is to be computed.
- * @param list An array of T already sorted according to the comparison criterion.
- * @param compare A function accepting two values of type T and returning a negative value if lhs < rhs,
+ * @param list An array of U already sorted according to the comparison criterion.
+ * @param compare A function accepting a value of type T and a value of type U and returning a negative value if lhs < rhs,
  *        zero if lhs == rhs, and a positive value otherwise.
  * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
  */
-export function lowerBound<T>(value: T, list: T[], compare: (lhs: T, rhs: T) => number): { index: number, equal: boolean } {
+export function lowerBound<T, U = T>(value: T, list: U[], compare: (lhs: T, rhs: U) => number): { index: number, equal: boolean } {
   let low = 0;
   let high = list.length;
   while (low < high) {

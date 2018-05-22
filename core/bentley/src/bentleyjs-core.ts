@@ -10,6 +10,7 @@ export * from "./Compare";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
+export * from "./IndexMap";
 export * from "./Iterable";
 export * from "./JsonUtils";
 export * from "./Logger";

@@ -325,7 +325,7 @@ export namespace Mesh {
     public get indices(): number[] { return this._indices; }
 
     public add(feat: Feature, numVerts: number): void {
-      const index = this.table.getIndex(feat);
+      const index = this.table.insert(feat);
       if (!this.initialized) {
         // First feature - uniform.
         this.uniform = index;
