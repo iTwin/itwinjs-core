@@ -109,7 +109,7 @@ The server must choose the appropriate RPC configuration for the interfaces that
 |Desktop app|[desktop RPC configuration](../overview/RpcInterface.md#desktop-rpc-configuration)
 |Web app|a [Web PRC configuration](../overview/RpcInterface.md#web-rpc-configuration)
 
-A backend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#app-initialization).
+A backend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#configuration-specific-main).
 
 If the server is a [service](../overview/App.md#imodel-services), it must always use a [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration) for its interfaces. Each client must use the same configuration.
 
@@ -139,9 +139,9 @@ It is this simple because the server should be concerned *only* with serving its
 
 The client must choose the interfaces that it plans to use.
 
-The client then configures each interface with the correct RPC mechanism. For all interfaces served by the app backend, the RPC configuration must corresponds to the app configuration. A frontend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#app-initialization).
+The client then configures each interface with the correct RPC mechanism. For all interfaces served by the app backend, the RPC configuration must corresponds to the app configuration. A frontend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#configuration-specific-main).
 
-Clients must always use a [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration) for RpcInterfaces provided by a [service](../overview/App.md#imodel-services). Client and server must use the same configuration.
+Clients must always use a [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration) for RpcInterfaces provided by a [remote service](../overview/App.md#imodel-services). Client and server must use the same configuration.
 
 *Web Example:*
 ``` ts

@@ -18,6 +18,7 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 ## The Class Registry
 
 ## IModelDb
+* [Open an IModelDb](./IModelDb.md)
 
 ## Loading and Creating Elements
 
