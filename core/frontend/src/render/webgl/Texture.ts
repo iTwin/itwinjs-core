@@ -125,7 +125,9 @@ export class TextureHandle implements IDisposable {
    * you do not specify a loadCallback, you cannot rely on the texture being loaded at any particular time.
    * A 1x1 opaque white texture will be bound until the image is loaded and the real texture is fully generated.
    */
-  public static createForImage(width: number, height: number, imageBytes: Uint8Array, imageFormat: ImageSourceFormat, isTranslucent: boolean, loadCallback?: TextureLoadCallback, useMipMaps = true, isGlyph = false, isTileSection = false, wantPreserveData = false) {
+  public static createForImage(width: number, height: number, imageBytes: Uint8Array, imageFormat: ImageSourceFormat, isTranslucent: boolean, loadCallback?: TextureLoadCallback,
+    useMipMaps: boolean = true, isGlyph: boolean = false, isTileSection: boolean = false, wantPreserveData: boolean = false) {
+
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (undefined === glTex) {
       return undefined;
@@ -187,14 +189,45 @@ export class TextureHandle implements IDisposable {
    * you do not specify a loadCallback, you cannot rely on the texture being loaded at any particular time.
    * A 1x1 opaque white texture will be bound until the image is loaded and the real texture is fully generated.
    */
-  public static createForBitmap(/*image: TextureImage, useMipmaps: boolean = true*/) {
+  public static createForBitmap(image: TextureImage, loadCallback?: TextureLoadCallback, useMipMaps: boolean = true, isGlyph: boolean = false,
+    isTileSection: boolean = false, wantPreserveData: boolean = false) {
+
     const glTex: WebGLTexture | undefined = this.createTextureHandle();
     if (glTex === undefined) {
       return undefined;
     }
 
-    // TODO: Implement
-    return undefined;
+    const params = new TextureCreateParams();
+    params.format = (image.format === ImageBufferFormat.Rgba) ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
+    params.width = image.width;
+    params.height = image.height;
+    params.imageBytes = image.data;
+    params.wrapMode = isTileSection ? GL.Texture.WrapMode.ClampToEdge : GL.Texture.WrapMode.Repeat;
+    params.wantUseMipMaps = useMipMaps;
+    params.wantPreserveData = wantPreserveData;
+    params.loadCallback = loadCallback;
+
+    if (isGlyph) {
+      params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
+      params.wantUseMipMaps = true;
+    }
+
+    if (isTileSection) {
+      // Largely for sheet tiles.  In some extreme cases, mipmapping lowers quality significantly due to a stretched view
+      // and fuzziness introduced by combining the layers.  A straight GL_LINEAR blend gives a better picture.
+      params.wantUseMipMaps = false;
+      params.wantInterpolate = true;
+    }
+
+    // must convert image bytes to canvas object - also resize if needed (this is deferred to constructor)
+    params.imageCanvas = document.createElement("canvas");
+    params.imageCanvas.width = image.width;
+    params.imageCanvas.height = image.height;
+
+    assert(0 < params.height);
+    assert(Math.floor(params.height) === params.height);
+
+    return new TextureHandle(glTex, params);
   }
 
   /** Creates a texture for a framebuffer attachment (no data specified). */
