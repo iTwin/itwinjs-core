@@ -209,18 +209,18 @@ export class IdMap {
     this.gradientMap.set(gradientSymb, texture);
   }
 
-  /** Find a mapped material using its key. If not found, returns undefined. */
+  /** Find a cached material using its key. If not found, returns undefined. */
   public findMaterial(key: string): RenderMaterial | undefined {
     return this.materialMap.get(key);
   }
 
-  /** Find a mapped texture using its key. If not found, returns undefined. */
+  /** Find a cached texture using its key. If not found, returns undefined. */
   public findTexture(key: string): RenderTexture | undefined {
     return this.textureMap.get(key);
   }
 
-  /** Find a mapped gradient using its symbology. If not found, returns undefined. */
-  public findGradient(grad: Gradient.Symb): RenderTexture | undefined {
+  /** Find a cached texture using its symbology. If not found, returns undefined. */
+  public findTextureGradientSymb(grad: Gradient.Symb): RenderTexture | undefined {
     return this.gradientMap.get(grad);
   }
 
@@ -257,10 +257,10 @@ export class IdMap {
   }
 
   /**
-   * Get a gradient using its symbology. If not found, create it and return it.
+   * Find a texture using its symbology. If not found, create it and return it.
    * This will also add it to the map.
    */
-  // public createGradient(grad: Gradient.Symb)
+  // public createTextureGradientSymb(grad: Gradient.Symb)
 }
 
 export class System extends RenderSystem {
@@ -277,7 +277,7 @@ export class System extends RenderSystem {
   private _lineCodeTexture: TextureHandle | undefined;
   public get lineCodeTexture() { return this._lineCodeTexture; }
 
-  public readonly renderMap: Dictionary<IModelConnection, IdMap>;
+  public readonly renderCache: Dictionary<IModelConnection, IdMap>;
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
@@ -350,7 +350,7 @@ export class System extends RenderSystem {
 
   /** Find an imodel rendering map using an IModelConnection. Returns undefined if not found. */
   public findIModelMap(imodel: IModelConnection): IdMap | undefined {
-    return this.renderMap.get(imodel);
+    return this.renderCache.get(imodel);
   }
 
   /**
@@ -358,29 +358,29 @@ export class System extends RenderSystem {
    * is valid, create and return a new one, adding it to the dictionary.
    */
   public createIModelMap(imodel: IModelConnection): IdMap | undefined {
-    let idMap = this.renderMap.get(imodel);
+    let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       if (!imodel.iModelToken.iModelId)
         return undefined;
       idMap = new IdMap();  // This currently starts empty, no matter the current contents of the imodel
-      this.renderMap.set(imodel, idMap);
+      this.renderCache.set(imodel, idMap);
     }
     return idMap;
   }
 
   /**
-   * Removes an imodel map from the renderMap. This function is called when the onClose event occurs on an iModel.
+   * Removes an imodel map from the renderCache. This function is called when the onClose event occurs on an iModel.
    * Note that this does not remove
    */
   private removeIModelMap(imodel: IModelConnection) {
-    this.renderMap.delete(imodel);
+    this.renderCache.delete(imodel);
   }
 
   /**
    * Actions to perform when the IModelApp shuts down. Release all imodel apps that were involved in the shutdown.
    */
   public onShutDown() {
-    this.renderMap.clear();
+    this.renderCache.clear();
     IModelConnection.onClose.removeListener(this.removeIModelMap);
   }
 
@@ -389,7 +389,7 @@ export class System extends RenderSystem {
    * If no render map exists for the imodel, returns undefined.
    */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
-    const idMap = this.renderMap.get(imodel);
+    const idMap = this.renderCache.get(imodel);
     if (!idMap) {
       return undefined;
     }
@@ -398,11 +398,15 @@ export class System extends RenderSystem {
 
   /** Searches through the imodel's render map for a material, given its key. Returns undefined if none found. */
   public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
-    const idMap = this.renderMap.get(imodel);
+    const idMap = this.renderCache.get(imodel);
     if (idMap !== undefined) {
       return idMap.findMaterial(key);
     }
     return undefined;
+  }
+
+  public static isPowerOfTwo(num: number): boolean {
+    return (num & (num - 1)) === 0;
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
@@ -412,7 +416,7 @@ export class System extends RenderSystem {
     this.techniques = techniques;
     this.capabilities = capabilities;
     this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-    this.renderMap = new Dictionary<IModelConnection, IdMap>((lhs: IModelConnection, rhs: IModelConnection): number => {
+    this.renderCache = new Dictionary<IModelConnection, IdMap>((lhs: IModelConnection, rhs: IModelConnection): number => {
       if (lhs.iModelToken.iModelId !== rhs.iModelToken.iModelId) {
         if (lhs.iModelToken.iModelId === undefined || rhs.iModelToken.iModelId === undefined)
           return -1;

@@ -13,7 +13,7 @@ import { CameraProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
-import { ImageSource } from "./Image";
+import { ImageSource, ImageBuffer, ImageBufferFormat } from "./Image";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
@@ -848,15 +848,33 @@ export namespace Gradient {
     Thematic = 6,
   }
 
+  export const enum ThematicMode {
+    Smooth = 0,
+    Stepped = 1,
+    SteppedWithDelimeter = 2,
+    Isolines = 3,
+  }
+
+  export const enum ThematicColorScheme {
+    BlueRed = 0,
+    RedBlue = 1,
+    Monochrome = 2,
+    Topographic = 3,
+    SeaMountain = 4,
+    Custom = 5,
+  }
+
   /** @hidden Gradient settings specific to thematic mesh display */
-  export interface ThematicProps {
-    mode?: number;
-    stepCount?: number;
-    margin?: number;
-    marginColor?: ColorDef;
-    colorScheme?: number;
-    rangeLow?: number;
-    rangeHigh?: number;
+  export class ThematicProps {
+    public mode: ThematicMode = ThematicMode.Smooth;
+    public stepCount: number = 10;
+    public margin: number = .05;
+    public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
+    public colorScheme: number = ThematicColorScheme.BlueRed;
+    public rangeLow: number = Number.MAX_VALUE;
+    public rangeHigh: number = Number.MIN_VALUE;
+
+    public static defaults = new ThematicProps();
   }
 
   /** Gradient fraction value to [[ColorDef]] pair */
@@ -896,10 +914,11 @@ export namespace Gradient {
 
   export class Symb implements SymbProps {
     public mode = Mode.None;
-    public flags?: Flags;
+    public flags: Flags = Flags.None;
     public angle?: Angle;
     public tint?: number;
     public shift?: number;
+    public thematicSettings?: ThematicProps;
     public keys: KeyColor[] = [];
 
     /** create a GradientSymb from a json object. */
@@ -908,7 +927,7 @@ export namespace Gradient {
       if (!json)
         return result;
       result.mode = json.mode;
-      result.flags = json.flags;
+      result.flags = (json.flags === undefined) ? Flags.None : json.flags;
       result.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
       result.tint = json.tint;
       result.shift = json.shift;
@@ -920,6 +939,7 @@ export namespace Gradient {
       return Symb.fromJSON(this);
     }
 
+    /** Returns true if this symbology is equal to another, false otherwise. */
     public isEqualTo(other: Symb): boolean {
       if (this === other)
         return true; // Same pointer
@@ -946,6 +966,7 @@ export namespace Gradient {
       return true;
     }
 
+    /** Compares two gradient symbologies. */
     public static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb) {
       if (lhs === rhs)
         return 0; // Same pointer
@@ -988,8 +1009,193 @@ export namespace Gradient {
       return 0;
     }
 
+    /** Compare this symbology to another. */
     public compare(other: Symb): number {
       return Gradient.Symb.compareSymb(this, other);
+    }
+
+    /**
+     * Ensure the value given is within the range of 0 to 255,
+     * and truncate the value to only the 8 least significant bits.
+     */
+    private roundToByte(num: number): number {
+      return Math.min(num + .5, 255.0) & 0xFF;
+    }
+
+    /** Maps a value to an RGBA value adjusted from a color present in this symbology's array. */
+    private mapColor(value: number) {
+      if (value < 0)
+        value = 0;
+      else if (value > 1)
+        value = 1;
+
+      if ((this.flags & Flags.Invert) !== 0)
+        value = 1 - value;
+
+      let idx = 0;
+      let d;
+      let w0;
+      let w1;
+      if (this.keys.length <= 2) {
+        w0 = 1.0 - value;
+        w1 = value;
+      } else {  // locate value in map, blend corresponding colors
+        while (idx < (this.keys.length - 2) && value > this.keys[idx + 1].value)
+          idx++;
+
+        d = this.keys[idx + 1].value - this.keys[idx].value;
+        w1 = d < 0.0001 ? 0.0 : (value - this.keys[idx].value) / d;
+        w0 = 1.0 - w1;
+      }
+
+      const color0 = this.keys[idx].color;
+      const color1 = this.keys[idx + 1].color;
+      const red = w0 * color0.colors.r + w1 * color1.colors.r;
+      const green = w0 * color0.colors.g + w1 * color1.colors.g;
+      const blue = w0 * color0.colors.b + w1 * color1.colors.b;
+      const transparency = w0 * color0.colors.t + w1 * color1.colors.t;
+
+      return ColorDef.from(this.roundToByte(red), this.roundToByte(green), this.roundToByte(blue), this.roundToByte(transparency));
+    }
+
+    /** Writes the image in 'reverse'. */
+    public getImage(width: number, height: number): ImageBuffer {
+      if (this.mode === Mode.Thematic) {
+        width = 1;
+        height = 8192;    // Thematic image height
+      }
+
+      const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
+      const cosA = Math.cos(thisAngle);
+      const sinA = Math.sin(thisAngle);
+      const image = new Float32Array(4 * width * height);
+      let currentIdx = image.length - 1;
+      let shift;
+      if (this.shift)
+        shift = Math.min(1.0, Math.abs(this.shift));
+      else
+        shift = 1.0;
+
+      switch (this.mode) {
+        case Mode.Linear:
+        case Mode.Cylindrical: {
+          const xs = 0.5 - 0.25 * shift * cosA;
+          const ys = 0.5 - 0.25 * shift * sinA;
+          let dMax;
+          let dMin = dMax = 0.0;
+          let d;
+          for (let j = 0; j < 2; j++) {
+            for (let i = 0; i < 2; i++) {
+              d = (i - xs) * cosA + (j - ys) * sinA;
+              if (d < dMin)
+                dMin = d;
+              if (d > dMax)
+                dMax = d;
+            }
+          }
+          for (let j = 0; j < height; j++) {
+            const y = j / 255 - ys;
+            for (let i = 0; i < width; i++) {
+              const x = i / 255 - xs;
+              d = x * cosA + y * sinA;
+              let f;
+              if (this.mode === Mode.Linear) {
+                if (d > 0)
+                  f = 0.5 + 0.5 * d / dMax;
+                else
+                  f = 0.5 - 0.5 * d / dMin;
+              } else {
+                if (d > 0)
+                  f = Math.sin(Math.PI / 2 * (1.0 - d / dMax));
+                else
+                  f = Math.sin(Math.PI / 2 * (1.0 - d / dMin));
+              }
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Curved: {
+          const xs = 0.5 + 0.5 * sinA - 0.25 * shift * cosA;
+          const ys = 0.5 - 0.5 * cosA - 0.25 * shift * sinA;
+          for (let j = 0; j < height; j++) {
+            const y = j / 255 - ys;
+            for (let i = 0; i < width; i++) {
+              const x = i / 255 - xs;
+              const xr = 0.8 * (x * cosA + y * sinA);
+              const yr = y * cosA - x * sinA;
+              const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Spherical: {
+          const r = 0.5 + 0.125 * Math.sin(2.0 * thisAngle);
+          const xs = 0.5 * shift * (cosA + sinA) * r;
+          const ys = 0.5 * shift * (sinA - cosA) * r;
+          for (let j = 0; j < height; j++) {
+            const y = ys + j / 255.0 - 0.5;
+            for (let i = 0; i < width; i++) {
+              const x = xs + i / 255.0 - 0.5;
+              const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Hemispherical: {
+          const xs = 0.5 + 0.5 * sinA - 0.5 * shift * cosA;
+          const ys = 0.5 - 0.5 * cosA - 0.5 * shift * sinA;
+          for (let j = 0; j < height; j++) {
+            const y = j / 255.0 - ys;
+            for (let i = 0; i < width; i++) {
+              const x = i / 255.0 - xs;
+              const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Thematic: {
+          let settings = this.thematicSettings;
+          if (settings === undefined) {
+            settings = ThematicProps.defaults;
+          }
+
+          // TBD - Stepped and isolines...
+          for (let j = 0; j < height; j++) {
+            let f = 1 - j / height;
+            let color = 0;
+
+            if (f < settings.margin || f > 1.0 - settings.margin) {
+              color = settings.marginColor.tbgr;
+            } else {
+              f = (f - settings.margin) / (1 - 2 * settings.margin);
+              switch (settings.mode) {
+                case ThematicMode.SteppedWithDelimeter:
+                case ThematicMode.Stepped: {
+                  if (settings.stepCount !== 0) {
+                    const fStep = Math.floor(f * settings.stepCount + .99999) / settings.stepCount;
+                    const delimitFraction = 1 / 1024;
+                    if (settings.mode === ThematicMode.SteppedWithDelimeter && Math.abs(fStep - f) < delimitFraction)
+                      color = 0xff000000;
+                    else
+                      color = this.mapColor(fStep).tbgr;
+                  }
+                  break;
+                }
+                case ThematicMode.Smooth:
+                  color = this.mapColor(f).tbgr;
+                  break;
+              }
+            }
+            for (let i = 0; i < width; i++)
+              image[currentIdx--] = color;
+          }
+        }
+      }
+      return new ImageBuffer(width, height, new Uint8Array(image), ImageBufferFormat.Rgba);
     }
   }
 }

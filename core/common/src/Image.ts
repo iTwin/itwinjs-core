@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
- /** format of an image buffer */
+/** format of an image buffer */
 export const enum ImageBufferFormat { Rgba = 0, Rgb = 2, Alpha = 5 }
 
 /** format of an image */
@@ -20,5 +20,22 @@ export class ImageSource {
   public constructor(data: Uint8Array, format: ImageSourceFormat) {
     this.data = data;
     this.format = format;
+  }
+}
+
+export type TextureDimension = 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024 | 2048;
+
+/** Image data encoded as an uncompressed bitmap in RGB or RGBA format. */
+export class ImageBuffer {
+  public readonly width: number;
+  public readonly height: number;
+  public readonly format: ImageBufferFormat;
+  public readonly data: Uint8Array;
+
+  public constructor(width: number, height: number, data: Uint8Array, format: ImageBufferFormat) {
+    this.width = width;
+    this.height = height;
+    this.format = format;
+    this.data = data;
   }
 }

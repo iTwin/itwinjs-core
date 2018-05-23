@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
-import { ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ImageSourceFormat, ImageBufferFormat, ImageBuffer } from "@bentley/imodeljs-common";
 // import { Texture, TextureCreateParams } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System, Capabilities } from "./System";
@@ -21,8 +21,34 @@ const enum TextureFlags {
   PreserveData = 1 << 2,
 }
 
-/** A private utility class used by TextureHandle to internally create textures with differing proprties. */
-class TextureCreateParams {
+/** A bitmap representation of an image for use in textures. */
+export class TextureImage extends ImageBuffer {
+
+  private constructor(width: number, height: number, data: Uint8Array, format: ImageBufferFormat) {
+    super(width, height, data, format);
+  }
+
+  /**
+   * Create a texture image from a valid width, buffer, and buffer format.
+   * Returns undefined if calculated height is not a valid integer, or if width or height are not
+   * powers of 2.
+   */
+  public static create(width: number, bitmap: Uint8Array, format: ImageBufferFormat): ImageBuffer | undefined {
+    if (!System.isPowerOfTwo(width))
+      return undefined;
+
+    const bytesPerPixel = (format === ImageBufferFormat.Rgb) ? 3 : 4;
+    const height = bitmap.byteLength / (bytesPerPixel * width);
+
+    if (!Number.isInteger(height) || !System.isPowerOfTwo(height))
+      return undefined;
+
+    return new TextureImage(width, height, bitmap, format);
+  }
+}
+
+/** A utility class used by TextureHandle to internally create textures with differing proprties. */
+export class TextureCreateParams {
   public imageBytes?: Uint8Array = undefined;
   public imageCanvas?: HTMLCanvasElement = undefined;
   public imageFormat?: ImageSourceFormat = undefined;
@@ -126,7 +152,7 @@ export class TextureHandle implements IDisposable {
       params.wantUseMipMaps = true; // in order to always use mipmaps, must resize to power of 2
       targetWidth = TextureHandle.nextHighestPowerOfTwo(targetWidth);
       targetHeight = TextureHandle.nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!TextureHandle.isPowerOfTwo(targetWidth) || !TextureHandle.isPowerOfTwo(targetHeight))) {
+    } else if (!caps.supportsNonPowerOf2Textures && !(System.isPowerOfTwo(targetWidth) && System.isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === params.wrapMode) {
         // NPOT are supported but not mipmaps
         // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
@@ -154,6 +180,21 @@ export class TextureHandle implements IDisposable {
     assert(Math.floor(params.height) === params.height);
 
     return new TextureHandle(glTex, params);
+  }
+
+  /**
+   * Creates a texture for a bitmap image. Will not be really loaded until loadCallback is called.  If
+   * you do not specify a loadCallback, you cannot rely on the texture being loaded at any particular time.
+   * A 1x1 opaque white texture will be bound until the image is loaded and the real texture is fully generated.
+   */
+  public static createForBitmap(/*image: TextureImage, useMipmaps: boolean = true*/) {
+    const glTex: WebGLTexture | undefined = this.createTextureHandle();
+    if (glTex === undefined) {
+      return undefined;
+    }
+
+    // TODO: Implement
+    return undefined;
   }
 
   /** Creates a texture for a framebuffer attachment (no data specified). */
@@ -299,9 +340,5 @@ export class TextureHandle implements IDisposable {
       num = num | num >> i;
     }
     return num + 1;
-  }
-
-  private static isPowerOfTwo(num: number): boolean {
-    return (num & (num - 1)) === 0;
   }
 }
