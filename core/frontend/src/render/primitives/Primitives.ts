@@ -164,4 +164,7 @@ export class TriangleSet extends SortedArray<TriangleKey> {
   public constructor() {
     super((lhs: TriangleKey, rhs: TriangleKey) => lhs.compare(rhs));
   }
+  public insertKey(triangle: Triangle, onInsert: (triangleKey: TriangleKey) => any): number {
+    return this.insert(new TriangleKey(triangle), onInsert);
+  }
 }
