@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecpresentation-controls
 
-This log was last generated on Fri, 18 May 2018 14:15:29 GMT and should not be manually modified.
+This log was last generated on Wed, 23 May 2018 10:15:48 GMT and should not be manually modified.
+
+## 0.2.1
+Wed, 23 May 2018 10:15:48 GMT
+
+### Patches
+
+- Update imodeljs-core dependencies to 0.88
 
 ## 0.2.0
 Fri, 18 May 2018 14:15:29 GMT

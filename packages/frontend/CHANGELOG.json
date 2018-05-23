@@ -2,6 +2,23 @@
   "name": "@bentley/ecpresentation-frontend",
   "entries": [
     {
+      "version": "0.3.1",
+      "tag": "@bentley/ecpresentation-frontend_v0.3.1",
+      "date": "Wed, 23 May 2018 10:15:48 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update imodeljs-core dependencies to 0.88"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.3.0` to `^0.3.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.0",
       "tag": "@bentley/ecpresentation-frontend_v0.3.0",
       "date": "Fri, 18 May 2018 14:15:29 GMT",
