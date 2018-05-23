@@ -49,8 +49,8 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 
 /**
- * @docs-group-description App
- * Classes for defining an app.
+ * @docs-group-description AppAdministration
+ * Classes for configuring and administering an app.
  */
 /**
  * @docs-group-description BisCore

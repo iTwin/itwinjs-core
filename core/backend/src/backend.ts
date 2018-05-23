@@ -33,7 +33,7 @@ export * from "./IModelDb"; // must be last
  * The imodeljs-backend package contains classes that backend code can use to work with directly with iModel content using briefcases - see [learning about backends]($docs/learning/backend/index.md).
  */
 /**
- * @docs-group-description App
+ * @docs-group-description AppAdministration
  * Classes for configuring and administering an app - see [learning IModelHost]($docs/learning/backend/IModelHost.md).
  */
 /**
