@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, ClipVector } from "@bentley/geometry-core";

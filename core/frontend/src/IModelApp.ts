@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module AppAdministration */
+
 import { DeploymentEnv, IModelHubClient } from "@bentley/imodeljs-clients";
 import { ViewManager } from "./ViewManager";
 import { ToolAdmin } from "./tools/ToolAdmin";

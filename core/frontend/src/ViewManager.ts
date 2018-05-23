@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
 import { Viewport } from "./Viewport";
 import { BeCursor } from "./tools/Tool";
 import { BeEvent } from "@bentley/bentleyjs-core";

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tools */
 import { Viewport } from "../Viewport";
 import { GestureId, GestureInfo, BeModifierKey, InputSource } from "./Tool";
 import { Point2d } from "@bentley/geometry-core";

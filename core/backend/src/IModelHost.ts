@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module App */
+/** @module AppAdministration */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { DeploymentEnv } from "@bentley/imodeljs-clients";

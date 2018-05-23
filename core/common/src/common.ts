@@ -45,12 +45,12 @@ export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
 
 /** @docs-package-description
- * The imodeljs-common package contains classes for working with iModels in both frontend and backend.
+ * The imodeljs-common package contains classes for working with iModels in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
 
 /**
  * @docs-group-description App
- * Classes for defining an app - see [App Overview]($docs/overview/App.md).
+ * Classes for defining an app.
  */
 /**
  * @docs-group-description BisCore

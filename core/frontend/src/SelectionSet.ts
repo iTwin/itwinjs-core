@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module SelectionSet */
 import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { BeEvent } from "@bentley/bentleyjs-core";

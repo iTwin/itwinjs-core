@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module DrawingAids */
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Geometry, Arc3d } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp"; // This must be first to avoid import cycles.
 import { Viewport } from "./Viewport";

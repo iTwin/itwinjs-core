@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Notifications */
 import { Viewport } from "./Viewport";
 import { Point2d } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";

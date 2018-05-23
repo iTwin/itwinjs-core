@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module App */
+/** @module AppAdministration */
 
 /**
  * A set of "gates" that can enable or disable features at runtime - see [learning about Feature Gates]($docs/learning/FeatureGates.md).

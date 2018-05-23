@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module AppAdministration */
+
 import * as i18next from "i18next";
 import { i18n } from "i18next";
 import * as i18nextXHRBackend from "i18next-xhr-backend";

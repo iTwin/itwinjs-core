@@ -35,3 +35,59 @@ export * from "./ViewManager";
 export * from "./Viewport";
 export * from "./ViewState";
 export * from "./IModelApp";
+
+/** @module AppAdministration */
+
+/** @docs-package-description
+ * The imodeljs-frontend package contains classes for data presentation and user interaction - see [learning about frontends]($docs/learning/frontend/index.md).
+ */
+
+/**
+ * @docs-group-description AppAdministration
+ * Classes for configuring and administering an app.
+ */
+
+/**
+ * @docs-group-description BisCore
+ * Classes for working with the major BisCore classes such as [ModelState]($frontend), [EntityState]($frontend).
+ */
+
+/**
+ * @docs-group-description DrawingAids
+ * Drawing aids
+ */
+
+/**
+ * @docs-group-description iModels
+ * Classes for working with iModels - see [iModel Overview]($docs/overview/IModels.md)
+ */
+
+/**
+ * @docs-group-description LocationAndSnapping
+ * Classes for location and snapping.
+ */
+
+/**
+ * @docs-group-description Notifications
+ * Classes for notifications.
+ */
+
+/**
+ * @docs-group-description SelectionSet
+ * Classes for working with the SelectionSet.
+ */
+
+/**
+ * @docs-group-description Search
+ * Classes for searching
+ */
+
+/**
+ * @docs-group-description Tools
+ * Classes for working with Tools - see [learning about tools]($docs/learning/frontend/Tools.md)
+ */
+
+/**
+ * @docs-group-description Views
+ * Classes for working with Views - see [learning about views]($docs/learning/frontend/Views.md)
+ */

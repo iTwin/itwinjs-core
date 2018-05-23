@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module LocationAndSnapping */
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";

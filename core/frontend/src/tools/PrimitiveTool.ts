@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tools */
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";

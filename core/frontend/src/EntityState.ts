@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module BisCore */
 import { Id64, Guid } from "@bentley/bentleyjs-core";
 import { EntityProps, Code, ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
