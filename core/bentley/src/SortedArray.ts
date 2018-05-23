@@ -108,12 +108,17 @@ export class SortedArray<T> {
    *  - The actual index of the newly-inserted element is returned.
    * If the element is to be inserted, then the supplied value will be passed to the clone function supplied to the constructor and the result will be inserted into the array.
    * @param value The value to insert
+   * @param onInsert The optional callback method to call if insertion occurs with the inserted value
    * @returns the index in the array of the newly-inserted value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
    */
-  public insert(value: T): number {
+  public insert(value: T, onInsert?: (value: T) => any): number {
     const bound = this.lowerBound(value);
+
     if (!bound.equal || this._allowDuplicates)
       this._array.splice(bound.index, 0, this._clone(value));
+
+    if (undefined !== onInsert)
+      onInsert(value);
 
     return bound.index;
   }

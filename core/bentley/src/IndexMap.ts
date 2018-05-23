@@ -63,9 +63,10 @@ export class IndexMap<T> {
    *  the cloned result is inserted into the map; and
    *  the index of the new element is returned.
    * @param value The value to insert
+   * @param onInsert The optional callback method to call if insertion occurs with the inserted value
    * @returns the index of the equivalent element in the map, or -1 if the map is full and no equivalent element exists.
    */
-  public insert(value: T): number {
+  public insert(value: T, onInsert?: (value: T) => any): number {
     const bound = this.lowerBound(value);
     if (bound.equal)
       return this.array[bound.index].index;
@@ -73,6 +74,10 @@ export class IndexMap<T> {
       return -1;
 
     const entry = new IndexedValue<T>(this.clone(value), this.array.length);
+
+    if (undefined !== onInsert)
+      onInsert(entry.value);
+
     this.array.splice(bound.index, 0, entry);
     return entry.index;
   }
