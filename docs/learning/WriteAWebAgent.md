@@ -5,6 +5,7 @@ To write a [Web Agent](../overview/App.md#imodel-agents), you will do the follow
 1. Write initialization logic, such as:
     * Start [IModelHost](./backend/IModelHost.md)
 1. Access an iModel
+    * Obtain an [AccessToken](./common/AccessToken.md)
     * [Open an iModel as a briefcase](./backend/IModelDb.md)
     * [Synchronize with iModelHub](./backend/IModelDbSync.md)
 1. Register for iModelHub events

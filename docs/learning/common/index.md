@@ -6,3 +6,6 @@ The common library is contained in the following npm packages:
 * `@bentley/imodeljs-common`
 * `@bentley/imodeljs-clients`
 * `@bentley/bentleyjs-core`
+
+Topics:
+* [Obtaining an AccessToken](./AccessToken.md)

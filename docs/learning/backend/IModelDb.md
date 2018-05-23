@@ -10,5 +10,8 @@ Use [IModelDb.open]($backend) to obtain and open an IModelDb from iModelHub.
 ``` ts
 [[include:IModelDb.open]]
 ```
-
 Use [IModelDb.close]($backend) to close the local briefcase.
+
+Note that an [AccessToken](../common/AccessToken.md) is an argument to IModelDb.open.
+
+> Normally, a backend opens an IModelDb at the request of a user who has an AccessToken.

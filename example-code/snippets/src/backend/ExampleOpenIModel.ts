@@ -4,9 +4,9 @@
 import { IModelDb, ConcurrencyControl, AutoPush } from "@bentley/imodeljs-backend";
 import { OpenMode, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
+// __PUBLISH_EXTRACT_START__ imodeljs-clients.getAccessToken
 import { AccessToken, DeploymentEnv, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 
-// __PUBLISH_EXTRACT_START__ imodeljs-clients.getAccessToken
 interface UserCredentials {
   email: string;
   password: string;
@@ -47,15 +47,15 @@ function readConfigParams(): any {
 
 function configureIModel() {
 
-// __PUBLISH_EXTRACT_START__ IModelDb.onOpen
+  // __PUBLISH_EXTRACT_START__ IModelDb.onOpen
   IModelDb.onOpen.addListener((_accessToken: AccessToken, _contextId: string, _iModelId: string, openMode: OpenMode, _version: IModelVersion) => {
     // A read-only service might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
     if (openMode !== OpenMode.Readonly)
       throw new IModelError(IModelStatus.BadRequest, "Navigator is readonly");
   });
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ IModelDb.onOpened
+  // __PUBLISH_EXTRACT_START__ IModelDb.onOpened
   IModelDb.onOpened.addListener((iModel: IModelDb) => {
     if (iModel.openMode !== OpenMode.ReadWrite)
       return;
@@ -67,10 +67,10 @@ function configureIModel() {
     // Note that AutoPush registers itself with IModelDb. That keeps it alive while the DB is open and releases it when the DB closes.
     new AutoPush(iModel, readConfigParams());
   });
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 }
 
-const cred = {email: "Regular.IModelJsTestUser@mailinator.com", password: "Regular@iMJs"};
+const cred = { email: "Regular.IModelJsTestUser@mailinator.com", password: "Regular@iMJs" };
 getUserAccessToken(cred, "PROD").then((accessToken: AccessToken) => {
   const im = openModel("x", "y", accessToken);
   if (im === undefined)
