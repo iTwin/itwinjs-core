@@ -1294,7 +1294,7 @@ export class FeatureTable extends IndexMap<Feature> {
     return undefined;
   }
 
-  // Internal use only (for tile reader)
+  /** @hidden */
   public insertWithIndex(feature: Feature, index: number): void {
     const bound = this.lowerBound(feature);
     assert(!bound.equal);

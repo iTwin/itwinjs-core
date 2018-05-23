@@ -6,7 +6,8 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
-  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface,
+  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
+  TileId, TileTreeProps, TileProps, TileGeometryProps,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -28,6 +29,7 @@ export class IModelConnection extends IModel {
   public readonly views: IModelConnectionViews;
   public readonly hilited: HilitedSet;
   public readonly selectionSet: SelectionSet;
+  public readonly tiles: IModelConnectionTiles;
 
   /**
    * Event called immediately before an IModelConnection is closed.
@@ -55,6 +57,7 @@ export class IModelConnection extends IModel {
     this.views = new IModelConnectionViews(this);
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
+    this.tiles = new IModelConnectionTiles(this);
   }
 
   /** Open an IModelConnection to an iModel */
@@ -416,5 +419,29 @@ export class IModelConnectionViews {
 
     await viewState.load(); // loads models for ModelSelector
     return viewState;
+  }
+}
+
+/** @hidden */
+// NB: Very WIP.
+export class IModelConnectionTiles {
+  private _iModel: IModelConnection;
+
+  /** @hidden */
+  constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+    assert(undefined !== this._iModel); // unused variable...
+  }
+
+  public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> {
+    return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids);
+  }
+
+  public async getTileProps(ids: TileId[]): Promise<TileProps[]> {
+    return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids);
+  }
+
+  public async getTileGeometry(ids: TileId[]): Promise<TileGeometryProps[]> {
+    return IModelTileRpcInterface.getClient().getTileGeometry(this._iModel.iModelToken, ids);
   }
 }

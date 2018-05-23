@@ -150,4 +150,16 @@ export class IModelHubBaseHandler extends WsgClient {
   public getInstances<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
     return super.getInstances(typedConstructor, token, relativeUrlPath, queryOptions);
   }
+
+  /**
+   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
+   * @param typedConstructor Constructor function for the type
+   * @param token Delegation token
+   * @param relativeUrlPath Relative path to the REST resource.
+   * @param queryOptions Query options.
+   * @returns Array of strongly typed instances.
+   */
+  public postQuery<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
+    return super.postQuery(typedConstructor, token, relativeUrlPath, queryOptions);
+  }
 }

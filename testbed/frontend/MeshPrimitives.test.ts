@@ -131,7 +131,7 @@ describe("MeshPrimitive Tests", () => {
 
     expect(m.points.length).to.equal(0);
     let q = QPoint3d.create(new Point3d(100, 100, 100), m.points.params);
-    let index = m.addVertex(q, ColorDef.white.tbgr);
+    let index = m.addVertex({ position: q, fillColor: ColorDef.white.tbgr });
     expect(index).to.equal(0);
     expect(m.points.length).to.equal(1);
     expect(m.normals.length).to.equal(0);
@@ -144,7 +144,7 @@ describe("MeshPrimitive Tests", () => {
     const oct = new OctEncodedNormal(10);
     const param = new Point2d(10, 10);
     q = QPoint3d.create(new Point3d(100, 100, 100), m.points.params);
-    index = m.addVertex(q, ColorDef.white.tbgr, oct, param);
+    index = m.addVertex({ position: q, fillColor: ColorDef.white.tbgr, normal: oct, uvParam: param });
     expect(m.normals.length).to.equal(1);
     expect(m.uvParams.length).to.equal(1);
     expect(m.points.length).to.equal(1);

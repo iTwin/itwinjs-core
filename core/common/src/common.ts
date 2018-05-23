@@ -21,6 +21,7 @@ export * from "./ModelProps";
 export * from "./OctEncodedNormal";
 export * from "./QPoint";
 export * from "./SubCategoryAppearance";
+export * from "./TileProps";
 export * from "./ViewProps";
 export * from "./Render";
 export * from "./Utility";
@@ -39,6 +40,7 @@ export * from "./rpc/core/RpcControl";
 export * from "./rpc/electron/ElectronRpcManager";
 export * from "./rpc/web/BentleyCloudRpcManager";
 export * from "./rpc/IModelReadRpcInterface";
+export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
 

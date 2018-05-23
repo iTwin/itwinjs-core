@@ -8,6 +8,7 @@ import { DeploymentEnv } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
+import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { IModelUnitTestRpcImpl } from "./rpc-impl/IModelUnitTestRpcImpl";
@@ -75,6 +76,7 @@ export class IModelHost {
     }
 
     IModelReadRpcImpl.register();
+    IModelTileRpcImpl.register();
     IModelWriteRpcImpl.register();
     StandaloneIModelRpcImpl.register();
     IModelUnitTestRpcImpl.register();

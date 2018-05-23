@@ -2,12 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
-import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
+import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { RenderContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
-import { RenderGraphic, RenderSystem, GraphicBranch } from "../render/System";
+import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 
@@ -337,33 +337,43 @@ export namespace Tile {
   }
 
   /** Parameters used to construct a Tile. */
-  export interface Params {
-    root: TileTree;
-    parent?: Tile;
-    range: ElementAlignedBox3d;
-    contentRange?: ElementAlignedBox3d;
-    id: string;
-    maximumSize: number;
-    childIds: string[];
-    zoomFactor?: number;
+  export class Params {
+    public constructor(
+      public readonly root: TileTree,
+      public readonly id: string,
+      public readonly range: ElementAlignedBox3d,
+      public readonly maximumSize: number,
+      public readonly childIds: string[],
+      public readonly parent?: Tile,
+      public readonly contentRange?: ElementAlignedBox3d,
+      public readonly zoomFactor?: number) { }
+
+    public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
+      const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor);
+    }
   }
 }
 
 export class TileTree {
   public readonly model: GeometricModelState;
   public readonly location: Transform;
-  private _rootTile?: Tile;
-  public readonly renderSystem: RenderSystem;
+  public readonly rootTile: Tile;
   public readonly expirationTime: BeDuration;
   public readonly clipVector?: ClipVector;
-  public readonly rootResource: string;
+  public readonly id: Id64;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
 
-  public static create(props: TileTree.Params) {
-    const tree = new TileTree(props);
-    tree.loadRootTile(props.rootTileId);
-    return undefined === tree._rootTile ? undefined : tree;
+  public constructor(props: TileTree.Params) {
+    this.model = props.model;
+    this.id = props.id;
+    this.location = props.location;
+    this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
+    this.clipVector = props.clipVector;
+    this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
+    this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
+    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this));
   }
 
   public get is3d(): boolean { return this.model.is3d; }
@@ -371,23 +381,18 @@ export class TileTree {
   public get modelId(): Id64 { return this.model.id; }
   public get iModel(): IModelConnection { return this.model.iModel; }
   public get range(): ElementAlignedBox3d { return this.rootTile.range; }
-  public get rootTile(): Tile { return this.rootTile!; }
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
-    assert(undefined !== this._rootTile);
     const selected: Tile[] = [];
-    if (undefined !== this._rootTile)
-      this._rootTile.selectTiles(selected, args);
+    if (undefined !== this.rootTile)
+      this.rootTile.selectTiles(selected, args);
 
     return selected;
   }
 
   public drawScene(context: SceneContext): void { this.draw(this.createDrawArgs(context)); }
   public draw(args: Tile.DrawArgs): void {
-    if (undefined === this._rootTile)
-      return;
-
     const selectedTiles = this.selectTiles(args);
     for (const selectedTile of selectedTiles)
       selectedTile.drawGraphics(args);
@@ -403,33 +408,23 @@ export class TileTree {
     return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector);
   }
 
-  public constructTileResource(tileId: string): string { return this.rootResource + tileId; }
-
-  private constructor(props: TileTree.Params) {
-    this.model = props.model;
-    this.location = props.location;
-    this.renderSystem = props.renderSystem;
-    this.expirationTime = props.expirationTime;
-    this.clipVector = props.clipVector;
-    this.rootResource = props.rootResource;
-    this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
-    this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
-  }
-
-  private loadRootTile(_tileId: string): Tile | undefined { return undefined; } // ###TODO
+  public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }
 }
 
 export namespace TileTree {
   /** Parameters used to construct a TileTree */
-  export interface Params {
-    rootResource: string;
-    rootTileId: string;
-    model: GeometricModelState;
-    location: Transform;
-    renderSystem: RenderSystem;
-    expirationTime: BeDuration;
-    clipVector?: ClipVector;
-    viewFlagOverrides?: ViewFlag.Overrides;
-    maxTilesToSkip?: number;
+  export class Params {
+    public constructor(
+      public readonly id: Id64,
+      public readonly rootTile: TileProps,
+      public readonly model: GeometricModelState,
+      public readonly location: Transform,
+      public readonly maxTilesToSkip?: number,
+      public readonly clipVector?: ClipVector,
+      public readonly viewFlagOverrides?: ViewFlag.Overrides) { }
+
+    public static fromJSON(props: TileTreeProps, model: GeometricModelState) {
+      return new Params(Id64.fromJSON(props.id), props.rootTile, model, Transform.fromJSON(props.location), props.maxTilesToSkip);
+    }
   }
 }

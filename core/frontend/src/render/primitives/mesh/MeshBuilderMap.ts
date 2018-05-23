@@ -7,18 +7,18 @@ import { PolyfacePrimitive } from "../Polyface";
 import { DisplayParams } from "../DisplayParams";
 import { ToleranceRatio } from "../Primitives";
 import { MeshBuilder } from "./MeshBuilder";
-import { Mesh } from "./MeshPrimitives";
+import { Mesh, MeshList } from "./MeshPrimitives";
 import { Geometry } from "../geometry/GeometryPrimitives";
 import { GeometryList } from "../geometry/GeometryList";
 import { StrokesPrimitive } from "../Strokes";
 
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
-  private readonly range: Range3d;
+  public readonly range: Range3d;
   // @ts-ignore (vertexTolerance unused so far)
-  private readonly vertexTolerance: number;
-  private readonly facetAreaTolerance: number;
-  private readonly tolerance: number;
-  private readonly is2d: boolean;
+  public readonly vertexTolerance: number;
+  public readonly facetAreaTolerance: number;
+  public readonly tolerance: number;
+  public readonly is2d: boolean;
 
   /** if true the order of keys created to store meshBuilders maintain order */
   private readonly preserveKeyOrder: boolean;
@@ -36,10 +36,21 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 
   public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, wantSurfacesOnly: boolean, wantPreserveOrder: boolean): MeshBuilderMap {
     const map = new MeshBuilderMap(tolerance, range, is2d, wantPreserveOrder);
+
     if (geometries.isEmpty)
       return map;
-    for (const geom of geometries) map.loadGeometry(geom, wantSurfacesOnly);
+
+    for (const geom of geometries)
+      map.loadGeometry(geom, wantSurfacesOnly);
     return map;
+  }
+
+  public toMeshes(): MeshList {
+    const meshes = new MeshList();
+    for (const builder of this._values) {
+      meshes.push(builder.mesh);
+    }
+    return meshes;
   }
 
   /**
@@ -81,7 +92,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     const builder = this.getBuilder(displayParams, Mesh.PrimitiveType.Mesh, normalCount > 0, isPlanar);
 
     // ###TODO: is displayParams.fillColor.tbgr equivalent to displayParams->GetFillColor() ?
-    builder.addFromPolyface(indexedPolyface, isTextured, fillColor.tbgr, textureMapping);
+    builder.addFromPolyface(indexedPolyface, { includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping });
   }
 
   /**
@@ -121,7 +132,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     const key = new MeshBuilderMap.Key(displayParams, type, hasNormals, isPlanar);
 
     if (this.preserveKeyOrder)
-      key.order = this.keyOrder++;
+      key.order = ++this.keyOrder;
 
     return key;
   }

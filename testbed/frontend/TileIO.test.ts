@@ -7,6 +7,7 @@ import { Mesh, DisplayParams } from "@bentley/imodeljs-frontend/lib/rendering";
 import { LinePixels, GeometryClass } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
+import { Point3d, Vector3d } from "@bentley/geometry-core";
 
 function delta(a: number, b: number): number { return Math.abs(a - b); }
 
@@ -181,15 +182,21 @@ describe("TileIO", () => {
         expect(indices[i]).to.equal(expectedIndices0[i]);
 
       // Validate vertex positions
+      const pos0 = [
+        Point3d.create(2.5, 0, 0), Point3d.create(2.5, 10, 0), Point3d.create(7.5, 0, 0),
+        Point3d.create(-2.5, 0, 0), Point3d.create(-2.5, 10, 0), Point3d.create(2.5, 0, 0),
+        Point3d.create(-7.5, 0, 0), Point3d.create(-7.5, 10, 0), Point3d.create(-2.5, 0, 0)];
+      const norms = Vector3d.create(0, 0, -1);
       for (let i = 0; i < mesh.points.length; ++i) {
         const pnt = mesh.points.unquantize(i);
         const vec = mesh.normals[i].decode();
-        expect(pnt).to.not.be.undefined; // ###TODO: test positions and normals.
-        expect(vec).to.not.be.undefined; // ###TODO: test positions and normals.
-        // if (undefined !== vec)
-        //   console.log("pos[" + i + "] (" + pnt.x + ", " + pnt.y + ", " + pnt.z + ")  normal (" + vec.x + ", " + vec.y + ", " + vec.z + ")");
-        // else
-        //   console.log("pos[" + i + "] (" + pnt.x + ", " + pnt.y + ", " + pnt.z + ")");
+        expect(vec).to.not.be.undefined;
+        expect(delta(pnt.x, pos0[i].x)).to.be.lessThan(0.00065);
+        expect(delta(pnt.y, pos0[i].y)).to.be.lessThan(0.00065);
+        expect(delta(pnt.z, pos0[i].z)).to.be.lessThan(0.00065);
+        expect(delta(vec!.x, norms.x)).to.be.lessThan(0.00065);
+        expect(delta(vec!.y, norms.y)).to.be.lessThan(0.00065);
+        expect(delta(vec!.z, norms.z)).to.be.lessThan(0.00065);
       }
 
       // Validate color table (3 colors, red, green, blue - no alpha)
@@ -228,15 +235,20 @@ describe("TileIO", () => {
         expect(indices[i]).to.equal(expectedIndices1[i]);
 
       // Validate vertex positions
+      const pos1 = [
+        Point3d.create(2.5, -10, 0), Point3d.create(2.5, 0, 0), Point3d.create(7.5, -10, 0),
+        Point3d.create(-2.5, -10, 0), Point3d.create(-2.5, 0, 0), Point3d.create(2.5, -10, 0),
+        Point3d.create(-7.5, -10, 0), Point3d.create(-7.5, 0, 0), Point3d.create(-2.5, -10, 0)];
       for (let i = 0; i < mesh.points.length; ++i) {
         const pnt = mesh.points.unquantize(i);
         const vec = mesh.normals[i].decode();
-        expect(pnt).to.not.be.undefined; // ###TODO: test positions and normals.
-        expect(vec).to.not.be.undefined; // ###TODO: test positions and normals.
-        // if (undefined !== vec)
-        //   console.log("pos[" + i + "] (" + pnt.x + ", " + pnt.y + ", " + pnt.z + ")  normal (" + vec.x + ", " + vec.y + ", " + vec.z + ")");
-        // else
-        //   console.log("pos[" + i + "] (" + pnt.x + ", " + pnt.y + ", " + pnt.z + ")");
+        expect(vec).to.not.be.undefined;
+        expect(delta(pnt.x, pos1[i].x)).to.be.lessThan(0.00065);
+        expect(delta(pnt.y, pos1[i].y)).to.be.lessThan(0.00065);
+        expect(delta(pnt.z, pos1[i].z)).to.be.lessThan(0.00065);
+        expect(delta(vec!.x, norms.x)).to.be.lessThan(0.00065);
+        expect(delta(vec!.y, norms.y)).to.be.lessThan(0.00065);
+        expect(delta(vec!.z, norms.z)).to.be.lessThan(0.00065);
       }
 
       // Validate color table (uniform - green)
