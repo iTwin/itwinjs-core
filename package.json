@@ -21,6 +21,7 @@
     "publish:backend": "cd core/backend && npm publish",
     "publish:clients": "cd core/clients && npm publish",
     "publish:frontend": "cd core/frontend && npm publish",
+    "publish:i18n": "cd core/i18n && npm publish",
     "predocs": "echo NOTE: use 'rush docs' instead",
     "docs": " ",
     "buildDocSite": "node tools/bemetalsmith/buildDocSite",

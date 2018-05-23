@@ -7,7 +7,7 @@ import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
 import { LocateResponse } from "../ElementLocateManager";
-import { I18NNamespace } from "../Localization";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
 import { IModelError } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";

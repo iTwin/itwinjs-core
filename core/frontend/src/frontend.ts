@@ -23,7 +23,6 @@ export * from "./FenceParams";
 export * from "./FuzzySearch";
 export * from "./HitDetail";
 export * from "./IModelConnection";
-export * from "./Localization";
 export * from "./ModelSelectorState";
 export * from "./ModelState";
 export * from "./NotificationManager";

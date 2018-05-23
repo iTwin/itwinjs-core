@@ -7,9 +7,8 @@ import * as i18next from "i18next";
 import { i18n } from "i18next";
 import * as i18nextXHRBackend from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import { IModelError } from "@bentley/imodeljs-common";
+import { BentleyError } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp } from "./IModelApp";
 
 export interface I18NOptions {
   urlTemplate?: string;
@@ -54,10 +53,10 @@ export class I18N {
   // register a new Namespace. Must be unique in the system.
   public registerNamespace(name: string): I18NNamespace {
     if (this.namespaceRegistry.get(name))
-      throw new IModelError(-1, "namespace '" + name + "' is not unique");
+      throw new BentleyError(-1, "namespace '" + name + "' is not unique");
 
     const theReadPromise = new Promise<void>((resolve: any, _reject: any) => {
-      IModelApp.i18n.loadNamespace(name, (err: any, _t: any) => {
+      this.loadNamespace(name, (err: any, _t: any) => {
         if (!err) {
           resolve();
           return;
@@ -68,7 +67,7 @@ export class I18N {
         // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
         const errorList = err as string[];
-        let locales: string[] = IModelApp.i18n.languageList().map((thisLocale: any) => "/" + thisLocale + "/");
+        let locales: string[] = this.languageList().map((thisLocale: any) => "/" + thisLocale + "/");
         for (const thisError of errorList) {
           if (!thisError.includes(name))
             continue;

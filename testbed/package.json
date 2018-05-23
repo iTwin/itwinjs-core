@@ -28,6 +28,7 @@
     "@bentley/imodeljs-e_2-win32-x64": "~19.0.1",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
+    "@bentley/imodeljs-i18n": "0",
     "@bentley/imodeljs-frontend": "0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
