@@ -38,13 +38,8 @@ export interface TileProps {
   childIds: string[];
   /** Optional scaling factor applied to this tile's maximum size */
   zoomFactor?: number;
-}
-
-export interface TileGeometryProps {
-  /** The unique identifier of the tile within the iModel */
-  id: TileIdProps;
-  /** A base-64-encoded representation of the tile's binary geometry data */
-  geometry: string;
+  /** WIP: base-64-encoded binary tile geometry data; or undefined if no geometry */
+  geometry?: string;
 }
 
 /** The metdata describing a TileTree */

@@ -27,6 +27,9 @@ runBemetalsmith();
 
 //Rush docs
 function runDocs() {
+  // Clean generated-docs
+  fs.removeSync(path.resolve(process.cwd(), "generated-docs"));
+
   const docsProcess = childProcess.execSync("rush docs", { stdio: [0, 1, 2] });
 }
 

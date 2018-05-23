@@ -236,8 +236,8 @@ export abstract class RenderSystem {
   // /** Create a Material from parameters */
   // public abstract getGradientTexture(gradient: GradientSymb, imodel: IModel): Texture;
 
-  // /** Create a new Texture from an Image. */
-  // public abstract createTexture(image: Image, imodel: IModel, params: TextureCreateParams): Texture;
+  /** Create a new Texture from an Image. */
+  // public abstract createTexture(image: TextureImage, imodel: IModelConnection, params: TextureCreateParams): RenderTexture;
 
   // /** Create a new Texture from an ImageSource. */
   // public abstract createTextureFromImageSrc(source: ImageSource, bottomUp: ImageBottomUp, imodel: IModel, params: TextureCreateParams): Texture;
