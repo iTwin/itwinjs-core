@@ -12,12 +12,14 @@ import { TextureUnit } from "./RenderFlags";
 /** A callback when a TextureHandle is finished loading.  Only relevant for createForImage creation method. */
 export type TextureLoadCallback = (t: TextureHandle, c: HTMLCanvasElement) => void;
 
+/** Describes texture data coming from binary jpeg or png data */
 interface TextureImageSource {
   source: ImageSource;
   canvas: HTMLCanvasElement;
   loadCallback?: TextureLoadCallback;
 }
 
+/** Associate texture data with a WebGLTexture from a canvas OR a bitmap. */
 function loadTextureImageData(handle: TextureHandle, params: TextureCreateParams, bytes?: Uint8Array, canvas?: HTMLCanvasElement): void {
   const tex = handle.getHandle()!;
   const gl = System.instance.context;
@@ -56,6 +58,7 @@ function loadTextureFromBytes(handle: TextureHandle, params: TextureCreateParams
 
 const singleWhitePixel = new Uint8Array([255, 255, 255, 255]);
 
+/** Asynchronously load texture data from a jpeg or png */
 function loadTextureFromImageSource(handle: TextureHandle, params: TextureCreateParams, source: TextureImageSource): void {
   // Immediately load a 1x1 pixel placeholder image
   loadTextureImageData(handle, TextureCreateParams.placeholderParams, singleWhitePixel);
@@ -89,6 +92,7 @@ interface TextureImageProperties {
   format: GL.Texture.Format;
 }
 
+/** Parameters used internally to describe how a TextureHandle should be created. */
 class TextureCreateParams {
   private constructor(
     public width: number,
@@ -160,6 +164,7 @@ class TextureCreateParams {
       (_tex: TextureHandle, _params: TextureCreateParams) => undefined);
 }
 
+/** Wraps a WebGLTextureHandle */
 export class TextureHandle implements IDisposable {
   public readonly width: number;
   public readonly height: number;
@@ -211,18 +216,22 @@ export class TextureHandle implements IDisposable {
     return null !== glTex ? new TextureHandle(glTex, params) : undefined;
   }
 
+  /** Create a texture from a jpeg or png */
   public static createForImageSource(width: number, height: number, source: ImageSource, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
     return this.create(TextureCreateParams.createForImageSource(source, width, height, type, loadCallback));
   }
 
+  /** Create a texture for use as a color attachment for rendering */
   public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
     return this.create(TextureCreateParams.createForAttachment(width, height, format, dataType));
   }
 
+  /** Create a texture to hold non-image data */
   public static createForData(width: number, height: number, data: Uint8Array, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
     return this.create(TextureCreateParams.createForData(width, height, data, wantPreserveData, wrapMode, format));
   }
 
+  /** Create a texture from a bitmap */
   public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
     // ###TODO: Support non-power-of-two if necessary...
     return this.create(TextureCreateParams.createForImageBuffer(image, type));
