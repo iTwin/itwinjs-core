@@ -19,8 +19,12 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 
 ## IModelDb
 * [Open an IModelDb](./IModelDb.md)
+* [Writing to an IModelDb](./IModelDb.readwrite.md)
+* [Concurrency control](./ConcurrencyControl.md)
 
 ## Loading and Creating Elements
+* [Access Elements](./AccessElements.md)
+* [Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
 
 ## ECSQL
 
@@ -29,14 +33,8 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 * [Code Examples](./ECSQLCodeExamples)
 * [Frequently used ECSQL queries](./ECSQL-queries)
 
-## Schemas
-
-* [Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
-
 ## Dealing with Codes
 
 ## Change Summary
 
 * [Change Summary Overview](../ChangeSummaries)
-
-## BriefcaseManager
