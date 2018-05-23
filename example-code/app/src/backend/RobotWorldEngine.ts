@@ -132,6 +132,7 @@ export class RobotWorldEngine {
     iModelDb.elements.updateElement(r2);
   }
 
+  // __PUBLISH_EXTRACT_START__ Element.createGeometricElement3d.example-code
   public static insertRobot(iModelDb: IModelDb, modelId: Id64Props, name: string, location: Point3d): Id64Props {
     const props: GeometricElement3dProps = {      // I know what class and category to use.
       model: modelId,
@@ -143,6 +144,7 @@ export class RobotWorldEngine {
     };
     return iModelDb.elements.insertElement(props);
   }
+    // __PUBLISH_EXTRACT_END__
 
   public static insertBarrier(iModelDb: IModelDb, modelId: Id64Props, location: Point3d, angle: Angle, length: number): Id64Props {
     const props: GeometricElement3dProps = {      // I know what class and category to use.

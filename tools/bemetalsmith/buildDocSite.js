@@ -19,14 +19,17 @@ if (runTypeDoc) {
 if (runRushBuild) {
   runBuild();
 }
+runStagingCopy();
 if (runQuick) {
   clearReference();
 }
-runStagingCopy();
 runBemetalsmith();
 
 //Rush docs
 function runDocs() {
+  // Clean generated-docs
+  fs.removeSync(path.resolve(process.cwd(), "generated-docs"));
+
   const docsProcess = childProcess.execSync("rush docs", { stdio: [0, 1, 2] });
 }
 
@@ -39,8 +42,12 @@ function runBuild() {
 
 //Copy docs to staging area
 function runStagingCopy() {
-  //Copy md files.
   const outputDir = path.resolve(process.cwd(), "generated-docs\\staging");
+
+  // Clean staging area
+  fs.removeSync(outputDir);
+
+  //Copy md files.
   const docsDir = path.resolve(process.cwd(), "docs");
   fs.copySync(docsDir, outputDir);
 
@@ -57,7 +64,7 @@ function runStagingCopy() {
     const packages = getPackages();
     const genDocsDir = path.resolve(process.cwd(), "generated-docs");
 
-    packages.forEach(function(pkg) {
+    packages.forEach(function (pkg) {
       let packageDir = pkg["projectFolder"].split("/")[1];
       let packageName = pkg["packageName"].split("/")[1];
       fs.copySync(
@@ -85,7 +92,7 @@ function getPackages() {
   var obj = JSON.parse(fs.readFileSync("rush.json", "utf8"));
   let retProjects = [];
   var projs = obj["projects"];
-  projs.forEach(function(proj) {
+  projs.forEach(function (proj) {
     if (proj["shouldPublish"] === true) {
       retProjects.push(proj);
     }

@@ -4,17 +4,26 @@ While the bulk of an iModelJs app is portable, it must also be tailored to fit e
 
 ## App Packaging and Deployment
 
-And app is prepared for deployment by "last mile" scripts. Different scripts will be used to package and deploy Web apps, Electron apps, and mobile apps. The packaging of the app will vary by target platform. The scripts will normally select different entry points for different deployments, as explained next.
+And app is prepared for deployment by "last mile" scripts. Different scripts will be used to package and deploy Web apps, Electron apps, and mobile apps. The packaging of the app will vary by configuration and target platform. The scripts will normally select different entry points for different deployments, as explained next.
 
-## App Initialization
+## Configuration-Specific Main
 
-An app frontend typically has a different "main" for each configuration. That allows the app's UI and functionality to vary by configuration and platform, as explained below.
+An app [frontend](../learning/Glossary.md#frontend) typically has a different "main" for each configuration to do the following:
+* Change the app's UI and functionality to suit the configuration and platform.
+  * Do platform-specific initialization:
+    * UI "chrome"
+    * Entitlements
+    * Other platform integration
+  * [Tailor the GUI](#change-the-gui)
+  * [Select the appropriate backends](#backends-for-frontends)
+* [Configure interfaces on the client side](../learning/RpcInterface.md#client-side-configuration).
 
-An app frontend also generally has different initialization logic for each platform within a configuration. That allows the app to create the right UI "chrome" and to do any necessary platform-specific initialization logic, such as asserting entitlements.
+An app [backend](../learning/Glossary.md#backend) typically has a different "main" for each configuation. For more information, see:
+* [Web app](../learning/WriteAnInteractiveWebApp.md)
+* [Desktop app](../learning/WriteAnInteractiveDesktopApp.md)
+* [Mobile app](../learning/WriteAnInteractiveMobileApp.md)
 
-An app backend typically has a different "main" for each configuation. For example, the main for a Web app must contain its (simple) Web server, while the main for an Electron app must do something comparable but specific to Electron. The main for a mobile app is very simple but different from the Web or Electron versions.
-
-The last-mile packaging and deployment scripts select the main for frontend and backend.
+The last-mile packaging and deployment scripts select the appropriate main for frontend and backend.
 
 ## Change the GUI
 

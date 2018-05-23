@@ -4,7 +4,6 @@
 
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo } from "@bentley/imodeljs-common";
-// import { Texture, TextureCreateParams } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";

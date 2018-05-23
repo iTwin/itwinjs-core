@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
- /** format of an image buffer */
+/** format of an image buffer */
 export const enum ImageBufferFormat { Rgba = 0, Rgb = 2, Alpha = 5 }
 
 /** Uncompressed bitmap image data */
