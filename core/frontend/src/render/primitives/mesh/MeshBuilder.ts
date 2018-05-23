@@ -10,7 +10,7 @@ import {
   Angle,
   IndexedPolyface,
 } from "@bentley/geometry-core";
-import { VertexMap, VertexKey } from "../VertexKey";
+import { VertexMap, VertexKey, VertexKeyProps } from "../VertexKey";
 import {
   QPoint3d,
   QPoint3dList,
@@ -90,86 +90,113 @@ export class MeshBuilder {
     }
   }
 
-  public addFromPolyface(polyface: IndexedPolyface, hasTexture: boolean, fillColor: number, mappedTexture?: TextureMapping): void {
+  /**
+   * add data from polyface into mesh builder
+   * @param polyface the indexed polyface to iterate the facets of in order to load each facet's triangles' vertices
+   * @param props the properties required for this operation
+   *    props.includeParams: boolean
+   *    props.fillColor: number
+   *    props.mappedTexture?: TextureMapping
+   */
+  public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {
     const visitor = polyface.createVisitor();
-    const requireNormals = undefined !== visitor.normal;
 
     do {
-      this.addFromPolyfaceVisitor(visitor, hasTexture, fillColor, requireNormals, mappedTexture);
+      this.addFromPolyfaceVisitor(visitor, props);
     } while (visitor.moveToNextFacet());
 
     this.endPolyface();
   }
 
   /**
-   * addFromPolyfaceVisitor
-   * @param visitor PolyfaceVisitor
-   * @param includeParams derives from displayParams isTextured
-   * @param fillColor
-   * @param requireNormals
-   * @param mappedTexture
+   *
+   * @param visitor
+   * @param props the properties required for this operation:
+   *    props.includeParams: boolean
+   *    props.fillColor: number
+   *    props.mappedTexture?: TextureMapping
    */
-  public addFromPolyfaceVisitor(visitor: PolyfaceVisitor, includeParams: boolean, fillColor: number, requireNormals: boolean, mappedTexture?: TextureMapping): void {
-    const { mesh, vertexMap, currentPolyface } = this;
-    const { point, pointCount, edgeVisible, normalCount, param, paramCount } = visitor;
+  public addFromPolyfaceVisitor(visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceOptions): void {
+    const { pointCount, normalCount, paramCount, requireNormals } = visitor;
+    const { includeParams, mappedTexture } = options;
 
-    if (pointCount < 3)
+    const isDegenerate = requireNormals && normalCount < pointCount; // TFS#790263: Degenerate triangle - no normals.
+
+    // a triangle must have at least 3 points
+    if (pointCount < 3 || isDegenerate)
       return;
 
     const haveParam = includeParams && paramCount > 0;
-    const nTriangles = pointCount - 2;
-
-    if (requireNormals && normalCount < pointCount)
-      return; // TFS#790263: Degenerate triangle - no normals.
+    const triangleCount = pointCount - 2;
 
     assert(!includeParams || paramCount > 0);
     assert(!haveParam || undefined !== mappedTexture);
 
+    const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
     // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
-    for (let iTriangle = 0; iTriangle < nTriangles; iTriangle++) {
-
-      const triangle = new Triangle();
-
-      triangle.setEdgeVisibility(
-        0 === iTriangle ? edgeVisible[0] : false,
-        edgeVisible[iTriangle + 1],
-        iTriangle === nTriangles - 1 ? edgeVisible[iTriangle + 2] : false,
-      );
-
-      if (haveParam && undefined !== mappedTexture) {
-        // const textureMapParams = mappedTexture.params;
-        // const computedParams = [];
-
-        assert(mesh.points.length === 0 || mesh.uvParams.length !== 0);
-        // ###TODO finish computeUVParams on TextureMapping
-        // if (SUCCESS == textureMapParams.ComputeUVParams (computedParams, visitor))
-        //     params = computedParams;
-        // else
-        //     BeAssert(false && "ComputeUVParams() failed");
-      }
-
-      const computeIndex = (i: number): number => 0 === i ? 0 : iTriangle + i;
-      const makeQPoint = (index: number): QPoint3d => QPoint3d.create(point.getPoint3dAt(index), mesh.points.params);
-      const makeOctEncodedNormal = (index: number): OctEncodedNormal | undefined => requireNormals ? new OctEncodedNormal(visitor.getNormal(index)) : undefined;
-      const makeVertexKey = (index: number) => new VertexKey(makeQPoint(index), fillColor, makeOctEncodedNormal(index), haveParam ? param![index] : undefined);
-      const indices = [computeIndex(0), computeIndex(1), computeIndex(2)];
-      const vertices = [makeVertexKey(indices[0]), makeVertexKey(indices[1]), makeVertexKey(indices[2])];
-
-      // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
-      // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
-      // Detect beforehand instead.
-      if (vertices[0].position === vertices[1].position || vertices[0].position === vertices[2].position || vertices[1].position === vertices[2].position)
-        continue;
-
-      for (let i = 0; i < 3; i++) {
-        const vertex = vertices[i];
-        triangle.indices[i] = vertexMap.insert(vertex);
-        if (currentPolyface !== undefined)
-          currentPolyface.vertexIndexMap.set(triangle.indices[i], visitor.clientPointIndex(i));
-      }
-
-      this.addTriangle(triangle);
+    for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
+      const triangle = this.createTriangle(triangleIndex, visitor, polyfaceVisitorOptions);
+      if (undefined !== triangle)
+        this.addTriangle(triangle);
     }
+  }
+
+  public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): VertexKeyProps[] | undefined {
+    const { point, param, requireNormals } = visitor;
+    const { fillColor, haveParam } = options;
+    const qPointParams = this.mesh.points.params;
+
+    const vertices = [];
+    for (let i = 0; i < 3; ++i) {
+      const vertexIndex = 0 === i ? 0 : triangleIndex + i;
+      const position = QPoint3d.create(point.getPoint3dAt(vertexIndex), qPointParams);
+      const normal = requireNormals ? new OctEncodedNormal(visitor.getNormal(vertexIndex)) : undefined;
+      const uvParam = haveParam ? param![vertexIndex] : undefined;
+      vertices[i] = { position, fillColor, normal, uvParam };
+    }
+
+    // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
+    // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
+    // Detect beforehand instead.
+    if (vertices[0].position === vertices[1].position || vertices[0].position === vertices[2].position || vertices[1].position === vertices[2].position)
+      return undefined;
+
+    return vertices;
+  }
+
+  public createTriangle(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): Triangle | undefined {
+    // generate vertex key properties for each of the three sides of the triangle
+    const vertices = this.createTriangleVertices(triangleIndex, visitor, options);
+
+    // avoid creating degenerate triangles
+    if (undefined === vertices)
+      return undefined;
+
+    const { edgeVisible } = visitor;
+
+    const triangle = new Triangle();
+
+    triangle.setEdgeVisibility(
+      0 === triangleIndex ? edgeVisible[0] : false,
+      edgeVisible[triangleIndex + 1],
+      triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false,
+    );
+
+    // ###TODO handle mappedTexture param
+    // ###TODO finish computeUVParams on TextureMapping
+
+    // set each triangle index to the index associated with the vertex key location in the vertex map
+    vertices.forEach((vertexProps: VertexKeyProps, i: number) => {
+      const vertexKeyIndex = this.addVertex(vertexProps);
+
+      triangle.indices[i] = vertexKeyIndex;
+
+      // if the current polyface exists, map the vertex key index to the visitor's client point index
+      if (this.currentPolyface !== undefined)
+        this.currentPolyface.vertexIndexMap.set(vertexKeyIndex, visitor.clientPointIndex(i));
+    });
+
+    return triangle;
   }
 
   /** removed Feature for now */
@@ -179,8 +206,8 @@ export class MeshBuilder {
     const poly = new MeshPolyline(startDistance);
     const points = pts instanceof QPoint3dList ? pts : QPoint3dList.createFrom(pts, mesh.points.params);
 
-    for (const point of points)
-      poly.addIndex(this.addVertex(point, fillColor));
+    for (const position of points)
+      poly.addIndex(this.addVertex({ position, fillColor }));
 
     mesh.addPolyline(poly);
   }
@@ -196,9 +223,9 @@ export class MeshBuilder {
     const poly = new MeshPolyline(startDistance);
     const points = QPoint3dList.createFrom(pts, mesh.points.params);
 
-    for (const point of points) {
-      mesh.addVertex(point, fillColor); // ###TODO is this only distinction between addPolyline and addPointString?
-      poly.addIndex(this.addVertex(point, fillColor));
+    for (const position of points) {
+      mesh.addVertex({ position, fillColor }); // ###TODO is this only distinction between addPolyline and addPointString is that we always add the vertex to the mesh for point string?
+      poly.addIndex(this.addVertex({ position, fillColor }, false));
     }
 
     mesh.addPolyline(poly);
@@ -226,21 +253,18 @@ export class MeshBuilder {
   // ###TODO: empty method declaration?
   // public addMesh(triangle: Triangle): void;
 
-  public addVertex(qPoint: QPoint3d, fillColor: number): number {
-    return this.vertexMap.add(qPoint, fillColor);
+  public addVertex(vertex: VertexKeyProps, addToMeshOnInsert = true): number {
+    // if vertex key isn't duplicate, then also insert properties into mesh
+    const onInsert = (vk: VertexKey) => this.mesh.addVertex(vk);
+    return this.vertexMap.insertKey(vertex, addToMeshOnInsert ? onInsert : undefined);
   }
 
   public addTriangle(triangle: Triangle): void {
-    const { triangleSet, mesh } = this;
-
     // Prefer to avoid adding vertices originating from degenerate triangles before we get here...
     assert(!triangle.isDegenerate);
 
-    const key = new TriangleKey(triangle);
-    if (triangleSet.findEqual(key) === undefined) {
-      triangleSet.insert(key);
-      mesh.addTriangle(triangle);
-    }
+    const onInsert = (_vk: TriangleKey) => this.mesh.addTriangle(triangle);
+    this.triangleSet.insertKey(triangle, onInsert);
   }
 }
 
@@ -248,6 +272,15 @@ export namespace MeshBuilder {
   export interface Props extends Mesh.Props {
     tolerance: number;
     areaTolerance: number;
+  }
+  export interface PolyfaceOptions {
+    includeParams: boolean;
+    fillColor: number;
+    mappedTexture?: TextureMapping;
+  }
+  export interface PolyfaceVisitorOptions extends PolyfaceOptions {
+    triangleCount: number;
+    haveParam: boolean;
   }
 }
 

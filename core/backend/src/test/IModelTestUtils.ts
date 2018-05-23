@@ -221,7 +221,7 @@ export class IModelTestUtils {
     let newModelCode: string = newModelCodeBase;
     let iter: number = 0;
     while (true) {
-      const modelCode = InformationPartitionElement.createCode(testIModel.elements.getRootSubject(), newModelCode);
+      const modelCode = InformationPartitionElement.createCode(testIModel, IModel.rootSubjectId, newModelCode);
       if (testIModel.elements.queryElementIdByCode(modelCode) === undefined)
         return modelCode;
 
@@ -275,8 +275,8 @@ export class IModelTestUtils {
     let newCodeValue: string = newCodeBaseValue;
     let iter: number = 0;
     while (true) {
-      if (SpatialCategory.queryCategoryIdByName(scopeModel, newCodeValue) === undefined)
-        return SpatialCategory.createCode(scopeModel, newCodeValue);
+      if (SpatialCategory.queryCategoryIdByName(scopeModel.iModel, scopeModel.id, newCodeValue) === undefined)
+        return SpatialCategory.createCode(scopeModel.iModel, scopeModel.id, newCodeValue);
 
       newCodeValue = newCodeBaseValue + iter;
       ++iter;

@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { SpatialLocationElement, IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
-import { GeometricElement3dProps, GeometryStreamBuilder } from "@bentley/imodeljs-common";
-import { Point3d, LineSegment3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
+import { SpatialLocationElement, IModelDb, SpatialCategory } from "@bentley/imodeljs-backend";
+import { GeometryStreamProps, GeometryStreamBuilder } from "@bentley/imodeljs-common";
+import { Point3d, LineSegment3d } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
 
 /**
@@ -20,29 +20,18 @@ export class Barrier extends SpatialLocationElement {
   // Note: Do not re-define the constructor. You must not interfere with the constructor that is
   // already defined by the base Element class.
 
-  // Define a factory method to make it easy for backend code to create new instances.
-  public static create(model: PhysicalModel, location: Point3d, angle: Angle, length: number) {
-    const iModel: IModelDb = model.iModel;
-
+  // You can provide handy methods for creating new Robots
+  public static generateGeometry(length: number): GeometryStreamProps {
     const builder = new GeometryStreamBuilder();  // I know what graphics represent a robot.
     const p1 = Point3d.createZero();
     const p2 = Point3d.createFrom({ x: length, y: 0.0, z: 0.0 });
     const circle = LineSegment3d.create(p1, p2);
     builder.appendGeometry(circle);
+    return builder.geometryStream;
+  }
 
-    const props: GeometricElement3dProps = {      // I know what class and category to use.
-      model: model.id,
-      classFullName: RobotWorld.Class.Barrier,
-      category: RobotWorld.getCategory(iModel, RobotWorld.Class.Barrier).id,
-      geom: builder.geometryStream,
-      placement: { origin: location, angles: new YawPitchRollAngles(angle, Angle.zero(), Angle.zero()) },
-    };
-
-    const r = new Barrier(props, iModel);           // construct the Barrier instance
-    r.length = length;
-    r.angle = angle.degrees;
-
-    return r;
+  public static getCategory(iModel: IModelDb): SpatialCategory {
+    return RobotWorld.getCategory(iModel, RobotWorld.Class.Barrier);
   }
 
   // You can write methods to implement business logic that apps can call.

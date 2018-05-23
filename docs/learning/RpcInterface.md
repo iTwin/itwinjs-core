@@ -17,7 +17,7 @@ An RpcInterface is defined and implemented in TypeScript. Conceptually, the inte
 
 In practice, two TypeScript classes are needed, as explained below.
 
-Communication between a client and the server is via [RPC](./Glossary.md#RPC). Many RPC mechanisms are [available](../overview/RpcInterface.md). Each RPC mechanism is encapsulated in an RpcConfiguration. [RpcManager]($common) is used by clients and servers to [apply configurations to RpcInterfaces](../overview/AppTailoring.md#rpc-configuration).
+Communication between a client and the server is via [RPC](./Glossary.md#RPC). Many RPC mechanisms are [available](../overview/RpcInterface.md#rpc-configuration). Each RPC mechanism is encapsulated in an RpcConfiguration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces, as described below.
 
 RpcInterface methods are always [asynchronous](#asynchronous-nature-of-rpcInterfaces).
 
@@ -82,7 +82,8 @@ Impls must be registered at runtime, as explained next.
 
 A server must expose the RpcInterfaces that it implements or imports, so that clients can use them.
 
-First, the server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
+### 1. Register Impls
+The server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
 
 *Example:*
 
@@ -90,7 +91,8 @@ First, the server must call [RpcManager.registerImpl]($common) to register the i
 [[include:RpcInterface.registerImpls]]
 ```
 
-Next, the server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters. A server will often use [FeatureGates]($common) to decide which interfaces to expose.
+### 2. Choose Interfaces
+The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters. A server will often use [FeatureGates]($common) to decide which interfaces to expose.
 
 *Example:*
 
@@ -98,15 +100,62 @@ Next, the server must decide which interfaces it wants to expose. A server can e
 [[include:RpcInterface.selectInterfacesToExpose]]
 ```
 
-Finally, the server must choose the appropriate RPC configuration for the interfaces. The choice of RPC configuration is simple and corresponds to how the server itself is deployed.
+### 3. Configure Interfaces
+The server must choose the appropriate RPC configuration for the interfaces that it exposes to clients. If the server is an app backend, the RPC configuration must correspond to the app configuration.
 
-*Example:*
+|App Configuration|RPC Configuration for App-Specific RpcInterfaces
+|---------------|-----------|--------------------
+|Mobile app|[in-process RPC configuration](../overview/RpcInterface.md#in-process-rpc-configuration)
+|Desktop app|[desktop RPC configuration](../overview/RpcInterface.md#desktop-rpc-configuration)
+|Web app|a [Web PRC configuration](../overview/RpcInterface.md#web-rpc-configuration)
 
-```ts
-[[include:RpcInterface.configureImpl]]
+A backend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#app-initialization).
+
+If the server is a [service](../overview/App.md#imodel-services), it must always use a [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration) for its interfaces. Each client must use the same configuration.
+
+*Web Example:*
+``` ts
+[[include:RpcInterface.initializeImplBentleyCloud]]
 ```
 
-A server configures its RpcInterfaces in its [configuration-specific main](./AppTailoring.md).
+*Desktop Example:*
+``` ts
+[[include:RpcInterface.initializeImplDesktop]]
+```
+
+## 4. Serve the Interfaces
+
+When a backend is configured as a Web app, it must implement a Web server to serve out its interfaces, so that in-coming client requests are forwarded to the implementations. This is always true of all [services](../overview/App.md#imodel-services). Any Web server technology can be used. Normally, a single function call is all that is required to integrate all configured interfaces with the Web server. For example, if a Web server uses express, it would serve its RpcInterfaces like this:
+```ts
+const webServer = express();
+...
+webServer.post("*", async (request, response) => {
+  rpcConfiguration.protocol.handleOperationPostRequest(request, response);
+});
+```
+It is this simple because the server should be concerned *only* with serving its RpcInterfaces and not with static resources or any other kind of API.
+
+## Client-side Configuration
+
+The client must choose the interfaces that it plans to use.
+
+The client then configures each interface with the correct RPC mechanism. For all interfaces served by the app backend, the RPC configuration must corresponds to the app configuration. A frontend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#app-initialization).
+
+Clients must always use a [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration) for RpcInterfaces provided by a [service](../overview/App.md#imodel-services). Client and server must use the same configuration.
+
+*Web Example:*
+``` ts
+[[include:RpcInterface.initializeClientBentleyCloud]]
+```
+
+Note that the client must specify the server URL for a Web configuration.
+
+*Desktop Example:*
+``` ts
+[[include:RpcInterface.initializeClientDesktop]]
+```
+
+For a desktop or mobile configuration, the connection is local and so no URL or authorization token is necessary.
 
 ## RpcInterface Performance
 

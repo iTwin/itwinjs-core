@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -10,7 +10,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { GraphicsList, Branch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Dictionary } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
@@ -23,6 +23,7 @@ import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { LineCode } from "./EdgeOverrides";
+import { Material } from "./Material";
 
 export const enum ContextState {
   Uninitialized,
@@ -176,6 +177,92 @@ export class Capabilities {
   }
 }
 
+/** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
+export class IdMap {
+  /** Mapping of materials by their key values. */
+  public readonly materialMap: Map<string, RenderMaterial>;
+  /** Mapping of textures by their key values. */
+  public readonly textureMap: Map<string, RenderTexture>;
+  /** Mapping of textures using gradient symbology. */
+  public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
+
+  public constructor() {
+    this.materialMap = new Map<string, RenderMaterial>();
+    this.textureMap = new Map<string, RenderTexture>();
+    this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+  }
+
+  /** Add a material to the material map, given that it has a valid key. */
+  public addMaterial(material: RenderMaterial) {
+    if (material.key)
+      this.materialMap.set(material.key, material);
+  }
+
+  /** Add a texture to the texture map, given that it has a valid key. */
+  public addTexture(texture: RenderTexture) {
+    if (texture.key)
+      this.textureMap.set(texture.key, texture);
+  }
+
+  /** Add a texture to the gradient symbology map. */
+  public addGradient(gradientSymb: Gradient.Symb, texture: RenderTexture) {
+    this.gradientMap.set(gradientSymb, texture);
+  }
+
+  /** Find a mapped material using its key. If not found, returns undefined. */
+  public findMaterial(key: string): RenderMaterial | undefined {
+    return this.materialMap.get(key);
+  }
+
+  /** Find a mapped texture using its key. If not found, returns undefined. */
+  public findTexture(key: string): RenderTexture | undefined {
+    return this.textureMap.get(key);
+  }
+
+  /** Find a mapped gradient using its symbology. If not found, returns undefined. */
+  public findGradient(grad: Gradient.Symb): RenderTexture | undefined {
+    return this.gradientMap.get(grad);
+  }
+
+  /**
+   * Find a material using its key. If not found, create and return it.
+   * This will also add it to the map if the key was valid.
+   */
+  public createMaterial(params: RenderMaterial.Params): RenderMaterial {
+    if (!params.key) {
+      return new Material(params);
+    }
+    let material = this.materialMap.get(params.key);
+    if (!material) {
+      material = new Material(params);
+      this.materialMap.set(params.key, material);
+    }
+    return material;
+  }
+
+  /**
+   * Find a texture using its key. If not found, create it and return it.
+   * This will also add it to the map if the key was valid.
+   */
+  public createTexture(params: RenderTexture.Params): RenderTexture {
+    if (!params.key) {
+      return new RenderTexture(params);
+    }
+    let texture = this.textureMap.get(params.key)!;
+    if (!texture) {
+      texture = new RenderTexture(params);
+      this.textureMap.set(params.key, texture);
+    }
+    return texture;
+  }
+
+  /**
+   * Get a gradient using its symbology. If not found, create it and return it.
+   * This will also add it to the map.
+   */
+  // public createGradient(grad: Gradient.Symb)
+}
+
 export class System extends RenderSystem {
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -189,6 +276,8 @@ export class System extends RenderSystem {
 
   private _lineCodeTexture: TextureHandle | undefined;
   public get lineCodeTexture() { return this._lineCodeTexture; }
+
+  public readonly renderMap: Dictionary<IModelConnection, IdMap>;
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
@@ -259,6 +348,63 @@ export class System extends RenderSystem {
     }
   }
 
+  /** Find an imodel rendering map using an IModelConnection. Returns undefined if not found. */
+  public findIModelMap(imodel: IModelConnection): IdMap | undefined {
+    return this.renderMap.get(imodel);
+  }
+
+  /**
+   * Find an imodel rendering map using an IModelConnection. If not found, as long as the id
+   * is valid, create and return a new one, adding it to the dictionary.
+   */
+  public createIModelMap(imodel: IModelConnection): IdMap | undefined {
+    let idMap = this.renderMap.get(imodel);
+    if (!idMap) {
+      if (!imodel.iModelToken.iModelId)
+        return undefined;
+      idMap = new IdMap();  // This currently starts empty, no matter the current contents of the imodel
+      this.renderMap.set(imodel, idMap);
+    }
+    return idMap;
+  }
+
+  /**
+   * Removes an imodel map from the renderMap. This function is called when the onClose event occurs on an iModel.
+   * Note that this does not remove
+   */
+  private removeIModelMap(imodel: IModelConnection) {
+    this.renderMap.delete(imodel);
+  }
+
+  /**
+   * Actions to perform when the IModelApp shuts down. Release all imodel apps that were involved in the shutdown.
+   */
+  public onShutDown() {
+    this.renderMap.clear();
+    IModelConnection.onClose.removeListener(this.removeIModelMap);
+  }
+
+  /**
+   * Creates a material and adds it to the imodel's render map. If the material already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
+    const idMap = this.renderMap.get(imodel);
+    if (!idMap) {
+      return undefined;
+    }
+    return idMap!.createMaterial(params);
+  }
+
+  /** Searches through the imodel's render map for a material, given its key. Returns undefined if none found. */
+  public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
+    const idMap = this.renderMap.get(imodel);
+    if (idMap !== undefined) {
+      return idMap.findMaterial(key);
+    }
+    return undefined;
+  }
+
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
     this.canvas = canvas;
@@ -266,6 +412,19 @@ export class System extends RenderSystem {
     this.techniques = techniques;
     this.capabilities = capabilities;
     this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
+    this.renderMap = new Dictionary<IModelConnection, IdMap>((lhs: IModelConnection, rhs: IModelConnection): number => {
+      if (lhs.iModelToken.iModelId !== rhs.iModelToken.iModelId) {
+        if (lhs.iModelToken.iModelId === undefined || rhs.iModelToken.iModelId === undefined)
+          return -1;
+        else if (lhs.iModelToken.iModelId < rhs.iModelToken.iModelId!)
+          return -1;
+        else
+          return 1;
+      }
+      return 0;
+    });
+    // Make this System a subscriber to the the IModelConnection onClose event
+    IModelConnection.onClose.addListener(this.removeIModelMap);
   }
 }
 

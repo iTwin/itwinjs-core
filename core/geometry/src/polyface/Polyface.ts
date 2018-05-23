@@ -163,6 +163,7 @@ export class PolyfaceData {
     if (!NumberArray.isExactEqual(this.edgeVisible, other.edgeVisible)) return false;
     return true;
   }
+  public get requireNormals(): boolean { return undefined !== this.normal; }
   public get pointCount() { return this.point.length; }
   public get normalCount() { return this.normal ? this.normal.length : 0; }
   public get paramCount() { return this.param ? this.param.length : 0; }
@@ -589,7 +590,6 @@ export abstract class PolyfaceVisitor extends PolyfaceData {
   public abstract currentReadIndex(): number;
   public abstract moveToNextFacet(): boolean;
   public abstract reset(): void;
-
   public abstract clientPointIndex(i: number): number;
   public abstract clientParamIndex(i: number): number;
   public abstract clientNormalIndex(i: number): number;

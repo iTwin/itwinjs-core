@@ -39,11 +39,11 @@ export class RobotWorld extends Schema {
     // ... other modules ...
   }
 
-// ...
+  // ...
 
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ IModelDb.importSchema
+  // __PUBLISH_EXTRACT_START__ IModelDb.importSchema
 
   // Import the RobotWorld schema into the specified iModel.
   // Also do some one-time bootstrapping of supporting definitions such as Categories.
@@ -63,7 +63,7 @@ export class RobotWorld extends Schema {
     // be used with the classes in this schema.
     RobotWorld.bootStrapDefinitions(iModelDb);
   }
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
   private static bootStrapDefinitions(iModelDb: IModelDb) {
     // Insert some pre-defined categories
@@ -72,24 +72,24 @@ export class RobotWorld extends Schema {
     if (true) {
       const cat: SpatialCategory = SpatialCategory.create(dictionary, _schemaNames.Class.Robot);
       cat.id = iModelDb.elements.insertElement(cat);
-      cat.setDefaultAppearance( new Appearance({ color: ColorByName.silver }));
+      cat.setDefaultAppearance(new Appearance({ color: ColorByName.silver }));
       iModelDb.elements.updateElement(cat);
     }
 
     if (true) {
       const cat: SpatialCategory = SpatialCategory.create(dictionary, _schemaNames.Class.Barrier);
       cat.id = iModelDb.elements.insertElement(cat);
-      cat.setDefaultAppearance( new Appearance({ color: ColorByName.brown }));
+      cat.setDefaultAppearance(new Appearance({ color: ColorByName.brown }));
       iModelDb.elements.updateElement(cat);
     }
   }
 
   // Look up the category to use for instances of the specified class
   public static getCategory(iModelDb: IModelDb, className: _schemaNames.Class): SpatialCategory {
-    const catid = SpatialCategory.queryCategoryIdByName(iModelDb.models.getModel(IModelDb.dictionaryId) as DictionaryModel, className);
-    if (catid === undefined)
+    const categoryId = SpatialCategory.queryCategoryIdByName(iModelDb, IModelDb.dictionaryId, className);
+    if (categoryId === undefined)
       throw new IModelError(IModelStatus.NotFound);
-    return iModelDb.elements.getElement(catid) as SpatialCategory;
+    return iModelDb.elements.getElement(categoryId) as SpatialCategory;
   }
 
 }

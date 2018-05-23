@@ -1,6 +1,6 @@
 # The Backend Library
 
-The Backend refers to the layers of the iModelJs library that run on a computer with a copy of an iModel. The backend always runs in-process (i.e. in the same address space) with the native layers.
+The Backend refers to the layers of the iModelJs library that run on a computer with a copy of an iModel. The backend always runs in-process (i.e. in the same address space) with the native layers. See [the app architecture overview](../../overview/App.md) for more on how backends fit into overall app architecture.
 
 The backend:
 
@@ -27,6 +27,10 @@ The backend library is delivered in the **npm package** `@bentley/imodeljs-backe
 * [Executing ECSQL statements](./ExecutingECSQL)
 * [Code Examples](./ECSQLCodeExamples)
 * [Frequently used ECSQL queries](./ECSQL-queries)
+
+## Schemas
+
+* [Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
 
 ## Dealing with Codes
 

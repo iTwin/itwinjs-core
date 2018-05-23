@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module BisCore */
 
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, Code, ElementProps, Appearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
+import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, Appearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
@@ -83,15 +83,21 @@ export class DrawingCategory extends Category {
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
 
+  /** Looks up the CategoryId of a DrawingCategory by model and name */
+  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64Props, categoryName: string): Id64 | undefined {
+    const code: Code = DrawingCategory.createCode(iModel, scopeModelId, categoryName);
+    return iModel.elements.queryElementIdByCode(code);
+  }
+
   /** Create a Code for a DrawingCategory given a name that is meant to be unique within the scope of the specified DefinitionModel.
-   * @param imodel  The IModel
-   * @param scopeModel The scope of the category.
+   * @param iModel  The IModel
+   * @param scopeModelId The Id of the DefinitionModel that contains the DrawingCategory and provides the scope for its name.
    * @param codeValue The name of the category
    * @return A drawing category Code
    */
-  public static createCode(scopeModel: DefinitionModel, codeValue: string): Code {
-    const codeSpec = scopeModel.iModel.codeSpecs.getByName(DrawingCategory.getCodeSpecName());
-    return new Code({ spec: codeSpec.id, scope: scopeModel.id.toString(), value: codeValue });
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(DrawingCategory.getCodeSpecName());
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 }
 
@@ -107,20 +113,20 @@ export class SpatialCategory extends Category {
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
-  public static queryCategoryIdByName(scopeModel: DefinitionModel, categoryName: string): Id64 | undefined {
-    const code = SpatialCategory.createCode(scopeModel, categoryName);
-    return scopeModel.iModel.elements.queryElementIdByCode(code);
+  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64Props, categoryName: string): Id64 | undefined {
+    const code: Code = SpatialCategory.createCode(iModel, scopeModelId, categoryName);
+    return iModel.elements.queryElementIdByCode(code);
   }
 
   /** Create a Code for a SpatialCategory given a name that is meant to be unique within the scope of the specified DefinitionModel.
-   * @param imodel  The IModel
-   * @param scopeModel The scope of the category.
+   * @param iModel  The IModel
+   * @param scopeModelId The Id of the DefinitionModel that contains the SpatialCategory and provides the scope for its name.
    * @param codeValue The name of the category
    * @return A spatial category Code
    */
-  public static createCode(scopeModel: DefinitionModel, codeValue: string): Code {
-    const codeSpec = scopeModel.iModel.codeSpecs.getByName(SpatialCategory.getCodeSpecName());
-    return new Code({ spec: codeSpec.id, scope: scopeModel.id.toString(), value: codeValue });
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(SpatialCategory.getCodeSpecName());
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
   /**
@@ -131,10 +137,9 @@ export class SpatialCategory extends Category {
    */
   public static create(scopeModel: DefinitionModel, categoryName: string): SpatialCategory {
     return scopeModel.iModel.elements.createElement({
-      iModel: scopeModel.iModel,
       classFullName: SpatialCategory.classFullName,
       model: scopeModel.id,
-      code: SpatialCategory.createCode(scopeModel, categoryName),
+      code: SpatialCategory.createCode(scopeModel.iModel, scopeModel.id, categoryName),
     }) as SpatialCategory;
   }
 }

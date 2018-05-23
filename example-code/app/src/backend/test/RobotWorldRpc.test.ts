@@ -112,3 +112,20 @@ describe("RobotWorldRpc", () => {
     simulateBackendShutdown();
   });
 });
+
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloud
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+
+export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], webServerUrl?: string) {
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: webServerUrl};
+  BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
+}
+// __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientDesktop
+import { ElectronRpcManager } from "@bentley/imodeljs-common";
+
+export function initializeRpcClientDesktop(interfaces: RpcInterfaceDefinition[]) {
+  ElectronRpcManager.initializeClient({}, interfaces);
+}
+// __PUBLISH_EXTRACT_END__

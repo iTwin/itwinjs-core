@@ -72,7 +72,7 @@ describe("RobotWorld", () => {
       assert.deepEqual((iModel.elements.getElement(robot1Id) as Robot).placement.origin, barrier1.placement.origin);
       const barriersHit = RobotWorldEngine.queryObstaclesHitByRobot(iModel, robot1Id);
       assert.equal(barriersHit.length, 1, "expect a collision");
-      assert.deepEqual(barriersHit[0], barrier1.id);
+      assert.deepEqual(barriersHit[0], barrier1.id.toString());
     }
 
     iModel.saveChanges();

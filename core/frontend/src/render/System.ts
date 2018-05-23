@@ -12,6 +12,7 @@ import {
   Hilite,
   HiddenLine,
   ColorDef,
+  RenderMaterial,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -170,8 +171,8 @@ export abstract class RenderSystem {
   // /** Create an offscreen render target. */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
-  // /** Find a previously-created Material by key. Returns null if no such material exists. */
-  // public abstract findMaterial(key: MaterialKey, imodel: IModel): Material;
+  /** Find a previously-created Material by key. Returns null if no such material exists. */
+  public abstract findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined;
 
   // /**
   //  * Get or create a material from a material element, by id
@@ -179,8 +180,8 @@ export abstract class RenderSystem {
   //  */
   // public abstract getMaterial(id: Id64, imodel: IModel): Material;
 
-  // /** Create a Material from parameters */
-  // public abstract createMaterial(params: CreateMaterialParams, imodel: IModel): Material;
+  /** Create a Material from parameters */
+  public abstract createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined;
 
   /** Create a GraphicBuilder from parameters */
   public abstract createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;

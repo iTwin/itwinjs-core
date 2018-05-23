@@ -710,7 +710,7 @@ describe("iModel", () => {
 
   it("should create model with custom relationship to modeled element", () => {
     const testBimName = "should-create-models-with-custom-relationship.bim";
-    let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", {copyFilename: testBimName});
+    let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", { copyFilename: testBimName });
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     testImodel.importSchema(schemaPathname); // will throw an exception if import fails
@@ -724,7 +724,7 @@ describe("iModel", () => {
     if (true) {
       const newPartition1 = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, Code.createEmpty());
       relClassName1 = "TestBim:TestModelModelsElement";
-      const modeledElementRef = new RelatedElement({id: newPartition1, relClassName: relClassName1});
+      const modeledElementRef = new RelatedElement({ id: newPartition1, relClassName: relClassName1 });
       newModelId1 = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef);
       assert.isTrue(newModelId1.isValid());
     }
@@ -757,7 +757,7 @@ describe("iModel", () => {
 
     // Find or create a SpatialCategory
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+    let spatialCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance({ color: ColorByName.darkRed }));
 
@@ -823,7 +823,7 @@ describe("iModel", () => {
 
     // Find or create a SpatialCategory
     const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary, "MySpatialCategory");
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
       spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new Appearance());
     }
@@ -952,8 +952,6 @@ describe("iModel", () => {
 
     const ifperfimodel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
 
-    const dictionary: DictionaryModel = ifperfimodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");
 
@@ -962,7 +960,7 @@ describe("iModel", () => {
     // const modelId: Id64 = ifperfimodel.models.querySubModelId(physicalPartitionCode);
     const modelId = new Id64("0X11");
 
-    const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(dictionary, "DefaultCategory");
+    const defaultCategoryId: Id64 | undefined = SpatialCategory.queryCategoryIdByName(ifperfimodel, IModel.dictionaryId, "DefaultCategory");
     assert.isFalse(undefined === defaultCategoryId);
 
     const elementCount = 10000;

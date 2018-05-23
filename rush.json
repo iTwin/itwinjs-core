@@ -59,7 +59,7 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/simpleviewtest",
+      "packageName": "simpleviewtest",
       "projectFolder": "simpleviewtest",
       "shouldPublish": false
     }
