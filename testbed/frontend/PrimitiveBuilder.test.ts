@@ -14,8 +14,11 @@ import {
   System,
   GraphicBuilderCreateParams,
   GraphicType,
+  GeometryAccumulator,
+  DisplayParams,
 } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
+import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d } from "@bentley/geometry-core";
+import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
 
@@ -103,8 +106,49 @@ describe("PrimitiveBuilder tests", () => {
     expect(numPointsA).to.be.lessThan(numPointsB);
   });
 
-  // ###TODO
-  // it("PrimitiveBuilder should be able to finish graphics", () => {
+  it("PrimitiveBuilder should be able to finish graphics", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
 
-  // });
+    const viewport = new Viewport(canvas, spatialView);
+    const scenegGfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(System.instance, scenegGfParams);
+    const accum = new GeometryAccumulator(imodel, System.instance);
+
+    const gfParams: GraphicParams = new GraphicParams();
+    gfParams.setLineColor(ColorDef.white);
+    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+
+    const points: Point3d[] = [];
+    points.push(new Point3d(0, 0, 0));
+    points.push(new Point3d(1, 0, 0));
+    points.push(new Point3d(1, 1, 0));
+    points.push(new Point3d(0, 1, 0));
+
+    const line = LineString3d.create(points);
+    const loop = Loop.create(line);
+    const loopRange: Range3d = new Range3d();
+    loop.range(undefined, loopRange);
+
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+
+    const pathPoints: Point3d[] = [];
+    pathPoints.push(new Point3d(0, 0, 0));
+    pathPoints.push(new Point3d(1, 0, 0));
+
+    const line2 = LineString3d.create(pathPoints);
+    const pth = Path.create(line2);
+
+    const gfParams2: GraphicParams = new GraphicParams();
+    gfParams2.setLineColor(ColorDef.white);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
+
+    accum.addPolyface(loopGeom.getPolyfaces(0.22)![0].indexedPolyface, displayParams, Transform.createIdentity());
+    accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
+
+    primBuilder.finishGraphic(accum);
+    expect(primBuilder.primitives.length).to.equal(2);
+  });
 });

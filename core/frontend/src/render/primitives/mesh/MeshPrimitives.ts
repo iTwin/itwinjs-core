@@ -24,13 +24,14 @@ import {
   EdgeArgs,
   PolylineEdgeArgs,
   FillFlags,
-  QPoint3d,
+  // QPoint3d,
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
 import { IModelConnection } from "../../../IModelConnection";
 import { ColorMap } from "../ColorMap";
 import { RenderGraphic, RenderSystem } from "../../System";
 import { Triangle, TriangleList } from "../Primitives";
+import { VertexKeyProps } from "../VertexKey";
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
 export class PolylineArgs {
@@ -268,43 +269,21 @@ export class Mesh {
       triangles.addTriangle(triangle);
   }
 
-  /**
-   * @param point called vert in native, point to be added to points list
-   * @param _fillColor not used currently
-   * @param normal optional
-   * @param param optional
-   */
-  public addVertex(point: QPoint3d, _fillColor: number, normal?: OctEncodedNormal, param?: Point2d): number {
-    this.points.push(point);
+  public addVertex(props: VertexKeyProps): number {
+    const { position, normal, uvParam, fillColor } = props;
+
+    this.points.push(position);
 
     if (undefined !== normal)
       this.normals.push(normal);
 
-    if (undefined !== param)
-      this.uvParams.push(param);
+    if (undefined !== uvParam)
+      this.uvParams.push(uvParam);
 
-    // ###TODO
-    // insertColorVertex(fillColor);
+    this.colorMap.insert(fillColor);
     return this.points.length - 1;
   }
 
-  // ###TODO implement insertVertexAttribute (RenderPrimitives.cpp 975)
-  // public insertColorVertex(fillColor: number): void {
-  //   const { colorMap, colors, points } = this;
-
-  //   if (colorMap.isEmpty) {
-  //     colorMap.getIndex(fillColor);
-
-  //     assert(colorMap.isUniform);
-  //     assert(0 === colorMap.getIndex(fillColor));
-  //   } else if (!colorMap.isUniform || colorMap.hasColor(fillColor)) {
-  //     if (0 === colors.length) {
-  //       // back-fill uniform value for existing vertices...
-  //       colors.set(new Array<number>().fill(0, 0, points.length));
-  //     }
-  //     colors.
-  //   }
-  // }
 }
 
 export namespace Mesh {

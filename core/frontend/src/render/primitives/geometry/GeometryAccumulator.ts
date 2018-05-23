@@ -67,7 +67,7 @@ export class GeometryAccumulator {
 
   public addPolyface(ipf: IndexedPolyface, displayParams: DisplayParams, transform: Transform): boolean {
     const range: Range3d | undefined = this.getPrimitiveRange(ipf);
-    if (!range)
+    if (undefined === range)
       return false;
 
     this.calculateTransform(transform, range);
@@ -102,20 +102,11 @@ export class GeometryAccumulator {
 
   /** removed ViewContext */
   public toMeshes(options: GeometryOptions, tolerance: number): MeshList {
-    const meshes = new MeshList();
-
     if (this.geometries.isEmpty)
-      return meshes;
+      return new MeshList();
 
     const builderMap = this.toMeshBuilderMap(options, tolerance);
-
-    for (const builder of builderMap.extractPairs()) {
-      const mesh = builder.value.mesh;
-      if (mesh.points.length !== 0)
-        meshes.push(mesh);
-    }
-
-    return meshes;
+    return builderMap.toMeshes();
   }
 
   /**
