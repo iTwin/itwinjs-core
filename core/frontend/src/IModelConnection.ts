@@ -7,7 +7,7 @@ import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileId, TileTreeProps, TileProps, TileGeometryProps,
+  TileId, TileTreeProps, TileProps,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -439,9 +439,5 @@ export class IModelConnectionTiles {
 
   public async getTileProps(ids: TileId[]): Promise<TileProps[]> {
     return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids);
-  }
-
-  public async getTileGeometry(ids: TileId[]): Promise<TileGeometryProps[]> {
-    return IModelTileRpcInterface.getClient().getTileGeometry(this._iModel.iModelToken, ids);
   }
 }

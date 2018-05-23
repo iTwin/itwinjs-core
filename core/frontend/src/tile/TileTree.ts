@@ -75,6 +75,7 @@ export class Tile {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
+    // ###TODO deserialize geometry
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
@@ -346,11 +347,15 @@ export namespace Tile {
       public readonly childIds: string[],
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
-      public readonly zoomFactor?: number) { }
+      public readonly zoomFactor?: number,
+      public readonly geometry?: Uint8Array) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
+      // ###TODO: We should be requesting the geometry separately, when needed
+      // ###TODO: Transmit as binary, not base-64
+      const tileBytes = undefined !== props.geometry ? new Uint8Array(atob(props.geometry).split("").map((c) => c.charCodeAt(0))) : undefined;
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor);
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, tileBytes);
     }
   }
 }

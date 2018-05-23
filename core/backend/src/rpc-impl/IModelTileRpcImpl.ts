@@ -10,7 +10,6 @@ import {
   TileProps,
   TileId,
   TileTreeProps,
-  TileGeometryProps,
   RpcInterface,
   RpcManager,
 } from "@bentley/imodeljs-common";
@@ -26,11 +25,6 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   public async getTileProps(_iModelToken: IModelToken, _ids: TileId[]): Promise<TileProps[]> {
     const props: TileProps[] = [];
-    return props;
-  }
-
-  public async getTileGeometry(_iModelToken: IModelToken, _ids: TileId[]): Promise<TileGeometryProps[]> {
-    const props: TileGeometryProps[] = [];
     return props;
   }
 }

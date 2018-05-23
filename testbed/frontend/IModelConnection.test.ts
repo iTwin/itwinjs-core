@@ -99,9 +99,6 @@ describe("IModelConnection", () => {
     const tileIds: TileId[] = [ new TileId(Id64.invalidId, "not a real tile ID") ];
     const tileProps = await iModel.tiles.getTileProps(tileIds);
     expect(tileProps.length).to.equal(0);
-
-    const tileGeom = await iModel.tiles.getTileGeometry(tileIds);
-    expect(tileGeom.length).to.equal(0);
   });
 
   it("Parameterized ECSQL (#integration)", async () => {
