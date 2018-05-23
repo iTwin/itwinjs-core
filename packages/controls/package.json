@@ -40,8 +40,8 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
-    "@bentley/imodeljs-common": "^0.85",
-    "@bentley/imodeljs-frontend": "^0.85",
+    "@bentley/imodeljs-common": "^0.88",
+    "@bentley/imodeljs-frontend": "^0.88",
     "@types/lodash": "^4.14.0",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
