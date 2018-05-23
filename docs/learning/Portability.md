@@ -2,7 +2,7 @@
 
 This article describes the technologies and best practices that make iModelJs apps portable. An well-written iModelJs app will run on many platforms without modification.
 
-In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../overview/App.md#making-interactive-apps-fit-the-configuration-and-platform).
+In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../overview/AppTailoring.md).
 
 This degree of portability and configurability is possible because of the technologies used by iModelJs apps and the iModelJs app architecture.
 

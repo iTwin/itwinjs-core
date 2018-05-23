@@ -4,4 +4,4 @@ An IModelDb also serves as a staging area where an app can change the content of
 
 Use [IModelDb.pushChanges]($backend) to push local changes to iModelHub as a changeset, so that others can see them. After a changeset is pushed to iModelHub, it becomes part of the iModel's permanent timeline.
 
-An app that modifies models, elements, or codes must use [ConcurrencyControl]($backend) to coordinate with other users.
+An app that modifies models, elements, or codes must use [ConcurrencyControl](./ConcurrencyControl.md) to coordinate with other users.

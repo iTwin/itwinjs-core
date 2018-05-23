@@ -36,11 +36,11 @@ The [frontend --> backend communication](./RpcInterface.md) is over HTTPS for in
 
 ![SoftwareArchitecture-Web](./SoftwareArchitecture-Web.png)
 
-![>](../right_chevron.png)[Write an interactive Web app](../learning/WriteAnInteractiveWebApp.md)
+![>](./right_chevron.png)[Write an interactive Web app](../learning/WriteAnInteractiveWebApp.md)
 
-![>](../right_chevron.png)[Write a Web service](../learning/WriteAWebService.md)
+![>](./right_chevron.png)[Write a Web service](../learning/WriteAWebService.md)
 
-![>](../right_chevron.png)[Write a Web agent](../learning/WriteAWebAgent.md)
+![>](./right_chevron.png)[Write a Web agent](../learning/WriteAWebAgent.md)
 
 ## Desktop
 
@@ -52,7 +52,7 @@ The [frontend --> backend communication](./RpcInterface.md) is over *Inter Proce
 
 ![SoftwareArchitecture-Desktop](./SoftwareArchitecture-Desktop.png)
 
-![>](../right_chevron.png)[Write a desktop app](../learning/WriteAnInteractiveDesktopApp.md)
+![>](./right_chevron.png)[Write a desktop app](../learning/WriteAnInteractiveDesktopApp.md)
 
 ## Mobile
 
@@ -62,7 +62,7 @@ The [frontend --> backend communication](./RpcInterface.md) is over function cal
 
 ![SoftwareArchitecture-Mobile](./SoftwareArchitecture-Mobile.png)
 
-![>](../right_chevron.png)[Write a mobile app](../learning/WriteAnInteractiveMobileApp.md)
+![>](./right_chevron.png)[Write a mobile app](../learning/WriteAnInteractiveMobileApp.md)
 
 ## Comparison
 

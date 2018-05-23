@@ -3,7 +3,7 @@
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information in a different orientation and units.
-|**Backend**|The part of an app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App backends](../overview/App.md)
+|**Backend**|The part of an app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS can have relevance outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The base BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](./backend/IModelDb.md).

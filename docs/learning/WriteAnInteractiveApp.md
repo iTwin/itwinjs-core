@@ -10,12 +10,12 @@ See the [frontend learning articles](./frontend/index.md).
 ## 2. Write the Backend
 Some apps can use an already deployed Web service. In that case, there is no need to write a backend. Just write the frontend's main to [point to the remote service](./RpcInterface.md#client-side-configuration).
 
-To write a [customized backend](./Glossary.md#backend), do the following:
+To write a [customized backend](../overview/App.md#app-backends), do the following:
 
 1. Write initialization logic, such as:
+    * Start [IModelHost](./backend/IModelHost.md)
     * [Initialize Logging](./Logging.md)
     * [Configure FeatureGates](./FeatureGates.md)
-    * Start [IModelHost]($backend)
 1. Write the operations of the backend, such as:
     * [Open an iModel as a briefcase](./backend/IModelDb.md)
     * [Access Elements](./backend/AccessElements.md)

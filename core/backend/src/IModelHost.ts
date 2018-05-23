@@ -18,10 +18,6 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
 
 /**
  * Configuration of imodeljs-backend.
- * <p><em>Example:</em>
- * ``` ts
- * [[include:IModelHost.startup]]
- * ```
  */
 export class IModelHostConfiguration {
   /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
@@ -46,10 +42,6 @@ export class IModelHostConfiguration {
 
 /**
  * IModelHost initializes imodeljs-backend and captures backend configuration. A backend must call [[IModelHost.startup]] before using any of the classes in imodeljs-backend.
- * <p><em>Example:</em>
- * ``` ts
- * [[include:IModelHost.startup]]
- * ```
  */
 export class IModelHost {
   public static configuration?: IModelHostConfiguration;

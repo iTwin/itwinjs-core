@@ -3,9 +3,9 @@
 To write a [Web Service](../overview/App.md#imodel-services), you will do the following:
 
 1. Write initialization logic, such as:
+    * Start [IModelHost](./backend/IModelHost.md)
     * [Initialize Logging](./Logging.md)
     * [Configure FeatureGates](./FeatureGates.md)
-    * Start [IModelHost]($backend)
 1. Write the operations of the service, such as:
     * [Open an iModel as a briefcase](./backend/IModelDb.md)
     * [Access Elements](./backend/AccessElements.md)
