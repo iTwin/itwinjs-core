@@ -38,27 +38,27 @@
       "integrity": "sha1-L6+hX7pF886shjxt3OhUW0M9rQE="
     },
     "@bentley/bemetalsmith": {
-      "version": "2.2.11",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-2.2.11.tgz",
-      "integrity": "sha1-WRJaB/V/pkMSKJNfvxGin9D03gY=",
+      "version": "2.3.1",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith/-/bemetalsmith-2.3.1.tgz",
+      "integrity": "sha1-T66j6T+TjOGfBVVFQIFC8CH3tYQ=",
       "requires": {
         "@bentley/bemetalsmith-add-descriptions": "1.18.7",
         "@bentley/bemetalsmith-add-titles": "2.0.6",
         "@bentley/bemetalsmith-bwc-markdown": "1.19.3",
         "@bentley/bemetalsmith-concat-single-pages": "1.18.6",
-        "@bentley/bemetalsmith-doc-sites": "2.2.4",
+        "@bentley/bemetalsmith-doc-sites": "2.3.0",
         "@bentley/bemetalsmith-generate-index": "2.0.6",
-        "@bentley/bemetalsmith-handlebars-helpers": "2.1.0",
-        "@bentley/bemetalsmith-headings": "2.2.10",
-        "@bentley/bemetalsmith-headings-identifier": "2.0.6",
+        "@bentley/bemetalsmith-handlebars-helpers": "2.3.0",
+        "@bentley/bemetalsmith-headings": "2.3.0",
+        "@bentley/bemetalsmith-headings-identifier": "2.3.0",
         "@bentley/bemetalsmith-insert-api": "1.18.7",
         "@bentley/bemetalsmith-insert-schemas": "2.0.6",
-        "@bentley/bemetalsmith-link-helpers": "2.2.4",
+        "@bentley/bemetalsmith-link-helpers": "2.3.0",
         "@bentley/bemetalsmith-lunr": "2.1.8",
-        "@bentley/bemetalsmith-nested-headings": "1.19.3",
+        "@bentley/bemetalsmith-nested-headings": "2.3.0",
         "@bentley/bemetalsmith-replace-links": "1.18.6",
-        "@bentley/bemetalsmith-toc-metadata": "2.0.0",
-        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.2.4",
+        "@bentley/bemetalsmith-toc-metadata": "2.3.0",
+        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.3.0",
         "@bentley/bwc": "5.1.1",
         "@bentley/icons-webfont": "6.5.0",
         "babel-cli": "6.26.0",
@@ -181,12 +181,12 @@
       }
     },
     "@bentley/bemetalsmith-doc-sites": {
-      "version": "2.2.4",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-doc-sites/-/bemetalsmith-doc-sites-2.2.4.tgz",
-      "integrity": "sha1-XJ6YaxZU501aYmBE+tUsO+NsrqI=",
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-doc-sites/-/bemetalsmith-doc-sites-2.3.0.tgz",
+      "integrity": "sha1-UVf9VRSbyIVAFH0/xFP23kvCKYU=",
       "requires": {
-        "@bentley/bemetalsmith-toc-metadata": "2.0.0",
-        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.2.4",
+        "@bentley/bemetalsmith-toc-metadata": "2.3.0",
+        "@bentley/bemetalsmith-typedoc-json-to-markdown": "2.3.0",
         "lodash.omit": "4.5.0",
         "metalsmith-debug": "1.2.0"
       }
@@ -201,17 +201,17 @@
       }
     },
     "@bentley/bemetalsmith-handlebars-helpers": {
-      "version": "2.1.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-handlebars-helpers/-/bemetalsmith-handlebars-helpers-2.1.0.tgz",
-      "integrity": "sha1-gtW2E8j8AOxuYwChsaI48nIjRSc=",
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-handlebars-helpers/-/bemetalsmith-handlebars-helpers-2.3.0.tgz",
+      "integrity": "sha1-esH4CHAt44Uiqnars2Tb40uC6xA=",
       "requires": {
         "@bentley/be-cases": "1.17.0"
       }
     },
     "@bentley/bemetalsmith-headings": {
-      "version": "2.2.10",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-headings/-/bemetalsmith-headings-2.2.10.tgz",
-      "integrity": "sha1-iDuMPcwiDv8dP/C9JPm0wxqCvt0=",
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-headings/-/bemetalsmith-headings-2.3.0.tgz",
+      "integrity": "sha1-7U7tgjtFaAspRx3qGhn/my8tgNw=",
       "requires": {
         "cheerio": "0.14.0",
         "metalsmith": "2.3.0",
@@ -293,9 +293,9 @@
       }
     },
     "@bentley/bemetalsmith-headings-identifier": {
-      "version": "2.0.6",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-headings-identifier/-/bemetalsmith-headings-identifier-2.0.6.tgz",
-      "integrity": "sha1-TvLL6k/5SQXJa93lWoYWc6u/8fg=",
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-headings-identifier/-/bemetalsmith-headings-identifier-2.3.0.tgz",
+      "integrity": "sha1-U8cSrf684lm99CUDBYdwunTXIRk=",
       "requires": {
         "cheerio": "1.0.0-rc.2",
         "lodash": "4.17.10",
@@ -317,9 +317,9 @@
       }
     },
     "@bentley/bemetalsmith-link-helpers": {
-      "version": "2.2.4",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-link-helpers/-/bemetalsmith-link-helpers-2.2.4.tgz",
-      "integrity": "sha1-sQhZ1IXuSj0rGJ8bhZjrui69Oxs=",
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-link-helpers/-/bemetalsmith-link-helpers-2.3.0.tgz",
+      "integrity": "sha1-RCfC86WKf7KBzk1btp59Kv1FL6c=",
       "requires": {
         "@bentley/bemetalsmith-crud": "1.19.3"
       }
@@ -335,9 +335,9 @@
       }
     },
     "@bentley/bemetalsmith-nested-headings": {
-      "version": "1.19.3",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-nested-headings/-/bemetalsmith-nested-headings-1.19.3.tgz",
-      "integrity": "sha1-fdR5JlBVWCGcIZn88kW6490Fvig=",
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-nested-headings/-/bemetalsmith-nested-headings-2.3.0.tgz",
+      "integrity": "sha1-Ed0a3j5b6KLjpXzSfJIeYyPNyPY=",
       "requires": {
         "micromatch": "3.1.10"
       }
@@ -348,14 +348,14 @@
       "integrity": "sha1-pESfsRqNJyrrdgkoq9+Kp/RLUsQ="
     },
     "@bentley/bemetalsmith-toc-metadata": {
-      "version": "2.0.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-toc-metadata/-/bemetalsmith-toc-metadata-2.0.0.tgz",
-      "integrity": "sha1-NYZIPIz1dlqF+KYoCBL9XZ+9fQA="
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-toc-metadata/-/bemetalsmith-toc-metadata-2.3.0.tgz",
+      "integrity": "sha1-xDlAMY8NXHg8ocie9ynFXwBwUqA="
     },
     "@bentley/bemetalsmith-typedoc-json-to-markdown": {
-      "version": "2.2.4",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-typedoc-json-to-markdown/-/bemetalsmith-typedoc-json-to-markdown-2.2.4.tgz",
-      "integrity": "sha1-Fb6IXOhtA+iXJ6Csmhz41xn5LP0=",
+      "version": "2.3.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/bemetalsmith-typedoc-json-to-markdown/-/bemetalsmith-typedoc-json-to-markdown-2.3.0.tgz",
+      "integrity": "sha1-zvWu35lhmVsv9Jq59nOPVzWzvWI=",
       "requires": {
         "obj-traverse": "1.0.0"
       }
@@ -424,7 +424,7 @@
     },
     "@rush-temp/bentleyjs-core": {
       "version": "file:projects/bentleyjs-core.tgz",
-      "integrity": "sha1-Sc//sDT/4PmgFM5CnGD27G/8aJs=",
+      "integrity": "sha1-3dDCIp9lGFckUxMCgNXd/8zRkQc=",
       "requires": {
         "mocha": "3.5.3",
         "rimraf": "2.6.2",
@@ -434,7 +434,7 @@
     },
     "@rush-temp/bentleyjs-tools": {
       "version": "file:projects/bentleyjs-tools.tgz",
-      "integrity": "sha1-CFiYzUIiHXyZhGPlUS2kBH/tJ0c=",
+      "integrity": "sha1-bRW6X7q0f3A19PWI2+e+m1LdaqA=",
       "requires": {
         "chai": "4.1.2",
         "chalk": "2.4.1",
@@ -462,7 +462,7 @@
     },
     "@rush-temp/example-code-app": {
       "version": "file:projects/example-code-app.tgz",
-      "integrity": "sha1-RKaqJs6XMaXMe361N8L3r0aVbWY=",
+      "integrity": "sha1-ilbzC0rRrBDbNjB+Gl8w9Zs6woA=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "19.0.1",
         "body-parser": "1.18.3",
@@ -487,7 +487,7 @@
     },
     "@rush-temp/example-code-snippets": {
       "version": "file:projects/example-code-snippets.tgz",
-      "integrity": "sha1-zhGSyRWtfgsPf5XXU/lCK2Zd6D8=",
+      "integrity": "sha1-uJ7P/q5z79XHWFWKrmg4hRHNUG4=",
       "requires": {
         "@bentley/imodeljs-n_8-win32-x64": "19.0.1",
         "body-parser": "1.18.3",
@@ -511,7 +511,7 @@
     },
     "@rush-temp/geometry-core": {
       "version": "file:projects/geometry-core.tgz",
-      "integrity": "sha1-VGqaThRL6bDsoWSOVxT7SokanK0=",
+      "integrity": "sha1-/icHsYLt9LkRrssh6DS273hXYKU=",
       "requires": {
         "chai": "4.1.2",
         "cpx": "1.5.0",
@@ -529,7 +529,7 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-mk3J1IowMQfQHNCwCmIUKwzYChE=",
+      "integrity": "sha1-3E8ngQVbThK47Q9W0jMnocUSfkY=",
       "requires": {
         "@bentley/imodeljs-native-platform-api": "19.0.1",
         "@bentley/imodeljs-native-platform-electron": "19.0.1",
@@ -551,7 +551,7 @@
     },
     "@rush-temp/imodeljs-clients": {
       "version": "file:projects/imodeljs-clients.tgz",
-      "integrity": "sha1-6KvoHvCZYDxjB2NjD3yG3lvdODg=",
+      "integrity": "sha1-8oEH3gcOozI0t32aaP1aVLSc5FQ=",
       "requires": {
         "clone": "2.1.1",
         "cpx": "1.5.0",
@@ -574,7 +574,7 @@
     },
     "@rush-temp/imodeljs-common": {
       "version": "file:projects/imodeljs-common.tgz",
-      "integrity": "sha1-ndEAoOOw7vNyrS5KHFc1U9gSpEI=",
+      "integrity": "sha1-dit/GMHRbXFGl3zTpW98EB4IJmw=",
       "requires": {
         "@types/uuid": "3.4.3",
         "cpx": "1.5.0",
@@ -586,9 +586,9 @@
     },
     "@rush-temp/imodeljs-core": {
       "version": "file:projects/imodeljs-core.tgz",
-      "integrity": "sha1-OxFaXhpYc+h+0Cjvi7TKj4BR7dA=",
+      "integrity": "sha1-DcktLGAhMKjjvKTnt9NE9FwDAkY=",
       "requires": {
-        "@bentley/bemetalsmith": "2.2.11",
+        "@bentley/bemetalsmith": "2.3.1",
         "@types/body-parser": "1.17.0",
         "@types/chai": "4.1.3",
         "@types/clone": "0.1.30",
@@ -646,7 +646,7 @@
     },
     "@rush-temp/imodeljs-core-testbed": {
       "version": "file:projects/imodeljs-core-testbed.tgz",
-      "integrity": "sha1-f8tDnR1vmHirRofOlkp6JH6GpVA=",
+      "integrity": "sha1-oRG/3GKXvBMSK3Gd1Ncu7NdKWq0=",
       "requires": {
         "@bentley/imodeljs-e_2-win32-x64": "19.0.1",
         "body-parser": "1.18.3",
@@ -671,7 +671,7 @@
     },
     "@rush-temp/imodeljs-frontend": {
       "version": "file:projects/imodeljs-frontend.tgz",
-      "integrity": "sha1-WxfGn8d563+F7qjAVR7xMXLacjw=",
+      "integrity": "sha1-sJlVYr/GwIG5SNp+sKoNH5st2B4=",
       "requires": {
         "cpx": "1.5.0",
         "fuse.js": "3.2.0",
@@ -686,7 +686,7 @@
     },
     "@rush-temp/simpleviewtest": {
       "version": "file:projects/simpleviewtest.tgz",
-      "integrity": "sha1-tS0QleXQSliDSeODPLkzGgB2vmg=",
+      "integrity": "sha1-F8VUo9QeCThg9ZvT0jn+U/iYa4g=",
       "requires": {
         "@bentley/imodeljs-native-platform-api": "19.0.1",
         "@bentley/imodeljs-native-platform-electron": "19.0.1",
