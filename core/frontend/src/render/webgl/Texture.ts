@@ -3,66 +3,172 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
-import { ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo } from "@bentley/imodeljs-common";
 // import { Texture, TextureCreateParams } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
-import { System, Capabilities } from "./System";
+import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit } from "./RenderFlags";
 
 /** A callback when a TextureHandle is finished loading.  Only relevant for createForImage creation method. */
-export type TextureLoadCallback = (t: TextureHandle) => void;
+export type TextureLoadCallback = (t: TextureHandle, c: HTMLCanvasElement) => void;
 
-/** A private enum used to track certain desired texture creation parameters. */
-const enum TextureFlags {
-  None = 0,
-  UseMipMaps = 1 << 0,
-  Interpolate = 1 << 1,
-  PreserveData = 1 << 2,
+interface TextureImageSource {
+  source: ImageSource;
+  canvas: HTMLCanvasElement;
+  loadCallback?: TextureLoadCallback;
 }
 
-/** A private utility class used by TextureHandle to internally create textures with differing proprties. */
-class TextureCreateParams {
-  public imageBytes?: Uint8Array = undefined;
-  public imageCanvas?: HTMLCanvasElement = undefined;
-  public imageFormat?: ImageSourceFormat = undefined;
-  public loadCallback?: TextureLoadCallback = undefined;
-  public width: number = 0;
-  public height: number = 0;
-  public format: GL.Texture.Format = GL.Texture.Format.Rgb;
-  public dataType: GL.Texture.DataType = GL.Texture.DataType.UnsignedByte;
-  public wrapMode: GL.Texture.WrapMode = GL.Texture.WrapMode.ClampToEdge;
-  private _flags = TextureFlags.None;
+function loadTextureImageData(handle: TextureHandle, params: TextureCreateParams, bytes?: Uint8Array, canvas?: HTMLCanvasElement): void {
+  const tex = handle.getHandle()!;
+  const gl = System.instance.context;
 
-  public get hasTranslucency() { return GL.Texture.Format.Rgba === this.format; }
-  public get wantPreserveData() { return TextureFlags.None !== (this._flags & TextureFlags.PreserveData); }
-  public set wantPreserveData(want: boolean) { this.setFlag(TextureFlags.PreserveData, want); }
-  public get wantInterpolate() { return TextureFlags.None !== (this._flags & TextureFlags.Interpolate); }
-  public set wantInterpolate(want: boolean) { this.setFlag(TextureFlags.Interpolate, want); }
-  public get wantUseMipMaps() { return TextureFlags.None !== (this._flags & TextureFlags.UseMipMaps); }
-  public set wantUseMipMaps(want: boolean) { this.setFlag(TextureFlags.UseMipMaps, want); }
+  // Use tightly packed data
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
-  private setFlag(flag: TextureFlags, enable: boolean) {
-    if (enable)
-      this._flags |= flag;
-    else
-      this._flags &= ~flag;
+  // Bind the texture object; make sure we do not interfere with other active textures
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+
+  // send the texture data
+  if (undefined !== canvas) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, canvas);
+  } else {
+    const pixelData = undefined !== bytes ? bytes : null;
+    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixelData);
   }
+
+  if (params.useMipMaps) {
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  } else {
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
+  }
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, params.wrapMode);
+
+  gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
-/** Encapsulates a handle to a WebGLTexture object created based on desired parameters. */
+function loadTextureFromBytes(handle: TextureHandle, params: TextureCreateParams, bytes?: Uint8Array): void { loadTextureImageData(handle, params, bytes); }
+
+const singleWhitePixel = new Uint8Array([255, 255, 255, 255]);
+
+function loadTextureFromImageSource(handle: TextureHandle, params: TextureCreateParams, source: TextureImageSource): void {
+  // Immediately load a 1x1 pixel placeholder image
+  loadTextureImageData(handle, TextureCreateParams.placeholderParams, singleWhitePixel);
+
+  // Queue loading the actual image
+  const imgSrc = source.source;
+  const blob = new Blob([imgSrc.data], ImageSourceFormat.Jpeg === imgSrc.format ? { type: "image/jpeg" } : { type: "image/png" });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = source.canvas;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    loadTextureImageData(handle, params, undefined, canvas);
+    if (undefined !== source.loadCallback)
+      source.loadCallback(handle, canvas);
+  };
+
+  // Load the image from the URL - will call onload above when finished.
+  img.src = url;
+}
+
+type TextureFlag = true | undefined;
+type LoadImageData = (handle: TextureHandle, params: TextureCreateParams) => void;
+export const enum ImageTextureType { Normal, Glyph, TileSection }
+
+interface TextureImageProperties {
+  wrapMode: GL.Texture.WrapMode;
+  useMipMaps: TextureFlag;
+  interpolate: TextureFlag;
+  format: GL.Texture.Format;
+}
+
+class TextureCreateParams {
+  private constructor(
+    public width: number,
+    public height: number,
+    public format: GL.Texture.Format,
+    public dataType: GL.Texture.DataType,
+    public wrapMode: GL.Texture.WrapMode,
+    public loadImageData: LoadImageData,
+    public useMipMaps?: TextureFlag,
+    public interpolate?: TextureFlag,
+    public dataBytes?: Uint8Array) { }
+
+  public static createForData(width: number, height: number, data: Uint8Array, preserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
+    return new TextureCreateParams(width, height, format, GL.Texture.DataType.UnsignedByte, wrapMode,
+        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, preserveData ? data : undefined);
+  }
+
+  public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
+    const props = this.getImageProperties(ImageBufferFormat.Rgba === image.format, type);
+
+    return new TextureCreateParams(image.width, image.height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
+        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, image.data), props.useMipMaps, props.interpolate);
+  }
+
+  public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
+    return new TextureCreateParams(width, height, format, dataType, GL.Texture.WrapMode.ClampToEdge,
+        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, true);
+  }
+
+  public static createForImageSource(source: ImageSource, width: number, height: number, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
+    const props = this.getImageProperties(ImageSourceFormat.Png === source.format, type);
+
+    let targetWidth = width;
+    let targetHeight = height;
+
+    const caps = System.instance.capabilities;
+    if (ImageTextureType.Glyph === type) {
+      targetWidth = nextHighestPowerOfTwo(targetWidth);
+      targetHeight = nextHighestPowerOfTwo(targetHeight);
+    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+      if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
+        // NPOT are supported but not mipmaps
+        // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
+        // Above comment is not necessarily true - WebGL doesn't support NPOT mipmapping, only supporting base NPOT caps
+        props.useMipMaps = undefined;
+      } else if (GL.Texture.WrapMode.Repeat === props.wrapMode) {
+        targetWidth = nextHighestPowerOfTwo(targetWidth);
+        targetHeight = nextHighestPowerOfTwo(targetHeight);
+      }
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    return new TextureCreateParams(width, height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
+        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromImageSource(tex, params, { source, canvas, loadCallback }), props.useMipMaps, props.interpolate);
+  }
+
+  private static getImageProperties(isTranslucent: boolean, type: ImageTextureType): TextureImageProperties {
+    const wrapMode = ImageTextureType.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
+    const useMipMaps: TextureFlag = (ImageTextureType.TileSection !== type) ? true : undefined;
+    const interpolate: TextureFlag = (ImageTextureType.TileSection === type) ? true : undefined;
+    const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
+    return { format, wrapMode, useMipMaps, interpolate };
+  }
+
+  public static readonly placeholderParams = new TextureCreateParams(1, 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte, GL.Texture.WrapMode.ClampToEdge,
+      (_tex: TextureHandle, _params: TextureCreateParams) => undefined);
+}
+
 export class TextureHandle implements IDisposable {
   public readonly width: number;
   public readonly height: number;
   public readonly format: GL.Texture.Format;
   public readonly dataType: GL.Texture.DataType;
-  public readonly imageBytes?: Uint8Array = undefined;
-  public readonly imageCanvas?: HTMLCanvasElement = undefined;
-  private loadCallback?: TextureLoadCallback;
-
+  public readonly dataBytes?: Uint8Array;
   private _glTexture?: WebGLTexture;
 
-  /** Retrieves actual WebGLTexture object associated with this texture. */
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }
 
   /** Binds texture handle (if available) associated with an instantiation of this class to specified texture unit. */
@@ -94,106 +200,6 @@ export class TextureHandle implements IDisposable {
     uniform.setUniform1i(unit - TextureUnit.Zero);
   }
 
-  /**
-   * Creates a texture for a jpeg or png image.  Will not be really loaded until loadCallback is called.  If
-   * you do not specify a loadCallback, you cannot rely on the texture being loaded at any particular time.
-   * A 1x1 opaque white texture will be bound until the image is loaded and the real texture is fully generated.
-   */
-  public static createForImage(width: number, height: number, imageBytes: Uint8Array, imageFormat: ImageSourceFormat, isTranslucent: boolean, loadCallback?: TextureLoadCallback, useMipMaps = true, isGlyph = false, isTileSection = false, wantPreserveData = false) {
-    const glTex: WebGLTexture | undefined = this.createTextureHandle();
-    if (undefined === glTex) {
-      return undefined;
-    }
-
-    const caps: Capabilities = System.instance.capabilities;
-
-    const params: TextureCreateParams = new TextureCreateParams();
-    params.format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
-    params.width = width;
-    params.height = height;
-    params.imageBytes = imageBytes;
-    params.imageFormat = imageFormat;
-    params.wrapMode = isTileSection ? GL.Texture.WrapMode.ClampToEdge : GL.Texture.WrapMode.Repeat;
-    params.wantUseMipMaps = useMipMaps;
-    params.wantPreserveData = wantPreserveData;
-    params.loadCallback = loadCallback;
-
-    let targetWidth: number = params.width;
-    let targetHeight: number = params.height;
-
-    if (isGlyph) {
-      params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
-      params.wantUseMipMaps = true; // in order to always use mipmaps, must resize to power of 2
-      targetWidth = TextureHandle.nextHighestPowerOfTwo(targetWidth);
-      targetHeight = TextureHandle.nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!TextureHandle.isPowerOfTwo(targetWidth) || !TextureHandle.isPowerOfTwo(targetHeight))) {
-      if (GL.Texture.WrapMode.ClampToEdge === params.wrapMode) {
-        // NPOT are supported but not mipmaps
-        // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
-        // Above comment is not necessarily true - WebGL doesn't support NPOT mipmapping, only supporting base NPOT caps
-        params.wantUseMipMaps = false;
-      } else if (GL.Texture.WrapMode.Repeat === params.wrapMode) {
-        targetWidth = TextureHandle.nextHighestPowerOfTwo(targetWidth);
-        targetHeight = TextureHandle.nextHighestPowerOfTwo(targetHeight);
-      }
-    }
-
-    if (isTileSection) {
-      // Largely for sheet tiles.  In some extreme cases, mipmapping lowers quality significantly due to a stretched view
-      // and fuzziness introduced by combining the layers.  A straight GL_LINEAR blend gives a better picture.
-      params.wantUseMipMaps = false;
-      params.wantInterpolate = true;
-    }
-
-    // must convert image bytes to canvas object - also resize if needed (this is deferred to constructor)
-    params.imageCanvas = document.createElement("canvas");
-    params.imageCanvas.width = targetWidth;
-    params.imageCanvas.height = targetHeight;
-
-    assert(0 < params.height);
-    assert(Math.floor(params.height) === params.height);
-
-    return new TextureHandle(glTex, params);
-  }
-
-  /** Creates a texture for a framebuffer attachment (no data specified). */
-  public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
-    const glTex: WebGLTexture | undefined = this.createTextureHandle();
-    if (undefined === glTex) {
-      return undefined;
-    }
-
-    const params: TextureCreateParams = new TextureCreateParams();
-    params.format = format;
-    params.dataType = dataType;
-    params.width = width;
-    params.height = height;
-    params.wrapMode = GL.Texture.WrapMode.ClampToEdge;
-    params.wantInterpolate = true;
-
-    return new TextureHandle(glTex, params);
-  }
-
-  /** Creates a texture for storing data accessed by shaders. */
-  public static createForData(width: number, height: number, data: Uint8Array, wantPreserveData = false,
-    wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
-    const glTex: WebGLTexture | undefined = this.createTextureHandle();
-    if (undefined === glTex) {
-      return undefined;
-    }
-
-    const params: TextureCreateParams = new TextureCreateParams();
-    params.format = format;
-    params.dataType = GL.Texture.DataType.UnsignedByte;
-    params.width = width;
-    params.height = height;
-    params.imageBytes = data;
-    params.wrapMode = wrapMode;
-    params.wantPreserveData = wantPreserveData;
-
-    return new TextureHandle(glTex, params);
-  }
-
   public dispose() {
     if (undefined !== this._glTexture) {
       System.instance.context.deleteTexture(this._glTexture);
@@ -201,107 +207,36 @@ export class TextureHandle implements IDisposable {
     }
   }
 
-  private constructor(glTex: WebGLTexture, params: TextureCreateParams) {
+  private static create(params: TextureCreateParams): TextureHandle | undefined {
+    const glTex = System.instance.context.createTexture();
+    return null !== glTex ? new TextureHandle(glTex, params) : undefined;
+  }
+
+  public static createForImageSource(width: number, height: number, source: ImageSource, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
+    return this.create(TextureCreateParams.createForImageSource(source, width, height, type, loadCallback));
+  }
+
+  public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
+    return this.create(TextureCreateParams.createForAttachment(width, height, format, dataType));
+  }
+
+  public static createForData(width: number, height: number, data: Uint8Array, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
+    return this.create(TextureCreateParams.createForData(width, height, data, wantPreserveData, wrapMode, format));
+  }
+
+  public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
+    // ###TODO: Support non-power-of-two if necessary...
+    return this.create(TextureCreateParams.createForImageBuffer(image, type));
+  }
+
+  private constructor(glTexture: WebGLTexture, params: TextureCreateParams) {
+    this._glTexture = glTexture;
     this.width = params.width;
     this.height = params.height;
     this.format = params.format;
     this.dataType = params.dataType;
-    this.loadCallback = params.loadCallback;
-    if (params.wantPreserveData) {
-      this.imageBytes = params.imageBytes;
-      this.imageCanvas = params.imageCanvas;
-    }
-    this._glTexture = glTex;
+    this.dataBytes = params.dataBytes;
 
-    if (params.imageCanvas !== undefined) { // Image texture - deferred load
-      // Immediately load a placeholder texture (1x1 white opaque) to use until actual image is ready.
-      const whitePixel = new Uint8Array([255, 255, 255, 255]);  // opaque white
-      TextureHandle.loadTexture(glTex, 1, 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte, whitePixel);
-      this.loadImageCanvas(params); // Begin the process of loading the actual image texture.
-    } else { // Regular data texture - already ready - no deferred load
-      TextureHandle.loadTexture(glTex, params.width, params.height, params.format, params.dataType, params.imageBytes, undefined, params.wantUseMipMaps, params.wantInterpolate, params.wrapMode);
-    }
-  }
-
-  private loadImageCanvas(params: TextureCreateParams) {
-    // create an HTMLImageElement from a Blob created from the encoded bytes (jpeg or png)
-    // ###TODO: Add support for Alpha image formats
-    const blob = new Blob([params.imageBytes], params.imageFormat === ImageSourceFormat.Jpeg ? { type: "image/jpeg" } : { type: "image/png" });
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-
-    img.onload = () => {
-      if (undefined === params.imageCanvas)
-        return;
-
-      const imageCanvasCtx = params.imageCanvas.getContext("2d");
-      if (null === imageCanvasCtx)
-        return;
-
-      // draw the HTMLImageElement to the destination canvas, possibly resizing it
-      imageCanvasCtx.drawImage(img, 0, 0, params.imageCanvas.width, params.imageCanvas.height);
-
-      if (undefined !== this._glTexture) {
-        TextureHandle.loadTexture(this._glTexture, this.width, this.height, this.format, this.dataType, undefined, params.imageCanvas, params.wantUseMipMaps, params.wantInterpolate, params.wrapMode);
-        if (undefined !== this.loadCallback) {
-          this.loadCallback(this);
-        }
-      }
-    };
-
-    img.src = url; // load the image from the URL object - will call onload above when finished
-  }
-
-  private static loadTexture(tex: WebGLTexture, width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType, bytes?: Uint8Array, canvas?: HTMLCanvasElement, wantUseMipMaps = false, wantInterpolate = false, wrapMode = GL.Texture.WrapMode.ClampToEdge) {
-    const gl: WebGLRenderingContext = System.instance.context;
-
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1); // use tightly packed data
-
-    gl.activeTexture(gl.TEXTURE0); // bind the texture object; make sure we do not interfere with other active textures
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    assert(width > 0 && height > 0);
-
-    // send the texture data
-    if (canvas !== undefined) {
-      // Use canvas version of texImage2D
-      gl.texImage2D(gl.TEXTURE_2D, 0, format, format, dataType, canvas);
-    } else {
-      // use regular (raw bytes) version of texImage2D
-      const pixels: ArrayBufferView | null = bytes !== undefined ? bytes as ArrayBufferView : null;
-      gl.texImage2D(gl.TEXTURE_2D, 0, format, width, height, 0, format, dataType, pixels);
-    }
-
-    if (wantUseMipMaps) {
-      gl.generateMipmap(gl.TEXTURE_2D);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    } else {
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, wantInterpolate ? gl.LINEAR : gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, wantInterpolate ? gl.LINEAR : gl.NEAREST);
-    }
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapMode);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapMode);
-
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-
-  private static createTextureHandle(): WebGLTexture | undefined {
-    const glTex: WebGLTexture | null = System.instance.context.createTexture();
-    if (glTex === null)
-      return undefined;
-    return glTex;
-  }
-
-  private static nextHighestPowerOfTwo(num: number): number {
-    --num;
-    for (let i = 1; i < 32; i <<= 1) {
-      num = num | num >> i;
-    }
-    return num + 1;
-  }
-
-  private static isPowerOfTwo(num: number): boolean {
-    return (num & (num - 1)) === 0;
+    params.loadImageData(this, params);
   }
 }

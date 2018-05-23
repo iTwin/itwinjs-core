@@ -6,7 +6,7 @@ import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { TextureHandle, TextureLoadCallback, GL } from "@bentley/imodeljs-frontend/lib/rendering";
-import { ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 
 // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
 // bottom right pixel.  The rest of the square is red.
@@ -57,7 +57,7 @@ describe("Texture tests", () => {
     }
 
     expect(texture.getHandle()).to.not.be.undefined;
-    expect(texture.imageBytes).to.not.be.undefined; // data should be preserved
+    expect(texture.dataBytes).to.not.be.undefined; // data should be preserved
   });
 
   it("should produce an image (png) texture with unpreserved data", () => {
@@ -66,30 +66,31 @@ describe("Texture tests", () => {
     }
 
     // create texture with default parameters
-    const texture: TextureHandle | undefined = TextureHandle.createForImage(3, 3, pixels, ImageSourceFormat.Png, false);
+    const texture = TextureHandle.createForImageSource(3, 3, new ImageSource(pixels, ImageSourceFormat.Png));
     assert(undefined !== texture);
     if (undefined === texture) {
       return;
     }
 
     expect(texture.getHandle()).to.not.be.undefined;
-    expect(texture.imageCanvas).to.be.undefined; // data should not be preserved
-    expect(texture.imageBytes).to.be.undefined;
+    expect(texture.dataBytes).to.be.undefined;
   });
 });
 
 describe("Test pixel values of resized texture in callback (async texture loading)", () => {
   let texture: TextureHandle | undefined;
   let loaded = false;
+  let canvas: HTMLCanvasElement | null;
 
   before((done) => {
     WebGLTestContext.startup();
     if (WebGLTestContext.isInitialized) {
-      const texLoadCallback: TextureLoadCallback = (/*t: TextureHandle*/): void => {
+      const texLoadCallback: TextureLoadCallback = (_t: TextureHandle, c: HTMLCanvasElement): void => {
         loaded = true;
+        canvas = c;
         done();
       };
-      texture = TextureHandle.createForImage(3, 3, pixels, ImageSourceFormat.Png, false, texLoadCallback, false, true, false, true);
+      texture = TextureHandle.createForImageSource(3, 3, new ImageSource(pixels, ImageSourceFormat.Png), undefined, texLoadCallback);
     } else {
       done();
     }
@@ -104,18 +105,19 @@ describe("Test pixel values of resized texture in callback (async texture loadin
 
     assert(undefined !== texture);
     assert(loaded);
+    assert(canvas);
     if (undefined === texture) {
       return;
     }
 
     expect(texture.getHandle()).to.not.be.undefined;
 
-    expect(texture.imageCanvas).to.not.be.undefined; // data should be preserved
-    if (texture.imageCanvas !== undefined) {
-      expect(texture.imageCanvas.width).to.equal(4); // should be resized to next power of two (3 becomes 4)
-      expect(texture.imageCanvas.height).to.equal(4);
+    expect(canvas).to.not.be.null;
+    if (null !== canvas) {
+      expect(canvas.width).to.equal(4); // should be resized to next power of two (3 becomes 4)
+      expect(canvas.height).to.equal(4);
 
-      const ctx = texture.imageCanvas.getContext("2d");
+      const ctx = canvas.getContext("2d");
       expect(ctx).to.be.not.null;
       if (ctx !== null) {
         // ###TODO: Why does the resizing result in slightly different RGB values on different machines?

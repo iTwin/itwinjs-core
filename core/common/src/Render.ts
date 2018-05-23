@@ -13,7 +13,6 @@ import { CameraProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
-import { ImageSource } from "./Image";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
@@ -202,9 +201,6 @@ export class RenderTexture {
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }
-
-  // Some textures preserve their image data. Most do not.
-  public get imageSource(): ImageSource | undefined { return undefined; }
 }
 
 export namespace RenderTexture {
