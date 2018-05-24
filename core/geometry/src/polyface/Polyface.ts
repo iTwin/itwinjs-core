@@ -114,20 +114,24 @@ export class FacetFaceData {
     this.paramRange.setNull();
   }
 
-  /** Convert parameter from stored value to distance-based parameter. */
-  public convertParamToDistance(distanceParam: Point2d, param: Point2d) {
+  /** Return distance-based parameter from stored parameter value. */
+  public convertParamToDistance(param: Point2d, result?: Point2d): Point2d {
+    result = result ? result : Point2d.create();
     const paramDelta = this.paramRange.high.minus(this.paramRange.low);
-    distanceParam.x = (0 === paramDelta.x) ? param.x : (this.paramDistanceRange.low.x + (param.x - this.paramRange.low.x)
+    result.x = (0 === paramDelta.x) ? param.x : (this.paramDistanceRange.low.x + (param.x - this.paramRange.low.x)
       * (this.paramDistanceRange.high.x - this.paramDistanceRange.low.x) / paramDelta.x);
-    distanceParam.y = (0.0 === paramDelta.y) ? param.y : (this.paramDistanceRange.low.y + (param.y - this.paramRange.low.y)
+    result.y = (0.0 === paramDelta.y) ? param.y : (this.paramDistanceRange.low.y + (param.y - this.paramRange.low.y)
       * (this.paramDistanceRange.high.y - this.paramDistanceRange.low.y) / paramDelta.y);
+    return result;
   }
 
-  /** Convert parameter from stored value to normalized (0-1) parameter. */
-  public convertParamToNormalized(normalizedParam: Point2d, param: Point2d) {
+  /** Return normalized (0-1) parameter from stored parameter value. */
+  public convertParamToNormalized(param: Point2d, result?: Point2d): Point2d {
+    result = result ? result : Point2d.create();
     const paramDelta = this.paramRange.high.minus(this.paramRange.low);
-    normalizedParam.x = (0.0 === paramDelta.x) ? param.x : ((param.x - this.paramRange.low.x) / paramDelta.x);
-    normalizedParam.y = (0.0 === paramDelta.y) ? param.y : ((param.y - this.paramRange.low.y) / paramDelta.y);
+    result.x = (0.0 === paramDelta.x) ? param.x : ((param.x - this.paramRange.low.x) / paramDelta.x);
+    result.y = (0.0 === paramDelta.y) ? param.y : ((param.y - this.paramRange.low.y) / paramDelta.y);
+    return result;
   }
 
   /** Scale distance paramaters. */
@@ -153,7 +157,7 @@ export class FacetFaceData {
       return false;
 
     do {
-      const numPointsInFacet = visitor.numEdgesThisFace;
+      const numPointsInFacet = visitor.numEdgesThisFacet;
       const visitorPoints = visitor.point;
       const trianglePointIndexes: number[] = [];
       const visitorParams = visitor.param;
@@ -328,7 +332,7 @@ export class PolyfaceData {
    * * This is the essense of transfering coordinates spread throughout a large polyface into a visitor's single facet.
    * * "other" is the large polyface
    * * "this" is the visitor
-   * * We leave face data alone, although it may become deprecated
+   * * does NOT copy face data - visitors reference the FacetFaceData array for the whole polyface!!
    * @param other polyface data being mined.
    * @param index0 start index in other's index arrays
    * @param index1 end index (one beyond last data accessed0 in other's index arrays
@@ -759,7 +763,7 @@ export class IndexedPolyface extends Polyface {
     }
 
     do {
-      for (let i = 0; i < visitor.numEdgesThisFace; i++) {
+      for (let i = 0; i < visitor.numEdgesThisFacet; i++) {
         if (setParamRange && visitor.param !== undefined)
           faceData.paramRange.extendPoint(visitor.param[i]);
       }
@@ -822,7 +826,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this.currentFacetIndex = -1;
   }
 
-  public get numEdgesThisFace(): number { return this.numEdges; }
+  public get numEdgesThisFacet(): number { return this.numEdges; }
 
   public static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor {
     return new IndexedPolyfaceVisitor(polyface, numWrap);
@@ -846,6 +850,37 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this.moveToReadIndex(0);
     this.nextFacetIndex = 0; // so immediate moveToNextFacet stays here.
   }
+
+  /**
+   * Attempts to extract the distance parameter for the face of a given point index.
+   * Returns the distance parameter as a point. Returns undefined on failure.
+   */
+  public tryGetDistanceParameter(index: number): Point2d | undefined {
+    if (index >= this.numEdgesThisFacet)
+      return undefined;
+
+    if (this.param === undefined || this.polyface.data.face.length === 0)
+      return undefined;
+
+    const facetIndex = this.currentFacetIndex;
+    return this.polyface.data.face[facetIndex].convertParamToDistance(this.param[index]);
+  }
+
+  /**
+   * Attempts to extract the normalized parameter (0,1) for the face of a given point index.
+   * Returns the normalized parameter as a point. Returns undefined on failure.
+   */
+  public tryGetNormalizedParameter(index: number): Point2d | undefined {
+    if (index >= this.numEdgesThisFacet)
+      return undefined;
+
+    if (this.param === undefined || this.polyface.data.face.length === 0)
+      return undefined;
+
+    const facetIndex = this.currentFacetIndex;
+    return this.polyface.data.face[facetIndex].convertParamToNormalized(this.param[index]);
+  }
+
   public currentReadIndex(): number { return this.currentFacetIndex; }
   public clientPointIndex(i: number): number { return this.pointIndex[i]; }
   public clientParamIndex(i: number): number { return this.paramIndex ? this.paramIndex[i] : -1; }

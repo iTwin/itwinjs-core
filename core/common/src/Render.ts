@@ -7,7 +7,7 @@ import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, c
 import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
