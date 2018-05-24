@@ -17,4 +17,6 @@ export { default as KindOfQuantity, FormatUnitSet } from "./Metadata/KindOfQuant
 export { default as PropertyCategory } from "./Metadata/PropertyCategory";
 export * from "./Metadata/Property";
 export * from "./Deserialization/SchemaXmlFileLocater";
+export * from "./Deserialization/SchemaJsonFileLocater";
+export * from "./Deserialization/SchemaFileLocater";
 export * from "./Deserialization/SchemaGraphUtil";
