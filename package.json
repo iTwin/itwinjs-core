@@ -65,7 +65,7 @@
     "WIP: Temporarily workaround monorepo/symlink issues by adding a devDependencies on @bentley/bentleyjs-core, @bentley/geometry-core and @bentley/imodeljs-clients"
   ],
   "devDependencies": {
-    "@bentley/bemetalsmith": "^2.3.1",
+    "@bentley/bemetalsmith": "^2.3.2",
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "4",
     "@bentley/geometry-core": "8",
