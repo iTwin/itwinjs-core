@@ -20,7 +20,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
-import { GraphicList } from "./render/System";
+import { GraphicList, RenderGraphic } from "./render/System";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 
@@ -1150,6 +1150,8 @@ export abstract class ViewState3d extends ViewState {
     const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
     if (undefined !== gf)
       context.setViewBackground(gf);
+
+    this.drawPlaceholderDecorations(context);
   }
 
   protected drawGroundPlane(context: DecorateContext): void {
@@ -1171,6 +1173,35 @@ export abstract class ViewState3d extends ViewState {
     const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
     if (undefined !== gf)
       context.addWorldDecoration(gf);
+  }
+
+  // ###TODO Remove this once element graphics are hooked up - it is serving as a placeholder so that we have a reference point for viewing tools.
+  private _placeholderDecoration?: RenderGraphic;
+  protected _wantPlaceholderDecorations: boolean = false;
+  protected drawPlaceholderDecorations(context: DecorateContext) {
+    if (!this._wantPlaceholderDecorations)
+      return;
+
+    if (undefined === this._placeholderDecoration) {
+      const cx = 0.5;
+      const cy = 0.5;
+      const dx = 0.25;
+      const dy = 0.25;
+      const z = 0.5;
+
+      const args = new MeshArgs();
+      const points = [new Point3d(cx - dx, cy, z), new Point3d(cx, cy - dy, z), new Point3d(cx + dx, cy, z), new Point3d(cx, cy + dy, z)];
+      context.viewport.npcToWorldArray(points);
+      args.points = QPoint3dList.fromPoints(points);
+      args.vertIndices = [3, 2, 0, 2, 1, 0];
+      const colors = new Uint32Array([ColorByName.chocolate, ColorByName.darkOrange, ColorByName.darkSeagreen, ColorByName.lightPink]);
+      args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
+
+      this._placeholderDecoration = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    }
+
+    if (undefined !== this._placeholderDecoration)
+      context.addWorldOverlay(this._placeholderDecoration);
   }
 }
 

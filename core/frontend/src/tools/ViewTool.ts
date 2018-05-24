@@ -1318,7 +1318,8 @@ export class FitViewTool extends ViewTool {
   }
 
   public doFit(viewport: Viewport, oneShot: boolean): boolean {
-    ViewManip.fitView(viewport, true);
+    const doAnimate = false; // ###TODO animateFrustumChange() appears to be borked.
+    ViewManip.fitView(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
     return oneShot;

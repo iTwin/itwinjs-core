@@ -327,9 +327,19 @@ export class QPoint3d {
 export class QPoint3dList extends Iterable<QPoint3d> {
   public readonly params: QParams3d;
   public get list(): QPoint3d[] { return this._list; }
+
   public constructor(paramsIn?: QParams3d) {
     super();
     this.params = paramsIn ? paramsIn.clone() : QParams3d.fromRange(Range3d.createNull());
+  }
+
+  /** Construct a QPoint3dList containing all points in the supplied list, quantized to the range of those points. */
+  public static fromPoints(points: Point3d[]) {
+    const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+    for (const point of points)
+      qpoints.add(point);
+
+    return qpoints;
   }
 
   /** Clears out the contents of the list */
