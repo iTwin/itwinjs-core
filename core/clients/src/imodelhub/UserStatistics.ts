@@ -4,8 +4,11 @@
 import { ECJsonTypeMap } from "./../ECJsonTypeMap";
 import { IModelHubBaseHandler } from "./BaseHandler";
 import { UserInfo } from "./Users";
-import { InstanceIdQuery } from "./index";
+import { InstanceIdQuery, IModelHubRequestError } from "./index";
 import { AccessToken } from "..";
+import { Logger } from "@bentley/bentleyjs-core";
+
+const loggingCategory = "imodeljs-clients.imodelhub";
 
 /** User Statistics */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -29,13 +32,36 @@ export class UserStatistics extends UserInfo {
  */
 export class UserStatisticsQuery extends InstanceIdQuery {
   private statisticsPrefix = "HasStatistics-forward-Statistics";
-
+  private queriedByIds = false;
   /**
    * Constructor for UserStatisticsQuery.
    */
   constructor() {
     super();
     this.select(`*`);
+  }
+
+  /**
+   * Query User Statistics by ids.
+   * @param ids Ids of the users.
+   * @returns This query.
+   */
+  public byIds(ids: string[]) {
+    if (ids.length < 1) {
+      throw IModelHubRequestError.invalidArgument("ids");
+    }
+
+    let filter = "$id+in+[";
+    ids.forEach((id, index) => {
+      if (index > 0)
+        filter += ",";
+      filter += `'${id}'`;
+    });
+    filter += "]";
+
+    this.addFilter(filter);
+    this.queriedByIds = true;
+    return this;
   }
 
   /** Select all statistics */
@@ -62,6 +88,11 @@ export class UserStatisticsQuery extends InstanceIdQuery {
   public selectLastChangeSetPushDate() {
     return this.addSelect(`${this.statisticsPrefix}.LastChangeSetPushDate`);
   }
+
+  /** Returns whether was object queried by ids or no */
+  public isQueriedByIds() {
+    return this.queriedByIds;
+  }
 }
 
 export class UserStatisticsHandler {
@@ -80,33 +111,7 @@ export class UserStatisticsHandler {
    * @param userId Id of the user.
    */
   private getRelativeUrl(imodelId: string, userId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId || ""}`;
-  }
-
-  /**
-   * Gets user statistics.
-   * @param token Delegation token of the authorized user.
-   * @param iModelId Id of the iModel.
-   * @param query Object used to modify results of this query.
-   */
-  public async GetUserStatistics(token: AccessToken, iModelId: string, query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics> {
-    // if there are no specific selects defined, select all statistics
-    if (query.getQueryOptions().$select === "*") {
-      query.selectAll();
-    }
-
-    const userStatistics = await this._handler.getInstances<UserStatistics>(UserStatistics, token,
-      this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
-
-    if (userStatistics === undefined || userStatistics.length === 0) {
-      Promise.reject(new Error(`User with id ${query.getId()} was not found.`));
-    }
-
-    if (userStatistics.length > 1) {
-      Promise.reject(new Error(`Multiple users found.`));
-    }
-
-    return userStatistics[0];
+    return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId ? userId : ""}`;
   }
 
   /**
@@ -116,39 +121,25 @@ export class UserStatisticsHandler {
    * @param userIds Ids of users to query statistics.
    * @param query Object used to modify results of this query.
    */
-  public async GetUsersStatistics(token: AccessToken, iModelId: string, userIds: string[],
+  public async get(token: AccessToken, iModelId: string,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
-    const statistics: UserStatistics[] = [];
+    Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${iModelId}`);
 
-    for (const userId of userIds) {
-      query.byId(userId);
-      statistics.push(await this.GetUserStatistics(token, iModelId, query));
-    }
-
-    return statistics;
-  }
-
-  /**
-   * Gets all users statistics.
-   * @param token Delegation token of the authorized user.
-   * @param iModelId Id of the iModel.
-   * @param userIds Ids of users to query statistics.
-   * @param query Object used to modify results of this query.
-   */
-  public async GetAllUsersStatistics(token: AccessToken, iModelId: string,
-    query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
     // if there are no specific selects defined, select all statistics
     if (query.getQueryOptions().$select === "*") {
       query.selectAll();
     }
 
-    const userStatistics = await this._handler.getInstances<UserStatistics>(UserStatistics, token,
-      this.getRelativeUrl(iModelId), query.getQueryOptions());
-
-    if (userStatistics === undefined || userStatistics.length === 0) {
-      Promise.reject(new Error(`No users for iModel ${iModelId} was found.`));
+    let userStatistics: UserStatistics[];
+    if (query.isQueriedByIds()) {
+      userStatistics = await this._handler.postQuery<UserStatistics>(UserStatistics, token,
+        this.getRelativeUrl(iModelId), query.getQueryOptions());
+    } else {
+      userStatistics = await this._handler.getInstances<UserStatistics>(UserStatistics, token,
+        this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
     }
 
+    Logger.logTrace(loggingCategory, `Queried ${userStatistics.length} user statistics for iModel ${iModelId}`);
     return userStatistics;
   }
 }
