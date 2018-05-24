@@ -21,6 +21,8 @@
   },
   "metadata": {
     "home": "overview",
+    "logo": "overview/siteLogos/iModelJs.svg",
+    "favicon": "overview/siteLogos/iModelJs.ico",
     "docSiteOrder": [
       "getting-started",
       "overview",
