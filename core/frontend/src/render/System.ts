@@ -15,6 +15,7 @@ import {
   RenderMaterial,
   ImageBuffer,
   RenderTexture,
+  FeatureTable,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -222,8 +223,8 @@ export abstract class RenderSystem {
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
 
-  // /** Create a Graphic consisting of batched Features. */
-  // public abstract createBatch(graphic: Graphic, features: FeatureTable): Graphic;
+  /** Create a Graphic consisting of batched Features. */
+  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
   public abstract findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined;
