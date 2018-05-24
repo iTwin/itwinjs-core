@@ -5,10 +5,13 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { MeshList } from "../render/primitives/mesh/MeshPrimitives";
+import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
+import { RenderGraphic } from "../render/System";
+import { RenderSystem } from "../render/System";
+import { GeometricModelState } from "../ModelState";
 
 /** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
@@ -54,11 +57,12 @@ export namespace IModelTileIO {
     isLeaf: boolean;
     contentRange?: ElementAlignedBox3d;
     geometry?: TileIO.GeometryCollection;
+    renderGraphic?: RenderGraphic;
   }
 
   /** Deserializes an iModel tile. */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, model: GltfTileIO.Model, system: GltfTileIO.System): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -97,15 +101,34 @@ export namespace IModelTileIO {
       const isComplete = Flags.None === (header.flags & Flags.Incomplete);
       const isCurved = Flags.None !== (header.flags & Flags.ContainsCurves);
       const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
+      const readStatus = this.readGltf(geometry);
+      let renderGraphic: RenderGraphic | undefined;
+      if (!geometry.isEmpty) {
+        const meshGraphicArgs = new MeshGraphicArgs();
+        if (1 === geometry.meshes.length) {
+          renderGraphic = geometry.meshes[0].getGraphics(meshGraphicArgs, this.system, this.model.iModel);
+        } else {
+          const renderGraphicList: RenderGraphic[] = [];
+          for (const mesh of geometry.meshes) {
+            renderGraphic = mesh.getGraphics(meshGraphicArgs, this.system, this.model.iModel);
+            if (undefined !== renderGraphic)
+              renderGraphicList.push(renderGraphic);
+          }
+          renderGraphic = this.system.createGraphicList(renderGraphicList, this.model.iModel);
+        }
+        if (undefined !== renderGraphic)
+          renderGraphic = this.system.createBatch(renderGraphic, featureTable);
+      }
       return {
-        readStatus: this.readGltf(geometry),
+        readStatus,
         isLeaf,
         contentRange: header.contentRange,
         geometry,
+        renderGraphic,
       };
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, model: GltfTileIO.Model, system: GltfTileIO.System) {
+    private constructor(props: GltfTileIO.ReaderProps, model: GeometricModelState, system: RenderSystem) {
       super(props, model, system);
     }
 

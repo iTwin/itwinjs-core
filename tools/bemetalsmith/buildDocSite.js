@@ -82,7 +82,7 @@ function runBemetalsmith() {
     "generated-docs\\staging\\public"
   );
   const metalsmithProcess = childProcess.execSync(
-    `bmsWatch --source "${source}" --destination "${destination}"`,
+    `bmsWatch --source "${source}" --destination "${destination}" --siteTitle iModelJs`,
     { stdio: [0, 1, 2] }
   );
 }

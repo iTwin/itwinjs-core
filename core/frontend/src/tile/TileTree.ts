@@ -307,7 +307,7 @@ export namespace Tile {
       this.context = context;
       this.now = now;
       this.purgeOlderThan = purgeOlderThan;
-      this.graphics.viewFlagOverrides = root.viewFlagOverrides;
+      this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
       this.missing = context.requests.getMissing(root);
     }
 

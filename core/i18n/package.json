@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json ../../generated-docs/frontend",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/frontend/json/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%"
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/i18n/json/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%"
   },
   "repository": {},
   "keywords": [
@@ -29,7 +29,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/bentleyjs-tools": "4",
+    "@bentley/bentleyjs-tools": "5",
     "rimraf": "^2.6.2",
     "typedoc": "^0.11.1",
     "typescript": "~2.7.2"

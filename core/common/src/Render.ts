@@ -595,7 +595,12 @@ export namespace ViewFlag {
     public isPresent(flag: PresenceFlag): boolean { return 0 !== (this.present & (1 << flag)); }
 
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags */
-    constructor(flags?: ViewFlags) { this.values = ViewFlags.createFrom(flags); this.present = 0xffffffff; }
+    constructor(flags?: ViewFlags) { this.overrideAll(flags); }
+
+    public overrideAll(flags?: ViewFlags) {
+      ViewFlags.createFrom(flags, this.values);
+      this.present = 0xffffffff;
+    }
 
     public clone(out?: Overrides) {
       const result = undefined !== out ? out : new Overrides();

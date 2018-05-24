@@ -42,27 +42,24 @@ const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
 const reporterOptions = (!isCI) ? [
   "-R", "spec"
-]: [
-  "--reporter", "mocha-junit-reporter",
-  "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
-]
+] : [
+    "--reporter", "mocha-junit-reporter",
+    "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
+  ]
 
 const debugOptions = argv.debug ?
-[
-  "--inspect=9229",
-  "--debug-brk"
-] : []
+  [
+    "--inspect=9229",
+    "--debug-brk"
+  ] : []
 
 let grepOptions = [];
-if (argv.grep){
+if (argv.grep) {
   grepOptions = ["--grep", argv.grep];
-  if (argv.invert){
+  if (argv.invert) {
     grepOptions.push("--invert");
   }
 }
-
-// Needed for ts_node to honor the tsconfig at the root of the project
-process.env.TS_NODE_PROJECT = packageRoot;
 
 const args = [
   ...debugOptions,
@@ -99,6 +96,6 @@ checkOnline()
       return 0;
     }
   })
-  .then((code) =>  process.exit(code));
+  .then((code) => process.exit(code));
 
 handleInterrupts();

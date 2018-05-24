@@ -10,6 +10,8 @@ import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
+import { RenderSystem } from "../render/System";
+import { GeometricModelState } from "../ModelState";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -204,17 +206,6 @@ export namespace GltfTileIO {
     }
   }
 
-  // Expected: GeometricModelState. Defined for mocking purposes.
-  export interface Model {
-    id: Id64;
-    is2d: boolean;
-  }
-
-  // Expected: RenderSystem. Defined for mocking purposes.
-  export interface System {
-    dummy: boolean; // because tslint: "An empty interface is equivalent to '{}'". We will add to this interface later.
-  }
-
   /** Deserializes glTF tile data. */
   export class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
@@ -227,12 +218,12 @@ export namespace GltfTileIO {
     protected readonly namedTextures: any;
     protected readonly images: any;
     protected readonly binaryData: Uint8Array;
-    protected readonly model: Model;
-    protected readonly system: System;
+    protected readonly model: GeometricModelState;
+    protected readonly system: RenderSystem;
 
     public get modelId(): Id64 { return this.model.id; }
 
-    public static createGltfReader(buffer: TileIO.StreamBuffer, model: Model, system: System): Reader | undefined {
+    public static createGltfReader(buffer: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
       const props = ReaderProps.create(buffer);
       return undefined !== props ? new Reader(props, model, system) : undefined;
     }
@@ -271,7 +262,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: Model, system: System) {
+    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;

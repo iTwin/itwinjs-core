@@ -16,6 +16,7 @@ import {
   ImageBuffer,
   RenderTexture,
   ImageSource,
+  FeatureTable,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -115,7 +116,8 @@ export class GraphicBranch {
   public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
-  public set viewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides.copyFrom(ovr); }
+  public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
+  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
   public clear() { this.entries.length = 0; }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
@@ -222,8 +224,8 @@ export abstract class RenderSystem {
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
 
-  // /** Create a Graphic consisting of batched Features. */
-  // public abstract createBatch(graphic: Graphic, features: FeatureTable): Graphic;
+  /** Create a Graphic consisting of batched Features. */
+  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
   public abstract findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined;

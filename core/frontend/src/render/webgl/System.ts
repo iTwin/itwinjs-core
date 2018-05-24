@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat, ImageSource } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { GraphicsList, Branch } from "./Graphic";
+import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
 import { BentleyStatus, assert, Dictionary } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
@@ -388,6 +388,7 @@ export class System extends RenderSystem {
   public createTriMesh(args: MeshArgs, iModel: IModelConnection) { return MeshGraphic.create(args, iModel); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+  public createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic { return new Batch(graphic, features); }
 
   public applyRenderState(newState: RenderState) {
     newState.apply(this._currentRenderState);
