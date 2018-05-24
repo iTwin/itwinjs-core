@@ -4,14 +4,6 @@
     "target": "es2017",
     "module": "commonjs",
     "outDir": "lib",
-    "baseUrl": "./",
-    "paths": {
-      "*": [
-        "./node_modules/@types/*",
-        "./node_modules/*",
-        "*"
-      ]
-    },
     "strictPropertyInitialization": false
   },
   "include": [

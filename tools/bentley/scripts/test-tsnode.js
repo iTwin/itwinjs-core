@@ -30,7 +30,7 @@ const tscPaths = argv.tscPaths ? ["--require", "tsconfig-paths/register"] : [];
 const options = [
   "--check-leaks",
   "--require", "source-map-support/register",
-  "--compilers", "ts-node/register",
+  "--require", "ts-node/register",
   "--watch-extensions", "ts",
   "-u", "tdd",
   "--timeout", timeout,
@@ -41,27 +41,24 @@ const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
 const reporterOptions = (!isCI) ? [
   "-R", "spec"
-]: [
-  "--reporter", "mocha-junit-reporter",
-  "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
-]
+] : [
+    "--reporter", "mocha-junit-reporter",
+    "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
+  ]
 
 const debugOptions = argv.debug ?
-[
-  "--inspect=9229",
-  "--debug-brk"
-] : []
+  [
+    "--inspect=9229",
+    "--debug-brk"
+  ] : []
 
 let grepOptions = [];
-if (argv.grep){
+if (argv.grep) {
   grepOptions = ["--grep", argv.grep];
-  if (argv.invert){
+  if (argv.invert) {
     grepOptions.push("--invert");
   }
 }
-
-// Needed for ts_node to honor the tsconfig at the root of the project
-process.env.TS_NODE_PROJECT = packageRoot;
 
 const args = [
   ...debugOptions,
@@ -74,5 +71,5 @@ const args = [
   path.resolve(testDir, "**/*.test.ts"),
 ];
 
-spawn("node", args).then((code) =>  process.exit(code));
+spawn("node", args).then((code) => process.exit(code));
 handleInterrupts();
