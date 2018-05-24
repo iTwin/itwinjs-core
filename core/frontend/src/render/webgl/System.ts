@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelError, RenderTexture, RenderMaterial, Gradient } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -17,13 +17,14 @@ import { ViewRect } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle } from "./Texture";
+import { TextureHandle, Texture } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
+import { IsTranslucent } from "./RenderFlags";
 
 export const enum ContextState {
   Uninitialized,
@@ -219,19 +220,14 @@ export class IdMap {
     return this.textureMap.get(key);
   }
 
-  /** Find a cached texture using its symbology. If not found, returns undefined. */
-  public findTextureGradientSymb(grad: Gradient.Symb): RenderTexture | undefined {
-    return this.gradientMap.get(grad);
-  }
-
   /**
    * Find a material using its key. If not found, create and return it.
    * This will also add it to the map if the key was valid.
    */
-  public createMaterial(params: RenderMaterial.Params): RenderMaterial {
-    if (!params.key) {
+  public getMaterial(params: RenderMaterial.Params): RenderMaterial {
+    if (!params.key)
       return new Material(params);
-    }
+
     let material = this.materialMap.get(params.key);
     if (!material) {
       material = new Material(params);
@@ -241,26 +237,68 @@ export class IdMap {
   }
 
   /**
-   * Find a texture using its key. If not found, create it and return it.
-   * This will also add it to the map if the key was valid.
+   * Attempt to create a new texture from an ImageBuffer and insert it into this cache.
+   * If the texture already exists inside the cache, or an error occurs, returns undefined.
    */
-  public createTexture(params: RenderTexture.Params): RenderTexture {
-    if (!params.key) {
-      return new RenderTexture(params);
-    }
-    let texture = this.textureMap.get(params.key)!;
-    if (!texture) {
-      texture = new RenderTexture(params);
+  public createTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+    if (params.key && this.textureMap.get(params.key) !== undefined)
+      return undefined;
+
+    const textureHandle = TextureHandle.createForImageBuffer(img);
+    if (textureHandle === undefined)
+      return undefined;
+    const texture = new Texture(params, textureHandle);
+    if (params.key)
       this.textureMap.set(params.key, texture);
-    }
     return texture;
   }
 
   /**
-   * Find a texture using its symbology. If not found, create it and return it.
-   * This will also add it to the map.
+   * Find a texture using its key. If not found, create one using an ImageSource and return it.
+   * This will also add it to the map if the key was valid.
    */
-  // public createTextureGradientSymb(grad: Gradient.Symb)
+  // public createTextureFromImgSrc(imgSrc: ImageSource, params: RenderTexture.Params, bottomUp: BottomUp): RenderTexture {}
+
+  /**
+   * Find a texture using its key. If not found, create one using an ImageBuffer and return it.
+   * This will also add it to the map if the key was valid. Returns undefined if we were unable to create the texture.
+   */
+  public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+    let texture;
+    if (params.key) {
+      texture = this.textureMap.get(params.key);
+      if (texture)
+        return texture;
+    }
+
+    const isTranslucent = params.isRGBE ? IsTranslucent.Yes : ((img.format === ImageBufferFormat.Rgba) ? IsTranslucent.Maybe : IsTranslucent.No);
+    if (isTranslucent === IsTranslucent.Maybe) {
+      // premultiplyOrStripAlpha
+    }
+
+    texture = this.createTexture(img, params);
+    return texture;
+  }
+
+  /**
+   * Find a gradient using its symbology. If the gradient does not exist, create it by constructing a texture
+   * derived from an image of given height and width. This will also add it to the map.
+   */
+  public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
+    const existingGrad = this.gradientMap.get(grad);
+    if (existingGrad)
+      return existingGrad;
+
+    const image: ImageBuffer = grad.getImage(0x100, 0x100);
+    // preMultiplyOrStripAlpha
+
+    const textureHandle = TextureHandle.createForImageBuffer(image);
+    if (!textureHandle)
+      return undefined;
+    const texture = new Texture(Texture.Params.defaults, textureHandle);
+    this.addGradient(grad, texture);
+    return texture;
+  }
 }
 
 export class System extends RenderSystem {
@@ -393,20 +431,49 @@ export class System extends RenderSystem {
     if (!idMap) {
       return undefined;
     }
-    return idMap!.createMaterial(params);
+    return idMap!.getMaterial(params);
   }
 
   /** Searches through the imodel's render map for a material, given its key. Returns undefined if none found. */
   public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.renderCache.get(imodel);
-    if (idMap !== undefined) {
-      return idMap.findMaterial(key);
-    }
-    return undefined;
+    if (!idMap)
+      return undefined;
+    return idMap.findMaterial(key);
   }
 
-  public static isPowerOfTwo(num: number): boolean {
-    return (num & (num - 1)) === 0;
+  /**
+   * Creates a texture using an ImageBuffer and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  public createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap) {
+      return undefined;
+    }
+    return idMap.createTexture(image, params);
+  }
+
+  /**
+   * Creates a texture using an ImageSource and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  /*
+  public createTextureFromImageSrc(source: ImageSource, bottomUp: BottomUp, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap) {
+      return undefined;
+    }
+    return idMap.createTextureFromImgSrc(source, params, bottomUp);
+  }
+  */
+
+  /** Searches through the imodel's render map for a texture, given its key. Returns undefined if none found. */
+  public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap)
+      return undefined;
+    return idMap.findTexture(key);
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {

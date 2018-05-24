@@ -196,7 +196,7 @@ export class PolylineEdgeArgs {
 export class RenderTexture {
   public readonly params: RenderTexture.Params;
 
-  public constructor(params: RenderTexture.Params) {
+  protected constructor(params: RenderTexture.Params) {
     this.params = params;
   }
 
@@ -217,6 +217,9 @@ export namespace RenderTexture {
       this.isGlyph = isGlyph;
       this.isRGBE = isRGBE;
     }
+
+    /** Create a RenderMaterial params object with QVision default values. */
+    public static readonly defaults = new Params();
   }
 }
 
@@ -1193,7 +1196,7 @@ export namespace Gradient {
         }
       }
 
-      const imageBuffer = ImageBuffer.create(new Uint8Array(image), ImageBufferFormat.Rgba, width);
+      const imageBuffer = ImageBuffer.create(new Uint8Array(image.buffer), ImageBufferFormat.Rgba, width);
       assert(undefined !== imageBuffer);
       return imageBuffer!;
     }

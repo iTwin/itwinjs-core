@@ -3,13 +3,13 @@ import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
 export class Material extends RenderMaterial {
   public static readonly material: Material = new Material(RenderMaterial.Params.defaults);
 
-  public color?: ColorDef;
-  public specularColor?: ColorDef;
-  public reflectColor?: ColorDef;
-  public alpha?: number;
-  public specularExponent: number;
-  public textureWeight?: number;
-  public weights: Float32Array;  // [diffuse weight, specular weight, reflect]
+  public readonly color?: ColorDef;
+  public readonly specularColor?: ColorDef;
+  public readonly reflectColor?: ColorDef;
+  public readonly alpha?: number;
+  public readonly specularExponent: number;
+  public readonly textureWeight?: number;
+  public readonly weights: Float32Array;  // [diffuse weight, specular weight, reflect]
 
   public constructor(materialParams: RenderMaterial.Params) {
     super(materialParams);

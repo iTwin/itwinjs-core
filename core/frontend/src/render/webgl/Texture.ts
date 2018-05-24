@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
-import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo } from "@bentley/imodeljs-common";
+import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
@@ -92,7 +92,17 @@ interface TextureImageProperties {
   format: GL.Texture.Format;
 }
 
-/** Parameters used internally to describe how a TextureHandle should be created. */
+/** Wrapper class for a WebGL texture handle and parameters specific to an individual texture. */
+export class Texture extends RenderTexture {
+  public readonly texture: TextureHandle;
+
+  public constructor(params: RenderTexture.Params, texture: TextureHandle) {
+    super(params);
+    this.texture = texture;
+  }
+}
+
+/** Parameters used internally to define how to create a texture for use with WebGL. */
 class TextureCreateParams {
   private constructor(
     public width: number,
@@ -107,19 +117,19 @@ class TextureCreateParams {
 
   public static createForData(width: number, height: number, data: Uint8Array, preserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
     return new TextureCreateParams(width, height, format, GL.Texture.DataType.UnsignedByte, wrapMode,
-        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, preserveData ? data : undefined);
+      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, preserveData ? data : undefined);
   }
 
   public static createForImageBuffer(image: ImageBuffer, type: ImageTextureType = ImageTextureType.Normal) {
     const props = this.getImageProperties(ImageBufferFormat.Rgba === image.format, type);
 
     return new TextureCreateParams(image.width, image.height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, image.data), props.useMipMaps, props.interpolate);
+      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params, image.data), props.useMipMaps, props.interpolate);
   }
 
   public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
     return new TextureCreateParams(width, height, format, dataType, GL.Texture.WrapMode.ClampToEdge,
-        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, true);
+      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, true);
   }
 
   public static createForImageSource(source: ImageSource, width: number, height: number, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
@@ -149,7 +159,7 @@ class TextureCreateParams {
     canvas.height = targetHeight;
 
     return new TextureCreateParams(width, height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-        (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromImageSource(tex, params, { source, canvas, loadCallback }), props.useMipMaps, props.interpolate);
+      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromImageSource(tex, params, { source, canvas, loadCallback }), props.useMipMaps, props.interpolate);
   }
 
   private static getImageProperties(isTranslucent: boolean, type: ImageTextureType): TextureImageProperties {
@@ -161,7 +171,7 @@ class TextureCreateParams {
   }
 
   public static readonly placeholderParams = new TextureCreateParams(1, 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte, GL.Texture.WrapMode.ClampToEdge,
-      (_tex: TextureHandle, _params: TextureCreateParams) => undefined);
+    (_tex: TextureHandle, _params: TextureCreateParams) => undefined);
 }
 
 /** Wraps a WebGLTextureHandle */
