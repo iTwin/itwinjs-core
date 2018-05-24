@@ -146,7 +146,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
 
   // return 1/k with convention that if near-zero is given as curvature, its infinite radius is returned as 0
   public static curvatureToRadius(curvature: number): number {
-    if (Math.abs (curvature) < Geometry.smallAngleRadians)
+    if (Math.abs(curvature) < Geometry.smallAngleRadians)
       return 0.0;
     return 1.0 / curvature;
   }
@@ -382,7 +382,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     const globalFraction0 = this.activeFractionInterval.fractionToPoint(fraction0);
     const globalFraction1 = this.activeFractionInterval.fractionToPoint(fraction);
     this.fullSpiralIncrementalIntegral(result, globalFraction0, globalFraction1);
-    this.localToWorld.multiplyPoint(result, result);
+    this.localToWorld.multiplyPoint3d(result, result);
     return result;
   }
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {

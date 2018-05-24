@@ -1494,7 +1494,7 @@ export class AccuDraw {
       this.published.origin.setFrom(originP);
 
       if (transP)
-        transP.multiplyPoint(this.published.origin, this.published.origin);
+        transP.multiplyPoint3d(this.published.origin, this.published.origin);
     }
 
     if (deltaP) {

@@ -1869,8 +1869,13 @@ export class Transform implements BeJSONFunctions {
     return Transform.createRefs(origin, matrix, result);
   }
 
-  /** Transform the input point.  Return as a new point or in the pre-allocated result (if result is given) */
-  public multiplyPoint(point: Point3d, result?: Point3d): Point3d {
+  /** Transform the input 2d point.  Return as a new point or in the pre-allocated result (if result is given) */
+  public multiplyPoint2d(source: Point2d, result?: Point2d): Point2d {
+    return RotMatrix.XYPlusMatrixTimesXY(this._origin, this._matrix, source, result);
+  }
+
+  /** Transform the input 3d point.  Return as a new point or in the pre-allocated result (if result is given) */
+  public multiplyPoint3d(point: Point3d, result?: Point3d): Point3d {
     return RotMatrix.XYZPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
 
@@ -1960,22 +1965,22 @@ export class Transform implements BeJSONFunctions {
     }
     return numSource;
   }
+
   /**
    * *  for each point:   multiply    transform * point
    * *  if result is given, resize to match source and replace each corresponding pi
    * *  if result is not given, return a new array.
    */
   public multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[] {
-    const xyOrigin = Point2d.create(this._origin.x, this._origin.y);
     if (result) {
       const n = Transform.matchArrayLengths(source, result, Point2d.createZero);
       for (let i = 0; i < n; i++)
-        RotMatrix.XYPlusMatrixTimesXY(xyOrigin, this._matrix, source[i], result[i]);
+        RotMatrix.XYPlusMatrixTimesXY(this._origin, this._matrix, source[i], result[i]);
       return result;
     }
     result = [];
     for (const p of source)
-      result.push(RotMatrix.XYPlusMatrixTimesXY(xyOrigin, this._matrix, p));
+      result.push(RotMatrix.XYPlusMatrixTimesXY(this._origin, this._matrix, p));
 
     return result;
   }

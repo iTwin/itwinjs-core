@@ -116,7 +116,7 @@ export class Clips {
 
         // Transform distance of clip plane
         const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
-        const xFormPos: Point3d = viewMatrix.multiplyPoint(pos);
+        const xFormPos: Point3d = viewMatrix.multiplyPoint3d(pos);
         this._clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
       }
     }

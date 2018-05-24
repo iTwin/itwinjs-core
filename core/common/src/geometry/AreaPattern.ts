@@ -119,11 +119,11 @@ export namespace AreaPattern {
         return true;    // Same pointer
 
       if (this.scale !== other.scale ||
-          this.space1 !== other.space1 ||
-          this.space2 !== other.space2 ||
-          this.weight !== other.weight ||
-          this.invisibleBoundary !== other.invisibleBoundary ||
-          this.snappable !== other.snappable)
+        this.space1 !== other.space1 ||
+        this.space2 !== other.space2 ||
+        this.weight !== other.weight ||
+        this.invisibleBoundary !== other.invisibleBoundary ||
+        this.snappable !== other.snappable)
         return false;
 
       if ((this.color === undefined) !== (other.color === undefined))
@@ -223,10 +223,10 @@ export namespace AreaPattern {
       const origin = this.origin ? this.origin : Point3d.createZero();
       const rMatrix = this.rotation ? this.rotation.toRotMatrix() : RotMatrix.createIdentity();
       if (this.symbolId !== undefined) {
-         this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
-         this.space2 = Params.transformPatternSpace(transform, this.space2 ? this.space2 : 0.0, rMatrix, this.angle2);
-         const scale = Params.getTransformPatternScale(transform);
-         this.scale = this.scale ? this.scale *= scale : scale;
+        this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
+        this.space2 = Params.transformPatternSpace(transform, this.space2 ? this.space2 : 0.0, rMatrix, this.angle2);
+        const scale = Params.getTransformPatternScale(transform);
+        this.scale = this.scale ? this.scale *= scale : scale;
       } else if (this.defLines) {
         const scale = Params.getTransformPatternScale(transform);
         if (!Geometry.isSameCoordinate(scale, 1.0)) {
@@ -252,7 +252,7 @@ export namespace AreaPattern {
           this.space2 = Params.transformPatternSpace(transform, this.space2, rMatrix, this.angle2);
       }
 
-      transform.multiplyPoint(origin);
+      transform.multiplyPoint3d(origin);
       rMatrix.multiplyMatrixMatrix(transform.matrix, rMatrix);
       const normalized = RotMatrix.createRigidFromRotMatrix(rMatrix);
       if (!normalized)

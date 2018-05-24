@@ -312,7 +312,7 @@ export namespace Tile {
     }
 
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
-    public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint(tile.center); }
+    public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
     private static scratchRange = new Range3d();
     public getTileRadius(tile: Tile): number {

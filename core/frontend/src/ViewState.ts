@@ -422,12 +422,12 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
     let origin = this.getOrigin();
     const trans = Transform.createOriginAndMatrix(Point3d.createZero(), this.getRotation());
-    const newOrigin = trans.multiplyPoint(origin);
+    const newOrigin = trans.multiplyPoint3d(origin);
 
     newOrigin.x += ((oldDelta.x - extents.x) / 2.0);
     newOrigin.y += ((oldDelta.y - extents.y) / 2.0);
 
-    origin = trans.inverse()!.multiplyPoint(newOrigin);
+    origin = trans.inverse()!.multiplyPoint3d(newOrigin);
     this.setOrigin(origin);
     this.setExtents(extents);
   }
@@ -1021,7 +1021,7 @@ export abstract class ViewState3d extends ViewState {
     if (!rotation)
       return ViewStatus.InvalidUpVector;    // Invalid axis given
     const trans = Transform.createFixedPointAndMatrix(about, rotation);
-    const newTarget = trans.multiplyPoint(this.getTargetPoint());
+    const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
     const upVec = rotation!.multiplyVector(this.getYVector());
     return this.lookAt(this.getEyePoint(), newTarget, upVec);
   }

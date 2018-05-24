@@ -206,14 +206,14 @@ export class FacetFaceData {
       const dS = Point2d.create(dSTotal.x / aveTotal, dSTotal.y / aveTotal);
       const standardDeviation = Point2d.create(
         Math.sqrt(Math.abs((dSSquaredTotal.x / aveTotal) - dS.x * dS.x)),
-        Math.sqrt(Math.abs((dSSquaredTotal.y / aveTotal) - dS.y * dS.y))
+        Math.sqrt(Math.abs((dSSquaredTotal.y / aveTotal) - dS.y * dS.y)),
       );
 
       // TR# 268980 - Add standard deviation to match QV....
       this.paramDistanceRange.low.set(0, 0);
       this.paramDistanceRange.high.set(
         (dS.x + standardDeviation.x) * (this.paramRange.high.x - this.paramRange.low.x),
-        (dS.y + standardDeviation.y) * (this.paramRange.high.y - this.paramRange.low.y)
+        (dS.y + standardDeviation.y) * (this.paramRange.high.y - this.paramRange.low.y),
       );
     }
     return true;
@@ -358,7 +358,6 @@ export class PolyfaceData {
       this.edgeVisible[i] = other.edgeVisible[index0 + i];
     for (let i = 0; i < numWrap; i++)
       this.edgeVisible[numEdge + i] = this.edgeVisible[i];
-
 
     if (this.normal && this.normalIndex && other.normal && other.normalIndex) {
       for (let i = 0; i < numEdge; i++)
@@ -541,7 +540,6 @@ export class IndexedPolyface extends Polyface {
   // be part of a single face.
   protected facetToFaceData: number[];
 
-
   protected constructor(data: PolyfaceData, facetStart?: number[], facetToFaceData?: number[]) {
     super(data);
     if (facetStart)
@@ -569,7 +567,7 @@ export class IndexedPolyface extends Polyface {
     for (let i = 0, n = source.data.point.length; i < n; i++) {
       sourcePoints.getPoint3dAt(i, xyz);
       if (transform) {
-        transform.multiplyPoint(xyz, xyz);
+        transform.multiplyPoint3d(xyz, xyz);
         sourceToDestPointIndex.push(this.addPoint(xyz));
       } else
         sourceToDestPointIndex.push(this.addPoint(xyz));
@@ -780,7 +778,6 @@ export class IndexedPolyface extends Polyface {
     return true;
   }
 
-
   /** TODO: IMPLEMENT */
   public isClosedByEdgePairing(): boolean {
     return false;
@@ -855,7 +852,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
    * Attempts to extract the distance parameter for the face of a given point index.
    * Returns the distance parameter as a point. Returns undefined on failure.
    */
-  public tryGetDistanceParameter(index: number): Point2d | undefined {
+  public tryGetDistanceParameter(index: number, result?: Point2d): Point2d | undefined {
     if (index >= this.numEdgesThisFacet)
       return undefined;
 
@@ -863,14 +860,14 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       return undefined;
 
     const facetIndex = this.currentFacetIndex;
-    return this.polyface.data.face[facetIndex].convertParamToDistance(this.param[index]);
+    return this.polyface.data.face[facetIndex].convertParamToDistance(this.param[index], result);
   }
 
   /**
    * Attempts to extract the normalized parameter (0,1) for the face of a given point index.
    * Returns the normalized parameter as a point. Returns undefined on failure.
    */
-  public tryGetNormalizedParameter(index: number): Point2d | undefined {
+  public tryGetNormalizedParameter(index: number, result?: Point2d): Point2d | undefined {
     if (index >= this.numEdgesThisFacet)
       return undefined;
 
@@ -878,7 +875,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       return undefined;
 
     const facetIndex = this.currentFacetIndex;
-    return this.polyface.data.face[facetIndex].convertParamToNormalized(this.param[index]);
+    return this.polyface.data.face[facetIndex].convertParamToNormalized(this.param[index], result);
   }
 
   public currentReadIndex(): number { return this.currentFacetIndex; }

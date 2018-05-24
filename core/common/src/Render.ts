@@ -1499,8 +1499,6 @@ export class TextureMapping {
     this.texture = tx;
     this.params = params;
   }
-
-
 }
 
 export namespace TextureMapping {
@@ -1562,13 +1560,15 @@ export namespace TextureMapping {
       this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;
     }
 
-    /** Generates UV parameters for textured surfaces. */
-    /*
+    /**
+     * Generates UV parameters for textured surfaces. The result is stored in the given params Point2d array.
+     * Returns true if successful, and false otherwise.
+     */
     public computeUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): boolean {
       switch (this.mode) {
         default:  // Fall through to parametric in default case
         case TextureMapping.Mode.Parametric: {
-          computeParametricUVParams(params, visitor, this.textureMatrix.transform, !this.worldMapping);
+          this.computeParametricUVParams(params, visitor, this.textureMatrix.transform, !this.worldMapping);
           return true;
         }
         case TextureMapping.Mode.Planar: {
@@ -1577,11 +1577,12 @@ export namespace TextureMapping {
             return false;
 
           // Ignore planar mode unless master or sub units for scaleMode and facet is planar
-          if (!this.worldMapping || (visitor.normalIndex !== undefined && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2])))
-            this.computeParametricUVParams(params, visitor, this.textureMatrix.transform, transformToImodel);
-          else
-            this.computePlanarUVParams(params, visitor, this.textureMatrix.transform, transformToImodel);
-          return true;
+          if (!this.worldMapping || (visitor.normalIndex !== undefined && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2]))) {
+            this.computeParametricUVParams(params, visitor, this.textureMatrix.transform, !this.worldMapping);
+            return true;
+          } else {
+            return this.computePlanarUVParams(params, visitor, this.textureMatrix.transform);
+          }
         }
         case TextureMapping.Mode.ElevationDrape: {
           this.computeElevationDrapeUVParams(params, visitor, this.textureMatrix.transform, transformToImodel);
@@ -1589,24 +1590,87 @@ export namespace TextureMapping {
         }
       }
     }
-    */
 
-    /** Computes UV parameters given a texture mapping mode of parametric. */
-    /*
+    /** Computes UV parameters given a texture mapping mode of parametric. The result is stored in the Point2d array given. */
     private computeParametricUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, uvTransform: Transform, isRelativeUnits: boolean): void {
-      for (let i = 0; i < visitor.numEdgesThisFace; i++) {
+      for (let i = 0; i < visitor.numEdgesThisFacet; i++) {
         let param = Point2d.create();
 
-        if (isRelativeUnits || !visitor.try)
+        if (isRelativeUnits || !visitor.tryGetDistanceParameter(i, param)) {
+          if (!visitor.tryGetNormalizedParameter(i, param)) {
+            // If mesh does not have facetFaceData, we still want to use the texture coordinates if they are present
+            param = visitor.getParam(i);
+          }
+        }
+
+        uvTransform.multiplyPoint2d(param, params[i]);
       }
     }
-    */
 
-    /** Computes UV parameters given a texture mapping mode of planar. */
-    /*
-    private computePlanarUVParams(params: Point2d, visitor: IndexedPolyfaceVisitor, uvTransform: Transform): void {
+    /** Computes UV parameters given a texture mapping mode of planar. The result is stored in the Point2d array given. */
+    private computePlanarUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, uvTransform: Transform): boolean {
+      const points = visitor.point;
+      let normal: Vector3d;
 
+      if (visitor.normal === undefined)
+        normal = points.getPoint3dAt(0).crossProductToPoints(points.getPoint3dAt(1), points.getPoint3dAt(2));
+      else
+        normal = visitor.normal[0];
+
+      if (!normal.normalize(normal))
+        return false;
+
+      // adjust U texture coordinate to be a continuous length starting at the
+      // origin. V coordinate stays the same. This mode assumes Z is up vector
+
+      // Flipping normal puts us in a planar coordinate system consistent with MicroStation's display system
+      normal.scale(-1.0, normal);
+
+      // pick the first vertex normal
+      const sideVector = Vector3d.create(normal.y, -normal.x, 0.0);
+
+      // if the magnitude of the normal is near zero, the real normal points
+      // almost straighten up.. In this case, use Y as the up vector in order to
+      // match QV
+
+      const magnitude = sideVector.magnitude();
+      sideVector.normalize(sideVector); // won't remain undefined if failed due to following check..
+
+      if (magnitude < 1e-3) {
+        normal.set(0, 0, -1);
+        sideVector.set(1, 0, 0);
+      }
+
+      const upVector = sideVector.crossProduct(normal).normalize();
+      if (!upVector)
+        return false;
+
+      const numEdges = visitor.numEdgesThisFacet;
+      for (let i = 0; i < numEdges; i++) {
+        const outParam = params[i];
+        const vector = Vector3d.createFrom(points.getPoint3dAt(i));
+
+        outParam.x = vector.dotProduct(sideVector);
+        outParam.y = vector.dotProduct(upVector);
+
+        uvTransform.multiplyPoint2d(outParam, outParam);
+      }
+      return true;
     }
-    */
+
+    /** Computes UV parameters given a texture mapping mode of elevation drape. The result is stored in the Point2d array given. */
+    private computeElevationDrapeUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, uvTransform: Transform, transformToIModel?: Transform): void {
+      const numEdges = visitor.numEdgesThisFacet;
+      for (let i = 0; i < numEdges; i++) {
+        const point = visitor.point.getPoint3dAt(i);
+        const outParam = params[i];
+
+        if (transformToIModel !== undefined)
+          transformToIModel.multiplyPoint3d(point, point);
+
+        outParam.setFrom(point);
+        uvTransform.multiplyPoint2d(outParam, outParam);
+      }
+    }
   }
 }

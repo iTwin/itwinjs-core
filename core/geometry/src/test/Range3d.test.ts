@@ -19,7 +19,7 @@ function exericseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
   ck.testTrue(rangeA.isAlmostEqual(rangeB));
   const q = Point3d.create();
   for (const p of points) {
-    frame.multiplyPoint(p, q);
+    frame.multiplyPoint3d(p, q);
     // ck.testTrue(rangeA.containsPoint(p));
     ck.testTrue(rangeA.containsPoint(q));
     ck.testCoordinate(0, rangeA.distanceToPoint(q));
@@ -156,7 +156,7 @@ describe("Range3d", () => {
     expected[4] = rangeQ.high.y;
     expected[5] = rangeQ.high.z;
     const floatArray = Range3d.toFloat64Array(rangeQ);
-    const floatArrayB = rangeQ.toFloat64Array ();
+    const floatArrayB = rangeQ.toFloat64Array();
     assert.deepEqual(floatArray, expected);
     assert.deepEqual(floatArrayB, expected);
     assert.instanceOf(floatArray, Float64Array);
@@ -174,18 +174,18 @@ describe("Range3d", () => {
     ck.testTrue(rangeA2d.low.isAlmostEqual(rangeA3d.low), "2d 3d range");
     ck.testTrue(rangeA2d.high.isAlmostEqual(rangeA3d.high), "2d 3d range");
 
-    const f64A = Range2d.toFloat64Array (rangeA2d);
-    const f64B = rangeA2d.toFloat64Array ();
+    const f64A = Range2d.toFloat64Array(rangeA2d);
+    const f64B = rangeA2d.toFloat64Array();
 
-    ck.testExactNumber (f64A[0], rangeA2d.low.x);
-    ck.testExactNumber (f64A[1], rangeA2d.low.y);
-    ck.testExactNumber (f64A[2], rangeA2d.high.x);
-    ck.testExactNumber (f64A[3], rangeA2d.high.y);
+    ck.testExactNumber(f64A[0], rangeA2d.low.x);
+    ck.testExactNumber(f64A[1], rangeA2d.low.y);
+    ck.testExactNumber(f64A[2], rangeA2d.high.x);
+    ck.testExactNumber(f64A[3], rangeA2d.high.y);
 
-    ck.testExactNumber (f64B[0], rangeA2d.low.x);
-    ck.testExactNumber (f64B[1], rangeA2d.low.y);
-    ck.testExactNumber (f64B[2], rangeA2d.high.x);
-    ck.testExactNumber (f64B[3], rangeA2d.high.y);
+    ck.testExactNumber(f64B[0], rangeA2d.low.x);
+    ck.testExactNumber(f64B[1], rangeA2d.low.y);
+    ck.testExactNumber(f64B[2], rangeA2d.high.x);
+    ck.testExactNumber(f64B[3], rangeA2d.high.y);
 
     ck.checkpoint("Range3d.With2d");
     expect(ck.getNumErrors()).equals(0);

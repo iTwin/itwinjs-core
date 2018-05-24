@@ -786,7 +786,7 @@ export class Viewport {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
-    return scrToNpcTran.multiplyPoint(pt, out);
+    return scrToNpcTran.multiplyPoint3d(pt, out);
   }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.View

@@ -103,7 +103,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const pointIndex0 = this.polyface.data.pointCount;
     // these will have sequential indices starting at pointIndex0 . . .
     for (const p of BoxTopology.points)
-      this.polyface.addPoint(transform.multiplyPoint(p));
+      this.polyface.addPoint(transform.multiplyPoint3d(p));
 
     for (const facet of BoxTopology.cornerIndexCCW) {
       for (const pointIndex of facet)
@@ -195,7 +195,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const q = ls.pointAt(index, PolyfaceBuilder.workPointFindOrAdd);
     if (q) {
       if (transform)
-        transform.multiplyPoint(q, q);
+        transform.multiplyPoint3d(q, q);
       return this.polyface.addPoint(q);
     }
     return undefined;
