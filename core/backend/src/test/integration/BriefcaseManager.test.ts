@@ -38,10 +38,18 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
   return token;
 }
 
-function applyChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
+function applyOneChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
   const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.applyChangeSets(JSON.stringify([cstoken]), ChangeSetApplyOption.Merge);
   imodel.onChangesetApplied.raiseEvent();
   assert.equal(status, ChangeSetStatus.Success);
+}
+
+function applyChangeSets(imodel: IModelDb, cshistory: ChangeSetToken[], curIdx: number): number {
+  while (curIdx < (cshistory.length - 1)) {
+    ++curIdx;
+    applyOneChangeSet(imodel, cshistory[curIdx]);
+  }
+  return curIdx;
 }
 
 export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
@@ -255,7 +263,7 @@ describe("BriefcaseManager", () => {
 
   });
 
-  it.skip("should merge changes so that two branches of an iModel converge (#integration)", () => {
+  it("should merge changes so that two branches of an iModel converge (#integration)", () => {
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
     const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
@@ -290,18 +298,18 @@ describe("BriefcaseManager", () => {
       el1 = first.elements.insertElement(IModelTestUtils.createPhysicalObject(first, modelId, spatialCategoryId));
       first.saveChanges();
       cshistory.push(createChangeSet(first));
-      ++firstparent; // (This automatically becomes my parent)
+      firstparent = cshistory.length - 1;
       assert.isTrue((cshistory.length - 1) === firstparent);
     }
 
     if (true) {
       // first -> second, neutral
-      applyChangeSet(second, cshistory[++secondparent]);
+      secondparent = applyChangeSets(second, cshistory, secondparent);
       assert.isTrue(second.models.getModel(modelId) !== undefined);
       assert.isTrue(second.elements.getElement(spatialCategoryId) !== undefined);
       assert.isTrue(second.elements.getElement(el1) !== undefined);
 
-      applyChangeSet(neutral, cshistory[++neutralparent]);
+      neutralparent = applyChangeSets(neutral, cshistory, neutralparent);
       assert.isTrue(neutral.models.getModel(modelId) !== undefined);
       assert.isTrue(neutral.elements.getElement(spatialCategoryId) !== undefined);
       assert.isTrue(neutral.elements.getElement(el1) !== undefined);
@@ -316,7 +324,7 @@ describe("BriefcaseManager", () => {
       first.elements.updateElement(el1cc);
       first.saveChanges("first modified el1.userLabel");
       cshistory.push(createChangeSet(first));
-      ++firstparent; // (This automatically becomes my parent)
+      firstparent = cshistory.length - 1;
     }
 
     // second: modify el1.userLabel
@@ -329,23 +337,23 @@ describe("BriefcaseManager", () => {
       second.saveChanges("second modified el1.userLabel");
 
       // merge => take second's change (RejectIncomingChange). That's because the default updateVsUpdate settting is RejectIncomingChange
-      applyChangeSet(second, cshistory[++secondparent]);
+      secondparent = applyChangeSets(second, cshistory, secondparent);
       const el1after = second.elements.getElement(el1);
       assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
       cshistory.push(createChangeSet(second));
-      ++secondparent; // (This automatically becomes my parent)
+      secondparent = cshistory.length - 1;
     }
 
     // Make sure a neutral observer sees secondUser's change.
     if (true) {
-      applyChangeSet(neutral, cshistory[++neutralparent]);
+      neutralparent = applyChangeSets(neutral, cshistory, neutralparent);
       const elobj = neutral.elements.getElement(el1);
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
     }
 
     // firstUser: pull and see that secondUser has overridden my change
     if (true) {
-      applyChangeSet(first, cshistory[++firstparent]);
+      firstparent = applyChangeSets(first, cshistory, firstparent);
       const elobj = first.elements.getElement(el1);
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
     }
