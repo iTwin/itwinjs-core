@@ -28,6 +28,7 @@ export const enum ECObjectsStatus {
   MissingSchemaUrl = ECOBJECTS_ERROR_BASE + 18,
   UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 19,
   InvalidSchemaXML = ECOBJECTS_ERROR_BASE + 20,
+  InvalidSchemaString = ECOBJECTS_ERROR_BASE + 21,
 }
 
 export class ECObjectsError extends BentleyError {

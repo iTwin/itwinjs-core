@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+
 import { SchemaXmlFileLocater } from "../source/Deserialization/SchemaXmlFileLocater";
 import { SchemaKey } from "../source";
 import Schema from "../source/Metadata/Schema";

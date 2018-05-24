@@ -1,4 +1,9 @@
-import { SchemaXmlFileLocater, XmlSchemaKey } from "../source/Deserialization/SchemaXmlFileLocater";
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+
+import { SchemaXmlFileLocater } from "../source/Deserialization/SchemaXmlFileLocater";
+import { FileSchemaKey } from "../source/Deserialization/SchemaFileLocater";
 import { SchemaKey, SchemaMatchType, ECObjectsError, ECObjectsStatus, ECVersion } from "../source";
 import { assert } from "chai";
 import * as fs from "fs";
@@ -23,7 +28,7 @@ describe("SchemaXmlFileLocater tests:", () => {
 
     // Assert
     assert.isDefined(stub);
-    const key = stub!.schemaKey as XmlSchemaKey;
+    const key = stub!.schemaKey as FileSchemaKey;
     assert.equal(key.name, "SchemaA");
     assert.equal(key.version.toString(), "1.1.1");
     assert.equal(key.fileName, schemaPath);
@@ -132,7 +137,7 @@ describe("SchemaXmlFileLocater tests:", () => {
 
     // Assert
     assert.isDefined(stub);
-    const key = stub!.schemaKey as XmlSchemaKey;
+    const key = stub!.schemaKey as FileSchemaKey;
     assert.equal(key.name, "SchemaA");
     assert.equal(key.version.toString(), "1.1.1");
   });
@@ -146,7 +151,7 @@ describe("SchemaXmlFileLocater tests:", () => {
 
     // Assert
     assert.isDefined(stub);
-    const key = stub!.schemaKey as XmlSchemaKey;
+    const key = stub!.schemaKey as FileSchemaKey;
     assert.isTrue(fs.existsSync(key.fileName));
   });
 
@@ -309,7 +314,7 @@ describe("SchemaXmlFileLocater tests:", () => {
   it("get schema reference keys, schemaXml is undefined in XmlSchemaKey, reference still added.", async () => {
     // Arrange
     const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
-    const key = new XmlSchemaKey(new SchemaKey("SchemaA", 1, 1, 1), schemaPath);
+    const key = new FileSchemaKey(new SchemaKey("SchemaA", 1, 1, 1), schemaPath);
 
     // Act
     const refs = locator.getSchemaReferenceKeys(key);
@@ -321,7 +326,7 @@ describe("SchemaXmlFileLocater tests:", () => {
   it("get schema reference keys, bad schema path, throws.", async () => {
     // Arrange
     const schemaPath = __dirname + "\\DoesNotExist";
-    const key = new XmlSchemaKey(new SchemaKey("SchemaA", 1, 1, 1), schemaPath);
+    const key = new FileSchemaKey(new SchemaKey("SchemaA", 1, 1, 1), schemaPath);
 
     // Act / Assert
     try {
@@ -333,6 +338,46 @@ describe("SchemaXmlFileLocater tests:", () => {
     }
 
     assert.fail(0, 1, "Expected ECObjects exception");
+  });
+
+  it("isSchemaJson correctly identifies Json", async () => {
+    // Arrange
+    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
+
+    // Act
+    const stub = await locator.loadSchema(schemaPath);
+
+    // Assert
+    assert.isDefined(stub);
+    const key = stub!.schemaKey as FileSchemaKey;
+    assert.equal(false, key.isSchemaJson());
+  });
+
+  it("isSchemaXml correctly identifies Xml", async () => {
+    // Arrange
+    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
+
+    // Act
+    const stub = await locator.loadSchema(schemaPath);
+
+    // Assert
+    assert.isDefined(stub);
+    const key = stub!.schemaKey as FileSchemaKey;
+    assert.equal(true, key.isSchemaXml());
+  });
+
+  it("loadSchema called twice, same Schema object", async () => {
+    // Arrange
+    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
+
+    // Act
+    const stub1 = await locator.loadSchema(schemaPath);
+    const stub2 = await locator.loadSchema(schemaPath);
+
+    // Assert
+    // Should be the same object (not constructed again), meaning
+    // it was retrieved from cache.
+    assert.equal(stub1, stub2);
   });
 
   /*
