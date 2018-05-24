@@ -28,7 +28,7 @@
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.9.0",
     "typedoc": "^0.11.1",
-    "typescript": "~2.8.1",
+    "typescript": "~2.7.2",
     "yargs": "^11.0.0",
     "obj-traverse": "^1.0.0"
   },
