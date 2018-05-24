@@ -16,3 +16,4 @@ export * from "./Versions";
 export * from "./Thumbnails";
 export * from "./FileHandler";
 export * from "./AzureFileHandler";
+export * from "./UserStatistics";

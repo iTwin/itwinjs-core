@@ -48,6 +48,10 @@ class TestClass extends TestBaseClass {
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class1].relatedInstance[Test_Related_Class2].properties.String_Property3")
   @ECJsonTypeMap.propertyToJson("ecdb", "relatedStringProperty3")
   public relatedStringProperty3: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class1].relatedInstance[Test_Related_Class2].properties.String_Property4")
+  @ECJsonTypeMap.propertyToJson("ecdb", "relatedStringProperty4")
+  public relatedStringProperty4: string;
 }
 
 describe("ECJsonTypeMap", () => {
@@ -93,6 +97,7 @@ describe("ECJsonTypeMap", () => {
             className: "Test_Related_Class2",
             properties: {
               String_Property3: "Test Related String Property 3",
+              String_Property4: "Test Related String Property 4",
             },
           },
         },
@@ -109,6 +114,7 @@ describe("ECJsonTypeMap", () => {
       relatedStringProperty1: seedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.String_Property1,
       relatedStringProperty2: seedUntypedWsgInstance.relationshipInstances[1].relatedInstance.properties.String_Property2,
       relatedStringProperty3: seedUntypedWsgInstance.relationshipInstances[2].relatedInstance.properties.String_Property3,
+      relatedStringProperty4: seedUntypedWsgInstance.relationshipInstances[2].relatedInstance.properties.String_Property4,
       abstractBaseStringProperty: seedUntypedWsgInstance.Abstract_Base_String_Property,
       baseStringProperty: seedUntypedWsgInstance.Base_String_Property,
     };
@@ -122,6 +128,7 @@ describe("ECJsonTypeMap", () => {
     seedTypedWsgInstance.relatedStringProperty1 = seedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.String_Property1;
     seedTypedWsgInstance.relatedStringProperty2 = seedUntypedWsgInstance.relationshipInstances[1].relatedInstance.properties.String_Property2;
     seedTypedWsgInstance.relatedStringProperty3 = seedUntypedWsgInstance.relationshipInstances[2].relatedInstance.properties.String_Property3;
+    seedTypedWsgInstance.relatedStringProperty4 = seedUntypedWsgInstance.relationshipInstances[2].relatedInstance.properties.String_Property4;
     seedTypedWsgInstance.abstractBaseStringProperty = seedUntypedWsgInstance.Abstract_Base_String_Property;
     seedTypedWsgInstance.baseStringProperty = seedUntypedWsgInstance.Base_String_Property;
 
@@ -134,6 +141,7 @@ describe("ECJsonTypeMap", () => {
     seedTypedECDbInstance.relatedStringProperty1 = seedUntypedECDbInstance.relatedStringProperty1;
     seedTypedECDbInstance.relatedStringProperty2 = seedUntypedECDbInstance.relatedStringProperty2;
     seedTypedECDbInstance.relatedStringProperty3 = seedUntypedECDbInstance.relatedStringProperty3;
+    seedTypedECDbInstance.relatedStringProperty4 = seedUntypedECDbInstance.relatedStringProperty4;
     seedTypedECDbInstance.abstractBaseStringProperty = seedUntypedECDbInstance.abstractBaseStringProperty;
     seedTypedECDbInstance.baseStringProperty = seedUntypedECDbInstance.baseStringProperty;
     done();

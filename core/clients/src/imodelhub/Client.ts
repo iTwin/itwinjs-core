@@ -7,6 +7,7 @@ import { AccessToken, AuthorizationToken } from "../Token";
 import { BriefcaseHandler, IModelHandler, ChangeSetHandler, LockHandler, CodeHandler, UserInfoHandler, VersionHandler, EventHandler, FileHandler } from "./index";
 import { ThumbnailHandler } from "./Thumbnails";
 import { GlobalEventHandler } from "./GlobalEvents";
+import { UserStatisticsHandler } from "./UserStatistics";
 
 /** Class that allows access to different iModel Hub class handlers.
  * Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -108,5 +109,12 @@ export class IModelHubClient {
    */
   public GlobalEvents(): GlobalEventHandler {
     return new GlobalEventHandler(this._handler);
+  }
+
+  /**
+   * Get the handler for @see IModelHubStatistics related methods.
+   */
+  public UserStatistics(): UserStatisticsHandler {
+    return new UserStatisticsHandler(this._handler);
   }
 }
