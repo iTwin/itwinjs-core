@@ -7,7 +7,7 @@ import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, c
 import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
@@ -941,29 +941,7 @@ export namespace Gradient {
 
     /** Returns true if this symbology is equal to another, false otherwise. */
     public isEqualTo(other: Symb): boolean {
-      if (this === other)
-        return true; // Same pointer
-      if (this.mode !== other.mode)
-        return false;
-      if (this.flags !== other.flags)
-        return false;
-      if (this.tint !== other.tint)
-        return false;
-      if (this.shift !== other.shift)
-        return false;
-      if ((this.angle === undefined) !== (other.angle === undefined))
-        return false;
-      if (this.angle && !this.angle.isAlmostEqualNoPeriodShift(other.angle!))
-        return false;
-      if (this.keys.length !== other.keys.length)
-        return false;
-      for (let i = 0; i < this.keys.length; ++i) {
-        if (this.keys[i].value !== other.keys[i].value)
-          return false;
-        if (!this.keys[i].color.equals(other.keys[i].color))
-          return false;
-      }
-      return true;
+      return Symb.compareSymb(this, other) === 0;
     }
 
     /** Compares two gradient symbologies. */
@@ -1521,6 +1499,8 @@ export class TextureMapping {
     this.texture = tx;
     this.params = params;
   }
+
+
 }
 
 export namespace TextureMapping {
@@ -1581,31 +1561,52 @@ export namespace TextureMapping {
       const { textureMat2x3 = new Trans2x3(), textureWeight = 1.0, mapMode = Mode.Parametric, worldMapping = false } = props;
       this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;
     }
-    // ###TODO use polyface geometry to complete computeUVParams
-    public computeUVParams(_params: Point2d[], _visitor: IndexedPolyfaceVisitor, _transformToImodel: Transform): void { // BentleyStatus {
-      // const { mode, textureMatrix, worldMapping } = this;
-      // switch (mode) {
-      //   default:
-      //   case Mode.Parametric:
-      //     computeParametricUVParams(params[0], visitor, textureMatrix.transform, !worldMapping);
-      //     return BentleyStatus.SUCCESS;
-      //   case Mode.Planar:
-      //     const normalIndices = visitor.normalIndex;
-      //     // We ignore planar mode unless master or sub units for scaleMode (TR# 162118) and facet is planar.
-      //     if (!worldMapping || (undefined !== normalIndices && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2])))
-      //       computeParametricUVParams(params[0], visitor, textureMatrix.transform, !worldMapping);
-      //     else
-      //       computePlanarUVParams(params[0], visitor, textureMatrix.transform);
-      //     return BentleyStatus.SUCCESS;
+
+    /** Generates UV parameters for textured surfaces. */
+    /*
+    public computeUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): boolean {
+      switch (this.mode) {
+        default:  // Fall through to parametric in default case
+        case TextureMapping.Mode.Parametric: {
+          computeParametricUVParams(params, visitor, this.textureMatrix.transform, !this.worldMapping);
+          return true;
+        }
+        case TextureMapping.Mode.Planar: {
+          const normalIndices = visitor.normalIndex;
+          if (!normalIndices)
+            return false;
+
+          // Ignore planar mode unless master or sub units for scaleMode and facet is planar
+          if (!this.worldMapping || (visitor.normalIndex !== undefined && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2])))
+            this.computeParametricUVParams(params, visitor, this.textureMatrix.transform, transformToImodel);
+          else
+            this.computePlanarUVParams(params, visitor, this.textureMatrix.transform, transformToImodel);
+          return true;
+        }
+        case TextureMapping.Mode.ElevationDrape: {
+          this.computeElevationDrapeUVParams(params, visitor, this.textureMatrix.transform, transformToImodel);
+          return true;
+        }
+      }
     }
+    */
+
+    /** Computes UV parameters given a texture mapping mode of parametric. */
+    /*
+    private computeParametricUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, uvTransform: Transform, isRelativeUnits: boolean): void {
+      for (let i = 0; i < visitor.numEdgesThisFace; i++) {
+        let param = Point2d.create();
+
+        if (isRelativeUnits || !visitor.try)
+      }
+    }
+    */
+
+    /** Computes UV parameters given a texture mapping mode of planar. */
+    /*
+    private computePlanarUVParams(params: Point2d, visitor: IndexedPolyfaceVisitor, uvTransform: Transform): void {
+
+    }
+    */
   }
-  // ###TODO use polyface geometry to complete computeParametricUVParams
-  export function computeParametricUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform, _isRelativeUnits: boolean): void {
-    // for (let i = 0, len = visitor.numEdges; ++i) {
-    //   const param = Point2d.create(0, 0);
-    //   if (isRelativeUnits || !visitor.tr)
-    // }
-  }
-  // ###TODO use polyface geometry to complete computePlanarUVParams
-  export function computePlanarUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform): void { }
 }

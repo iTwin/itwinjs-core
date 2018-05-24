@@ -15,6 +15,7 @@ import {
   RenderMaterial,
   ImageBuffer,
   RenderTexture,
+  ImageSource,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -237,7 +238,7 @@ export abstract class RenderSystem {
   public abstract createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
 
   /** Create a new Texture from an ImageSource. */
-  // public abstract createTextureFromImageSrc(source: ImageSource, bottomUp: BottomUp, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
+  public abstract createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
 
   // /** Create a Texture from a graphic. */
   // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;

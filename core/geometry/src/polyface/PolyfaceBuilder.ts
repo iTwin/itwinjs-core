@@ -499,6 +499,15 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.polyface.addIndexedPolyface(source, reversed, transform);
   }
 
+  /**
+   * Produce a new FacetFaceData for all terminated facets since construction of the previous face.
+   * Each facet number/index is mapped to the FacetFaceData through the faceToFaceData array.
+   * Returns true if successful, and false otherwise.
+   */
+  public endFace(): boolean {
+    return this.polyface.setNewFaceData();
+  }
+
   // -------------------- double dispatch methods ---------------------------
   public handleCone(g: Cone): any { return this.addCone(g); }
   public handleTorusPipe(g: TorusPipe): any { return this.addTorusPipe(g); }

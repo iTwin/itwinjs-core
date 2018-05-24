@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat, ImageSource } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -240,7 +240,7 @@ export class IdMap {
    * Attempt to create a new texture from an ImageBuffer and insert it into this cache.
    * If the texture already exists inside the cache, or an error occurs, returns undefined.
    */
-  public createTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+  private createTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
 
@@ -254,21 +254,45 @@ export class IdMap {
   }
 
   /**
+   * Attempt to create a new texture from an ImageSource and insert it into this cache.
+   * If the texture already exists inside the cache, or an error occurs, returns undefined.
+   */
+  private createTextureFromImgSrc(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
+    if (params.key && this.textureMap.get(params.key) !== undefined)
+      return undefined;
+
+    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc);
+    if (textureHandle === undefined)
+      return undefined;
+    const texture = new Texture(params, textureHandle);
+    if (params.key)
+      this.textureMap.set(params.key, texture);
+    return texture;
+  }
+
+  /**
    * Find a texture using its key. If not found, create one using an ImageSource and return it.
    * This will also add it to the map if the key was valid.
    */
-  // public createTextureFromImgSrc(imgSrc: ImageSource, params: RenderTexture.Params, bottomUp: BottomUp): RenderTexture {}
+  public getTextureFromImgSrc(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
+    if (params.key) {
+      const existingTexture = this.textureMap.get(params.key);
+      if (existingTexture)
+        return existingTexture;
+    }
+
+    return this.createTextureFromImgSrc(imgSrc, width, height, params);
+  }
 
   /**
    * Find a texture using its key. If not found, create one using an ImageBuffer and return it.
    * This will also add it to the map if the key was valid. Returns undefined if we were unable to create the texture.
    */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    let texture;
     if (params.key) {
-      texture = this.textureMap.get(params.key);
-      if (texture)
-        return texture;
+      const existingTexture = this.textureMap.get(params.key);
+      if (existingTexture)
+        return existingTexture;
     }
 
     const isTranslucent = params.isRGBE ? IsTranslucent.Yes : ((img.format === ImageBufferFormat.Rgba) ? IsTranslucent.Maybe : IsTranslucent.No);
@@ -276,8 +300,7 @@ export class IdMap {
       // premultiplyOrStripAlpha
     }
 
-    texture = this.createTexture(img, params);
-    return texture;
+    return this.createTexture(img, params);
   }
 
   /**
@@ -451,22 +474,20 @@ export class System extends RenderSystem {
     if (!idMap) {
       return undefined;
     }
-    return idMap.createTexture(image, params);
+    return idMap.getTexture(image, params);
   }
 
   /**
    * Creates a texture using an ImageSource and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
-  /*
-  public createTextureFromImageSrc(source: ImageSource, bottomUp: BottomUp, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+  public createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     const idMap = this.renderCache.get(imodel);
     if (!idMap) {
       return undefined;
     }
-    return idMap.createTextureFromImgSrc(source, params, bottomUp);
+    return idMap.getTextureFromImgSrc(source, width, height, params);
   }
-  */
 
   /** Searches through the imodel's render map for a texture, given its key. Returns undefined if none found. */
   public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
