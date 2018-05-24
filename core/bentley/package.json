@@ -23,7 +23,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "4",
+    "@bentley/bentleyjs-tools": "5",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
     "typedoc": "^0.11.1",
