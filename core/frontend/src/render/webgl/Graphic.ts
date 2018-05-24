@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
-import { ViewFlags, ViewFlag, FeatureTable } from "@bentley/imodeljs-common";
+import { ViewFlags, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, DecorationList } from "../System";
@@ -68,10 +68,8 @@ export class Branch extends Graphic {
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
     this.clips = Clip.getClipVolume(clips, iModel);
-    if (undefined !== viewFlags) {
-      // ###TODO: Avoid useless `new` below...
-      branch.viewFlagOverrides = new ViewFlag.Overrides(viewFlags);
-    }
+    if (undefined !== viewFlags)
+      branch.setViewFlags(viewFlags);
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }

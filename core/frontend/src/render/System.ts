@@ -114,7 +114,8 @@ export class GraphicBranch {
   public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
-  public set viewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides.copyFrom(ovr); }
+  public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
+  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
   public clear() { this.entries.length = 0; }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
