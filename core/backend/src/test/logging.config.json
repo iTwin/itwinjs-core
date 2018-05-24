@@ -5,6 +5,6 @@
         "logLevel": "None"
     }, {
         "category": "imodeljs-backend.BriefcaseManager",
-        "logLevel": "Trace"
+        "logLevel": "Error"
     }]
 }

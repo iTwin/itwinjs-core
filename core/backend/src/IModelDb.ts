@@ -60,7 +60,13 @@ export class OpenParams {
     this.validate();
   }
 
+  /** Returns true if the open params are setup to open a standalone Db */
+  public isStandalone(): boolean { return this.accessMode === undefined || this.syncMode === undefined; }
+
   private validate() {
+    if (this.isStandalone() && !(this.accessMode === undefined && this.syncMode === undefined))
+      throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
+
     if (this.openMode === OpenMode.Readonly && this.syncMode && this.syncMode !== SyncMode.FixedVersion) {
       throw new IModelError(BentleyStatus.ERROR, "Cannot pull changes into a ReadOnly IModelDb");
     }
@@ -160,7 +166,6 @@ export class IModelDb extends IModel {
     let props: any;
     try {
       props = JSON.parse(this.briefcase.nativeDb.getIModelProps()) as IModelProps;
-
     } catch (error) { }
 
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
@@ -266,8 +271,16 @@ export class IModelDb extends IModel {
   public closeStandalone(): void {
     if (!this.briefcase)
       throw this._newNotOpenError();
-    BriefcaseManager.closeStandalone(this.briefcase);
-    this.clearBriefcaseEntry();
+    if (!this.briefcase.isStandalone)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.closeStandalone() to close a non-standalone iModel. Use IModelDb.close() instead");
+
+    try {
+      BriefcaseManager.closeStandalone(this.briefcase);
+    } catch (error) {
+      throw error;
+    } finally {
+      this.clearBriefcaseEntry();
+    }
   }
 
   /**
@@ -279,8 +292,16 @@ export class IModelDb extends IModel {
   public async close(accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcase)
       throw this._newNotOpenError();
-    await BriefcaseManager.close(accessToken, this.briefcase, keepBriefcase);
-    this.clearBriefcaseEntry();
+    if (this.briefcase.isStandalone)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
+
+    try {
+      await BriefcaseManager.close(accessToken, this.briefcase, keepBriefcase);
+    } catch (error) {
+      throw error;
+    } finally {
+      this.clearBriefcaseEntry();
+    }
   }
 
   private forwardChangesetApplied() { this.onChangesetApplied.raiseEvent(); }

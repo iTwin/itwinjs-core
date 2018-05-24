@@ -21,7 +21,7 @@ function setupTest(iModelId: string): void {
     IModelJsFs.removeSync(cacheFilePath);
 }
 
-describe.only("ChangeSummary", () => {
+describe("ChangeSummary", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let accessToken: AccessToken = new MockAccessToken();
@@ -188,7 +188,7 @@ describe.only("ChangeSummary", () => {
     assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
   });
 
-  it.only("Extract ChangeSummaries", async () => {
+  it("Extract ChangeSummaries", async () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 

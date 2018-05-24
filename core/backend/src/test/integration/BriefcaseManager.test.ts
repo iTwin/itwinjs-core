@@ -34,10 +34,17 @@ describe("BriefcaseManager", () => {
     return count;
   };
 
-  const validateCache = () => {
-    (BriefcaseManager as any).cache.briefcases.forEach((value: BriefcaseEntry, key: string) => {
-      assert.isTrue(IModelJsFs.existsSync(value.pathname), `File corresponding to briefcase cache entry not found: ${value.pathname}`);
-      assert.strictEqual<string>(value.getKey(), key, `Cached key ${key} doesn't match the current generated key ${value.getKey()}`);
+  const validateBriefcaseCache = () => {
+    (BriefcaseManager as any).cache.briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
+      assert.isTrue(IModelJsFs.existsSync(briefcase.pathname), `File corresponding to briefcase cache entry not found: ${briefcase.pathname}`);
+      assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
+      if (briefcase.isOpen) {
+        assert.strictEqual<string>(briefcase.nativeDb.getParentChangeSetId(), briefcase.changeSetId, `Parent change set id of Db doesn't match what's cached in memory`);
+        if (briefcase.openParams!.accessMode === AccessMode.Shared) {
+          assert.isTrue(!briefcase.reversedChangeSetId, "Found a shared briefcase that was reversed!");
+          assert.isTrue(!briefcase.nativeDb.getReversedChangeSetId(), "Found a shared briefcase that was reversed!");
+        }
+      }
     });
   };
 
@@ -60,7 +67,7 @@ describe("BriefcaseManager", () => {
   });
 
   afterEach(() => {
-    validateCache();
+    validateBriefcaseCache();
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {
@@ -79,6 +86,11 @@ describe("BriefcaseManager", () => {
     await testPromise;
 
     assert.equal(callbackcount, 2);
+  });
+
+  it("should create a valid in memory cache", async () => {
+    await (BriefcaseManager as any).initCache(accessToken);
+    validateBriefcaseCache();
   });
 
   it("should open and close an iModel from the Hub", async () => {
@@ -176,23 +188,40 @@ describe("BriefcaseManager", () => {
   it("should open iModels of specific versions from the Hub", async () => {
     const iModelFirstVersion: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.first());
     assert.exists(iModelFirstVersion);
+    assert.strictEqual<string>(iModelFirstVersion.briefcase.changeSetId, "");
+    assert.equal(+iModelFirstVersion.briefcase.nativeDb.getParentChangeSetId(), 0);
+    assert.isNotTrue(!!iModelFirstVersion.briefcase.reversedChangeSetId);
+    assert.isNotTrue(!!iModelFirstVersion.briefcase.nativeDb.getReversedChangeSetId());
 
     for (const [arrayIndex, versionName] of testVersionNames.entries()) {
       const iModelFromVersion = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testIModels[0].changeSets[arrayIndex].wsgId));
       assert.exists(iModelFromVersion);
 
+      assert.strictEqual<string>(iModelFromVersion.briefcase.changeSetId, testIModels[0].changeSets[arrayIndex].wsgId);
+      assert.strictEqual<string>(iModelFromVersion.briefcase.nativeDb.getParentChangeSetId(), testIModels[0].changeSets[arrayIndex].wsgId);
+      assert.isNotTrue(!!iModelFromVersion.briefcase.reversedChangeSetId);
+      assert.isNotTrue(!!iModelFromVersion.briefcase.nativeDb.getReversedChangeSetId());
+
       const iModelFromChangeSet = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
 
-      assert.strictEqual(iModelFromVersion, iModelFromChangeSet);
+      assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
+      assert.strictEqual<string>(iModelFromChangeSet.briefcase.changeSetId, testIModels[0].changeSets[arrayIndex].wsgId);
+      assert.strictEqual<string>(iModelFromChangeSet.briefcase.nativeDb.getParentChangeSetId(), testIModels[0].changeSets[arrayIndex].wsgId);
+      assert.isNotTrue(!!iModelFromChangeSet.briefcase.reversedChangeSetId);
+      assert.isNotTrue(!!iModelFromChangeSet.briefcase.nativeDb.getReversedChangeSetId());
+
       const elementCount = getElementCount(iModelFromVersion);
-      assert.equal(elementCount, testElementCounts[arrayIndex]);
+      assert.equal(elementCount, testElementCounts[arrayIndex], `Count isn't what's expected for ${iModelFromVersion.briefcase.pathname}, version ${versionName}`);
 
       await iModelFromVersion.close(accessToken, KeepBriefcase.Yes);
     }
 
     const iModelLatestVersion: IModelDb = await IModelDb.open(accessToken as any, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelLatestVersion);
+    assert.strictEqual<string>(iModelLatestVersion.briefcase.changeSetId, testIModels[0].changeSets[2].wsgId);
+    assert.strictEqual<string>(iModelLatestVersion.briefcase.nativeDb.getParentChangeSetId(), testIModels[0].changeSets[2].wsgId);
+    assert.isNotTrue(!!iModelLatestVersion.briefcase.reversedChangeSetId);
 
     await iModelFirstVersion.close(accessToken, KeepBriefcase.No);
     await iModelLatestVersion.close(accessToken, KeepBriefcase.No);
@@ -314,6 +343,9 @@ describe("BriefcaseManager", () => {
     let iModelExclusive: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelExclusive);
     const exclusivePathname = iModelExclusive.briefcase.pathname;
+
+    await iModelShared.close(accessToken, KeepBriefcase.Yes);
+    await iModelExclusive.close(accessToken, KeepBriefcase.Yes);
 
     IModelHost.shutdown();
 
