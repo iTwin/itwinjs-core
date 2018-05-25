@@ -4,7 +4,7 @@
 import { assert, expect } from "chai";
 import { Id64, OpenMode } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement, TileId } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
@@ -130,6 +130,17 @@ describe("IModelConnection", () => {
     expect(rootTile.childIds.length).to.equal(childIds.length);
     for (let i = 0; i < childIds.length; i++)
       expect(rootTile.childIds[i]).to.equal(childIds[i]);
+
+    const treeId = new Id64(tree.id);
+    const tileIds: TileId[] = [ ];
+    for (const childId of rootTile.childIds)
+      tileIds.push(new TileId(treeId, childId));
+
+    const tileProps = await iModel.tiles.getTileProps(tileIds);
+    expect(tileProps).not.to.be.undefined;
+    expect(tileProps.length).to.equal(rootTile.childIds.length);
+    for (let i = 0; i < rootTile.childIds.length; i++)
+      expect(tileProps[i].id.tileId).to.equal(rootTile.childIds[i]);
   });
 
   it("Parameterized ECSQL (#integration)", async () => {

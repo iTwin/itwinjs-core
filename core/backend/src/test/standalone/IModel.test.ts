@@ -254,7 +254,7 @@ describe("iModel", () => {
   });
 
   it("should find a tile tree for a geometric model", () => {
-    const tree = imodel1.tiles.getTileTreeJson("0x1c");
+    const tree = imodel1.tiles.getTileTreeProps("0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
@@ -288,6 +288,14 @@ describe("iModel", () => {
     expect(tree.rootTile.childIds.length).to.equal(childIds.length);
     for (let i = 0; i < childIds.length; i++)
       expect(tree.rootTile.childIds[i]).to.equal(childIds[i]);
+
+    const childTiles = imodel1.tiles.getTilesProps("0x1c", tree.rootTile.childIds);
+    expect(childTiles).not.to.be.undefined;
+    expect(childTiles.length).to.equal(tree.rootTile.childIds.length);
+
+    for (let i = 0; i < tree.rootTile.childIds.length; i++) {
+      expect(childTiles[i].id.tileId).to.equal(tree.rootTile.childIds[i]);
+    }
   });
 
   it("should produce an array of rows", () => {
