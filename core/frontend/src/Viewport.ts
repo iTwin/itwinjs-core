@@ -1313,8 +1313,8 @@ export class Viewport {
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
     const normal = hit.geomDetail.normal;
     const rMatrix = RotMatrix.createRigidHeadsUp(normal);
-    color.setAlpha(100);
-    colorFill.setAlpha(200);
+    color.setTransparency(100);
+    colorFill.setTransparency(200);
 
     const ellipse = Arc3d.createScaledXYColumns(pt, rMatrix, radius, radius, AngleSweep.create360())!;
     const graphic = context.createWorldOverlay();
@@ -1343,13 +1343,13 @@ export class Viewport {
     const graphic = context.createViewOverlay();
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
-    white.setAlpha(165);
+    white.setTransparency(165);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
-    black.setAlpha(100);
+    black.setTransparency(100);
     graphic.setSymbology(black, black, 1);
     graphic.addArc2d(ellipse2, false, false, 0.0);
-    white.setAlpha(20);
+    white.setTransparency(20);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, false, false, 0.0);
     context.addViewOverlay(graphic.finish()!);
