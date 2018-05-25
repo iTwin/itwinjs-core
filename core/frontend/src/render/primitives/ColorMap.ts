@@ -14,9 +14,9 @@ export class ColorMap extends IndexMap<number> {
   public insert(color: number): number {
     // The table should never contain a mix of opaque and translucent colors.
     if (this.isEmpty)
-      this._hasTransparency = ColorMap.isTransparent(color);
+      this._hasTransparency = ColorMap.isTranslucent(color);
     else
-      assert(ColorMap.isTransparent(color) === this.hasTransparency);
+      assert(ColorMap.isTranslucent(color) === this.hasTransparency);
 
     return super.insert(color);
   }
@@ -41,7 +41,7 @@ export class ColorMap extends IndexMap<number> {
   }
 
   private static scratchColorDef = new ColorDef();
-  private static isTransparent(color: number) {
+  private static isTranslucent(color: number) {
     this.scratchColorDef.tbgr = color;
     return 255 !== this.scratchColorDef.getAlpha();
   }
