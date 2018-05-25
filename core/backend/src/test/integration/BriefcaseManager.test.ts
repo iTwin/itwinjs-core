@@ -70,24 +70,6 @@ describe("BriefcaseManager", () => {
     validateBriefcaseCache();
   });
 
-  it("The same promise can have two subscribers, and it will notify both.", async () => {
-    const testPromise = new Promise((resolve, _reject) => {
-      setTimeout(() => resolve("Success!"), 250);
-    });
-
-    let callbackcount = 0;
-    testPromise.then(() => {
-      ++callbackcount;
-    });
-    testPromise.then(() => {
-      ++callbackcount;
-    });
-
-    await testPromise;
-
-    assert.equal(callbackcount, 2);
-  });
-
   it("should create a valid in memory cache", async () => {
     await (BriefcaseManager as any).initCache(accessToken);
     validateBriefcaseCache();
@@ -272,7 +254,7 @@ describe("BriefcaseManager", () => {
     await iModelFixed.close(accessToken, KeepBriefcase.No);
   });
 
-  it("should be able to edit and push only if it's allowed", async () => {
+  it("should be able to edit and push only if it's allowed (#integration)", async () => {
     const iModelFixed: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelFixed);
 
@@ -310,7 +292,7 @@ describe("BriefcaseManager", () => {
     await iModelPullAndPush.close(accessToken, KeepBriefcase.No);
   });
 
-  it("should be able to allow exclusive access to iModels", async () => {
+  it("should be able to allow exclusive access to iModels (#integration)", async () => {
     const iModelShared: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelShared);
 
@@ -335,7 +317,7 @@ describe("BriefcaseManager", () => {
     await iModelPullAndPush.close(accessToken, KeepBriefcase.No);
   });
 
-  it("should be able to reuse existing briefcases from a previous session", async () => {
+  it("should be able to reuse existing briefcases from a previous session (#integration)", async () => {
     let iModelShared: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelShared);
     const sharedPathname = iModelShared.briefcase.pathname;
@@ -398,7 +380,7 @@ describe("BriefcaseManager", () => {
     assert.exists(qaIModel);
   });
 
-  it("Should track the AccessTokens that are used to open IModels", async () => {
+  it("Should track the AccessTokens that are used to open IModels (#integration)", async () => {
     await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion());
     assert.deepEqual(IModelDb.getAccessToken(testIModels[0].id), accessToken);
 
@@ -410,7 +392,7 @@ describe("BriefcaseManager", () => {
     }
   });
 
-  it("should be able to reverse and reinstate changes", async () => {
+  it("should be able to reverse and reinstate changes (#integration)", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(), IModelVersion.latest());
 
     let arrayIndex: number;
