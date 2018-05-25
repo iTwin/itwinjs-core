@@ -254,6 +254,7 @@ describe("iModel", () => {
   });
 
   it("should find a tile tree for a geometric model", () => {
+    // Note: this is an empty model.
     const tree = imodel1.tiles.getTileTreeProps("0x1c");
     expect(tree).not.to.be.undefined;
 
@@ -266,36 +267,15 @@ describe("iModel", () => {
     expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
 
     expect(tree.rootTile.id.treeId).to.equal(tree.id);
-    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0:0.000000");
+    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
 
     const range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
     expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
 
-    expect(tree.rootTile.geometry).to.be.undefined; // for now...
-    expect(tree.rootTile.contentRange).to.be.undefined; // for now...
-
-    const childIds = [
-      "1/0/0/0:0.000000",
-      "1/0/0/1:0.000000",
-      "1/0/1/0:0.000000",
-      "1/0/1/1:0.000000",
-      "1/1/0/0:0.000000",
-      "1/1/0/1:0.000000",
-      "1/1/1/0:0.000000",
-      "1/1/1/1:0.000000",
-    ];
-    expect(tree.rootTile.childIds.length).to.equal(childIds.length);
-    for (let i = 0; i < childIds.length; i++)
-      expect(tree.rootTile.childIds[i]).to.equal(childIds[i]);
-
-    const childTiles = imodel1.tiles.getTilesProps("0x1c", tree.rootTile.childIds);
-    expect(childTiles).not.to.be.undefined;
-    expect(childTiles.length).to.equal(tree.rootTile.childIds.length);
-
-    for (let i = 0; i < tree.rootTile.childIds.length; i++) {
-      expect(childTiles[i].id.tileId).to.equal(tree.rootTile.childIds[i]);
-    }
+    expect(tree.rootTile.geometry).to.be.undefined; // empty model => empty tile
+    expect(tree.rootTile.contentRange).to.be.undefined;
+    expect(tree.rootTile.childIds.length).to.equal(0);
   });
 
   it("should produce an array of rows", () => {

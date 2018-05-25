@@ -4,7 +4,7 @@
 import { assert, expect } from "chai";
 import { Id64, OpenMode } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement, TileId } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
@@ -108,39 +108,21 @@ describe("IModelConnection", () => {
 
     const rootTile = tree.rootTile;
     expect(rootTile.id.treeId).to.equal(tree.id);
-    expect(rootTile.id.tileId).to.equal("0/0/0/0:0.000000");
+    expect(rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
 
     const range = Range3d.fromJSON(rootTile.range);
     expect(range.low.isAlmostEqualXYZ(-50.0075, -50.0075, -20.003)).to.be.true;
     expect(range.high.isAlmostEqualXYZ(50.0075, 50.0075, 20.003)).to.be.true;
 
-    expect(rootTile.geometry).to.be.undefined; // for now...
-    expect(rootTile.contentRange).to.be.undefined; // for now...
+    expect(rootTile.geometry).not.to.be.undefined;
+    expect(rootTile.contentRange).not.to.be.undefined;
 
-    const childIds = [
-      "1/0/0/0:0.000000",
-      "1/0/0/1:0.000000",
-      "1/0/1/0:0.000000",
-      "1/0/1/1:0.000000",
-      "1/1/0/0:0.000000",
-      "1/1/0/1:0.000000",
-      "1/1/1/0:0.000000",
-      "1/1/1/1:0.000000",
-    ];
-    expect(rootTile.childIds.length).to.equal(childIds.length);
-    for (let i = 0; i < childIds.length; i++)
-      expect(rootTile.childIds[i]).to.equal(childIds[i]);
+    const contentRange = Range3d.fromJSON(rootTile.contentRange);
+    expect(contentRange.low.isAlmostEqualXYZ(-30.14521, -30.332516, -10.001)).to.be.true;
+    expect(contentRange.high.isAlmostEqualXYZ(40.414249, 39.89347, 10.310687)).to.be.true;
 
-    const treeId = new Id64(tree.id);
-    const tileIds: TileId[] = [ ];
-    for (const childId of rootTile.childIds)
-      tileIds.push(new TileId(treeId, childId));
-
-    const tileProps = await iModel.tiles.getTileProps(tileIds);
-    expect(tileProps).not.to.be.undefined;
-    expect(tileProps.length).to.equal(rootTile.childIds.length);
-    for (let i = 0; i < rootTile.childIds.length; i++)
-      expect(tileProps[i].id.tileId).to.equal(rootTile.childIds[i]);
+    expect(rootTile.childIds).not.to.be.undefined;
+    expect(rootTile.childIds.length).to.equal(0); // this is a leaf tile.
   });
 
   it("Parameterized ECSQL (#integration)", async () => {
