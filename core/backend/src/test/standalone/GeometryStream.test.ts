@@ -58,7 +58,7 @@ describe("GeometryStream", () => {
     lsStyles.forEach((styleId) => {
       params.styleInfo = styleId.isValid() ? new LineStyle.Info(styleId) : undefined;
       builder.appendGeometryParamsChange(params);
-      builder.appendGeometryQuery(LineSegment3d.create(pointS, pointE));
+      builder.appendGeometry(LineSegment3d.create(pointS, pointE));
       pointS.y += 0.5; pointE.y += 0.5;
     });
 
@@ -136,22 +136,22 @@ describe("GeometryStream", () => {
     // add line using 0 width continuous style
     params.styleInfo = new LineStyle.Info(styles[0]);
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 5, 0)));
+    builder.appendGeometry(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 5, 0)));
 
     // add line with width override, undefined endWidth = startWidth, needed soley for taper
     params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: widths[1], physicalWidth: true });
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(0.5, 0, 0), Point3d.create(0.5, 5, 0)));
+    builder.appendGeometry(LineSegment3d.create(Point3d.create(0.5, 0, 0), Point3d.create(0.5, 5, 0)));
 
     // add line using pre-defined width continuous style
     params.styleInfo = new LineStyle.Info(styles[2]);
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(1.0, 0, 0), Point3d.create(1.0, 5, 0)));
+    builder.appendGeometry(LineSegment3d.create(Point3d.create(1.0, 0, 0), Point3d.create(1.0, 5, 0)));
 
     // add line with width override, undefined endWidth = startWidth, needed soley for taper
     params.styleInfo.styleMod = new LineStyle.Modifier({ startWidth: widths[3], physicalWidth: true });
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
+    builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -200,7 +200,7 @@ describe("GeometryStream", () => {
 
     partParams.fillDisplay = FillDisplay.Always;
     partBuilder.appendGeometryParamsChange(partParams);
-    partBuilder.appendGeometryQuery(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
+    partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
@@ -231,7 +231,7 @@ describe("GeometryStream", () => {
 
     params.styleInfo = new LineStyle.Info(styleId);
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
+    builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -266,7 +266,7 @@ describe("GeometryStream", () => {
     assert.isTrue(undefined !== strokePatternData);
 
     const partBuilder = new GeometryStreamBuilder();
-    partBuilder.appendGeometryQuery(Arc3d.createXY(Point3d.createZero(), 0.05));
+    partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
@@ -304,7 +304,7 @@ describe("GeometryStream", () => {
 
     params.styleInfo = new LineStyle.Info(styleId);
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
+    builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -339,40 +339,40 @@ describe("GeometryStream", () => {
     params.lineColor = ColorDef.green;
     params.weight = 5;
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Opaque fill by view...
     params.fillDisplay = FillDisplay.ByView;
     params.fillColor = params.lineColor;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Outline fill by view...
     params.fillColor = ColorDef.red;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Outline transparency fill always...
     params.fillDisplay = FillDisplay.Always;
     params.fillTransparency = 0.75;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Opaque background fill always...
     params.backgroundFill = BackgroundFill.Solid;
     params.fillTransparency = 0.0;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Outline background fill always...
     params.backgroundFill = BackgroundFill.Outline;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Opaque gradient by view...
     params.fillDisplay = FillDisplay.ByView;
@@ -383,13 +383,13 @@ describe("GeometryStream", () => {
     params.gradient.keys.push(new Gradient.KeyColor({ value: 0.5, color: ColorDef.red }));
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Outline gradient by view...Display issue, changes to gradient being ignored???
     params.gradient.flags = Gradient.Flags.Outline;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -473,7 +473,7 @@ describe("GeometryStream", () => {
     params.pattern.space1 = 0.05;
     params.pattern.angle1 = Angle.createDegrees(45.0);
     builder.appendGeometryParamsChange(params);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Cross hatch with color/weight override
     params.pattern.space2 = 0.1;
@@ -482,10 +482,10 @@ describe("GeometryStream", () => {
     params.pattern.weight = 0;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     const partBuilder = new GeometryStreamBuilder();
-    partBuilder.appendGeometryQuery(Arc3d.createXY(Point3d.createZero(), 0.05));
+    partBuilder.appendGeometry(Arc3d.createXY(Point3d.createZero(), 0.05));
 
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
@@ -505,7 +505,7 @@ describe("GeometryStream", () => {
     params.pattern.angle1 = Angle.createDegrees(45.0);
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Area pattern with color/weight overrides, snappable geometry, and invisible boundary
     params.pattern.origin = Point3d.create(0.05, 0.05, 0.0);
@@ -515,7 +515,7 @@ describe("GeometryStream", () => {
     params.pattern.snappable = params.pattern.invisibleBoundary = true;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Hatch definition w/o overrides (zig-zag)
     const defLines: AreaPattern.HatchDefLine[] = [
@@ -527,14 +527,14 @@ describe("GeometryStream", () => {
     params.pattern.defLines = defLines;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     // Hatch definition with color/weight overrides
     params.pattern.color = ColorDef.red;
     params.pattern.weight = 1;
     builder.appendGeometryParamsChange(params);
     shape.tryTransformInPlace(xOffset);
-    builder.appendGeometryQuery(shape);
+    builder.appendGeometry(shape);
 
     const elementProps: GeometricElement3dProps = {
       classFullName: "Generic:PhysicalObject",
@@ -680,7 +680,7 @@ describe("GeometryStream", () => {
     const partBuilder = new GeometryStreamBuilder();
 
     for (const geom of geomArray) {
-      partBuilder.appendGeometryQuery(geom);
+      partBuilder.appendGeometry(geom);
     }
 
     const partProps: GeometryPartProps = {
@@ -727,7 +727,7 @@ describe("GeometryStream", () => {
     const builder = new GeometryStreamBuilder();
 
     for (const geom of geomArray) {
-      builder.appendGeometryQuery(geom);
+      builder.appendGeometry(geom);
     }
 
     const elementProps: GeometricElement3dProps = {

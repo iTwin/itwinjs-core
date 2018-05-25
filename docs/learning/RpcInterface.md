@@ -7,7 +7,7 @@ This article uses the terms *client* and *server* to identify the two roles in a
 * *client* -- the code that uses an RpcInterface and calls its methods. A client could be the frontend of an app, the backend of an app, a service, or an agent. It could be [frontend code](./Glossary.md#frontend) or [backend code](./Glossary.md#backend).
 * *server* -- the code that implements and exposes an RpcInterface to clients. A server could be a deployed, stand-alone service, or the backend of an app. It is always [backend code](./Glossary.md#backend).
 
-See [the RpcInterface overview](../overview/App.md#rpcinterface) for more information on the purpose of RpcInterfaces in the context of overall [app architecture](../overview/SoftwareArchitecture.md).
+See [the RpcInterface overview](../overview/RpcInterface.md) for more information on the purpose of RpcInterfaces in the context of overall [app architecture](../overview/SoftwareArchitecture.md).
 
 An RpcInterface is defined and implemented in TypeScript. Conceptually, the interface has three parts:
 
@@ -17,7 +17,7 @@ An RpcInterface is defined and implemented in TypeScript. Conceptually, the inte
 
 In practice, two TypeScript classes are needed, as explained below.
 
-Communication between a client and the server is via [RPC](./Glossary.md#RPC). The RPC mechanism is factored out into RpcConfiguration which are applied to RpcInterfaces. This design allows clients and servers to be written in a way that is independent of transport details, while allowing transport to be configured at runtime to suit app requirements. See [server-side configuration](#server-side-configuration) and [client-side configuration](#client-side-configuration) below for details.
+Communication between a client and the server is via [RPC](./Glossary.md#RPC). Many RPC mechanisms are [available](../overview/RpcInterface.md#rpc-configuration). Each RPC mechanism is encapsulated in an RpcConfiguration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces, as described below.
 
 RpcInterface methods are always [asynchronous](#asynchronous-nature-of-rpcInterfaces).
 
@@ -68,7 +68,7 @@ Each impl method must return the operation's result as a Promise.
 
 As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 
-A best practice is that an impl should be a thin layer on top of normal classes in the service. Ideally, each method of an impl should be a one-line forwarding call that uses the public backend API of the service. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferrably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).
+A best practice is that an impl should be a thin layer on top of normal classes in the server. Ideally, each method of an impl should be a one-line forwarding call that uses the public backend API of the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferrably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).
 
 *Example:*
 
@@ -82,29 +82,50 @@ Impls must be registered at runtime, as explained next.
 
 A server must expose the RpcInterfaces that it implements or imports, so that clients can use them.
 
-First, the server must call [RpcManager#registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
-
-Next, the server must decide which interfaces it wants to expose. A service can expose multiple interfaces. A service can expose both its own implementations, if any, and imported implementations. The service can decide at run time which interfaces to expose, perhaps based on deployment parameters.
-
-Finally, the server must choose the appropriate RPC configuration for the interfaces. The choice of RPC configuration is simple and is based on how the server itself is configured, as shown in the example.
+### 1. Register Impls
+The server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
 
 *Example:*
 
 ```ts
-[[include:RpcInterface.initializeImpl]]
+[[include:RpcInterface.registerImpls]]
 ```
 
-This example shows how a service could configure and expose more than one interface, including imported interfaces. It also shows how to choose the appropriate configuration. It also shows how a service could use [FeatureGates]($common) to decide which interfaces to expose.
+### 2. Choose Interfaces
+The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters. A server will often use [FeatureGates]($common) to decide which interfaces to expose.
 
-## Serving RpcInterfaces
+*Example:*
 
-A server must serve out its interfaces, so that in-coming client requests are forwarded to the implementations. This varies, depending on how the server is deployed in relation to clients.
+```ts
+[[include:RpcInterface.selectInterfacesToExpose]]
+```
 
-### Web Server
+### 3. Configure Interfaces
+The server must choose the appropriate RPC configuration for the interfaces that it exposes to clients. If the server is an app backend, the RPC configuration must correspond to the app configuration.
 
-When a server is configured as a Web service, it can use any Web server technology. A single function call is all that is required to integrate all configured interfaces with the Web server.
+|App Configuration|RPC Configuration for App-Specific RpcInterfaces
+|---------------|-----------|--------------------
+|Mobile app|[in-process RPC configuration](../overview/RpcInterface.md#in-process-rpc-configuration)
+|Desktop app|[desktop RPC configuration](../overview/RpcInterface.md#desktop-rpc-configuration)
+|Web app|a [Web PRC configuration](../overview/RpcInterface.md#web-rpc-configuration)
 
-For example, if a Web server uses express, it would serve its RpcInterfaces like this:
+A backend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#configuration-specific-main).
+
+If the server is a [service](../overview/App.md#imodel-services), it must always use a [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration) for its interfaces. Each client must use the same configuration.
+
+*Web Example:*
+``` ts
+[[include:RpcInterface.initializeImplBentleyCloud]]
+```
+
+*Desktop Example:*
+``` ts
+[[include:RpcInterface.initializeImplDesktop]]
+```
+
+## 4. Serve the Interfaces
+
+When a backend is configured as a Web app, it must implement a Web server to serve out its interfaces, so that in-coming client requests are forwarded to the implementations. This is always true of all [services](../overview/App.md#imodel-services). Any Web server technology can be used. Normally, a single function call is all that is required to integrate all configured interfaces with the Web server. For example, if a Web server uses express, it would serve its RpcInterfaces like this:
 ```ts
 const webServer = express();
 ...
@@ -112,32 +133,29 @@ webServer.post("*", async (request, response) => {
   rpcConfiguration.protocol.handleOperationPostRequest(request, response);
 });
 ```
-
-### Electron Desktop App
-
-When a server is the backend of an Electron desktop app, no additional code is required to serve out its interfaces, beyond calling ElectronRpcManager to configure them.
-
-<!-- TODO:
-### Mobile App
-When a server is the backend of a mobile app, TBD....
--->
+It is this simple because the server should be concerned *only* with serving its RpcInterfaces and not with static resources or any other kind of API.
 
 ## Client-side Configuration
 
-A client (e.g., an app frontend) must configure the interfaces that it intends to use. And, it must specify the appropriate configuration for each interface, depending on the configuration of the app itself and relationship between the client and the server.
+The client must choose the interfaces that it plans to use.
 
-|Type of server|Type of app|Configuration to use
-|---------------|-----------|--------------------
-|App-specific backend|Mobile app|[in-process RPC configuration](../overview/App.md#in-process-rpc-configuration).
-|"|Desktop app|[desktop RPC configuration](../overview/App.md#desktop-rpc-configuration).
-|"|Web app|[cloud PRC configuration](../overview/App.md#cloud-rpc-configuration).
-|External service|*|The client will always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration) for services.
+The client then configures each interface with the correct RPC mechanism. For all interfaces served by the app backend, the RPC configuration must corresponds to the app configuration. A frontend should configure its RpcInterfaces in its [configuration-specific main](../overview/AppTailoring.md#configuration-specific-main).
 
-Here is a simple example of an app frontend registering to access interfaces that are exposed by its own app backend server:
+Clients must always use a [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration) for RpcInterfaces provided by a [remote service](../overview/App.md#imodel-services). Client and server must use the same configuration.
 
-```ts
-[[include:RpcInterface.initializeClient]]
+*Web Example:*
+``` ts
+[[include:RpcInterface.initializeClientBentleyCloud]]
 ```
+
+Note that the client must specify the server URL for a Web configuration.
+
+*Desktop Example:*
+``` ts
+[[include:RpcInterface.initializeClientDesktop]]
+```
+
+For a desktop or mobile configuration, the connection is local and so no URL or authorization token is necessary.
 
 ## RpcInterface Performance
 

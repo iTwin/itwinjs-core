@@ -1,12 +1,15 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
+
 import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
-  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface,
+  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
+  TileId, TileTreeProps, TileProps,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -28,6 +31,7 @@ export class IModelConnection extends IModel {
   public readonly views: IModelConnectionViews;
   public readonly hilited: HilitedSet;
   public readonly selectionSet: SelectionSet;
+  public readonly tiles: IModelConnectionTiles;
 
   /**
    * Event called immediately before an IModelConnection is closed.
@@ -55,6 +59,7 @@ export class IModelConnection extends IModel {
     this.views = new IModelConnectionViews(this);
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
+    this.tiles = new IModelConnectionTiles(this);
   }
 
   /** Open an IModelConnection to an iModel */
@@ -165,21 +170,31 @@ export class IModelConnection extends IModel {
   }
 
   /**
-   * Determines whether the *Changes Cache File* is attached to this iModel or not.
+   * Determines whether the *Change Cache file* is attached to this iModel or not.
    *
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @returns Returns true if the *Changes Cache File* is attached to the iModel. false otherwise
+   * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
   public async isChangeCacheAttached(): Promise<boolean> { return await IModelReadRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
   /**
-   * Attaches the *Changes Cache File* to this iModel if it hasn't been attached yet.
+   * Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
    *
-   * A new *Changes Cache File* will be created for the iModel if it hasn't existed before.
+   * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
+   *
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @throws [IModelError]($common) if a Change Cache file has already been attached before.
+   */
+  public async attachChangeCache(): Promise<void> { await IModelReadRpcInterface.getClient().attachChangeCache(this.iModelToken); }
+
+  /**
+   * Detaches the *Change Cache file* to this iModel if it had been attached before.
+   * > You do not have to check whether a Change Cache file had been attached before. The
+   * > method does not do anything, if no Change Cache is attached.
    *
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    */
-  public async attachChangeCache(): Promise<void> { await IModelReadRpcInterface.getClient().attachChangeCache(this.iModelToken); }
+  public async detachChangeCache(): Promise<void> { await IModelReadRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
   /**
    * Execute a test by name
@@ -406,5 +421,25 @@ export class IModelConnectionViews {
 
     await viewState.load(); // loads models for ModelSelector
     return viewState;
+  }
+}
+
+/** @hidden */
+// NB: Very WIP.
+export class IModelConnectionTiles {
+  private _iModel: IModelConnection;
+
+  /** @hidden */
+  constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+    assert(undefined !== this._iModel); // unused variable...
+  }
+
+  public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> {
+    return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, ids);
+  }
+
+  public async getTileProps(ids: TileId[]): Promise<TileProps[]> {
+    return IModelTileRpcInterface.getClient().getTileProps(this._iModel.iModelToken, ids);
   }
 }

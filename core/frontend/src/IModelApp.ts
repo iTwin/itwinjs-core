@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module AppAdministration */
+
 import { DeploymentEnv, IModelHubClient } from "@bentley/imodeljs-clients";
 import { ViewManager } from "./ViewManager";
 import { ToolAdmin } from "./tools/ToolAdmin";
@@ -8,7 +10,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { TentativePoint } from "./TentativePoint";
-import { I18N, I18NOptions } from "./Localization";
+import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ToolRegistry } from "./tools/Tool";
 import { IModelError, IModelStatus, FeatureGates } from "@bentley/imodeljs-common";
 import { NotificationManager } from "./NotificationManager";

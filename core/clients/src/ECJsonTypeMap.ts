@@ -449,14 +449,29 @@ export class ECJsonTypeMap {
             if (!untypedInstanceCursor[accessString])
               untypedInstanceCursor[accessString] = [];
 
-            let relationshipCount: number = 0;
-            while (untypedInstanceCursor[accessString][relationshipCount])
-              relationshipCount++;
+            const nextEcNameSubParts: string[] | null = ecNameParts[index + 1].match(/[^\[\]]+/g);
+            if (!nextEcNameSubParts || nextEcNameSubParts.length !== 2)
+              return;
 
-            untypedInstanceCursor[accessString][relationshipCount] = isLastPart ? typedValue : {};
+            const relatedInstanceAccessString: any = nextEcNameSubParts[0];
+            const expectedRelatedInstanceClass: any = nextEcNameSubParts[1];
+
+            let relationshipCount: number = 0;
+            while (untypedInstanceCursor[accessString][relationshipCount]
+              && (untypedInstanceCursor[accessString][relationshipCount][className] !== expectedclassName
+                || untypedInstanceCursor[accessString][relationshipCount][relatedInstanceAccessString][className] !== expectedRelatedInstanceClass)) {
+              relationshipCount++;
+            }
+
+            if (!untypedInstanceCursor[accessString][relationshipCount]) {
+              untypedInstanceCursor[accessString][relationshipCount] = isLastPart ? typedValue : {};
+            }
             untypedInstanceCursor = untypedInstanceCursor[accessString][relationshipCount];
           } else {
-            untypedInstanceCursor[accessString] = isLastPart ? typedValue : {};
+            if (accessString !== "relatedInstance" || !untypedInstanceCursor[accessString]
+              || (accessString === "relatedInstance" && untypedInstanceCursor[accessString][className] !== expectedclassName)) {
+              untypedInstanceCursor[accessString] = isLastPart ? typedValue : {};
+            }
             untypedInstanceCursor = untypedInstanceCursor[accessString];
           }
 

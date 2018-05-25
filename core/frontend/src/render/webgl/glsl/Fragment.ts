@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { FragmentShaderBuilder, VariableType } from "../ShaderBuilder";
+import { FragmentShaderBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ColorDef } from "@bentley/imodeljs-common";
 
 export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
@@ -20,13 +20,28 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
 export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
   frag.addUniform("u_reverseWhiteOnWhite", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
-      const bgColor: ColorDef = params.target.bgColor;
+      const bgColor: ColorDef = params.target.bgColor.clone();
       bgColor.setAlpha(0);
       const doReversal = (bgColor.equals(ColorDef.white) && params.geometry.wantWoWReversal(params)) ? 1.0 : 0.0;
       uniform.setUniform1f(doReversal);
     });
   });
+  frag.set(FragmentShaderComponent.ReverseWhiteOnWhite, reverseWhiteOnWhite);
 }
+
+const reverseWhiteOnWhite = `
+  if (u_reverseWhiteOnWhite > 0.5) {
+    // Account for erroneous interpolation from varying vec3(1.0)...
+    const vec3 white = vec3(1.0);
+    const vec3 epsilon = vec3(0.0001);
+    vec3 color = baseColor.a > 0.0 ? baseColor.rgb / baseColor.a : baseColor.rgb; // revert premultiplied alpha
+    vec3 delta = (color + epsilon) - white;
+    if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
+      baseColor.rgb = vec3(0.0);
+  }
+
+  return baseColor;
+`;
 
 export namespace GLSLFragment {
   export const assignFragColor = `FragColor = baseColor;`;

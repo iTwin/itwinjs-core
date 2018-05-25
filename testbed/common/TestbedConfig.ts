@@ -1,7 +1,17 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { BentleyCloudRpcManager, ElectronRpcManager, BentleyCloudRpcConfiguration, RpcOperation, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface } from "@bentley/imodeljs-common";
+import {
+  BentleyCloudRpcManager,
+  ElectronRpcManager,
+  BentleyCloudRpcConfiguration,
+  RpcOperation,
+  IModelToken,
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  IModelWriteRpcInterface,
+  StandaloneIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { TestRpcInterface, TestRpcInterface2, TestRpcInterface3 } from "./TestRpcInterface";
 
@@ -14,7 +24,7 @@ export class TestbedConfig {
   public static cloudRpc: BentleyCloudRpcConfiguration;
   public static get ipc(): any { return ___TESTBED_IPC_RENDERER___; }
   public static useIPC = false;
-  public static rpcInterfaces = [IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelUnitTestRpcInterface, TestRpcInterface, TestRpcInterface2];
+  public static rpcInterfaces = [IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelUnitTestRpcInterface, TestRpcInterface, TestRpcInterface2];
 
   public static initializeRpcFrontend() {
     if (TestbedConfig.useIPC) {

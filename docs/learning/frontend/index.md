@@ -8,10 +8,12 @@ The **imodeljs-frontend** package always runs inside a web browser:
 
 ## Frontend Services
 
+* [Login and obtain AccessTokens](../common/AccessToken.md)
+* [Open iModel connections](./IModelConnection.md)
 * [Adminstration](./IModelApp.md) via the IModelApp class
 * [Localization](./Localization.md) of strings and user interface
 * Writing [Tools](./Tools.md) for handling events from users
-* Communicating with the Backend via an [RpcInterface](./RpcInterface.md)
+* Communicating with the Backend via an [RpcInterface](../RpcInterface.md)
 * Displaying [Views](./Views.md) of iModels
 * Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
 

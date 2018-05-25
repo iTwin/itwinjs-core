@@ -1,27 +1,30 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilderCreateParams, GraphicBuilder } from "../GraphicBuilder";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PolylineArgs, MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { GraphicsList, Branch } from "./Graphic";
+import { GraphicsList, Branch, Batch } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Dictionary } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle } from "./Texture";
+import { TextureHandle, Texture } from "./Texture";
 import { GL } from "./GL";
 import { PolylinePrimitive } from "./Polyline";
 import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
+import { LineCode } from "./EdgeOverrides";
+import { Material } from "./Material";
+import { IsTranslucent } from "./RenderFlags";
 
 export const enum ContextState {
   Uninitialized,
@@ -175,6 +178,152 @@ export class Capabilities {
   }
 }
 
+/** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
+export class IdMap {
+  /** Mapping of materials by their key values. */
+  public readonly materialMap: Map<string, RenderMaterial>;
+  /** Mapping of textures by their key values. */
+  public readonly textureMap: Map<string, RenderTexture>;
+  /** Mapping of textures using gradient symbology. */
+  public readonly gradientMap: Dictionary<Gradient.Symb, RenderTexture>;
+
+  public constructor() {
+    this.materialMap = new Map<string, RenderMaterial>();
+    this.textureMap = new Map<string, RenderTexture>();
+    this.gradientMap = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+  }
+
+  /** Add a material to the material map, given that it has a valid key. */
+  public addMaterial(material: RenderMaterial) {
+    if (material.key)
+      this.materialMap.set(material.key, material);
+  }
+
+  /** Add a texture to the texture map, given that it has a valid key. */
+  public addTexture(texture: RenderTexture) {
+    if (texture.key)
+      this.textureMap.set(texture.key, texture);
+  }
+
+  /** Add a texture to the gradient symbology map. */
+  public addGradient(gradientSymb: Gradient.Symb, texture: RenderTexture) {
+    this.gradientMap.set(gradientSymb, texture);
+  }
+
+  /** Find a cached material using its key. If not found, returns undefined. */
+  public findMaterial(key: string): RenderMaterial | undefined {
+    return this.materialMap.get(key);
+  }
+
+  /** Find a cached texture using its key. If not found, returns undefined. */
+  public findTexture(key: string): RenderTexture | undefined {
+    return this.textureMap.get(key);
+  }
+
+  /**
+   * Find a material using its key. If not found, create and return it.
+   * This will also add it to the map if the key was valid.
+   */
+  public getMaterial(params: RenderMaterial.Params): RenderMaterial {
+    if (!params.key)
+      return new Material(params);
+
+    let material = this.materialMap.get(params.key);
+    if (!material) {
+      material = new Material(params);
+      this.materialMap.set(params.key, material);
+    }
+    return material;
+  }
+
+  /**
+   * Attempt to create a new texture from an ImageBuffer and insert it into this cache.
+   * If the texture already exists inside the cache, or an error occurs, returns undefined.
+   */
+  private createTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+    if (params.key && this.textureMap.get(params.key) !== undefined)
+      return undefined;
+
+    const textureHandle = TextureHandle.createForImageBuffer(img);
+    if (textureHandle === undefined)
+      return undefined;
+    const texture = new Texture(params, textureHandle);
+    if (params.key)
+      this.textureMap.set(params.key, texture);
+    return texture;
+  }
+
+  /**
+   * Attempt to create a new texture from an ImageSource and insert it into this cache.
+   * If the texture already exists inside the cache, or an error occurs, returns undefined.
+   */
+  private createTextureFromImgSrc(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
+    if (params.key && this.textureMap.get(params.key) !== undefined)
+      return undefined;
+
+    const textureHandle = TextureHandle.createForImageSource(width, height, imgSrc);
+    if (textureHandle === undefined)
+      return undefined;
+    const texture = new Texture(params, textureHandle);
+    if (params.key)
+      this.textureMap.set(params.key, texture);
+    return texture;
+  }
+
+  /**
+   * Find a texture using its key. If not found, create one using an ImageSource and return it.
+   * This will also add it to the map if the key was valid.
+   */
+  public getTextureFromImgSrc(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
+    if (params.key) {
+      const existingTexture = this.textureMap.get(params.key);
+      if (existingTexture)
+        return existingTexture;
+    }
+
+    return this.createTextureFromImgSrc(imgSrc, width, height, params);
+  }
+
+  /**
+   * Find a texture using its key. If not found, create one using an ImageBuffer and return it.
+   * This will also add it to the map if the key was valid. Returns undefined if we were unable to create the texture.
+   */
+  public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+    if (params.key) {
+      const existingTexture = this.textureMap.get(params.key);
+      if (existingTexture)
+        return existingTexture;
+    }
+
+    const isTranslucent = params.isRGBE ? IsTranslucent.Yes : ((img.format === ImageBufferFormat.Rgba) ? IsTranslucent.Maybe : IsTranslucent.No);
+    if (isTranslucent === IsTranslucent.Maybe) {
+      // premultiplyOrStripAlpha
+    }
+
+    return this.createTexture(img, params);
+  }
+
+  /**
+   * Find a gradient using its symbology. If the gradient does not exist, create it by constructing a texture
+   * derived from an image of given height and width. This will also add it to the map.
+   */
+  public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
+    const existingGrad = this.gradientMap.get(grad);
+    if (existingGrad)
+      return existingGrad;
+
+    const image: ImageBuffer = grad.getImage(0x100, 0x100);
+    // preMultiplyOrStripAlpha
+
+    const textureHandle = TextureHandle.createForImageBuffer(image);
+    if (!textureHandle)
+      return undefined;
+    const texture = new Texture(Texture.Params.defaults, textureHandle);
+    this.addGradient(grad, texture);
+    return texture;
+  }
+}
+
 export class System extends RenderSystem {
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -185,6 +334,11 @@ export class System extends RenderSystem {
   public readonly capabilities: Capabilities;
 
   public readonly drawBuffersExtension?: WEBGL_draw_buffers;
+
+  private _lineCodeTexture: TextureHandle | undefined;
+  public get lineCodeTexture() { return this._lineCodeTexture; }
+
+  public readonly renderCache: Dictionary<IModelConnection, IdMap>;
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
@@ -217,6 +371,11 @@ export class System extends RenderSystem {
     return new System(canvas, context, techniques, capabilities);
   }
 
+  public onInitialized(): void {
+    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+  }
+
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return new PrimitiveBuilder(this, params); }
@@ -229,6 +388,7 @@ export class System extends RenderSystem {
   public createTriMesh(args: MeshArgs, iModel: IModelConnection) { return MeshGraphic.create(args, iModel); }
   public createGraphicList(primitives: RenderGraphic[], imodel: IModelConnection): RenderGraphic { return new GraphicsList(primitives, imodel); }
   public createBranch(branch: GraphicBranch, imodel: IModelConnection, transform: Transform, clips?: ClipVector): RenderGraphic { return new Branch(imodel, branch, transform, clips); }
+  public createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic { return new Batch(graphic, features); }
 
   public applyRenderState(newState: RenderState) {
     newState.apply(this._currentRenderState);
@@ -250,6 +410,94 @@ export class System extends RenderSystem {
     }
   }
 
+  /** Find an imodel rendering map using an IModelConnection. Returns undefined if not found. */
+  public findIModelMap(imodel: IModelConnection): IdMap | undefined {
+    return this.renderCache.get(imodel);
+  }
+
+  /**
+   * Find an imodel rendering map using an IModelConnection. If not found, as long as the id
+   * is valid, create and return a new one, adding it to the dictionary.
+   */
+  public createIModelMap(imodel: IModelConnection): IdMap | undefined {
+    let idMap = this.renderCache.get(imodel);
+    if (!idMap) {
+      if (!imodel.iModelToken.iModelId)
+        return undefined;
+      idMap = new IdMap();  // This currently starts empty, no matter the current contents of the imodel
+      this.renderCache.set(imodel, idMap);
+    }
+    return idMap;
+  }
+
+  /**
+   * Removes an imodel map from the renderCache. This function is called when the onClose event occurs on an iModel.
+   * Note that this does not remove
+   */
+  private removeIModelMap(imodel: IModelConnection) {
+    this.renderCache.delete(imodel);
+  }
+
+  /**
+   * Actions to perform when the IModelApp shuts down. Release all imodel apps that were involved in the shutdown.
+   */
+  public onShutDown() {
+    this.renderCache.clear();
+    IModelConnection.onClose.removeListener(this.removeIModelMap);
+  }
+
+  /**
+   * Creates a material and adds it to the imodel's render map. If the material already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap) {
+      return undefined;
+    }
+    return idMap!.getMaterial(params);
+  }
+
+  /** Searches through the imodel's render map for a material, given its key. Returns undefined if none found. */
+  public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap)
+      return undefined;
+    return idMap.findMaterial(key);
+  }
+
+  /**
+   * Creates a texture using an ImageBuffer and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  public createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap) {
+      return undefined;
+    }
+    return idMap.getTexture(image, params);
+  }
+
+  /**
+   * Creates a texture using an ImageSource and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  public createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap) {
+      return undefined;
+    }
+    return idMap.getTextureFromImgSrc(source, width, height, params);
+  }
+
+  /** Searches through the imodel's render map for a texture, given its key. Returns undefined if none found. */
+  public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap)
+      return undefined;
+    return idMap.findTexture(key);
+  }
+
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
     super();
     this.canvas = canvas;
@@ -257,6 +505,19 @@ export class System extends RenderSystem {
     this.techniques = techniques;
     this.capabilities = capabilities;
     this.drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
+    this.renderCache = new Dictionary<IModelConnection, IdMap>((lhs: IModelConnection, rhs: IModelConnection): number => {
+      if (lhs.iModelToken.iModelId !== rhs.iModelToken.iModelId) {
+        if (lhs.iModelToken.iModelId === undefined || rhs.iModelToken.iModelId === undefined)
+          return -1;
+        else if (lhs.iModelToken.iModelId < rhs.iModelToken.iModelId!)
+          return -1;
+        else
+          return 1;
+      }
+      return 0;
+    });
+    // Make this System a subscriber to the the IModelConnection onClose event
+    IModelConnection.onClose.addListener(this.removeIModelMap);
   }
 }
 

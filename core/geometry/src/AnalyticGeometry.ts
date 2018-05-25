@@ -122,7 +122,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   /** Create a clone and return the transform of the clone. */
   public cloneTransformed(transform: Transform): Plane3dByOriginAndUnitNormal | undefined {
     const result = this.clone();
-    transform.multiplyPoint(result.origin, result.origin);
+    transform.multiplyPoint3d(result.origin, result.origin);
     transform.matrix.multiplyInverseTranspose(result.normal, result.normal);
     if (result.normal.normalizeInPlace())
       return result;
@@ -260,11 +260,11 @@ export class Ray3d implements BeJSONFunctions {
   }
   /** Create a clone and return the transform of the clone. */
   public cloneTransformed(transform: Transform): Ray3d {
-    return new Ray3d(transform.multiplyPoint(this.origin), transform.multiplyVector(this.direction));
+    return new Ray3d(transform.multiplyPoint3d(this.origin), transform.multiplyVector(this.direction));
   }
   /** Apply a transform in place. */
   public transformInPlace(transform: Transform) {
-    transform.multiplyPoint(this.origin, this.origin);
+    transform.multiplyPoint3d(this.origin, this.origin);
     transform.multiplyVector(this.direction, this.direction);
   }
   /** Copy data from another ray. */

@@ -61,9 +61,9 @@ describe("FrameBuilder.HelloWorld", () => {
         if (ck.testPointer(inverse, "invertible frame") && inverse) {
           const product = rFrame.multiplyTransformTransform(inverse);
           ck.testBoolean(true, product.isIdentity(), "correct inverse");
-          const q0 = inverse.multiplyPoint(point0);
-          const q1 = inverse.multiplyPoint(point1);
-          const q2 = inverse.multiplyPoint(point2);
+          const q0 = inverse.multiplyPoint3d(point0);
+          const q1 = inverse.multiplyPoint3d(point1);
+          const q2 = inverse.multiplyPoint3d(point2);
           ck.testCoordinate(0.0, q0.x, "point0 is origin");
           ck.testCoordinate(0.0, q0.y, "point0 is origin");
           ck.testCoordinate(0.0, q0.z, "point0 is origin");

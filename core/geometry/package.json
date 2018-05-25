@@ -7,17 +7,16 @@
   "typings": "lib/geometry-core",
   "repository": {},
   "devDependencies": {
-    "@types/lodash": "4.14.106",
+    "@bentley/bentleyjs-tools": "5",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
-    "mocha": "^3.5.3",
-    "nyc": "^11.4.1",
+    "mocha": "^5.2.0",
+    "nyc": "^11.8.0",
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
     "source-map-support": "^0.5.0",
-    "ts-node": "^3.3.0",
-    "tsconfig-paths": "^2.7.2",
+    "ts-node": "^6.0.3",
     "typedoc": "^0.11.1",
     "typescript": "~2.7.2"
   },
@@ -26,10 +25,10 @@
     "clean": "rimraf ./lib ./src/test/output package-deps.json ../../generated-docs/geometry",
     "watch": "tsc --watch",
     "pretest": "rush build -t @bentley/geometry-core",
-    "test": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\"",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/geometry/json/file.json --onlyJson %TYPEDOC_THEME%",
-    "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "cover:docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js"
+    "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/geometry/json/file.json --onlyJson %TYPEDOC_THEME%",
+    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
+    "cover:docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docscoverage.js"
   },
   "keywords": [
     "Bentley",
@@ -53,7 +52,6 @@
     ],
     "require": [
       "source-map-support/register",
-      "tsconfig-paths/register",
       "ts-node/register"
     ],
     "reporter": [

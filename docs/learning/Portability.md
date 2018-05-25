@@ -2,7 +2,7 @@
 
 This article describes the technologies and best practices that make iModelJs apps portable. An well-written iModelJs app will run on many platforms without modification.
 
-In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../overview/App.md#making-interactive-apps-fit-the-platform).
+In addition, a well-written interactive app can be configured to run as a Web abb, a desktop app, and a mobile app, with a few simple runtime checks and no other code changes. Configurability does not mean that an iModelJs app must be the same in all configurations. In fact, the iModelJs architecture makes it easy to [make the app fit the platform](../overview/AppTailoring.md).
 
 This degree of portability and configurability is possible because of the technologies used by iModelJs apps and the iModelJs app architecture.
 
@@ -10,7 +10,7 @@ This degree of portability and configurability is possible because of the techno
 
 The key technology that makes an app portable is JavaScript. JavaScript engines are available on many operating systems and Web browsers. TypeScript compiles to JavaScript.
 
-[Nodejs](./Glossary.md#Node.js) is an execution environment for agents, services, and servers. Nodejs runs JavaScript programs. Nodejs itself runs on many platforms, including Windows and Linux. Nodejs is also widely supported by cloud infrastructures and deployment mechanisms.
+[Nodejs](./Glossary.md#Nodejs) is an execution environment for agents, services, and servers. Nodejs runs JavaScript programs. Nodejs itself runs on many platforms, including Windows and Linux. Nodejs is also widely supported by cloud infrastructures and deployment mechanisms.
 
 Web UI technology, including HTML and CSS, makes it possible to write a cross-platform user interface that looks and behaves the same everywhere, in every configuration. Web UI technology is supported by Web browsers and Web view renderers on many platforms. Web UI technology also simplifies the task of reconfiguring or even swapping out an app's GUI.
 
@@ -19,13 +19,6 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 ## Frontend Portability
 
 Since an iModelJs app [frontend](../overview/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
-
-The frontend's main script must check the app's configuration to decide what RpcInterface configuration to use for its app-specific backend(s):
-* Mobile app - [in-process RPC configuration](../overview/App.md#in-process-rpc-configuration).
-* Desktop app - [desktop RPC configuration](../overview/App.md#desktop-rpc-configuration).
-* Web app - [cloud PRC configuration](../overview/App.md#cloud-rpc-configuration).
-
-The frontend will always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration) for services.
 
 ### Using Plaform-specfic Modules in the Frontend
 In some cases, the Web view environment will provide platform-specific globals and modules. The frontend can use these modules in guarded code. To detect the platform of the frontend:
@@ -41,20 +34,10 @@ if (isIos) {
 ## Backend Portability
 
 ### Services and Agents
-True services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
+True services and agents are easy to make portable, since they always run in nodejs and they always run on a server. Services always run a Web server and always use [Web RPC configuration](../overview/RpcInterface.md#web-rpc-configuration). Note that an iModelJs service or agent does not deal directly with issues such as deployment, routing, or scaling. Those are the concerns of the cloud infrastructure. As nodejs apps, iModelJs services and agents are cloud-neutral and run on many cloud infrastructures.
 
 ### App Backends
 App-specific backends do not always run in nodejs, and they do not always run on a server. This section describes how to make an app-specific backend portable and adaptable to multiple app configurations.
-
-An app-specific backend's main script must check the app's configuration to decide how it should initialize and run:
-* Mobile app - the backend should run the in-process RPC request processor and use the [in-process RPC configuration](../overview/App.md#in-process-rpc-configuration).
-* Desktop app - the backend should run a Web server and use the [desktop RPC configuration](../overview/App.md#desktop-rpc-configuration).
-* Web app - the backend should run a Web server and use the [cloud RPC configuration](../overview/App.md#cloud-rpc-configuration).
-
-*Example:*
-```ts
-[[include:RpcInterface.initializeImpl]]
-```
 
 #### Using Platform-specific Modules in the Backend
 A backend can use platform-specific globals and modules, but only in guarded code. See [Platform](#backend) for methods to detect the platform.
@@ -82,7 +65,7 @@ A backend can use the following portable imodeljs-backend classes to avoid unnec
 |process|[Platform]($backend)
 |__dirname|[KnownLocations]($backend)
 |__filename|[KnownLocations]($backend)
-|console|[Logger]($bentley-js)
+|console|[Logger]($bentley)
 |path|[path](#path)|
 
 In most cases, the imodeljs-backend substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.

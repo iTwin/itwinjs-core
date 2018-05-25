@@ -96,14 +96,7 @@ describe("iModelHub GlobalEventHandler", () => {
   const imodelName = "imodeljs-clients GlobalEvents test";
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
 
-  function shouldRun(): boolean {
-    return (TestConfig.enableMocks || TestConfig.deploymentEnv === "DEV");
-  }
-
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (!shouldRun())
-      this.skip();
-
     projectId = await utils.getProjectId();
     serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
     accessToken = await utils.login();
@@ -111,8 +104,7 @@ describe("iModelHub GlobalEventHandler", () => {
   });
 
   after(async () => {
-    if (shouldRun())
-      await utils.deleteIModelByName(accessToken, projectId, imodelName);
+    await utils.deleteIModelByName(accessToken, projectId, imodelName);
   });
 
   afterEach(() => {

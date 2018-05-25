@@ -37,7 +37,7 @@ export enum LockLevel {
  * @returns Encoded lock instance id.
  */
 function getLockInstanceId(lock: Lock): string | undefined {
-  if (!lock || !lock.briefcaseId || !lock.lockType || !lock.objectId)
+  if (!lock || lock.briefcaseId === undefined || lock.lockType === undefined || !lock.objectId)
     return undefined;
 
   return `${lock.lockType}-${lock.objectId}-${lock.briefcaseId}`;
@@ -217,7 +217,7 @@ export class LockQuery extends Query {
    * @returns This query.
    */
   public byReleasedWithChangeSet(changeSetId: string) {
-    this.addFilter(`ReleasedWithChangeSet+eq+${changeSetId}`);
+    this.addFilter(`ReleasedWithChangeSet+eq+'${changeSetId}'`);
     return this;
   }
 
@@ -226,7 +226,7 @@ export class LockQuery extends Query {
    * @param changeSetIndex Index of the changeSet.
    * @returns This query.
    */
-  public byReleasedWithChangeSetIndex(changeSetIndex: number) {
+  public byReleasedWithChangeSetIndex(changeSetIndex: string) {
     this.addFilter(`ReleasedWithChangeSetIndex+eq+${changeSetIndex}`);
     return this;
   }
@@ -252,7 +252,7 @@ export class LockQuery extends Query {
       }
 
       first ? first = false : filter += ",";
-      filter += id;
+      filter += `'${id}'`;
     }
 
     filter += "]";

@@ -28,11 +28,11 @@ function exerciseArcSet(ck: Checker, arcA: Arc3d) {
   const mySweep = AngleSweep.createStartEndDegrees(9, 20);
   arcB.setRefs(myPoint, myMatrix, mySweep);
 
-  const arcD = arcB.clone ();
-  arcD.set (myPoint, myMatrix, mySweep);
-  ck.testTrue (arcD.isAlmostEqual (arcB));
-  transform.multiplyPoint (myPoint, myPoint); // this indirectly modifies arcB, but not arcD
-  ck.testFalse (arcD.isAlmostEqual (arcB));
+  const arcD = arcB.clone();
+  arcD.set(myPoint, myMatrix, mySweep);
+  ck.testTrue(arcD.isAlmostEqual(arcB));
+  transform.multiplyPoint3d(myPoint, myPoint); // this indirectly modifies arcB, but not arcD
+  ck.testFalse(arcD.isAlmostEqual(arcB));
 }
 function exerciseArc3d(ck: Checker, arc: Arc3d) {
   const vector0 = arc.vector0;

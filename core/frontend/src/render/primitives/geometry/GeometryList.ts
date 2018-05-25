@@ -7,7 +7,6 @@ import { Range3d } from "@bentley/geometry-core";
 import { Geometry } from "./GeometryPrimitives";
 
 export class GeometryList extends Iterable<Geometry> {
-  constructor() { super(); }
   public get first(): Geometry | undefined { return this._list[0]; }
   public get isEmpty(): boolean { return this._list.length === 0; }
   public get length(): number { return this._list.length; }

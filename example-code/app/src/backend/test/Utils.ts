@@ -86,12 +86,33 @@ export class IModelTestUtils {
     return iModel!;
   }
 
+  public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+    const destPath = KnownTestLocations.outputDir;
+    if (!IModelJsFs.existsSync(destPath))
+      IModelJsFs.mkdirSync(destPath);
+
+    if (opts === undefined)
+      opts = {};
+
+    const srcName = path.join(KnownTestLocations.outputDir, filename);
+    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
+    const srcStat = IModelTestUtils.getStat(srcName);
+    const destStat = IModelTestUtils.getStat(dbName);
+    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
+      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
+    }
+
+    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
+    assert.exists(iModel);
+    return iModel!;
+  }
+
   public static createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
 
     const outputImodel = parentElement.iModel;
 
     // The modeled element's code
-    const modelCode = InformationPartitionElement.createCode(parentElement, modelName);
+    const modelCode = InformationPartitionElement.createCode(outputImodel, parentElement.id, modelName);
 
     //  The modeled element
     const modeledElementProps: ElementProps = {
@@ -104,7 +125,7 @@ export class IModelTestUtils {
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
     const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
 
-    const modeledElementRef = new RelatedElement({id: modeledElementId});
+    const modeledElementRef = new RelatedElement({ id: modeledElementId });
 
     // The model
     const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });

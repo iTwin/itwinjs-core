@@ -24,12 +24,14 @@ import {
   EdgeArgs,
   PolylineEdgeArgs,
   FillFlags,
+  // QPoint3d,
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
 import { IModelConnection } from "../../../IModelConnection";
 import { ColorMap } from "../ColorMap";
 import { RenderGraphic, RenderSystem } from "../../System";
 import { Triangle, TriangleList } from "../Primitives";
+import { VertexKeyProps } from "../VertexKey";
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
 export class PolylineArgs {
@@ -206,9 +208,18 @@ export class Mesh {
   public readonly isPlanar: boolean;
   public displayParams: DisplayParams;
 
+  /**
+   * @param props
+   *    props.displayParams: DisplayParams
+   *    props.features?: Mesh.Features | undefined
+   *    props.type: Mesh.PrimitiveType
+   *    props.range: Range3d
+   *    props.is2d: boolean
+   *    props.isPlanar: boolean
+   */
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
-    this._data = Mesh.PrimitiveType.Mesh === type ? new TriangleList() : new Array<MeshPolyline>();
+    this._data = Mesh.PrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
     this.displayParams = displayParams;
     this.features = features;
     this.type = type;
@@ -216,6 +227,8 @@ export class Mesh {
     this.isPlanar = isPlanar;
     this.points = new QPoint3dList(QParams3d.fromRange(range));
   }
+
+  public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
 
   public get triangles(): TriangleList | undefined { return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
   public get polylines(): MeshPolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined; }
@@ -235,21 +248,42 @@ export class Mesh {
 
   public addPolyline(poly: MeshPolyline): void {
     const { type, polylines } = this;
+
     assert(Mesh.PrimitiveType.Polyline === type || Mesh.PrimitiveType.Point === type);
     assert(undefined !== polylines);
+
     if (Mesh.PrimitiveType.Polyline === type && poly.indices.length < 2)
       return;
-    if (undefined !== polylines) polylines.push(poly);
+
+    if (undefined !== polylines)
+      polylines.push(poly);
   }
 
   public addTriangle(triangle: Triangle): void {
     const { triangles, type } = this;
+
     assert(Mesh.PrimitiveType.Mesh === type);
     assert(undefined !== triangles);
-    if (undefined !== triangles) triangles.addTriangle(triangle);
+
+    if (undefined !== triangles)
+      triangles.addTriangle(triangle);
   }
 
-  public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
+  public addVertex(props: VertexKeyProps): number {
+    const { position, normal, uvParam, fillColor } = props;
+
+    this.points.push(position);
+
+    if (undefined !== normal)
+      this.normals.push(normal);
+
+    if (undefined !== uvParam)
+      this.uvParams.push(uvParam);
+
+    this.colorMap.insert(fillColor);
+    return this.points.length - 1;
+  }
+
 }
 
 export namespace Mesh {
@@ -270,7 +304,7 @@ export namespace Mesh {
     public get indices(): number[] { return this._indices; }
 
     public add(feat: Feature, numVerts: number): void {
-      const index = this.table.getIndex(feat);
+      const index = this.table.insert(feat);
       if (!this.initialized) {
         // First feature - uniform.
         this.uniform = index;

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tools */
 import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { PrimitiveTool } from "./PrimitiveTool";

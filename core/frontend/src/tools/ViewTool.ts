@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tools */
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
 import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
@@ -1317,7 +1318,8 @@ export class FitViewTool extends ViewTool {
   }
 
   public doFit(viewport: Viewport, oneShot: boolean): boolean {
-    ViewManip.fitView(viewport, true);
+    const doAnimate = false; // ###TODO animateFrustumChange() appears to be borked.
+    ViewManip.fitView(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
     return oneShot;

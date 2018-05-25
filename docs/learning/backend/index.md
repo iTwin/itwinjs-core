@@ -1,6 +1,6 @@
 # The Backend Library
 
-The Backend refers to the layers of the iModelJs library that run on a computer with a copy of an iModel. The backend always runs in-process (i.e. in the same address space) with the native layers.
+The Backend refers to the layers of the iModelJs library that run on a computer with a copy of an iModel. The backend always runs in-process (i.e. in the same address space) with the native layers. The backend may be in the form of a [service or agent](../../overview/App.md#agents-and-services) or an [app-specific backend](../../overview/App.md#app-backend).
 
 The backend:
 
@@ -9,29 +9,40 @@ The backend:
 * determines the JavaScript engine (vs. the frontend where the JavaScript engine comes from the user's browser). Usually that is V8 from Node.js
 * may load third-party native code
 
-When the backend is used by a frontend, that will usually be from another process - potentially on another computer. The only exception is mobile devices; in that case the backend and the frontend run in the same (only) process.
+See [the app architecture overview](../../overview/App.md) for more on how backends fit into overall app architecture.
 
 The backend library is delivered in the **npm package** `@bentley/imodeljs-backend`.
 
-## IModelHost
-
-## The Class Registry
+## Administration
+* [IModelHost](./IModelHost.md)
 
 ## IModelDb
+* [Open an IModelDb](./IModelDb.md)
+* [Synchronizing with iModelHub](./IModelDbSync.md)
+* [Writing to an IModelDb](./IModelDbReadwrite.md)
+  * [Concurrency control](./ConcurrencyControl.md)
 
-## Loading and Creating Elements
+## Working with Schemas and Elements in TypeScript
+* [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
+
+## Loading and Creating Elements, Aspects, and Models
+* [Access Elements](./AccessElements.md)
+* [Create Elements](./CreateElements.md)
+* [Access Aspects](./AccessAspects.md)
+* [Create Aspects](./CreateAspects.md)
+* [Access Models](./AccessModels.md)
+* [Create Models](./CreateModels.md)
 
 ## ECSQL
 
 * [What is ECSQL?](../ECSQL)
 * [Executing ECSQL statements](./ExecutingECSQL)
-* [Code Examples](./ExecutingECSQL#code-examples)
+* [Code Examples](./ECSQLCodeExamples)
 * [Frequently used ECSQL queries](./ECSQL-queries)
 
 ## Dealing with Codes
+* [Reserve Codes](./ReserveCodes.md)
 
 ## Change Summary
 
 * [Change Summary Overview](../ChangeSummaries)
-
-## BriefcaseManager

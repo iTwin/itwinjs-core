@@ -2,13 +2,13 @@
 
 Concurrency control is a way to coordinate simultaneous transactions (briefcases) while preserving data integrity. Concurrency control is implemented in the code of an app and is based on the identity of a briefcase. Concurrency control should not to be confused with user access control. To make coordinated changes, and app must follow 3 basic rules:
 
-1. [Reserve Codes] before using them.
+1. [Reserve Codes](#code-reservation) before using them.
 1. Optionally lock models and elements before modifying them, depending on the iModel's [concurrency control policy](#concurrency-control-policies)
-1. Pull (and merge) before pushing.
+1. [Pull and merge](./IModelDb.sync.md) before pushing.
 
 An iModel has a concurrency control policy that specifies how multiple briefcases may modify models and elements. The policy may stipulate that locks must be used, forcing transactions to be sequential (pessimistic), or it may specify change-merging with conflict-resolution to combine the results of simultaneous transactions (optimistic).
 
-An app uses [IModelDb]($backend/IModelDb) and [ConcurrencyControl]($backend) to follow concurrency control rules.
+An app uses [IModelDb]($backend) and [ConcurrencyControl]($backend) to follow concurrency control rules.
 
 Locks and code reservations are associated with a briefcase while it is making changes and are released when it pushes.
 
@@ -19,7 +19,7 @@ This article assumes that you already know that:
 * An iModel is a multi-user database
 * An app works with a [briefcase](../Glossary.md#Briefcase) using the [IModelDb]($backend) class.
 * A briefcase has a unique identity that is issued and tracked by [iModelHub](../../overview/IModelHub.md).
-* Changes are captured and distributed in the form of [ChangeSets](../Glossary.md#ChangeSets).
+* Changes are captured and distributed in the form of [ChangeSets](../Glossary.md#ChangeSet).
 * ChangeSets are ordered in a sequence that is called the [timeline](../../overview/IModelHub.md#the-timeline-of-changes) of the iModel.
 * ChangeSets are stored in iModelHub
 * A [Code](../Glossary.md#Code) is an identifier that is assigned to an element and is managed by a central Code Service.
@@ -40,11 +40,11 @@ This article assumes that you already know that:
 |**Optimistic Concurrency Control**|A policy that allows apps to change models and elements without acquiring locks.
 |**Pessimistic Concurrency Control**|A policy that requires apps to acquire locks before changing models or elements.
 |**Push**|Upload a ChangeSet to iModelHub
-|**Pull**|Download a ChangeSet from iModelHub
+|**Pull**|Download a ChangeSet from iModelHub. See [IModelDb synchronization](./IModelDb.sync.md)
 |**Rebase**|Adjust a ChangeSet so that its pre-change state matches the post-change state of some other ChangeSet.
 |**Revision**|The state of an iModel as of a specific point in its [timeline](../../overview/IModelHub.md#the-timeline-of-changes), that is, the result of the ChangeSets up to that point.
 |**Tip**|The most recent revision of an iModel. Also, the most recent ChangeSet in the [timeline](../../overview/IModelHub.md#the-timeline-of-changes).
-|**Transaction**|A set of changes that are committed or abandoned atomically, making up a unit of work. Multiple transactions to a briefcase are combined into a [ChangeSet](../Glossary.md#ChangeSets).
+|**Transaction**|A set of changes that are committed or abandoned atomically, making up a unit of work. Multiple transactions to a briefcase are combined into a [ChangeSet](../Glossary.md#ChangeSet).
 
 ## Code Reservation
 
@@ -113,7 +113,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
  #### Conflicts
  Working without locks also opens up the possibility that local changes may overlap with in-coming ChangeSets. When ChangeSets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
 
- If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [IModelDb.concurrencyControl]($backend) property. The policy object includes a [ConcurrencyControl.ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [ConcurrencyControl.OnConflict]($backend). The default conflict-resolution policies are:
+ If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [IModelDb.concurrencyControl]($backend) property. The policy object includes a [ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [OnConflict]($backend). The default conflict-resolution policies are:
 
  |Local Change|RemoteChange|Resolution|
  |------------|------------|--------|
@@ -149,7 +149,7 @@ Note that sending a request to iModelHub is a relatively expensive operation. Th
  1. Insert or update models and elements.
 
  1. Call [ConcurrencyControl.request]($backend) to request the locks and codes that those local operations require.
- 1. If the request fails, call [IModelDb.cancelChanges]($backend) to roll back the local transaction.
+ 1. If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
  1. If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
 
  Using bulk mode is simpler than using the preemptive approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.

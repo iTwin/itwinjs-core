@@ -6,9 +6,29 @@ A row returned from an [ECSQL](./ECSQL) SELECT query is formatted as JavaScript 
 
 If the ECSQL select clause item
 
-- is an [ECSqlSystemProperty]($common), the property name is as described here: [ECJsNames.toJsName]($common)
 - has a column alias, the alias, with the first character lowered, becomes the property name.
-- has no alias, the ECSQL select clause item, with the first character lowered, becomes the property name.
+- has no alias and is no ECSQL system property, the ECSQL select clause item, with the **first character lowered**, becomes the property name.
+- is an ECSQL system property (see also enum [ECSqlSystemProperty]($common)):
+
+  System property | JavaScript Type
+  --- | ---
+  [ECInstanceId](./ECSQL#ecinstanceid) | id
+  [ECClassId](./ECSQL#ecclassid) | className
+  [SourceECInstanceId](./ECSQL#ecrelationshipclasses) | sourceId
+  [SourceECClassId](./ECSQL#ecrelationshipclasses) | sourceClassName
+  [TargetECInstanceId](./ECSQL#ecrelationshipclasses) | targetId
+  [TargetECClassId](./ECSQL#ecrelationshipclasses) | targetClassName
+
+  Navigation property member | JavaScript Type
+  --- | ---
+  [Id](./ECSQL#navigation-properties) | id
+  [RelClassId](./ECSQL#navigation-properties) | relClassName
+
+  Point property member | JavaScript Type
+  --- | ---
+  [X](./ECSQL#points) | x
+  [Y](./ECSQL#points) | y
+  [Z](./ECSQL#points) | z
 
 ## Property value types
 

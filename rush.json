@@ -9,6 +9,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/bentleyjs-tools",
+      "projectFolder": "tools/bentley",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@bentley/bentleyjs-core",
       "projectFolder": "core/bentley",
       "shouldPublish": true
@@ -54,9 +59,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/simpleviewtest",
+      "packageName": "simpleviewtest",
       "projectFolder": "simpleviewtest",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/imodeljs-i18n",
+      "projectFolder": "core/i18n",
+      "shouldPublish": true
     }
   ],
   "eventHooks": {

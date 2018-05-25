@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tools */
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { Tool, BeButtonEvent, BeCursor, InteractiveTool } from "./Tool";
 import { Viewport } from "../Viewport";
@@ -250,7 +251,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!ev.viewport || !IModelApp.viewManager.inDynamicsMode)
       return;
 
-    const context = new DynamicsContext(); // NEEDS_WORK * ev.GetViewport(), Render:: Task:: Priority:: Highest());
+    const context = new DynamicsContext(ev.viewport);
     this.onDynamicFrame(ev, context);
   }
 }

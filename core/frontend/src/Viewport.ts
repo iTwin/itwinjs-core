@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   RotMatrix, Transform, Map4d, Point4d, Constant,
@@ -549,7 +550,7 @@ export class Viewport {
 
   private readonly _viewRange: ViewRect = new ViewRect();
   /** get the rectangle of this Viewport in ViewCoordinates. */
-  public get viewRect(): ViewRect { const r = this._viewRange; const rect = this.getClientRect(); r.right = rect.width; r.top = rect.height; return r; }
+  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this.backStack.length; }
@@ -785,7 +786,7 @@ export class Viewport {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
-    return scrToNpcTran.multiplyPoint(pt, out);
+    return scrToNpcTran.multiplyPoint3d(pt, out);
   }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.View
@@ -1386,6 +1387,11 @@ export class Viewport {
     let isRedrawNeeded = sync.isRedrawPending;
     sync.invalidateRedrawPending();
 
+    if (target.updateViewRect()) {
+      target.onResized();
+      sync.invalidateRenderPlan();
+    }
+
     if (view.isSelectionSetDirty) {
       target.setHiliteSet(view.iModel.hilited);
       view.setSelectionSetDirty(false);
@@ -1433,7 +1439,7 @@ export class Viewport {
     // }
 
     if (isRedrawNeeded)
-      this.target.drawFrame();
+      target.drawFrame();
 
     return true;
   }

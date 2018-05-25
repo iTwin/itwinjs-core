@@ -24,13 +24,13 @@ mocha.setup({ui: 'bdd', reporter: mobileReporter}); // puts 'describe', 'it', et
 debugger;
 require("./IModelTestUtils.js");
 // Passing tests:
-require("./Category.test.js");
-require("./ECSqlStatement.test.js");
-require("./ClassRegistry.test.js");
-require("./ECDb.test.js");
-require("./ElementAspect.test.js");
-require("./GeometryStream.test.js");
-require("./IModel.test.js");
+require("./standalone/Category.test.js");
+require("./standalone/ECSqlStatement.test.js");
+require("./standalone/ClassRegistry.test.js");
+require("./standalone/ECDb.test.js");
+require("./standalone/ElementAspect.test.js");
+require("./standalone/GeometryStream.test.js");
+require("./standalone/IModel.test.js");
 require("./Promise.test.js");
 require("./Render.test.js");
 

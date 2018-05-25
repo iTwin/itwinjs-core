@@ -410,4 +410,67 @@ export abstract class WsgClient extends Client {
     Logger.logTrace(loggingCategory, `Successful GET request to ${url}`);
     return Promise.resolve(typedInstances);
   }
+
+  private getQueryRequestBody(queryOptions: RequestQueryOptions) {
+    const addPart = (query: string, key: string, value: string) => {
+      if (query !== "")
+        query += "&";
+      query += `${key}=${value}`;
+      return query;
+    };
+    let result = "";
+    if (queryOptions.$filter) {
+      result = addPart(result, "$filter", queryOptions.$filter);
+    }
+    if (queryOptions.$orderby) {
+      result = addPart(result, "$orderby", queryOptions.$orderby);
+    }
+    if (queryOptions.$select) {
+      result = addPart(result, "$select", queryOptions.$select);
+    }
+    if (queryOptions.$skip) {
+      result = addPart(result, "$skip", queryOptions.$skip.toString(10));
+    }
+    if (queryOptions.$top) {
+      result = addPart(result, "$top", queryOptions.$top.toString(10));
+    }
+    return result;
+  }
+
+  /**
+   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
+   * @param typedConstructor Constructor function for the type
+   * @param token Delegation token
+   * @param relativeUrlPath Relative path to the REST resource.
+   * @param queryOptions Query options.
+   * @returns Array of strongly typed instances.
+   */
+  protected async postQuery<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
+    const url: string = `${await this.getUrl()}${relativeUrlPath}/$query`;
+    Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
+
+    const options: RequestOptions = {
+      method: "POST",
+      headers: { authorization: token.toTokenString() },
+      body: this.getQueryRequestBody(queryOptions),
+    };
+
+    await this.setupOptionDefaults(options);
+
+    const res: Response = await request(url, options);
+    if (!res.body || !res.body.hasOwnProperty("instances")) {
+      return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
+    }
+    // console.log(JSON.stringify(res.body.instances));
+    const typedInstances: T[] = new Array<T>();
+    for (const ecJsonInstance of res.body.instances) {
+      const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
+      if (typedInstance) {
+        typedInstances.push(typedInstance);
+      }
+    }
+
+    Logger.logTrace(loggingCategory, `Successful GET request to ${url}`);
+    return Promise.resolve(typedInstances);
+  }
 }

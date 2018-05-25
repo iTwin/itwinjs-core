@@ -127,7 +127,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         const vectorCenterToC = Vector3d.createStartEnd(center, pointC);
         const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);
         return Arc3d.create(center, vectorX, vectorY,
-            AngleSweep.createStartEndRadians (0.0, sweepAngle.radians), result);
+          AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
       }
     }
     return LineString3d.create(pointA, pointB, pointC);
@@ -238,7 +238,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
 
   public reverseInPlace(): void { this._sweep.reverseInPlace(); }
   public tryTransformInPlace(transform: Transform): boolean {
-    this._center = transform.multiplyPoint(this._center, this._center);
+    this._center = transform.multiplyPoint3d(this._center, this._center);
     this._matrix = transform.matrix.multiplyMatrixMatrix(this._matrix, this._matrix);
     // force re-normalization of columnZ.
     this.setVector0Vector90(this._matrix.columnX(), this._matrix.columnY());

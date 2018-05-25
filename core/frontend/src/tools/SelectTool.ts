@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tools */
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";

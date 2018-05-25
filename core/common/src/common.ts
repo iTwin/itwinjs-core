@@ -21,6 +21,7 @@ export * from "./ModelProps";
 export * from "./OctEncodedNormal";
 export * from "./QPoint";
 export * from "./SubCategoryAppearance";
+export * from "./TileProps";
 export * from "./ViewProps";
 export * from "./Render";
 export * from "./Utility";
@@ -39,16 +40,17 @@ export * from "./rpc/core/RpcControl";
 export * from "./rpc/electron/ElectronRpcManager";
 export * from "./rpc/web/BentleyCloudRpcManager";
 export * from "./rpc/IModelReadRpcInterface";
+export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
 
 /** @docs-package-description
- * The imodeljs-common package contains classes for working with iModels in both frontend and backend.
+ * The imodeljs-common package contains classes for working with iModels in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
 
 /**
- * @docs-group-description App
- * Classes for defining an app - see [App Overview]($docs/overview/App.md).
+ * @docs-group-description AppAdministration
+ * Classes for configuring and administering an app.
  */
 /**
  * @docs-group-description BisCore
@@ -84,7 +86,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  */
 /**
  * @docs-group-description RpcInterface
- * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/App.md#rpcinterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
+ * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/RpcInterface.md) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
  */
 /**
  * @docs-group-description Schema

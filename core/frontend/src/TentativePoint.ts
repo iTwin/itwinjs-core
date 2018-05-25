@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module LocationAndSnapping */
+
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { Viewport } from "./Viewport";
@@ -308,7 +310,7 @@ export class TentativePoint {
 
     // Construct each active point snap mode
     const snaps = IModelApp.locateManager.getPreferredPointSnapModes(HitSource.TentativeSnap);
-    const snapContext = new SnapContext();
+    const snapContext = new SnapContext(this.viewport!);
     for (const snap of snaps) {
       this.testHitsForSnapMode(snapContext, snap);
     }

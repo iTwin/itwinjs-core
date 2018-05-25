@@ -3,7 +3,7 @@
 ## What is ECSQL
 
 ECSQL is a text-based command language for CRUD (create, read, update, delete) operations against
-EC data in an EC repository.
+the business data in an iModel or ECDb file.
 
 ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It sticks to
 standard SQL (SQL-92 and SQL-99) wherever possible.

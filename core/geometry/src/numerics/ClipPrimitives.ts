@@ -757,12 +757,12 @@ export class ClipShape extends ClipPrimitive {
   /** Transform the input point using this instance's transformToClip member */
   public performTransformToClip(point: Point3d) {
     if (this._transformToClip !== undefined)
-      this._transformToClip.multiplyPoint(point);
+      this._transformToClip.multiplyPoint3d(point);
   }
 
   /** Transform the input point using this instance's transformFromClip member */
   public performTransformFromClip(point: Point3d) {
     if (this._transformFromClip !== undefined)
-      this._transformFromClip.multiplyPoint(point);
+      this._transformFromClip.multiplyPoint3d(point);
   }
 }

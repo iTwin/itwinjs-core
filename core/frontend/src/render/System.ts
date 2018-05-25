@@ -12,6 +12,11 @@ import {
   Hilite,
   HiddenLine,
   ColorDef,
+  RenderMaterial,
+  ImageBuffer,
+  RenderTexture,
+  ImageSource,
+  FeatureTable,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -111,9 +116,11 @@ export class GraphicBranch {
   public addRange(graphics: RenderGraphic[]): void { graphics.forEach(this.add); }
 
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
-  public set viewFlagOverrides(ovr: ViewFlag.Overrides) { this._viewFlagOverrides.copyFrom(ovr); }
+  public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
+  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
   public clear() { this.entries.length = 0; }
+  public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 
 /**
@@ -145,6 +152,7 @@ export abstract class RenderTarget {
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
   public abstract queueReset(): void;
   public abstract onResized(): void;
+  public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
 
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
   // ###TODO public abstract setMinimumFrameRate(minimumFrameRate: number): number;
@@ -168,8 +176,8 @@ export abstract class RenderSystem {
   // /** Create an offscreen render target. */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
-  // /** Find a previously-created Material by key. Returns null if no such material exists. */
-  // public abstract findMaterial(key: MaterialKey, imodel: IModel): Material;
+  /** Find a previously-created Material by key. Returns null if no such material exists. */
+  public abstract findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined;
 
   // /**
   //  * Get or create a material from a material element, by id
@@ -177,8 +185,8 @@ export abstract class RenderSystem {
   //  */
   // public abstract getMaterial(id: Id64, imodel: IModel): Material;
 
-  // /** Create a Material from parameters */
-  // public abstract createMaterial(params: CreateMaterialParams, imodel: IModel): Material;
+  /** Create a Material from parameters */
+  public abstract createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined;
 
   /** Create a GraphicBuilder from parameters */
   public abstract createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder;
@@ -216,16 +224,11 @@ export abstract class RenderSystem {
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
 
-  // /** Create a Graphic consisting of batched Features. */
-  // public abstract createBatch(graphic: Graphic, features: FeatureTable): Graphic;
+  /** Create a Graphic consisting of batched Features. */
+  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic;
 
-  // /**
-  //  * Get or create a Texture from a DgnTexture element. Note that there is a cache of textures stored on a DgnDb, so this may return a pointer to a previously-created texture.
-  //  * The default implementation uses _FindTexture() and calls _CreateTexture() if not found.
-  //  * @param key the Id64 of the texture element
-  //  * @param imodel the IModel for textureId
-  //  */
-  // public abstract findTexture(key: Id64, imodel: IModel): Texture;
+  /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
+  public abstract findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined;
 
   // /** Get or create a Texture from a GradientSymb. Note that there is a cache of textures stored on a DgnDb, so this may return a pointer to a previously-created texture. */
   // public abstract getTexture(id: Id64, imodel: IModel): Texture;
@@ -233,11 +236,11 @@ export abstract class RenderSystem {
   // /** Create a Material from parameters */
   // public abstract getGradientTexture(gradient: GradientSymb, imodel: IModel): Texture;
 
-  // /** Create a new Texture from an Image. */
-  // public abstract createTexture(image: Image, imodel: IModel, params: TextureCreateParams): Texture;
+  /** Create a new Texture from an ImageBuffer. */
+  public abstract createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
 
-  // /** Create a new Texture from an ImageSource. */
-  // public abstract createTextureFromImageSrc(source: ImageSource, bottomUp: ImageBottomUp, imodel: IModel, params: TextureCreateParams): Texture;
+  /** Create a new Texture from an ImageSource. */
+  public abstract createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
 
   // /** Create a Texture from a graphic. */
   // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;

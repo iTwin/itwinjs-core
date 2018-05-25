@@ -2,7 +2,7 @@
 ---
 
 ### ($backend)
-- [App]($backend:App)
+- [AppAdministration]($backend:AppAdministration)
 - [BisCore]($backend:BisCore)
 - [Codes]($backend:Codes)
 - [ECDb]($backend:ECDb)
@@ -16,10 +16,20 @@
 
 &nbsp;
 ### ($frontend)
+- [AppAdministration]($frontend:AppAdministration)
+- [BisCore]($frontend:BisCore)
+- [DrawingAids]($frontend:DrawingAids)
+- [iModels]($frontend:iModels)
+- [LocationAndSnapping]($frontend:LocationAndSnapping)
+- [Notifications]($frontend:Notifications)
+- [SelectionSet]($frontend:SelectionSet)
+- [Search]($frontend:Search)
+- [Tools]($frontend:Tools)
+- [Views]($frontend:Views)
 
 &nbsp;
 ### ($common)
-- [App]($common:App)
+- [AppAdministration]($common:AppAdministration)
 - [BisCore]($common:BisCore)
 - [Codes]($common:Codes)
 - [ECSQL]($common:ECSQL)

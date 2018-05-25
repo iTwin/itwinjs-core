@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
 import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
@@ -19,7 +20,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
-import { GraphicList } from "./render/System";
+import { GraphicList, RenderGraphic } from "./render/System";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 
@@ -159,7 +160,7 @@ export class SpecialElements implements DrawnElementSets {
 /**
  * The state of a ViewDefinition element. ViewDefinitions specify the area/volume that is viewed, and points to a DisplayStyle and a CategorySelector.
  * Subclasses of ViewDefinition determine which model(s) are viewed.
- * * @see ($docs/learning/frontend/Views.md)
+ * * @see [Views]($docs/learning/frontend/Views.md)
  */
 export abstract class ViewState extends ElementState implements DrawnElementSets {
   protected _featureOverridesDirty = false;
@@ -202,7 +203,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   /** Asynchronously load any required data for this ViewState from the backend.
    * @note callers should await the Promise returned by this method before using this ViewState.
-   * @see ($docs/learning/frontend/Views.md)
+   * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
     this._auxCoordSystem = undefined;
@@ -421,12 +422,12 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
     let origin = this.getOrigin();
     const trans = Transform.createOriginAndMatrix(Point3d.createZero(), this.getRotation());
-    const newOrigin = trans.multiplyPoint(origin);
+    const newOrigin = trans.multiplyPoint3d(origin);
 
     newOrigin.x += ((oldDelta.x - extents.x) / 2.0);
     newOrigin.y += ((oldDelta.y - extents.y) / 2.0);
 
-    origin = trans.inverse()!.multiplyPoint(newOrigin);
+    origin = trans.inverse()!.multiplyPoint3d(newOrigin);
     this.setOrigin(origin);
     this.setExtents(extents);
   }
@@ -1020,7 +1021,7 @@ export abstract class ViewState3d extends ViewState {
     if (!rotation)
       return ViewStatus.InvalidUpVector;    // Invalid axis given
     const trans = Transform.createFixedPointAndMatrix(about, rotation);
-    const newTarget = trans.multiplyPoint(this.getTargetPoint());
+    const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
     const upVec = rotation!.multiplyVector(this.getYVector());
     return this.lookAt(this.getEyePoint(), newTarget, upVec);
   }
@@ -1150,12 +1151,7 @@ export abstract class ViewState3d extends ViewState {
     if (undefined !== gf)
       context.setViewBackground(gf);
 
-    // ###TODO: Remove this...we're using it to debug failure to blend translucent overlay decorations
-    args.vertIndices = [3, 2, 0];
-    args.colors.initUniform(0x7f7f7f7f);
-    const triangle = IModelApp.renderSystem.createTriMesh(args, this.iModel);
-    if (undefined !== triangle)
-      context.addViewOverlay(triangle);
+    this.drawPlaceholderDecorations(context);
   }
 
   protected drawGroundPlane(context: DecorateContext): void {
@@ -1177,6 +1173,35 @@ export abstract class ViewState3d extends ViewState {
     const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
     if (undefined !== gf)
       context.addWorldDecoration(gf);
+  }
+
+  // ###TODO Remove this once element graphics are hooked up - it is serving as a placeholder so that we have a reference point for viewing tools.
+  private _placeholderDecoration?: RenderGraphic;
+  protected _wantPlaceholderDecorations: boolean = false;
+  protected drawPlaceholderDecorations(context: DecorateContext) {
+    if (!this._wantPlaceholderDecorations)
+      return;
+
+    if (undefined === this._placeholderDecoration) {
+      const cx = 0.5;
+      const cy = 0.5;
+      const dx = 0.25;
+      const dy = 0.25;
+      const z = 0.5;
+
+      const args = new MeshArgs();
+      const points = [new Point3d(cx - dx, cy, z), new Point3d(cx, cy - dy, z), new Point3d(cx + dx, cy, z), new Point3d(cx, cy + dy, z)];
+      context.viewport.npcToWorldArray(points);
+      args.points = QPoint3dList.fromPoints(points);
+      args.vertIndices = [3, 2, 0, 2, 1, 0];
+      const colors = new Uint32Array([ColorByName.chocolate, ColorByName.darkOrange, ColorByName.darkSeagreen, ColorByName.lightPink]);
+      args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
+
+      this._placeholderDecoration = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+    }
+
+    if (undefined !== this._placeholderDecoration)
+      context.addWorldOverlay(this._placeholderDecoration);
   }
 }
 

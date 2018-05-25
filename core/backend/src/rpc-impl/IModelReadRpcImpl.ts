@@ -116,4 +116,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async readFontJson(iModelToken: IModelToken): Promise<any> { return IModelDb.find(iModelToken).readFontJson(); }
   public async isChangeCacheAttached(iModelToken: IModelToken): Promise<boolean> { return ChangeSummaryManager.isChangeCacheAttached(IModelDb.find(iModelToken)); }
   public async attachChangeCache(iModelToken: IModelToken): Promise<void> { ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken)); }
+  public async detachChangeCache(iModelToken: IModelToken): Promise<void> {
+    const iModel: IModelDb = IModelDb.find(iModelToken);
+    if (ChangeSummaryManager.isChangeCacheAttached(iModel))
+      ChangeSummaryManager.detachChangeCache(iModel);
+  }
 }

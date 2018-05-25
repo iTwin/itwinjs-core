@@ -84,40 +84,43 @@ async function selectView(state: SimpleViewState, viewName: string) {
   }
 }
 
+let theViewport: Viewport | undefined;
+
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
   if (htmlCanvas) {
-    const viewport = new Viewport(htmlCanvas, state.viewState!);
-    await viewport.changeView(state.viewState!);
-    IModelApp.viewManager.addViewport(viewport);
+    const target = IModelApp.renderSystem.createTarget(htmlCanvas);
+    theViewport = new Viewport(htmlCanvas, state.viewState!, target);
+    await theViewport.changeView(state.viewState!);
+    IModelApp.viewManager.addViewport(theViewport);
   }
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
 function startFit(_event: any) {
-  IModelApp.tools.run("View.Fit");
+  IModelApp.tools.run("View.Fit", theViewport!, true);
 }
 
 // starts Window Area
 function startWindowArea(_event: any) {
-  IModelApp.tools.run("View.WindowArea", true);
+  IModelApp.tools.run("View.WindowArea", theViewport!);
 }
 
-// starts View Look (I don't see a Zoom command)
+// starts View Scroll (I don't see a Zoom command)
 function startZoom(_event: any) {
-  IModelApp.tools.run("View.Look", true);
+  IModelApp.tools.run("View.Scroll", theViewport!);
 }
 
 // starts walk command
 function startWalk(_event: any) {
-  IModelApp.tools.run("View.Walk", true);
+  IModelApp.tools.run("View.Walk", theViewport!);
 }
 
 // start rotate view.
 function startRotateView(_event: any) {
-  IModelApp.tools.run("View.RotateView", true);
+  IModelApp.tools.run("View.Rotate", theViewport!);
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
@@ -156,7 +159,7 @@ async function main() {
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
-  IModelApp.startup();
+  IModelApp.startup("QA", true);
 
   if (ElectronRpcConfiguration.isElectron)
     ElectronRpcManager.initializeClient({}, [IModelReadRpcInterface]);

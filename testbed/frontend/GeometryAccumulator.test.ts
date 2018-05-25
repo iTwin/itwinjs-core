@@ -23,20 +23,18 @@ import {
   // GraphicBuilderCreateParams,
   // GraphicType,
   GeometryAccumulator,
-  //  GeometryOptions,
+  GeometryOptions,
+  RenderGraphic,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
+import { FakeDisplayParams } from "./DisplayParams.test";
 // import { FakeGraphic } from "./Graphic.test";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
-
-export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
-}
 
 export class FakeGeometry extends Geometry {
   public constructor() { super(Transform.createIdentity(), Range3d.createNull(), new FakeDisplayParams()); }
@@ -195,34 +193,138 @@ describe("GeometryAccumulator tests", () => {
     expect(accum.isEmpty).to.be.true;
   });
 
-  // ###TODO
-  // it("toMeshBuilderMap works as expected", () => {
+  it("toMeshBuilderMap works as expected", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
 
-  // });
+    accum = new GeometryAccumulator(iModel, System.instance);
 
-  // ###TODO
-  // it("toMeshes works as expected", () => {
+    const points: Point3d[] = [];
+    points.push(new Point3d(0, 0, 0));
+    points.push(new Point3d(1, 0, 0));
+    points.push(new Point3d(1, 1, 0));
+    points.push(new Point3d(0, 1, 0));
 
-  // });
+    const line = LineString3d.create(points);
+    const loop = Loop.create(line);
 
-  // ###TODO
-  // it("saveToGraphicList works as expected", () => {
-  //   if (!WebGLTestContext.isInitialized) {
-  //     return;
-  //   }
+    const gfParams: GraphicParams = new GraphicParams();
+    gfParams.setLineColor(ColorDef.white);
+    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
-  //   accum = new GeometryAccumulator(iModel, System.instance);
+    const loopRange: Range3d = new Range3d();
+    loop.range(undefined, loopRange);
 
-  //   const viewport = new Viewport(canvas, spatialView);
-  //   const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-  //   const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
 
-  //   const tol = primBuilder.computeTolerance(accum);
-  //   const graphics = [new FakeGraphic(iModel)];
-  //   const fkGeom = new FakeGeometry();
-  //   accum.addGeometry(fkGeom);
-  //   const meshes = accum.toMeshes(new GeometryOptions(), tol);
-  //   expect(accum.saveToGraphicList(graphics, new GeometryOptions(), tol)).to.not.throw;
-  //   console.log(meshes); // tslint:disable-line
-  // });
+    const pathPoints: Point3d[] = [];
+    pathPoints.push(new Point3d(0, 0, 0));
+    pathPoints.push(new Point3d(1, 0, 0));
+
+    const line2 = LineString3d.create(pathPoints);
+    const pth = Path.create(line2);
+
+    const gfParams2: GraphicParams = new GraphicParams();
+    gfParams2.setLineColor(ColorDef.white);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
+
+    accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
+    accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
+
+    expect(accum.geometries.length).to.equal(2);
+    const map = accum.toMeshBuilderMap(new GeometryOptions(), 0.22);
+    expect(map.length).to.equal(2);
+  });
+
+  it("toMeshes works as expected", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
+
+    accum = new GeometryAccumulator(iModel, System.instance);
+
+    const points: Point3d[] = [];
+    points.push(new Point3d(0, 0, 0));
+    points.push(new Point3d(1, 0, 0));
+    points.push(new Point3d(1, 1, 0));
+    points.push(new Point3d(0, 1, 0));
+
+    const line = LineString3d.create(points);
+    const loop = Loop.create(line);
+
+    const gfParams: GraphicParams = new GraphicParams();
+    gfParams.setLineColor(ColorDef.white);
+    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+
+    const loopRange: Range3d = new Range3d();
+    loop.range(undefined, loopRange);
+
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+
+    const pathPoints: Point3d[] = [];
+    pathPoints.push(new Point3d(0, 0, 0));
+    pathPoints.push(new Point3d(1, 0, 0));
+
+    const line2 = LineString3d.create(pathPoints);
+    const pth = Path.create(line2);
+
+    const gfParams2: GraphicParams = new GraphicParams();
+    gfParams2.setLineColor(ColorDef.white);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
+
+    accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
+    accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
+
+    expect(accum.geometries.length).to.equal(2);
+    const meshes = accum.toMeshes(new GeometryOptions(), 0.22);
+    expect(meshes.length).to.equal(2);
+  });
+
+  it("saveToGraphicList works as expected", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
+
+    accum = new GeometryAccumulator(iModel, System.instance);
+
+    const points: Point3d[] = [];
+    points.push(new Point3d(0, 0, 0));
+    points.push(new Point3d(1, 0, 0));
+    points.push(new Point3d(1, 1, 0));
+    points.push(new Point3d(0, 1, 0));
+
+    const line = LineString3d.create(points);
+    const loop = Loop.create(line);
+
+    const gfParams: GraphicParams = new GraphicParams();
+    gfParams.setLineColor(ColorDef.white);
+    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
+
+    const loopRange: Range3d = new Range3d();
+    loop.range(undefined, loopRange);
+
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+
+    const pathPoints: Point3d[] = [];
+    pathPoints.push(new Point3d(0, 0, 0));
+    pathPoints.push(new Point3d(1, 0, 0));
+
+    const line2 = LineString3d.create(pathPoints);
+    const pth = Path.create(line2);
+
+    const gfParams2: GraphicParams = new GraphicParams();
+    gfParams2.setLineColor(ColorDef.white);
+    const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
+
+    accum.addPolyface(loopGeom.getPolyfaces(0)![0].indexedPolyface, displayParams, Transform.createIdentity());
+    accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
+
+    const graphics = new Array<RenderGraphic>();
+    accum.saveToGraphicList(graphics, new GeometryOptions(), 0.22);
+    expect(graphics.length).to.equal(2);
+  });
 });

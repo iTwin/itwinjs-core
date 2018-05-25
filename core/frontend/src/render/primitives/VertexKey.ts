@@ -1,9 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { SortedArray, Comparable, assert, compareWithTolerance } from "@bentley/bentleyjs-core";
+import { IndexMap, Comparable, compare, assert, compareWithTolerance } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import { QPoint3d, OctEncodedNormal } from "@bentley/imodeljs-common";
+
+export interface VertexKeyProps {
+  position: QPoint3d;
+  fillColor: number;
+  normal?: OctEncodedNormal;
+  uvParam?: Point2d;
+}
 
 export class VertexKey implements Comparable<VertexKey> {
   public readonly position: QPoint3d;
@@ -24,6 +31,8 @@ export class VertexKey implements Comparable<VertexKey> {
     if (undefined !== uvParam)
       this.uvParam = uvParam.clone();
   }
+
+  public static create(props: VertexKeyProps): VertexKey { return new VertexKey(props.position, props.fillColor, props.normal, props.uvParam); }
 
   public equals(rhs: VertexKey): boolean {
     assert(this.normalValid === rhs.normalValid);
@@ -63,8 +72,10 @@ export class VertexKey implements Comparable<VertexKey> {
   }
 }
 
-function compareVertexKeys(lhs: VertexKey, rhs: VertexKey): number { return lhs.compare(rhs); }
+export class VertexMap extends IndexMap<VertexKey> {
+  public constructor() { super(compare); }
 
-export class VertexMap extends SortedArray<VertexKey> {
-  public constructor() { super(compareVertexKeys); }
+  public insertKey(props: VertexKeyProps, onInsert?: (vk: VertexKey) => any): number {
+    return this.insert(VertexKey.create(props), onInsert);
+  }
 }

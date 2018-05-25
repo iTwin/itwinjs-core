@@ -1,32 +1,32 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Views */
 import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
-import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, ClipVector } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
-import { ViewFlags, Npc } from "@bentley/imodeljs-common";
+import { ViewFlags, Npc, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
-import { DecorationList, Decorations, RenderGraphic, RenderTarget } from "./render/System";
+import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
 const gridConstants = { maxGridDotsInRow: 500, gridDotTransparency: 100, gridLineTransparency: 200, gridPlaneTransparency: 225, maxGridPoints: 90, maxGridRefs: 40 };
 
 export class ViewContext {
-  private _viewFlags?: ViewFlags;
-  private _viewport?: Viewport;
+  public readonly viewFlags: ViewFlags;
+  public readonly viewport: Viewport;
+  public readonly frustum: Frustum;
+  public readonly frustumPlanes: FrustumPlanes;
 
-  public get viewFlags(): ViewFlags { return this._viewFlags!; }
-  public get viewport(): Viewport { return this._viewport!; }
-
-  constructor(vp?: Viewport) { if (!!vp) this.attachViewport(vp); }
-
-  public attachViewport(vp: Viewport): void {
-    this._viewport = vp;
-    this._viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+  constructor(vp: Viewport) {
+    this.viewport = vp;
+    this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+    this.frustum = vp.getFrustum();
+    this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
 
   public getPixelSizeAtPoint(inPoint?: Point3d): number {
@@ -48,6 +48,8 @@ export class SnapContext extends ViewContext {
   public snapAperture = 10;
   public snapMode = SnapMode.Invalid;
   public snapDivisor = 2;
+
+  public constructor(viewport: Viewport) { super(viewport); }
 
   public async snapToPath(_thisPath: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
     //   if (!Application.locateManager.isSnappableModel(thisPath.getModel())   {
@@ -108,12 +110,16 @@ export class SnapContext extends ViewContext {
 }
 
 export class RenderContext extends ViewContext {
-  public get target(): RenderTarget { return this.viewport.target; }
   constructor(vp: Viewport) { super(vp); }
-  public createGraphic(_tf: Transform, _type: GraphicType): GraphicBuilder | undefined {
-    return this._createGraphic(GraphicBuilderCreateParams.create(_type, this.viewport, _tf));
+
+  public get target(): RenderTarget { return this.viewport.target; }
+
+  public createGraphic(tf: Transform, type: GraphicType): GraphicBuilder {
+    return this.target.createGraphic(GraphicBuilderCreateParams.create(type, this.viewport, tf));
   }
-  private _createGraphic(params: GraphicBuilderCreateParams): GraphicBuilder { return this.target.createGraphic(params); }
+  public createBranch(branch: GraphicBranch, location: Transform, clip?: ClipVector): RenderGraphic {
+    return this.target.renderSystem.createBranch(branch, this.viewport.iModel, location, clip);
+  }
 }
 
 export class DecorateContext extends RenderContext {

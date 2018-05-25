@@ -28,7 +28,7 @@ function exercisePointString3d(ck: Checker, lsA: PointString3d) {
   for (let i = 0; i < numPoints; i++) {
     const pointA = lsA.pointAt(i)!;
     lsC.pointAt(i, pointC)!;
-    transform.multiplyPoint(pointA, pointA);
+    transform.multiplyPoint3d(pointA, pointA);
     ck.testPoint3d(pointA, pointC, "transform commutes");
     ck.testTrue(rangeC.containsPoint(pointC), "confirm range");
 

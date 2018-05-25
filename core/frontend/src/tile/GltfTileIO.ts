@@ -3,15 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TileIO } from "./TileIO";
-import { ModelState } from "../ModelState";
-import { RenderSystem } from "../render/System";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
-import { Range3d, Point2d } from "@bentley/geometry-core";
+import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
+import { RenderSystem } from "../render/System";
+import { GeometricModelState } from "../ModelState";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -218,12 +218,12 @@ export namespace GltfTileIO {
     protected readonly namedTextures: any;
     protected readonly images: any;
     protected readonly binaryData: Uint8Array;
-    protected readonly model: ModelState;
+    protected readonly model: GeometricModelState;
     protected readonly system: RenderSystem;
 
-    public get modelId(): Id64 { return /* this.model.id */ Id64.invalidId; } // ###TODO ModelState...
+    public get modelId(): Id64 { return this.model.id; }
 
-    public static createGltfReader(buffer: TileIO.StreamBuffer, model: ModelState, system: RenderSystem): Reader | undefined {
+    public static createGltfReader(buffer: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
       const props = ReaderProps.create(buffer);
       return undefined !== props ? new Reader(props, model, system) : undefined;
     }
@@ -262,7 +262,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: ModelState, system: RenderSystem) {
+    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
@@ -319,7 +319,7 @@ export namespace GltfTileIO {
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
         type: primitiveType,
         range: Range3d.createNull(),
-        is2d: false, // ###TODO: obtain from model...
+        is2d: this.model.is2d,
         isPlanar,
       });
 
@@ -379,7 +379,7 @@ export namespace GltfTileIO {
         return false;
 
       const qpt = QPoint3d.fromScalars(0, 0, 0);
-      positions.reset(QParams3d.fromRange(Range3d.create(rangeMin[0], rangeMin[1], rangeMin[2], rangeMax[0], rangeMax[1], rangeMax[2])));
+      positions.reset(QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2]))));
       for (let i = 0; i < view.count; i++) {
         const index = i * 3; // 3 uint16 per QPoint3d...
         qpt.setFromScalars(buffer.buffer[index], buffer.buffer[index + 1], buffer.buffer[index + 2]);

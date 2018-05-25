@@ -36,6 +36,8 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Controls the version number and package dependencies for **@bentley/imodeljs-clients**
 * `core/frontend/package.json`
   * Controls the version number and package dependencies for **@bentley/imodeljs-frontend**
+* `core/i18n/package.json`
+  * Controls the version number and package dependencies for **@bentley/imodeljs-i18n**
 * `testbed/package.json`
   * Private, not published
   * Testbed application for testing frontend/backend interaction

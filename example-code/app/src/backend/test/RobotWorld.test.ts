@@ -54,8 +54,7 @@ describe("RobotWorld", () => {
     assert.equal(RobotWorldEngine.countRobots(iModel), 1);
 
     const hits0 = RobotWorldEngine.queryObstaclesHitByRobot(iModel, robot1Id);
-    hits0;
-    // assert.equal(hits0.length, 0, "no collisions initially");
+    assert.equal(hits0.length, 0, "no collisions initially");
 
     //  Move Robot1 up, so that it touches barrier1 but not barrier2
     //
@@ -73,7 +72,7 @@ describe("RobotWorld", () => {
       assert.deepEqual((iModel.elements.getElement(robot1Id) as Robot).placement.origin, barrier1.placement.origin);
       const barriersHit = RobotWorldEngine.queryObstaclesHitByRobot(iModel, robot1Id);
       assert.equal(barriersHit.length, 1, "expect a collision");
-      assert.deepEqual(barriersHit[0], barrier1.id);
+      assert.deepEqual(barriersHit[0], barrier1.id.toString());
     }
 
     iModel.saveChanges();

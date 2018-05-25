@@ -19,7 +19,7 @@ import { defaultClone, lowerBound } from "./SortedArray";
  * most likely of which is that keys will cease to map to the values with which they were initially inserted.
  */
 export class Dictionary<K, V> {
-  protected _keys: K[] = [ ];
+  protected _keys: K[] = [];
   protected readonly _compareKeys: (lhs: K, rhs: K) => number;
   protected readonly _cloneKey: (key: K) => K;
   protected _values: V[] = [];
@@ -60,6 +60,17 @@ export class Dictionary<K, V> {
   }
 
   /**
+   * Deletes a value using its key.
+   * @param key The key to delete
+   */
+  public delete(key: K) {
+    const bound = this.lowerBound(key);
+    if (bound.equal) {
+      this._values.splice(bound.index, 1);
+    }
+  }
+
+  /**
    * Attempts to insert a new entry into the dictionary. If an entry with an equivalent key exists, the dictionary is unmodified.
    * If the new entry is in fact inserted, both the key and value will be cloned using the functions supplied to the dictionary's constructor.
    * @param key The key to associate with the value
@@ -97,7 +108,7 @@ export class Dictionary<K, V> {
    * @returns An array of { key, value } pairs sorted by key.
    */
   public extractPairs(): Array<{ key: K, value: V }> {
-    const pairs: Array<{ key: K, value: V}> = [];
+    const pairs: Array<{ key: K, value: V }> = [];
     for (let i = 0; i < this.length; i++)
       pairs.push({ key: this._keys[i], value: this._values[i] });
 

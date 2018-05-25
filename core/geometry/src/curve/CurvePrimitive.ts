@@ -738,7 +738,7 @@ export class CoordinateXYZ extends GeometryQuery {
   }
   /** Apply transform to the Coordinate's point. */
   public tryTransformInPlace(transform: Transform): boolean {
-    transform.multiplyPoint(this.xyz, this.xyz);
+    transform.multiplyPoint3d(this.xyz, this.xyz);
     return true;
   }
   /** return a transformed clone.

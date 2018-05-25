@@ -32,6 +32,15 @@ export class Query {
     return this;
   }
 
+  /** Add a part of the select to currently set select. */
+  protected addSelect(select: string) {
+    if (this._query.$select) {
+      this._query.$select += ",";
+    }
+    this._query.$select += select;
+    return this;
+  }
+
   /**
    * Set select to specified select string.
    * This resets all previously set selects.

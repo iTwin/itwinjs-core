@@ -3,7 +3,7 @@
 |Term | Definition
 |------------|------------|--------|--------|-------|
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information in a different orientation and units.
-|**Backend**|The part of an app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App backends](../overview/App.md)
+|**Backend**|The part of an app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS can have relevance outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The base BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](./backend/IModelDb.md).
@@ -36,7 +36,7 @@
 |**ElementUserLabel**|An optional string that holds a user-assigned *alias* for an Element. ElementUserLabels are **not** enforced to be unique.
 |**Entity Metadata**|The names and types of the ECProperties and ECRelationships of an Entity ECClass.
 |**Entity**|A physical or non-physical object in the real world, defined by an ECClass.
-|**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature. See [learning about FeatureGates](./FeatureGates.md).
+|**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature. See [learning about FeatureGates](./common/FeatureGates.md).
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
 |**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](../overview/App.md#app-frontend)
@@ -64,7 +64,7 @@
 |**Props**|iModelJs uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. ElementProps, ViewDefinitionProps, etc.
 |**RootSubject**|An Element in the iModel that describes (in text) the asset modeled by an iModel. There is always one and only one RootSubject. All information in an iModel will have some relationship to the RootSubject, making it the root of a *table of contents*.
 |**RPC**|Remote procedure call. Allows a client to invoke an operation in a service. Web apps use HTTP to implement RPC calls, while desktop apps use pipes.
-|**RpcInterface**|An interface exposed by a service and callable by clients via RPC. See  [RpcInterface](../overview/App.md#rpcinterface) for more information.
+|**RpcInterface**|An interface exposed by a service and callable by clients via RPC. See  [RpcInterface](../overview/RpcInterface.md) for more information.
 |**Rush**|A tool for [managing multiple NPM packages](http://rushjs.io/) within a single git repository.
 |**Schema**|See ECSchema
 |**SheetModel**|A digital representation of a *sheet of paper*. Sheet Models are 2d models in bounded paper coordinates. SheetModels may contain annotation Elements as well as references to 2d or 3d Views.

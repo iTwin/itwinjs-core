@@ -14,12 +14,12 @@ export function defaultClone<T>(value: T) { return value; }
 /**
  * Computes the position at which the specified value should be inserted in order to maintain sorted order within a sorted array.
  * @param value The value whose position is to be computed.
- * @param list An array of T already sorted according to the comparison criterion.
- * @param compare A function accepting two values of type T and returning a negative value if lhs < rhs,
+ * @param list An array of U already sorted according to the comparison criterion.
+ * @param compare A function accepting a value of type T and a value of type U and returning a negative value if lhs < rhs,
  *        zero if lhs == rhs, and a positive value otherwise.
  * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
  */
-export function lowerBound<T>(value: T, list: T[], compare: (lhs: T, rhs: T) => number): { index: number, equal: boolean } {
+export function lowerBound<T, U = T>(value: T, list: U[], compare: (lhs: T, rhs: U) => number): { index: number, equal: boolean } {
   let low = 0;
   let high = list.length;
   while (low < high) {
@@ -49,9 +49,6 @@ export function lowerBound<T>(value: T, list: T[], compare: (lhs: T, rhs: T) => 
  * search, which is more efficient than a linear search for reasonably large arrays.
  *
  * The user can also specify how the SortedArray takes ownership of inserted values, e.g., by cloning them.
- *
- * Inserting an element returns its index (or the index of an equivalent existing element, if duplicates are
- * not permitted), allowing a SortedArray<T> to behave like a Map<T, number> with more flexible comparison logic.
  *
  * The comparison function must meet the following criteria, given 'lhs' and 'rhs' of type T:
  *  - If lhs is equal to rhs, returns 0
@@ -111,12 +108,17 @@ export class SortedArray<T> {
    *  - The actual index of the newly-inserted element is returned.
    * If the element is to be inserted, then the supplied value will be passed to the clone function supplied to the constructor and the result will be inserted into the array.
    * @param value The value to insert
-   * @returns the index in the array of the newly-insert value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
+   * @param onInsert The optional callback method to call if insertion occurs with the inserted value
+   * @returns the index in the array of the newly-inserted value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
    */
-  public insert(value: T): number {
+  public insert(value: T, onInsert?: (value: T) => any): number {
     const bound = this.lowerBound(value);
+
     if (!bound.equal || this._allowDuplicates)
       this._array.splice(bound.index, 0, this._clone(value));
+
+    if (undefined !== onInsert)
+      onInsert(value);
 
     return bound.index;
   }

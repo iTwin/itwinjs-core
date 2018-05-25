@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, JsonUtils, assert, Dictionary, Comparable, compare, compareNumbers, compareStrings } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -13,7 +13,7 @@ import { CameraProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
-import { ImageSource } from "./Image";
+import { ImageBuffer, ImageBufferFormat } from "./Image";
 
 export const enum AsThickenedLine { No = 0, Yes = 1 }
 
@@ -91,12 +91,10 @@ export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
   public startDistance: number;
-  public rangeCenter: Point3d;
-  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0, rangeCenter = new Point3d()) {
+  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0) {
     this.vertIndices = vertIndices;
     this.numIndices = numIndices;
     this.startDistance = startDistance;
-    this.rangeCenter = rangeCenter;
   }
   public isValid(): boolean { return 0 < this.numIndices; }
   public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
@@ -104,20 +102,23 @@ export class PolylineData {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
     this.startDistance = polyline.startDistance;
-    this.rangeCenter = polyline.rangeCenter;
     return this.isValid();
   }
 }
 
 export class MeshPolyline {
-  public indices: number[] = [];
-  public rangeCenter = new Point3d();
-  public constructor(public startDistance = 0, rangeCenter?: Point3d, indices?: number[]) {
-    if (rangeCenter) { this.rangeCenter = rangeCenter; }
-    if (indices) { this.indices = indices.slice(); }
+  public readonly indices: number[];
+  public readonly startDistance: number;
+  public constructor(startDistance: number = 0, indices: number[] = []) {
+    this.indices = indices.slice();
+    this.startDistance = startDistance;
   }
-  public addIndex(index: number) { if (this.indices.length === 0 || this.indices[this.indices.length - 1] !== index) this.indices.push(index); }
-  public clear() { this.indices = []; }
+  public addIndex(index: number) {
+    const { indices } = this;
+    if (indices.length === 0 || indices[indices.length - 1] !== index)
+      indices.push(index);
+  }
+  public clear() { this.indices.length = 0; }
 }
 
 export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }
@@ -195,15 +196,12 @@ export class PolylineEdgeArgs {
 export class RenderTexture {
   public readonly params: RenderTexture.Params;
 
-  public constructor(params: RenderTexture.Params) {
+  protected constructor(params: RenderTexture.Params) {
     this.params = params;
   }
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }
-
-  // Some textures preserve their image data. Most do not.
-  public get imageSource(): ImageSource | undefined { return undefined; }
 }
 
 export namespace RenderTexture {
@@ -219,11 +217,57 @@ export namespace RenderTexture {
       this.isGlyph = isGlyph;
       this.isRGBE = isRGBE;
     }
+
+    /** Create a RenderMaterial params object with QVision default values. */
+    public static readonly defaults = new Params();
   }
 }
 
-/** Defines material properties for rendering */
-export class RenderMaterial {
+/** A Material for rendering */
+export abstract class RenderMaterial {
+  public readonly key?: string;
+  public readonly textureMapping?: TextureMapping;
+
+  protected constructor(params: RenderMaterial.Params) {
+    this.key = params.key;
+    this.textureMapping = params.textureMapping;
+  }
+}
+
+export namespace RenderMaterial {
+  export class Params {
+    public key?: string; // The ID of the renderable material
+    public diffuseColor?: ColorDef;
+    public specularColor?: ColorDef;
+    public emissiveColor?: ColorDef;
+    public reflectColor?: ColorDef;
+    public textureMapping?: TextureMapping;
+    public diffuse: number = 0.6;
+    public specular: number = .4;
+    public specularExponent: number = 13.5;
+    public reflect: number = 0.0;
+    public transparency: number = 0.0;
+    public refract: number = 1.0;
+    public ambient: number = .3;
+    public shadows = true;
+
+    private constructor() { }
+
+    /** Create a RenderMaterial params object with QVision default values. */
+    public static readonly defaults = new Params();
+
+    /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
+    public static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params {
+      const materialParams = new Params();
+      materialParams.key = key;
+      materialParams.diffuseColor = diffuseColor;
+      materialParams.specularColor = specularColor;
+      materialParams.emissiveColor = emissiveColor;
+      materialParams.reflectColor = reflectColor;
+      materialParams.textureMapping = textureMap;
+      return materialParams;
+    }
+  }
 }
 
 export namespace ImageLight {
@@ -551,7 +595,12 @@ export namespace ViewFlag {
     public isPresent(flag: PresenceFlag): boolean { return 0 !== (this.present & (1 << flag)); }
 
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags */
-    constructor(flags?: ViewFlags) { this.values = ViewFlags.createFrom(flags); this.present = 0xffffffff; }
+    constructor(flags?: ViewFlags) { this.overrideAll(flags); }
+
+    public overrideAll(flags?: ViewFlags) {
+      ViewFlags.createFrom(flags, this.values);
+      this.present = 0xffffffff;
+    }
 
     public clone(out?: Overrides) {
       const result = undefined !== out ? out : new Overrides();
@@ -804,15 +853,33 @@ export namespace Gradient {
     Thematic = 6,
   }
 
+  export const enum ThematicMode {
+    Smooth = 0,
+    Stepped = 1,
+    SteppedWithDelimeter = 2,
+    Isolines = 3,
+  }
+
+  export const enum ThematicColorScheme {
+    BlueRed = 0,
+    RedBlue = 1,
+    Monochrome = 2,
+    Topographic = 3,
+    SeaMountain = 4,
+    Custom = 5,
+  }
+
   /** @hidden Gradient settings specific to thematic mesh display */
-  export interface ThematicProps {
-    mode?: number;
-    stepCount?: number;
-    margin?: number;
-    marginColor?: ColorDef;
-    colorScheme?: number;
-    rangeLow?: number;
-    rangeHigh?: number;
+  export class ThematicProps {
+    public mode: ThematicMode = ThematicMode.Smooth;
+    public stepCount: number = 10;
+    public margin: number = .05;
+    public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
+    public colorScheme: number = ThematicColorScheme.BlueRed;
+    public rangeLow: number = Number.MAX_VALUE;
+    public rangeHigh: number = Number.MIN_VALUE;
+
+    public static defaults = new ThematicProps();
   }
 
   /** Gradient fraction value to [[ColorDef]] pair */
@@ -834,13 +901,13 @@ export namespace Gradient {
 
   /** Multi-color area fill defined by a range of colors that vary by position */
   export interface SymbProps {
-    /** Gradient type, must be set to something other than [[Gradient.Mode.None]] in order to display fill */
+    /** Gradient type, must be set to something other than [[Mode.None]] in order to display fill */
     mode: Mode;
     /** Gradient flags to enable outline display and invert color fractions, Flags.None if undefined */
     flags?: Flags;
     /** Gradient rotation angle, 0.0 if undefined */
     angle?: AngleProps;
-    /** Gradient tint value from 0.0 to 1.0, only used when [[GradientKeyColorProps]] size is 1, 0.0 if undefined */
+    /** Gradient tint value from 0.0 to 1.0, only used when [[KeyColorProps]] size is 1, 0.0 if undefined */
     tint?: number;
     /** Gradient shift value from 0.0 to 1.0, 0.0 if undefined */
     shift?: number;
@@ -852,10 +919,11 @@ export namespace Gradient {
 
   export class Symb implements SymbProps {
     public mode = Mode.None;
-    public flags?: Flags;
+    public flags: Flags = Flags.None;
     public angle?: Angle;
     public tint?: number;
     public shift?: number;
+    public thematicSettings?: ThematicProps;
     public keys: KeyColor[] = [];
 
     /** create a GradientSymb from a json object. */
@@ -864,7 +932,7 @@ export namespace Gradient {
       if (!json)
         return result;
       result.mode = json.mode;
-      result.flags = json.flags;
+      result.flags = (json.flags === undefined) ? Flags.None : json.flags;
       result.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
       result.tint = json.tint;
       result.shift = json.shift;
@@ -876,28 +944,244 @@ export namespace Gradient {
       return Symb.fromJSON(this);
     }
 
+    /** Returns true if this symbology is equal to another, false otherwise. */
     public isEqualTo(other: Symb): boolean {
-      if (this === other)
-        return true; // Same pointer
-      if (this.mode !== other.mode)
-        return false;
-      if (this.flags !== other.flags)
-        return false;
-      if (this.tint !== other.tint)
-        return false;
-      if (this.shift !== other.shift)
-        return false;
-      if ((this.angle === undefined) !== (other.angle === undefined))
-        return false;
-      if (this.angle && !this.angle.isAlmostEqualNoPeriodShift(other.angle!))
-        return false;
-      for (let i = 0; i < this.keys.length; ++i) {
-        if (this.keys[i].value !== other.keys[i].value)
-          return false;
-        if (!this.keys[i].color.equals(other.keys[i].color))
-          return false;
+      return Symb.compareSymb(this, other) === 0;
+    }
+
+    /** Compares two gradient symbologies. */
+    public static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb) {
+      if (lhs === rhs)
+        return 0; // Same pointer
+      if (lhs.mode !== rhs.mode)
+        return lhs.mode - rhs.mode;
+      if (lhs.flags !== rhs.flags)
+        if (lhs.flags === undefined)
+          return -1;
+        else if (rhs.flags === undefined)
+          return 1;
+        else
+          return lhs.flags - rhs.flags;
+      if (lhs.tint !== rhs.tint)
+        if (lhs.tint === undefined)
+          return -1;
+        else if (rhs.tint === undefined)
+          return 1;
+        else
+          return lhs.tint - rhs.tint;
+      if (lhs.shift !== rhs.shift)
+        if (lhs.shift === undefined)
+          return -1;
+        else if (rhs.shift === undefined)
+          return 1;
+        else
+          return lhs.shift - rhs.shift;
+      if ((lhs.angle === undefined) !== (rhs.angle === undefined))
+        if (lhs.angle === undefined)
+          return -1;
+        else
+          return 1;
+      if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!))
+        return lhs.angle.radians - rhs.angle!.radians;
+      for (let i = 0; i < lhs.keys.length; i++) {
+        if (lhs.keys[i].value !== rhs.keys[i].value)
+          return lhs.keys[i].value - rhs.keys[i].value;
+        if (!lhs.keys[i].color.equals(rhs.keys[i].color))
+          return lhs.keys[i].color.getRgb() - rhs.keys[i].color.getRgb();
       }
-      return true;
+      return 0;
+    }
+
+    /** Compare this symbology to another. */
+    public compare(other: Symb): number {
+      return Gradient.Symb.compareSymb(this, other);
+    }
+
+    /**
+     * Ensure the value given is within the range of 0 to 255,
+     * and truncate the value to only the 8 least significant bits.
+     */
+    private roundToByte(num: number): number {
+      return Math.min(num + .5, 255.0) & 0xFF;
+    }
+
+    /** Maps a value to an RGBA value adjusted from a color present in this symbology's array. */
+    private mapColor(value: number) {
+      if (value < 0)
+        value = 0;
+      else if (value > 1)
+        value = 1;
+
+      if ((this.flags & Flags.Invert) !== 0)
+        value = 1 - value;
+
+      let idx = 0;
+      let d;
+      let w0;
+      let w1;
+      if (this.keys.length <= 2) {
+        w0 = 1.0 - value;
+        w1 = value;
+      } else {  // locate value in map, blend corresponding colors
+        while (idx < (this.keys.length - 2) && value > this.keys[idx + 1].value)
+          idx++;
+
+        d = this.keys[idx + 1].value - this.keys[idx].value;
+        w1 = d < 0.0001 ? 0.0 : (value - this.keys[idx].value) / d;
+        w0 = 1.0 - w1;
+      }
+
+      const color0 = this.keys[idx].color;
+      const color1 = this.keys[idx + 1].color;
+      const red = w0 * color0.colors.r + w1 * color1.colors.r;
+      const green = w0 * color0.colors.g + w1 * color1.colors.g;
+      const blue = w0 * color0.colors.b + w1 * color1.colors.b;
+      const transparency = w0 * color0.colors.t + w1 * color1.colors.t;
+
+      return ColorDef.from(this.roundToByte(red), this.roundToByte(green), this.roundToByte(blue), this.roundToByte(transparency));
+    }
+
+    /** Writes the image in 'reverse'. */
+    public getImage(width: number, height: number): ImageBuffer {
+      if (this.mode === Mode.Thematic) {
+        width = 1;
+        height = 8192;    // Thematic image height
+      }
+
+      const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
+      const cosA = Math.cos(thisAngle);
+      const sinA = Math.sin(thisAngle);
+      const image = new Float32Array(4 * width * height);
+      let currentIdx = image.length - 1;
+      let shift;
+      if (this.shift)
+        shift = Math.min(1.0, Math.abs(this.shift));
+      else
+        shift = 1.0;
+
+      switch (this.mode) {
+        case Mode.Linear:
+        case Mode.Cylindrical: {
+          const xs = 0.5 - 0.25 * shift * cosA;
+          const ys = 0.5 - 0.25 * shift * sinA;
+          let dMax;
+          let dMin = dMax = 0.0;
+          let d;
+          for (let j = 0; j < 2; j++) {
+            for (let i = 0; i < 2; i++) {
+              d = (i - xs) * cosA + (j - ys) * sinA;
+              if (d < dMin)
+                dMin = d;
+              if (d > dMax)
+                dMax = d;
+            }
+          }
+          for (let j = 0; j < height; j++) {
+            const y = j / 255 - ys;
+            for (let i = 0; i < width; i++) {
+              const x = i / 255 - xs;
+              d = x * cosA + y * sinA;
+              let f;
+              if (this.mode === Mode.Linear) {
+                if (d > 0)
+                  f = 0.5 + 0.5 * d / dMax;
+                else
+                  f = 0.5 - 0.5 * d / dMin;
+              } else {
+                if (d > 0)
+                  f = Math.sin(Math.PI / 2 * (1.0 - d / dMax));
+                else
+                  f = Math.sin(Math.PI / 2 * (1.0 - d / dMin));
+              }
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Curved: {
+          const xs = 0.5 + 0.5 * sinA - 0.25 * shift * cosA;
+          const ys = 0.5 - 0.5 * cosA - 0.25 * shift * sinA;
+          for (let j = 0; j < height; j++) {
+            const y = j / 255 - ys;
+            for (let i = 0; i < width; i++) {
+              const x = i / 255 - xs;
+              const xr = 0.8 * (x * cosA + y * sinA);
+              const yr = y * cosA - x * sinA;
+              const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Spherical: {
+          const r = 0.5 + 0.125 * Math.sin(2.0 * thisAngle);
+          const xs = 0.5 * shift * (cosA + sinA) * r;
+          const ys = 0.5 * shift * (sinA - cosA) * r;
+          for (let j = 0; j < height; j++) {
+            const y = ys + j / 255.0 - 0.5;
+            for (let i = 0; i < width; i++) {
+              const x = xs + i / 255.0 - 0.5;
+              const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Hemispherical: {
+          const xs = 0.5 + 0.5 * sinA - 0.5 * shift * cosA;
+          const ys = 0.5 - 0.5 * cosA - 0.5 * shift * sinA;
+          for (let j = 0; j < height; j++) {
+            const y = j / 255.0 - ys;
+            for (let i = 0; i < width; i++) {
+              const x = i / 255.0 - xs;
+              const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
+              image[currentIdx--] = this.mapColor(f).tbgr;
+            }
+          }
+          break;
+        }
+        case Mode.Thematic: {
+          let settings = this.thematicSettings;
+          if (settings === undefined) {
+            settings = ThematicProps.defaults;
+          }
+
+          // TBD - Stepped and isolines...
+          for (let j = 0; j < height; j++) {
+            let f = 1 - j / height;
+            let color = 0;
+
+            if (f < settings.margin || f > 1.0 - settings.margin) {
+              color = settings.marginColor.tbgr;
+            } else {
+              f = (f - settings.margin) / (1 - 2 * settings.margin);
+              switch (settings.mode) {
+                case ThematicMode.SteppedWithDelimeter:
+                case ThematicMode.Stepped: {
+                  if (settings.stepCount !== 0) {
+                    const fStep = Math.floor(f * settings.stepCount + .99999) / settings.stepCount;
+                    const delimitFraction = 1 / 1024;
+                    if (settings.mode === ThematicMode.SteppedWithDelimeter && Math.abs(fStep - f) < delimitFraction)
+                      color = 0xff000000;
+                    else
+                      color = this.mapColor(fStep).tbgr;
+                  }
+                  break;
+                }
+                case ThematicMode.Smooth:
+                  color = this.mapColor(f).tbgr;
+                  break;
+              }
+            }
+            for (let i = 0; i < width; i++)
+              image[currentIdx--] = color;
+          }
+        }
+      }
+
+      const imageBuffer = ImageBuffer.create(new Uint8Array(image.buffer), ImageBufferFormat.Rgba, width);
+      assert(undefined !== imageBuffer);
+      return imageBuffer!;
     }
   }
 }
@@ -1181,48 +1465,34 @@ export class Feature implements Comparable<Feature> {
  * A FeatureTable can be shared amongst multiple primitives within a single RenderGraphic, and
  * amongst multiple sub-Graphics of a RenderGraphic.
  */
-export class FeatureTable extends Dictionary<Feature, number> {
-  public readonly maxFeatures: number;
+export class FeatureTable extends IndexMap<Feature> {
   public readonly modelId: Id64;
 
   public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId) {
-    super(compare);
-    this.maxFeatures = maxFeatures;
+    super(compare, maxFeatures);
     this.modelId = modelId;
   }
 
-  public get isFull(): boolean { assert(this.length <= this.maxFeatures); return this.length >= this.maxFeatures; }
-  public get isUniform(): boolean { return this.length === 1; }
-  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._keys[0].isDefined); }
-
-  /**
-   * returns index of feature, unless it doesn't exist, then the feature is added and its key, which is the current numIndices is returned
-   */
-  public getIndex(feature: Feature): number {
-    assert(!this.isFull);
-    let index = this.findIndex(feature);
-    if (-1 === index && !this.isFull) {
-      index = this.length;
-      this.insert(feature, index);
-    }
-
-    return index;
-  }
-
-  /** Returns the index of the Feature, or -1 if the Feature does not exist in the lookup table. */
-  public findIndex(feature: Feature): number {
-    const found = this.get(feature);
-    return undefined !== found ? found : -1;
-  }
+  public get maxFeatures(): number { return this.maximumSize; }
+  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this.array[0].value.isDefined); }
+  public get isUniform(): boolean { return 1 === this.length; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {
-    for (let i = 0; i < this.length; i++) {
-      if (this._values[i] === index)
-        return this._keys[i];
-    }
+    for (const entry of this.array)
+      if (entry.index === index)
+        return entry.value;
 
     return undefined;
+  }
+
+  /** @hidden */
+  public insertWithIndex(feature: Feature, index: number): void {
+    const bound = this.lowerBound(feature);
+    assert(!bound.equal);
+    assert(!this.isFull);
+    const entry = new IndexedValue<Feature>(feature, index);
+    this.array.splice(bound.index, 0, entry);
   }
 }
 
@@ -1294,31 +1564,118 @@ export namespace TextureMapping {
       const { textureMat2x3 = new Trans2x3(), textureWeight = 1.0, mapMode = Mode.Parametric, worldMapping = false } = props;
       this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;
     }
-    // ###TODO use polyface geometry to complete computeUVParams
-    public computeUVParams(_params: Point2d[], _visitor: IndexedPolyfaceVisitor, _transformToImodel: Transform): void { // BentleyStatus {
-      // const { mode, textureMatrix, worldMapping } = this;
-      // switch (mode) {
-      //   default:
-      //   case Mode.Parametric:
-      //     computeParametricUVParams(params[0], visitor, textureMatrix.transform, !worldMapping);
-      //     return BentleyStatus.SUCCESS;
-      //   case Mode.Planar:
-      //     const normalIndices = visitor.normalIndex;
-      //     // We ignore planar mode unless master or sub units for scaleMode (TR# 162118) and facet is planar.
-      //     if (!worldMapping || (undefined !== normalIndices && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2])))
-      //       computeParametricUVParams(params[0], visitor, textureMatrix.transform, !worldMapping);
-      //     else
-      //       computePlanarUVParams(params[0], visitor, textureMatrix.transform);
-      //     return BentleyStatus.SUCCESS;
+
+    /**
+     * Generates UV parameters for textured surfaces. The result is stored in the given params Point2d array.
+     * Returns true if successful, and false otherwise.
+     */
+    public computeUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): boolean {
+      switch (this.mode) {
+        default:  // Fall through to parametric in default case
+        case TextureMapping.Mode.Parametric: {
+          this.computeParametricUVParams(params, visitor, this.textureMatrix.transform, !this.worldMapping);
+          return true;
+        }
+        case TextureMapping.Mode.Planar: {
+          const normalIndices = visitor.normalIndex;
+          if (!normalIndices)
+            return false;
+
+          // Ignore planar mode unless master or sub units for scaleMode and facet is planar
+          if (!this.worldMapping || (visitor.normalIndex !== undefined && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2]))) {
+            this.computeParametricUVParams(params, visitor, this.textureMatrix.transform, !this.worldMapping);
+            return true;
+          } else {
+            return this.computePlanarUVParams(params, visitor, this.textureMatrix.transform);
+          }
+        }
+        case TextureMapping.Mode.ElevationDrape: {
+          this.computeElevationDrapeUVParams(params, visitor, this.textureMatrix.transform, transformToImodel);
+          return true;
+        }
+      }
+    }
+
+    /** Computes UV parameters given a texture mapping mode of parametric. The result is stored in the Point2d array given. */
+    private computeParametricUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, uvTransform: Transform, isRelativeUnits: boolean): void {
+      for (let i = 0; i < visitor.numEdgesThisFacet; i++) {
+        let param = Point2d.create();
+
+        if (isRelativeUnits || !visitor.tryGetDistanceParameter(i, param)) {
+          if (!visitor.tryGetNormalizedParameter(i, param)) {
+            // If mesh does not have facetFaceData, we still want to use the texture coordinates if they are present
+            param = visitor.getParam(i);
+          }
+        }
+
+        uvTransform.multiplyPoint2d(param, params[i]);
+      }
+    }
+
+    /** Computes UV parameters given a texture mapping mode of planar. The result is stored in the Point2d array given. */
+    private computePlanarUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, uvTransform: Transform): boolean {
+      const points = visitor.point;
+      let normal: Vector3d;
+
+      if (visitor.normal === undefined)
+        normal = points.getPoint3dAt(0).crossProductToPoints(points.getPoint3dAt(1), points.getPoint3dAt(2));
+      else
+        normal = visitor.normal[0];
+
+      if (!normal.normalize(normal))
+        return false;
+
+      // adjust U texture coordinate to be a continuous length starting at the
+      // origin. V coordinate stays the same. This mode assumes Z is up vector
+
+      // Flipping normal puts us in a planar coordinate system consistent with MicroStation's display system
+      normal.scale(-1.0, normal);
+
+      // pick the first vertex normal
+      const sideVector = Vector3d.create(normal.y, -normal.x, 0.0);
+
+      // if the magnitude of the normal is near zero, the real normal points
+      // almost straighten up.. In this case, use Y as the up vector in order to
+      // match QV
+
+      const magnitude = sideVector.magnitude();
+      sideVector.normalize(sideVector); // won't remain undefined if failed due to following check..
+
+      if (magnitude < 1e-3) {
+        normal.set(0, 0, -1);
+        sideVector.set(1, 0, 0);
+      }
+
+      const upVector = sideVector.crossProduct(normal).normalize();
+      if (!upVector)
+        return false;
+
+      const numEdges = visitor.numEdgesThisFacet;
+      for (let i = 0; i < numEdges; i++) {
+        const outParam = params[i];
+        const vector = Vector3d.createFrom(points.getPoint3dAt(i));
+
+        outParam.x = vector.dotProduct(sideVector);
+        outParam.y = vector.dotProduct(upVector);
+
+        uvTransform.multiplyPoint2d(outParam, outParam);
+      }
+      return true;
+    }
+
+    /** Computes UV parameters given a texture mapping mode of elevation drape. The result is stored in the Point2d array given. */
+    private computeElevationDrapeUVParams(params: Point2d[], visitor: IndexedPolyfaceVisitor, uvTransform: Transform, transformToIModel?: Transform): void {
+      const numEdges = visitor.numEdgesThisFacet;
+      for (let i = 0; i < numEdges; i++) {
+        const point = visitor.point.getPoint3dAt(i);
+        const outParam = params[i];
+
+        if (transformToIModel !== undefined)
+          transformToIModel.multiplyPoint3d(point, point);
+
+        outParam.setFrom(point);
+        uvTransform.multiplyPoint2d(outParam, outParam);
+      }
     }
   }
-  // ###TODO use polyface geometry to complete computeParametricUVParams
-  export function computeParametricUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform, _isRelativeUnits: boolean): void {
-    // for (let i = 0, len = visitor.numEdges; ++i) {
-    //   const param = Point2d.create(0, 0);
-    //   if (isRelativeUnits || !visitor.tr)
-    // }
-  }
-  // ###TODO use polyface geometry to complete computePlanarUVParams
-  export function computePlanarUVParams(_params: Point2d, _visitor: IndexedPolyfaceVisitor, _uvTransform: Transform): void { }
 }

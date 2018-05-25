@@ -27,13 +27,13 @@ describe("Example Code", () => {
     assert.exists(s);
   };
 
-  // __PUBLISH_EXTRACT_START__ IModelDbModels.createModel
+  // __PUBLISH_EXTRACT_START__ IModelDbModels.createModel.example-code
   function createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
 
     const outputImodel = parentElement.iModel;
 
     // The modeled element's code
-    const modelCode = InformationPartitionElement.createCode(parentElement, modelName);
+    const modelCode = InformationPartitionElement.createCode(outputImodel, parentElement.id, modelName);
 
     //  The modeled element
     const modeledElementProps: ElementProps = {
@@ -46,7 +46,7 @@ describe("Example Code", () => {
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
     const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
 
-    const modeledElementRef = new RelatedElement({id: modeledElementId});
+    const modeledElementRef = new RelatedElement({ id: modeledElementId });
 
     // The model
     const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
@@ -159,6 +159,21 @@ describe("Example Code", () => {
     const codeSpec2Id: Id64 = testImodel.codeSpecs.insert(codeSpec2);
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
+    // __PUBLISH_EXTRACT_END__
+
+  });
+
+  it("should get elements by id and code", () => {
+    // __PUBLISH_EXTRACT_START__ Elements.getRootSubject
+    const root = iModel.elements.getRootSubject();
+    // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ Elements.getElement
+    const el = iModel.elements.getElement(root.id);
+    assert.deepEqual(el.id, root.id);
+
+    const el2 = iModel.elements.getElement(root.code);
+    assert.deepEqual(el2.id, root.id);
+    assert.deepEqual(el2.code, root.code);
     // __PUBLISH_EXTRACT_END__
 
   });

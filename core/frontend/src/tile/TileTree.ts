@@ -2,15 +2,49 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 
-import { Id64, BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
-import { ElementAlignedBox3d, ViewFlag /*, Frustum */ } from "@bentley/imodeljs-common";
-import { Point3d, Transform, ClipVector } from "@bentley/geometry-core";
+import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
+import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
+import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { RenderContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
-import { RenderSystem } from "../render/System";
+import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
+import { Viewport } from "../Viewport";
+
+function compareMissingTiles(lhs: Tile, rhs: Tile): number {
+  const diff = compareNumbers(lhs.depth, rhs.depth);
+  return 0 === diff ? compareStrings(lhs.id, rhs.id) : diff;
+}
+
+// ###TODO: TileRequests and MissingNodes are likely to change...
+export class MissingNodes extends SortedArray<Tile> {
+  public constructor() { super(compareMissingTiles); }
+}
+
+export class TileRequests {
+  private _map = new Map<TileTree, MissingNodes>();
+
+  public getMissing(root: TileTree): MissingNodes {
+    let found = this._map.get(root);
+    if (undefined === found) {
+      found = new MissingNodes();
+      this._map.set(root, found);
+    }
+
+    return found;
+  }
+}
 
 export class SceneContext extends RenderContext {
+  public readonly graphics: RenderGraphic[] = [];
+  public readonly requests: TileRequests;
+
+  public constructor(vp: Viewport, requests: TileRequests) {
+    super(vp);
+    this.requests = requests;
+  }
+
+  public outputGraphic(graphic: RenderGraphic): void { this.graphics.push(graphic); }
 }
 
 export class Tile {
@@ -21,10 +55,14 @@ export class Tile {
   public loadStatus: Tile.LoadStatus;
   public readonly id: string;
   public readonly maximumSize: number;
+  public readonly center: Point3d;
+  public readonly radius: number;
+  public readonly zoomFactor?: number;
   private readonly _childIds: string[];
   private _childrenLastUsed: BeTimePoint;
   private _children?: Tile[];
   private readonly _contentRange?: ElementAlignedBox3d;
+  private _graphic?: RenderGraphic;
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
@@ -37,6 +75,10 @@ export class Tile {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
+    // ###TODO deserialize geometry
+
+    this.center = this.range.low.interpolate(0.5, this.range.high);
+    this.radius = 0.5 * this.range.low.distance(this.range.high);
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
@@ -58,37 +100,142 @@ export class Tile {
     this.loadStatus = Tile.LoadStatus.Abandoned;
   }
 
-  public get radius(): number { return 0.5 * this.range.low.distance(this.range.high); }
-  public get radiusSquared(): number { return 0.5 * this.range.low.distanceSquared(this.range.high); }
-  public get center(): Point3d { return this.range.low.interpolate(0.5, this.range.high); }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
+  public get hasChildren(): boolean { return 0 !== this._childIds.length; }
+  public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
+  public get isLeaf(): boolean { return !this.hasChildren; }
+  public get isDisplayable(): boolean { return this.maximumSize > 0; }
+  public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
 
-  public get hasGraphics(): boolean { return false; } // ###TODO
+  public get graphics(): RenderGraphic | undefined { return this._graphic; }
+  public get hasGraphics(): boolean { return undefined !== this.graphics; }
+  public get hasZoomFactor(): boolean { return undefined !== this.zoomFactor; }
   public get children(): Tile[] | undefined { return this._children; }
   // ###TODO public loadChildren()
 
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
-  public computeVisibility(_args: Tile.DrawArgs): Tile.Visibility {
-    return Tile.Visibility.Visible; // ###TODO
+  public computeVisibility(args: Tile.DrawArgs): Tile.Visibility {
+    // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
+    // they are outside frustum
+    if (this.isEmpty || this.isRegionCulled(args))
+      return Tile.Visibility.OutsideFrustum;
+
+    // some nodes are merely for structure and don't have any geometry
+    if (!this.isDisplayable)
+      return Tile.Visibility.TooCoarse;
+
+    const hasContentRange = this.hasContentRange;
+    if (!this.hasChildren) {
+      if (hasContentRange && this.isContentCulled(args))
+        return Tile.Visibility.OutsideFrustum;
+      else
+        return Tile.Visibility.Visible; // it's a leaf node
+    }
+
+    const radius = args.getTileRadius(this); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
+    const center = args.getTileCenter(this);
+
+    const pixelSizeAtPt = args.context.getPixelSizeAtPoint(center);
+    const pixelSize = 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
+
+    if (pixelSize > this.maximumSize * args.tileSizeModifier)
+      return Tile.Visibility.TooCoarse;
+    else if (hasContentRange && this.isContentCulled(args))
+      return Tile.Visibility.OutsideFrustum;
+    else
+      return Tile.Visibility.Visible;
   }
 
-  // Override the following methods if desired...
-  public get hasChildren(): boolean { return 0 !== this._childIds.length; }
-  public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
+  public selectTiles(selected: Tile[], args: Tile.DrawArgs, numSkipped: number = 0): Tile.SelectParent {
+    const vis = this.computeVisibility(args);
+    if (Tile.Visibility.OutsideFrustum === vis) {
+      this.unloadChildren(args.purgeOlderThan);
+      return Tile.SelectParent.No;
+    }
 
-  public selectTiles(selected: Tile[], args: Tile.DrawArgs): Tile.SelectParent {
-    // ###TODO: selectTiles()
-    if (Tile.Visibility.Visible !== this.computeVisibility(args))
-      return Tile.SelectParent.Yes;
+    if (Tile.Visibility.Visible === vis) {
+      // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
+      if (!this.isReady)
+        args.insertMissing(this);
 
-    selected.push(this);
-    return Tile.SelectParent.No;
+      if (this.hasGraphics) {
+        // It can be drawn - select it
+        selected.push(this);
+        this.unloadChildren(args.purgeOlderThan);
+      } else {
+        // It can't be drawn. If direct children are drawable, draw them in this tile's place; otherwise draw the parent.
+        // Do not load/request the children for this purpose.
+        const initialSize = selected.length;
+        const kids = this.children;
+        if (undefined === kids)
+          return Tile.SelectParent.Yes;
+
+        for (const kid of kids) {
+          if (Tile.Visibility.OutsideFrustum !== kid.computeVisibility(args)) {
+            if (!kid.hasGraphics) {
+              selected.length = initialSize;
+              return Tile.SelectParent.Yes;
+            } else {
+              selected.push(kid);
+            }
+          }
+        }
+
+        this._childrenLastUsed = args.now;
+      }
+
+      // We're drawing either this tile, or its direct children.
+      return Tile.SelectParent.No;
+    }
+
+    // This tile is too coarse to draw. Try to draw something more appropriate.
+    // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
+    let canSkipThisTile = this.isReady || this.isParentDisplayable;
+    if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
+      // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
+      const isNotReady = !this.hasGraphics && !this.hasZoomFactor;
+      if (isNotReady) {
+        if (numSkipped >= this.root.maxTilesToSkip)
+          canSkipThisTile = false;
+        else
+          numSkipped += 1;
+      }
+    }
+
+    // ###TODO: load children
+    const children = canSkipThisTile ? this.children : undefined;
+    if (undefined !== children) {
+      this._childrenLastUsed = args.now;
+      let allChildrenDrawable = true;
+      const initialSize = selected.length;
+      for (const child of children) {
+        if (Tile.SelectParent.Yes === child.selectTiles(selected, args, numSkipped))
+          allChildrenDrawable = false; // NB: We must continue iterating children so that they can be requested if missing.
+      }
+
+      if (allChildrenDrawable)
+        return Tile.SelectParent.No;
+
+      selected.length = initialSize;
+    }
+
+    if (this.hasGraphics) {
+      if (!this.isReady)
+        args.insertMissing(this);
+
+      selected.push(this);
+      return Tile.SelectParent.No;
+    }
+
+    args.insertMissing(this);
+    return this.isParentDisplayable ? Tile.SelectParent.Yes : Tile.SelectParent.No;
   }
 
-  public drawGraphics(_args: Tile.DrawArgs): void {
-    // ###TODO...
+  public drawGraphics(args: Tile.DrawArgs): void {
+    if (undefined !== this.graphics)
+      args.graphics.add(this.graphics);
   }
 
   private unloadChildren(olderThan: BeTimePoint): void {
@@ -107,13 +254,14 @@ export class Tile {
     }
   }
 
-  // private static scratchWorldFrustum = new Frustum();
-  // private static scratchRootFrustum = new Frustum();
-  private isCulled(_range: ElementAlignedBox3d, _args: Tile.DrawArgs) {
-    // const box = Frustum.fromRange(range, Tile.scratchRootFrustum);
-    // const worldBox = box.transformby(args.location, Tile.scratchWorldFrustum);
-    // const isOutside = ###TODO...
-    return false;
+  private static scratchWorldFrustum = new Frustum();
+  private static scratchRootFrustum = new Frustum();
+  private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
+    const box = Frustum.fromRange(range, Tile.scratchRootFrustum);
+    const worldBox = box.transformBy(args.location, Tile.scratchWorldFrustum);
+    const isOutside = FrustumPlanes.Containment.Outside === args.context.frustumPlanes.computeFrustumContainment(worldBox);
+    const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
+    return isOutside || isClipped;
   }
 }
 
@@ -146,41 +294,91 @@ export namespace Tile {
     public readonly location: Transform;
     public readonly root: TileTree;
     public clip?: ClipVector;
-    // ###TODO SceneContext, MissingNodes, GraphicBranch, ViewFlagsOverrides
+    public readonly context: SceneContext;
+    public readonly graphics: GraphicBranch = new GraphicBranch();
+    public readonly now: BeTimePoint;
+    public readonly purgeOlderThan: BeTimePoint;
+    public readonly missing: MissingNodes;
 
-    public constructor(location: Transform, root: TileTree, clip?: ClipVector) {
+    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
       this.location = location;
       this.root = root;
       this.clip = clip;
+      this.context = context;
+      this.now = now;
+      this.purgeOlderThan = purgeOlderThan;
+      this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
+      this.missing = context.requests.getMissing(root);
     }
+
+    public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
+    public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
+
+    private static scratchRange = new Range3d();
+    public getTileRadius(tile: Tile): number {
+      let range = tile.range.clone(DrawArgs.scratchRange);
+      range = this.location.multiplyRange(range, range);
+      return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
+    }
+
+    public clear(): void {
+      this.graphics.clear();
+      this.missing.clear();
+    }
+
+    public drawGraphics(): void {
+      if (this.graphics.isEmpty)
+        return;
+
+      const branch = this.context.createBranch(this.graphics, this.location, this.clip);
+      this.context.outputGraphic(branch);
+    }
+
+    public insertMissing(tile: Tile): void { this.missing.insert(tile); }
   }
 
   /** Parameters used to construct a Tile. */
-  export interface Params {
-    root: TileTree;
-    parent?: Tile;
-    range: ElementAlignedBox3d;
-    contentRange?: ElementAlignedBox3d;
-    id: string;
-    maximumSize: number;
-    childIds: string[];
+  export class Params {
+    public constructor(
+      public readonly root: TileTree,
+      public readonly id: string,
+      public readonly range: ElementAlignedBox3d,
+      public readonly maximumSize: number,
+      public readonly childIds: string[],
+      public readonly parent?: Tile,
+      public readonly contentRange?: ElementAlignedBox3d,
+      public readonly zoomFactor?: number,
+      public readonly geometry?: Uint8Array) { }
+
+    public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
+      // ###TODO: We should be requesting the geometry separately, when needed
+      // ###TODO: Transmit as binary, not base-64
+      const tileBytes = undefined !== props.geometry ? new Uint8Array(atob(props.geometry).split("").map((c) => c.charCodeAt(0))) : undefined;
+      const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
+      return new Params(root, props.id.tileId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.childIds, parent, contentRange, props.zoomFactor, tileBytes);
+    }
   }
 }
 
 export class TileTree {
   public readonly model: GeometricModelState;
   public readonly location: Transform;
-  private _rootTile?: Tile;
-  public readonly renderSystem: RenderSystem;
+  public readonly rootTile: Tile;
   public readonly expirationTime: BeDuration;
   public readonly clipVector?: ClipVector;
-  public readonly rootResource: string;
-  public readonly viewFlagsOverrides: ViewFlag.Overrides;
+  public readonly id: Id64;
+  public readonly viewFlagOverrides: ViewFlag.Overrides;
+  public readonly maxTilesToSkip: number;
 
-  public static create(props: TileTree.Params) {
-    const tree = new TileTree(props);
-    tree.loadRootTile(props.rootTileId);
-    return undefined === tree._rootTile ? undefined : tree;
+  public constructor(props: TileTree.Params) {
+    this.model = props.model;
+    this.id = props.id;
+    this.location = props.location;
+    this.expirationTime = BeDuration.fromSeconds(5000); // ###TODO tile purging strategy
+    this.clipVector = props.clipVector;
+    this.viewFlagOverrides = undefined !== props.viewFlagOverrides ? props.viewFlagOverrides : new ViewFlag.Overrides();
+    this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
+    this.rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this));
   }
 
   public get is3d(): boolean { return this.model.is3d; }
@@ -188,43 +386,50 @@ export class TileTree {
   public get modelId(): Id64 { return this.model.id; }
   public get iModel(): IModelConnection { return this.model.iModel; }
   public get range(): ElementAlignedBox3d { return this.rootTile.range; }
-  public get rootTile(): Tile { return this.rootTile!; }
 
-  public selectTilesForScene(_context: SceneContext): Tile[] { return []; }
-  public selectTiles(_args: Tile.DrawArgs): Tile[] { return []; } // ###TODO
+  public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
+  public selectTiles(args: Tile.DrawArgs): Tile[] {
+    const selected: Tile[] = [];
+    if (undefined !== this.rootTile)
+      this.rootTile.selectTiles(selected, args);
 
-  public drawScene(_context: SceneContext): void { }
-  public draw(_args: Tile.DrawArgs): void { } // ###TODO
+    return selected;
+  }
+
+  public drawScene(context: SceneContext): void { this.draw(this.createDrawArgs(context)); }
+  public draw(args: Tile.DrawArgs): void {
+    const selectedTiles = this.selectTiles(args);
+    for (const selectedTile of selectedTiles)
+      selectedTile.drawGraphics(args);
+
+    args.drawGraphics();
+  }
 
   // ###TODO: requestTile(), requestTiles()
 
-  // ###TODO public const createDrawArgs(context: SceneContext): Tile.DrawArgs { }
-
-  public constructTileResource(tileId: string): string { return this.rootResource + tileId; }
-
-  private constructor(props: TileTree.Params) {
-    this.model = props.model;
-    this.location = props.location;
-    this.renderSystem = props.renderSystem;
-    this.expirationTime = props.expirationTime;
-    this.clipVector = props.clipVector;
-    this.rootResource = props.rootResource;
-    this.viewFlagsOverrides = undefined !== props.viewFlagsOverrides ? props.viewFlagsOverrides : new ViewFlag.Overrides();
+  public createDrawArgs(context: SceneContext): Tile.DrawArgs {
+    const now = BeTimePoint.now();
+    const purgeOlderThan = now.minus(this.expirationTime);
+    return new Tile.DrawArgs(context, this.location, this, now, purgeOlderThan, this.clipVector);
   }
 
-  private loadRootTile(_tileId: string): Tile | undefined { return undefined; } // ###TODO
+  public constructTileId(tileId: string): TileId { return new TileId(this.id, tileId); }
 }
 
 export namespace TileTree {
   /** Parameters used to construct a TileTree */
-  export interface Params {
-    rootResource: string;
-    rootTileId: string;
-    model: GeometricModelState;
-    location: Transform;
-    renderSystem: RenderSystem;
-    expirationTime: BeDuration;
-    clipVector?: ClipVector;
-    viewFlagsOverrides?: ViewFlag.Overrides;
+  export class Params {
+    public constructor(
+      public readonly id: Id64,
+      public readonly rootTile: TileProps,
+      public readonly model: GeometricModelState,
+      public readonly location: Transform,
+      public readonly maxTilesToSkip?: number,
+      public readonly clipVector?: ClipVector,
+      public readonly viewFlagOverrides?: ViewFlag.Overrides) { }
+
+    public static fromJSON(props: TileTreeProps, model: GeometricModelState) {
+      return new Params(Id64.fromJSON(props.id), props.rootTile, model, Transform.fromJSON(props.location), props.maxTilesToSkip);
+    }
   }
 }

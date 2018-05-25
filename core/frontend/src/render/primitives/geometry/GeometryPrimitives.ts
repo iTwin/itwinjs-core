@@ -118,7 +118,7 @@ export class PrimitivePathGeometry extends Geometry {
     const pts: Point3d[] = [];
     for (let i = 0; i < strokes.numPoints(); i++) {
       strokes.pointAt(i, pt);
-      pts.push(trans.multiplyPoint(pt));
+      pts.push(trans.multiplyPoint3d(pt));
     }
     strksPts.push(new StrokesPrimitivePointList(0, pts));
   }

@@ -12,7 +12,6 @@
     <ECEntityClass typeName="Barrier" modifier="Sealed">
         <BaseClass>bis:SpatialLocationElement</BaseClass>
         <ECProperty propertyName="length" typeName="double" description="the length of the barrier" />
-        <ECProperty propertyName="angle" typeName="double" description="the orientation angle of the barrier (degrees)" />
     </ECEntityClass>
 
     <!-- A Barrier can optionally have a hole init -->

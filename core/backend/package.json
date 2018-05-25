@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.85.1",
+  "version": "0.88.0",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -11,15 +11,15 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets",
     "clean": "rimraf lib package-deps.json ../../generated-docs/backend",
-    "docs": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/backend/json/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/backend/json/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
-    "cover": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "cover:integration": "nyc mocha --timeout 30000 --compilers ts-node/register --require tsconfig-paths/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
+    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
+    "cover:integration": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend && cpx ./src/test/logging.config.json ./lib/test",
-    "test": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test\" --offline=\"mock\" --grep #integration --invert",
-    "test:integration": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/test/integration\"",
-    "perftest": "npm run pretest && node ../../node_modules/@bentley/bentleyjs-tools/scripts/test --packageRoot=\"../../\" --testDir=\"./lib/perftest\" --timeout=999999999",
+    "test": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\" --grep #integration --invert",
+    "test:integration": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
+    "perftest": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx ./src/test/runMochaTestsDirectly.js ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {},
@@ -32,11 +32,16 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "//peerDependencies": [
+    "NOTE: The @bentley/imodeljs-native-platform-api dependency is REPEATED here, so that clients such as protogist",
+    "will see a warning from NPM INSTALL in case they depend on an incompatible version of the addon and/or API version."
+  ],
   "peerDependencies": {
     "@bentley/bentleyjs-core": "8",
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
-    "@bentley/imodeljs-common": "0"
+    "@bentley/imodeljs-common": "0",
+    "@bentley/imodeljs-native-platform-api": "~19.0.1"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -44,16 +49,16 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
+    "@bentley/bentleyjs-tools": "5",
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
     "cpx": "^1.5.0",
-    "mocha": "^3.5.3",
-    "nyc": "^11.4.1",
+    "mocha": "^5.2.0",
+    "nyc": "^11.8.0",
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.0",
-    "ts-node": "^3.3.0",
-    "tsconfig-paths": "^2.7.2",
+    "ts-node": "^6.0.3",
     "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
     "webpack": "^3.10.0",
@@ -73,10 +78,10 @@
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~19.0.0",
-    "@bentley/imodeljs-native-platform-node": "~19.0.0",
-    "@bentley/imodeljs-native-platform-electron": "~19.0.0",
-    "fs-extra": "^5.0.0",
+    "@bentley/imodeljs-native-platform-api": "~19.0.1",
+    "@bentley/imodeljs-native-platform-node": "~19.0.1",
+    "@bentley/imodeljs-native-platform-electron": "~19.0.1",
+    "fs-extra": "^6.0.1",
     "js-base64": "^2.4.0"
   },
   "//optionalDependencies": [
@@ -97,7 +102,6 @@
     ],
     "require": [
       "source-map-support/register",
-      "tsconfig-paths/register",
       "ts-node/register"
     ],
     "reporter": [

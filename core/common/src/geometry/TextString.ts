@@ -80,7 +80,7 @@ export class TextString {
   }
 
   public transformInPlace(transform: Transform): boolean {
-    const newOrigin = transform.multiplyPoint(this.origin, this.origin);
+    const newOrigin = transform.multiplyPoint3d(this.origin, this.origin);
     const newTransform = this.rotation.toRotMatrix().multiplyMatrixTransform(transform);
     const scales = new Vector3d();
     if (!newTransform.matrix.normalizeColumnsInPlace(scales))

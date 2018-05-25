@@ -30,12 +30,11 @@ export * from "./IModelDb"; // must be last
 /** @module iModels */
 
 /** @docs-package-description
- * The imodeljs-backend package contains classes that backend code can use to work with directly with iModel content using briefcases.
+ * The imodeljs-backend package contains classes that backend code can use to work with directly with iModel content using briefcases - see [learning about backends]($docs/learning/backend/index.md).
  */
 /**
- * @docs-group-description App
- * Classes for defining an app.
- * For more information, see [App Overview]($docs/overview/App.md).
+ * @docs-group-description AppAdministration
+ * Classes for configuring and administering an app - see [learning IModelHost]($docs/learning/backend/IModelHost.md).
  */
 /**
  * @docs-group-description BisCore
@@ -67,7 +66,7 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description RpcInterface
- * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/App.md#rpcinterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
+ * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/RpcInterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
  */
 /**
  * @docs-group-description Schema

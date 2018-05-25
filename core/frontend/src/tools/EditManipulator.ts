@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tools */
 import { BeButtonEvent } from "./Tool";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";

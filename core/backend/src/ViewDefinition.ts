@@ -6,7 +6,7 @@
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
 import {
-  ElementProps, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps,
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps,
   CategorySelectorProps, Camera,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
@@ -15,6 +15,16 @@ import { IModelDb } from "./IModelDb";
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export class DisplayStyle extends DefinitionElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a DisplayStyle given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the DisplayStyle and provides the scope for its name.
+   * @param codeValue The DisplayStyle name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.displayStyle);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /** A DisplayStyle for 2d views */
@@ -36,6 +46,16 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     val.models = this.models;
     return val;
   }
+
+  /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
+   * @param codeValue The ModelSelector name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /** A list of Categories to be displayed in a view. */
@@ -46,6 +66,16 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
+  }
+
+  /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the CategorySelector and provides the scope for its name.
+   * @param codeValue The CategorySelector name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 }
 
@@ -70,6 +100,16 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 
   public isView3d(): this is ViewDefinition3d { return this instanceof ViewDefinition3d; }
   public isSpatialView(): this is SpatialViewDefinition { return this instanceof SpatialViewDefinition; }
+
+  /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the ViewDefinition and provides the scope for its name.
+   * @param codeValue The ViewDefinition name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.viewDefinition);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /** Defines a view of 3d models. */

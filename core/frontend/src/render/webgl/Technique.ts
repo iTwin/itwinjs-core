@@ -19,7 +19,7 @@ import { createClipMaskProgram } from "./glsl/ClipMask";
 import { addTranslucency } from "./glsl/Translucency";
 import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial } from "./glsl/Surface";
-import { createPointStringBuilder, createPointStringHiliter } from "./PointString";
+import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeEyeSpace, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment } from "./glsl/Fragment";
 import { GLSLDecode } from "./glsl/Decode";
@@ -170,7 +170,7 @@ class SurfaceTechnique extends VariedTechnique {
   }
 }
 
-export class PolylineTechnique extends VariedTechnique {
+class PolylineTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
@@ -187,7 +187,6 @@ export class PolylineTechnique extends VariedTechnique {
         flags.reset(featureMode, clip);
         const builder = createPolylineBuilder(clip);
         addMonochrome(builder.frag);
-        addMaterial(builder.frag);
 
         // The translucent shaders do not need the element IDs.
         const builderTrans = createPolylineBuilder(clip);
@@ -201,6 +200,7 @@ export class PolylineTechnique extends VariedTechnique {
           addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
         }
         this.addElementId(builder, featureMode);
+        flags.reset(featureMode, clip);
         this.addShader(builder, flags, gl);
       }
     }
@@ -226,7 +226,7 @@ export class PolylineTechnique extends VariedTechnique {
   }
 }
 
-export class PointStringTechnique extends VariedTechnique { // ###TODO - shouldn't need to export
+class PointStringTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kTranslucent = 1;
   private static readonly kFeature = 2;
@@ -256,6 +256,7 @@ export class PointStringTechnique extends VariedTechnique { // ###TODO - shouldn
           addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
         }
         this.addElementId(builder, featureMode);
+        flags.reset(featureMode, clip);
         this.addShader(builder, flags, gl);
       }
     }
@@ -412,8 +413,8 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
-    // this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
-    // this._list[TechniqueId.PointString] = new PointStringTechnique(gl); // ###TODO
+    this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
+    this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;

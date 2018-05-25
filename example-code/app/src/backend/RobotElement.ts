@@ -2,9 +2,9 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Element.subclass
-import { SpatialLocationElement, IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
-import { GeometricElement3dProps, GeometryStreamBuilder } from "@bentley/imodeljs-common";
-import { Point3d, Arc3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { SpatialLocationElement, IModelDb, SpatialCategory } from "@bentley/imodeljs-backend";
+import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { Point3d, Arc3d } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
 
 /**
@@ -17,29 +17,19 @@ export class Robot extends SpatialLocationElement {
   //  Define the properties added by this subclass
   public radius: number = 0.1;                     // The girth of the robot
 
-  // Note: Do not re-define the constructor. You must not interfere with the constructor that is
+  // Note: Do not redefine the constructor. You must not interfere with the constructor that is
   // already defined by the base Element class.
 
-  // Define a factory method to make it easy for backend code to create new instances.
-  public static create(model: PhysicalModel, location: Point3d, radius: number = 0.1) {
-    const iModel: IModelDb = model.iModel;
-
+  // You can provide handy methods for creating new Robots
+  public static generateGeometry(radius: number = 0.1): GeometryStreamProps {
     const builder = new GeometryStreamBuilder();  // I know what graphics represent a robot.
     const circle = Arc3d.createXY(Point3d.createZero(), radius);
-    builder.appendGeometryQuery(circle);
+    builder.appendGeometry(circle);
+    return builder.geometryStream;
+  }
 
-    const props: GeometricElement3dProps = {      // I know what class and category to use.
-      model: model.id,
-      classFullName: RobotWorld.Class.Robot,
-      category: RobotWorld.getCategory(iModel, RobotWorld.Class.Robot).id,
-      geom: builder.geometryStream,
-      placement: { origin: location, angles: new YawPitchRollAngles()},
-    };
-
-    const r = new Robot(props, iModel);           // construct the Robot instance
-    r.radius = radius;
-
-    return r;
+  public static getCategory(iModel: IModelDb): SpatialCategory {
+    return RobotWorld.getCategory(iModel, RobotWorld.Class.Robot);
   }
 
   // You can write methods to implement business logic that apps can call.

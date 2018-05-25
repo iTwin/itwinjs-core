@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@bentley/bentleyjs-core";
 import {
   ProgramBuilder,
   VariableType,
@@ -18,8 +19,7 @@ import { addClipping } from "./Clipping";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
-// import { System } from "../System";
-import { TextureHandle } from "../Texture";
+import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { addHiliter } from "./FeatureSymbology";
 
@@ -31,7 +31,7 @@ if (v_texc.x >= 0.0) { // v_texc = (-1,-1) for solid lines - don't bother with a
   discardByLineCode = (0.0 == texColor.r);
 }
 
-if (v_lnInfo.w > 0.5) {} // line needs pixel trimming
+if (v_lnInfo.w > 0.5) { // line needs pixel trimming
   // calculate pixel distance from pixel center to expected line center, opposite dir from major
   vec2 dxy = gl_FragCoord.xy - v_lnInfo.xy;
   if (v_lnInfo.w < 1.5)  // not x-major
@@ -126,11 +126,10 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
 export function addLineCodeTexture(frag: FragmentShaderBuilder) {
   frag.addUniform("u_lineCodeTexture", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_lineCodeTexture", (uniform) => {
-      // System.getLineCodeTexture().bindSampler(uniform, TextureUnit.LineCode); // ###TODO: implement getLineCodeTexture in System instead of following
-      const data = new Uint8Array(32 * 10);
-      const t = TextureHandle.createForData(32, 10, data, false);
-      if (undefined !== t)
-        t.bindSampler(uniform, TextureUnit.LineCode);
+      const lct = System.instance.lineCodeTexture;
+      assert(undefined !== lct);
+      if (undefined !== lct)
+        lct.bindSampler(uniform, TextureUnit.LineCode);
     });
   });
 }
