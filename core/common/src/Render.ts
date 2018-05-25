@@ -989,7 +989,7 @@ export namespace Gradient {
         if (lhs.keys[i].value !== rhs.keys[i].value)
           return lhs.keys[i].value - rhs.keys[i].value;
         if (!lhs.keys[i].color.equals(rhs.keys[i].color))
-          return lhs.keys[i].color.getRgb() - rhs.keys[i].color.getRgb();
+          return lhs.keys[i].color.tbgr - rhs.keys[i].color.tbgr;
       }
       return 0;
     }
