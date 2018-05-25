@@ -131,7 +131,7 @@ export class MeshBuilder {
     const triangleCount = pointCount - 2;
 
     assert(!includeParams || paramCount > 0);
-    assert(haveParam || undefined !== mappedTexture);
+    assert(!haveParam || undefined !== mappedTexture);
 
     const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
     // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
@@ -146,15 +146,17 @@ export class MeshBuilder {
     const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
     const qPointParams = this.mesh.points.params;
-    let params = visitor.param;
 
     // If we do not have UVParams stored on the IndexedPolyface, compute them now
     // (We know we have mappedTexture, otherwise we would have thrown an exception in addFromPolyfaceVisitor)
-    if (!haveParam) {
+    let params: Point2d[] | undefined = undefined;
+    if (haveParam && options.mappedTexture) {
+      assert(this.mesh.points.length === 0 || this.mesh.features !== undefined);
       const mappedTexture = options.mappedTexture;
-      const transformToImodel = mappedTexture!.params.textureMatrix.transform;
+      const transformToImodel = mappedTexture.params.textureMatrix.transform;
       if (transformToImodel)
-        params = mappedTexture!.computeUVParams(visitor, transformToImodel);
+        params = mappedTexture.computeUVParams(visitor, transformToImodel);
+      assert(params !== undefined);
     }
 
     const vertices = [];
