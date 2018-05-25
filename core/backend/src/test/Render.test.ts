@@ -2,7 +2,8 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ViewFlags, RenderMode, ColorDef, Light, LightProps, Spot, LightType, SpotProps } from "@bentley/imodeljs-common";
+import { ViewFlags, RenderMode, ColorDef, Light, LightProps, Spot, LightType, SpotProps, Gradient } from "@bentley/imodeljs-common";
+import { Angle } from "../../../geometry/lib/Geometry";
 
 describe("Render", () => {
 
@@ -75,4 +76,72 @@ describe("Render", () => {
     assert.equal(json, JSON.stringify(s2));
   });
 
+  it("Gradient.Symb", () => {
+    let symb = Gradient.Symb.fromJSON({
+      mode: Gradient.Mode.Linear,
+      flags: Gradient.Flags.Outline,
+      angle: Angle.createDegrees(45.5),
+      tint: 0.6,
+      shift: 1,
+      keys: [{ value: .65, color: new ColorDef(100) }, { value: .12, color: new ColorDef(100) }],
+    });
+
+    const symbCopy = symb.clone();
+    assert.isTrue(symb.isEqualTo(symbCopy));
+
+    // Assert that ordering of symbology is correct using implemented compare method
+    const symbArr: Gradient.Symb[] = [];
+    const numCreated = 10;
+    for (let i = 0; i < numCreated; i++) {
+      symb = Gradient.Symb.fromJSON({
+        mode: (i < 1) ? Math.floor(Math.random() * 1234) % 7 : Gradient.Mode.Linear,
+        flags: (i < 2) ? Math.floor(Math.random() * 1234) % 3 : Gradient.Flags.None,
+        tint: (i < 3) ? Math.random() : 5,
+        shift: (i < 4) ? Math.random() * 10 : 6,
+        angle: (i < 5) ? Angle.createDegrees(Math.random() * 100) : Angle.create360(),
+        keys: [{ value: (i < 6) ? Math.random() : 5, color: new ColorDef(Math.random() * 1000) }, { value: Math.random(), color: new ColorDef(Math.random() * 1000) }],
+      });
+      symbArr.push(symb);
+    }
+    symbArr[numCreated - 1].keys.pop(); // Get a symbology with a fewer # of keys
+    symbArr.sort(Gradient.Symb.compareSymb);
+
+    for (let i = 1; i < numCreated; i++) {
+      const prev = symbArr[i - 1];
+      const current = symbArr[i];
+      if (current.mode !== prev.mode) {
+        assert.isTrue(current.mode > prev.mode);
+        continue;
+      }
+      if (current.flags !== prev.flags) {
+        assert.isTrue(current.flags > prev.flags);
+        continue;
+      }
+      if (current.tint !== prev.tint) {
+        assert.isTrue(current.tint! > prev.tint!);
+        continue;
+      }
+      if (current.shift !== prev.shift) {
+        assert.isTrue(current.shift! > prev.shift!);
+        continue;
+      }
+      if (current.angle!.degrees !== prev.angle!.degrees) {
+        assert.isTrue(current.angle!.degrees > prev.angle!.degrees);
+        continue;
+      }
+      if (current.keys.length !== prev.keys.length) {
+        assert.isTrue(current.keys.length > prev.keys.length);
+        continue;
+      }
+      if (current.keys[0].value !== prev.keys[0].value) {
+        assert.isTrue(current.keys[0].value > prev.keys[0].value);
+        continue;
+      }
+      if (current.keys[0].color.tbgr !== prev.keys[0].color.tbgr) {
+        assert.isTrue(current.keys[0].color.tbgr > prev.keys[0].color.tbgr);
+        continue;
+      }
+      assert.isTrue(current.isEqualTo(prev));
+    }
+  });
 });

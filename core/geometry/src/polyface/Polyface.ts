@@ -733,8 +733,13 @@ export class IndexedPolyface extends Polyface {
   public extendRange(range: Range3d, transform?: Transform): void { this.data.range(range, transform); }
 
   /** Given the index of a facet, return the data pertaining to the face it is a part of. */
-  public getFaceOfFacet(facetIndex: number): FacetFaceData {
-    return this.data.face[facetIndex];
+  public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
+    return this.data.face[this.facetToFaceData[facetIndex]];
+  }
+
+  /** Given the index of a face, return the range of that face. */
+  public getFaceDataByFaceIndex(faceIndex: number): FacetFaceData {
+    return this.data.face[faceIndex];
   }
 
   /**
@@ -748,17 +753,17 @@ export class IndexedPolyface extends Polyface {
 
     if (0 === endFacetIndex)  // The default for endFacetIndex is really the last facet
       endFacetIndex = this.facetStart.length;
+
     const faceData = FacetFaceData.createNull();
-
-    // If parameter range is provided (by the polyface planeset clipper) then use it
-    const paramDefined = this.data.param !== undefined;
-    const setParamRange: boolean = faceData.paramRange.isNull() && paramDefined;
-
     const visitor = IndexedPolyfaceVisitor.create(this, 0);
 
     if (!visitor.moveToReadIndex(facetStart)) {  // Move visitor to first facet of new face
       return false;
     }
+
+    // If parameter range is provided (by the polyface planeset clipper) then use it
+    const paramDefined = this.data.param !== undefined;
+    const setParamRange: boolean = faceData.paramRange.isNull() && paramDefined;
 
     do {
       for (let i = 0; i < visitor.numEdgesThisFacet; i++) {

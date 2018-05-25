@@ -220,6 +220,11 @@ export class IdMap {
     return this.textureMap.get(key);
   }
 
+  /** Find a cached gradient using the symbology provided. If not found, returns undefined. */
+  public findGradient(symb: Gradient.Symb): RenderTexture | undefined {
+    return this.gradientMap.get(symb);
+  }
+
   /**
    * Find a material using its key. If not found, create and return it.
    * This will also add it to the map if the key was valid.
@@ -488,6 +493,17 @@ export class System extends RenderSystem {
       return undefined;
     }
     return idMap.getTextureFromImgSrc(source, width, height, params);
+  }
+
+  /**
+   * Creates a texture using gradient symbology and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * If no render map exists for the imodel, returns undefined.
+   */
+  public createGradient(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
+    const idMap = this.renderCache.get(imodel);
+    if (!idMap)
+      return undefined;
+    return idMap.getGradient(symb);
   }
 
   /** Searches through the imodel's render map for a texture, given its key. Returns undefined if none found. */
