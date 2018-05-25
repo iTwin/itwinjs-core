@@ -839,8 +839,8 @@ export namespace HiddenLine {
 export namespace Gradient {
   export const enum Flags {
     None = 0,
-    Invert = (1 << 0),
-    Outline = (1 << 1),
+    Invert = 1,
+    Outline = 2,
   }
 
   export const enum Mode {
@@ -983,6 +983,8 @@ export namespace Gradient {
           return 1;
       if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!))
         return lhs.angle.radians - rhs.angle!.radians;
+      if (lhs.keys.length !== rhs.keys.length)
+        return lhs.keys.length - rhs.keys.length;
       for (let i = 0; i < lhs.keys.length; i++) {
         if (lhs.keys[i].value !== rhs.keys[i].value)
           return lhs.keys[i].value - rhs.keys[i].value;
