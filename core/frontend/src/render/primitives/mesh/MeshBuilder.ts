@@ -149,7 +149,7 @@ export class MeshBuilder {
 
     // If we do not have UVParams stored on the IndexedPolyface, compute them now
     // (We know we have mappedTexture, otherwise we would have thrown an exception in addFromPolyfaceVisitor)
-    let params: Point2d[] | undefined = undefined;
+    let params: Point2d[] | undefined;
     if (haveParam && options.mappedTexture) {
       assert(this.mesh.points.length === 0 || this.mesh.features !== undefined);
       const mappedTexture = options.mappedTexture;
@@ -164,7 +164,7 @@ export class MeshBuilder {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
       const position = QPoint3d.create(point.getPoint3dAt(vertexIndex), qPointParams);
       const normal = requireNormals ? new OctEncodedNormal(visitor.getNormal(vertexIndex)) : undefined;
-      let uvParam: Point2d | undefined = params ? params[i] : undefined;
+      const uvParam: Point2d | undefined = params ? params[i] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam };
     }
 
@@ -196,8 +196,6 @@ export class MeshBuilder {
     );
 
     // ###TODO handle mappedTexture param
-    // ###TODO finish computeUVParams on TextureMapping
-
 
     // set each triangle index to the index associated with the vertex key location in the vertex map
     vertices.forEach((vertexProps: VertexKeyProps, i: number) => {

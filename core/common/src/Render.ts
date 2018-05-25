@@ -1675,7 +1675,6 @@ export namespace TextureMapping {
         if (transformToIModel !== undefined)
           transformToIModel.multiplyPoint3d(point, point);
 
-
         params.push(Point2d.createFrom(point));
         uvTransform.multiplyPoint2d(params[i], params[i]);
       }

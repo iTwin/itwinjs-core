@@ -400,7 +400,7 @@ describe("Polyface.Faces", () => {
 
   it("Verify UV params computed from face data", () => {
 
-    //###TODO: Implement
+    // ###TODO: Implement
 
     expect(ck.getNumErrors()).equals(0);
   });
