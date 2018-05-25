@@ -14,7 +14,7 @@ Each of the logging output functions assigns a [LogLevel]($bentleyjs-core) to th
 ## Categories
 Each of the logging output functions takes the *category* of the message as its first argument and associates this string with the specified message. Category is like a property of a logging message. The app that produces logging messages can control output by filtering on category. And the dashboards that consume logging messages can filter and organize logging messages by categories.
 
-Categories are freeform strings that are made up by the app that generates logging messages. A well-chosen category string make messages useful and manageable. In some cases, the category will be used to identify the source of the message. For example, when logging messages from many different services are streamed to a single file or dashboard, users will rely on the category of a message to identify its source. The category will also be used to group messages. For example, all logging messages that pertain to a certain module can be recognized as belonging to a group if they all have the same category.
+Categories are freeform strings that are made up by the app that generates logging messages. A well-chosen category string make messages useful and manageable. In some cases, the category will be used to identify the source of the message. For example, when logging messages from many different services are streamed to a single file or dashboard, users will rely on the category of a message to identify its source. The category will also be used to group messages. For example, all logging messages that pertain to a certain module should have the same category.
 
 Parent/child category naming is often useful for achieving uniqueness and grouping.
 

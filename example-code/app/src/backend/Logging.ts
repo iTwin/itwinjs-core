@@ -12,9 +12,9 @@ export function initializeLogging(): void {
   const config = require("./MyService.config.json");
 
   const defaultConfigValues: any = {
-    "RobotWorld-DEFAULT-LOG-LEVEL": "Error",
-    "RobotWorld-SEQ-URL": "http://localhost",
-    "RobotWorld-SEQ-PORT": "5341",
+    "ROBOT-WORLD-DEFAULT-LOG-LEVEL": "Error",
+    "ROBOT-WORLD-SEQ-URL": "http://localhost",
+    "ROBOT-WORLD-SEQ-PORT": "5341",
   };
 
   EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
