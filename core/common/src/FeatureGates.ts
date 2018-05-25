@@ -4,7 +4,7 @@
 /** @module AppAdministration */
 
 /**
- * A set of "gates" that can enable or disable features at runtime - see [learning about Feature Gates]($docs/learning/FeatureGates.md).
+ * A set of "gates" that can enable or disable features at runtime - see [learning about Feature Gates]($docs/learning/common/FeatureGates.md).
  */
 export class FeatureGates {
   private readonly gates: any = {};

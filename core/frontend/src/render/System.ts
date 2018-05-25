@@ -17,6 +17,7 @@ import {
   RenderTexture,
   ImageSource,
   FeatureTable,
+  Gradient,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -235,6 +236,9 @@ export abstract class RenderSystem {
 
   // /** Create a Material from parameters */
   // public abstract getGradientTexture(gradient: GradientSymb, imodel: IModel): Texture;
+
+  /** Create a new Texture from gradient symbology. */
+  public abstract createGradient(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined;
 
   /** Create a new Texture from an ImageBuffer. */
   public abstract createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
