@@ -16,6 +16,7 @@ import { IModelDb, OpenParams, SyncMode, AccessMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
+import * as glob from "glob";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
@@ -248,7 +249,7 @@ export class BriefcaseManager {
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
   private static getIModelPath(iModelId: string): string {
-    const pathname = path.join(IModelHost.configuration!.briefcaseCacheDir, iModelId, "/");
+    const pathname = path.join(BriefcaseManager.cacheDir, iModelId, "/");
     return path.normalize(pathname);
   }
 
@@ -279,7 +280,7 @@ export class BriefcaseManager {
     return path.join(pathBaseName, briefcaseId.toString(), iModelName.concat(".bim"));
   }
 
-  private static buildScratchPath(): string { return path.join(IModelHost.configuration!.briefcaseCacheDir, "scratch"); }
+  private static buildScratchPath(): string { return path.join(BriefcaseManager.cacheDir, "scratch"); }
 
   /** Clear the briefcase manager cache */
   private static clearCache() {
@@ -363,6 +364,49 @@ export class BriefcaseManager {
     }
   }
 
+  private static readonly cacheMajorVersion: number = 1;
+  private static readonly cacheMinorVersion: number = 0;
+
+  private static buildCacheSubDir(): string {
+    return `v${BriefcaseManager.cacheMajorVersion}_${BriefcaseManager.cacheMinorVersion}`;
+  }
+
+  private static findCacheSubDir(): string | undefined {
+    if (!IModelHost.configuration || !IModelHost.configuration.briefcaseCacheDir) {
+      assert(false, "Cache directory undefined");
+      return undefined;
+    }
+    const cacheDir = IModelHost.configuration.briefcaseCacheDir;
+    let dirs: string[] | undefined;
+    try {
+      dirs = glob.sync(`v${BriefcaseManager.cacheMajorVersion}_*`, { cwd: cacheDir });
+      assert(dirs.length === 1, "Expected *only* a single directory for a major version");
+    } catch (error) {
+    }
+    if (!dirs || dirs.length === 0)
+      return undefined;
+    return dirs[0];
+  }
+
+  private static cacheDir: string;
+
+  private static setupCacheDir() {
+    const cacheSubDirOnDisk = BriefcaseManager.findCacheSubDir();
+    const cacheSubDir = BriefcaseManager.buildCacheSubDir();
+    BriefcaseManager.cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
+
+    if (!cacheSubDirOnDisk) {
+      // For now, just recreate the entire cache if the directory for the major version is not found - NEEDS_WORK
+      BriefcaseManager.deleteFolderRecursive(IModelHost.configuration!.briefcaseCacheDir!);
+    } else if (cacheSubDirOnDisk !== cacheSubDir) {
+      const cacheDirOnDisk = path.join(IModelHost.configuration!.briefcaseCacheDir!, cacheSubDirOnDisk);
+      BriefcaseManager.deleteFolderRecursive(cacheDirOnDisk);
+    }
+
+    if (!IModelJsFs.existsSync(BriefcaseManager.cacheDir))
+      BriefcaseManager.makeDirectoryRecursive(BriefcaseManager.cacheDir);
+  }
+
   /** Initialize the briefcase manager cache of in-memory briefcases (if necessary). */
   private static async initCache(accessToken?: AccessToken): Promise<void> {
     if (BriefcaseManager.isCacheInitialized)
@@ -375,13 +419,8 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
-    const cacheDir = IModelHost.configuration.briefcaseCacheDir;
-    if (!IModelJsFs.existsSync(cacheDir)) {
-      BriefcaseManager.makeDirectoryRecursive(cacheDir);
-      return;
-    }
-
-    for (const iModelId of IModelJsFs.readdirSync(cacheDir)) {
+    BriefcaseManager.setupCacheDir();
+    for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {
       await BriefcaseManager.initCacheForIModel(accessToken, iModelId);
     }
 
@@ -868,8 +907,8 @@ export class BriefcaseManager {
 
   /** Purge all briefcases and reset the briefcase manager */
   public static purgeAll() {
-    if (IModelJsFs.existsSync(IModelHost.configuration!.briefcaseCacheDir))
-      BriefcaseManager.deleteFolderRecursive(IModelHost.configuration!.briefcaseCacheDir);
+    if (IModelJsFs.existsSync(BriefcaseManager.cacheDir))
+      BriefcaseManager.deleteFolderRecursive(BriefcaseManager.cacheDir);
 
     BriefcaseManager.clearCache();
   }

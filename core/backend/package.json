@@ -84,7 +84,8 @@
     "@bentley/imodeljs-native-platform-node": "~19.0.1",
     "@bentley/imodeljs-native-platform-electron": "~19.0.1",
     "fs-extra": "^6.0.1",
-    "js-base64": "^2.4.0"
+    "js-base64": "^2.4.0",
+    "glob": "^7.1.2"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"
