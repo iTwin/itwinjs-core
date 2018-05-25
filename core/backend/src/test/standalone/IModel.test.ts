@@ -4,7 +4,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64 } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Transform, Range3d } from "@bentley/geometry-core";
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
@@ -251,6 +251,43 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
+  });
+
+  it("should find a tile tree for a geometric model", () => {
+    const tree = imodel1.tiles.getTileTreeJson("0x1c");
+    expect(tree).not.to.be.undefined;
+
+    expect(tree.id).to.equal("0x1c");
+    expect(tree.maxTilesToSkip).to.equal(1);
+    expect(tree.rootTile).not.to.be.undefined;
+
+    const tf = Transform.fromJSON(tree.location);
+    expect(tf.matrix.isIdentity()).to.be.true;
+    expect(tf.origin.isAlmostEqualXYZ(9.486452, 9.87531, 5.421084)).to.be.true;
+
+    expect(tree.rootTile.id.treeId).to.equal(tree.id);
+    expect(tree.rootTile.id.tileId).to.equal("0/0/0/0:0.000000");
+
+    const range = Range3d.fromJSON(tree.rootTile.range);
+    expect(range.low.isAlmostEqualXYZ(-20.369643, -25.905358, -15.522127)).to.be.true;
+    expect(range.high.isAlmostEqualXYZ(20.369643, 25.905358, 15.522127)).to.be.true;
+
+    expect(tree.rootTile.geometry).to.be.undefined; // for now...
+    expect(tree.rootTile.contentRange).to.be.undefined; // for now...
+
+    const childIds = [
+      "1/0/0/0:0.000000",
+      "1/0/0/1:0.000000",
+      "1/0/1/0:0.000000",
+      "1/0/1/1:0.000000",
+      "1/1/0/0:0.000000",
+      "1/1/0/1:0.000000",
+      "1/1/1/0:0.000000",
+      "1/1/1/1:0.000000",
+    ];
+    expect(tree.rootTile.childIds.length).to.equal(childIds.length);
+    for (let i = 0; i < childIds.length; i++)
+      expect(tree.rootTile.childIds[i]).to.equal(childIds[i]);
   });
 
   it("should produce an array of rows", () => {

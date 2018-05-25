@@ -7,7 +7,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps, IModelToken,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps,
+  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -43,6 +43,7 @@ export class IModelDb extends IModel {
   public models: IModelDbModels = new IModelDbModels(this);
   public elements: IModelDbElements = new IModelDbElements(this);
   public views: IModelDbViews = new IModelDbViews(this);
+  public tiles: IModelDbTiles = new IModelDbTiles(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
@@ -978,6 +979,28 @@ export class IModelDbViews {
       viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
     return viewStateData;
   }
+}
+
+/** @hidden */
+// NB: Very WIP.
+export class IModelDbTiles {
+  /** @hidden */
+  public constructor(private _iModel: IModelDb) { }
+
+  /** @hidden */
+  public getTileTreeJson(id: string): any {
+    if (!this._iModel.briefcase)
+      throw this._iModel._newNotOpenError();
+
+    const { error, result } = this._iModel.briefcase.nativeDb.getTileTree(id);
+    if (error)
+      throw new IModelError(error.status, "TreeId=" + id);
+
+    return result!;
+  }
+
+  /** @hidden */
+  public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
 }
 
 /**

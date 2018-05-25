@@ -3,8 +3,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, OpenMode } from "@bentley/bentleyjs-core";
-import { XYAndZ } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement, TileId } from "@bentley/imodeljs-common";
+import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
+import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
@@ -89,16 +89,47 @@ describe("IModelConnection", () => {
 
   });
 
-  // WIP: this is currently just testing that I hooked everything up correctly...
   it("should be able to request tiles from an IModelConnection", async () => {
-    const treeIds = new Set<string>();
-    treeIds.add(Id64.invalidId.value);
-    const tileTreeProps = await iModel.tiles.getTileTreeProps(treeIds);
-    expect(tileTreeProps.length).to.equal(0);
+    const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
+    expect(modelProps.length).to.equal(1);
 
-    const tileIds: TileId[] = [ new TileId(Id64.invalidId, "not a real tile ID") ];
-    const tileProps = await iModel.tiles.getTileProps(tileIds);
-    expect(tileProps.length).to.equal(0);
+    const treeIds = Id64.toIdSet(modelProps[0].id!);
+    const tileTreeProps = await iModel.tiles.getTileTreeProps(treeIds);
+    expect(tileTreeProps.length).to.equal(1);
+
+    const tree = tileTreeProps[0];
+    expect(tree.id).to.equal(modelProps[0].id);
+    expect(tree.maxTilesToSkip).to.equal(1);
+    expect(tree.rootTile).not.to.be.undefined;
+
+    const tf = Transform.fromJSON(tree.location);
+    expect(tf.matrix.isIdentity()).to.be.true;
+    expect(tf.origin.isAlmostEqualXYZ(0.0025, 0.0025, 10.001)).to.be.true;
+
+    const rootTile = tree.rootTile;
+    expect(rootTile.id.treeId).to.equal(tree.id);
+    expect(rootTile.id.tileId).to.equal("0/0/0/0:0.000000");
+
+    const range = Range3d.fromJSON(rootTile.range);
+    expect(range.low.isAlmostEqualXYZ(-50.0075, -50.0075, -20.003)).to.be.true;
+    expect(range.high.isAlmostEqualXYZ(50.0075, 50.0075, 20.003)).to.be.true;
+
+    expect(rootTile.geometry).to.be.undefined; // for now...
+    expect(rootTile.contentRange).to.be.undefined; // for now...
+
+    const childIds = [
+      "1/0/0/0:0.000000",
+      "1/0/0/1:0.000000",
+      "1/0/1/0:0.000000",
+      "1/0/1/1:0.000000",
+      "1/1/0/0:0.000000",
+      "1/1/0/1:0.000000",
+      "1/1/1/0:0.000000",
+      "1/1/1/1:0.000000",
+    ];
+    expect(rootTile.childIds.length).to.equal(childIds.length);
+    for (let i = 0; i < childIds.length; i++)
+      expect(rootTile.childIds[i]).to.equal(childIds[i]);
   });
 
   it("Parameterized ECSQL (#integration)", async () => {
