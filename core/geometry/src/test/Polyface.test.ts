@@ -397,4 +397,11 @@ describe("Polyface.Faces", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("Verify UV params computed from face data", () => {
+
+    //###TODO: Implement
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

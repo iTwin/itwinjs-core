@@ -9,6 +9,7 @@ import {
   PolyfaceVisitor,
   Angle,
   IndexedPolyface,
+  Point2d,
 } from "@bentley/geometry-core";
 import { VertexMap, VertexKey, VertexKeyProps } from "../VertexKey";
 import {
@@ -130,7 +131,7 @@ export class MeshBuilder {
     const triangleCount = pointCount - 2;
 
     assert(!includeParams || paramCount > 0);
-    assert(!haveParam || undefined !== mappedTexture);
+    assert(haveParam || undefined !== mappedTexture);
 
     const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
     // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
@@ -142,16 +143,26 @@ export class MeshBuilder {
   }
 
   public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): VertexKeyProps[] | undefined {
-    const { point, param, requireNormals } = visitor;
+    const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
     const qPointParams = this.mesh.points.params;
+    let params = visitor.param;
+
+    // If we do not have UVParams stored on the IndexedPolyface, compute them now
+    // (We know we have mappedTexture, otherwise we would have thrown an exception in addFromPolyfaceVisitor)
+    if (!haveParam) {
+      const mappedTexture = options.mappedTexture;
+      const transformToImodel = mappedTexture!.params.textureMatrix.transform;
+      if (transformToImodel)
+        params = mappedTexture!.computeUVParams(visitor, transformToImodel);
+    }
 
     const vertices = [];
     for (let i = 0; i < 3; ++i) {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
       const position = QPoint3d.create(point.getPoint3dAt(vertexIndex), qPointParams);
       const normal = requireNormals ? new OctEncodedNormal(visitor.getNormal(vertexIndex)) : undefined;
-      const uvParam = haveParam ? param![vertexIndex] : undefined;
+      let uvParam: Point2d | undefined = params ? params[i] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam };
     }
 
@@ -184,6 +195,7 @@ export class MeshBuilder {
 
     // ###TODO handle mappedTexture param
     // ###TODO finish computeUVParams on TextureMapping
+
 
     // set each triangle index to the index associated with the vertex key location in the vertex map
     vertices.forEach((vertexProps: VertexKeyProps, i: number) => {
