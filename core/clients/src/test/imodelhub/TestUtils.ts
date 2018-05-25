@@ -365,11 +365,11 @@ export function generateLock(idRequired: boolean, briefcaseId?: number, objectId
   return result;
 }
 
-export function mockGetLocks(imodelId: string, ...locks: Lock[]) {
+export function mockGetLocks(imodelId: string, query?: string, ...locks: Lock[]) {
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Lock");
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Lock", query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Lock>(locks);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
