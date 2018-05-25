@@ -17,6 +17,7 @@
     "copy:frontendpublic": "cpx ../core/frontend/src/public/**/* ./lib/backend/public",
     "copy:ourpublic": "cpx public/**/* ./lib/backend/public",
     "docs": "",
+    "lint": "tslint --project . 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js",
     "start": "electron ./lib/backend/ElectronMain.js"
   },
@@ -38,6 +39,7 @@
     "electron-builder": "^20.13.3",
     "node-glob": "^1.2.0",
     "rimraf": "^2.6.2",
+    "tslint": "^5.9.0",
     "typescript": "~2.7.2",
     "webpack": "^3.10.0"
   },
