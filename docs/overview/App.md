@@ -16,7 +16,7 @@ Agents and services are [backend](../learning/Glossary.md#Backend) code. Their m
 
 Agents and services are written in TypeScript/JavaScript and depend on the `@bentley/imodeljs-backend` package. They may also depend on common packages such as imodeljs-common, bentleyjs-core, or geometry-core. They frequently also use third-party JavaScript packages, as well as the services built into nodejs.
 
-Agents and Services use [logging](../learning/Logging.md) to enable users to monitor their operations and to help with diagnosing problems.
+Agents and Services use [logging](../learning/common/Logging.md) to enable users to monitor their operations and to help with diagnosing problems.
 
 See the [diagram of a Web agent](./SoftwareArchitecture.md#web) for an overview of the software components found in agents and services.
 
@@ -82,7 +82,7 @@ App-specific backends are written in TypeScript/JavaScript and depend on `@bentl
 
 An app can use many services, both general-purpose and app-specific.
 
-App backends may use [logging](../learning/Logging.md) to help with diagnosing problems.
+App backends may use [logging](../learning/common/Logging.md) to help with diagnosing problems.
 
 #### App Frontend
 

@@ -35,7 +35,7 @@ export interface LoggerLevelsConfig {
 }
 
 /** Logger allows libraries and apps to report potentially useful information about operations, and it allows apps and users to control
- * how or if the logged information is displayed or collected. See [Learning about Logging]($docs/learning/Logging.md).
+ * how or if the logged information is displayed or collected. See [Learning about Logging]($docs/learning/common/Logging.md).
  */
 export class Logger {
   private static _logError: LogFunction | undefined;

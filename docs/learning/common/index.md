@@ -9,3 +9,5 @@ The common library is contained in the following npm packages:
 
 Topics:
 * [Obtaining an AccessToken](./AccessToken.md)
+* [FeatureGates](./FeatureGates)
+* [Logging](./Logging)
