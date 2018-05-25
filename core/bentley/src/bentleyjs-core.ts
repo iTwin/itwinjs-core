@@ -43,7 +43,7 @@ export * from "./Time";
  */
 /**
  * @docs-group-description Logging
- * Classes for configuring and logging diagnostic messages - see [Logging]($docs/learning/Logging.md)
+ * Classes for configuring and logging diagnostic messages - see [Learning about Logging]($docs/learning/common/Logging.md)
  */
 /**
  * @docs-group-description Utils

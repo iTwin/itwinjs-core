@@ -36,7 +36,7 @@
 |**ElementUserLabel**|An optional string that holds a user-assigned *alias* for an Element. ElementUserLabels are **not** enforced to be unique.
 |**Entity Metadata**|The names and types of the ECProperties and ECRelationships of an Entity ECClass.
 |**Entity**|A physical or non-physical object in the real world, defined by an ECClass.
-|**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature. See [learning about FeatureGates](./FeatureGates.md).
+|**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature. See [learning about FeatureGates](./common/FeatureGates.md).
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
 |**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](../overview/App.md#app-frontend)
