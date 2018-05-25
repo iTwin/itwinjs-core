@@ -11,7 +11,8 @@
   "scripts": {
     "build": "",
     "clean": "echo NOTE: use 'rush clean' instead",
-    "lint": "node node_modules/@bentley/bentleyjs-tools/scripts/tslint.js",
+    "prelint": "echo NOTE: use 'rush lint' instead",
+    "lint": " ",
     "preinstall": "echo ERROR: use 'rush install' instead && exit 1",
     "install-imodeljs-addon": "installImodelJsNative",
     "publish:bentleyjs-tools": "cd tools/bentley && npm publish",

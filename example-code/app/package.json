@@ -12,6 +12,7 @@
     "copy:test-backend-assets": "cpx ./src/backend/test/assets/**/* ./lib/backend/test/assets",
     "extract": "node ./node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
+    "lint": "tslint --project . 1>&2",
     "pretest": "npm run copy:test-backend-assets && npm run copy:backend-assets && npm run build-code",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/backend/test\""
   },
@@ -46,6 +47,7 @@
     "cpx": "^1.5.0",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
+    "tslint": "^5.9.0",
     "typescript": "~2.7.2",
     "xmlhttprequest": "^1.8.0"
   }
