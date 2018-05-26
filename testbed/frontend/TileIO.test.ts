@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
-import { Mesh, DisplayParams, System } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsList, SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { LinePixels, GeometryClass, ModelProps, RelatedElementProps } from "@bentley/imodeljs-common";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
@@ -136,6 +136,26 @@ describe("TileIO", () => {
         expect(mesh.colorMap.indexOf(0x0000ff00)).to.equal(0); // green is first and only color in color table
         expect(mesh.colors.length).to.equal(0);
 
+        // Validate RenderGraphic
+        const graphic = result.renderGraphic!;
+        expect(graphic).not.to.be.undefined;
+        expect(graphic).to.be.instanceOf(Batch);
+        const batch = graphic as Batch;
+        expect(batch.featureTable.isUniform).to.be.true;
+        expect(batch.graphic).not.to.be.undefined;
+        expect(batch.graphic).to.be.instanceOf(MeshGraphic);
+        const mg = batch.graphic as MeshGraphic;
+        expect(mg.surfaceType).to.equal(SurfaceType.Lit);
+        expect(mg.meshData).not.to.be.undefined;
+        expect(mg.meshData.edgeLineCode).to.equal(0);
+        expect(mg.meshData.edgeWidth).to.equal(1);
+        expect(mg.meshData.isPlanar).to.be.true;
+        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
+        expect(mg.meshData.lut.numVertices).to.equal(4);
+        expect(mg.meshData.lut.colorInfo.isUniform).to.be.true;
+        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.false;
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
+
         // Validate display params
         const displayParams = mesh.displayParams;
         expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
@@ -218,7 +238,7 @@ describe("TileIO", () => {
         for (let i = 0; i < indices.length; i++)
           expect(indices[i]).to.equal(expectedIndices0[i]);
 
-        // Validate vertex positions
+        // Validate vertices and normals
         const pos0 = [
           Point3d.create(2.5, 0, 0), Point3d.create(2.5, 10, 0), Point3d.create(7.5, 0, 0),
           Point3d.create(-2.5, 0, 0), Point3d.create(-2.5, 10, 0), Point3d.create(2.5, 0, 0),
@@ -239,7 +259,7 @@ describe("TileIO", () => {
         // Validate color table (3 colors, red, green, blue - no alpha)
         expect(mesh.colorMap.length).to.equal(3);
         expect(mesh.colorMap.isUniform).to.be.false;
-        // expect(mesh.colorMap.hasTransparency).to.be.false;
+        expect(mesh.colorMap.hasTransparency).to.be.false;
         expect(mesh.colorMap.indexOf(0x00ff0000)).to.equal(0); // red is first color in color table
         expect(mesh.colorMap.indexOf(0x0000ff00)).to.equal(1); // green is 2nd color in color table
         expect(mesh.colorMap.indexOf(0x000000ff)).to.equal(2); // blue is 3rd color in color table
@@ -271,7 +291,7 @@ describe("TileIO", () => {
         for (let i = 0; i < indices.length; i++)
           expect(indices[i]).to.equal(expectedIndices1[i]);
 
-        // Validate vertex positions
+        // Validate vertices and normals
         const pos1 = [
           Point3d.create(2.5, -10, 0), Point3d.create(2.5, 0, 0), Point3d.create(7.5, -10, 0),
           Point3d.create(-2.5, -10, 0), Point3d.create(-2.5, 0, 0), Point3d.create(2.5, -10, 0),
@@ -299,6 +319,44 @@ describe("TileIO", () => {
         const expectedColors1 = [0, 0, 0, 1, 1, 1, 2, 2, 2];
         for (let i = 0; i < mesh.colors.length; i++)
           expect(mesh.colors[i]).to.equal(expectedColors1[i]);
+
+        // Validate RenderGraphic
+        const graphic = result.renderGraphic!;
+        expect(graphic).not.to.be.undefined;
+        expect(graphic).to.be.instanceOf(Batch);
+        const batch = graphic as Batch;
+        expect(batch.featureTable.isUniform).to.be.false;
+        expect(batch.featureTable.length).to.equal(6);
+        expect(batch.graphic).not.to.be.undefined;
+        expect(batch.graphic).to.be.instanceOf(GraphicsList);
+        const list = batch.graphic as GraphicsList;
+        expect(list.graphics.length).to.equal(2);
+
+        expect(list.graphics[0]).to.be.instanceOf(MeshGraphic);
+        let mg = list.graphics[0] as MeshGraphic;
+        expect(mg.surfaceType).to.be.equal(SurfaceType.Lit);
+        expect(mg.meshData).not.to.be.undefined;
+        expect(mg.meshData.edgeLineCode).to.equal(0);
+        expect(mg.meshData.edgeWidth).to.equal(1);
+        expect(mg.meshData.isPlanar).to.be.true;
+        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
+        expect(mg.meshData.lut.numVertices).to.equal(9);
+        expect(mg.meshData.lut.colorInfo.isUniform).to.be.false;
+        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.true;
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
+
+        expect(list.graphics[1]).to.be.instanceOf(MeshGraphic);
+        mg = list.graphics[1] as MeshGraphic;
+        expect(mg.surfaceType).to.be.equal(SurfaceType.Lit);
+        expect(mg.meshData).not.to.be.undefined;
+        expect(mg.meshData.edgeLineCode).to.equal(0);
+        expect(mg.meshData.edgeWidth).to.equal(1);
+        expect(mg.meshData.isPlanar).to.be.true;
+        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
+        expect(mg.meshData.lut.numVertices).to.equal(9);
+        expect(mg.meshData.lut.colorInfo.isUniform).to.be.false;
+        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.true;
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.true;
 
         // Validate display params
         const displayParams = mesh.displayParams;
