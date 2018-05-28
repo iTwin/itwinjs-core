@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as h from "@common/hierarchy";
-import { nullable } from "./Misc";
+import { nullable, createRandomHexColor, createRandomRgbColor } from "./Misc";
 import { createRandomECInstanceKey } from "./EC";
 
 export const createRandomECInstanceNodeKey = (): h.ECInstanceNodeKey => {
@@ -18,9 +18,9 @@ export const createRandomECInstanceNode = (): h.Node => {
   return {
     key: createRandomECInstanceNodeKey(),
     label: faker.random.words(),
-    description: faker.lorem.sentence(),
-    foreColor: nullable<string>(faker.commerce.color),
-    backColor: nullable<string>(faker.commerce.color),
+    description: nullable<string>(faker.lorem.sentence),
+    foreColor: nullable<string>(createRandomHexColor),
+    backColor: nullable<string>(createRandomRgbColor),
     hasChildren: faker.random.boolean(),
     isSelectable: faker.random.boolean(),
     isEditable: faker.random.boolean(),

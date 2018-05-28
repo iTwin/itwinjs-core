@@ -24,7 +24,7 @@ describe("TreeDataProvider", async () => {
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
-    provider = new TreeDataProvider(imodel.iModelToken, "SimpleHierarchy");
+    provider = new TreeDataProvider(imodel, "SimpleHierarchy");
   });
   after(async () => {
     await imodel.closeStandalone();
