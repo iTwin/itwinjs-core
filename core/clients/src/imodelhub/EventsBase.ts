@@ -74,8 +74,11 @@ export abstract class EventBaseHandler {
     const options: RequestOptions = {
       method: "DELETE",
       headers: { authorization: sasToken },
-      timeout: requestTimeout,
     };
+
+    // Request timeout is in seconds, wait 50% more than the expected timeout from server
+    if (requestTimeout)
+      options.timeout = requestTimeout * 1500;
 
     new DefaultRequestOptionsProvider().assignOptions(options);
 
