@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult, Id64, PerfLogger } from "@bentley/bentleyjs-core";
+import { OpenMode, DbResult, Id64, PerfLogger, ChangeSetStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
 import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../ChangeSummaryManager";
@@ -50,7 +50,7 @@ describe("ChangeSummary", () => {
       MockAssetUtil.tearDownOfflineFixture();
   });
 
-  it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
+  it("Attach / Detach ChangeCache file to pullonly briefcase", async () => {
     const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
@@ -347,8 +347,28 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion());
+    // extract on fixedVersion(exclusive access) iModel should fail
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Exclusive));
+    try {
+      assert.exists(iModel);
+      await ChangeSummaryManager.extractChangeSummaries(iModel);
+    } catch (e) {
+      assert.isDefined(e.errorNumber);
+      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+    }
+
+    // extract on fixedVersion(shared access) iModel should fail
+    iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Shared));
+    try {
+      assert.exists(iModel);
+      await ChangeSummaryManager.extractChangeSummaries(iModel);
+    } catch (e) {
+      assert.isDefined(e.errorNumber);
+      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+    }
+
     // extract on closed iModel should fail
+    iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion());
     try {
       assert.exists(iModel);
       await iModel.close(accessToken);
@@ -358,7 +378,7 @@ describe("ChangeSummary", () => {
       assert.equal(e.errorNumber, IModelStatus.BadArg);
     }
 
-    // open standalone iModel
+    // extract on standalone iModel should fail
     iModel = IModelTestUtils.openIModel("test.bim");
     assert.exists(iModel);
     assert.exists(iModel.briefcase);
