@@ -2,7 +2,8 @@
   "require": [
     "source-map-support/register",
     "ts-node/register",
-    "tsconfig-paths/register"
+    "tsconfig-paths/register",
+    "ignore-styles"
   ],
   "include": [
     "**/*.ts"
