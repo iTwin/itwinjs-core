@@ -10,7 +10,7 @@ ignore: true
 * [Lesson 3: ECSQL Data Types](./ECSQLDataTypes)
 * [Lesson 4: Relationships and Joins](./Joins)
 * [Lesson 5: Class Polymorphism](./PolymorphicQueries)
-* [Lesson 6: SQL Functions](./Functions)
+* [Lesson 6: SQL Functions](./SQLFunctions)
 
 ## Advanced lessons
 

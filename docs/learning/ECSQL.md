@@ -309,4 +309,4 @@ See also [SQLite Functions overview](https://www.sqlite.org/lang_corefunc.html).
 
 ECSQL can perform [spatial queries](./SpatialQueries.md).
 
-ECSQL has a number of [built-in geometry functions](./SqlFuncs.md)
+ECSQL has a number of [built-in geometry functions](./GeometrySqlFuncs.md)

@@ -62,9 +62,9 @@ As every iModel is based upon [BIS](../../bis/intro/introduction.md), the exampl
 * [Lesson 3: ECSQL Data Types](./ECSQLDataTypes)
 * [Lesson 4: Relationships and Joins](./Joins)
 * [Lesson 5: Class Polymorphism](./PolymorphicQueries)
-* [Lesson 6: SQL Functions](./Functions)
+* [Lesson 6: SQL Functions](./SQLFunctions)
 
 ### Advanced lessons
 
-* [Lesson 7: Querying ECSchemas (Meta queries)](./MetaQueries)
+* [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries)
 * [Lesson 8: Querying ChangeSummaries](./ChangeSummaryQueries)
