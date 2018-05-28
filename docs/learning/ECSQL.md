@@ -266,7 +266,7 @@ Return the Model for an Element with the specified condition (No join needed):
 
 ## Polymorphic Queries
 
-By default, any ECClass in the FROM clause of an ECSQL is treated polymorphically, i.e. all its sub-classes are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.
+By default, any ECClass in the FROM clause of an ECSQL is treated polymorphically, i.e. all its subclasses are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.
 
 ### Examples
 

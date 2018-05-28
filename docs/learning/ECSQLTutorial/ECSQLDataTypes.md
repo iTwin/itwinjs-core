@@ -138,9 +138,9 @@ following system properties (See [ECSQL Reference](../ECSQL.md#points) for detai
 
 Property | Description
 --- | ---
-X | X coordinate of the Point2d or Point3d
-Y | Y coordinate of the Point2d or Point3d
-Z | Z coordinate of the Point3d
+`X` | X coordinate of the Point2d or Point3d
+`Y` | Y coordinate of the Point2d or Point3d
+`Z` | Z coordinate of the Point3d
 
 > **Try it yourself**
 >
@@ -211,6 +211,8 @@ Property | Description
 > Parent.Id | Parent.RelECClassId
 > -- | --
 > 0x4 | BisCore.ElementOwnsChildElements
+
+Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
 
 ## Structs
 
