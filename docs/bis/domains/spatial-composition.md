@@ -1,6 +1,11 @@
-# Spatial Composition (alias spcomp)
+# Schema : Spatial Composition (alias spcomp)
 
 This schema describes the breakdown of `SpatialLocationElement`. It is intended to be used across disciplines. For instance, it is meant to allow making a single hierarchy that composes instances of `buildingspatial:BuildableVolume` into a `site:Site`. The composition relationship can be applied in a recursive manner, i.e. a composed element can be composed into another composition. Cyclic references are prevented by rules in the `domain handler`. Semantically, composition means that composer and composed elements describe the same volume of space and therefore sharing a geometric location is not a conflict, it is actually expected. Compositions imply a dependency, i.e. the definition of the whole depends on the definition of the parts and the parts depend on the existence of the whole. The behavior that is implied by the dependency is established and maintained inside applications.
+
+```xml
+<ECSchema schemaName="SpatialComposition" alias="spcomp" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+```
 
 ![SpatialComposition](./media/composite-element.png)
 
@@ -18,6 +23,9 @@ This schema describes the breakdown of `SpatialLocationElement`. It is intended 
 ### CompositeElement
 
 A spatial element that may be Composite of other CompositeElements
+
+Geometry Use:
+1 - Defined in derived types. I is a boundary of some sort, either curve on terrain with height or 3d volume.
 
 Naming :
 1 - Do not repeat the name of the base type `SpatialLocation`, it makes the name to long especially when this name is repeated in the relationship names later. Leaving that out makes the name sound more general than it should however namespace should resolve that.
@@ -67,7 +75,7 @@ Naming :
 Naming :
 1 - Equivalent of : `IfcRelAggregates`.
 
-Relates the Composer with its' composees
+Relates the Composer with its' composes
 
 ```xml
     <ECRelationshipClass typeName="CompositeComposesSubComposites" strength="embedding" modifier="None">
@@ -108,3 +116,9 @@ Name|Value
 CodeValue|NULL
 CodeScope|CodeScopeSpec::Repository
 CodeSpec|bis:NullCodeSpec
+
+## iModel Bridges using SpatialComposition
+
+Bridges that do not store `SpatialComposition` relationships natively, may compute and maintain those in their bridge. In the long run it is not sure if the tradeoff of storing and maintaining the persistance of relationships outweighs the performance loss of computing them each time. However a future domain handler API may elect to compute them (as bim software grows more mature).
+
+## Domain Standardization of SpatialCategories

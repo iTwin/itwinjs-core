@@ -4,10 +4,10 @@
 
 ### [SpatialComposition](./spatial-composition.md)
 
-### [ClassificationSystems](./classifications)
+### [ClassificationSystems](./classifications.md)
 
-### [Grids](./grids)
+### [Grids](./grids.md)
 
 ## Building discipline
 
-## [BuildingSpatial](./building-spatial)
+## [BuildingSpatial](./building-spatial.md)
