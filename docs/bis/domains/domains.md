@@ -2,7 +2,7 @@
 
 ## Shared across disciplines
 
-### [SpatialComposition](./building-spatial.md)
+### [SpatialComposition](./spatial-composition.md)
 
 ### [ClassificationSystems](./classifications)
 
