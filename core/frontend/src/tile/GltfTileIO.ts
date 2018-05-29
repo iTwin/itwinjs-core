@@ -7,7 +7,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
+import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolylineList, MeshPolyline } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
@@ -350,6 +350,13 @@ export namespace GltfTileIO {
           // ###TODO: read mesh edges...
           break;
         }
+        case Mesh.PrimitiveType.Polyline:
+        case Mesh.PrimitiveType.Point: {
+          if (undefined !== mesh.polylines)
+            return undefined;
+          if (!this.readPolylines(mesh.polylines!, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
+            return undefined;
+        }
         default: {
           assert(false, "unhandled primitive type"); // ###TODO: points and polylines...
           return undefined;
@@ -463,6 +470,52 @@ export namespace GltfTileIO {
       for (let i = 0; i < data.count; i++) {
         const index = 2 * i; // 2 float per param...
         params.push(new Point2d(data.buffer[index], data.buffer[index + 1]));
+      }
+
+      return true;
+    }
+
+    protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
+      const view = this.getBufferView(json, accessorName);
+      if (undefined === view)
+        return false;
+
+      const startDistance = new Float32Array(1);
+      const sdBytes = new Uint8Array(startDistance);
+      const numIndices = new Uint32Array(1);
+      const niBytes = new Uint8Array(numIndices);
+      const index16 = new Uint16Array(1);
+      const i16Bytes = new Uint8Array(index16);
+      const index32 = new Uint32Array(1);
+      const i32Bytes = new Uint8Array(index32);
+
+      let ndx = 0;
+      for (let p = 0; p < view.count; ++p) {
+        for (let b = 0; b < 4; ++b)
+          sdBytes[b] = view.data[ndx++];
+        for (let b = 0; b < 4; ++b)
+          niBytes[b] = view.data[ndx++];
+
+        if (!disjoint && numIndices[0] < 2)
+          continue;
+
+        const indices: number[] = new Array(numIndices[0]);
+
+        if (DataType.UnsignedShort === view.type) {
+          for (let i = 0; i < numIndices[0]; ++i) {
+            for (let b = 0; b < 4; ++b)
+              i16Bytes[b] = view.data[ndx++];
+            indices[i] = index16[0];
+          }
+        } else if (DataType.UInt32 === view.type) {
+          for (let i = 0; i < numIndices[0]; ++i) {
+            for (let b = 0; b < 8; ++b)
+              i32Bytes[b] = view.data[ndx++];
+            indices[i] = index32[0];
+          }
+        }
+
+        polylines.push(new MeshPolyline(startDistance[0], indices));
       }
 
       return true;
