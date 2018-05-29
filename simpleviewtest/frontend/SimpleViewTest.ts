@@ -8,6 +8,14 @@ import { ProjectApi, ProjectScope } from "./ProjectApi";
 
 // tslint:disable:no-console
 
+// show status in the output HTML
+function showStatus(string1: string, string2?: string) {
+  let outString: string = string1;
+  if (string2)
+    outString = outString.concat(" ", string2);
+  document.getElementById("showstatus")!.innerHTML = outString;
+}
+
 class SimpleViewState {
   public accessToken?: AccessToken;
   public project?: Project;
@@ -129,11 +137,12 @@ export class LocateTool extends ViewTool {
 export class StandardViewRotationTool extends ViewTool {
   public static toolId = "View.StandardRotation";
   private rotations = [StandardViewId.Top, StandardViewId.Iso, StandardViewId.Front];
+  private rotationNames = ["Top", "Iso", "Front"];
   private rotationIndex = 0;
 
   public onDataButtonDown(ev: BeButtonEvent) {
     if (ev.viewport) {
-      console.log("STANDARD VIEW ROTATION CLICKED", this.rotationIndex); //tslint:disable-line
+      showStatus(this.rotationNames[this.rotationIndex], "view");
       ev.viewport.setStandardRotation(this.rotations[this.rotationIndex]);
       this.rotationIndex = (this.rotationIndex + 1) % 3;
     }
@@ -191,14 +200,6 @@ function wireIconsToFunctions() {
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);
-}
-
-// show status in the output HTML
-function showStatus(string1: string, string2?: string) {
-  let outString: string = string1;
-  if (string2)
-    outString = outString.concat(" ", string2);
-  document.getElementById("showstatus")!.innerHTML = outString;
 }
 
 // ----------------------------------------------------------
