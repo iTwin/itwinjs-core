@@ -15,7 +15,7 @@ work directly with them. Instead, in ECSQL, you use builtin functions to
 create, analyze, and extract or compute primitive values from them.
 If you return a structured data type value from an ECSQL statement, it will have the
 type of ArrayBuffer in script.
-You will normally have to convert a returned anArrayBuffer to the appropriate geometry
+You will normally have to convert a returned ArrayBuffer to the appropriate geometry
 type before you can work with it in script. See, for example, [Range3d.fromArrayBuffer]($geometry).
 
 ### iModel_point

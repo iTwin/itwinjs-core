@@ -62,7 +62,7 @@ As every iModel is based upon [BIS](../../bis/intro/introduction.md), the exampl
 * [Lesson 3: ECSQL Data Types](./ECSQLDataTypes)
 * [Lesson 4: Relationships and Joins](./Joins)
 * [Lesson 5: Class Polymorphism](./PolymorphicQueries)
-* [Lesson 6: SQL Functions](./SQLFunctions)
+* [Lesson 6: Spatial Queries](./SpatialQueries)
 
 ### Advanced lessons
 
