@@ -100,6 +100,11 @@ export class Texture extends RenderTexture {
     super(params);
     this.texture = texture;
   }
+
+  /** Free this object in the WebGL wrapper. */
+  public dispose() {
+    this.texture.dispose();
+  }
 }
 
 /** Parameters used internally to define how to create a texture for use with WebGL. */

@@ -148,7 +148,6 @@ export class MeshBuilder {
     const qPointParams = this.mesh.points.params;
 
     // If we do not have UVParams stored on the IndexedPolyface, compute them now
-    // (We know we have mappedTexture, otherwise we would have thrown an exception in addFromPolyfaceVisitor)
     let params: Point2d[] | undefined;
     if (haveParam && options.mappedTexture) {
       assert(this.mesh.points.length === 0 || this.mesh.features !== undefined);

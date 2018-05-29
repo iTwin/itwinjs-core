@@ -30,10 +30,10 @@ import { NullGeometryHandler, UVSurface } from "../GeometryHandler";
  *
  * * Simple construction for strongly typed GeometryQuery objects:
  *
- * ** Create a builder with `builder = PolyfaceBuilder.creaate()`
+ * ** Create a builder with `builder = PolyfaceBuilder.create()`
  * ** Add GeemotryQuery objects:
  *
- * *** `builder.addGeometryQUery(g: GeometryQuery)`
+ * *** `builder.addGeometryQuery(g: GeometryQuery)`
  * *** `builder.addCone(cone: Cone)`
  * *** `builder.addTorusPipe(surface: TorusPipe)`
  * *** `builder.addLinearSweepLineStrings(surface: LinearSweep)`
@@ -44,10 +44,11 @@ import { NullGeometryHandler, UVSurface } from "../GeometryHandler";
  * *** `builder.addBox(box: Box)`
  * *** `buidler.addIndexedPolyface(polyface)`
  * **  Extract with `builder.claimPolyface (true)`
- * * Simple construction for  ephemeral constructive data:
  *
- * ** Create a builder with `builder = PolyfaceBuilder.creaate()`
- * ** Add from fragmenttary data:
+ * * Simple construction for ephemeral constructive data:
+ *
+ * ** Create a builder with `builder = PolyfaceBuilder.create()`
+ * ** Add from fragmentary data:
  *
  * *** `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
  * *** `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
@@ -60,10 +61,11 @@ import { NullGeometryHandler, UVSurface } from "../GeometryHandler";
  * *** `builder.addUVGrid(surface,numU, numV, createFanInCaps)`
  * *** `builder.addGraph(Graph, acceptFaceFunction)`
  * **  Extract with `builder.claimPolyface(true)`
+ *
  * * Low-level detail construction -- direct use of indices
  *
- * ** Create a builder with `builder = PolyfaceBuilder.creaate()`
- * ** Add GeemotryQuery objects
+ * ** Create a builder with `builder = PolyfaceBuilder.create()`
+ * ** Add GeometryQuery objects
  *
  * *** `builder.findOrAddPoint(point)`
  * *** `builder.findOrAddPointInLineString (linestring, index)`
@@ -202,7 +204,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   * Announce point coordinates.  The implemetation is free to either create a new point or (if knonw) return indxex of a prior point with the same coordinates.
+   * Announce point coordinates.  The implemetation is free to either create a new point or (if known) return index of a prior point with the same coordinates.
    */
   public findOrAddPointXYZ(x: number, y: number, z: number): number {
     return this.polyface.addPointXYZ(x, y, z);
@@ -562,7 +564,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       // evaluate new points ....
       index1.clear();
       for (let u = 0; u <= numU; u++) {
-        surface.UVFractionToPoint(u * du, v * dv, xyz);
+        surface.UVFractionToPoint(u * du, v * dv, xyz); // ### TODO: Replace with UVFractionToPointAndTangents()
         index1.push(this.findOrAddPoint(xyz));
       }
       if (createFanInCaps && (v === 0 || v === numV))
