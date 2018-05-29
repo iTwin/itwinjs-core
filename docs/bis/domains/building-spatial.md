@@ -8,6 +8,7 @@ They are used to build the spatial structure of a building (that serves as the p
     <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
     <ECSchemaReference name="SpatialComposition" version="01.00" alias="spcomp" />
 ```
+![SpatialComposition](./media/building-spatial.png)
 
 ## Classes
 
@@ -15,8 +16,13 @@ They are used to build the spatial structure of a building (that serves as the p
 
 A civil `BuildableVolume` also known as Sub-Site. The portion of a site that can be used for buildings and facilities like parking lots.
 
+Naming:
+1 - Matches with IAI `IfcSite` (partial).
+
 Geometry Use:
 1 - 3d solid or extruded closed `CurveVector`
+3 - Local Coordinates : z points away from the center of the earth.
+
 
 ```xml
     <ECEntityClass typeName="BuildableVolume" displayLabel="BuildableVolume">
@@ -38,6 +44,7 @@ Naming :
 
 Geometry Use:
 1 -
+3 - Local Coordinates : z points away from the center of the earth.
 
 ```xml
     <ECEntityClass typeName="Building" displayLabel="Building">
@@ -59,7 +66,7 @@ Naming:
 
 Geometry Use:
 1 -
-
+3 - Local Coordinates : z points away from the center of the earth.
 
 ```xml
     <ECEntityClass typeName="Story" displayLabel="Story">
@@ -79,6 +86,7 @@ Naming :
 Geometry Use:
 1 - Can be 2d closed `CurveVector` defining a volume when combined with height.
 2 - Can be a closed 3d volume.
+3 - Local Coordinates : z points away from the center of the earth.
 
 ```xml
     <ECEntityClass typeName="Space" displayLabel="Space" description="a spatial aspect class of a real-world Space object">

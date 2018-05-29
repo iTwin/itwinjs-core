@@ -26,6 +26,7 @@ A spatial element that may be Composite of other CompositeElements
 
 Geometry Use:
 1 - Defined in derived types. I is a boundary of some sort, either curve on terrain with height or 3d volume.
+2 - Local Coordinates : z points away from the center of the earth.
 
 Naming :
 1 - Do not repeat the name of the base type `SpatialLocation`, it makes the name to long especially when this name is repeated in the relationship names later. Leaving that out makes the name sound more general than it should however namespace should resolve that.
@@ -42,10 +43,14 @@ Naming :
 
 ### CompositeBoundary
 
-A CompositeElement that is delimited by a curve on a terrain. We expect a closed curve on a surface as geometry.
+A CompositeElement that is delimited by a curve on a terrain.
 
 Naming :
 1 - Boundary indicates a 2 dimensional perimeter (on a terrain surface) for the location.
+
+Geometry Use:
+1 - A closed curve on a surface as geometry.
+2 - Local Coordinates : z points away from the center of the earth.
 
 ```xml
     <ECEntityClass typeName="CompositeBoundary" modifier="Abstract">
@@ -56,6 +61,10 @@ Naming :
 ### CompositeVolume
 
 A CompositeElement that is delimited by a volume
+
+Geometry Use:
+1 -
+2 - Local Coordinates : z points away from the center of the earth.
 
 Naming :
 1 - Volume indicates a 3d solid object to delimit the spatial location.
