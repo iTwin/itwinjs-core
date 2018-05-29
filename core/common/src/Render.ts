@@ -327,7 +327,7 @@ export class GraphicParams {
     return graphicParams;
   }
 
-  public static FromBlankingFill(fillColor: ColorDef): GraphicParams {
+  public static fromBlankingFill(fillColor: ColorDef): GraphicParams {
     const graphicParams = new GraphicParams();
     graphicParams.setFillColor(fillColor);
     graphicParams.fillFlags = FillFlags.Blanking;
