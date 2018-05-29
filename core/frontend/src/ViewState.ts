@@ -1131,7 +1131,6 @@ export abstract class ViewState3d extends ViewState {
   public drawDecorations(context: DecorateContext): void {
     this.drawSkyBox(context);
     this.drawGroundPlane(context);
-    this.drawDebugDecorations(context);
   }
 
   protected drawSkyBox(context: DecorateContext): void {
@@ -1163,37 +1162,6 @@ export abstract class ViewState3d extends ViewState {
     gf.setSymbology(green, green, 1);
     gf.addArc(ellipse, true, true);
     context.addWorldDecoration(gf.finish()!);
-  }
-
-  protected drawDebugDecorations(context: DecorateContext) {
-    const rect = context.viewport.viewRect;
-    const radius = 0.05 * rect.width;
-    const center = new Point3d(0.5 * rect.width, 0.5 * rect.height, 0.0);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius * 1.1, radius * 1.1);
-    const graphic = context.createViewOverlay();
-    // const white = ColorDef.white.clone();
-    // const black = ColorDef.black.clone();
-    const white = new ColorDef(ColorByName.turquoise);
-    const black = new ColorDef(ColorByName.tomato);
-    white.setTransparency(165);
-    graphic.setSymbology(white, white, 4);
-    graphic.addArc2d(ellipse, true, true, 0.0);
-    black.setTransparency(100);
-    graphic.setSymbology(black, black, 4);
-    graphic.addArc2d(ellipse2, false, false, 0.0);
-    white.setTransparency(20);
-    graphic.setSymbology(white, white, 4);
-    graphic.addArc2d(ellipse, false, false, 0.0);
-    const gf = graphic.finish();
-    assert(undefined !== gf);
-    context.addViewOverlay(gf!);
-
-    const line = context.createViewOverlay();
-    line.setSymbology(black, black, 10);
-    line.addLineString([new Point3d(0.25 * rect.width, 0.25 * rect.height, 0), new Point3d(0.75 * rect.width, 0.75 * rect.height, 0)]);
-    line.addPointString([new Point3d(0.25 * rect.width, 0.75 * rect.height, 0), new Point3d(0.75 * rect.width, 0.25 * rect.height, 0)]);
-    context.addViewOverlay(line.finish()!);
   }
 }
 
