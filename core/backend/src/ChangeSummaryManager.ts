@@ -38,7 +38,6 @@ export interface InstanceChange {
   changedInstance: { id: Id64, className: string };
   opCode: ChangeOpCode;
   isIndirect: boolean;
-  changedProperties: { before: any, after: any };
 }
 
 /** Options for [ChangeSummaryManager.extractChangeSummaries]($backend). */
@@ -322,7 +321,9 @@ export class ChangeSummaryManager {
 
   /** Queries the ChangeSummary for the specified change summary id
    *
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * See also
+   * - `ECDbChange.ChangeSummary` ECClass in the *ECDbChange* ECSchema
+   * - [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @param iModel iModel
    * @param changeSummaryId ECInstanceId of the ChangeSummary
    * @returns Returns the requested ChangeSummary object
@@ -346,11 +347,12 @@ export class ChangeSummaryManager {
 
   /** Queries the InstanceChange for the specified instance change id.
    *
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   *
+   * See also
+   * - `ECDbChange.InstanceChange` ECClass in the *ECDbChange* ECSchema
+   * - [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @param iModel iModel
    * @param instanceChangeId ECInstanceId of the InstanceChange (see `ECDbChange.InstanceChange` ECClass in the *ECDbChange* ECSchema)
-   * @returns Returns the requested InstanceChange object
+   * @returns Returns the requested InstanceChange object (see `ECDbChange.InstanceChange` ECClass in the *ECDbChange* ECSchema)
    * @throws [IModelError]($common) if instance change does not exist for the specified id, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
@@ -377,31 +379,27 @@ export class ChangeSummaryManager {
         };
       });
 
-    switch (instanceChange.opCode) {
-      case ChangeOpCode.Insert:
-        instanceChange.changedProperties.after = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.AfterInsert);
-        break;
-
-      case ChangeOpCode.Update:
-        instanceChange.changedProperties.before = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.BeforeUpdate);
-        instanceChange.changedProperties.after = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.AfterUpdate);
-        break;
-
-      case ChangeOpCode.Delete:
-        instanceChange.changedProperties.before = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.BeforeDelete);
-        break;
-    }
-
     return instanceChange;
   }
 
-  private static queryPropertyValueChanges(iModel: IModelDb, instanceChange: InstanceChange, changedValueState: ChangedValueState): object {
+  /** Queries the property value changes for the specified instance change id and the specified ChangedValueState.
+   *
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @param iModel iModel
+   * @param instanceChange Instance Change
+   * @param changedValueState Changed State to query the changes for
+   * @returns Returns the property value changes
+   * @throws [IModelError]($common) if instance change does not exist, or if the
+   * change cache file hasn't been attached, or in case of other errors.
+   */
+  public static queryPropertyValueChanges(iModel: IModelDb, instanceChange: InstanceChange, changedValueState: ChangedValueState): any {
     // query property value changes just to build a SELECT statement against the class of the changed instance
-    let propValECSql: string = "SELECT ";
+    let propValECSql: string = "";
     iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, instanceChange.id);
         let isFirstRow: boolean = true;
+        propValECSql = "SELECT ";
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           if (!isFirstRow)
             propValECSql += ",";
@@ -422,6 +420,9 @@ export class ChangeSummaryManager {
           isFirstRow = false;
         }
       });
+
+    if (propValECSql.length === 0)
+      throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChange.id.value}.`);
 
     // Avoiding parameters in the Changes function speeds up performance because ECDb can do optimizations
     // if it knows the function args at prepare time

@@ -5,8 +5,8 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64, PerfLogger, ChangeSetStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
-import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
-import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../ChangeSummaryManager";
+import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState } from "@bentley/imodeljs-common";
+import { ChangeSummaryManager, ChangeSummary } from "../../ChangeSummaryManager";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelDb, OpenParams, AccessMode } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -428,14 +428,28 @@ describe("ChangeSummary", () => {
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
 
-      const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>() };
+      const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
         perfLogger = new PerfLogger("ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary " + changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const row = stmt.getRow();
 
-          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
+          const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
+          switch (instanceChange.opCode) {
+            case ChangeOpCode.Insert:
+              instanceChange.after = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.AfterInsert);
+              break;
+            case ChangeOpCode.Update:
+              instanceChange.before = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.BeforeUpdate);
+              instanceChange.after = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.AfterUpdate);
+              break;
+            case ChangeOpCode.Delete:
+              instanceChange.before = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.BeforeDelete);
+              break;
+            default:
+              throw new Error("Unexpected ChangedOpCode " + instanceChange.opCode);
+          }
           content.instanceChanges.push(instanceChange);
         }
         perfLogger.dispose();
