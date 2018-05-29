@@ -1,6 +1,7 @@
-import { IModelApp, IModelConnection, ViewState, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
@@ -86,6 +87,28 @@ async function selectView(state: SimpleViewState, viewName: string) {
 
 let theViewport: Viewport | undefined;
 
+export class LocateTool extends ViewTool {
+  public static toolId = "View.Locate";
+
+  private _curPoint?: Point3d;
+
+  public constructor() { super(); }
+
+  public onDataButtonDown(_ev: BeButtonEvent) { }
+  public updateDynamics(ev: BeButtonEvent) { this.onModelMotion(ev); }
+  public onModelMotion(ev: BeButtonEvent) {
+    this._curPoint = ev.point;
+
+    if (ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
+
+  public decorate(context: DecorateContext) {
+    if (undefined !== this._curPoint)
+      context.viewport.drawLocateCursor(context, this._curPoint, context.viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), true);
+  }
+}
+
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
@@ -110,7 +133,8 @@ function startWindowArea(_event: any) {
 
 // starts View Scroll (I don't see a Zoom command)
 function startZoom(_event: any) {
-  IModelApp.tools.run("View.Scroll", theViewport!);
+  // IModelApp.tools.run("View.Scroll", theViewport!);
+  IModelApp.tools.run("View.Locate", theViewport!);
 }
 
 // starts walk command
@@ -168,6 +192,8 @@ async function main() {
     // initialize the Project and IModel Api
     await ProjectApi.init();
     await IModelApi.init();
+
+    IModelApp.tools.register(LocateTool);
 
     // log in.
     showStatus("logging in as", configuration.userName);

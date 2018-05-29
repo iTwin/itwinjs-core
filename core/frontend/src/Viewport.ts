@@ -294,7 +294,7 @@ export class Viewport {
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
-  public invalidateDecorations() { }
+  public invalidateDecorations() { this.sync.invalidateDecorations(); }
 
   public changeDynamics(dynamics: DecorationList | undefined): void {
     if (this.isActive) {
