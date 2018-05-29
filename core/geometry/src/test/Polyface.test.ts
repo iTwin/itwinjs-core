@@ -17,6 +17,7 @@ import { expect } from "chai";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { GeometryCoreTestIO } from "./IModelJson.test";
+// import { StrokeOptions } from "../geometry-core";
 
 /* tslint:disable:no-console */
 let outputFolderPath = "./src/test/output";
@@ -398,10 +399,22 @@ describe("Polyface.Faces", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("Verify UV params computed from face data", () => {
+  /*
+  it.only("Verify polyface params with native output", () => {
+    const options = new StrokeOptions();
+    options.needNormals = true;
+    options.needParams = true;
+    const builder = PolyfaceBuilder.create(options);
+    const torusPipes = Sample.createTorusPipes();
 
-    // ###TODO: Implement
+    builder.addTorusPipe(torusPipes[1]);
+    builder.addTorusPipe(torusPipes[2]);
+
+    const polyface = builder.claimPolyface(true);
+
+    // ### TODO: Verify output
 
     expect(ck.getNumErrors()).equals(0);
   });
+  */
 });
