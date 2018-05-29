@@ -128,7 +128,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let index2 = 0;
       for (let i = 1; i < n; i++) {
         index2 = this.findOrAddPointInLineString(ls, i)!;
-        this.addIndexedTriangle(index0, index1, index2);
+        this.addIndexedTrianglePointIndexes(index0, index1, index2);
         index1 = index2;
       }
       if (toggle)
@@ -150,7 +150,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let index2 = 0;
       for (let i = 2; i < n; i++) {
         index2 = this.findOrAddPointInLineString(ls, i)!;
-        this.addIndexedTriangle(index0, index1, index2);
+        this.addIndexedTrianglePointIndexes(index0, index1, index2);
         index1 = index2;
       }
       if (toggle)
@@ -161,7 +161,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * @param ls linestring with point coordinates
    * @param reverse if true, wrap the triangle creation in toggleReversedFacetFlag.
    */
-  public addTriangleFanFromIndex0(index: GrowableFloat64Array, toggle: boolean): void {
+  public addTriangleFanFromIndex0(index: GrowableFloat64Array, toggle: boolean, needNormals: boolean = false, needParams: boolean = false): void {
     const n = index.length;
     if (n > 2) {
       if (toggle)
@@ -171,7 +171,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let index2 = 0;
       for (let i = 2; i < n; i++) {
         index2 = index.at(i);
-        this.addIndexedTriangle(index0, index1, index2);
+        this.addIndexedTrianglePointIndexes(index0, index1, index2);
+        if (needNormals)
+          this.addIndexedTriangleNormalIndexes(index0, index1, index2);
+        if (needParams)
+          this.addIndexedTriangleParamIndexes(index0, index1, index2);
         index1 = index2;
       }
       if (toggle)
@@ -216,82 +220,105 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
    * *  indexB0 and indexB1 are in the forward order at the "B" end of the quad.
    */
-  public addIndexedQuad(indexA0: number, indexA1: number, indexB0: number, indexB1: number) {
+  public addIndexedQuadPointIndexes(indexA0: number, indexA1: number, indexB0: number, indexB1: number) {
     if (this.reversed) {
       this.polyface.addPointIndex(indexA0);
       this.polyface.addPointIndex(indexB0);
       this.polyface.addPointIndex(indexB1);
       this.polyface.addPointIndex(indexA1);
-      if (this.polyface.data.param !== undefined) {   // need params
-        this.polyface.addParamIndex(indexA0);
-        this.polyface.addParamIndex(indexB0);
-        this.polyface.addParamIndex(indexB1);
-        this.polyface.addParamIndex(indexA1);
-      }
-      if (this.polyface.data.normal !== undefined) {  // need normals
-        this.polyface.addNormalIndex(indexA0);
-        this.polyface.addNormalIndex(indexB0);
-        this.polyface.addNormalIndex(indexB1);
-        this.polyface.addNormalIndex(indexA1);
-      }
       this.polyface.terminateFacet();
     } else {
       this.polyface.addPointIndex(indexA0);
       this.polyface.addPointIndex(indexA1);
       this.polyface.addPointIndex(indexB1);
       this.polyface.addPointIndex(indexB0);
-      if (this.polyface.data.param !== undefined) {   // need params
-        this.polyface.addParamIndex(indexA0);
-        this.polyface.addParamIndex(indexA1);
-        this.polyface.addParamIndex(indexB1);
-        this.polyface.addParamIndex(indexA0);
-      }
-      if (this.polyface.data.normal !== undefined) {  // need normals
-        this.polyface.addNormalIndex(indexA0);
-        this.polyface.addNormalIndex(indexA1);
-        this.polyface.addNormalIndex(indexB1);
-        this.polyface.addNormalIndex(indexB0);
-      }
       this.polyface.terminateFacet();
     }
   }
-  /** Announce a single quad facet.
+
+  /** For a single quad facet, add the indexes of the corresponding param points. */
+  public addIndexedQuadParamIndexes(indexA0: number, indexA1: number, indexB0: number, indexB1: number) {
+    if (this.reversed) {
+      this.polyface.addParamIndex(indexA0);
+      this.polyface.addParamIndex(indexB0);
+      this.polyface.addParamIndex(indexB1);
+      this.polyface.addParamIndex(indexA1);
+      this.polyface.terminateFacet();
+    } else {
+      this.polyface.addParamIndex(indexA0);
+      this.polyface.addParamIndex(indexA1);
+      this.polyface.addParamIndex(indexB1);
+      this.polyface.addParamIndex(indexB0);
+      this.polyface.terminateFacet();
+    }
+  }
+
+  /** For a single quad facet, add the indexes of the corresponding normal vectors. */
+  public addIndexedQuadNormalIndexes(indexA0: number, indexA1: number, indexB0: number, indexB1: number) {
+    if (this.reversed) {
+      this.polyface.addNormalIndex(indexA0);
+      this.polyface.addNormalIndex(indexB0);
+      this.polyface.addNormalIndex(indexB1);
+      this.polyface.addNormalIndex(indexA1);
+      this.polyface.terminateFacet();
+    } else {
+      this.polyface.addNormalIndex(indexA0);
+      this.polyface.addNormalIndex(indexA1);
+      this.polyface.addNormalIndex(indexB1);
+      this.polyface.addNormalIndex(indexB0);
+      this.polyface.terminateFacet();
+    }
+  }
+
+  /** Announce a single triangle facet.
    *
    * * The actual quad may be reversed or trianglulated based on builder setup.
    * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
    * *  indexB0 and indexB1 are in the forward order at the "B" end of hte quad.
    */
-  public addIndexedTriangle(indexA: number, indexB: number, indexC: number) {
+  public addIndexedTrianglePointIndexes(indexA: number, indexB: number, indexC: number) {
     if (indexA === indexB || indexB === indexC || indexC === indexA) return;
     if (!this.reversed) {
       this.polyface.addPointIndex(indexA);
       this.polyface.addPointIndex(indexB);
       this.polyface.addPointIndex(indexC);
-      if (this.polyface.data.param !== undefined) { // need params
-        this.polyface.addParamIndex(indexA);
-        this.polyface.addParamIndex(indexB);
-        this.polyface.addParamIndex(indexC);
-      }
-      if (this.polyface.data.normal !== undefined) { // need normals
-        this.polyface.addNormalIndex(indexA);
-        this.polyface.addNormalIndex(indexB);
-        this.polyface.addNormalIndex(indexC);
-      }
       this.polyface.terminateFacet();
     } else {
       this.polyface.addPointIndex(indexA);
       this.polyface.addPointIndex(indexC);
       this.polyface.addPointIndex(indexB);
-      if (this.polyface.data.param !== undefined) { // need params
-        this.polyface.addParamIndex(indexA);
-        this.polyface.addParamIndex(indexC);
-        this.polyface.addParamIndex(indexB);
-      }
-      if (this.polyface.data.normal !== undefined) { // need normals
-        this.polyface.addNormalIndex(indexA);
-        this.polyface.addNormalIndex(indexC);
-        this.polyface.addNormalIndex(indexB);
-      }
+      this.polyface.terminateFacet();
+    }
+  }
+
+  /** For a single triangle facet, add the indexes of the corresponding params. */
+  public addIndexedTriangleParamIndexes(indexA: number, indexB: number, indexC: number) {
+    if (indexA === indexB || indexB === indexC || indexC === indexA) return;
+    if (!this.reversed) {
+      this.polyface.addParamIndex(indexA);
+      this.polyface.addParamIndex(indexB);
+      this.polyface.addParamIndex(indexC);
+      this.polyface.terminateFacet();
+    } else {
+      this.polyface.addParamIndex(indexA);
+      this.polyface.addParamIndex(indexC);
+      this.polyface.addParamIndex(indexB);
+      this.polyface.terminateFacet();
+    }
+  }
+
+  /** For a single triangle facet, add the indexes of the corresponding params. */
+  public addIndexedTriangleNormalIndexes(indexA: number, indexB: number, indexC: number) {
+    if (indexA === indexB || indexB === indexC || indexC === indexA) return;
+    if (!this.reversed) {
+      this.polyface.addNormalIndex(indexA);
+      this.polyface.addNormalIndex(indexB);
+      this.polyface.addNormalIndex(indexC);
+      this.polyface.terminateFacet();
+    } else {
+      this.polyface.addNormalIndex(indexA);
+      this.polyface.addNormalIndex(indexC);
+      this.polyface.addNormalIndex(indexB);
       this.polyface.terminateFacet();
     }
   }
@@ -315,12 +342,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     for (let i = 1; i < numPoints; i++) {
       indexA1 = this.findOrAddPoint(pointA[i]);
       indexB1 = this.findOrAddPoint(pointB[i]);
-      this.addIndexedQuad(indexA0, indexA1, indexB0, indexB1);
+      this.addIndexedQuadPointIndexes(indexA0, indexA1, indexB0, indexB1);
       indexA0 = indexA1;
       indexB0 = indexB1;
     }
     if (addClosure)
-      this.addIndexedQuad(indexA0, indexA00, indexB0, indexB00);
+      this.addIndexedQuadPointIndexes(indexA0, indexA00, indexB0, indexB00);
   }
 
   /** Add facets betwee lineStrings with matched point counts.
@@ -341,12 +368,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       for (let i = 1; i < numPoints; i++) {
         indexA1 = this.findOrAddPointInLineString(curves, i, transformA)!;
         indexB1 = this.findOrAddPointInLineString(curves, i, transformB)!;
-        this.addIndexedQuad(indexA0, indexA1, indexB0, indexB1);
+        this.addIndexedQuadPointIndexes(indexA0, indexA1, indexB0, indexB1);
         indexA0 = indexA1;
         indexB0 = indexB1;
       }
       if (addClosure)
-        this.addIndexedQuad(indexA0, indexA00, indexB0, indexB00);
+        this.addIndexedQuadPointIndexes(indexA0, indexA00, indexB0, indexB00);
     } else {
       const children = curves.children;
       // just send the children individually -- final compres will fix things??
@@ -425,7 +452,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         indexA1 = this.findOrAddPoint(pointA);
         indexB1 = this.findOrAddPoint(pointB);
         if (i > 0) {
-          this.addIndexedQuad(indexA0, indexA1, indexB0, indexB1);
+          this.addIndexedQuadPointIndexes(indexA0, indexA1, indexB0, indexB1);
         }
         indexA0 = indexA1;
         indexB0 = indexB1;
@@ -604,13 +631,15 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const xyz = Point3d.create();
     const du = 1.0 / numU;
     const dv = 1.0 / numV;
+    const needParams = this.polyface.data.param !== undefined;
+    const needNormals = this.polyface.data.normal !== undefined;
     for (let v = 0; v <= numV; v++) {
       // evaluate new points ....
       index1.clear();
       for (let u = 0; u <= numU; u++) {
         const uFrac = u * du;
         const vFrac = v * dv;
-        if (this.polyface.data.normal !== undefined) {  // Need normals
+        if (needNormals) {
           const plane = surface.UVFractionToPointAndTangents(uFrac, vFrac);
           this.polyface.addNormal(plane.vectorU.crossProduct(plane.vectorV));
           index1.push(this.findOrAddPoint(plane.origin.clone()));
@@ -618,17 +647,28 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           surface.UVFractionToPoint(uFrac, vFrac, xyz);
           index1.push(this.findOrAddPoint(xyz));
         }
-        if (this.polyface.data.param !== undefined) {   // Need params
+        if (needParams) {
           this.polyface.addParam(new Point2d(uFrac, vFrac));
         }
       }
-      if (createFanInCaps && (v === 0 || v === numV))
-        this.addTriangleFanFromIndex0(index1, v === 0);
+      if (createFanInCaps && (v === 0 || v === numV)) {
+        this.addTriangleFanFromIndex0(index1, v === 0, true, true);
+      }
       if (v > 0) {
         for (let u = 0; u < numU; u++) {
-          this.addIndexedQuad(
+          this.addIndexedQuadPointIndexes(
             index0.at(u), index0.at(u + 1),
             index1.at(u), index1.at(u + 1));
+          if (needNormals)
+            this.addIndexedQuadNormalIndexes(
+              index0.at(u), index0.at(u + 1),
+              index1.at(u), index1.at(u + 1)
+            );
+          if (needParams)
+            this.addIndexedQuadParamIndexes(
+              index0.at(u), index0.at(u + 1),
+              index1.at(u), index1.at(u + 1)
+            );
         }
       }
       indexSwap = index1;
