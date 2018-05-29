@@ -1,4 +1,4 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
@@ -109,6 +109,20 @@ export class LocateTool extends ViewTool {
   }
 }
 
+export class StandardViewRotationTool extends ViewTool {
+  public static toolId = "View.StandardRotation";
+  private rotations = [StandardViewId.Top, StandardViewId.Iso, StandardViewId.Front];
+  private rotationIndex = 0;
+
+  public onDataButtonDown(ev: BeButtonEvent) {
+    if (ev.viewport) {
+      console.log("STANDARD VIEW ROTATION CLICKED", this.rotationIndex); //tslint:disable-line
+      ev.viewport.setStandardRotation(this.rotations[this.rotationIndex]);
+      this.rotationIndex = (this.rotationIndex + 1) % 3;
+    }
+  }
+}
+
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
@@ -147,6 +161,11 @@ function startRotateView(_event: any) {
   IModelApp.tools.run("View.Rotate", theViewport!);
 }
 
+// start rotate view.
+function switchStandardRotation(_event: any) {
+  IModelApp.tools.run("View.StandardRotation", theViewport!);
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   document.getElementById("startFit")!.addEventListener("click", startFit);
@@ -154,6 +173,7 @@ function wireIconsToFunctions() {
   document.getElementById("startZoom")!.addEventListener("click", startZoom);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
+  document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);
 }
 
 // show status in the output HTML
@@ -194,6 +214,7 @@ async function main() {
     await IModelApi.init();
 
     IModelApp.tools.register(LocateTool);
+    IModelApp.tools.register(StandardViewRotationTool);
 
     // log in.
     showStatus("logging in as", configuration.userName);
