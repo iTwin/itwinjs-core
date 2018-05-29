@@ -1347,10 +1347,10 @@ export class Viewport {
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
     black.setTransparency(100);
-    graphic.setSymbology(black, black, 1);
+    graphic.setSymbology(black, black, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
     graphic.addArc2d(ellipse2, false, false, 0.0);
     white.setTransparency(20);
-    graphic.setSymbology(white, white, 1);
+    graphic.setSymbology(white, white, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
     graphic.addArc2d(ellipse, false, false, 0.0);
     context.addViewOverlay(graphic.finish()!);
   }

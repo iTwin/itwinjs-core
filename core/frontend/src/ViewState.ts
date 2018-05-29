@@ -1227,6 +1227,12 @@ export abstract class ViewState3d extends ViewState {
     const gf = graphic.finish();
     assert(undefined !== gf);
     context.addViewOverlay(gf!);
+
+    const line = context.createViewOverlay();
+    line.setSymbology(black, black, 10);
+    line.addLineString([new Point3d(0.25 * rect.width, 0.25 * rect.height, 0), new Point3d(0.75 * rect.width, 0.75 * rect.height, 0)]);
+    line.addPointString([new Point3d(0.25 * rect.width, 0.75 * rect.height, 0), new Point3d(0.75 * rect.width, 0.25 * rect.height, 0)]);
+    context.addViewOverlay(line.finish()!);
   }
 }
 
