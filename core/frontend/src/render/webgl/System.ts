@@ -440,6 +440,18 @@ export class System extends RenderSystem {
    * Note that this does not remove
    */
   private removeIModelMap(imodel: IModelConnection) {
+    // First, 'free' all textures in the idMap for this imodel
+    const idMap = this.renderCache.get(imodel);
+    if (idMap === undefined)
+      return;
+    const textureArr = Array.from(idMap.textureMap.values());
+    const gradientArr = idMap.gradientMap.extractArrays().values;
+    for (const texture of textureArr) {
+      texture.dispose();
+    }
+    for (const gradient of gradientArr) {
+      gradient.dispose();
+    }
     this.renderCache.delete(imodel);
   }
 

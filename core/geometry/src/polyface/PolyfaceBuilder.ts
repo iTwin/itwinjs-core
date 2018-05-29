@@ -614,8 +614,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           const plane = surface.UVFractionToPointAndTangents(uFrac, vFrac);
           this.polyface.addNormal(plane.vectorU.crossProduct(plane.vectorV));
           index1.push(this.findOrAddPoint(plane.origin.clone()));
-        }
-        else {
+        } else {
           surface.UVFractionToPoint(uFrac, vFrac, xyz);
           index1.push(this.findOrAddPoint(xyz));
         }
