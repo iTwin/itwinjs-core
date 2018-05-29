@@ -17,7 +17,7 @@ import {
   GeometryAccumulator,
   DisplayParams,
 } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d } from "@bentley/geometry-core";
+import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d, Polyface, IndexedPolyface, Point2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
@@ -106,66 +106,96 @@ describe("PrimitiveBuilder tests", () => {
     expect(numPointsA).to.be.lessThan(numPointsB);
   });
 
-  // it("PrimitiveBuilder should produce proper polyface strokes for specific tolerances", () => {
-  //   if (!WebGLTestContext.isInitialized) {
-  //     return;
-  //   }
+  it("PrimitiveBuilder should not produce any strokes for Polyface", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
 
-  //   const viewport = new Viewport(canvas, spatialView);
-  //   const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
-  //   const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    const viewport = new Viewport(canvas, spatialView);
+    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
-  //   const pointA = new Point3d(-100, 0, 0);
-  //   const pointB = new Point3d(0, 100, 0);
-  //   const pointC = new Point3d(100, 0, 0);
-  //   const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-  //   assert(arc !== undefined && arc instanceof Arc3d);
-  //   if (arc === undefined || !(arc instanceof Arc3d))
-  //     return;
+    // const pointA = new Point3d(-100, 0, 0);
+    // const pointB = new Point3d(0, 100, 0);
+    // const pointC = new Point3d(100, 0, 0);
 
-  //   primBuilder.addArc(arc, false, false);
+    const polyFace = IndexedPolyface.create();
+    polyFace.addPointXYZ(-100, 0, 0);
+    polyFace.addPointXYZ(0, 100, 0);
+    polyFace.addPointXYZ(100, 0, 0);
+    assert(polyFace !== undefined && polyFace instanceof Polyface);
+    if (polyFace === undefined || !(polyFace instanceof Polyface))
+      return;
 
-  //   assert(!(primBuilder.accum.geometries.isEmpty));
+    primBuilder.addPolyface(polyFace);
 
-  //   const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
-  //   assert(arcGeom !== undefined);
-  //   if (arcGeom === undefined)
-  //     return;
+    assert(!(primBuilder.accum.geometries.isEmpty));
 
-  //   let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
+    const firstGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    assert(firstGeom !== undefined);
+    if (firstGeom === undefined)
+      return;
 
-  //   assert(strokesPrimList !== undefined);
-  //   if (strokesPrimList === undefined)
-  //     return;
+    let strokesPrimList: StrokesPrimitiveList | undefined = firstGeom.getStrokes(0.22);
+    assert(strokesPrimList === undefined);
 
-  //   expect(strokesPrimList.length).to.be.greaterThan(0);
-  //   let strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
-  //   expect(strksPrims.length).to.be.greaterThan(0);
-  //   let strks: StrokesPrimitivePointList = strksPrims[0];
+    strokesPrimList = firstGeom.getStrokes(0.12);
+    assert(strokesPrimList === undefined);
+  });
 
-  //   // check that first and last point of stroking match first and last point of original points
-  //   expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-  //   expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-  //   const numPointsA = strks.points.length;
+  it("PrimitiveBuilder should not produce any strokes for Shape", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
 
-  //   strokesPrimList = arcGeom.getStrokes(0.12);
+    const viewport = new Viewport(canvas, spatialView);
+    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
 
-  //   assert(strokesPrimList !== undefined);
-  //   if (strokesPrimList === undefined)
-  //     return;
+    const pointA = new Point3d(-100, 0, 0);
+    const pointB = new Point3d(0, 100, 0);
+    const pointC = new Point3d(100, 0, 0);
+    primBuilder.addShape([pointA, pointB, pointC]);
+    assert(!(primBuilder.accum.geometries.isEmpty));
 
-  //   expect(strokesPrimList.length).to.be.greaterThan(0);
-  //   strksPrims = strokesPrimList[0].strokes;
-  //   expect(strksPrims.length).to.be.greaterThan(0);
-  //   strks = strksPrims[0];
+    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    assert(arcGeom !== undefined);
+    if (arcGeom === undefined)
+      return;
 
-  //   // check that first and last point of stroking match first and last point of original points
-  //   expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-  //   expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
-  //   const numPointsB = strks.points.length;
+    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
+    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
 
-  //   expect(numPointsA).to.be.lessThan(numPointsB);
-  // });
+    strokesPrimList = arcGeom.getStrokes(0.12);
+    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
+  });
+
+  it("PrimitiveBuilder should not produce any strokes for Shape2d", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
+
+    const viewport = new Viewport(canvas, spatialView);
+    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+
+    const pointA = new Point2d(-100, 0);
+    const pointB = new Point2d(0, 100);
+    const pointC = new Point2d(100, 0);
+    primBuilder.addShape2d([pointA, pointB, pointC], 5);
+    assert(!(primBuilder.accum.geometries.isEmpty));
+
+    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    assert(arcGeom !== undefined);
+    if (arcGeom === undefined)
+      return;
+
+    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
+    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
+
+    strokesPrimList = arcGeom.getStrokes(0.12);
+    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
+  });
 
   it("PrimitiveBuilder should produce proper LineString strokes; different tolerances should have no effect", () => {
     if (!WebGLTestContext.isInitialized) {
@@ -282,6 +312,66 @@ describe("PrimitiveBuilder tests", () => {
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
     expect(strks.points[1].isAlmostEqual(pointB)).to.be.true;
     expect(strks.points[2].isAlmostEqual(pointC)).to.be.true;
+    const numPointsB = strks.points.length;
+
+    expect(numPointsA).to.equal(numPointsB);
+  });
+
+  it("PrimitiveBuilder should produce proper PointString2d strokes; different tolerances should have no effect", () => {
+    if (!WebGLTestContext.isInitialized) {
+      return;
+    }
+
+    const viewport = new Viewport(canvas, spatialView);
+    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+
+    const pointA = new Point2d(-100, 0);
+    const pointB = new Point2d(0, 100);
+    const pointC = new Point2d(100, 0);
+    const pointList = [pointA, pointB, pointC];
+
+    primBuilder.addPointString2d(pointList, 5);
+
+    assert(!(primBuilder.accum.geometries.isEmpty));
+
+    const pointGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    assert(pointGeom !== undefined);
+    if (pointGeom === undefined)
+      return;
+
+    let strokesPrimList: StrokesPrimitiveList | undefined = pointGeom.getStrokes(0.0);
+
+    assert(strokesPrimList !== undefined);
+    if (strokesPrimList === undefined)
+      return;
+
+    expect(strokesPrimList.length).to.be.greaterThan(0);
+    let strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
+    expect(strksPrims.length).to.be.greaterThan(0);
+    let strks: StrokesPrimitivePointList = strksPrims[0];
+
+    // check that points of stroking match points of original points
+    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be.true;
+    expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).to.be.true;
+    expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).to.be.true;
+    const numPointsA = strks.points.length;
+
+    strokesPrimList = pointGeom.getStrokes(1.0);
+
+    assert(strokesPrimList !== undefined);
+    if (strokesPrimList === undefined)
+      return;
+
+    expect(strokesPrimList.length).to.be.greaterThan(0);
+    strksPrims = strokesPrimList[0].strokes;
+    expect(strksPrims.length).to.be.greaterThan(0);
+    strks = strksPrims[0];
+
+    // check that first and last point of stroking match first and last point of original points
+    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be.true;
+    expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).to.be.true;
+    expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).to.be.true;
     const numPointsB = strks.points.length;
 
     expect(numPointsA).to.equal(numPointsB);
