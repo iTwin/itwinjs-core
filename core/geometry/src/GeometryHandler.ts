@@ -23,6 +23,7 @@ import { LineSegment3d } from "./curve/LineSegment3d";
 import { Arc3d } from "./curve/Arc3d";
 import { LineString3d } from "./curve/LineString3d";
 import { PointString3d } from "./curve/PointString3d";
+import { Plane3dByOriginAndVectors } from "./AnalyticGeometry";
 
 export abstract class GeometryHandler {
   // Currently will include functionality on "how to handle" (note: Subclasses of CurveCollection are linked to one method)
@@ -130,4 +131,5 @@ export interface IStrokeHandler {
 
 export interface UVSurface {
   UVFractionToPoint(u: number, v: number, result?: Point3d): Point3d;
+  UVFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }
