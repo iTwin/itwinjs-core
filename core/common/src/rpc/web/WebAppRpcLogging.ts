@@ -17,7 +17,7 @@ const loggingCategory = "imodeljs-rpc.WebAppRpcProtocol";
 const os = (typeof (process) !== "undefined") ? require("os") : undefined;
 function getHostname(): string {
   if (os !== undefined) {
-    return os.hostname;
+    return os.hostname();
   } else {
     if (typeof (window) !== "undefined") {
       return window.location.host;
