@@ -382,18 +382,18 @@ export class ChangeSummaryManager {
     return instanceChange;
   }
 
-  /** Queries the property value changes for the specified instance change and the specified ChangedValueState.
+  /** Builds the ECSQL to query the property value changes for the specified instance change and the specified ChangedValueState.
    *
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @param iModel iModel
    * @param instanceChangeInfo InstanceChange to query the property value changes for
    *        changedInstance.className must be fully qualified and schema and class name must be escaped with square brackets if they collide with reserved ECSQL words: `[schema name].[class name]`
    * @param changedValueState The Changed State to query the values for. This must correspond to the [InstanceChange.OpCode]($backend) of the InstanceChange.
-   * @returns Returns the property value changes
+   * @returns Returns the ECSQL that will retrieve the property value changes
    * @throws [IModelError]($common) if instance change does not exist, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
-  public static queryPropertyValueChanges(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState): any {
+  public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState): string {
     // query property value changes just to build a SELECT statement against the class of the changed instance
     let propValECSql: string = "";
     iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
@@ -427,13 +427,7 @@ export class ChangeSummaryManager {
 
     // Avoiding parameters in the Changes function speeds up performance because ECDb can do optimizations
     // if it knows the function args at prepare time
-    propValECSql += " FROM main." + instanceChangeInfo.changedInstance.className + ".Changes(" + instanceChangeInfo.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=?";
-    return iModel.withPreparedStatement(propValECSql, (stmt: ECSqlStatement) => {
-      stmt.bindId(1, instanceChangeInfo.changedInstance.id);
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChangeInfo.id.value}.`);
-
-      return stmt.getRow();
-    });
+    propValECSql += " FROM main." + instanceChangeInfo.changedInstance.className + ".Changes(" + instanceChangeInfo.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=" + instanceChangeInfo.changedInstance.id.toString();
+    return propValECSql;
   }
 }
