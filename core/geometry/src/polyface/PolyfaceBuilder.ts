@@ -662,13 +662,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           if (needNormals)
             this.addIndexedQuadNormalIndexes(
               index0.at(u), index0.at(u + 1),
-              index1.at(u), index1.at(u + 1)
-            );
+              index1.at(u), index1.at(u + 1));
           if (needParams)
             this.addIndexedQuadParamIndexes(
               index0.at(u), index0.at(u + 1),
-              index1.at(u), index1.at(u + 1)
-            );
+              index1.at(u), index1.at(u + 1));
         }
       }
       indexSwap = index1;
