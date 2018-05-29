@@ -37,7 +37,7 @@ Geometry Use:
 
 ### Building
 
-A spatial aspect class of a real-world Building object
+A spatial aspect class of a real-world Building object. A building is construction work that has the provision of shelter for its occupants or contents.
 
 Naming :
 1 - Equivalent with IAI IfcBuilding
@@ -58,8 +58,8 @@ Geometry Use:
 
 ### Story
 
-The building story has an elevation and typically represents a (nearly) horizontal aggregation of spaces that are vertically bound.
-A Spatial aspect class of a real-world Story object.
+A Spatial aspect class of a real-world Story object. The building story has an elevation and typically represents a (nearly) horizontal aggregation of spaces that are vertically bound.
+
 
 Naming:
 1 - Equivalent with IAI IfcBuildingStorey
@@ -80,6 +80,8 @@ Geometry Use:
 
 ### Space
 
+A space represents a volume bounded physically or only logically. Spaces provide for certain functions to be performed within a building.
+
 Naming :
 1 - Equivalent with IAI IfcSpace
 
@@ -89,7 +91,7 @@ Geometry Use:
 3 - Local Coordinates : z points away from the center of the earth.
 
 ```xml
-    <ECEntityClass typeName="Space" displayLabel="Space" description="a spatial aspect class of a real-world Space object">
+    <ECEntityClass typeName="Space" displayLabel="Space">
         <BaseClass>spcomp:ComposedVolume</BaseClass>
         <ECCustomAttributes>
             <ClassHasHandler xmlns="BisCore.01.00" />
@@ -101,11 +103,13 @@ Geometry Use:
 
 ### SpaceHasAdjacentSpaces
 
+Defines space adjacencies for spaces bounded by walls.
+
 Naming :
-1 -
+1 - Sometimes referred to as Room, space is a more general term including other space functions like corridor.
 
 ```xml
-    <ECRelationshipClass typeName="SpaceHasAdjacentSpaces" modifier="None" strength="referencing" description="defines space adjacencies">
+    <ECRelationshipClass typeName="SpaceHasAdjacentSpaces" modifier="None" strength="referencing">
       <BaseClass>bis:ElementRefersToElements</BaseClass>
         <Source multiplicity="(0..*)" roleLabel="is adjacent to" polymorphic="true">
             <Class class="Space"/>
