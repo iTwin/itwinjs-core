@@ -63,6 +63,21 @@ Parameter type | Description
 
 See also sections [ECInstanceId and ECClassId](#ecinstanceid-and-ecclassid) and [LIMIT and OFFSET](#limit-and-offset).
 
+## ECInstanceId and ECClassId
+
+ECSQL defines a set of built-in system properties. They don't have to be defined in the ECSchemas.
+
+Property | Description
+-- | --
+ECInstanceId | Is the unique identifier for an ECInstance.
+ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECClass in the iModel.
+
+> In iModelJs the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
+
+### Example
+
+`SELECT Parent, ECClassId FROM bis.Element WHERE ECInstanceId=123`
+
 ## Basic data types in ECSQL
 
 ECSQL supports all primitive types built into EC. This means that in addition to the basic numeric and string data types in SQL-92, ECSQL also supports boolean, BLOBs, date-times and points.
@@ -131,22 +146,6 @@ Z | Z coordinate of the Point3d
 `SELECT ECInstanceId, Model, CodeValue FROM bis.GeometricElement3d
 WHERE Origin.X BETWEEN 3500000.0 AND 3500500.0 AND
 Origin.Y BETWEEN 5700000.0 AND 5710000.0 AND Origin.Z BETWEEN 0 AND 100.0`
-
-## ECInstanceId and ECClassId
-
-ECSQL defines a set of built-in system properties. They don't have to be defined in the ECSchemas.
-
-### ECInstanceId
-
-The ECInstanceId is the unique identifier for an ECInstance. In ECSQL you use the reserved token `ECInstanceId` to refer to the ECInstanceId of an instance,
-
-### ECClassId
-
-The reserved token `ECClassId` in an ECSQL refers to the ECClassId of an ECClass. It is a numeric id that uniquely identifies an ECClass in the iModel.
-
-### Example
-
-`SELECT Parent, ECClassId FROM bis.Element WHERE ECInstanceId = 123`
 
 ## Structs
 
@@ -244,9 +243,7 @@ Joins between ECClasses are specified with the standard SQL join syntax (either 
 
 In ECSchemas ECRelationshipClasses are used to relate two ECClasses. ECRelationshipClasses can therefore be seen as virtual link tables between those two classes. If you want to join two ECClasses via their ECRelationshipClass, you need to join the first class to the relationship class and then the relationship class to the second class.
 
-> If [navigation properties](#navigation-properties) are defined for the ECRelationship class,
-> - you don't need to JOIN at all, when going from the 'Many' to the 'One' end,
-> - you can omit the JOIN to the ECRelationshipClass, when going from the 'One' to the 'Many' end
+If [navigation properties](#navigation-properties) are defined for the ECRelationship class, use the navigation property instead of a join.
 
 #### Examples
 
