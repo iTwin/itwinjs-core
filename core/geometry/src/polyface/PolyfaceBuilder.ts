@@ -7,7 +7,7 @@
 // import { Geometry, AxisOrder, Angle, AngleSweep, BSIJSONValues } from "./Geometry";
 import { IndexedPolyface } from "./Polyface";
 import { GrowableFloat64Array } from "../GrowableArray";
-import { Point3d, Vector3d } from "../PointVector";
+import { Point3d, Vector3d, Point2d } from "../PointVector";
 import { Transform } from "../Transform";
 import { BoxTopology } from "./BoxTopology";
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -214,7 +214,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    *
    * * The actual quad may be reversed or trianglulated based on builder setup.
    * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
-   * *  indexB0 and indexB1 are in the forward order at the "B" end of hte quad.
+   * *  indexB0 and indexB1 are in the forward order at the "B" end of the quad.
    */
   public addIndexedQuad(indexA0: number, indexA1: number, indexB0: number, indexB1: number) {
     if (this.reversed) {
@@ -222,12 +222,36 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.polyface.addPointIndex(indexB0);
       this.polyface.addPointIndex(indexB1);
       this.polyface.addPointIndex(indexA1);
+      if (this.polyface.data.param !== undefined) {   // need params
+        this.polyface.addParamIndex(indexA0);
+        this.polyface.addParamIndex(indexB0);
+        this.polyface.addParamIndex(indexB1);
+        this.polyface.addParamIndex(indexA1);
+      }
+      if (this.polyface.data.normal !== undefined) {  // need normals
+        this.polyface.addNormalIndex(indexA0);
+        this.polyface.addNormalIndex(indexB0);
+        this.polyface.addNormalIndex(indexB1);
+        this.polyface.addNormalIndex(indexA1);
+      }
       this.polyface.terminateFacet();
     } else {
       this.polyface.addPointIndex(indexA0);
       this.polyface.addPointIndex(indexA1);
       this.polyface.addPointIndex(indexB1);
       this.polyface.addPointIndex(indexB0);
+      if (this.polyface.data.param !== undefined) {   // need params
+        this.polyface.addParamIndex(indexA0);
+        this.polyface.addParamIndex(indexA1);
+        this.polyface.addParamIndex(indexB1);
+        this.polyface.addParamIndex(indexA0);
+      }
+      if (this.polyface.data.normal !== undefined) {  // need normals
+        this.polyface.addNormalIndex(indexA0);
+        this.polyface.addNormalIndex(indexA1);
+        this.polyface.addNormalIndex(indexB1);
+        this.polyface.addNormalIndex(indexB0);
+      }
       this.polyface.terminateFacet();
     }
   }
@@ -243,11 +267,31 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.polyface.addPointIndex(indexA);
       this.polyface.addPointIndex(indexB);
       this.polyface.addPointIndex(indexC);
+      if (this.polyface.data.param !== undefined) { // need params
+        this.polyface.addParamIndex(indexA);
+        this.polyface.addParamIndex(indexB);
+        this.polyface.addParamIndex(indexC);
+      }
+      if (this.polyface.data.normal !== undefined) { // need normals
+        this.polyface.addNormalIndex(indexA);
+        this.polyface.addNormalIndex(indexB);
+        this.polyface.addNormalIndex(indexC);
+      }
       this.polyface.terminateFacet();
     } else {
       this.polyface.addPointIndex(indexA);
       this.polyface.addPointIndex(indexC);
       this.polyface.addPointIndex(indexB);
+      if (this.polyface.data.param !== undefined) { // need params
+        this.polyface.addParamIndex(indexA);
+        this.polyface.addParamIndex(indexC);
+        this.polyface.addParamIndex(indexB);
+      }
+      if (this.polyface.data.normal !== undefined) { // need normals
+        this.polyface.addNormalIndex(indexA);
+        this.polyface.addNormalIndex(indexC);
+        this.polyface.addNormalIndex(indexB);
+      }
       this.polyface.terminateFacet();
     }
   }
@@ -564,8 +608,20 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       // evaluate new points ....
       index1.clear();
       for (let u = 0; u <= numU; u++) {
-        surface.UVFractionToPoint(u * du, v * dv, xyz); // ### TODO: Replace with UVFractionToPointAndTangents()
-        index1.push(this.findOrAddPoint(xyz));
+        const uFrac = u * du;
+        const vFrac = v * dv;
+        if (this.polyface.data.normal !== undefined) {  // Need normals
+          const plane = surface.UVFractionToPointAndTangents(uFrac, vFrac);
+          this.polyface.addNormal(plane.vectorU.crossProduct(plane.vectorV));
+          index1.push(this.findOrAddPoint(plane.origin.clone()));
+        }
+        else {
+          surface.UVFractionToPoint(uFrac, vFrac, xyz);
+          index1.push(this.findOrAddPoint(xyz));
+        }
+        if (this.polyface.data.param !== undefined) {   // Need params
+          this.polyface.addParam(new Point2d(uFrac, vFrac));
+        }
       }
       if (createFanInCaps && (v === 0 || v === numV))
         this.addTriangleFanFromIndex0(index1, v === 0);
