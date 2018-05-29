@@ -186,16 +186,19 @@ The following examples illustrate how to go back in history using the ECSQL func
 
 `ECInstanceId` | `Name` | `Age`
 -------------- | ------ | ----
+no rows | |
 
 `SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(1,'AfterUpdate')`
 
 `ECInstanceId` | `Name` | `Age`
 -------------- | ------ | ----
+no rows | |
 
 `SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(1,'BeforeDelete')`
 
 `ECInstanceId` | `Name` | `Age`
 -------------- | ------ | ----
+no rows | |
 
 ##### Changes in Change Summary 2
 
@@ -221,6 +224,7 @@ The following examples illustrate how to go back in history using the ECSQL func
 
 `ECInstanceId` | `Name` | `Age`
 -------------- | ------ | ----
+no rows | |
 
 ##### Changes in Change Summary 3
 
@@ -228,16 +232,19 @@ The following examples illustrate how to go back in history using the ECSQL func
 
 `ECInstanceId` | `Name` | `Age`
 -------------- | ------ | ----
+no rows | |
 
 `SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(3,'BeforeUpdate')`
 
 `ECInstanceId` | `Name` | `Age`
 -------------- | ------ | ----
+no rows | |
 
 `SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(3,'AfterUpdate')`
 
 `ECInstanceId` | `Name` | `Age`
 -------------- | ------ | ----
+no rows | |
 
 `SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(3,'BeforeDelete')`
 
