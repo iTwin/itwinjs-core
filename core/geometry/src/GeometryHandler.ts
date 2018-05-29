@@ -23,6 +23,7 @@ import { LineSegment3d } from "./curve/LineSegment3d";
 import { Arc3d } from "./curve/Arc3d";
 import { LineString3d } from "./curve/LineString3d";
 import { PointString3d } from "./curve/PointString3d";
+import { Plane3dByOriginAndVectors } from "./AnalyticGeometry";
 
 export abstract class GeometryHandler {
   // Currently will include functionality on "how to handle" (note: Subclasses of CurveCollection are linked to one method)
@@ -127,7 +128,22 @@ export interface IStrokeHandler {
   endCurvePrimitive(cp: CurvePrimitive): void;
   endParentCurvePrimitive(cp: CurvePrimitive): void;
 }
-
+/**
+ * Interface with methods for mapping (u,v) fractional coordinates to surface xyz and derivatives.
+ */
 export interface UVSurface {
-  UVFractionToPoint(u: number, v: number, result?: Point3d): Point3d;
+  /**
+   * Convert fractional u and v coordinates to surface point
+   * @param uFraction fractional coordinate in u direction
+   * @param vFraction fractional coordinate in the v direction
+   * @param result optional pre-allocated point
+   */
+  UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
+  /**
+   * Convert fractional u and v coordinates to surface point and partial derivatives
+   * @param uFraction fractional coordinate in u direction
+   * @param vFraction fractional coordinate in the v direction
+   * @param result optional pre-allocated carrier for point and vectors
+   */
+  UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }

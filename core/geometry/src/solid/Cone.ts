@@ -9,10 +9,11 @@ import { Range3d } from "../Range";
 import { Transform, RotMatrix } from "../Transform";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
-import { GeometryHandler } from "../GeometryHandler";
+import { GeometryHandler, UVSurface } from "../GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Loop, CurveCollection } from "../curve/CurveChain";
+import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -24,7 +25,7 @@ import { LineString3d } from "../curve/LineString3d";
  * * The stored matrix has unit vectors in the xy columns, and full-length z column.
  * *
  */
-export class Cone extends SolidPrimitive {
+export class Cone extends SolidPrimitive implements UVSurface {
   private localToWorld: Transform;       // Transform from local to global.
   private radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
   private radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse
@@ -155,5 +156,26 @@ export class Cone extends SolidPrimitive {
     const arc1 = this.constantVSection(1.0)!;
     arc0.extendRange(range, transform);
     arc1.extendRange(range, transform);
+  }
+
+  public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+    const theta = uFraction * Math.PI * 2.0;
+    const r = Geometry.interpolate(this.radiusA, vFraction, this.radiusB);
+    const cosTheta = Math.cos(theta);
+    const sinTheta = Math.sin(theta);
+    return this.localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
+  }
+  public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    const theta = uFraction * Math.PI * 2.0;
+    const r = Geometry.interpolate(this.radiusA, vFraction, this.radiusB);
+    const drdv = this.radiusB - this.radiusA;
+    const cosTheta = Math.cos(theta);
+    const sinTheta = Math.sin(theta);
+    const fTheta = 2.0 * Math.PI;
+    return Plane3dByOriginAndVectors.createOriginAndVectors(
+      this.localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction),
+      this.localToWorld.multiplyVectorXYZ(-r * sinTheta * fTheta, r * cosTheta * fTheta, 0),
+      this.localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
+      result);
   }
 }

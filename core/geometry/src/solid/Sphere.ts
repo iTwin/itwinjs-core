@@ -12,11 +12,12 @@ import { GeometryQuery } from "../curve/CurvePrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
 
 import { Geometry, AngleSweep } from "../Geometry";
-import { GeometryHandler } from "../GeometryHandler";
+import { GeometryHandler, UVSurface } from "../GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { Loop, CurveCollection } from "../curve/CurveChain";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
+import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 /**
  * A Sphere is
  *
@@ -24,13 +25,18 @@ import { LineString3d } from "../curve/LineString3d";
  * * mapped by an arbitrary (possibly skewed, non-uniform scaled) transform
  * * hence possibly the final geometry is ellipsoidal
  */
-export class Sphere extends SolidPrimitive {
+export class Sphere extends SolidPrimitive implements UVSurface {
   private localToWorld: Transform;  // unit sphere maps to world through the transform0 part of this map.
   private latitudeSweep: AngleSweep;
-  /** Return the longitude (in radians) all fractional v. */
+  /** Return the latitude (in radians) all fractional v. */
   public vFractionToRadians(v: number): number {
     return this.latitudeSweep.fractionToRadians(v);
   }
+  /** Return the longitude (in radians) all fractional u. */
+  public uFractionToRadians(u: number): number {
+    return u * Math.PI * 2.0;
+  }
+
   private constructor(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean) {
     super(capped);
     this.localToWorld = localToWorld;
@@ -188,5 +194,38 @@ export class Sphere extends SolidPrimitive {
     range.extendTransformedXYZ(placement, -1, 1, 1);
     range.extendTransformedXYZ(placement, 1, 1, 1);
 
+  }
+/** Evaluate as a uv surface
+ * @param uFraction fractional position in minor (phi)
+ * @param vFraction fractional position on major (theta) arc
+ */
+  public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+    // sphere with radius 1 . . .
+    const thetaRadians = this.uFractionToRadians(uFraction);
+    const phiRadians = this.vFractionToRadians(vFraction);
+    const cosTheta = Math.cos(thetaRadians);
+    const sinTheta = Math.sin(thetaRadians);
+    const sinPhi = Math.sin(phiRadians);
+    const cosPhi = Math.cos(phiRadians);
+    return this.localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result);
+  }
+  /** Evaluate as a uv surface, returning point and two vectors.
+   * @param u fractional position in minor (phi)
+   * @param v fractional position on major (theta) arc
+   */
+  public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    const thetaRadians = this.uFractionToRadians(uFraction);
+    const phiRadians = this.vFractionToRadians(vFraction);
+    const fTheta = Math.PI * 2.0;
+    const fPhi   = this.latitudeSweep.sweepRadians;
+    const cosTheta = Math.cos(thetaRadians);
+    const sinTheta = Math.sin(thetaRadians);
+    const sinPhi = Math.sin(phiRadians);
+    const cosPhi = Math.cos(phiRadians);
+    return Plane3dByOriginAndVectors.createOriginAndVectors(
+      this.localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
+      this.localToWorld.multiplyVectorXYZ(-fTheta * sinTheta * cosPhi, fTheta * cosTheta * cosPhi, 0),
+      this.localToWorld.multiplyVectorXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta, fPhi * cosPhi),
+      result);
   }
 }
