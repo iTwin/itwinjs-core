@@ -1050,7 +1050,7 @@ class NavigateMotion {
       const up = this.getWorldUp();
       const cross = up.crossProduct(zDir);
       cross.crossProduct(up, zDir);
-      zDir.normalize();
+      zDir.normalizeInPlace();
     }
 
     xDir.scale(velocity.x * this.deltaTime, xDir);
