@@ -79,8 +79,10 @@ export class WebAppRpcLogging {
       operation: object.operation.operationName,
       rpcInterface: WebAppRpcLogging.getRpcInterfaceName(object.operation.interfaceDefinition),
       status,
-      activityId: object.id,
-      elapsed,
+      // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
+      ActivityId: object.id,
+      TimeElapsed: elapsed,
+      MachineName: getHostname(),
     }));
   }
 
@@ -88,7 +90,9 @@ export class WebAppRpcLogging {
     Logger.logInfo(loggingCategory, message, () => ({
       method: request.method,
       path: request.path,
-      activityId: request.id,
+      // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
+      ActivityId: request.id,
+      MachineName: getHostname(),
     }));
   }
 
@@ -98,7 +102,9 @@ export class WebAppRpcLogging {
       path: invocation.request.path,
       status: invocation.status,
       error: invocation.result,
-      activityId: invocation.request.id,
+      // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
+      ActivityId: invocation.request.id,
+      MachineName: getHostname(),
     }));
   }
 }
