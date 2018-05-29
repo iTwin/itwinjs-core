@@ -495,7 +495,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Add a polyface, with optional reverse and transform. */
-  public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
+  public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform?: Transform) {
     this.polyface.addIndexedPolyface(source, reversed, transform);
   }
 

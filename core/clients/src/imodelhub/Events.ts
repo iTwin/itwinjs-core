@@ -368,7 +368,7 @@ export class EventHandler extends EventBaseHandler {
   public async getEvent(sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent> {
     Logger.logInfo(loggingCategory, `Getting event from subscription ${subscriptionId}`);
 
-    const options = this.getEventRequestOptions(sasToken);
+    const options = this.getEventRequestOptions(sasToken, timeout);
 
     const result = await request(this.getEventUrl(baseAddress, subscriptionId, timeout), options);
 

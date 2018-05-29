@@ -5,7 +5,7 @@ import { assert, IndexMap, compareNumbers } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
 export class ColorMap extends IndexMap<number> {
-  private _hasAlpha: boolean = false;
+  private _hasTransparency: boolean = false;
 
   public constructor() { super(compareNumbers, 0xffff); }
 
@@ -14,14 +14,14 @@ export class ColorMap extends IndexMap<number> {
   public insert(color: number): number {
     // The table should never contain a mix of opaque and translucent colors.
     if (this.isEmpty)
-      this._hasAlpha = ColorMap.hasAlpha(color);
+      this._hasTransparency = ColorMap.isTranslucent(color);
     else
-      assert(ColorMap.hasAlpha(color) === this.hasTransparency);
+      assert(ColorMap.isTranslucent(color) === this.hasTransparency);
 
     return super.insert(color);
   }
 
-  public get hasTransparency(): boolean { return this._hasAlpha; }
+  public get hasTransparency(): boolean { return this._hasTransparency; }
   public get isUniform(): boolean { return 1 === this.length; }
 
   public toColorIndex(index: ColorIndex, indices: Uint16Array): void {
@@ -41,8 +41,8 @@ export class ColorMap extends IndexMap<number> {
   }
 
   private static scratchColorDef = new ColorDef();
-  private static hasAlpha(color: number) {
+  private static isTranslucent(color: number) {
     this.scratchColorDef.tbgr = color;
-    return 0 !== this.scratchColorDef.getAlpha();
+    return 255 !== this.scratchColorDef.getAlpha();
   }
 }

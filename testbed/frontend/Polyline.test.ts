@@ -157,7 +157,6 @@ function testCreateGeometry() {
 
 describe("PolylineGeometry", () => {
   before(() => {
-    WebGLTestContext.shutdown();
     WebGLTestContext.startup();
   });
   after(() => WebGLTestContext.shutdown());

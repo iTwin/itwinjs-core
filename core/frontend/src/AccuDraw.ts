@@ -8,7 +8,7 @@ import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
-import { ColorDef, ColorByName, LinePixels } from "@bentley/imodeljs-common";
+import { ColorDef, ColorByName, LinePixels, FillFlags } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
 import { SnapMode } from "./HitDetail";
@@ -18,6 +18,7 @@ import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
+import { GeometryListBuilder } from "./rendering";
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -1753,7 +1754,9 @@ export class AccuDraw {
       pts[0] = ptP;
       pts[1] = ptP;
       graphic.setSymbology(colorIndex, colorIndex, 8);
-      graphic.addPointString(2, pts);
+      (graphic as GeometryListBuilder).graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+      graphic.addPointString(pts);
+      (graphic as GeometryListBuilder).graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
     }
 
     let axisIsIndexed = false;
@@ -1886,7 +1889,9 @@ export class AccuDraw {
           new Point3d(1.0, -1.0, 0.0),
           new Point3d(-1.0, -1.0, 0.0)];
         shapePts[4] = shapePts[0];
-        graphic.addShape(5, shapePts, true);
+        (graphic as GeometryListBuilder).graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+        graphic.addShape(shapePts);
+        (graphic as GeometryListBuilder).graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
         graphic.addLineString(shapePts);
       }
     } else {
@@ -1910,7 +1915,9 @@ export class AccuDraw {
 
       shapePtsP[nSides] = shapePtsP[0];
 
-      graphic.addShape(nSides + 1, shapePtsP, true);
+      (graphic as GeometryListBuilder).graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+      graphic.addShape(shapePtsP);
+      (graphic as GeometryListBuilder).graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
       graphic.addLineString(shapePtsP);
     }
 
@@ -1934,7 +1941,7 @@ export class AccuDraw {
 
     // Display compass center mark...
     graphic.setSymbology(frameColor, frameColor, 8);
-    graphic.addPointString(1, [center]);
+    graphic.addPointString([center]);
 
     // Display positive "X" tick...
     graphic.setSymbology(xColor, xColor, 4);

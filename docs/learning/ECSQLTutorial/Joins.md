@@ -5,7 +5,7 @@ ignore: true
 
 ## ECRelationshipClasses
 
-As ECRelationshipClasses are ECClasses as well, they can be used in ECSQL like ECClasses. Their additional relationship semantics is expressed by these system properties.
+As ECRelationshipClasses are ECClasses as well, they can be used in ECSQL like ECClasses. Their additional relationship semantics are expressed by these system properties.
 
 Property | Description
 --- | ---
@@ -14,37 +14,115 @@ Property | Description
 `TargetECInstanceId` | ECInstanceId of the instance on the *target* end of the relationship
 `TargetECClassId` | ECClassId of the instance on the *target* end of the relationship
 
-> If the ECRelationshipClass is backed by a [Navigation property](#navigation-properties), it is usually much easier to use the navigation property in your ECSQL than the ECRelationshipClass.
+> **Try it yourself**
+>
+> *Goal:* Return the child Elements (id and class id) of the parent Element 123
+>
+> *ECSQL:* `SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElement WHERE SourceECInstanceId=123`
+>
+> *Result*
+>
+> ChildId | ChildClassId
+> -- | --
+> lll | 123
+> xxx | 123
 
-### Examples
+Like any ECClass, ECRelationshipClasses abstract away how they are actually persisted in the database. When working with plain database and SQL you need to know that. This usually depends on the cardinality of the relationship. For example M:N relationships (also known as *many to many*) require a separate link table which persists the pairs of related instances. For 1:N relationhips (also known as *one to many*) though, the id of the related instance is usually persisted as foreign key in the child table directly. **For ECRelationshipClasses you do not need to know that.**
 
-ECSQL | Description
---- | ---
-`SELECT SourceECInstanceId FROM bis.ElementDrivesElement WHERE TargetECInstanceId=? AND Status=?` | Returns the ECInstanceId of all Elements that drive the Element bound to the first parameter
-`SELECT TargetECInstanceId,TargetECClassId FROM bis.ModelHasElements WHERE SourceECInstanceId=?` | Returns the ECInstanceId and ECClassId of all Elements contained by the Model bound to the parameter
+We will cover relationships more in the next chapter on joins.
 
 ## Joins
 
-Joins between ECClasses are specified with the standard SQL join syntax (either `JOIN` ... `ON` ... or the *theta* style).
+Joins are a powerful feature of ECSQL to combine data from different classes. **The syntax is the same as as in SQL**.
 
-In ECSchemas ECRelationshipClasses are used to relate two ECClasses. ECRelationshipClasses can therefore be seen as virtual link tables between those two classes. If you want to join two ECClasses via their ECRelationshipClass, you need to join the first class to the relationship class and then the relationship class to the second class.
+Unlike a plain database, ECSchemas provide first-class concepts like [ECRelationshipClasses](#ecrelationshipclasses) and [Navigation properties](.\ECSQLDataTypes.md#navigation-properties) which are helpful when using joins in ECSQL. However, you can also use the joins as you did in SQL without being aware of the above-mentioned concepts.
 
-> If [navigation properties](#navigation-properties) are defined for the ECRelationship class,
-> - you don't need to JOIN at all, when going from the 'Many' to the 'One' end,
-> - you can omit the JOIN to the ECRelationshipClass, when going from the 'One' to the 'Many' end
+### Quick Recap
 
-#### Examples
+The tutorial expects that you are familiar with SQL joins. Because their understanding is crucial for how relationships and navigation properties affect defining joins, we do a quick recap of the key aspects of joins.
 
-Without navigation property (2 JOINs needed):
+A join is made up of two pieces:
 
-`SELECT e.CodeValue,e.UserLabel FROM bis.Element driver JOIN bis.ElementDrivesElement ede ON driver.ECInstanceId=ede.SourceECInstanceId JOIN bis.Element driven ON driven.ECInstanceId=ede.TargetECInstanceId WHERE driven.ECInstanceId=? AND ede.Status=?`
+- *What to join*: specifies the class to join to.
+- *How to join*: specifies the join condition. Those pairs of rows from the two classes that match the condition end up in the join.
 
-With navigation property (Element.Model):
+While you can use any condition, the typical join condition matches a property common to both of the joined classes. This is where ECRelationshipClasses and Navigation properties come into play. The next sections explain why.
 
-Return the CodeValue and UserLabel of all Elements in the Model with the specified condition (1 JOIN needed):
+### Navigation Properties
 
-`SELECT e.CodeValue,e.UserLabel FROM bis.Element e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.Name=?`
+[Navigation properties](./ECSQLDataTypes.md#navigation-properties)' main goal is to simplify the navigation from instances to related instances. Consequently, whenever you have a navigation property, you do not need to worry about a join anymore.
 
-Return the Model for an Element with the specified condition (No join needed):
+The rule of thumb therefore is: **Prefer navigation properties over joins when available.**
 
-`SELECT Model FROM bis.Element WHERE ECInstanceId=?`
+However, navigation properties cannot replace all use cases of joins. We will look at those in the next sections.
+We will also cover examples that compare ECSQL using navigation properties with ECSQL using joins once we learnt how to use joins with ECRelationshipClasses.
+
+### Joins using ECRelationshipClasses
+
+Relationships are basically pairs of ids of the related instances. They act as middle-man when joining instances from the two related classes. It does not matter how the relationship is actually persisted (which also depends on the cardinality of the relationship) (see also [ECRelationshipClasses](#ecrelationshipclasses)).
+
+General idea: **join from a class to the relationship class and then join from the relationship class to the related class**
+
+### Ad-hoc Joins
+
+As noted above, you can have a join using any arbitrary join condition (*ad-hoc joins*). Usually you will find relationship classes or even navigation properties defined for the typical cases you need to join. Ad-hoc joins are therefore mainly needed if that is **not** the case.
+
+### Examples
+
+As explained above using navigation properties instead of joins is preferred. So always double-check whether a navigation property is defined for the ECRelationshipClass you want to navigate. The examples below show how to use navigation properties and how the corresponding ECSQL using ECRelationshipClasses would look like.
+
+> **Try it yourself**
+>
+> *Goal:* Return the Model that contains the Element with code 'bla bla'.
+>
+> *ECSQL:* `SELECT Model FROM bis.Element WHERE CodeValue='bla bla'`
+>
+> *Result*
+>
+> Model |
+> -- |
+> {"id": "0xlll", "relClassName":"BisCore.ModelContainsElements"} |
+
+Note that the above ECSQL implies to navigate from the `Element` ECClass to the `Model` ECClass using the ECRelationshipClass `ModelContainsElements`. But none of that has to be expressed in the ECSQL. It is all hidden behind the navigation property and makes the ECSQL straight-forward.
+
+The following ECSQL is the same as above but uses joins instead of the navigation property.
+
+> **Try it yourself**
+>
+> *Goal:* Return the Model that contains the Element with code 'bla bla'.
+>
+> *ECSQL:* `SELECT rel.SourceECInstanceId ModelId FROM bis.ModelContainsElement rel JOIN bis.Element ON rel.TargetECInstanceId=Element.ECInstanceId WHERE Element.CodeValue='bla bla'`
+>
+> *Result*
+>
+> ModelId |
+> -- |
+> 0xlll |
+
+If you want to return something else than just the id of the related instance, you can still use the navigation property but you need a join to bring in the related instance's class.
+
+> **Try it yourself**
+>
+> *Goal:* Return the id, the modeled element and the parent model of the Model that contains the Element with code 'bla bla'.
+>
+> *ECSQL:* `SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Model JOIN bis.Element ON Element.Model.Id=Model.ECInstanceId WHERE Element.CodeValue='bla bla'`
+>
+> *Result*
+>
+> ECInstanceId | ModelElementId | ParentModelId
+> -- | -- | --
+> lll | 123 | 222
+
+Again for the purpose of learning, the same ECSQL expressed with relationship classes instead of navigation properties looks like this.
+
+> **Try it yourself**
+>
+> *Goal:* Return the id, the modeled element and the parent model of the Model that contains the Element with code 'bla bla'.
+>
+> *ECSQL:* `SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Element JOIN bis.ModelContainsElement rel ON Element.ECInstanceId=rel.TargetECInstanceId JOIN bis.Model ON rel.SourceECInstanceId=Model.ECInstanceId WHERE Element.CodeValue='bla bla'`
+>
+> *Result*
+>
+> ECInstanceId | ModelElementId | ParentModelId
+> -- | -- | --
+> lll | 123 | 222

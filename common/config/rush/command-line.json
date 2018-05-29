@@ -12,6 +12,12 @@
       "summary": "Builds the API reference docs for each package",
       "documentation": "Iterates through each package in the monorepo and runs the 'docs' script",
       "parallelized": true
+    },
+    {
+      "name": "lint",
+      "summary": "Run lint rules on each package",
+      "documentation": "Iterates through each package in the monorepo and runs the 'lint' script",
+      "parallelized": true
     }
   ]
 }

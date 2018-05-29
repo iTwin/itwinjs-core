@@ -5,7 +5,7 @@ import * as path from "path";
 import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelDb } from "../../backend";
+import { IModelDb, OpenParams } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubTestUtils } from "./HubTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -47,9 +47,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubTestUtils.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenMode.Readonly);
+    const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
-    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
 
     iModel.close(accessToken);
   });
@@ -72,9 +72,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubTestUtils.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenMode.Readonly);
+    const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
-    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
 
     iModel.close(accessToken);
   });

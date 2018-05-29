@@ -7,14 +7,14 @@ To log a message, call [Logger.logError]($bentleyjs-core), [Logger.logWarning]($
 [BentleyError]($bentleyjs-core) is integrated with logging.
 
 ## LogLevels
-Each of the logging output functions assigns a [LogLevel]($bentleyjs-core) to the specified message. A LogLevel is a tag that is associated with a message as it travels through filters and output streams. The app that produces logging messages can control output by filtering on LogLevel. And the dashboards that consume logging messages can filter and organize logging messages by LogLevels.
+Each of the logging output functions assigns a [LogLevel]($bentleyjs-core) to the specified message. LogLevel is like a property of a logging message. The app that produces logging messages can control output by filtering on LogLevel. And the dashboards that consume logging messages can filter and organize logging messages by LogLevels.
 
-[LogLevel]($bentleyjs-core) is a pre-defined enum that is chosen by the app that generates logging messages. The app must choose the appropriate level for each message, so that the most important messages stand out.
+[LogLevel]($bentleyjs-core) is a pre-defined enum that is chosen by the app that generates logging messages. The app must choose the appropriate level for each message, so that the purpose of a message is clear and so that the most important messages stand out.
 
 ## Categories
-Each of the logging output functions takes the *category* of the message as its first argument and associates this string with the specified message. The app that produces logging messages can control output by filtering on categories. And the dashboards that consume logging messages can filter and organize logging messages by categories.
+Each of the logging output functions takes the *category* of the message as its first argument and associates this string with the specified message. Category is like a property of a logging message. The app that produces logging messages can control output by filtering on category. And the dashboards that consume logging messages can filter and organize logging messages by categories.
 
-Categories are freeform strings that are made up by the app that generates logging messages. A well-chosen category string make messages useful and manageable. In some cases, the category will be used to identify the source of the message. For example, when logging messages from many different services are streamed to a single file or dashboard, users will rely on the category of a message to identify its source. The category will also be used to group messages. For example, all logging messages that pertain to a certain module can be recognized as belonging to a group if they all have the same category.
+Categories are freeform strings that are made up by the app that generates logging messages. A well-chosen category string make messages useful and manageable. In some cases, the category will be used to identify the source of the message. For example, when logging messages from many different services are streamed to a single file or dashboard, users will rely on the category of a message to identify its source. The category will also be used to group messages. For example, all logging messages that pertain to a certain module should have the same category.
 
 Parent/child category naming is often useful for achieving uniqueness and grouping.
 
@@ -62,7 +62,7 @@ A service typically initializes and configures logging in its startup logic. Con
 
 *Example:*
 ``` ts
-[include:Logging.serviceLoggingExample]
+[[include:Logging-configureLoggingAndStreams.example-code]]
 ```
 An example of the logging-related sections of a configuration .json file that is deployed with a service might be:
 ``` json
