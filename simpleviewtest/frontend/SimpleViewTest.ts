@@ -1,6 +1,6 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
@@ -90,22 +90,39 @@ let theViewport: Viewport | undefined;
 export class LocateTool extends ViewTool {
   public static toolId = "View.Locate";
 
-  private _curPoint?: Point3d;
+  private _curPoint = new Point3d();
+  private _worldPoint = new Point3d();
+  private _haveWorldPoint = false;
 
   public constructor() { super(); }
 
-  public onDataButtonDown(_ev: BeButtonEvent) { }
   public updateDynamics(ev: BeButtonEvent) { this.onModelMotion(ev); }
   public onModelMotion(ev: BeButtonEvent) {
-    this._curPoint = ev.point;
+    this._curPoint.setFrom(ev.point);
 
     if (ev.viewport)
       ev.viewport.invalidateDecorations();
   }
 
+  public onDataButtonDown(ev: BeButtonEvent) {
+    this._worldPoint.setFrom(ev.point);
+    this._haveWorldPoint = true;
+    if (ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
+
   public decorate(context: DecorateContext) {
-    if (undefined !== this._curPoint)
-      context.viewport.drawLocateCursor(context, this._curPoint, context.viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), true);
+    context.viewport.drawLocateCursor(context, this._curPoint, context.viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), true);
+    if (this._haveWorldPoint) {
+      const gf = context.createWorldOverlay();
+      const color = ColorDef.red.clone();
+      gf.setSymbology(color, color, 10);
+      // gf.addPointString([this._worldPoint]);
+      // context.addWorldOverlay(gf.finish()!);
+      const pt = context.viewport.worldToView(this._worldPoint);
+      gf.addPointString([pt]);
+      context.addViewOverlay(gf.finish()!);
+    }
   }
 }
 
