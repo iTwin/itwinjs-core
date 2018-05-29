@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-common",
+      "comment": "Added interfaces for UserSettingsManager.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-common",
+  "email": "aidas.kilinskas@bentley.com"
+}

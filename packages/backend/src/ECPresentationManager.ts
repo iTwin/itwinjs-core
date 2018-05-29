@@ -12,6 +12,7 @@ import { ECPresentationManager as ECPresentationManagerDefinition, ECPresentatio
 import { NodeKey, Node } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Content, Descriptor } from "@bentley/ecpresentation-common";
 import { PageOptions, KeySet, PresentationRuleSet } from "@bentley/ecpresentation-common";
+import UserSettingsManager from "./UserSettingsManager";
 
 /**
  * Properties that can be used to configure [[ECPresentationManager]]
@@ -45,6 +46,7 @@ export interface Props {
 export default class ECPresentationManager implements ECPresentationManagerDefinition, IDisposable {
 
   private _addon?: NodeAddonDefinition;
+  private _settings: UserSettingsManager;
   private _activeLocale?: string;
   private _isDisposed: boolean;
 
@@ -61,6 +63,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     if (props)
       this.activeLocale = props.activeLocale;
     this.setupLocaleDirectories(props);
+    this._settings = new UserSettingsManager(this.getNativePlatform);
   }
 
   /**
@@ -74,8 +77,12 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     this._isDisposed = true;
   }
 
+  public get settings(): UserSettingsManager {
+      return this._settings;
+  }
+
   /** @hidden */
-  public getNativePlatform(): NodeAddonDefinition {
+  public getNativePlatform = (): NodeAddonDefinition => {
     if (this._isDisposed)
       throw new ECPresentationError(ECPresentationStatus.UseAfterDisposal, "Attempting to use ECPresentation manager after disposal");
     if (!this._addon) {
@@ -222,6 +229,8 @@ export interface NodeAddonDefinition extends IDisposable {
   addRuleSet(ruleSetJson: string): void;
   removeRuleSet(ruleSetId: string): void;
   clearRuleSets(): void;
+  getUserSetting(ruleSetId: string, settingId: string, settingType: string): any;
+  setUserSetting(ruleSetId: string, settingId: string, settingValue: string): void;
 }
 
 const createAddonImpl = () => {
@@ -240,7 +249,7 @@ const createAddonImpl = () => {
         throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
       if (response.error)
         throw new ECPresentationError(this.getStatus(response.error.status), response.error.message);
-      if (!response.result)
+      if (response.result === undefined)
         throw new ECPresentationError(ECPresentationStatus.InvalidResponse);
       return response.result;
     }
@@ -279,6 +288,12 @@ const createAddonImpl = () => {
       if (!imodel || !imodel.nativeDb)
         throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "token");
       return imodel.nativeDb;
+    }
+    public getUserSetting(ruleSetId: string, settingId: string, settingType: string): any {
+      return this.handleResult(this._nativeAddon.getUserSetting(ruleSetId, settingId, settingType));
+    }
+    public setUserSetting(ruleSetId: string, settingId: string, settingValue: string): void {
+      this.handleVoidResult(this._nativeAddon.setUserSetting(ruleSetId, settingId, settingValue));
     }
   };
 };

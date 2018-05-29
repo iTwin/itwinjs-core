@@ -4,7 +4,7 @@
 /** @module RPC */
 
 import { IModelToken } from "@bentley/imodeljs-common";
-import { ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
+import { ECPresentationRpcInterface, SettingValue, SettingValueTypes } from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
@@ -79,5 +79,13 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     const content: Content = await this.getManager().getContent(token, descriptor, keys, pageOptions, options);
     content.descriptor.resetParentship();
     return content;
+  }
+
+  public async setUserSettingValue(ruleSetId: string, settingId: string, value: SettingValue): Promise<void> {
+    return await this.getManager().settings.setValue(ruleSetId, settingId, value);
+  }
+
+  public async getUserSettingValue(ruleSetId: string, settingId: string, settingType: SettingValueTypes): Promise<any> {
+    return await this.getManager().settings.getValue(ruleSetId, settingId, settingType);
   }
 }

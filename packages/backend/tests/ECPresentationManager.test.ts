@@ -9,9 +9,10 @@ import { OpenMode, using } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-native-platform-api";
-import { PageOptions, SelectionInfo, KeySet, ECPresentationError } from "@common/index";
+import { PageOptions, SelectionInfo, KeySet, ECPresentationError, SettingValueTypes } from "@common/index";
 import { Node, NodeKey, ECInstanceNodeKey } from "@common/index";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@src/ECPresentationManager";
+import UserSettingsManager from "@src/UserSettingsManager";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomECInstanceKey, createRandomECClassInfo } from "@helpers/random/EC";
 import { createRandomDescriptor, createRandomCategory } from "@helpers/random/Content";
@@ -89,6 +90,17 @@ describe("ECPresentationManager", () => {
         addon.verifyAll();
       });
 
+    });
+
+  });
+
+  describe("settings", () => {
+
+    const addon = moq.Mock.ofType<NodeAddonDefinition>();
+    const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
+
+    it("returns settings manager", () => {
+      expect(manager.settings).to.be.instanceOf(UserSettingsManager);
     });
 
   });
@@ -219,6 +231,25 @@ describe("ECPresentationManager", () => {
     it("calls addon's clearRuleSets", async () => {
       addonMock.setup((x) => x.clearRuleSets()).returns(() => ({})).verifiable();
       await manager.clearRuleSets();
+      addonMock.verifyAll();
+    });
+
+    it("calls addon's setUserSetting", async () => {
+      const value = JSON.stringify({ value: "", type: SettingValueTypes.String });
+      addonMock.setup((x) => x.setUserSetting("rulesetId", "settingId", value))
+        .returns(() => ({}))
+        .verifiable();
+      await manager.getNativePlatform().setUserSetting("rulesetId", "settingId", value);
+      addonMock.verifyAll();
+    });
+
+    it("calls addon's getUserSetting", async () => {
+      const value = faker.random.word();
+      addonMock.setup((x) => x.getUserSetting("rulesetId", "settingId", SettingValueTypes.String))
+        .returns(() => ({ result: value }))
+        .verifiable();
+      const result = await manager.getNativePlatform().getUserSetting("rulesetId", "settingId", SettingValueTypes.String);
+      expect(result).to.be.equal(value);
       addonMock.verifyAll();
     });
 

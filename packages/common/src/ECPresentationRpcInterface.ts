@@ -3,12 +3,14 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
+import { Id64 } from "@bentley/bentleyjs-core";
 import { RpcInterface, IModelToken, RpcManager } from "@bentley/imodeljs-common";
 import { PresentationRuleSet } from "./rules";
 import { Node, NodeKey } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
 import { PageOptions } from "./ECPresentationManager";
 import KeySet from "./KeySet";
+import { SettingValue, SettingValueTypes } from "./UserSettingsManager";
 
 /** Interface used for communication between ECPresentation backend and frontend. */
 export default class ECPresentationRpcInterface extends RpcInterface {
@@ -27,6 +29,7 @@ export default class ECPresentationRpcInterface extends RpcInterface {
     PropertiesField,
     NestedContentField,
     Item,
+    Id64,
   ]
 
   /** Get the frontend client of this interface */
@@ -57,4 +60,20 @@ export default class ECPresentationRpcInterface extends RpcInterface {
   public getContentSetSize(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _options: object): Promise<number> { return this.forward.apply(this, arguments); }
   /** See [[ECPresentationManager.getContent]] */
   public getContent(_token: Readonly<IModelToken>, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _pageOptions: Readonly<PageOptions> | undefined, _options: object): Promise<Readonly<Content>> { return this.forward.apply(this, arguments); }
+
+  /** Sets user setting value
+   * @param _ruleSetId Id of a ruleset setting is associated with.
+   * @param _settingId Id of a setting.
+   * @param _value Value and type.
+   */
+  public setUserSettingValue(_ruleSetId: string, _settingId: string, _value: SettingValue): Promise<void> { return this.forward.apply(this, arguments); }
+
+  /**
+   * Retrieves setting value. Returns default value if setting does not exist or does not convert to specified type.
+   * @param _ruleSetId Id of a ruleset setting is associated with.
+   * @param _settingId Id of a setting.
+   * @param _settingType Type of a setting.
+   * @return A promise object that returns setting value.
+   */
+  public getUserSettingValue(_ruleSetId: string, _settingId: string, _settingType: SettingValueTypes): Promise<any> { return this.forward.apply(this, arguments); }
 }
