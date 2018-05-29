@@ -128,8 +128,22 @@ export interface IStrokeHandler {
   endCurvePrimitive(cp: CurvePrimitive): void;
   endParentCurvePrimitive(cp: CurvePrimitive): void;
 }
-
+/**
+ * Interface with methods for mapping (u,v) fractional coordinates to surface xyz and derivatives.
+ */
 export interface UVSurface {
-  UVFractionToPoint(u: number, v: number, result?: Point3d): Point3d;
-  UVFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+  /**
+   * Convert fractional u and v coordinates to surface point
+   * @param uFraction fractional coordinate in u direction
+   * @param vFraction fractional coordinate in the v direction
+   * @param result optional pre-allocated point
+   */
+  UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
+  /**
+   * Convert fractional u and v coordinates to surface point and partial derivatives
+   * @param uFraction fractional coordinate in u direction
+   * @param vFraction fractional coordinate in the v direction
+   * @param result optional pre-allocated carrier for point and vectors
+   */
+  UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }
