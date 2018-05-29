@@ -3,14 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-import { memoize, MemoizedFunction } from "lodash";
-import { IModelToken } from "@bentley/imodeljs-common";
+import * as _ from "lodash";
+import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-components";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
-import ContentBuilder, { PropertyRecord, isValueEmpty, isArrayValue, isStructValue } from "../common/ContentBuilder";
-import { KeySet, CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
-
-// wip: workaround for TS4029 and TS6133
-export type MemoizedFunction = MemoizedFunction;
+import ContentBuilder from "../common/ContentBuilder";
+import { CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 
 let favoritesCategory: CategoryDescription | undefined;
 function getFavoritesCategory(): CategoryDescription {
@@ -64,6 +62,16 @@ export interface PropertyPaneData extends CategorizedRecords {
   label: string;
   description?: string;
 }
+
+const isValueEmpty = (v: PropertyValue): boolean => {
+  if (v.valueFormat === PropertyValueFormat.Primitive)
+    return (null === v.value || undefined === v.value || "" === v.value);
+  if (v.valueFormat === PropertyValueFormat.Struct)
+    return !v.members;
+  if (v.valueFormat === PropertyValueFormat.Array)
+    return !v.items || 0 === v.items.length;
+  return false;
+};
 
 class PropertyDataBuilder {
   private _descriptor: Descriptor;
@@ -148,7 +156,7 @@ class PropertyDataBuilder {
       const handleNestedContentRecord = (field: NestedContentField, record: PropertyRecord) => {
         if (1 === fields.fields[category.name].length) {
           // note: special handling if this is the only field in the category
-          if (isArrayValue(record.value)) {
+          if (record.value && record.value.valueFormat === PropertyValueFormat.Array) {
             if (0 === record.value.items.length) {
               // don't include empty arrays at all
               return;
@@ -158,7 +166,7 @@ class PropertyDataBuilder {
               record = record.value.items[0];
             }
           }
-          if (isStructValue(record.value)) {
+          if (record.value && record.value.valueFormat === PropertyValueFormat.Struct) {
             // for structs just include all their members
             for (const nestedField of field.nestedFields)
               addRecord(nestedField, record.value.members[nestedField.name]);
@@ -205,19 +213,11 @@ class PropertyDataBuilder {
 
 export default class PropertyPaneDataProvider extends ContentDataProvider {
   private _includeFieldsWithNoValues: boolean;
-  private _keys: Readonly<KeySet>;
 
   /** Constructor. */
-  constructor(imodelToken: IModelToken, rulesetId: string) {
-    super(imodelToken, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
+  constructor(connection: IModelConnection, rulesetId: string) {
+    super(connection, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
     this._includeFieldsWithNoValues = true;
-    this._keys = new KeySet();
-  }
-
-  public get keys() { return this._keys; }
-  public set keys(keys: Readonly<KeySet>) {
-    this._keys = keys;
-    this.invalidateCache({ descriptor: true, size: true, content: true });
   }
 
   protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
@@ -251,8 +251,8 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     fields.sort(prioritySortFunction);
   }
 
-  public getData = memoize(async (): Promise<PropertyPaneData> => {
-    const content = await this.getContent(this._keys);
+  public getData = _.memoize(async (): Promise<PropertyPaneData> => {
+    const content = await this.getContent();
     if (!content || 0 === content.contentSet.length)
       throw new ECPresentationError(ECPresentationStatus.NoContent);
 

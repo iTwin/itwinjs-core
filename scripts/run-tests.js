@@ -26,6 +26,7 @@ const registerExtensions = () => {
     require("ts-node/register");
     require("tsconfig-paths/register");
     require("source-map-support/register");
+    require("jsdom-global/register");
     require("ignore-styles");
     extensionsRegistered = true;
   }
@@ -107,8 +108,9 @@ const runOnce = () => {
     .timeout(10 * 60 * 1000) // 10 minutes
     .enableTimeouts(options.timeoutsEnabled)
     .ignoreLeaks(false)
-    .useColors(true)
-    .fullTrace();
+    .useColors(true);
+  if (!options.watch)
+    mocha = mocha.fullTrace();
   getTestFiles().forEach((file) => {
     mocha.addFile(file);
   });
@@ -135,11 +137,10 @@ const run = () => {
     });
   }
   chain = chain.catch((err) => {
-    if (options.watch)
-      return;
     if (err)
       console.log(err);
-    process.exit(1);
+    if (!options.watch)
+      process.exit(1);
   });
   current = chain;
 };

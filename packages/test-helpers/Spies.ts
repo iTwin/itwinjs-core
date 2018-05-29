@@ -7,8 +7,12 @@ import * as spies from "chai-spies";
 chai.use(spies);
 
 beforeEach(() => {
-  // @types don't export `restore`...
-  (chai.spy as any).restore();
+  restore();
 });
+
+export const restore = (obj?: any) => {
+  // @types don't export `restore`...
+  (chai.spy as any).restore(obj);
+};
 
 export { spy } from "chai";

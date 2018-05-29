@@ -3,6 +3,7 @@
     "source-map-support/register",
     "ts-node/register",
     "tsconfig-paths/register",
+    "jsdom-global/register",
     "ignore-styles"
   ],
   "include": [

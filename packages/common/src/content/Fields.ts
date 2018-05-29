@@ -4,6 +4,7 @@
 /** @module Content */
 
 import * as ec from "../EC";
+import { ValuesDictionary } from "../Utils";
 import CategoryDescription from "./Category";
 import EditorDescription from "./Editor";
 import Property from "./Property";
@@ -56,19 +57,19 @@ const isNestedContentField = (field: BaseFieldJSON | Field): field is NestedCont
  */
 export class Field {
   /** Category information */
-  public readonly category: Readonly<CategoryDescription>;
+  public category: Readonly<CategoryDescription>;
   /** Unique name */
-  public readonly name: string;
+  public name: string;
   /** Display label */
-  public readonly label: string;
+  public label: string;
   /** Description of this field's values data type */
-  public readonly type: Readonly<TypeDescription>;
+  public type: Readonly<TypeDescription>;
   /** Are values in this field read-only */
-  public readonly isReadonly: boolean;
+  public isReadonly: boolean;
   /** Priority of the field. Higher priority fields should appear first in the UI */
-  public readonly priority: number;
+  public priority: number;
   /** Property editor used to edit values of this field */
-  public readonly editor?: Readonly<EditorDescription>;
+  public editor?: Readonly<EditorDescription>;
   /** Parent field */
   private _parent?: Readonly<NestedContentField>;
 
@@ -163,7 +164,7 @@ export class Field {
  */
 export class PropertiesField extends Field {
   /** A list of properties this field is created from */
-  public readonly properties: Array<Readonly<Property>>;
+  public properties: Array<Readonly<Property>>;
 
   /**
    * Creates an instance of PropertiesField.
@@ -209,11 +210,11 @@ export class PropertiesField extends Field {
  */
 export class NestedContentField extends Field {
   /** Information about an ECClass whose properties are nested inside this field */
-  public readonly contentClassInfo: ec.ClassInfo;
+  public contentClassInfo: ec.ClassInfo;
   /** Relationship path to [Primary class]($docs/learning/content/Terminology#primary-class) */
-  public readonly pathToPrimaryClass: ec.RelationshipPathInfo;
+  public pathToPrimaryClass: ec.RelationshipPathInfo;
   /** Contained nested fields */
-  public readonly nestedFields: Array<Readonly<Field>>;
+  public nestedFields: Array<Readonly<Field>>;
 
   /**
    * Creates an instance of NestedContentField.
@@ -279,7 +280,8 @@ export class NestedContentField extends Field {
 
 /** Data structure that describes nested content value */
 export interface NestedContent {
-  primaryKeys: Array<Readonly<ec.InstanceKey>>;
-  values: any;
-  displayValues: any;
+  primaryKeys: ec.InstanceKey[];
+  values: ValuesDictionary<any>;
+  displayValues: ValuesDictionary<any>;
+  mergedFieldNames: string[];
 }

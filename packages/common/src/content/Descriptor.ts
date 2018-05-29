@@ -93,19 +93,19 @@ export interface DescriptorOverrides {
  */
 export default class Descriptor {
   /** Id of the connection used to create the descriptor */
-  public readonly connectionId!: string;
+  public connectionId!: string;
   /** Hash of the input keys used to create the descriptor */
-  public readonly inputKeysHash!: string;
+  public inputKeysHash!: string;
   /** Extended options used to create the descriptor */
-  public readonly contentOptions: any;
+  public contentOptions: any;
   /** Selection info used to create the descriptor */
-  public readonly selectionInfo?: SelectionInfo;
+  public selectionInfo?: SelectionInfo;
   /** Display type used to create the descriptor */
-  public readonly displayType!: string;
+  public displayType!: string;
   /** A list of classes that will be selected from when creating content with this descriptor */
-  public readonly selectClasses!: SelectClassInfo[];
+  public selectClasses!: SelectClassInfo[];
   /** A list of fields contained in the descriptor */
-  public readonly fields!: Field[];
+  public fields!: Field[];
   /** [[ContentFlags]] used to create the descriptor */
   public contentFlags!: number;
   /** Field used to sort the content */
@@ -146,6 +146,17 @@ export default class Descriptor {
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Descriptor.fromJSON(value) : value;
+  }
+
+  /**
+   * Get field by its name
+   */
+  public getFieldByName(name: string): Field | undefined {
+    for (const field of this.fields) {
+      if (field.name === name)
+        return field;
+    }
+    return undefined;
   }
 
   /** @hidden */
