@@ -4,7 +4,7 @@
 
 ### [SpatialComposition](./spatial-composition.md)
 
-### [ClassificationSystems](./classifications.md)
+### [ClassificationSystems](./classification-systems.md)
 
 ### [Grids](./grids.md)
 
