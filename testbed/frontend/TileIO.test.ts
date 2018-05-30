@@ -112,6 +112,17 @@ describe("TileIO", () => {
         const meshes = geom.meshes;
         expect(meshes.length).to.equal(1);
 
+        // Validate feature table (uniform - one element)
+        const features = meshes.features!;
+        expect(meshes.features).not.to.be.undefined;
+        expect(features.length).to.equal(1);
+        expect(features.isUniform).to.be.true;
+        const feature = features.findFeature(0);
+        expect(feature).not.to.be.undefined;
+        expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+        expect(feature!.elementId.value).to.equal("0x4e");
+        expect(feature!.subCategoryId.value).to.equal("0x18");
+
         // Validate mesh data
         const mesh = meshes[0];
         expect(mesh.type).to.equal(Mesh.PrimitiveType.Mesh);
@@ -138,6 +149,18 @@ describe("TileIO", () => {
         expect(mesh.colorMap.indexOf(0x0000ff00)).to.equal(0); // green is first and only color in color table
         expect(mesh.colors.length).to.equal(0);
 
+        // Validate display params
+        const displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(0x0000ff00);
+        expect(displayParams.fillColor.tbgr).to.equal(0x0000ff00);
+        expect(displayParams.width).to.equal(1);
+        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+        expect(displayParams.ignoreLighting).to.be.false;
+        expect(displayParams.hasFillTransparency).to.be.false;
+        expect(displayParams.hasLineTransparency).to.be.false;
+
         // Validate RenderGraphic
         const graphic = result.renderGraphic!;
         expect(graphic).not.to.be.undefined;
@@ -157,28 +180,6 @@ describe("TileIO", () => {
         expect(mg.meshData.lut.colorInfo.isUniform).to.be.true;
         expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.false;
         expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
-
-        // Validate display params
-        const displayParams = mesh.displayParams;
-        expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
-        expect(displayParams.material).to.be.undefined;
-        expect(displayParams.lineColor.tbgr).to.equal(0x0000ff00);
-        expect(displayParams.fillColor.tbgr).to.equal(0x0000ff00);
-        expect(displayParams.width).to.equal(1);
-        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
-        expect(displayParams.ignoreLighting).to.be.false;
-
-        // Validate feature table (uniform - one element)
-        const features = meshes.features!;
-        expect(meshes.features).not.to.be.undefined;
-        expect(features.length).to.equal(1);
-        expect(features.isUniform).to.be.true;
-        expect(mesh.features!.uniform).to.equal(0);
-        const feature = features.findFeature(0);
-        expect(feature).not.to.be.undefined;
-        expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-        expect(feature!.elementId.value).to.equal("0x4e");
-        expect(feature!.subCategoryId.value).to.equal("0x18");
       }
     }
   });
@@ -216,6 +217,20 @@ describe("TileIO", () => {
 
         const meshes = geom.meshes;
         expect(meshes.length).to.equal(2);
+
+        // Validate feature table (uniform - one element)
+        const features = meshes.features!;
+        expect(meshes.features).not.to.be.undefined;
+        expect(features.length).to.equal(6);
+        expect(features.isUniform).to.be.false;
+        const expectedElementId = ["0x50", "0x53", "0x4f", "0x52", "0x4e", "0x51"];
+        for (let i = 0; i < features.length; ++i) {
+          const feature = features.findFeature(i);
+          expect(feature).not.to.be.undefined;
+          expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+          expect(feature!.elementId.value).to.equal(expectedElementId[i]);
+          expect(feature!.subCategoryId.value).to.equal("0x18");
+        }
 
         // Validate mesh data for first mesh (3 triangles).
         let mesh = meshes[0];
@@ -270,6 +285,18 @@ describe("TileIO", () => {
         for (let i = 0; i < mesh.colors.length; i++)
           expect(mesh.colors[i]).to.equal(expectedColors0[i]);
 
+        // Validate display params
+        let displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(255);
+        expect(displayParams.fillColor.tbgr).to.equal(255);
+        expect(displayParams.width).to.equal(1);
+        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+        expect(displayParams.ignoreLighting).to.be.false;
+        expect(displayParams.hasFillTransparency).to.be.false;
+        expect(displayParams.hasLineTransparency).to.be.false;
+
         // Validate mesh data for second mesh (3 triangles)
         mesh = meshes[1];
         expect(mesh.type).to.equal(Mesh.PrimitiveType.Mesh);
@@ -322,6 +349,18 @@ describe("TileIO", () => {
         for (let i = 0; i < mesh.colors.length; i++)
           expect(mesh.colors[i]).to.equal(expectedColors1[i]);
 
+        // Validate display params
+        displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(0x7f0000ff);
+        expect(displayParams.fillColor.tbgr).to.equal(0x7f0000ff);
+        expect(displayParams.width).to.equal(1);
+        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+        expect(displayParams.ignoreLighting).to.be.false;
+        expect(displayParams.hasFillTransparency).to.be.true;
+        expect(displayParams.hasLineTransparency).to.be.true;
+
         // Validate RenderGraphic
         const graphic = result.renderGraphic!;
         expect(graphic).not.to.be.undefined;
@@ -359,30 +398,6 @@ describe("TileIO", () => {
         expect(mg.meshData.lut.colorInfo.isUniform).to.be.false;
         expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.true;
         expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.true;
-
-        // Validate display params
-        const displayParams = mesh.displayParams;
-        expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
-        expect(displayParams.material).to.be.undefined;
-        expect(displayParams.lineColor.tbgr).to.equal(0x7f0000ff);
-        expect(displayParams.fillColor.tbgr).to.equal(0x7f0000ff);
-        expect(displayParams.width).to.equal(1);
-        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
-        expect(displayParams.ignoreLighting).to.be.false;
-
-        // Validate feature table (uniform - one element)
-        const features = meshes.features!;
-        expect(meshes.features).not.to.be.undefined;
-        expect(features.length).to.equal(6);
-        expect(features.isUniform).to.be.false;
-        const expectedElementId = ["0x50", "0x53", "0x4f", "0x52", "0x4e", "0x51"];
-        for (let i = 0; i < features.length; ++i) {
-          const feature = features.findFeature(i);
-          expect(feature).not.to.be.undefined;
-          expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-          expect(feature!.elementId.value).to.equal(expectedElementId[i]);
-          expect(feature!.subCategoryId.value).to.equal("0x18");
-        }
       }
     }
   });
@@ -421,6 +436,17 @@ describe("TileIO", () => {
         const meshes = geom.meshes;
         expect(meshes.length).to.equal(1);
 
+        // Validate feature table (uniform - one element)
+        const features = meshes.features!;
+        expect(features).not.to.be.undefined;
+        expect(features.length).to.equal(1);
+        expect(features.isUniform).to.be.true;
+        const feature = features.findFeature(0);
+        expect(feature).not.to.be.undefined;
+        expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+        expect(feature!.elementId.value).to.equal("0x4e");
+        expect(feature!.subCategoryId.value).to.equal("0x18");
+
         // Validate mesh data for first mesh (1 polyline).
         const mesh = meshes[0];
         expect(mesh.type).to.equal(Mesh.PrimitiveType.Polyline);
@@ -458,6 +484,17 @@ describe("TileIO", () => {
         expect(mesh.colorMap.indexOf(0x0000ffff)).to.equal(0); // yellow is first and only color in color table
         expect(mesh.colors.length).to.equal(0);
 
+        // Validate display params
+        const displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Linear);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(0x0000ffff);
+        expect(displayParams.fillColor.tbgr).to.equal(0x0000ffff);
+        expect(displayParams.width).to.equal(9);
+        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+        expect(displayParams.hasFillTransparency).to.be.false;
+        expect(displayParams.hasLineTransparency).to.be.false;
+
         // Validate RenderGraphic
         const graphic = result.renderGraphic!;
         expect(graphic).not.to.be.undefined;
@@ -479,26 +516,6 @@ describe("TileIO", () => {
         expect(plGeom.lut.numVertices).to.equal(6);
         expect(plGeom.polyline.lineCode).to.equal(0);
         expect(plGeom.polyline.lineWeight).to.equal(9);
-
-        // Validate display params
-        const displayParams = mesh.displayParams;
-        expect(displayParams.type).to.equal(DisplayParams.Type.Linear);
-        expect(displayParams.material).to.be.undefined;
-        expect(displayParams.lineColor.tbgr).to.equal(0x0000ffff);
-        expect(displayParams.fillColor.tbgr).to.equal(0x0000ffff);
-        expect(displayParams.width).to.equal(9);
-        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
-
-        // Validate feature table (uniform - one element)
-        const features = meshes.features!;
-        expect(features).not.to.be.undefined;
-        expect(features.length).to.equal(1);
-        expect(features.isUniform).to.be.true;
-        const feature = features.findFeature(0);
-        expect(feature).not.to.be.undefined;
-        expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-        expect(feature!.elementId.value).to.equal("0x4e");
-        expect(feature!.subCategoryId.value).to.equal("0x18");
       }
     }
   });
@@ -537,6 +554,20 @@ describe("TileIO", () => {
         const meshes = geom.meshes;
         expect(meshes.length).to.equal(2);
 
+        // Validate feature table (uniform - one element)
+        const features = meshes.features!;
+        expect(features).not.to.be.undefined;
+        expect(features.length).to.equal(3);
+        expect(features.isUniform).to.be.false;
+        const expectedElementId = ["0x4e", "0x50", "0x4f"];
+        for (let i = 0; i < features.length; ++i) {
+          const feature = features.findFeature(i);
+          expect(feature).not.to.be.undefined;
+          expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+          expect(feature!.elementId.value).to.equal(expectedElementId[i]);
+          expect(feature!.subCategoryId.value).to.equal("0x18");
+        }
+
         // Validate mesh data for first mesh (1 polyline).
         let mesh = meshes[0];
         expect(mesh.type).to.equal(Mesh.PrimitiveType.Polyline);
@@ -573,6 +604,17 @@ describe("TileIO", () => {
         expect(mesh.colorMap.isUniform).to.be.true;
         expect(mesh.colorMap.indexOf(0x00ff00ff)).to.equal(0);
         expect(mesh.colors.length).to.equal(0);
+
+        // Validate display params
+        let displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Linear);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(0x00ff00ff);
+        expect(displayParams.fillColor.tbgr).to.equal(0x00ff00ff);
+        expect(displayParams.width).to.equal(9);
+        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+        expect(displayParams.hasFillTransparency).to.be.false;
+        expect(displayParams.hasLineTransparency).to.be.false;
 
         // Validate mesh data for second mesh (2 polylines).
         mesh = meshes[1];
@@ -625,6 +667,17 @@ describe("TileIO", () => {
         for (let i = 0; i < mesh.colors.length; i++)
           expect(mesh.colors[i]).to.equal(expectedColors[i]);
 
+        // Validate display params
+        displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Linear);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(0x00f0f000);
+        expect(displayParams.fillColor.tbgr).to.equal(0x00f0f000);
+        expect(displayParams.width).to.equal(9);
+        expect(displayParams.linePixels).to.equal(LinePixels.Code2);
+        expect(displayParams.hasFillTransparency).to.be.false;
+        expect(displayParams.hasLineTransparency).to.be.false;
+
         // Validate RenderGraphic
         const graphic = result.renderGraphic!;
         expect(graphic).not.to.be.undefined;
@@ -664,29 +717,6 @@ describe("TileIO", () => {
         expect(plGeom.lut.numVertices).to.equal(12);
         expect(plGeom.polyline.lineCode).to.equal(2);
         expect(plGeom.polyline.lineWeight).to.equal(9);
-
-        // Validate display params
-        const displayParams = mesh.displayParams;
-        expect(displayParams.type).to.equal(DisplayParams.Type.Linear);
-        expect(displayParams.material).to.be.undefined;
-        expect(displayParams.lineColor.tbgr).to.equal(15790080);
-        expect(displayParams.fillColor.tbgr).to.equal(15790080);
-        expect(displayParams.width).to.equal(9);
-        expect(displayParams.linePixels).to.equal(LinePixels.Code2);
-
-        // Validate feature table (uniform - one element)
-        const features = meshes.features!;
-        expect(features).not.to.be.undefined;
-        expect(features.length).to.equal(3);
-        expect(features.isUniform).to.be.false;
-        const expectedElementId = ["0x4e", "0x50", "0x4f"];
-        for (let i = 0; i < features.length; ++i) {
-          const feature = features.findFeature(i);
-          expect(feature).not.to.be.undefined;
-          expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
-          expect(feature!.elementId.value).to.equal(expectedElementId[i]);
-          expect(feature!.subCategoryId.value).to.equal("0x18");
-        }
       }
     }
   });
