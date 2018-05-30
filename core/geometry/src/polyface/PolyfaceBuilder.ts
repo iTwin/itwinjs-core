@@ -7,7 +7,7 @@
 // import { Geometry, AxisOrder, Angle, AngleSweep, BSIJSONValues } from "./Geometry";
 import { IndexedPolyface } from "./Polyface";
 import { GrowableFloat64Array } from "../GrowableArray";
-import { Point3d, Vector3d, Point2d, Vector2d } from "../PointVector";
+import { Point3d, Vector3d, Point2d } from "../PointVector";
 import { Transform, RotMatrix } from "../Transform";
 import { BoxTopology } from "./BoxTopology";
 import { StrokeOptions } from "../curve/StrokeOptions";
