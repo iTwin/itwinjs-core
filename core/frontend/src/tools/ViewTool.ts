@@ -73,7 +73,7 @@ export const ViewToolSettings = {
   viewBallRadius: 0.35, // percent of screen width
   walkVelocity: 3.5,      // in meters/second
   walkCameraAngle: Angle.createDegrees(75.6),  // in degrees
-  animationTime: BeDuration.fromSeconds(260),
+  animationTime: BeDuration.fromMilliseconds(260),
   animateZoom: false,
   pickSize: 13,
 };
@@ -606,7 +606,7 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
-  public static fitView(viewport: Viewport, doUpdate: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: Viewport, _doUpdate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum(scratchFrustum);
@@ -614,8 +614,8 @@ export abstract class ViewManip extends ViewTool {
     viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
-
-    if (doUpdate)
+    console.log(ViewToolSettings.animationTime.milliseconds); //tslint:disable-line
+    if (true)
       viewport.animateFrustumChange(before, viewport.getFrustum(), ViewToolSettings.animationTime);
 
     viewport.synchWithView(true);
