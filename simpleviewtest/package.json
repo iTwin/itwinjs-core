@@ -27,9 +27,6 @@
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-frontend": "0",
     "@bentley/imodeljs-backend": "0",
-    "@bentley/imodeljs-native-platform-api": "~19.0.1",
-    "@bentley/imodeljs-native-platform-electron": "~19.0.1",
-    "@bentley/imodeljs-native-platform-node": "~19.0.1",
     "electron-devtools-installer": "^2.2.4"
   },
   "devDependencies": {
