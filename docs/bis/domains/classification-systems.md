@@ -19,8 +19,15 @@ CodeScope|CodeScopeSpec::Repository
 CodeSpec|bis:NullCodeSpec
 
 ## Pending work
-1 - Applicability (Allan)
-2 - Catalog (Allan)
+- Applicability (Allan)
+- Catalog impact on the Schema (Allan)
+- ONLY what BCS needs rest is out. (Wouter)
+- how to relate to PE (Wouter)
+- Strong or weak typing. SEALED. (Wouter)
+- instance diagram is wrong (Wouter)
+- how to prevent multiple classifications from the same system on same type. Solve in software.(Wouter)
+- IClassiedType mixin (Wouter)
+- Wrong airport-toilet classification in library (Wouter)
 
 ## iModel Bridges using ClassificationSystems
 

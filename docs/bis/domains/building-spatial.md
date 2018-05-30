@@ -60,7 +60,6 @@ Geometry Use:
 
 A Spatial aspect class of a real-world Story object. The building story has an elevation and typically represents a (nearly) horizontal aggregation of spaces that are vertically bound.
 
-
 Naming:
 1 - Equivalent with IAI IfcBuildingStorey
 
@@ -86,9 +85,12 @@ Naming :
 1 - Equivalent with IAI IfcSpace
 
 Geometry Use:
-1 - Can be 2d closed `CurveVector` defining a volume when combined with height property.
-2 - Can be a closed 3d volume.
-3 - Local Coordinates : z points away from the center of the earth.
+1 - 2d closed `CurveVector` defining a volume when combined with height property.
+![SpaceGeometryUse2d](./media/IfcSpace_2D-Layout1.gif)
+2 - 3d volume.
+![SpaceGeometryUse2d](./media/IfcSpace_Standard-Layout1.gif)
+3 - Holes
+4 - Local Coordinates : z points away from the center of the earth.
 
 ```xml
     <ECEntityClass typeName="Space" displayLabel="Space">
