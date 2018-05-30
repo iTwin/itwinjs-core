@@ -247,7 +247,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.addIndexedQuadPointIndexes(idx0, idx1, idx2, idx3);
 
     // Add params if needed
-    if (this.polyface.data.param !== undefined) {
+    if (this.options.needParams) {
       if (params && params.length >= 4) { // Params were given
         idx0 = this.polyface.addParam(params[0]);
         idx1 = this.polyface.addParam(params[1]);
@@ -267,7 +267,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
     // Add normals if needed
-    if (this.polyface.data.normal !== undefined) {
+    if (this.options.needNormals) {
       if (normals && normals.length >= 4) { // Normals were given
         idx0 = this.polyface.addNormal(normals[0]);
         idx1 = this.polyface.addNormal(normals[1]);
@@ -355,7 +355,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.addIndexedTrianglePointIndexes(idx0, idx1, idx2);
 
     // Add params if needed
-    if (this.polyface.data.param !== undefined) {
+    if (this.options.needParams) {
       if (params && params.length >= 3) { // Params were given
         idx0 = this.polyface.addParam(params[0]);
         idx1 = this.polyface.addParam(params[1]);
@@ -373,7 +373,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
     // Add normals if needed
-    if (this.polyface.data.normal !== undefined) {
+    if (this.options.needNormals) {
       if (normals && normals.length >= 3) { // Normals were given
         idx0 = this.polyface.addNormal(normals[0]);
         idx1 = this.polyface.addNormal(normals[1]);
@@ -769,15 +769,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const xyz = Point3d.create();
     const du = 1.0 / numU;
     const dv = 1.0 / numV;
-    const needParams = this.polyface.data.param !== undefined;
-    const needNormals = this.polyface.data.normal !== undefined;
     for (let v = 0; v <= numV; v++) {
       // evaluate new points ....
       index1.clear();
       for (let u = 0; u <= numU; u++) {
         const uFrac = u * du;
         const vFrac = v * dv;
-        if (needNormals) {
+        if (this.options.needNormals) {
           const plane = surface.UVFractionToPointAndTangents(uFrac, vFrac);
           this.polyface.addNormal(plane.vectorU.crossProduct(plane.vectorV));
           index1.push(this.findOrAddPoint(plane.origin.clone()));
@@ -785,7 +783,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           surface.UVFractionToPoint(uFrac, vFrac, xyz);
           index1.push(this.findOrAddPoint(xyz));
         }
-        if (needParams) {
+        if (this.options.needParams) {
           this.polyface.addParam(new Point2d(uFrac, vFrac));
         }
       }
@@ -797,11 +795,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           this.addIndexedQuadPointIndexes(
             index0.at(u), index0.at(u + 1),
             index1.at(u), index1.at(u + 1));
-          if (needNormals)
+          if (this.options.needNormals)
             this.addIndexedQuadNormalIndexes(
               index0.at(u), index0.at(u + 1),
               index1.at(u), index1.at(u + 1));
-          if (needParams)
+          if (this.options.needParams)
             this.addIndexedQuadParamIndexes(
               index0.at(u), index0.at(u + 1),
               index1.at(u), index1.at(u + 1));
