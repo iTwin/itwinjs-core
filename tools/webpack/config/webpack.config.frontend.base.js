@@ -147,8 +147,7 @@ module.exports = (publicPath) => {
                 {
                   loader: require.resolve("svg-sprite-loader"),
                   options: {
-                    runtimeGenerator: require.resolve("./generateSvgUrl"),
-                    extract: true,
+                    runtimeCompat: true,
                     spriteFilename: "sprite-[hash:6].svg"
                   },
                 }
