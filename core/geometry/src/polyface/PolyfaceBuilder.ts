@@ -741,6 +741,25 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private static index0 = new GrowableFloat64Array();
   private static index1 = new GrowableFloat64Array();
 
+  /**
+   * Given a 2-dimensional grid of points and optional corresponding params and normals, add the grid to the polyface as a series of quads.
+   * Each facet in the grid should either be made up of 3 or 4 edges. Optionally specify that this quad is the last piece of a face.
+   */
+  public addGrid(pointArray: Point3d[][], paramArray?: Point2d[][], normalArray?: Vector3d[][], endFace: boolean = false) {
+    for (let i = 0; i < pointArray.length; i++) {
+      const params = paramArray ? paramArray[i] : undefined;
+      const normals = normalArray ? normalArray[i] : undefined;
+
+      if (pointArray[i].length === 3)
+        this.addTriangle(pointArray[i], params, normals);
+      else if (pointArray[i].length === 4)
+        this.addQuad(pointArray[i], params, normals);
+    }
+
+    if (endFace)
+      this.endFace();
+  }
+
   public addUVGrid(surface: UVSurface, numU: number, numV: number, createFanInCaps: boolean) {
     let index0 = PolyfaceBuilder.index0;
     let index1 = PolyfaceBuilder.index1;
