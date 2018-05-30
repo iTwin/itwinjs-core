@@ -399,7 +399,7 @@ describe("Polyface.Faces", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("Triangle and quad polyface param verification with native", () => {
+  it.skip("Triangle and quad polyface param verification with native", () => {
 
   });
 
