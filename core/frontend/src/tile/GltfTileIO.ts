@@ -7,7 +7,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolylineList, MeshPolyline } from "@bentley/imodeljs-common";
+import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
@@ -352,10 +352,9 @@ export namespace GltfTileIO {
         }
         case Mesh.PrimitiveType.Polyline:
         case Mesh.PrimitiveType.Point: {
-          if (undefined !== mesh.polylines)
+          if (!this.readPolylines(mesh, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
             return undefined;
-          if (!this.readPolylines(mesh.polylines!, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
-            return undefined;
+          break;
         }
         default: {
           assert(false, "unhandled primitive type"); // ###TODO: points and polylines...
@@ -475,19 +474,19 @@ export namespace GltfTileIO {
       return true;
     }
 
-    protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
+    protected readPolylines(mesh: Mesh, json: any, accessorName: string, disjoint: boolean): boolean {
       const view = this.getBufferView(json, accessorName);
       if (undefined === view)
         return false;
 
       const startDistance = new Float32Array(1);
-      const sdBytes = new Uint8Array(startDistance);
+      const sdBytes = new Uint8Array(startDistance.buffer);
       const numIndices = new Uint32Array(1);
-      const niBytes = new Uint8Array(numIndices);
+      const niBytes = new Uint8Array(numIndices.buffer);
       const index16 = new Uint16Array(1);
-      const i16Bytes = new Uint8Array(index16);
+      const i16Bytes = new Uint8Array(index16.buffer);
       const index32 = new Uint32Array(1);
-      const i32Bytes = new Uint8Array(index32);
+      const i32Bytes = new Uint8Array(index32.buffer);
 
       let ndx = 0;
       for (let p = 0; p < view.count; ++p) {
@@ -503,19 +502,19 @@ export namespace GltfTileIO {
 
         if (DataType.UnsignedShort === view.type) {
           for (let i = 0; i < numIndices[0]; ++i) {
-            for (let b = 0; b < 4; ++b)
+            for (let b = 0; b < 2; ++b)
               i16Bytes[b] = view.data[ndx++];
             indices[i] = index16[0];
           }
         } else if (DataType.UInt32 === view.type) {
           for (let i = 0; i < numIndices[0]; ++i) {
-            for (let b = 0; b < 8; ++b)
+            for (let b = 0; b < 4; ++b)
               i32Bytes[b] = view.data[ndx++];
             indices[i] = index32[0];
           }
         }
 
-        polylines.push(new MeshPolyline(startDistance[0], indices));
+        mesh.addPolyline(new MeshPolyline(startDistance[0], indices));
       }
 
       return true;

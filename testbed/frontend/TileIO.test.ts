@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
-import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsList, SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsList, SurfaceType, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/rendering";
 import { LinePixels, GeometryClass, ModelProps, RelatedElementProps } from "@bentley/imodeljs-common";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
@@ -38,6 +38,8 @@ describe("TileIO", () => {
   let imodel: IModelConnection;
   const rectangle = TileData.rectangle.buffer;
   const triangles = TileData.triangles.buffer;
+  const lineString = TileData.lineString.buffer;
+  // const lineStrings = TileData.lineStrings.buffer;
 
   before(async () => {   // Create a ViewState to load into a Viewport
     imodel = await IModelConnection.openStandalone(iModelLocation);
@@ -222,7 +224,7 @@ describe("TileIO", () => {
         expect(mesh.isPlanar).to.be.true;
         expect(mesh.is2d).to.be.false;
         expect(mesh.normals.length).to.equal(9);
-        expect(mesh.uvParams.length).to.equal(0, "----- 1");
+        expect(mesh.uvParams.length).to.equal(0);
         expect(mesh.features).not.to.be.undefined;
         expect(mesh.features!._indices.length).to.equal(9);
         const expectedFeatureIndices0 = [0, 0, 0, 2, 2, 2, 4, 4, 4];
@@ -381,6 +383,122 @@ describe("TileIO", () => {
           expect(feature!.elementId.value).to.equal(expectedElementId[i]);
           expect(feature!.subCategoryId.value).to.equal("0x18");
         }
+      }
+    }
+  });
+
+  it("should read an iModel tile containing single open yellow line string", () => {
+    if (WebGLTestContext.isInitialized) {
+      const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
+      const stream = new TileIO.StreamBuffer(lineString);
+      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      expect(reader).not.to.be.undefined;
+
+      if (undefined !== reader) {
+        const result = reader.read();
+        expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+        expect(result.isLeaf).to.be.true;
+        expect(result.contentRange).not.to.be.undefined;
+        expect(result.geometry).not.to.be.undefined;
+
+        // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
+        const low = result.contentRange!.low;
+        expect(delta(low.x, -7.5)).to.be.lessThan(0.0005);
+        expect(delta(low.y, -10.0)).to.be.lessThan(0.00051);
+        expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+
+        const high = result.contentRange!.high;
+        expect(delta(high.x, 7.5)).to.be.lessThan(0.0005);
+        expect(delta(high.y, 10.0)).to.be.lessThan(0.00051);
+        expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+
+        // Confirm GeometryCollection
+        const geom = result.geometry!;
+        expect(geom.isEmpty).to.be.false;
+        expect(geom.isComplete).to.be.true;
+        expect(geom.isCurved).to.be.false;
+
+        const meshes = geom.meshes;
+        expect(meshes.length).to.equal(1);
+
+        // Validate mesh data for first mesh (3 triangles).
+        const mesh = meshes[0];
+        expect(mesh.type).to.equal(Mesh.PrimitiveType.Polyline);
+        expect(mesh.points.length).to.equal(6);
+        expect(mesh.isPlanar).to.be.false;
+        expect(mesh.is2d).to.be.false;
+        expect(mesh.normals.length).to.equal(0);
+        expect(mesh.uvParams.length).to.equal(0);
+        expect(mesh.features).not.to.be.undefined;
+        expect(mesh.features!._indices.length).to.equal(0);
+
+        // Validate mesh polylines
+        expect(mesh.triangles).to.be.undefined;
+        expect(mesh.polylines).to.not.be.undefined;
+        expect(mesh.polylines!.length).to.equal(1);
+        const indices = mesh.polylines![0].indices;
+        const expectedIndices0 = [0, 1, 2, 3, 4, 5];
+        expect(indices.length).to.equal(6);
+        for (let i = 0; i < indices.length; i++)
+          expect(indices[i]).to.equal(expectedIndices0[i]);
+
+        // Validate vertices and normals
+        const pos = [
+          Point3d.create(-7.5, 10, 0), Point3d.create(-7.5, -10, 0), Point3d.create(-2.5, 0, 0),
+          Point3d.create(-2.5, 10, 0), Point3d.create(7.5, -10, 0), Point3d.create(7.5, 0, 0)];
+        for (let i = 0; i < mesh.points.length; ++i) {
+          const pnt = mesh.points.unquantize(i);
+          expect(delta(pnt.x, pos[i].x)).to.be.lessThan(0.00065);
+          expect(delta(pnt.y, pos[i].y)).to.be.lessThan(0.00065);
+          expect(delta(pnt.z, pos[i].z)).to.be.lessThan(0.00065);
+        }
+
+        // Validate color table (uniform - yellow)
+        expect(mesh.colorMap.isUniform).to.be.true;
+        expect(mesh.colorMap.indexOf(0x0000ffff)).to.equal(0); // green is first and only color in color table
+        expect(mesh.colors.length).to.equal(0);
+
+        // Validate RenderGraphic
+        const graphic = result.renderGraphic!;
+        expect(graphic).not.to.be.undefined;
+        expect(graphic).to.be.instanceOf(Batch);
+        const batch = graphic as Batch;
+        expect(batch.featureTable.isUniform).to.be.true;
+        expect(batch.featureTable.length).to.equal(1);
+        expect(batch.graphic).not.to.be.undefined;
+        expect(batch.graphic).to.be.instanceOf(PolylinePrimitive);
+        const plinePrim = batch.graphic as PolylinePrimitive;
+        expect(plinePrim.featureIndexType).to.equal(0);
+        expect(plinePrim.isEdge).to.be.false;
+        expect(plinePrim.isLit).to.be.false;
+        expect(plinePrim.isPlanar).to.be.false;
+        expect(plinePrim.renderOrder).to.equal(3);
+        expect(plinePrim.cachedGeometry).to.not.be.undefined;
+        const plGeom = plinePrim.cachedGeometry as PolylineGeometry;
+        expect(plGeom.numIndices).to.equal(60);
+        expect(plGeom.lut.numVertices).to.equal(6);
+        expect(plGeom.polyline.lineCode).to.equal(0);
+        expect(plGeom.polyline.lineWeight).to.equal(9);
+
+        // Validate display params
+        const displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Linear);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(0x0000ffff);
+        expect(displayParams.fillColor.tbgr).to.equal(0x0000ffff);
+        expect(displayParams.width).to.equal(9);
+        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+
+        // Validate feature table (uniform - one element)
+        const features = meshes.features!;
+        expect(features).not.to.be.undefined;
+        expect(features.length).to.equal(1);
+        expect(features.isUniform).to.be.true;
+        const feature = features.findFeature(0);
+        expect(feature).not.to.be.undefined;
+        expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+        expect(feature!.elementId.value).to.equal("0x4e");
+        expect(feature!.subCategoryId.value).to.equal("0x18");
       }
     }
   });
