@@ -1048,7 +1048,10 @@ export class Viewport {
    */
   public setupFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
-    return this.setupFromView() ? validSize === ViewStatus.Success : false;
+    if (this.setupFromView() !== ViewStatus.Success)
+      return false;
+    this.view.setRotation(this.rotMatrix);
+    return validSize === ViewStatus.Success;
   }
 
   public resetUndo() {
