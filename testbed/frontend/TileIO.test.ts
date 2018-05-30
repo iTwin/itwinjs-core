@@ -39,7 +39,7 @@ describe("TileIO", () => {
   const rectangle = TileData.rectangle.buffer;
   const triangles = TileData.triangles.buffer;
   const lineString = TileData.lineString.buffer;
-  // const lineStrings = TileData.lineStrings.buffer;
+  const lineStrings = TileData.lineStrings.buffer;
 
   before(async () => {   // Create a ViewState to load into a Viewport
     imodel = await IModelConnection.openStandalone(iModelLocation);
@@ -421,7 +421,7 @@ describe("TileIO", () => {
         const meshes = geom.meshes;
         expect(meshes.length).to.equal(1);
 
-        // Validate mesh data for first mesh (3 triangles).
+        // Validate mesh data for first mesh (1 polyline).
         const mesh = meshes[0];
         expect(mesh.type).to.equal(Mesh.PrimitiveType.Polyline);
         expect(mesh.points.length).to.equal(6);
@@ -455,7 +455,7 @@ describe("TileIO", () => {
 
         // Validate color table (uniform - yellow)
         expect(mesh.colorMap.isUniform).to.be.true;
-        expect(mesh.colorMap.indexOf(0x0000ffff)).to.equal(0); // green is first and only color in color table
+        expect(mesh.colorMap.indexOf(0x0000ffff)).to.equal(0); // yellow is first and only color in color table
         expect(mesh.colors.length).to.equal(0);
 
         // Validate RenderGraphic
@@ -499,6 +499,194 @@ describe("TileIO", () => {
         expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
         expect(feature!.elementId.value).to.equal("0x4e");
         expect(feature!.subCategoryId.value).to.equal("0x18");
+      }
+    }
+  });
+
+  it("should read an iModel tile containing multiple line strings", () => {
+    if (WebGLTestContext.isInitialized) {
+      const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
+      const stream = new TileIO.StreamBuffer(lineStrings);
+      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      expect(reader).not.to.be.undefined;
+
+      if (undefined !== reader) {
+        const result = reader.read();
+        expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+        expect(result.isLeaf).to.be.true;
+        expect(result.contentRange).not.to.be.undefined;
+        expect(result.geometry).not.to.be.undefined;
+
+        // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
+        const low = result.contentRange!.low;
+        expect(delta(low.x, -7.5)).to.be.lessThan(0.0005);
+        expect(delta(low.y, -30.0)).to.be.lessThan(0.0016);
+        expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+
+        const high = result.contentRange!.high;
+        expect(delta(high.x, 7.5)).to.be.lessThan(0.0005);
+        expect(delta(high.y, 30.0)).to.be.lessThan(0.0016);
+        expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+
+        // Confirm GeometryCollection
+        const geom = result.geometry!;
+        expect(geom.isEmpty).to.be.false;
+        expect(geom.isComplete).to.be.true;
+        expect(geom.isCurved).to.be.false;
+
+        const meshes = geom.meshes;
+        expect(meshes.length).to.equal(2);
+
+        // Validate mesh data for first mesh (1 polyline).
+        let mesh = meshes[0];
+        expect(mesh.type).to.equal(Mesh.PrimitiveType.Polyline);
+        expect(mesh.points.length).to.equal(6);
+        expect(mesh.isPlanar).to.be.false;
+        expect(mesh.is2d).to.be.false;
+        expect(mesh.normals.length).to.equal(0);
+        expect(mesh.uvParams.length).to.equal(0);
+        expect(mesh.features).not.to.be.undefined;
+        expect(mesh.features!._indices.length).to.equal(0);
+
+        // Validate mesh polylines
+        expect(mesh.triangles).to.be.undefined;
+        expect(mesh.polylines).to.not.be.undefined;
+        expect(mesh.polylines!.length).to.equal(1);
+        let indices = mesh.polylines![0].indices;
+        const expectedIndices0 = [0, 1, 2, 3, 4, 5];
+        expect(indices.length).to.equal(6);
+        for (let i = 0; i < indices.length; i++)
+          expect(indices[i]).to.equal(expectedIndices0[i]);
+
+        // Validate vertices and normals
+        const pos0 = [
+          Point3d.create(-7.5, -10, 0), Point3d.create(-7.5, -30, 0), Point3d.create(-2.5, -20, 0),
+          Point3d.create(-2.5, -10, 0), Point3d.create(7.5, -30, 0), Point3d.create(7.5, -20, 0)];
+        for (let i = 0; i < mesh.points.length; ++i) {
+          const pnt = mesh.points.unquantize(i);
+          expect(delta(pnt.x, pos0[i].x)).to.be.lessThan(0.00065);
+          expect(delta(pnt.y, pos0[i].y)).to.be.lessThan(0.0018);
+          expect(delta(pnt.z, pos0[i].z)).to.be.lessThan(0.00065);
+        }
+
+        // Validate color table (uniform - purple)
+        expect(mesh.colorMap.isUniform).to.be.true;
+        expect(mesh.colorMap.indexOf(0x00ff00ff)).to.equal(0);
+        expect(mesh.colors.length).to.equal(0);
+
+        // Validate mesh data for second mesh (2 polylines).
+        mesh = meshes[1];
+        expect(mesh.type).to.equal(Mesh.PrimitiveType.Polyline);
+        expect(mesh.points.length).to.equal(12);
+        expect(mesh.isPlanar).to.be.false;
+        expect(mesh.is2d).to.be.false;
+        expect(mesh.normals.length).to.equal(0);
+        expect(mesh.uvParams.length).to.equal(0);
+        expect(mesh.features).not.to.be.undefined;
+        expect(mesh.features!._indices.length).to.equal(12);
+        const expectedFeatureIndices1 = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2];
+        for (let i = 0; i < mesh.features!._indices.length; i++)
+          expect(mesh.features!._indices[i]).to.equal(expectedFeatureIndices1[i]);
+
+        // Validate mesh polylines
+        expect(mesh.triangles).to.be.undefined;
+        expect(mesh.polylines).to.not.be.undefined;
+        expect(mesh.polylines!.length).to.equal(2);
+        indices = mesh.polylines![0].indices;
+        const expectedIndices1 = [0, 1, 2, 3, 4, 5];
+        expect(indices.length).to.equal(6);
+        for (let i = 0; i < indices.length; i++)
+          expect(indices[i]).to.equal(expectedIndices1[i]);
+        indices = mesh.polylines![1].indices;
+        const expectedIndices2 = [6, 7, 8, 9, 10, 11];
+        expect(indices.length).to.equal(6);
+        for (let i = 0; i < indices.length; i++)
+          expect(indices[i]).to.equal(expectedIndices2[i]);
+
+        // Validate vertices and normals
+        const pos1 = [
+          Point3d.create(-7.5, 10, 0), Point3d.create(-7.5, -10, 0), Point3d.create(-2.5, 0, 0),
+          Point3d.create(-2.5, 10, 0), Point3d.create(7.5, -10, 0), Point3d.create(7.5, 0, 0),
+          Point3d.create(-7.5, 30, 0), Point3d.create(-7.5, 10, 0), Point3d.create(-2.5, 20, 0),
+          Point3d.create(-2.5, 30, 0), Point3d.create(7.5, 10, 0), Point3d.create(7.5, 20, 0)];
+        for (let i = 0; i < mesh.points.length; ++i) {
+          const pnt = mesh.points.unquantize(i);
+          expect(delta(pnt.x, pos1[i].x)).to.be.lessThan(0.0005);
+          expect(delta(pnt.y, pos1[i].y)).to.be.lessThan(0.002);
+          expect(delta(pnt.z, pos1[i].z)).to.be.lessThan(0.0005);
+        }
+
+        // Validate color table (nonuniform - yellow and cyan)
+        expect(mesh.colorMap.isUniform).to.be.false;
+        expect(mesh.colorMap.indexOf(0x0000ffff)).to.equal(1);
+        expect(mesh.colorMap.indexOf(0x00f0f000)).to.equal(0);
+        expect(mesh.colors.length).to.equal(12);
+        const expectedColors = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1];
+        for (let i = 0; i < mesh.colors.length; i++)
+          expect(mesh.colors[i]).to.equal(expectedColors[i]);
+
+        // Validate RenderGraphic
+        const graphic = result.renderGraphic!;
+        expect(graphic).not.to.be.undefined;
+        expect(graphic).to.be.instanceOf(Batch);
+        const batch = graphic as Batch;
+        expect(batch.featureTable.isUniform).to.be.false;
+        expect(batch.featureTable.length).to.equal(3);
+        expect(batch.graphic).not.to.be.undefined;
+        expect(batch.graphic).to.be.instanceOf(GraphicsList);
+        const list = batch.graphic as GraphicsList;
+        expect(list.graphics.length).to.equal(2);
+
+        expect(list.graphics[0]).to.be.instanceOf(PolylinePrimitive);
+        let plinePrim = list.graphics[0] as PolylinePrimitive;
+        expect(plinePrim.featureIndexType).to.equal(0);
+        expect(plinePrim.isEdge).to.be.false;
+        expect(plinePrim.isLit).to.be.false;
+        expect(plinePrim.isPlanar).to.be.false;
+        expect(plinePrim.renderOrder).to.equal(3);
+        expect(plinePrim.cachedGeometry).to.not.be.undefined;
+        let plGeom = plinePrim.cachedGeometry as PolylineGeometry;
+        expect(plGeom.numIndices).to.equal(60);
+        expect(plGeom.lut.numVertices).to.equal(6);
+        expect(plGeom.polyline.lineCode).to.equal(0);
+        expect(plGeom.polyline.lineWeight).to.equal(9);
+
+        expect(list.graphics[1]).to.be.instanceOf(PolylinePrimitive);
+        plinePrim = list.graphics[1] as PolylinePrimitive;
+        expect(plinePrim.featureIndexType).to.equal(0);
+        expect(plinePrim.isEdge).to.be.false;
+        expect(plinePrim.isLit).to.be.false;
+        expect(plinePrim.isPlanar).to.be.false;
+        expect(plinePrim.renderOrder).to.equal(3);
+        expect(plinePrim.cachedGeometry).to.not.be.undefined;
+        plGeom = plinePrim.cachedGeometry as PolylineGeometry;
+        expect(plGeom.numIndices).to.equal(120);
+        expect(plGeom.lut.numVertices).to.equal(12);
+        expect(plGeom.polyline.lineCode).to.equal(2);
+        expect(plGeom.polyline.lineWeight).to.equal(9);
+
+        // Validate display params
+        const displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Linear);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(15790080);
+        expect(displayParams.fillColor.tbgr).to.equal(15790080);
+        expect(displayParams.width).to.equal(9);
+        expect(displayParams.linePixels).to.equal(LinePixels.Code2);
+
+        // Validate feature table (uniform - one element)
+        const features = meshes.features!;
+        expect(features).not.to.be.undefined;
+        expect(features.length).to.equal(3);
+        expect(features.isUniform).to.be.false;
+        const expectedElementId = ["0x4e", "0x50", "0x4f"];
+        for (let i = 0; i < features.length; ++i) {
+          const feature = features.findFeature(i);
+          expect(feature).not.to.be.undefined;
+          expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+          expect(feature!.elementId.value).to.equal(expectedElementId[i]);
+          expect(feature!.subCategoryId.value).to.equal("0x18");
+        }
       }
     }
   });
