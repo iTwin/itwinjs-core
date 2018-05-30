@@ -7,7 +7,7 @@ import { Logger, Id64Set, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken, IModelVersion, ModelProps, ElementProps } from "@bentley/imodeljs-common";
 import { EntityMetaData } from "../Entity";
-import { IModelDb } from "../IModelDb";
+import { IModelDb, OpenParams } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
@@ -19,7 +19,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
   public async openForRead(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
     const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    return await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId!, iModelToken.iModelId!, iModelToken.openMode, iModelVersion);
+
+    // If the frontend wants a readOnly connection, we assume, for now, that they cannot change versions - i.e., cannot pull changes
+    return await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId!, iModelToken.iModelId!, OpenParams.fixedVersion(), iModelVersion);
   }
 
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {

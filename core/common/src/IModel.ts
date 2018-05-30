@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModels */
 
-import { OpenMode, Id64, GuidProps } from "@bentley/bentleyjs-core";
+import { Id64, GuidProps } from "@bentley/bentleyjs-core";
 import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { ThumbnailProps } from "./Thumbnail";
@@ -13,20 +13,15 @@ export class IModelToken {
   /** Constructor */
   public constructor(
     /** Key used for identifying the iModel on the backend */
-    public readonly pathKey?: string,
-    /** True for standalone iModels */
-    public readonly isStandalone?: boolean,
-    /** Context (Project or Asset) in which the iModel exists. May be undefined *only* if it is a standalone iModel */
+    public readonly key?: string,
+    /** Context (Project or Asset) in which the iModel exists - must be defined if the iModel exists in the Hub */
     public readonly contextId?: string,
-    /** Guid of the iModel. May not be defined *only* if it is a standalone iModel */
+    /** Guid of the iModel - must be defined if the iModel exists in the Hub */
     public readonly iModelId?: string,
-    /** Id of the last ChangeSet that was applied to the iModel */
+    /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub */
     public changeSetId?: string,
-    /** Mode used to open the iModel */
-    public readonly openMode?: OpenMode,
-    /** Id of the user that's currently editing or viewing the iModel. May not be defined *only* if it is a standalone iModel */
-    public readonly userId?: string,
-  ) { }
+  ) {
+  }
 }
 
 /** properties that position an iModel on the earth via ECEF (Earth Centered Earth Fixed) coordinates */
@@ -131,9 +126,6 @@ export abstract class IModel implements IModelProps {
     if (props.ecefLocation)
       this.ecefLocation = new EcefLocation(props.ecefLocation);
   }
-
-  /** Check if this iModel has been opened read-only or not. */
-  public isReadonly(): boolean { return this.token.openMode === OpenMode.Readonly; }
 
   /** get the default subCategoryId for the supplied categoryId */
   public static getDefaultSubCategoryId(categoryId: Id64): Id64 { return categoryId.isValid() ? new Id64([categoryId.getLow() + 1, categoryId.getHigh()]) : new Id64(); }

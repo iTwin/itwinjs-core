@@ -17,6 +17,8 @@ import { expect } from "chai";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { GeometryCoreTestIO } from "./IModelJson.test";
+import { StrokeOptions } from "../geometry-core";
+
 /* tslint:disable:no-console */
 let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
@@ -112,6 +114,37 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
   }
 
   ck.testRange3d(range, range1);
+}
+
+/**
+ * Checks that FacetFaceData contained within an index polyface is accurate.
+ * If there was no face data recorded, we do nothing.
+ *
+ * NOTE: Currently, face data is only recorded for facets when explicitly telling
+ * the builder to do so. Therefore, if every facet is not a part of a face by manually
+ * calling PolyfaceBuilder.endFace(), the test will fail. In the future, faces may be
+ * moreso automatically claimed depending on the polyface built.
+ */
+function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParamDistance: boolean = false) {
+  if (polyface.data.face.length === 0) {
+    return;
+  }
+
+  const pointIndex = polyface.data.pointIndex;
+  const paramIndex = polyface.data.paramIndex;
+  const normalIndex = polyface.data.normalIndex;
+
+  if (paramIndex)
+    ck.testExactNumber(paramIndex.length, pointIndex.length, "point, param index counts match");
+  if (normalIndex)
+    ck.testExactNumber(normalIndex.length, pointIndex.length, "point, normal index counts match");
+
+  for (let i = 0; i < polyface.facetCount; i++) {
+    const faceData = polyface.getFaceDataByFacetIndex(i);  // Ensures we do not get out of bounds exception
+    ck.testTrue(faceData !== undefined);
+    if (shouldCheckParamDistance)
+      ck.testFalse(faceData.paramDistanceRange.isNull(), "paramDistanceRange should not be null");
+  }
 }
 
 /* tslint:disable:no-console */
@@ -235,7 +268,7 @@ describe("Polyface.Box", () => {
     polyfaceB.data.pointIndex[0] += 1;
     ck.testBoolean(false, polyface.isAlmostEqual(polyfaceB), "index change detection");
     // console.log(polyfaceB);
-
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 
@@ -294,6 +327,7 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string) {
   }
 
 }
+
 describe("Polyface.Facets", () => {
   it("Cones", () => {
     writeMeshes(Sample.createCones(), "FacetedCones");
@@ -316,5 +350,90 @@ describe("Polyface.Facets", () => {
   });
   it("RuledSweeps", () => {
     writeMeshes(Sample.createRuledSweeps(), "FacetedRuledSweeps");
+  });
+});
+
+describe("Polyface.Faces", () => {
+  const ck = new Checker();
+
+  it("Verify FacetFaceData Exists", () => {
+    // For the sake of testing, we will let each GeometryQuery object be a 'face',
+    // and we will obtain a mesh to which we add new IndexedPolyfaces to and keep declaring new faces
+    const builder = PolyfaceBuilder.create();
+    let polyface: IndexedPolyface;
+
+    let totalFacets = 0;
+    let totalPoints = 0;
+    const numFacets: number[] = []; // Number of facets for each added part of the mesh
+    const numPoints: number[] = []; // Number of points for each added part of the mesh
+
+    const sampleMeshes = Sample.createSimpleIndexedPolyfaces(1);
+    builder.addIndexedPolyface(sampleMeshes[0], false);
+    polyface = builder.claimPolyface(false);
+    numFacets.push(polyface.facetCount - totalFacets);
+    numPoints.push(polyface.pointCount - totalPoints);
+    totalFacets += polyface.facetCount;
+    totalPoints += polyface.pointCount;
+    ck.testTrue(builder.endFace());
+
+    builder.addIndexedPolyface(sampleMeshes[2], false);
+    polyface = builder.claimPolyface(false);
+    numFacets.push(polyface.facetCount - totalFacets);
+    numPoints.push(polyface.pointCount - totalPoints);
+    totalFacets += polyface.facetCount;
+    totalPoints += polyface.pointCount;
+    ck.testTrue(builder.endFace());
+
+    const sampleCones = Sample.createCones();
+    builder.addCone(sampleCones[0]);
+    polyface = builder.claimPolyface(false);
+    numFacets.push(polyface.facetCount - totalFacets);
+    numPoints.push(polyface.pointCount - totalPoints);
+    totalFacets += polyface.facetCount;
+    totalPoints += polyface.pointCount;
+    ck.testTrue(builder.endFace());
+
+    ck.testExactNumber(3, polyface.faceCount);
+    verifyFaceData(ck, polyface, false);
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.skip("Verify polyface param and normal data with native output", () => {
+    const options = new StrokeOptions();
+    options.needNormals = true;
+    options.needParams = true;
+    const builder = PolyfaceBuilder.create(options);
+    builder.toggleReversedFacetFlag();
+    const torusPipes = Sample.createTorusPipes();
+
+    builder.addTorusPipe(torusPipes[1]);
+    builder.addTorusPipe(torusPipes[2]);
+
+    const polyface = builder.claimPolyface();
+    const nativePolyface = JSON.parse(fs.readFileSync("./src/test/deepComparisonTestFiles/Polyface.ParamsAndNormals.dgnjs", "utf8"));
+
+    const jsParams = polyface.data.param;
+    const jsParamsIdx = polyface.data.paramIndex;
+    const nativeParams = nativePolyface.Group.Member[0].IndexedMesh.Param;
+    const nativeParamIdx = nativePolyface.Group.Member[0].IndexedMesh.ParamIndex;
+    ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx!.length, "Number of params match");
+    for (let i = 0; i < jsParams!.length; i++) {
+      ck.testCoordinate(jsParams![polyface.data.paramIndex![i]].x, nativeParams![nativeParamIdx![i]][0]);
+      ck.testCoordinate(jsParams![polyface.data.paramIndex![i]].y, nativeParams![nativeParamIdx![i]][1]);
+    }
+
+    const jsNormals = polyface.data.normal;
+    const jsNormalIdx = polyface.data.normalIndex;
+    const nativeNormals = nativePolyface.Group.Member[0].IndexedMesh.Normal;
+    const nativeNormalIdx = nativePolyface.Group.Member[0].IndexedMesh.NormalIndex;
+    ck.testExactNumber(jsNormalIdx!.length, nativeNormalIdx!.length, "Number of params match");
+    for (let i = 0; i < jsNormals!.length; i++) {
+      ck.testCoordinate(jsNormals![polyface.data.normalIndex![i]].x, nativeNormals![nativeNormalIdx![i]][0]);
+      ck.testCoordinate(jsNormals![polyface.data.normalIndex![i]].y, nativeNormals![nativeNormalIdx![i]][1]);
+      ck.testCoordinate(jsNormals![polyface.data.normalIndex![i]].z, nativeNormals![nativeNormalIdx![i]][2]);
+    }
+
+    expect(ck.getNumErrors()).equals(0);
   });
 });

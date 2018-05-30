@@ -36,14 +36,14 @@ function createRays(ck: Checker, target?: Ray3d) {
     const fractionOut = ray1.pointToFraction(pointF);
     ck.testCoordinate(f, fractionOut);
     const pointF4 = ray4.fractionToPoint(f);
-    ck.testPoint3d(pointF4, transform.multiplyPoint(pointF), "transform*ray");
+    ck.testPoint3d(pointF4, transform.multiplyPoint3d(pointF), "transform*ray");
 
     const pointF1 = ray1.projectPointToRay(pointF);
     ck.testPoint3d(pointF, pointF1, "fraction to point reprojects to same point");
     const frame = ray.toRigidZFrame();
     if (ck.testPointer(frame) && frame) {
       const localPoint = Point3d.create(0.3, 0.8, 5.7);
-      const globalPoint = frame.multiplyPoint(localPoint);
+      const globalPoint = frame.multiplyPoint3d(localPoint);
       const distanceToRay = ray.distance(globalPoint);
       ck.testCoordinate(distanceToRay, localPoint.magnitudeXY(), " projection distance is inplane part");
     }
@@ -82,8 +82,8 @@ describe("Ray3d", () => {
     ck.testTrue(ray0.isAlmostEqual(rayQ));
 
     const rayU = Ray3d.createXYZUVW(1, 2, 3, 4, 5, 6);
-    ck.testTrue (rayU.trySetDirectionMagnitudeInPlace (2.0));
-    ck.testCoordinate (2.0, rayU.direction.magnitude (), "ray direction with imposed magnitude");
+    ck.testTrue(rayU.trySetDirectionMagnitudeInPlace(2.0));
+    ck.testCoordinate(2.0, rayU.direction.magnitude(), "ray direction with imposed magnitude");
     createRays(ck, undefined);
     createRays(ck, rayQ0);
 
@@ -92,9 +92,9 @@ describe("Ray3d", () => {
     nullray.tryNormalizeInPlaceWithAreaWeight(0.0);
     nullray.tryNormalizeInPlaceWithAreaWeight(1.0);
     const spacePoint = Point3d.create(8, 10, 1);
-    ck.testCoordinate(spacePoint.distance (nullray.origin), nullray.distance (spacePoint), "distance to null ray");
+    ck.testCoordinate(spacePoint.distance(nullray.origin), nullray.distance(spacePoint), "distance to null ray");
 
-    ck.testFalse (nullray.trySetDirectionMagnitudeInPlace (), "trySetMagnnitude of nullray");
+    ck.testFalse(nullray.trySetDirectionMagnitudeInPlace(), "trySetMagnnitude of nullray");
     expect(ck.getNumErrors()).equals(0);
   });
 });

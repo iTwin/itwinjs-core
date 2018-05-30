@@ -353,7 +353,7 @@ export class ClipPlane implements ClipperMethods {
   public transformInPlace(transform: Transform): boolean {
     const plane: Plane3dByOriginAndUnitNormal = this.getPlane3d();
     const matrix: RotMatrix = transform.matrix;
-    const newPoint = transform.multiplyPoint(plane.getOriginRef());
+    const newPoint = transform.multiplyPoint3d(plane.getOriginRef());
     // Normal transforms as the inverse transpose of the matrix part
     // BTW: If the matrix is orthogonal, this is a long way to multiply by the matrix part (mumble grumble)
     const newNormal = matrix.multiplyInverseTranspose(plane.getNormalRef());

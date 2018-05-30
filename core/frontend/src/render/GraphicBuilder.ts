@@ -184,37 +184,29 @@ export abstract class GraphicBuilder {
 
   /**
    * Draw a 3D point string. A point string is displayed as a series of points, one at each vertex in the array, with no vectors connecting the vertices.
-   * @param numPoints Number of vertices in points array.
    * @param points Array of vertices in the point string.
    */
-  public abstract addPointString(numPoints: number, points: Point3d[]): void;
+  public abstract addPointString(points: Point3d[]): void;
 
   /**
    * Draw a 2D point string. A point string is displayed as a series of points, one at each vertex in the array, with no vectors connecting the vertices.
-   * @param numPoints Number of vertices in points array.
    * @param points Array of vertices in the point string.
    * @param zDepth Z depth value.
    */
-  public abstract addPointString2d(numPoints: number, points: Point2d[], zDepth: number): void;
+  public abstract addPointString2d(points: Point2d[], zDepth: number): void;
 
   /**
    *  Draw a closed 3D shape.
-   * @param numPoints Number of vertices in \c points array. If the last vertex in the array is not the same as the first vertex, an
-   *  additional vertex will be added to close the shape.
    * @param points Array of vertices of the shape.
-   * @param filled If true, the shape will be drawn filled.
    */
-  public abstract addShape(numPoints: number, points: Point3d[], filled: boolean): void;
+  public abstract addShape(points: Point3d[]): void;
 
   /**
    * Draw a 2D shape.
-   * @param numPoints Number of vertices in \c points array. If the last vertex in the array is not the same as the first vertex, an
-   * additional vertex will be added to close the shape.
    * @param points Array of vertices of the shape.
    * @param zDepth Z depth value.
-   * @param filled If true, the shape will be drawn filled.
    */
-  public abstract addShape2d(numPoints: number, points: Point2d[], filled: boolean, zDepth: number): void;
+  public abstract addShape2d(points: Point2d[], zDepth: number): void;
 
   /**
    * Draw a 3D elliptical arc or ellipse.
@@ -268,5 +260,5 @@ export abstract class GraphicBuilder {
    * Set blanking fill symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize
    * a GeometryParams and cook it into a GraphicParams to have a locatable decoration.
    */
-  public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.FromBlankingFill(fillColor)); }
+  public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
 }

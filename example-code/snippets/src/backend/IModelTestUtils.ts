@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 
@@ -123,6 +123,8 @@ export class IModelTestUtils {
   // __PUBLISH_EXTRACT_END__
 
 }
+
+NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
 
 // Start the backend
 IModelTestUtils.startupIModelHost();

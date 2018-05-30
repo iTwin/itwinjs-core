@@ -280,7 +280,7 @@ export class GlobalEventHandler extends EventBaseHandler {
   public async getEvent(sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number): Promise<IModelHubGlobalEvent> {
     Logger.logInfo(loggingCategory, `Getting global event from subscription with instance id: ${subscriptionInstanceId}`);
 
-    const options = this.getEventRequestOptions(sasToken);
+    const options = this.getEventRequestOptions(sasToken, timeout);
 
     const result = await request(this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
 

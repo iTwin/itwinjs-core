@@ -973,6 +973,24 @@ describe("iModel", () => {
     iModel.closeStandalone();
   });
 
+  it("The same promise can have two subscribers, and it will notify both.", async () => {
+    const testPromise = new Promise((resolve, _reject) => {
+      setTimeout(() => resolve("Success!"), 250);
+    });
+
+    let callbackcount = 0;
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+    testPromise.then(() => {
+      ++callbackcount;
+    });
+
+    await testPromise;
+
+    assert.equal(callbackcount, 2);
+  });
+
   it.skip("ImodelJsTest.MeasureInsertPerformance", () => {
 
     const ifperfimodel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });

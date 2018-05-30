@@ -124,7 +124,7 @@ export class MockAssetUtil {
     assetDir: string, cacheDir: string,
     testIModels: TestIModelInfo[]): Promise<string> {
 
-    cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/iModels/"));
+    cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/"));
     IModelHost.configuration!.briefcaseCacheDir = cacheDir;
 
     MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
@@ -155,8 +155,8 @@ export class MockAssetUtil {
       assert.exists(iModelInfo.changeSets);
 
       // downloadChangeSets
-      const csetDir = path.join(cacheDir, iModelInfo.id, "csets");
-      await iModelHubClientMock.object.ChangeSets().download(iModelInfo.changeSets, csetDir);
+      // const csetDir = path.join(cacheDir, iModelInfo.id, "csets");
+      // await iModelHubClientMock.object.ChangeSets().download(iModelInfo.changeSets, csetDir);
     }
     MockAssetUtil.verifyIModelInfo(testIModels);
     return testProjectId;

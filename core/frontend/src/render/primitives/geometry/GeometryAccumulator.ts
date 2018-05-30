@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Transform, Range3d, Loop, Path, IndexedPolyface } from "@bentley/geometry-core";
+import { Transform, Range3d, Loop, Path, IndexedPolyface, Point3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../../../IModelConnection";
 import { GeometryOptions } from "../Primitives";
 import { RenderSystem, RenderGraphic } from "../../System";
@@ -54,6 +54,28 @@ export class GeometryAccumulator {
 
     this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromLoop(loop, transform, range, displayParams, disjoint));
+  }
+
+  public addLineString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
+    // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
+    const range = Range3d.createNull();
+    range.extendArray(pts, undefined);
+    if (range.isNull())
+      return false;
+
+    this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromLineString(pts, transform, range, displayParams));
+  }
+
+  public addPointString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
+    // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
+    const range = Range3d.createNull();
+    range.extendArray(pts, undefined);
+    if (range.isNull())
+      return false;
+
+    this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromPointString(pts, transform, range, displayParams));
   }
 
   public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {

@@ -3,12 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { expect, assert } from "chai";
-import { OpenMode, DbResult, Id64, PerfLogger } from "@bentley/bentleyjs-core";
+import { OpenMode, DbResult, Id64, PerfLogger, ChangeSetStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectClient, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
-import { IModelVersion, IModelStatus } from "@bentley/imodeljs-common";
-import { ChangeSummaryManager, ChangeSummary, InstanceChange } from "../../ChangeSummaryManager";
+import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState } from "@bentley/imodeljs-common";
+import { ChangeSummaryManager, ChangeSummary } from "../../ChangeSummaryManager";
 import { BriefcaseManager } from "../../BriefcaseManager";
-import { IModelDb } from "../../IModelDb";
+import { IModelDb, OpenParams, AccessMode } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -50,14 +50,14 @@ describe("ChangeSummary", () => {
       MockAssetUtil.tearDownOfflineFixture();
   });
 
-  it("Attach / Detach ChangeCache file to readwrite briefcase", async () => {
+  it("Attach / Detach ChangeCache file to pullonly briefcase", async () => {
     const testIModelId: string = testIModels[1].id;
     setupTest(testIModelId);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(), IModelVersion.latest());
     try {
       assert.exists(iModel);
-      assert(iModel.iModelToken.openMode === OpenMode.ReadWrite);
+      assert(iModel.openParams.openMode === OpenMode.ReadWrite);
 
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -104,9 +104,9 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModel);
-    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
     try {
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
       assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
@@ -152,9 +152,9 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModel);
-    assert(iModel.iModelToken.openMode === OpenMode.Readonly);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
     try {
       assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
       assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
@@ -180,7 +180,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     await iModel.close(accessToken);
     assert.exists(iModel);
     assert.throw(() => ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -192,7 +192,7 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModel);
     try {
       await ChangeSummaryManager.extractChangeSummaries(iModel);
@@ -238,7 +238,7 @@ describe("ChangeSummary", () => {
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
 
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(changesetId));
@@ -281,7 +281,7 @@ describe("ChangeSummary", () => {
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
 
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(accessToken, IModelVersion.asOfChangeSet(firstChangesetId));
@@ -315,7 +315,7 @@ describe("ChangeSummary", () => {
       // now do second extraction for last changeset
       const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
       await iModel.close(accessToken);
-      iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenMode.Readonly, IModelVersion.asOfChangeSet(lastChangesetId));
+      iModel = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(lastChangesetId));
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
@@ -347,8 +347,28 @@ describe("ChangeSummary", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly);
+    // extract on fixedVersion(exclusive access) iModel should fail
+    let iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Exclusive));
+    try {
+      assert.exists(iModel);
+      await ChangeSummaryManager.extractChangeSummaries(iModel);
+    } catch (e) {
+      assert.isDefined(e.errorNumber);
+      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+    }
+
+    // extract on fixedVersion(shared access) iModel should fail
+    iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Shared));
+    try {
+      assert.exists(iModel);
+      await ChangeSummaryManager.extractChangeSummaries(iModel);
+    } catch (e) {
+      assert.isDefined(e.errorNumber);
+      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
+    }
+
     // extract on closed iModel should fail
+    iModel = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.fixedVersion());
     try {
       assert.exists(iModel);
       await iModel.close(accessToken);
@@ -358,7 +378,7 @@ describe("ChangeSummary", () => {
       assert.equal(e.errorNumber, IModelStatus.BadArg);
     }
 
-    // open standalone iModel
+    // extract on standalone iModel should fail
     iModel = IModelTestUtils.openIModel("test.bim");
     assert.exists(iModel);
     assert.exists(iModel.briefcase);
@@ -381,7 +401,7 @@ describe("ChangeSummary", () => {
     setupTest(testIModelId);
 
     let perfLogger = new PerfLogger("IModelDb.open");
-    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModelId, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     perfLogger.dispose();
     await ChangeSummaryManager.extractChangeSummaries(iModel);
     assert.exists(iModel);
@@ -408,14 +428,40 @@ describe("ChangeSummary", () => {
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
 
-      const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<InstanceChange>() };
+      const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
         stmt.bindId(1, changeSummary.id);
         perfLogger = new PerfLogger("ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary " + changeSummary.id);
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const row = stmt.getRow();
 
-          const instanceChange: InstanceChange = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
+          const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
+          switch (instanceChange.opCode) {
+            case ChangeOpCode.Insert: {
+              const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert));
+              assert.equal(rows.length, 1);
+              instanceChange.after = rows[0];
+              break;
+            }
+            case ChangeOpCode.Update: {
+              let rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
+              assert.equal(rows.length, 1);
+              instanceChange.before = rows[0];
+              rows = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
+              assert.equal(rows.length, 1);
+              instanceChange.after = rows[0];
+              break;
+            }
+            case ChangeOpCode.Delete: {
+              const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeDelete));
+              assert.equal(rows.length, 1);
+              instanceChange.before = rows[0];
+              break;
+            }
+            default:
+              throw new Error("Unexpected ChangedOpCode " + instanceChange.opCode);
+          }
+
           content.instanceChanges.push(instanceChange);
         }
         perfLogger.dispose();

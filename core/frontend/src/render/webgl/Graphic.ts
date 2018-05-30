@@ -43,11 +43,11 @@ export abstract class Graphic extends RenderGraphic {
 }
 
 export class Batch extends Graphic {
-  public get graphic(): Graphic { return this._graphic; }
+  public get graphic(): RenderGraphic { return this._graphic; }
   public get featureTable(): FeatureTable { return this._features; }
   // public get overrides(): FeatureOverrides[] { return this._overrides; }
   // public get pickTable(): PickTable { return this._pickTable; }
-  constructor(private _graphic: Graphic,
+  constructor(private _graphic: RenderGraphic,
     private _features: FeatureTable,
     // private _overrides: FeatureOverrides[] = [],
     // private _pickTable: PickTable

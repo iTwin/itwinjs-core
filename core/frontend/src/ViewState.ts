@@ -5,7 +5,7 @@
 import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, Arc3d,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
@@ -20,7 +20,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
-import { GraphicList, RenderGraphic } from "./render/System";
+import { GraphicList } from "./render/System";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 
@@ -422,12 +422,12 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
     let origin = this.getOrigin();
     const trans = Transform.createOriginAndMatrix(Point3d.createZero(), this.getRotation());
-    const newOrigin = trans.multiplyPoint(origin);
+    const newOrigin = trans.multiplyPoint3d(origin);
 
     newOrigin.x += ((oldDelta.x - extents.x) / 2.0);
     newOrigin.y += ((oldDelta.y - extents.y) / 2.0);
 
-    origin = trans.inverse()!.multiplyPoint(newOrigin);
+    origin = trans.inverse()!.multiplyPoint3d(newOrigin);
     this.setOrigin(origin);
     this.setExtents(extents);
   }
@@ -1021,7 +1021,7 @@ export abstract class ViewState3d extends ViewState {
     if (!rotation)
       return ViewStatus.InvalidUpVector;    // Invalid axis given
     const trans = Transform.createFixedPointAndMatrix(about, rotation);
-    const newTarget = trans.multiplyPoint(this.getTargetPoint());
+    const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
     const upVec = rotation!.multiplyVector(this.getYVector());
     return this.lookAt(this.getEyePoint(), newTarget, upVec);
   }
@@ -1150,58 +1150,19 @@ export abstract class ViewState3d extends ViewState {
     const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
     if (undefined !== gf)
       context.setViewBackground(gf);
-
-    this.drawPlaceholderDecorations(context);
   }
 
   protected drawGroundPlane(context: DecorateContext): void {
     // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
     const extents = this.getViewedExtents(); // the project extents
-    const pts = [extents.low, extents.low.clone(), extents.high.clone(), extents.low.clone()];
-    pts[1].x = extents.high.x;
-    pts[2].z = extents.low.z;
-    pts[3].y = extents.high.y;
-
-    const args = new MeshArgs();
-    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(pts)));
-    for (const point of pts)
-      args.points.add(point);
-
-    args.vertIndices = [3, 2, 0, 2, 1, 0];
-    args.colors.initUniform(ColorByName.darkGreen);
-
-    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
-    if (undefined !== gf)
-      context.addWorldDecoration(gf);
-  }
-
-  // ###TODO Remove this once element graphics are hooked up - it is serving as a placeholder so that we have a reference point for viewing tools.
-  private _placeholderDecoration?: RenderGraphic;
-  protected _wantPlaceholderDecorations: boolean = false;
-  protected drawPlaceholderDecorations(context: DecorateContext) {
-    if (!this._wantPlaceholderDecorations)
-      return;
-
-    if (undefined === this._placeholderDecoration) {
-      const cx = 0.5;
-      const cy = 0.5;
-      const dx = 0.25;
-      const dy = 0.25;
-      const z = 0.5;
-
-      const args = new MeshArgs();
-      const points = [new Point3d(cx - dx, cy, z), new Point3d(cx, cy - dy, z), new Point3d(cx + dx, cy, z), new Point3d(cx, cy + dy, z)];
-      context.viewport.npcToWorldArray(points);
-      args.points = QPoint3dList.fromPoints(points);
-      args.vertIndices = [3, 2, 0, 2, 1, 0];
-      const colors = new Uint32Array([ColorByName.chocolate, ColorByName.darkOrange, ColorByName.darkSeagreen, ColorByName.lightPink]);
-      args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
-
-      this._placeholderDecoration = IModelApp.renderSystem.createTriMesh(args, this.iModel);
-    }
-
-    if (undefined !== this._placeholderDecoration)
-      context.addWorldOverlay(this._placeholderDecoration);
+    const center = extents.low.interpolate(0.5, extents.high);
+    const ellipse = Arc3d.createXYEllipse(center, Math.abs(center.x - extents.low.x), Math.abs(center.y - extents.low.y));
+    const gf = context.createWorldDecoration();
+    const green = ColorDef.green.clone();
+    gf.setSymbology(green, green, 2);
+    gf.addArc(ellipse, true, true);
+    gf.addRangeBox(extents);
+    context.addWorldDecoration(gf.finish()!);
   }
 }
 

@@ -7,7 +7,7 @@ import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegat
 import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, Platform,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel,
 } from "../backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestIModelInfo } from "./MockAssetUtil";
@@ -44,14 +44,7 @@ if (IModelJsFs.existsSync(loggingConfigFile)) {
   Logger.configureLevels(require(loggingConfigFile));
 }
 
-let nativePlatformDir: string | undefined;
-if (!Platform.isMobile()) {
-  let nativePlatformForTestsDir = __dirname;
-  while (!IModelJsFs.existsSync(path.join(nativePlatformForTestsDir, "nativePlatformForTests")))
-    nativePlatformForTestsDir = path.join(nativePlatformForTestsDir, "..");
-  nativePlatformDir = path.join(path.join(nativePlatformForTestsDir, "nativePlatformForTests"), "node_modules");
-}
-NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
+NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
 
 // Initialize the RPC interface classes used by tests
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -105,7 +98,6 @@ export class TestUsers {
     email: "bentleyvilnius@gmail.com",
     password: "Q!w2e3r4t5",
   };
-
 }
 
 export class IModelTestUtils {

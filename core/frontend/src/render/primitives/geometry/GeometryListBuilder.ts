@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface } from "@bentley/geometry-core";
+import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "../../GraphicBuilder";
@@ -12,6 +12,13 @@ import { RenderSystem, RenderGraphic } from "../../System";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";
+
+function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
+  const pts3d: Point3d[] = [];
+  for (const point of pts2d)
+    pts3d.push(Point3d.create(point.x, point.y, depth));
+  return pts3d;
+}
 
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
@@ -66,17 +73,38 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       this.accum.addPath(curve, displayParams, this.localToWorldTransform, false);
   }
 
-  public addLineString(_points: Point3d[]): void {
-    // const curve = BagOfCurves.create(LineString3d.create(points));
-    // ###TODO
+  public addLineString(points: Point3d[]): void {
+    // ###TODO: Still need to handle the case of a zero-length line segment (doing this should create a pointPrimitive)
+    const lineString: CurvePrimitive = LineString3d.create(points);
+    this.accum.addPath(Path.create(lineString), this.getLinearDisplayParams(), this.localToWorldTransform, false);  // possibly a zero-length line segment (== disjoint)...
   }
 
   public addLineString2d(points: Point2d[], zDepth: number): void {
-    const pt3d: Point3d[] = [];
-    points.forEach((element: Point2d) => {
-      pt3d.push(Point3d.create(element.x, element.y, zDepth));
-    });
-    this.addLineString(pt3d);
+    const pts3d = copy2dTo3d(points, zDepth);
+    this.addLineString(pts3d);
+  }
+
+  public addPointString(points: Point3d[]): void {
+    this.accum.addPointString(points, this.getLinearDisplayParams(), this.localToWorldTransform);
+  }
+
+  public addPointString2d(points: Point2d[], zDepth: number): void {
+    const pts3d = copy2dTo3d(points, zDepth);
+    this.addPointString(pts3d);
+  }
+
+  public addPolyface(meshData: Polyface): void {
+    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.localToWorldTransform);
+  }
+
+  public addShape(points: Point3d[]): void {
+    const loop = Loop.create(LineString3d.create(points));
+    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.localToWorldTransform, false);
+  }
+
+  public addShape2d(points: Point2d[], zDepth: number): void {
+    const pts3d = copy2dTo3d(points, zDepth);
+    this.addShape(pts3d);
   }
 
   public abstract reset(): void;
@@ -131,12 +159,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
     return this.params.viewport!.getPixelSizeAtPoint(pt) * toleranceMult;
   }
 
-  public reset(): void { }
-  public addPointString(_numPoints: number, _points: Point3d[]): void { } //tslint:disable-line
-  public addPointString2d(_numPoints: number, _points: Point2d[], _zDepth: number): void { } //tslint:disable-line
-  public addPolyface(_meshData: Polyface, _filled: boolean): void { } //tslint:disable-line
-  public addShape(_numPoints: number, _points: Point3d[], _filled: boolean): void { } //tslint:disable-line
-  public addShape2d(_numPoints: number, _points: Point2d[], _filled: boolean, _zDepth: number): void { } //tslint:disable-line
+  public reset(): void { this.primitives = []; }
 }
 
 export class PrimitiveBuilderContext extends ViewContext {

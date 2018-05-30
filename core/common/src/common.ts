@@ -62,7 +62,7 @@ export * from "./rpc/StandaloneIModelRpcInterface";
   */
 /**
  * @docs-group-description ECSQL
- * Classes for working with ECSQL - see [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Built-in Geometry Functions]($docs/learning/SqlFuncs.md)
+ * Classes for working with ECSQL - see [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Built-in Geometry Functions]($docs/learning/GeometrySqlFuncs.md)
  */
 /**
  * @docs-group-description Errors

@@ -126,8 +126,8 @@ export class TestUsers {
   };
 
   public static readonly serviceAccount1: UserCredentials = {
-    email: "bistroATP_pm1@mailinator.com",
-    password: "pmanager1",
+    email: "bistroATP_pm2@mailinator.com",
+    password: "pmanager2",
   };
 
 }

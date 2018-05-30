@@ -116,7 +116,7 @@ export class Clips {
 
         // Transform distance of clip plane
         const pos: Point3d = norm.scale(planes[i].distance).cloneAsPoint3d();
-        const xFormPos: Point3d = viewMatrix.multiplyPoint(pos);
+        const xFormPos: Point3d = viewMatrix.multiplyPoint3d(pos);
         this._clips[i * 4 + 3] = -dir.dotProductXYZ(xFormPos.x, xFormPos.y, xFormPos.z);
       }
     }
@@ -719,7 +719,7 @@ function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3
   result.x = p0.x - p1.x;
   result.y = p0.y - p1.y;
   result.z = p0.z - p1.z;
-  result.normalize();
+  result.normalizeInPlace();
   return result;
 }
 

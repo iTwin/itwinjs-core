@@ -18,36 +18,60 @@ describe("ColorMap", () => {
     const a: ColorMap = new ColorMap();
     assert.isTrue(a.insert(0xFF0000) === 0);
     assert.isTrue(a.length === 1);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
     assert.isTrue(a.insert(0x0000FF) === 1);
     assert.isTrue(a.length === 2);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
     assert.isTrue(a.insert(0x0000FF) === 1);
     assert.isTrue(a.length === 2);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
     assert.isTrue(a.insert(0xFF0000) === 0);
     assert.isTrue(a.length === 2);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
     assert.isTrue(a.insert(0xFFFFFF) === 2);
     assert.isTrue(a.length === 3);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
     assert.isTrue(a.insert(0x0000FF) === 1);
     assert.isTrue(a.length === 3);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
     assert.isTrue(a.insert(0xFF0000) === 0);
     assert.isTrue(a.length === 3);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
     assert.isTrue(a.insert(0xFFFFFF) === 2);
     assert.isTrue(a.length === 3);
-    assert.isTrue(a.hasTransparency);
+    assert.isFalse(a.hasTransparency);
   });
 
   it("test simple return functions", () => {
     /** Test hasTransparency function */
     let a: ColorMap = new ColorMap();
     assert.isFalse(a.hasTransparency);
-    a.insert(0xFF0000);
+    a.insert(0x01000000);
     assert.isTrue(a.hasTransparency);
+    a.insert(0xFF000000);
+    assert.isTrue(a.hasTransparency);
+    a.insert(0x7FFFFFFF);
+    assert.isTrue(a.hasTransparency);
+    a = new ColorMap();
+    a.insert(0xFF000000);
+    assert.isTrue(a.hasTransparency);
+    a = new ColorMap();
+    a.insert(0x7FFFFFFF);
+    assert.isTrue(a.hasTransparency);
+    a = new ColorMap();
+    a.insert(0x00000000);
+    assert.isFalse(a.hasTransparency);
+    a = new ColorMap();
+    a.insert(0x00FFFFFF);
+    assert.isFalse(a.hasTransparency);
+    let inserted = false;
+    try { // try to insert a translucent color into a table which does not have transparency.
+      a.insert(0x0F000000);
+      inserted = true;
+    } catch (err) {
+      expect(err).is.not.undefined;
+    }
+    expect(inserted).to.be.false;
 
     /** Test isUniform function */
     a = new ColorMap();

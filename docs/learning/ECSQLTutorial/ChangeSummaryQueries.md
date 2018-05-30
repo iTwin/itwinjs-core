@@ -1,0 +1,4 @@
+---
+ignore: true
+---
+# Querying ChangeSummaries

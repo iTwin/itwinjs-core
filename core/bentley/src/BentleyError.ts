@@ -115,20 +115,19 @@ export const enum ChangeSetStatus { // Note: Values must be kept in sync with Ch
   InDynamicTransaction = CHANGESET_ERROR_BASE + 10,     /** Cannot perform the operation since system is in the middle of a dynamic transaction */
   IsCreatingChangeSet = CHANGESET_ERROR_BASE + 11,      /** Cannot perform operation since system is in the middle of a creating a change set */
   IsNotCreatingChangeSet = CHANGESET_ERROR_BASE + 12,   /** Cannot perform operation since the system is not creating a change set */
-  MergeError = CHANGESET_ERROR_BASE + 13,               /**  (TO BE REMOVED) */
-  MergePropagationError = CHANGESET_ERROR_BASE + 14,    /** Error propagating the changes after the merge */
-  NothingToMerge = CHANGESET_ERROR_BASE + 15,           /** No change sets to merge */
-  NoTransactions = CHANGESET_ERROR_BASE + 16,           /** No transactions are available to create a change set */
-  ParentMismatch = CHANGESET_ERROR_BASE + 17,           /** Parent change set of the Db does not match the parent id of the change set */
-  SQLiteError = CHANGESET_ERROR_BASE + 18,              /** Error performing a SQLite operation on the Db */
-  WrongDgnDb = CHANGESET_ERROR_BASE + 19,               /** ChangeSet originated in a different Db */
-  CouldNotOpenDgnDb = CHANGESET_ERROR_BASE + 20,        /** Could not open the DgnDb to merge change set */
-  MergeSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 21, /** Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
-  ReverseOrReinstateSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 22,  /** Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
-  ProcessSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 23,             /** Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
-  CannotMergeIntoReadonly = CHANGESET_ERROR_BASE + 24,                /** Cannot merge changes into a Readonly DgnDb. */
-  CannotMergeIntoMaster = CHANGESET_ERROR_BASE + 25,                  /**  Cannot merge changes into a Master DgnDb. */
-  CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 26,                /** Cannot merge changes into a DgnDb that has reversed change sets. */
+  MergePropagationError = CHANGESET_ERROR_BASE + 13,    /** Error propagating the changes after the merge */
+  NothingToMerge = CHANGESET_ERROR_BASE + 14,           /** No change sets to merge */
+  NoTransactions = CHANGESET_ERROR_BASE + 15,           /** No transactions are available to create a change set */
+  ParentMismatch = CHANGESET_ERROR_BASE + 16,           /** Parent change set of the Db does not match the parent id of the change set */
+  SQLiteError = CHANGESET_ERROR_BASE + 17,              /** Error performing a SQLite operation on the Db */
+  WrongDgnDb = CHANGESET_ERROR_BASE + 18,               /** ChangeSet originated in a different Db */
+  CouldNotOpenDgnDb = CHANGESET_ERROR_BASE + 19,        /** Could not open the DgnDb to merge change set */
+  MergeSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 20, /** Cannot merge changes in in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  ReverseOrReinstateSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 21,  /** Cannot reverse or reinstate schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  ProcessSchemaChangesOnOpen = CHANGESET_ERROR_BASE + 22,             /** Cannot process changes schema changes in an open DgnDb. Close the DgnDb, and process the operation when it is opened. */
+  CannotMergeIntoReadonly = CHANGESET_ERROR_BASE + 23,                /** Cannot merge changes into a Readonly DgnDb. */
+  CannotMergeIntoMaster = CHANGESET_ERROR_BASE + 24,                  /**  Cannot merge changes into a Master DgnDb. */
+  CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 25,                /** Cannot merge changes into a DgnDb that has reversed change sets. */
 }
 
 /** Return codes for methods which perform repository management operations */
@@ -363,7 +362,6 @@ export class BentleyError extends Error {
       case ChangeSetStatus.InDynamicTransaction: return "Cannot perform the operation since system is in the middle of a dynamic transaction";
       case ChangeSetStatus.IsCreatingChangeSet: return "Cannot perform operation since system is in the middle of a creating a change set";
       case ChangeSetStatus.IsNotCreatingChangeSet: return "Cannot perform operation since the system is not creating a change set";
-      case ChangeSetStatus.MergeError: return "Error merging changes from the change set to the Db";
       case ChangeSetStatus.MergePropagationError: return "Error propagating the changes after the merge";
       case ChangeSetStatus.NothingToMerge: return "No change sets to merge";
       case ChangeSetStatus.NoTransactions: return "No transactions are available to create a change set";

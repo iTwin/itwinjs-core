@@ -134,8 +134,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     this._point1 = a;
   }
   public tryTransformInPlace(transform: Transform): boolean {
-    this._point0 = transform.multiplyPoint(this._point0, this._point0);
-    this._point1 = transform.multiplyPoint(this._point1, this._point1);
+    this._point0 = transform.multiplyPoint3d(this._point0, this._point0);
+    this._point1 = transform.multiplyPoint3d(this._point1, this._point1);
     return true;
   }
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {

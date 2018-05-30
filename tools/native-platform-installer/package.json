@@ -1,0 +1,15 @@
+{
+  "name": "native-platform-installer",
+  "private": true,
+  "//optionalDependencies": [
+    "This package exists *only* so that we can npm install platform-specific code that is needed by the unit tests and example code.",
+    "It must *not* be managed by rush! It must be installed by npm, as it relies on npm's support for optional dependencies.",
+    "*** Keep this in synch with source/backend/package.json ***"
+  ],
+  "optionalDependencies": {
+    "@bentley/imodeljs-n_8-darwin-x64": "~19.2.0",
+    "@bentley/imodeljs-n_8-linux-x64": "~19.2.0",
+    "@bentley/imodeljs-n_8-win32-x64": "~19.2.0",
+    "@bentley/imodeljs-e_2-win32-x64": "~19.2.0"
+  }
+}

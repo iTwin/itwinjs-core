@@ -1,11 +1,20 @@
-import { IModelApp, IModelConnection, ViewState, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
+import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
 
 // tslint:disable:no-console
+
+// show status in the output HTML
+function showStatus(string1: string, string2?: string) {
+  let outString: string = string1;
+  if (string2)
+    outString = outString.concat(" ", string2);
+  document.getElementById("showstatus")!.innerHTML = outString;
+}
 
 class SimpleViewState {
   public accessToken?: AccessToken;
@@ -86,6 +95,60 @@ async function selectView(state: SimpleViewState, viewName: string) {
 
 let theViewport: Viewport | undefined;
 
+export class LocateTool extends ViewTool {
+  public static toolId = "View.Locate";
+
+  private _curPoint = new Point3d();
+  private _worldPoint = new Point3d();
+  private _haveWorldPoint = false;
+
+  public constructor() { super(); }
+
+  public updateDynamics(ev: BeButtonEvent) { this.onModelMotion(ev); }
+  public onModelMotion(ev: BeButtonEvent) {
+    this._curPoint.setFrom(ev.point);
+
+    if (ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
+
+  public onDataButtonDown(ev: BeButtonEvent) {
+    this._worldPoint.setFrom(ev.point);
+    this._haveWorldPoint = true;
+    if (ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
+
+  public decorate(context: DecorateContext) {
+    context.viewport.drawLocateCursor(context, this._curPoint, context.viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), true);
+    if (this._haveWorldPoint) {
+      const gf = context.createWorldOverlay();
+      const color = ColorDef.red.clone();
+      gf.setSymbology(color, color, 10);
+      // gf.addPointString([this._worldPoint]);
+      // context.addWorldOverlay(gf.finish()!);
+      const pt = context.viewport.worldToView(this._worldPoint);
+      gf.addPointString([pt]);
+      context.addViewOverlay(gf.finish()!);
+    }
+  }
+}
+
+export class StandardViewRotationTool extends ViewTool {
+  public static toolId = "View.StandardRotation";
+  private rotations = [StandardViewId.Top, StandardViewId.Iso, StandardViewId.Front];
+  private rotationNames = ["Top", "Iso", "Front"];
+  private rotationIndex = 0;
+
+  public onDataButtonDown(ev: BeButtonEvent) {
+    if (ev.viewport) {
+      showStatus(this.rotationNames[this.rotationIndex], "view");
+      ev.viewport.setStandardRotation(this.rotations[this.rotationIndex]);
+      this.rotationIndex = (this.rotationIndex + 1) % 3;
+    }
+  }
+}
+
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   // find the canvas.
@@ -110,7 +173,8 @@ function startWindowArea(_event: any) {
 
 // starts View Scroll (I don't see a Zoom command)
 function startZoom(_event: any) {
-  IModelApp.tools.run("View.Scroll", theViewport!);
+  // IModelApp.tools.run("View.Scroll", theViewport!);
+  IModelApp.tools.run("View.Locate", theViewport!);
 }
 
 // starts walk command
@@ -123,6 +187,11 @@ function startRotateView(_event: any) {
   IModelApp.tools.run("View.Rotate", theViewport!);
 }
 
+// start rotate view.
+function switchStandardRotation(_event: any) {
+  IModelApp.tools.run("View.StandardRotation", theViewport!);
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   document.getElementById("startFit")!.addEventListener("click", startFit);
@@ -130,14 +199,7 @@ function wireIconsToFunctions() {
   document.getElementById("startZoom")!.addEventListener("click", startZoom);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
-}
-
-// show status in the output HTML
-function showStatus(string1: string, string2?: string) {
-  let outString: string = string1;
-  if (string2)
-    outString = outString.concat(" ", string2);
-  document.getElementById("showstatus")!.innerHTML = outString;
+  document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);
 }
 
 // ----------------------------------------------------------
@@ -168,6 +230,9 @@ async function main() {
     // initialize the Project and IModel Api
     await ProjectApi.init();
     await IModelApi.init();
+
+    IModelApp.tools.register(LocateTool);
+    IModelApp.tools.register(StandardViewRotationTool);
 
     // log in.
     showStatus("logging in as", configuration.userName);

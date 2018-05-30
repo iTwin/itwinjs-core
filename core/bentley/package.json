@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "8.3.0",
+  "version": "8.4.0",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -11,7 +11,8 @@
     "clean": "rimraf lib package-deps.json ../../generated_docs/bentley",
     "pretest": "rush build -t @bentley/bentleyjs-core",
     "test": "node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --json=../../generated-docs/bentley/json/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson"
+    "docs": "node ./node_modules/@bentley/bentleyjs-tools/scripts/docs.js --source=./src --json=../../generated-docs/bentley/json/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
+    "lint": "tslint --project . 1>&2"
   },
   "keywords": [
     "Bentley",
@@ -23,9 +24,10 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/bentleyjs-tools": "4",
+    "@bentley/bentleyjs-tools": "5",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
+    "tslint": "^5.9.0",
     "typedoc": "^0.11.1",
     "typescript": "~2.7.2"
   }

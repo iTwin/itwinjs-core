@@ -8,13 +8,14 @@
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 // import { Geometry } from "./Geometry";
 import { Point3d, Vector3d, Point2d } from "../PointVector";
-import { Range3d } from "../Range";
+import { Range3d, Range2d } from "../Range";
 import { Transform } from "../Transform";
 import { NumberArray, Vector3dArray, Point2dArray } from "../PointHelpers";
 import { GrowableFloat64Array, GrowableXYZArray } from "../GrowableArray";
 import { GeometryQuery } from "../curve/CurvePrimitive";
 import { GeometryHandler } from "../GeometryHandler";
 import { ClusterableArray } from "../numerics/ClusterableArray";
+
 /**
  * Check validity of indices into a data array.
  * * It is valid to have  both indices and data undeinfed.
@@ -88,7 +89,139 @@ function reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, 
   return false;
 }
 
-/** PolyfaceData carries data arrays for point, normal, param, color and their indices.
+/**
+ * Data for a face in a polyface containing facets.
+ * This is built up cooperatively by the PolyfaceBuilder and its
+ * callers, and stored as a FaceData array in PolyfaceData.
+ */
+export class FacetFaceData {
+  public readonly paramDistanceRange: Range2d;
+  public readonly paramRange: Range2d;
+
+  private constructor(distanceRange: Range2d, paramRange: Range2d) {
+    this.paramDistanceRange = distanceRange;
+    this.paramRange = paramRange;
+  }
+
+  /** Create a FacetFaceData with null ranges. */
+  public static createNull(): FacetFaceData {
+    return new FacetFaceData(Range2d.createNull(), Range2d.createNull());
+  }
+
+  /** Restore this FacetFaceData to its null constructor state. */
+  public null() {
+    this.paramDistanceRange.setNull();
+    this.paramRange.setNull();
+  }
+
+  /** Return distance-based parameter from stored parameter value. */
+  public convertParamToDistance(param: Point2d, result?: Point2d): Point2d {
+    result = result ? result : Point2d.create();
+    const paramDelta = this.paramRange.high.minus(this.paramRange.low);
+    result.x = (0 === paramDelta.x) ? param.x : (this.paramDistanceRange.low.x + (param.x - this.paramRange.low.x)
+      * (this.paramDistanceRange.high.x - this.paramDistanceRange.low.x) / paramDelta.x);
+    result.y = (0.0 === paramDelta.y) ? param.y : (this.paramDistanceRange.low.y + (param.y - this.paramRange.low.y)
+      * (this.paramDistanceRange.high.y - this.paramDistanceRange.low.y) / paramDelta.y);
+    return result;
+  }
+
+  /** Return normalized (0-1) parameter from stored parameter value. */
+  public convertParamToNormalized(param: Point2d, result?: Point2d): Point2d {
+    result = result ? result : Point2d.create();
+    const paramDelta = this.paramRange.high.minus(this.paramRange.low);
+    result.x = (0.0 === paramDelta.x) ? param.x : ((param.x - this.paramRange.low.x) / paramDelta.x);
+    result.y = (0.0 === paramDelta.y) ? param.y : ((param.y - this.paramRange.low.y) / paramDelta.y);
+    return result;
+  }
+
+  /** Scale distance paramaters. */
+  public scaleDistances(distanceScale: number) {
+    this.paramDistanceRange.low.x *= distanceScale;
+    this.paramDistanceRange.low.y *= distanceScale;
+    this.paramDistanceRange.high.x *= distanceScale;
+    this.paramDistanceRange.high.y *= distanceScale;
+  }
+
+  /**
+   * Sets the paramDistance range of this FacetFaceData based on the newly terminated facets that make it up.
+   * Takes the polyface itself, the first and last indexes of the facets to be included in the face.
+   * Returns true on success, false otherwise.
+   */
+  public setParamDistanceRangeFromNewFaceData(polyface: IndexedPolyface, facetStart: number, facetEnd: number): boolean {
+    const dSTotal = Point2d.create();
+    const dSSquaredTotal = Point2d.create();
+    let aveTotal = 0;
+
+    const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
+    if (!visitor.moveToReadIndex(facetStart))
+      return false;
+
+    do {
+      const numPointsInFacet = visitor.numEdgesThisFacet;
+      const visitorPoints = visitor.point;
+      const trianglePointIndexes: number[] = [];
+      const visitorParams = visitor.param;
+      const triangleParamIndexes: number[] = [];
+
+      if (!visitorParams)
+        return false;
+
+      for (let k = 0; k < numPointsInFacet; k++) {
+        trianglePointIndexes[2] = k;
+        triangleParamIndexes[2] = k;
+
+        if (k > 1) {
+          const dUV0 = visitorParams[triangleParamIndexes[0]].minus(visitorParams[triangleParamIndexes[1]]);
+          const dUV1 = visitorParams[triangleParamIndexes[1]].minus(visitorParams[triangleParamIndexes[2]]);
+          const delta0 = visitorPoints.getPoint3dAt(trianglePointIndexes[0]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[1]));
+          const delta1 = visitorPoints.getPoint3dAt(trianglePointIndexes[1]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[2]));
+
+          const uvCross = Math.abs(dUV0.x * dUV1.y - dUV1.x * dUV0.y);
+          if (uvCross) {
+            const dwDu = Point3d.createFrom(delta0);
+            dwDu.scaleInPlace(dUV1.y);
+            dwDu.addScaledInPlace(delta1, -dUV0.y);
+            const dwDv = Point3d.createFrom(delta1);
+            dwDv.scaleInPlace(dUV0.x);
+            dwDv.addScaledInPlace(delta0, -dUV1.x);
+
+            const dS = Point2d.create(dwDu.magnitude() / uvCross, dwDv.magnitude() / uvCross);
+
+            dSTotal.x += dS.x;
+            dSTotal.y += dS.y;
+            dSSquaredTotal.x += dS.x * dS.x;
+            dSSquaredTotal.y += dS.y * dS.y;
+            aveTotal++;
+          }
+        }
+
+        triangleParamIndexes[0] = triangleParamIndexes[1];
+        triangleParamIndexes[1] = triangleParamIndexes[2];
+        trianglePointIndexes[0] = trianglePointIndexes[1];
+        trianglePointIndexes[1] = trianglePointIndexes[2];
+      }
+    } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < facetEnd);
+
+    if (aveTotal !== 0) {
+      const dS = Point2d.create(dSTotal.x / aveTotal, dSTotal.y / aveTotal);
+      const standardDeviation = Point2d.create(
+        Math.sqrt(Math.abs((dSSquaredTotal.x / aveTotal) - dS.x * dS.x)),
+        Math.sqrt(Math.abs((dSSquaredTotal.y / aveTotal) - dS.y * dS.y)),
+      );
+
+      // TR# 268980 - Add standard deviation to match QV....
+      this.paramDistanceRange.low.set(0, 0);
+      this.paramDistanceRange.high.set(
+        (dS.x + standardDeviation.x) * (this.paramRange.high.x - this.paramRange.low.x),
+        (dS.y + standardDeviation.y) * (this.paramRange.high.y - this.paramRange.low.y),
+      );
+    }
+    return true;
+  }
+}
+
+/**
+ * PolyfaceData carries data arrays for point, normal, param, color and their indices.
  *
  * * IndexedPolyface carries a PolyfaceData as a member. (NOT as a base class -- it already has GeometryQuery as base)
  * * IndexedPolyfaceVisitor uses PolyfaceData as a base class.
@@ -116,10 +249,13 @@ export class PolyfaceData {
   public paramIndex: number[] | undefined;
   public color: number[] | undefined;
   public colorIndex: number[] | undefined;
+  /** Face data will remain empty until a face is specified. */
+  public face: FacetFaceData[];
 
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false) {
     this.point = new GrowableXYZArray();
     this.pointIndex = []; this.edgeVisible = [];
+    this.face = [];
     if (needNormals) { this.normal = []; this.normalIndex = []; }
     if (needParams) { this.param = []; this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }
@@ -130,6 +266,7 @@ export class PolyfaceData {
     result.point = this.point.clone();
     result.pointIndex = this.pointIndex.slice();
     result.edgeVisible = this.edgeVisible.slice();
+    result.face = this.face.slice();
 
     if (this.normal)
       result.normal = Vector3dArray.cloneVector3dArray(this.normal);
@@ -169,6 +306,8 @@ export class PolyfaceData {
   public get paramCount() { return this.param ? this.param.length : 0; }
   public get colorCount() { return this.color ? this.color.length : 0; }
   public get indexCount() { return this.pointIndex.length; }  // ALWAYS INDEXED ... all index vectors must have same length.
+  /** Will return 0 if no faces were specified during construction. */
+  public get faceCount() { return this.face.length; }
 
   /** return indexed point. This is a copy of the coordinates, not a referenc. */
   public getPoint(i: number): Point3d { return this.point.getPoint3dAt(i); }
@@ -178,6 +317,8 @@ export class PolyfaceData {
   public getParam(i: number): Point2d { return this.param ? this.param[i] : Point2d.create(); }
   /** return indexed color */
   public getColor(i: number): number { return this.color ? this.color[i] : 0; }
+  /** return indexed face data. This is the REFERENCE to the FacetFaceData, not a copy */
+  public getFace(i: number): FacetFaceData { return this.face[i]; }
   /** return indexed visibility */
   public getEdgeVisible(i: number): boolean { return this.edgeVisible[i]; }
   /** Copy the contents (not pointer) of point[i] into dest. */
@@ -191,6 +332,7 @@ export class PolyfaceData {
    * * This is the essense of transfering coordinates spread throughout a large polyface into a visitor's single facet.
    * * "other" is the large polyface
    * * "this" is the visitor
+   * * does NOT copy face data - visitors reference the FacetFaceData array for the whole polyface!!
    * @param other polyface data being mined.
    * @param index0 start index in other's index arrays
    * @param index1 end index (one beyond last data accessed0 in other's index arrays
@@ -288,7 +430,7 @@ export class PolyfaceData {
     result.extendArray(this.point, transform);
     return result;
   }
-  /** reverse indices face-by-facet, with the given facetStartIndex array delimiting faces.
+  /** reverse indices facet-by-facet, with the given facetStartIndex array delimiting faces.
    *
    * * facetStartIndex[0] == 0 always -- start of facet zero.
    * * facet k has indices from facetStartIndex[k] <= i < facetStartIndex[k+1]
@@ -333,7 +475,8 @@ export class PolyfaceData {
   }
 }
 
-/** A Polyface is n abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
+/**
+ * A Polyface is n abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
  * to iterate over its facets.
  */
 export abstract class Polyface extends GeometryQuery {
@@ -352,9 +495,11 @@ export abstract class Polyface extends GeometryQuery {
 }
 export class IndexedPolyface extends Polyface {
   public isSameGeometryClass(other: any): boolean { return other instanceof IndexedPolyface; }
+  /** Tests for equivalence between two IndexedPolyfaces. */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof IndexedPolyface) {
-      return this.data.isAlmostEqual(other.data) && NumberArray.isExactEqual(this.facetStart, other.facetStart);
+      return this.data.isAlmostEqual(other.data) && NumberArray.isExactEqual(this.facetStart, other.facetStart) &&
+        NumberArray.isExactEqual(this.facetToFaceData, other.facetToFaceData);
     }
     return false;
   }
@@ -370,7 +515,7 @@ export class IndexedPolyface extends Polyface {
   }
 
   public clone(): IndexedPolyface {
-    return new IndexedPolyface(this.data.clone(), this.facetStart.slice());
+    return new IndexedPolyface(this.data.clone(), this.facetStart.slice(), this.facetToFaceData.slice());
   }
 
   public cloneTransformed(transform: Transform): IndexedPolyface {
@@ -388,20 +533,33 @@ export class IndexedPolyface extends Polyface {
   // Note thet the array is initialized with one entry.
   protected facetStart: number[];
 
-  protected constructor(data: PolyfaceData, facetStart?: number[]) {
+  //
+  // index to the index array entries for a specific face.
+  // the face count is determined by how many faces were specified
+  // during construction, otherwise, the array won't exist.
+  // We index into this using a facet index, where multiple facets may
+  // be part of a single face.
+  protected facetToFaceData: number[];
+
+  protected constructor(data: PolyfaceData, facetStart?: number[], facetToFaceData?: number[]) {
     super(data);
     if (facetStart)
-      this.facetStart = facetStart;
+      this.facetStart = facetStart.slice();
     else {
       this.facetStart = [];
       this.facetStart.push(0);
     }
+    if (facetToFaceData)
+      this.facetToFaceData = facetToFaceData.slice();
+    else
+      this.facetToFaceData = [];
   }
   /**
    * *  Add facets from source to this polyface.
    * * optionally reverse the facets.
    * * optionally apply a transform to points.
-*/
+   * * does NOT preserve face information from source.
+   */
   public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
     const sourceToDestPointIndex = new GrowableFloat64Array();
     sourceToDestPointIndex.ensureCapacity(source.data.pointCount);
@@ -410,12 +568,13 @@ export class IndexedPolyface extends Polyface {
     for (let i = 0, n = source.data.point.length; i < n; i++) {
       sourcePoints.getPoint3dAt(i, xyz);
       if (transform) {
-        transform.multiplyPoint(xyz, xyz);
+        transform.multiplyPoint3d(xyz, xyz);
         sourceToDestPointIndex.push(this.addPoint(xyz));
       } else
         sourceToDestPointIndex.push(this.addPoint(xyz));
     }
 
+    // Add facet data
     const numSourceFacets = source.facetStart.length - 1;
     for (let i = 0; i < numSourceFacets; i++) {
       const i0 = source.facetStart[i];
@@ -541,8 +700,14 @@ export class IndexedPolyface extends Polyface {
     this.facetStart.push(lengthB);
     return undefined;
   }
+  /**
+   * All terminated facets added since the declaration of the previous face
+   * will be grouped into a new face with their own 2D range.
+   */
   /** (read-only property) number of facets */
   public get facetCount(): number { return this.facetStart.length - 1; }
+  /** (read-only property) number of faces */
+  public get faceCount(): number { return this.data.face.length; }
   /** (read-only property) number of points */
   public get pointCount(): number { return this.data.pointCount; }
   /** (read-only property) number of colors */
@@ -567,6 +732,57 @@ export class IndexedPolyface extends Polyface {
 
   public range(transform?: Transform, result?: Range3d): Range3d { return this.data.range(result, transform); }
   public extendRange(range: Range3d, transform?: Transform): void { this.data.range(range, transform); }
+
+  /** Given the index of a facet, return the data pertaining to the face it is a part of. */
+  public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
+    return this.data.face[this.facetToFaceData[facetIndex]];
+  }
+
+  /** Given the index of a face, return the range of that face. */
+  public getFaceDataByFaceIndex(faceIndex: number): FacetFaceData {
+    return this.data.face[faceIndex];
+  }
+
+  /**
+   * All terminated facets since the last face declaration will be mapped to a single new FacetFaceData object
+   * using facetToFaceData[]. FacetFaceData holds the 2D range of the face. Returns true if successful, false otherwise.
+   */
+  public setNewFaceData(endFacetIndex: number = 0): boolean {
+    const facetStart = this.facetToFaceData.length;
+    if (facetStart >= this.facetStart.length)
+      return false;
+
+    if (0 === endFacetIndex)  // The default for endFacetIndex is really the last facet
+      endFacetIndex = this.facetStart.length - 1; // Last facetStart index corresponds to the next facet if we were to create one
+
+    const faceData = FacetFaceData.createNull();
+    const visitor = IndexedPolyfaceVisitor.create(this, 0);
+
+    if (!visitor.moveToReadIndex(facetStart)) {  // Move visitor to first facet of new face
+      return false;
+    }
+
+    // If parameter range is provided (by the polyface planeset clipper) then use it
+    const paramDefined = this.data.param !== undefined;
+    const setParamRange: boolean = faceData.paramRange.isNull() && paramDefined;
+
+    do {
+      for (let i = 0; i < visitor.numEdgesThisFacet; i++) {
+        if (setParamRange && visitor.param !== undefined)
+          faceData.paramRange.extendPoint(visitor.param[i]);
+      }
+    } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
+
+    if (paramDefined && !(this.data.param!.length === 0) && faceData.paramDistanceRange.isNull())
+      faceData.setParamDistanceRangeFromNewFaceData(this, facetStart, endFacetIndex);
+
+    this.data.face.push(faceData);
+    const faceDataIndex = this.data.face.length - 1;
+    for (let i = this.facetToFaceData.length; i < endFacetIndex; i++)
+      this.facetToFaceData.push(0 === this.facetStart[i] ? 0 : faceDataIndex);
+
+    return true;
+  }
 
   /** TODO: IMPLEMENT */
   public isClosedByEdgePairing(): boolean {
@@ -613,7 +829,9 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this.currentFacetIndex = -1;
   }
 
-  public static create(polyface: IndexedPolyface, numWrap: number): PolyfaceVisitor {
+  public get numEdgesThisFacet(): number { return this.numEdges; }
+
+  public static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor {
     return new IndexedPolyfaceVisitor(polyface, numWrap);
   }
   public moveToReadIndex(facetIndex: number): boolean {
@@ -635,6 +853,37 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this.moveToReadIndex(0);
     this.nextFacetIndex = 0; // so immediate moveToNextFacet stays here.
   }
+
+  /**
+   * Attempts to extract the distance parameter for the face of a given point index.
+   * Returns the distance parameter as a point. Returns undefined on failure.
+   */
+  public tryGetDistanceParameter(index: number, result?: Point2d): Point2d | undefined {
+    if (index >= this.numEdgesThisFacet)
+      return undefined;
+
+    if (this.param === undefined || this.polyface.data.face.length === 0)
+      return undefined;
+
+    const facetIndex = this.currentFacetIndex;
+    return this.polyface.data.face[facetIndex].convertParamToDistance(this.param[index], result);
+  }
+
+  /**
+   * Attempts to extract the normalized parameter (0,1) for the face of a given point index.
+   * Returns the normalized parameter as a point. Returns undefined on failure.
+   */
+  public tryGetNormalizedParameter(index: number, result?: Point2d): Point2d | undefined {
+    if (index >= this.numEdgesThisFacet)
+      return undefined;
+
+    if (this.param === undefined || this.polyface.data.face.length === 0)
+      return undefined;
+
+    const facetIndex = this.currentFacetIndex;
+    return this.polyface.data.face[facetIndex].convertParamToNormalized(this.param[index], result);
+  }
+
   public currentReadIndex(): number { return this.currentFacetIndex; }
   public clientPointIndex(i: number): number { return this.pointIndex[i]; }
   public clientParamIndex(i: number): number { return this.paramIndex ? this.paramIndex[i] : -1; }

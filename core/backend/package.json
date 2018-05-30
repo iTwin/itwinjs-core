@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.88.0",
+  "version": "0.92.2",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -16,6 +16,7 @@
     "copy:test-assets": "cpx ./src/test/assets/**/* ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
     "cover:integration": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
+    "lint": "tslint --project . 1>&2",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend && cpx ./src/test/logging.config.json ./lib/test",
     "test": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\" --grep #integration --invert",
     "test:integration": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
@@ -41,7 +42,7 @@
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-native-platform-api": "~19.0.1"
+    "@bentley/imodeljs-native-platform-api": "~19.2.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -49,7 +50,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/bentleyjs-tools": "4",
+    "@bentley/bentleyjs-tools": "5",
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
@@ -59,6 +60,7 @@
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.0",
     "ts-node": "^6.0.3",
+    "tslint": "^5.9.0",
     "typedoc": "^0.11.1",
     "typescript": "~2.7.2",
     "webpack": "^3.10.0",
@@ -78,11 +80,12 @@
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~19.0.1",
-    "@bentley/imodeljs-native-platform-node": "~19.0.1",
-    "@bentley/imodeljs-native-platform-electron": "~19.0.1",
+    "@bentley/imodeljs-native-platform-api": "~19.2.0",
+    "@bentley/imodeljs-native-platform-node": "~19.2.0",
+    "@bentley/imodeljs-native-platform-electron": "~19.2.0",
     "fs-extra": "^6.0.1",
-    "js-base64": "^2.4.0"
+    "js-base64": "^2.4.0",
+    "glob": "^7.1.2"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

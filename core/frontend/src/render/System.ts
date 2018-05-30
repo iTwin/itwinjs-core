@@ -15,6 +15,9 @@ import {
   RenderMaterial,
   ImageBuffer,
   RenderTexture,
+  ImageSource,
+  FeatureTable,
+  Gradient,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
@@ -222,8 +225,8 @@ export abstract class RenderSystem {
   // /** Return the maximum number of Features allowed within a Batch. */
   // public abstract getMaxFeaturesPerBatch(): number;
 
-  // /** Create a Graphic consisting of batched Features. */
-  // public abstract createBatch(graphic: Graphic, features: FeatureTable): Graphic;
+  /** Create a Graphic consisting of batched Features. */
+  public abstract createBatch(graphic: RenderGraphic, features: FeatureTable): RenderGraphic;
 
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
   public abstract findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined;
@@ -234,11 +237,14 @@ export abstract class RenderSystem {
   // /** Create a Material from parameters */
   // public abstract getGradientTexture(gradient: GradientSymb, imodel: IModel): Texture;
 
+  /** Create a new Texture from gradient symbology. */
+  public abstract createGradient(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined;
+
   /** Create a new Texture from an ImageBuffer. */
   public abstract createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
 
   /** Create a new Texture from an ImageSource. */
-  // public abstract createTextureFromImageSrc(source: ImageSource, bottomUp: BottomUp, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
+  public abstract createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
 
   // /** Create a Texture from a graphic. */
   // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;

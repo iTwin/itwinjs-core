@@ -6,7 +6,7 @@ import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
@@ -294,7 +294,7 @@ export class Viewport {
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   public isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn(); }
-  public invalidateDecorations() { }
+  public invalidateDecorations() { this.sync.invalidateDecorations(); }
 
   public changeDynamics(dynamics: DecorationList | undefined): void {
     if (this.isActive) {
@@ -565,6 +565,11 @@ export class Viewport {
     this.backStack.length = 0;
   }
 
+  public setStandardRotation(id: StandardViewId): void {
+    this.view.setStandardRotation(id);
+    this.setupFromView();
+  }
+
   /** Establish the parameters of this Viewport from the current information in its ViewState */
   public setupFromView(): ViewStatus {
     const view = this.view;
@@ -786,7 +791,7 @@ export class Viewport {
     const corners = this.getViewCorners();
     const scrToNpcTran = Transform.createIdentity();
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
-    return scrToNpcTran.multiplyPoint(pt, out);
+    return scrToNpcTran.multiplyPoint3d(pt, out);
   }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.View
@@ -1043,7 +1048,10 @@ export class Viewport {
    */
   public setupFromFrustum(inFrustum: Frustum): boolean {
     const validSize = this.view.setupFromFrustum(inFrustum);
-    return this.setupFromView() ? validSize === ViewStatus.Success : false;
+    if (this.setupFromView() !== ViewStatus.Success)
+      return false;
+    this.view.setRotation(this.rotMatrix);
+    return validSize === ViewStatus.Success;
   }
 
   public resetUndo() {
@@ -1313,8 +1321,8 @@ export class Viewport {
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
     const normal = hit.geomDetail.normal;
     const rMatrix = RotMatrix.createRigidHeadsUp(normal);
-    color.setAlpha(100);
-    colorFill.setAlpha(200);
+    color.setTransparency(100);
+    colorFill.setTransparency(200);
 
     const ellipse = Arc3d.createScaledXYColumns(pt, rMatrix, radius, radius, AngleSweep.create360())!;
     const graphic = context.createWorldOverlay();
@@ -1343,14 +1351,14 @@ export class Viewport {
     const graphic = context.createViewOverlay();
     const white = ColorDef.white.clone();
     const black = ColorDef.black.clone();
-    white.setAlpha(165);
+    white.setTransparency(165);
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
-    black.setAlpha(100);
-    graphic.setSymbology(black, black, 1);
+    black.setTransparency(100);
+    graphic.setSymbology(black, black, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
     graphic.addArc2d(ellipse2, false, false, 0.0);
-    white.setAlpha(20);
-    graphic.setSymbology(white, white, 1);
+    white.setTransparency(20);
+    graphic.setSymbology(white, white, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
     graphic.addArc2d(ellipse, false, false, 0.0);
     context.addViewOverlay(graphic.finish()!);
   }

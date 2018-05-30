@@ -7,13 +7,14 @@ import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc } from "@bentley/imodeljs-common";
+import { Frustum, NpcCenter, Npc, ColorDef } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import { AccuDrawFlags } from "../AccuDraw";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { IModelApp } from "../IModelApp";
+import { DecorateContext } from "../ViewContext";
 
 const scratchFrustum = new Frustum();
 const scratchTransform1 = Transform.createIdentity();
@@ -23,6 +24,14 @@ const scratchPoint3d1 = new Point3d();
 const scratchPoint3d2 = new Point3d();
 const scratchVector3d1 = new Vector3d();
 const scratchVector3d2 = new Vector3d();
+
+export const enum ViewHandleWeight {
+  Thin = 1,
+  Normal = 2,
+  Bold = 3,
+  VeryBold = 4,
+  FatDot = 8,
+}
 
 export const enum ViewHandleType {
   None = 0,
@@ -765,8 +774,8 @@ class ViewPan extends ViewingToolHandle {
     const dist = newPtWorld.vectorTo(this.anchorPt);
 
     if (view.is3d()) {
-      view.moveCameraWorld(dist);
-      return false;
+      if (ViewStatus.Success !== view.moveCameraWorld(dist))
+        return false;
     } else {
       view.setOrigin(view.getOrigin().plus(dist));
     }
@@ -1041,7 +1050,7 @@ class NavigateMotion {
       const up = this.getWorldUp();
       const cross = up.crossProduct(zDir);
       cross.crossProduct(up, zDir);
-      zDir.normalize();
+      zDir.normalizeInPlace();
     }
 
     xDir.scale(velocity.x * this.deltaTime, xDir);
@@ -1346,23 +1355,21 @@ export class ViewWalkTool extends ViewManip {
 
 /** tool that performs a Window-area view operation */
 export class WindowAreaTool extends ViewTool {
+  public static toolId = "View.WindowArea";
+
   private haveFirstPoint: boolean = false;
   private firstPtWorld: Point3d = new Point3d();
   private secondPtWorld: Point3d = new Point3d();
+  private lastPtView = new Point3d();
+  private viewport: Viewport;
   private corners = [new Point3d(), new Point3d()];
-  public static toolId = "View.WindowArea";
+  private shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
+  private linePts = [new Point3d(), new Point3d()];
+  private fillColor = ColorDef.from(0, 0, 255, 200);
 
-  constructor(private viewport: Viewport) {
+  constructor(viewport: Viewport) {
     super();
-    // this.overlay = new WindowAreaDecoration(viewport.canvas.parentElement, viewport.getContrastToBackgroundColor());
-    // this.overlay.visible = false;
-  }
-
-  public onCleanup() {
-    //   if (Cesium.defined(this.overlay)) {
-    //     this.overlay.destroy();
-    //     this.overlay = undefined;
-    //   }
+    this.viewport = viewport;
   }
 
   public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
@@ -1380,13 +1387,14 @@ export class WindowAreaTool extends ViewTool {
       this.secondPtWorld.setFrom(ev.point);
       this.doManipulation(ev, false);
       this.onReinitialize();
+      this.viewport.invalidateDecorations();
     } else {
       this.firstPtWorld.setFrom(ev.point);
       this.secondPtWorld.setFrom(this.firstPtWorld);
       this.haveFirstPoint = true;
-      // this.overlay.firstPt.x = ev.viewPoint.x;
-      // this.overlay.firstPt.y = ev.viewPoint.y;
+      this.lastPtView.setFrom(ev.viewPoint);
     }
+
     return true;
   }
 
@@ -1396,6 +1404,65 @@ export class WindowAreaTool extends ViewTool {
       return true;
     }
     return super.onResetButtonUp(ev);
+  }
+
+  public decorate(context: DecorateContext): void {
+    const color = this.viewport.getContrastToBackgroundColor();
+    if (this.haveFirstPoint) {
+      const corners = this.computeWindowCorners();
+      if (undefined === corners)
+        return;
+
+      const shape = this.shapePts;
+      shape[0].x = shape[3].x = corners[0].x;
+      shape[1].x = shape[2].x = corners[1].x;
+      shape[0].y = shape[1].y = corners[0].y;
+      shape[2].y = shape[3].y = corners[1].y;
+      shape[0].z = shape[1].z = shape[2].z = shape[3].z = corners[0].z;
+      shape[4] = shape[0];
+
+      this.viewport.viewToWorldArray(shape);
+
+      const graphic = context.createWorldOverlay();
+
+      graphic.setBlankingFill(this.fillColor);
+      graphic.addShape(shape);
+
+      graphic.setSymbology(color, color, ViewHandleWeight.Normal); // ###TODO Thin...
+      graphic.addLineString(shape);
+
+      graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
+      graphic.addPointString([this.firstPtWorld]);
+
+      context.addWorldOverlay(graphic.finish()!);
+      return;
+    }
+
+    const gf = context.createViewOverlay();
+
+    gf.setSymbology(color, color, ViewHandleWeight.Normal); // ###TODO Thin...
+
+    const viewRect = this.viewport.viewRect;
+    const cursorPt = this.lastPtView;
+    const line = this.linePts;
+
+    cursorPt.z = 0;
+
+    line[0].setFrom(cursorPt);
+    line[1].setFrom(cursorPt);
+    line[0].x = viewRect.left;
+    line[1].x = viewRect.right;
+
+    gf.addLineString(line);
+
+    line[0].setFrom(cursorPt);
+    line[1].setFrom(cursorPt);
+    line[0].y = viewRect.top;
+    line[1].y = viewRect.bottom;
+
+    gf.addLineString(line);
+
+    context.addViewOverlay(gf.finish()!);
   }
 
   private computeWindowCorners(): Point3d[] | undefined {
@@ -1438,7 +1505,8 @@ export class WindowAreaTool extends ViewTool {
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {
     this.secondPtWorld.setFrom(ev.point);
     if (inDynamics) {
-      this.updateOverlay();
+      this.lastPtView.setFrom(ev.viewPoint);
+      IModelApp.viewManager.invalidateDecorationsAllViews();
       return;
     }
 
@@ -1506,32 +1574,6 @@ export class WindowAreaTool extends ViewTool {
 
     vp.synchWithView(true);
     vp.animateFrustumChange(startFrust, vp.getFrustum(), ViewToolSettings.animationTime);
-  }
-
-  public updateOverlay(): void { this.haveFirstPoint ? this.updateRectangle() : this.updateRules(); }
-  public updateRectangle(): void {
-    // const firstPtView = this.viewport.worldToView(this.firstPtWorld);
-    // this.overlay.firstPt.x = firstPtView.x;
-    // this.overlay.firstPt.y = firstPtView.y;
-
-    // const corners = this.computeWindowCorners();
-    // this.overlay.visible = Cesium.defined(corners);
-    // if (!this.overlay.visible)
-    //   return;
-
-    // const range = Range3.from2Points(corners[0], corners[1]);
-    // this.overlay.left = range.low.x;
-    // this.overlay.top = range.low.y;
-    // this.overlay.right = range.high.x;
-    // this.overlay.bottom = range.high.y;
-  }
-
-  public updateRules(): void {
-    // const ev = this.getCurrentButtonEvent();
-
-    // this.overlay.left = ev.viewPoint.x;
-    // this.overlay.top = ev.viewPoint.y;
-    // this.overlay.visible = false;
   }
 
   public onSingleFingerMove(ev: BeGestureEvent): boolean { IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev); return true; }

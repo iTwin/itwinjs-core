@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelDb, ConcurrencyControl, AutoPush } from "@bentley/imodeljs-backend";
+import { IModelDb, ConcurrencyControl, AutoPush, OpenParams } from "@bentley/imodeljs-backend";
 import { OpenMode, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ imodeljs-clients.getAccessToken
@@ -23,7 +23,7 @@ async function getUserAccessToken(userCredentials: UserCredentials, env: Deploym
 
 // __PUBLISH_EXTRACT_START__ IModelDb.open
 async function openModel(projectid: string, imodelid: string, accessToken: AccessToken) {
-  const imodel: IModelDb = await IModelDb.open(accessToken, projectid, imodelid, OpenMode.Readonly);
+  const imodel: IModelDb = await IModelDb.open(accessToken, projectid, imodelid, OpenParams.fixedVersion());
   return imodel;
 }
 // __PUBLISH_EXTRACT_END__
@@ -48,16 +48,16 @@ function readConfigParams(): any {
 function configureIModel() {
 
   // __PUBLISH_EXTRACT_START__ IModelDb.onOpen
-  IModelDb.onOpen.addListener((_accessToken: AccessToken, _contextId: string, _iModelId: string, openMode: OpenMode, _version: IModelVersion) => {
+  IModelDb.onOpen.addListener((_accessToken: AccessToken, _contextId: string, _iModelId: string, openParams: OpenParams, _version: IModelVersion) => {
     // A read-only service might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
-    if (openMode !== OpenMode.Readonly)
+    if (openParams.openMode !== OpenMode.Readonly)
       throw new IModelError(IModelStatus.BadRequest, "Navigator is readonly");
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ IModelDb.onOpened
   IModelDb.onOpened.addListener((iModel: IModelDb) => {
-    if (iModel.openMode !== OpenMode.ReadWrite)
+    if (iModel.openParams.openMode !== OpenMode.ReadWrite)
       return;
 
     // Setting a concurrency control policy is an example of something you might do in an onOpened event handler.

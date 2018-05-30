@@ -7,9 +7,11 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal } from "@bentley/imodeljs-common";
+import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
+import { RenderSystem } from "../render/System";
+import { GeometricModelState } from "../ModelState";
 
 /** Provides facilities for deserializing glTF tile data. */
 export namespace GltfTileIO {
@@ -204,17 +206,6 @@ export namespace GltfTileIO {
     }
   }
 
-  // Expected: GeometricModelState. Defined for mocking purposes.
-  export interface Model {
-    id: Id64;
-    is2d: boolean;
-  }
-
-  // Expected: RenderSystem. Defined for mocking purposes.
-  export interface System {
-    dummy: boolean; // because tslint: "An empty interface is equivalent to '{}'". We will add to this interface later.
-  }
-
   /** Deserializes glTF tile data. */
   export class Reader {
     protected readonly buffer: TileIO.StreamBuffer;
@@ -227,12 +218,12 @@ export namespace GltfTileIO {
     protected readonly namedTextures: any;
     protected readonly images: any;
     protected readonly binaryData: Uint8Array;
-    protected readonly model: Model;
-    protected readonly system: System;
+    protected readonly model: GeometricModelState;
+    protected readonly system: RenderSystem;
 
     public get modelId(): Id64 { return this.model.id; }
 
-    public static createGltfReader(buffer: TileIO.StreamBuffer, model: Model, system: System): Reader | undefined {
+    public static createGltfReader(buffer: TileIO.StreamBuffer, model: GeometricModelState, system: RenderSystem): Reader | undefined {
       const props = ReaderProps.create(buffer);
       return undefined !== props ? new Reader(props, model, system) : undefined;
     }
@@ -271,7 +262,7 @@ export namespace GltfTileIO {
     public readBufferData8(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.UnsignedByte); }
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
-    protected constructor(props: ReaderProps, model: Model, system: System) {
+    protected constructor(props: ReaderProps, model: GeometricModelState, system: RenderSystem) {
       this.buffer = props.buffer;
       this.binaryData = props.binaryData;
       this.accessors = props.accessors;
@@ -357,6 +348,12 @@ export namespace GltfTileIO {
 
           this.readUVParams(mesh.uvParams, primitive.attributes, "TEXCOORD_0");
           // ###TODO: read mesh edges...
+          break;
+        }
+        case Mesh.PrimitiveType.Polyline:
+        case Mesh.PrimitiveType.Point: {
+          if (!this.readPolylines(mesh, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
+            return undefined;
           break;
         }
         default: {
@@ -472,6 +469,52 @@ export namespace GltfTileIO {
       for (let i = 0; i < data.count; i++) {
         const index = 2 * i; // 2 float per param...
         params.push(new Point2d(data.buffer[index], data.buffer[index + 1]));
+      }
+
+      return true;
+    }
+
+    protected readPolylines(mesh: Mesh, json: any, accessorName: string, disjoint: boolean): boolean {
+      const view = this.getBufferView(json, accessorName);
+      if (undefined === view)
+        return false;
+
+      const startDistance = new Float32Array(1);
+      const sdBytes = new Uint8Array(startDistance.buffer);
+      const numIndices = new Uint32Array(1);
+      const niBytes = new Uint8Array(numIndices.buffer);
+      const index16 = new Uint16Array(1);
+      const i16Bytes = new Uint8Array(index16.buffer);
+      const index32 = new Uint32Array(1);
+      const i32Bytes = new Uint8Array(index32.buffer);
+
+      let ndx = 0;
+      for (let p = 0; p < view.count; ++p) {
+        for (let b = 0; b < 4; ++b)
+          sdBytes[b] = view.data[ndx++];
+        for (let b = 0; b < 4; ++b)
+          niBytes[b] = view.data[ndx++];
+
+        if (!disjoint && numIndices[0] < 2)
+          continue;
+
+        const indices: number[] = new Array(numIndices[0]);
+
+        if (DataType.UnsignedShort === view.type) {
+          for (let i = 0; i < numIndices[0]; ++i) {
+            for (let b = 0; b < 2; ++b)
+              i16Bytes[b] = view.data[ndx++];
+            indices[i] = index16[0];
+          }
+        } else if (DataType.UInt32 === view.type) {
+          for (let i = 0; i < numIndices[0]; ++i) {
+            for (let b = 0; b < 4; ++b)
+              i32Bytes[b] = view.data[ndx++];
+            indices[i] = index32[0];
+          }
+        }
+
+        mesh.addPolyline(new MeshPolyline(startDistance[0], indices));
       }
 
       return true;

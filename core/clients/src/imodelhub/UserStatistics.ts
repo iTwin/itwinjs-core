@@ -118,7 +118,6 @@ export class UserStatisticsHandler {
    * Gets users statistics.
    * @param token Delegation token of the authorized user.
    * @param iModelId Id of the iModel.
-   * @param userIds Ids of users to query statistics.
    * @param query Object used to modify results of this query.
    */
   public async get(token: AccessToken, iModelId: string,

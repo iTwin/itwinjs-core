@@ -611,7 +611,7 @@ export class ClipShape extends ClipPrimitive {
       const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
       const dir = Vector2d.createFrom((polygon[i + 1].minus(polygon[i])));
       const magnitude = dir.magnitude();
-      dir.normalize();
+      dir.normalize(dir);
 
       if (magnitude > samePointTolerance) {
         const normal = Vector2d.create(reverse ? dir.y : -dir.y, reverse ? -dir.x : dir.x);
@@ -632,8 +632,8 @@ export class ClipShape extends ClipPrimitive {
         const prevNormal = edge.normal.minus(prevEdge.normal);
         const nextNormal = edge.normal.minus(nextEdge.normal);
 
-        prevNormal.normalize();
-        nextNormal.normalize();
+        prevNormal.normalize(prevNormal);
+        nextNormal.normalize(nextNormal);
 
         // Create three-sided fans from each edge.   Note we could define the correct region
         // with only two planes for edge, but cannot then designate the "interior" status of the edges accurately.
@@ -757,12 +757,12 @@ export class ClipShape extends ClipPrimitive {
   /** Transform the input point using this instance's transformToClip member */
   public performTransformToClip(point: Point3d) {
     if (this._transformToClip !== undefined)
-      this._transformToClip.multiplyPoint(point);
+      this._transformToClip.multiplyPoint3d(point);
   }
 
   /** Transform the input point using this instance's transformFromClip member */
   public performTransformFromClip(point: Point3d) {
     if (this._transformFromClip !== undefined)
-      this._transformFromClip.multiplyPoint(point);
+      this._transformFromClip.multiplyPoint3d(point);
   }
 }

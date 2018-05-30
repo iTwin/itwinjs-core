@@ -14,8 +14,8 @@ To write a [customized backend](../overview/App.md#app-backend), do the followin
 
 1. Write initialization logic, such as:
     * Start [IModelHost](./backend/IModelHost.md)
-    * [Initialize Logging](./Logging.md)
-    * [Configure FeatureGates](./FeatureGates.md)
+    * [Initialize Logging](./common/Logging.md)
+    * [Configure FeatureGates](./common/FeatureGates.md)
 1. Write the operations of the backend, such as:
     * [Access Elements](./backend/AccessElements.md)
     * [Execute ECSQL queries](./backend/ExecutingECSQL.md)

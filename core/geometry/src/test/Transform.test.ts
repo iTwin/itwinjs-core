@@ -22,7 +22,7 @@ describe("Transform", () => {
     let point2dE: Point2d[] = [];
     for (const transform of transforms) {
       // single point calls ...
-      transform.multiplyPoint(point3dA[0], xyz);
+      transform.multiplyPoint3d(point3dA[0], xyz);
       ck.testBoolean(transform.isIdentity(), xyz.isAlmostEqual(point3dA[0]));
       transform.multiplyInversePoint3d(xyz, xyz);
       ck.testPoint3d(point3dA[0], xyz, "RoundTrip transform and inverse");
@@ -72,7 +72,7 @@ describe("Transform", () => {
       Transform.initFromRange(corners[i], corners[i + 1], npcToWorld, worldToNpc);
       ck.testTrue(npcToWorld.multiplyTransformTransform(worldToNpc).isIdentity(), "range maps  inverses");
       for (const xyz of point3dA) {
-        worldToNpc.multiplyPoint(xyz, npc);
+        worldToNpc.multiplyPoint3d(xyz, npc);
         const interpolated = cornerA.interpolateXYZ(npc.x, npc.y, npc.z, cornerB);
         ck.testPoint3d(xyz, interpolated);
 
@@ -152,8 +152,8 @@ describe("Transform", () => {
     ck.testTransform(transformC, transformD);
     ck.testTransform(transformC, transformE);
     for (const p of points) {
-      const productABp = transformA.multiplyPoint(transformB.multiplyPoint(p));
-      const productCp = transformC.multiplyPoint(p);
+      const productABp = transformA.multiplyPoint3d(transformB.multiplyPoint3d(p));
+      const productCp = transformC.multiplyPoint3d(p);
       ck.testPoint3d(productABp, productCp);
     }
     // inplace update of primary transform
@@ -183,8 +183,8 @@ describe("Transform", () => {
     for (const p of points) {
 
       const productABp = Point3d.create();
-      matrixA.multiplyXYZtoXYZ(transformB.multiplyPoint(p), productABp);
-      const productCp = transformC.multiplyPoint(p);
+      matrixA.multiplyXYZtoXYZ(transformB.multiplyPoint3d(p), productABp);
+      const productCp = transformC.multiplyPoint3d(p);
       ck.testPoint3d(productABp, productCp);
     }
     // inplace update of primary transform

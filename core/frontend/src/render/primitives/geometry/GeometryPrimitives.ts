@@ -32,6 +32,14 @@ export abstract class Geometry {
     this.displayParams = displayParams;
   }
 
+  public static createFromPointString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams): Geometry {
+    return new PrimitivePointStringGeometry(pts, tf, tileRange, params);
+  }
+
+  public static createFromLineString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams): Geometry {
+    return new PrimitiveLineStringGeometry(pts, tf, tileRange, params);
+  }
+
   public static createFromLoop(loop: Loop, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean): Geometry {
     return new PrimitiveLoopGeometry(loop, tf, tileRange, params, disjoint);
   }
@@ -118,9 +126,57 @@ export class PrimitivePathGeometry extends Geometry {
     const pts: Point3d[] = [];
     for (let i = 0; i < strokes.numPoints(); i++) {
       strokes.pointAt(i, pt);
-      pts.push(trans.multiplyPoint(pt));
+      pts.push(trans.multiplyPoint3d(pt));
     }
     strksPts.push(new StrokesPrimitivePointList(0, pts));
+  }
+}
+
+export class PrimitivePointStringGeometry extends Geometry {
+  public readonly pts: Point3d[];
+
+  public constructor(pts: Point3d[], tf: Transform, range: Range3d, params: DisplayParams) {
+    super(tf, range, params);
+    this.pts = pts;
+  }
+
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
+    return undefined;
+  }
+
+  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    const strksList = new StrokesPrimitiveList();
+    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(0, this.pts));
+
+    const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, true, false);
+    strksPrim.strokes = strksPts;
+    strksList.push(strksPrim);
+
+    return strksList;
+  }
+}
+
+export class PrimitiveLineStringGeometry extends Geometry {
+  public readonly pts: Point3d[];
+
+  public constructor(pts: Point3d[], tf: Transform, range: Range3d, params: DisplayParams) {
+    super(tf, range, params);
+    this.pts = pts;
+  }
+
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
+    return undefined;
+  }
+
+  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    const strksList = new StrokesPrimitiveList();
+    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(0, this.pts));
+
+    const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, false, false);
+    strksPrim.strokes = strksPts;
+    strksList.push(strksPrim);
+
+    return strksList;
   }
 }
 

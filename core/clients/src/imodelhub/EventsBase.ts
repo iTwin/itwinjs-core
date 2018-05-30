@@ -67,13 +67,18 @@ export abstract class EventBaseHandler {
   /**
    * Gets event from Service Bus Topic.
    * @param sasToken Service Bus SAS Token.
+   * @param requestTimeout Timeout for the request.
    * @return Event if it exists.
    */
-  protected getEventRequestOptions(sasToken: string): RequestOptions {
+  protected getEventRequestOptions(sasToken: string, requestTimeout?: number): RequestOptions {
     const options: RequestOptions = {
       method: "DELETE",
       headers: { authorization: sasToken },
     };
+
+    // Request timeout is in seconds, wait 50% more than the expected timeout from server
+    if (requestTimeout)
+      options.timeout = requestTimeout * 1500;
 
     new DefaultRequestOptionsProvider().assignOptions(options);
 

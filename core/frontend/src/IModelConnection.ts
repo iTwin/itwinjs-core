@@ -32,6 +32,10 @@ export class IModelConnection extends IModel {
   public readonly hilited: HilitedSet;
   public readonly selectionSet: SelectionSet;
   public readonly tiles: IModelConnectionTiles;
+  public readonly openMode: OpenMode;
+
+  /** Check if this iModel has been opened read-only or not. */
+  public isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
   /**
    * Event called immediately before an IModelConnection is closed.
@@ -50,9 +54,10 @@ export class IModelConnection extends IModel {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
 
-  private constructor(iModel: IModel) {
+  private constructor(iModel: IModel, openMode: OpenMode) {
     super(iModel.iModelToken);
     super.initialize(iModel.name, iModel);
+    this.openMode = openMode;
     this.models = new IModelConnectionModels(this);
     this.elements = new IModelConnectionElements(this);
     this.codeSpecs = new IModelConnectionCodeSpecs(this);
@@ -71,7 +76,7 @@ export class IModelConnection extends IModel {
     if (!changeSetId)
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it is required by the RPC interface API.
 
-    const iModelToken = new IModelToken(undefined, undefined, contextId, iModelId, changeSetId, openMode, accessToken.getUserProfile()!.userId);
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
     let openResponse: IModel;
     if (openMode === OpenMode.ReadWrite)
       openResponse = await IModelWriteRpcInterface.getClient().openForWrite(accessToken, iModelToken);
@@ -81,7 +86,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggingCategory, "IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
     // todo: Setup userId if it is a readWrite open - this is necessary to reopen the same exact briefcase at the backend
-    return new IModelConnection(openResponse);
+    return new IModelConnection(openResponse, openMode);
   }
 
   /** Close this IModelConnection */
@@ -103,7 +108,7 @@ export class IModelConnection extends IModel {
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
     const openResponse: IModel = await StandaloneIModelRpcInterface.getClient().openStandalone(fileName, openMode);
     Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
-    return new IModelConnection(openResponse);
+    return new IModelConnection(openResponse, openMode);
   }
 
   /** Close this standalone IModelConnection */
@@ -152,7 +157,7 @@ export class IModelConnection extends IModel {
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
-    if (OpenMode.ReadWrite !== this.iModelToken.openMode)
+    if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
     await IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
@@ -164,7 +169,7 @@ export class IModelConnection extends IModel {
    */
   public async saveChanges(description?: string): Promise<void> {
     Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
-    if (OpenMode.ReadWrite !== this.iModelToken.openMode)
+    if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly));
     return await IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
