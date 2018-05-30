@@ -606,7 +606,7 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
-  public static fitView(viewport: Viewport, _doUpdate: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: Viewport, doUpdate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum(scratchFrustum);
@@ -615,7 +615,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
     console.log(ViewToolSettings.animationTime.milliseconds); //tslint:disable-line
-    if (true)
+    if (doUpdate)
       viewport.animateFrustumChange(before, viewport.getFrustum(), ViewToolSettings.animationTime);
 
     viewport.synchWithView(true);
@@ -1327,8 +1327,7 @@ export class FitViewTool extends ViewTool {
   }
 
   public doFit(viewport: Viewport, oneShot: boolean): boolean {
-    const doAnimate = false; // ###TODO animateFrustumChange() appears to be borked.
-    ViewManip.fitView(viewport, doAnimate);
+    ViewManip.fitView(viewport, true);
     if (oneShot)
       this.exitTool();
     return oneShot;

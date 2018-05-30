@@ -1397,7 +1397,7 @@ export class Viewport {
 
     if (target.updateViewRect()) {
       target.onResized();
-      sync.invalidateRenderPlan();
+      sync.invalidateController();
     }
 
     if (view.isSelectionSetDirty) {

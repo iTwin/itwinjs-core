@@ -7,7 +7,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
-  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken,
+  FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -111,6 +111,7 @@ export class IModelDb extends IModel {
   public models: IModelDbModels = new IModelDbModels(this);
   public elements: IModelDbElements = new IModelDbElements(this);
   public views: IModelDbViews = new IModelDbViews(this);
+  public tiles: IModelDbTiles = new IModelDbTiles(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
   private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
@@ -1064,6 +1065,41 @@ export class IModelDbViews {
     if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
       viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
     return viewStateData;
+  }
+}
+
+/** @hidden */
+// NB: Very WIP.
+export class IModelDbTiles {
+  /** @hidden */
+  public constructor(private _iModel: IModelDb) { }
+
+  /** @hidden */
+  public getTileTreeJson(id: string): any {
+    if (!this._iModel.briefcase)
+      throw this._iModel._newNotOpenError();
+
+    const { error, result } = this._iModel.briefcase.nativeDb.getTileTree(id);
+    if (error)
+      throw new IModelError(error.status, "TreeId=" + id);
+
+    return result!;
+  }
+
+  /** @hidden */
+  public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
+
+  /** @hidden */
+  public getTilesProps(treeId: string, tileIds: string[]): TileProps[] {
+    if (!this._iModel.briefcase)
+      throw this._iModel._newNotOpenError();
+
+    const { error, result } = this._iModel.briefcase.nativeDb.getTiles(treeId, tileIds);
+    if (error)
+      throw new IModelError(error.status, "TreeId=" + treeId);
+
+    assert(Array.isArray(result));
+    return result! as TileProps[];
   }
 }
 

@@ -437,7 +437,6 @@ export class IModelConnectionTiles {
   /** @hidden */
   constructor(iModel: IModelConnection) {
     this._iModel = iModel;
-    assert(undefined !== this._iModel); // unused variable...
   }
 
   public async getTileTreeProps(ids: Id64Set): Promise<TileTreeProps[]> {
