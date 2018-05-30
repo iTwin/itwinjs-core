@@ -19,7 +19,7 @@ exports.builder = (yargs) =>
 
 exports.handler = async (argv) => {
   const quote = (s) => `"${s}"`;
-  const forwardedArgs = argv._.slice(1);
+  const forwardedArgs = process.argv.slice(3);
 
   const startBackend = quote(["imodeljs-react-scripts", "start-backend", ...forwardedArgs].join(" "));
   const startFrontend = quote(["imodeljs-react-scripts", "start-frontend", ...forwardedArgs].join(" "));
