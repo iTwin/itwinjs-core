@@ -49,7 +49,7 @@ export class RpcOperation {
   /** Iterates the operations of an RPC interface definition. */
   public static forEach(definition: RpcInterfaceDefinition, callback: (operation: RpcOperation) => void): void {
     Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
-      if (operationName === "constructor")
+      if (operationName === "constructor" || operationName === "configurationSupplier")
         return;
 
       callback((definition.prototype as any)[operationName][OPERATION]);
