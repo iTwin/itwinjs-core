@@ -243,13 +243,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.polyface.addParamIndex(indexB0);
       this.polyface.addParamIndex(indexB1);
       this.polyface.addParamIndex(indexA1);
-      this.polyface.terminateFacet();
     } else {
       this.polyface.addParamIndex(indexA0);
       this.polyface.addParamIndex(indexA1);
       this.polyface.addParamIndex(indexB1);
       this.polyface.addParamIndex(indexB0);
-      this.polyface.terminateFacet();
     }
   }
 
@@ -260,13 +258,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.polyface.addNormalIndex(indexB0);
       this.polyface.addNormalIndex(indexB1);
       this.polyface.addNormalIndex(indexA1);
-      this.polyface.terminateFacet();
     } else {
       this.polyface.addNormalIndex(indexA0);
       this.polyface.addNormalIndex(indexA1);
       this.polyface.addNormalIndex(indexB1);
       this.polyface.addNormalIndex(indexB0);
-      this.polyface.terminateFacet();
     }
   }
 
@@ -298,12 +294,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.polyface.addParamIndex(indexA);
       this.polyface.addParamIndex(indexB);
       this.polyface.addParamIndex(indexC);
-      this.polyface.terminateFacet();
     } else {
       this.polyface.addParamIndex(indexA);
       this.polyface.addParamIndex(indexC);
       this.polyface.addParamIndex(indexB);
-      this.polyface.terminateFacet();
     }
   }
 
@@ -314,12 +308,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.polyface.addNormalIndex(indexA);
       this.polyface.addNormalIndex(indexB);
       this.polyface.addNormalIndex(indexC);
-      this.polyface.terminateFacet();
     } else {
       this.polyface.addNormalIndex(indexA);
       this.polyface.addNormalIndex(indexC);
       this.polyface.addNormalIndex(indexB);
-      this.polyface.terminateFacet();
     }
   }
 
