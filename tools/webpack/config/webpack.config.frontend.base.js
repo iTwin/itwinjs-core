@@ -230,7 +230,7 @@ module.exports = (publicPath) => {
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       // For a PRODUCTION build, it is absolutely essential that NODE_ENV was set to production here.
       // Otherwise React will be compiled in the very slow development mode.
-      new webpack.DefinePlugin(env.stringified),
+      new webpack.DefinePlugin(env.frontendStringified),
       // Watcher doesn't work well if you mistype casing in a path so we use
       // a plugin that prints an error when you attempt to do this.
       // See https://github.com/facebookincubator/create-react-app/issues/240
