@@ -437,19 +437,31 @@ describe("ChangeSummary", () => {
 
           const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, new Id64(row.id));
           switch (instanceChange.opCode) {
-            case ChangeOpCode.Insert:
-              instanceChange.after = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.AfterInsert);
+            case ChangeOpCode.Insert: {
+              const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert));
+              assert.equal(rows.length, 1);
+              instanceChange.after = rows[0];
               break;
-            case ChangeOpCode.Update:
-              instanceChange.before = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.BeforeUpdate);
-              instanceChange.after = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.AfterUpdate);
+            }
+            case ChangeOpCode.Update: {
+              let rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
+              assert.equal(rows.length, 1);
+              instanceChange.before = rows[0];
+              rows = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
+              assert.equal(rows.length, 1);
+              instanceChange.after = rows[0];
               break;
-            case ChangeOpCode.Delete:
-              instanceChange.before = ChangeSummaryManager.queryPropertyValueChanges(iModel, instanceChange, ChangedValueState.BeforeDelete);
+            }
+            case ChangeOpCode.Delete: {
+              const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeDelete));
+              assert.equal(rows.length, 1);
+              instanceChange.before = rows[0];
               break;
+            }
             default:
               throw new Error("Unexpected ChangedOpCode " + instanceChange.opCode);
           }
+
           content.instanceChanges.push(instanceChange);
         }
         perfLogger.dispose();

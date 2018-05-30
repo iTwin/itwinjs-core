@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -193,7 +193,7 @@ export class PolylineEdgeArgs {
 }
 
 /** A Texture for rendering */
-export class RenderTexture {
+export abstract class RenderTexture implements IDisposable {
   public readonly params: RenderTexture.Params;
 
   protected constructor(params: RenderTexture.Params) {
@@ -202,6 +202,7 @@ export class RenderTexture {
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }
+  public abstract dispose(): void;
 }
 
 export namespace RenderTexture {
@@ -326,7 +327,7 @@ export class GraphicParams {
     return graphicParams;
   }
 
-  public static FromBlankingFill(fillColor: ColorDef): GraphicParams {
+  public static fromBlankingFill(fillColor: ColorDef): GraphicParams {
     const graphicParams = new GraphicParams();
     graphicParams.setFillColor(fillColor);
     graphicParams.fillFlags = FillFlags.Blanking;

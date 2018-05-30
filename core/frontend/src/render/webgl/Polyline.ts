@@ -18,6 +18,7 @@ import { VertexLUT } from "./VertexLUT";
 import { ColorInfo } from "./ColorInfo";
 import { GL } from "./GL";
 import { System } from "./System";
+import { ShaderProgramParams } from "./DrawCommand";
 
 export class PolylineInfo {
   public vertexParams: QParams3d;
@@ -269,8 +270,15 @@ export class PolylineGeometry extends LUTGeometry {
   public get isEdge(): boolean { return this.polyline.isAnyEdge; }
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
-  public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
+
+  protected _getLineWeight(params: ShaderProgramParams): number {
+    return this.isEdge ? params.target.getEdgeWeight(params, this.polyline.lineWeight) : this.polyline.lineWeight;
+  }
+  protected _getLineCode(params: ShaderProgramParams): number {
+    return this.isEdge ? params.target.getEdgeLineCode(params, this.polyline.lineCode) : this.polyline.lineCode;
+  }
+  public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
 
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this.buffers.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);

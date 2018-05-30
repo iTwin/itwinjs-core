@@ -260,5 +260,5 @@ export abstract class GraphicBuilder {
    * Set blanking fill symbology for decorations that are only used for display purposes. Pickable decorations require a category, must initialize
    * a GeometryParams and cook it into a GraphicParams to have a locatable decoration.
    */
-  public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.FromBlankingFill(fillColor)); }
+  public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
 }

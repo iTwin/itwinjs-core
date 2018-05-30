@@ -13,6 +13,20 @@ import { RpcInterfaceDefinition } from "../../RpcInterface";
 
 const loggingCategory = "imodeljs-rpc.WebAppRpcProtocol";
 
+// tslint:disable-next-line:no-var-requires
+const os = (typeof (process) !== "undefined") ? require("os") : undefined;
+function getHostname(): string {
+  if (os !== undefined) {
+    return os.hostname();
+  } else {
+    if (typeof (window) !== "undefined") {
+      return window.location.host;
+    } else {
+      return "imodeljs-mobile";
+    }
+  }
+}
+
 /** @hidden @internal */
 export class WebAppRpcLogging {
   public static logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
@@ -51,7 +65,10 @@ export class WebAppRpcLogging {
       path: object.path,
       operation: object.operation.operationName,
       rpcInterface: WebAppRpcLogging.getRpcInterfaceName(object.operation.interfaceDefinition),
-      activityId: object.id,
+      // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
+      ActivityId: object.id,
+      TimeElapsed: ("elapsed" in object) ? object.elapsed : 0,
+      MachineName: getHostname(),
     }));
   }
 
@@ -62,8 +79,10 @@ export class WebAppRpcLogging {
       operation: object.operation.operationName,
       rpcInterface: WebAppRpcLogging.getRpcInterfaceName(object.operation.interfaceDefinition),
       status,
-      activityId: object.id,
-      elapsed,
+      // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
+      ActivityId: object.id,
+      TimeElapsed: elapsed,
+      MachineName: getHostname(),
     }));
   }
 
@@ -71,7 +90,9 @@ export class WebAppRpcLogging {
     Logger.logInfo(loggingCategory, message, () => ({
       method: request.method,
       path: request.path,
-      activityId: request.id,
+      // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
+      ActivityId: request.id,
+      MachineName: getHostname(),
     }));
   }
 
@@ -81,7 +102,9 @@ export class WebAppRpcLogging {
       path: invocation.request.path,
       status: invocation.status,
       error: invocation.result,
-      activityId: invocation.request.id,
+      // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
+      ActivityId: invocation.request.id,
+      MachineName: getHostname(),
     }));
   }
 }

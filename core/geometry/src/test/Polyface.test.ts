@@ -17,6 +17,7 @@ import { expect } from "chai";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { GeometryCoreTestIO } from "./IModelJson.test";
+import { StrokeOptions } from "../geometry-core";
 
 /* tslint:disable:no-console */
 let outputFolderPath = "./src/test/output";
@@ -398,9 +399,40 @@ describe("Polyface.Faces", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("Verify UV params computed from face data", () => {
+  it.skip("Verify polyface param and normal data with native output", () => {
+    const options = new StrokeOptions();
+    options.needNormals = true;
+    options.needParams = true;
+    const builder = PolyfaceBuilder.create(options);
+    builder.toggleReversedFacetFlag();
+    const torusPipes = Sample.createTorusPipes();
 
-    // ###TODO: Implement
+    builder.addTorusPipe(torusPipes[1]);
+    builder.addTorusPipe(torusPipes[2]);
+
+    const polyface = builder.claimPolyface();
+    const nativePolyface = JSON.parse(fs.readFileSync("./src/test/deepComparisonTestFiles/Polyface.ParamsAndNormals.dgnjs", "utf8"));
+
+    const jsParams = polyface.data.param;
+    const jsParamsIdx = polyface.data.paramIndex;
+    const nativeParams = nativePolyface.Group.Member[0].IndexedMesh.Param;
+    const nativeParamIdx = nativePolyface.Group.Member[0].IndexedMesh.ParamIndex;
+    ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx!.length, "Number of params match");
+    for (let i = 0; i < jsParams!.length; i++) {
+      ck.testCoordinate(jsParams![polyface.data.paramIndex![i]].x, nativeParams![nativeParamIdx![i]][0]);
+      ck.testCoordinate(jsParams![polyface.data.paramIndex![i]].y, nativeParams![nativeParamIdx![i]][1]);
+    }
+
+    const jsNormals = polyface.data.normal;
+    const jsNormalIdx = polyface.data.normalIndex;
+    const nativeNormals = nativePolyface.Group.Member[0].IndexedMesh.Normal;
+    const nativeNormalIdx = nativePolyface.Group.Member[0].IndexedMesh.NormalIndex;
+    ck.testExactNumber(jsNormalIdx!.length, nativeNormalIdx!.length, "Number of params match");
+    for (let i = 0; i < jsNormals!.length; i++) {
+      ck.testCoordinate(jsNormals![polyface.data.normalIndex![i]].x, nativeNormals![nativeNormalIdx![i]][0]);
+      ck.testCoordinate(jsNormals![polyface.data.normalIndex![i]].y, nativeNormals![nativeNormalIdx![i]][1]);
+      ck.testCoordinate(jsNormals![polyface.data.normalIndex![i]].z, nativeNormals![nativeNormalIdx![i]][2]);
+    }
 
     expect(ck.getNumErrors()).equals(0);
   });

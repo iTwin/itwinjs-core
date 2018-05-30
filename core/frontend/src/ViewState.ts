@@ -20,7 +20,7 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { DecorateContext } from "./ViewContext";
-import { GraphicList, RenderGraphic } from "./render/System";
+import { GraphicList } from "./render/System";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 
@@ -1131,8 +1131,6 @@ export abstract class ViewState3d extends ViewState {
   public drawDecorations(context: DecorateContext): void {
     this.drawSkyBox(context);
     this.drawGroundPlane(context);
-    this.drawPlaceholderDecorations(context);
-    this.drawDebugDecorations(context);
   }
 
   protected drawSkyBox(context: DecorateContext): void {
@@ -1157,76 +1155,13 @@ export abstract class ViewState3d extends ViewState {
   protected drawGroundPlane(context: DecorateContext): void {
     // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
     const extents = this.getViewedExtents(); // the project extents
-    const pts = [extents.low, extents.low.clone(), extents.high.clone(), extents.low.clone()];
-    pts[1].x = extents.high.x;
-    pts[2].z = extents.low.z;
-    pts[3].y = extents.high.y;
-
-    const args = new MeshArgs();
-    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(pts)));
-    for (const point of pts)
-      args.points.add(point);
-
-    args.vertIndices = [3, 2, 0, 2, 1, 0];
-    args.colors.initUniform(ColorByName.darkGreen);
-
-    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
-    if (undefined !== gf)
-      context.addWorldDecoration(gf);
-  }
-
-  // ###TODO Remove this once element graphics are hooked up - it is serving as a placeholder so that we have a reference point for viewing tools.
-  private _placeholderDecoration?: RenderGraphic;
-  protected _wantPlaceholderDecorations: boolean = false;
-  protected drawPlaceholderDecorations(context: DecorateContext) {
-    if (!this._wantPlaceholderDecorations)
-      return;
-
-    if (undefined === this._placeholderDecoration) {
-      const cx = 0.5;
-      const cy = 0.5;
-      const dx = 0.25;
-      const dy = 0.25;
-      const z = 0.5;
-
-      const args = new MeshArgs();
-      const points = [new Point3d(cx - dx, cy, z), new Point3d(cx, cy - dy, z), new Point3d(cx + dx, cy, z), new Point3d(cx, cy + dy, z)];
-      context.viewport.npcToWorldArray(points);
-      args.points = QPoint3dList.fromPoints(points);
-      args.vertIndices = [3, 2, 0, 2, 1, 0];
-      const colors = new Uint32Array([ColorByName.chocolate, ColorByName.darkOrange, ColorByName.darkSeagreen, ColorByName.lightPink]);
-      args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
-
-      this._placeholderDecoration = IModelApp.renderSystem.createTriMesh(args, this.iModel);
-    }
-
-    if (undefined !== this._placeholderDecoration)
-      context.addWorldOverlay(this._placeholderDecoration);
-  }
-
-  protected drawDebugDecorations(context: DecorateContext) {
-    const rect = context.viewport.viewRect;
-    const radius = 0.05 * rect.width;
-    const center = new Point3d(0.5 * rect.width, 0.5 * rect.height, 0.0);
-    const ellipse = Arc3d.createXYEllipse(center, radius, radius);
-    const ellipse2 = Arc3d.createXYEllipse(center, radius * 1.1, radius * 1.1);
-    const graphic = context.createViewOverlay();
-    // const white = ColorDef.white.clone();
-    // const black = ColorDef.black.clone();
-    const white = new ColorDef(ColorByName.turquoise);
-    const black = new ColorDef(ColorByName.tomato);
-    white.setTransparency(165);
-    graphic.setSymbology(white, white, 4);
-    graphic.addArc2d(ellipse, true, true, 0.0);
-    black.setTransparency(100);
-    graphic.setSymbology(black, black, 4);
-    graphic.addArc2d(ellipse2, false, false, 0.0);
-    white.setTransparency(20);
-    graphic.setSymbology(white, white, 4);
-    graphic.addArc2d(ellipse, false, false, 0.0);
-    const gf = graphic.finish();
-    assert(undefined !== gf);
-    context.addViewOverlay(gf!);
+    const center = extents.low.interpolate(0.5, extents.high);
+    const ellipse = Arc3d.createXYEllipse(center, Math.abs(center.x - extents.low.x), Math.abs(center.y - extents.low.y));
+    const gf = context.createWorldDecoration();
+    const green = ColorDef.green.clone();
+    gf.setSymbology(green, green, 1);
+    gf.addArc(ellipse, true, true);
+    context.addWorldDecoration(gf.finish()!);
   }
 }
 

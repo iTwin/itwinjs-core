@@ -75,8 +75,8 @@ export class ChangeSummaryManager {
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
   public static isChangeCacheAttached(iModel: IModelDb): boolean {
-    if (!iModel || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     return iModel.nativeDb.isChangeCacheAttached();
   }
@@ -87,8 +87,8 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common)
    */
   public static attachChangeCache(iModel: IModelDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       return;
@@ -111,8 +111,8 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
    */
   public static detachChangeCache(iModel: IModelDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.nativeDb)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open.");
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
+      throw new IModelError(IModelStatus.BadRequest, "Invalid iModel object. iModel must be open and not a standalone iModel.");
 
     iModel.clearStatementCache();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
@@ -130,8 +130,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common/IModelError) if the iModel is standalone
    */
   public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
-    // TODO: iModel must be opened in exclusive mode (needs change in BriefcaseManager)
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.briefcase.isStandalone)
+    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
     const ctx = new ChangeSummaryExtractContext(iModel);
@@ -375,65 +374,77 @@ export class ChangeSummaryManager {
 
         return {
           id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
-          opCode: op, isIndirect: row.isIndirect, changedProperties: { before: undefined, after: undefined },
+          opCode: op, isIndirect: row.isIndirect,
         };
       });
 
     return instanceChange;
   }
 
-  /** Queries the property value changes for the specified instance change and the specified ChangedValueState.
+  /** Retrieves the names of the properties whose values have changed for the given instance change
+   *
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @param iModel iModel
+   * @param instanceChangeId Id of the InstanceChange to query the properties whose values have changed
+   * @returns Returns names of the properties whose values have changed for the given instance change
+   * @throws [IModelError]($common) if the change cache file hasn't been attached, or in case of other errors.
+   */
+  public static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64): string[] {
+    return iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, instanceChangeId);
+
+        const selectClauseItems: string[] = [];
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
+          const accessString: string = stmt.getValue(0).getString();
+          const accessStringTokens: string[] = accessString.split(".");
+          assert(accessStringTokens.length > 0);
+
+          let isFirstToken: boolean = true;
+          let item: string = "";
+          for (const token of accessStringTokens) {
+            if (!isFirstToken)
+              item += ".";
+
+            item += "[" + token + "]";
+            isFirstToken = false;
+          }
+          selectClauseItems.push(item);
+        }
+
+        return selectClauseItems;
+      });
+  }
+
+  /** Builds the ECSQL to query the property value changes for the specified instance change and the specified ChangedValueState.
    *
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @param iModel iModel
    * @param instanceChangeInfo InstanceChange to query the property value changes for
    *        changedInstance.className must be fully qualified and schema and class name must be escaped with square brackets if they collide with reserved ECSQL words: `[schema name].[class name]`
    * @param changedValueState The Changed State to query the values for. This must correspond to the [InstanceChange.OpCode]($backend) of the InstanceChange.
-   * @returns Returns the property value changes
+   * @returns Returns the ECSQL that will retrieve the property value changes
    * @throws [IModelError]($common) if instance change does not exist, or if the
    * change cache file hasn't been attached, or in case of other errors.
    */
-  public static queryPropertyValueChanges(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState): any {
+  public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState): string {
     // query property value changes just to build a SELECT statement against the class of the changed instance
-    let propValECSql: string = "";
-    iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
-      (stmt: ECSqlStatement) => {
-        stmt.bindId(1, instanceChangeInfo.id);
-        let isFirstRow: boolean = true;
-        propValECSql = "SELECT ";
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          if (!isFirstRow)
-            propValECSql += ",";
-
-          // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
-          const accessString: string = stmt.getValue(0).getString();
-          const accessStringTokens: string[] = accessString.split(".");
-          assert(accessStringTokens.length > 0);
-          let isFirstToken: boolean = true;
-          for (const token of accessStringTokens) {
-            if (!isFirstToken)
-              propValECSql += ".";
-
-            propValECSql += "[" + token + "]";
-            isFirstToken = false;
-          }
-
-          isFirstRow = false;
-        }
-      });
-
-    if (propValECSql.length === 0)
+    const selectClauseItems: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModel, instanceChangeInfo.id);
+    if (selectClauseItems.length === 0)
       throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChangeInfo.id.value}.`);
+
+    let ecsql: string = "SELECT ";
+    selectClauseItems.map((item: string, index: number) => {
+      if (index !== 0)
+        ecsql += ",";
+
+      ecsql += item;
+    });
 
     // Avoiding parameters in the Changes function speeds up performance because ECDb can do optimizations
     // if it knows the function args at prepare time
-    propValECSql += " FROM main." + instanceChangeInfo.changedInstance.className + ".Changes(" + instanceChangeInfo.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=?";
-    return iModel.withPreparedStatement(propValECSql, (stmt: ECSqlStatement) => {
-      stmt.bindId(1, instanceChangeInfo.changedInstance.id);
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChangeInfo.id.value}.`);
-
-      return stmt.getRow();
-    });
+    ecsql += " FROM main." + instanceChangeInfo.changedInstance.className + ".Changes(" + instanceChangeInfo.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=" + instanceChangeInfo.changedInstance.id.toString();
+    return ecsql;
   }
 }

@@ -15,6 +15,7 @@ import { FeaturesInfo } from "./FeaturesInfo";
 import { AttributeHandle, BufferHandle } from "./Handle";
 import { GL } from "./GL";
 import { System } from "./System";
+import { ShaderProgramParams } from "./DrawCommand";
 
 export class PointStringInfo {
   public vertexParams: QParams3d;
@@ -48,6 +49,8 @@ export class PointStringGeometry extends LUTGeometry {
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
+
+  protected _getLineWeight(_params: ShaderProgramParams): number { return this.pointString.weight; }
 
   public draw(): void {
     const gl = System.instance.context;

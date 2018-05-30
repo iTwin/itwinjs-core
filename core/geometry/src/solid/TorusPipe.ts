@@ -14,6 +14,7 @@ import { GeometryHandler, UVSurface } from "../GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { Loop, Path, CurveCollection } from "../curve/CurveChain";
 import { Arc3d } from "../curve/Arc3d";
+import { Plane3dByOriginAndVectors } from "../AnalyticGeometry";
 /**
  * the stored form of the torus pipe is oriented for positive volume:
  *
@@ -215,4 +216,28 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
     const rxy = this.getMajorRadius() + Math.cos(phiRadians) * minorRadius;
     return this.localToWorld.multiplyXYZ(rxy * cosTheta, rxy * sinTheta, minorRadius * Math.sin(phiRadians), result);
   }
+  /** Evaluate as a uv surface, returning point and two vectors.
+   * @param u fractional position in minor (phi)
+   * @param v fractional position on major (theta) arc
+   */
+  public UVFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    const thetaRadians = v * this.sweep.radians;
+    const phiRadians = u * Math.PI * 2.0;
+    const fTheta = this.sweep.radians;
+    const fPhi   = Math.PI * 2.0;
+    const cosTheta = Math.cos(thetaRadians);
+    const sinTheta = Math.sin(thetaRadians);
+    const sinPhi   = Math.sin (phiRadians);
+    const cosPhi   = Math.cos (phiRadians);
+    const minorRadius = this.getMinorRadius();
+    const rxy = this.getMajorRadius() + Math.cos(phiRadians) * minorRadius;
+    const rSinPhi = minorRadius * sinPhi;
+    const rCosPhi = minorRadius * cosPhi;   // appears only as derivative of rSinPhi.
+    return Plane3dByOriginAndVectors.createOriginAndVectors (
+          this.localToWorld.multiplyXYZ(cosTheta * rxy, sinTheta * rxy, rSinPhi),
+          this.localToWorld.multiplyVectorXYZ (-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
+          this.localToWorld.multiplyVectorXYZ(-cosTheta * rSinPhi * fPhi, -sinTheta * rSinPhi * fPhi, rCosPhi * fPhi),
+          result);
+  }
+
 }

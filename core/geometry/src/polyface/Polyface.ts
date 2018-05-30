@@ -475,7 +475,8 @@ export class PolyfaceData {
   }
 }
 
-/** A Polyface is n abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
+/**
+ * A Polyface is n abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
  * to iterate over its facets.
  */
 export abstract class Polyface extends GeometryQuery {
@@ -752,7 +753,7 @@ export class IndexedPolyface extends Polyface {
       return false;
 
     if (0 === endFacetIndex)  // The default for endFacetIndex is really the last facet
-      endFacetIndex = this.facetStart.length;
+      endFacetIndex = this.facetStart.length - 1; // Last facetStart index corresponds to the next facet if we were to create one
 
     const faceData = FacetFaceData.createNull();
     const visitor = IndexedPolyfaceVisitor.create(this, 0);

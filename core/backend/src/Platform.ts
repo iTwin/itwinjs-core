@@ -10,11 +10,7 @@ import * as os from "os";
 export class Platform {
   /** The imodeljs mobile info object, if this is running in the imodeljs mobile platform. */
   public static get imodeljsMobile(): any {
-    try {
-      return (self as any).imodeljsMobile;
-    } catch (err) {
-      return undefined;
-    }
+    return (typeof (self) !== "undefined") ? (self as any).imodeljsMobile : undefined;
   }
 
   /** Get the name of the platform. Possible return values are: "win32", "linux", "darwin", "ios", "android", or "uwp". */

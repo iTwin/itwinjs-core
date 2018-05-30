@@ -9,7 +9,7 @@ import { Point3d, Vector3d, XAndY } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform, RotMatrix } from "../Transform";
 import { Plane3dByOriginAndUnitNormal, Plane3dByOriginAndVectors, Ray3d } from "../AnalyticGeometry";
-import { GrowableXYZArray } from "../GrowableArray";
+import { GrowableXYZArray, GrowableFloat64Array } from "../GrowableArray";
 import { GeometryHandler, IStrokeHandler } from "../GeometryHandler";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive, GeometryQuery, CurveLocationDetail, CurveIntervalRole, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
@@ -631,4 +631,17 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result;
   }
+}
+
+/** An AnnotatedLineString3d is a linestring with additional data attached to each point
+ * * This is useful in facet construction.
+ */
+export class AnnotatedLineString3d {
+public curveParam?: GrowableFloat64Array;
+/**
+ * uv parameters, stored as uvw with the w possibly used for distinguishing among multiple "faces".
+ */
+public uvwParam?: GrowableXYZArray;
+public vecturU?: GrowableXYZArray;
+public vectorV?: GrowableXYZArray;
 }

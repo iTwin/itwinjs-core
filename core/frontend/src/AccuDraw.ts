@@ -8,7 +8,7 @@ import { Viewport } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId, ViewState } from "./ViewState";
 import { CoordinateLockOverrides } from "./tools/ToolAdmin";
-import { ColorDef, ColorByName, LinePixels, FillFlags } from "@bentley/imodeljs-common";
+import { ColorDef, ColorByName, LinePixels, FillFlags, GraphicParams } from "@bentley/imodeljs-common";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { BeButtonEvent, CoordSource, BeModifierKey } from "./tools/Tool";
 import { SnapMode } from "./HitDetail";
@@ -18,7 +18,6 @@ import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext, SnapContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
 import { PrimitiveTool } from "./tools/PrimitiveTool";
-import { GeometryListBuilder } from "./rendering";
 
 export const enum AccuDrawFlags {
   SetModePolar = 1,
@@ -1753,10 +1752,12 @@ export class AccuDraw {
     if (offsetSnap) {
       pts[0] = ptP;
       pts[1] = ptP;
-      graphic.setSymbology(colorIndex, colorIndex, 8);
-      (graphic as GeometryListBuilder).graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+      const graphicParams = GraphicParams.fromSymbology(colorIndex, colorIndex, 8);
+      graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+      graphic.activateGraphicParams(graphicParams);
       graphic.addPointString(pts);
-      (graphic as GeometryListBuilder).graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
+      graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
+      graphic.activateGraphicParams(graphicParams);
     }
 
     let axisIsIndexed = false;
@@ -1873,13 +1874,14 @@ export class AccuDraw {
     const shadowColor = frameColor;
 
     // Display compass frame...
-    graphic.setSymbology(shadowColor, fillColor, 1);
+    const graphicParams = GraphicParams.fromSymbology(shadowColor, fillColor, 1);
 
     const center = Point3d.createZero();
 
     if (this.flags.animateRotation || 0.0 === this.percentChanged) {
       if (CompassMode.Polar === this.getCompassMode()) {
         const ellipse = Arc3d.createXYEllipse(center, 1, 1);
+        graphic.activateGraphicParams(graphicParams);
         graphic.addArc(ellipse, true, true);
         graphic.addArc(ellipse, false, false);
       } else {
@@ -1889,10 +1891,11 @@ export class AccuDraw {
           new Point3d(1.0, -1.0, 0.0),
           new Point3d(-1.0, -1.0, 0.0)];
         shapePts[4] = shapePts[0];
-        (graphic as GeometryListBuilder).graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+        graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+        graphic.activateGraphicParams(graphicParams);
         graphic.addShape(shapePts);
-        (graphic as GeometryListBuilder).graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
-        graphic.addLineString(shapePts);
+        graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
+        graphic.activateGraphicParams(graphicParams);
       }
     } else {
       let nSides, radius;
@@ -1915,9 +1918,11 @@ export class AccuDraw {
 
       shapePtsP[nSides] = shapePtsP[0];
 
-      (graphic as GeometryListBuilder).graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+      graphicParams.fillFlags |= FillFlags.ByView; // Mark as filled
+      graphic.activateGraphicParams(graphicParams);
       graphic.addShape(shapePtsP);
-      (graphic as GeometryListBuilder).graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
+      graphicParams.fillFlags &= ~(FillFlags.ByView); // Mark as not filled
+      graphic.activateGraphicParams(graphicParams);
       graphic.addLineString(shapePtsP);
     }
 

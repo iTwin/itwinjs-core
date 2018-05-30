@@ -719,7 +719,7 @@ function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3
   result.x = p0.x - p1.x;
   result.y = p0.y - p1.y;
   result.z = p0.z - p1.z;
-  result.normalize();
+  result.normalizeInPlace();
   return result;
 }
 

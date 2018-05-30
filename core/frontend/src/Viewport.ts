@@ -6,7 +6,7 @@ import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
+import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
@@ -563,6 +563,11 @@ export class Viewport {
     this.currentBaseline = undefined;
     this.forwardStack.length = 0;
     this.backStack.length = 0;
+  }
+
+  public setStandardRotation(id: StandardViewId): void {
+    this.view.setStandardRotation(id);
+    this.setupFromView();
   }
 
   /** Establish the parameters of this Viewport from the current information in its ViewState */
@@ -1347,10 +1352,10 @@ export class Viewport {
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
     black.setTransparency(100);
-    graphic.setSymbology(black, black, 1);
+    graphic.setSymbology(black, black, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
     graphic.addArc2d(ellipse2, false, false, 0.0);
     white.setTransparency(20);
-    graphic.setSymbology(white, white, 1);
+    graphic.setSymbology(white, white, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
     graphic.addArc2d(ellipse, false, false, 0.0);
     context.addViewOverlay(graphic.finish()!);
   }
