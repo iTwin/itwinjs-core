@@ -8,17 +8,22 @@ const chalk = require("chalk");
 exports.command = "build <target>";
 exports.describe = chalk.bold("Runs a production build.");
 exports.builder = (yargs) =>
-  yargs.positional("target", {
+  yargs.strict(true)
+  .positional("target", {
     choices: ["electron", "web"],
     describe: `The target environment.`,
     type: "string"
   })
   .options({
-    "only": {
-      type: "string",
-      alias: "o",
-      choices: ["frontend", "backend"],
-      describe: "only build a particular bundle"
+    "frontend": {
+      alias: "F",
+      describe: "Only build the FRONTEND bundle",
+      conflicts: "backend"
+    },
+    "backend": {
+      alias: "B",
+      describe: "Only build the BACKEND bundle",
+      conflicts: "frontend"
     },
   });
 
@@ -46,8 +51,8 @@ exports.handler = async (argv) => {
   const backendConfig = require("../config/webpack.config.backend.prod");
   const statDumpPromises = [];
 
-  const skipBackend = (argv.only === "frontend");
-  const skipFrontend = (argv.only === "backend");
+  const skipBackend = Boolean(argv.frontend);
+  const skipFrontend = Boolean(argv.backend);
 
   async function prepFrontendBuild() {
     if (skipFrontend)
