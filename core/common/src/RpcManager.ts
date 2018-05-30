@@ -5,6 +5,14 @@
 
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
 import { RpcRegistry } from "./rpc/core/RpcRegistry";
+import { RpcControlChannel } from "./rpc/core/RpcControl";
+
+/** Describes the endpoints of an RPC interface. */
+export interface RpcInterfaceEndpoints {
+  interfaceName: string;
+  interfaceVersion: string;
+  operationNames: string[];
+}
 
 /** RPC interface management is concerned with coordination of access and configuration for RPC interfaces. */
 export class RpcManager {
@@ -39,5 +47,15 @@ export class RpcManager {
   /** Unregisters the RPC implementation class for the backend. */
   public static unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void {
     RpcRegistry.instance.unregisterImpl(definition);
+  }
+
+  /** Describes the RPC interfaces and endpoints that are currently available for use by the frontend. */
+  public static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+    const requests: Array<Promise<RpcInterfaceEndpoints[]>> = [];
+    for (const channel of RpcControlChannel.channels) {
+      requests.push(channel.describeEndpoints());
+    }
+
+    return Promise.all(requests).then((responses) => responses.reduce((a, b) => a.concat(b), []));
   }
 }
