@@ -24,11 +24,14 @@ This schema describes the breakdown of `SpatialLocationElement`. It is intended 
 
 A spatial element that may be Composite of other CompositeElements
 
+Dependency management:
+1 - No bundling, handled by derived types.
+
 Geometry Use:
 1 - Defined in derived types. I is a boundary of some sort, either curve on terrain with height or 3d volume.
 2 - Local Coordinates : z points away from the center of the earth.
 
-Naming :
+Class Naming :
 1 - Do not repeat the name of the base type `SpatialLocation`, it makes the name to long especially when this name is repeated in the relationship names later. Leaving that out makes the name sound more general than it should however namespace should resolve that.
 2 - Do not use Composed since leaf nodes will not be composed.
 3 - Equivalent of `IfcSpatialStructureElement`.

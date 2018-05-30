@@ -1,6 +1,4 @@
-# Schema : Classification Systems (alias)
-
-![SpatialComposition](./media/classification-systems.png)
+# Schema : Building Concept Station (alias)
 
 ## Design considerations
 
@@ -19,8 +17,6 @@ CodeScope|CodeScopeSpec::Repository
 CodeSpec|bis:NullCodeSpec
 
 ## Pending work
-1 - Applicability (Allan)
-2 - Catalog (Allan)
 
 ## iModel Bridges using ClassificationSystems
 
