@@ -374,11 +374,47 @@ export class ChangeSummaryManager {
 
         return {
           id: instanceChangeId, summaryId: new Id64(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
-          opCode: op, isIndirect: row.isIndirect, changedProperties: { before: undefined, after: undefined },
+          opCode: op, isIndirect: row.isIndirect,
         };
       });
 
     return instanceChange;
+  }
+
+  /** Retrieves the names of the properties whose values have changed for the given instance change
+   *
+   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @param iModel iModel
+   * @param instanceChangeId Id of the InstanceChange to query the properties whose values have changed
+   * @returns Returns names of the properties whose values have changed for the given instance change
+   * @throws [IModelError]($common) if the change cache file hasn't been attached, or in case of other errors.
+   */
+  public static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64): string[] {
+    return iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, instanceChangeId);
+
+        const selectClauseItems: string[] = [];
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
+          const accessString: string = stmt.getValue(0).getString();
+          const accessStringTokens: string[] = accessString.split(".");
+          assert(accessStringTokens.length > 0);
+
+          let isFirstToken: boolean = true;
+          let item: string = "";
+          for (const token of accessStringTokens) {
+            if (!isFirstToken)
+              item += ".";
+
+            item += "[" + token + "]";
+            isFirstToken = false;
+          }
+          selectClauseItems.push(item);
+        }
+
+        return selectClauseItems;
+      });
   }
 
   /** Builds the ECSQL to query the property value changes for the specified instance change and the specified ChangedValueState.
@@ -394,39 +430,21 @@ export class ChangeSummaryManager {
    */
   public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64, summaryId: Id64, changedInstance: { id: Id64, className: string } }, changedValueState: ChangedValueState): string {
     // query property value changes just to build a SELECT statement against the class of the changed instance
-    let propValECSql: string = "";
-    iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
-      (stmt: ECSqlStatement) => {
-        stmt.bindId(1, instanceChangeInfo.id);
-        let isFirstRow: boolean = true;
-        propValECSql = "SELECT ";
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          if (!isFirstRow)
-            propValECSql += ",";
-
-          // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
-          const accessString: string = stmt.getValue(0).getString();
-          const accessStringTokens: string[] = accessString.split(".");
-          assert(accessStringTokens.length > 0);
-          let isFirstToken: boolean = true;
-          for (const token of accessStringTokens) {
-            if (!isFirstToken)
-              propValECSql += ".";
-
-            propValECSql += "[" + token + "]";
-            isFirstToken = false;
-          }
-
-          isFirstRow = false;
-        }
-      });
-
-    if (propValECSql.length === 0)
+    const selectClauseItems: string[] = ChangeSummaryManager.getChangedPropertyValueNames(iModel, instanceChangeInfo.id);
+    if (selectClauseItems.length === 0)
       throw new IModelError(IModelStatus.BadArg, `No property value changes found for InstanceChange ${instanceChangeInfo.id.value}.`);
+
+    let ecsql: string = "SELECT ";
+    selectClauseItems.map((item: string, index: number) => {
+      if (index !== 0)
+        ecsql += ",";
+
+      ecsql += item;
+    });
 
     // Avoiding parameters in the Changes function speeds up performance because ECDb can do optimizations
     // if it knows the function args at prepare time
-    propValECSql += " FROM main." + instanceChangeInfo.changedInstance.className + ".Changes(" + instanceChangeInfo.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=" + instanceChangeInfo.changedInstance.id.toString();
-    return propValECSql;
+    ecsql += " FROM main." + instanceChangeInfo.changedInstance.className + ".Changes(" + instanceChangeInfo.summaryId.toString() + "," + changedValueState + ") WHERE ECInstanceId=" + instanceChangeInfo.changedInstance.id.toString();
+    return ecsql;
   }
 }
