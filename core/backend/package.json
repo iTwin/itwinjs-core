@@ -42,7 +42,7 @@
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-native-platform-api": "~19.0.1"
+    "@bentley/imodeljs-native-platform-api": "~19.2.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -80,9 +80,9 @@
     "*** Keep this in synch with nativePlatformForTests ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~19.0.1",
-    "@bentley/imodeljs-native-platform-node": "~19.0.1",
-    "@bentley/imodeljs-native-platform-electron": "~19.0.1",
+    "@bentley/imodeljs-native-platform-api": "~19.2.0",
+    "@bentley/imodeljs-native-platform-node": "~19.2.0",
+    "@bentley/imodeljs-native-platform-electron": "~19.2.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.0",
     "glob": "^7.1.2"

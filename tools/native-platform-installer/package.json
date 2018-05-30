@@ -7,9 +7,9 @@
     "*** Keep this in synch with source/backend/package.json ***"
   ],
   "optionalDependencies": {
-    "@bentley/imodeljs-n_8-darwin-x64": "~19.0.1",
-    "@bentley/imodeljs-n_8-linux-x64": "~19.0.1",
-    "@bentley/imodeljs-n_8-win32-x64": "~19.0.1",
-    "@bentley/imodeljs-e_2-win32-x64": "~19.0.1"
+    "@bentley/imodeljs-n_8-darwin-x64": "~19.2.0",
+    "@bentley/imodeljs-n_8-linux-x64": "~19.2.0",
+    "@bentley/imodeljs-n_8-win32-x64": "~19.2.0",
+    "@bentley/imodeljs-e_2-win32-x64": "~19.2.0"
   }
 }
