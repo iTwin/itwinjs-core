@@ -399,7 +399,11 @@ describe("Polyface.Faces", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.skip("Verify polyface param and normal data with native output", () => {
+  it.only("Triangle and quad polyface param verification with native", () => {
+
+  });
+
+  it.skip("Solid primitive param verification with native", () => {
     const options = new StrokeOptions();
     options.needNormals = true;
     options.needParams = true;
