@@ -1159,8 +1159,9 @@ export abstract class ViewState3d extends ViewState {
     const ellipse = Arc3d.createXYEllipse(center, Math.abs(center.x - extents.low.x), Math.abs(center.y - extents.low.y));
     const gf = context.createWorldDecoration();
     const green = ColorDef.green.clone();
-    gf.setSymbology(green, green, 1);
+    gf.setSymbology(green, green, 2);
     gf.addArc(ellipse, true, true);
+    gf.addRangeBox(extents);
     context.addWorldDecoration(gf.finish()!);
   }
 }

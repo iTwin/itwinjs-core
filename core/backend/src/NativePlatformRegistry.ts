@@ -7,6 +7,7 @@ import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
 import * as path from "path";
+import { IModelJsFs } from "./IModelJsFs";
 
 let realrequire: any;
 try {
@@ -65,20 +66,16 @@ export class NativePlatformRegistry {
     }
   }
 
-  /** Get the module that can load the standard node addon. */
-  public static getStandardAddonLoaderModule(dir?: string): any | undefined {
-    if (typeof (process) === "undefined")
-      return undefined;
-    let packageDir: string;
-    if ("electron" in process.versions)
-      packageDir = "@bentley/imodeljs-native-platform-electron";
-    else
-      packageDir = "@bentley/imodeljs-native-platform-node";
-    if (dir !== undefined)
-      packageDir = path.join(dir, packageDir);
-    // *** TODO: Put the name of the js file back into the addon package's 'main' property, so that we don't have to hard-wire it here.
-    const addonLoaderPath = path.join(packageDir, "NodeAddonLoader.js");
-    return realrequire(addonLoaderPath);
+  /** Load the appropriate version of the standard addon. */
+  public static loadStandardAddon(dir?: string): any | undefined {
+    if (typeof (process) === "undefined" || process.version === "")
+      throw new Error("could not determine process type");
+
+    const addonPackageName = NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName();
+
+    const addonFileName = path.join(dir || "", addonPackageName, "addon", "imodeljs.node");
+
+    return realrequire(addonFileName);
   }
 
   /** Load and register the standard platform. */
@@ -96,11 +93,19 @@ export class NativePlatformRegistry {
     }
 
     // We are running in node or electron.
-    const loaderModule = NativePlatformRegistry.getStandardAddonLoaderModule(dir);
-    if (loaderModule === undefined) {
-      throw new IModelError(IModelStatus.NotFound);
+    NativePlatformRegistry.register(this.loadStandardAddon(dir));
+  }
+
+  /** @hidden */
+  public static loadAndRegisterStandardNativePlatformFromTools() {
+    let nativePlatformDir: string | undefined;
+    if (!Platform.isMobile()) {
+      let toolsDir = __dirname;
+      while (!IModelJsFs.existsSync(path.join(toolsDir, "tools")))
+        toolsDir = path.join(toolsDir, "..");
+      nativePlatformDir = path.join(toolsDir, "tools", "native-platform-installer", "node_modules");
     }
-    NativePlatformRegistry.register(loaderModule.NodeAddonLoader.loadAddon());
+    NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
   }
 }
 
@@ -129,13 +134,13 @@ export class NodeAddonPackageName {
       const nodeVersion = process.version.substring(1).split("."); // strip off the character 'v' from the start of the string
       versionCode = "n_" + nodeVersion[0]; // use only major version number
     }
-    return "@bentley/imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch;
+    return path.join("@bentley", "imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch);
   }
 
-  /** Compute the name of default platform that should be used for this environment. This method uses the same naming formula that is used by
+  /** Compute the name of default addon that should be used for this environment. This method uses the same naming formula that is used by
    * the bb part that generates and publishes the default platform packages (iModelJsNodeAddon:MakePackages).
    */
   public static computeDefaultImodelNodeAddonName(): string {
-    return NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName() + "/platform/imodeljs.node";
+    return path.join(NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName(), "addon", "imodeljs.node");
   }
 }

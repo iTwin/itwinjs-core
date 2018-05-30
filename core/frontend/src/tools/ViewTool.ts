@@ -774,8 +774,8 @@ class ViewPan extends ViewingToolHandle {
     const dist = newPtWorld.vectorTo(this.anchorPt);
 
     if (view.is3d()) {
-      view.moveCameraWorld(dist);
-      return false;
+      if (ViewStatus.Success !== view.moveCameraWorld(dist))
+        return false;
     } else {
       view.setOrigin(view.getOrigin().plus(dist));
     }
@@ -1050,7 +1050,7 @@ class NavigateMotion {
       const up = this.getWorldUp();
       const cross = up.crossProduct(zDir);
       cross.crossProduct(up, zDir);
-      zDir.normalize();
+      zDir.normalizeInPlace();
     }
 
     xDir.scale(velocity.x * this.deltaTime, xDir);

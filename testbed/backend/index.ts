@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
@@ -34,6 +34,8 @@ ipcMain.on("testbed", (event: any, arg: any) => {
     event.returnValue = true;
   }
 });
+
+NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
 
 // Start the backend
 IModelHost.startup();
