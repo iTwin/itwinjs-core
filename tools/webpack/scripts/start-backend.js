@@ -18,7 +18,7 @@ exports.builder = (yargs) =>
   .options({
     "electronDebug": {
       type: "string",
-      describe: `The port for the electron main process to listen on for (legacy) debugging.`
+      describe: `The port for the electron main process to listen on for (inspector) debugging.`
     },
   })
   .options({
@@ -50,7 +50,7 @@ exports.handler = async (argv) => {
   const { watchBackend }= require("./utils/webpackWrappers");
 
   const nodeDebugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
-  const electronDebugOptions = (argv.electronDebug) ? ["--debug-brk=" + argv.electronDebug] : [];
+  const electronDebugOptions = (argv.electronDebug) ? ["--inspect-brk=" + argv.electronDebug] : [];
   const electronRemoteDebugOptions = (argv.electronRemoteDebug) ? ["--remote-debugging-port=" + argv.electronRemoteDebug] : [];
 
   // Run a webpack watch to compile/re-compile the backend bundle.
