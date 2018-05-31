@@ -28,7 +28,7 @@ export class UserStatistics extends UserInfo {
 
 /**
  * Query object for getting User Statistics. You can use this to modify the query.
- * @see UserStatistics.GetUserStatistics()
+ * @see UserStatisticsHandler.get()
  */
 export class UserStatisticsQuery extends InstanceIdQuery {
   private statisticsPrefix = "HasStatistics-forward-Statistics";
