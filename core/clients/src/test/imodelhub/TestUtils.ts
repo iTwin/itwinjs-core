@@ -14,7 +14,7 @@ import {
 import {
   IModelHubClient, Code, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
-  MultiLock, Lock,
+  MultiLock, Lock, VersionQuery,
 } from "../../imodelhub/";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
@@ -455,11 +455,11 @@ export function generateVersion(name?: string, changesetId?: string, smallThumbn
   return result;
 }
 
-export function mockGetVersions(imodelId: string, ...versions: Version[]) {
+export function mockGetVersions(imodelId: string, query?: string, ...versions: Version[]) {
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Version");
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Version", query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }
@@ -631,6 +631,20 @@ export async function createLocks(accessToken: AccessToken, imodelId: string, br
   }
 
   await client.Locks().update(accessToken, imodelId, generatedLocks);
+}
+
+export async function createVersions(accessToken: AccessToken, imodelId: string, changesetIds: string[], versionNames: string[]) {
+  if (TestConfig.enableMocks)
+    return;
+
+  const client = getDefaultClient();
+  for (let i = 0; i < changesetIds.length; i++) {
+    // check if changeset does not have version
+    const version = await client.Versions().get(accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
+    if (!version || version.length === 0) {
+      await client.Versions().create(accessToken, imodelId, changesetIds[i], versionNames[i]);
+    }
+  }
 }
 
 export class ProgressTracker {

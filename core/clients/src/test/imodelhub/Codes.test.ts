@@ -263,6 +263,24 @@ describe("iModelHub CodeHandler", () => {
     chai.expect(codes.length).to.be.equal(0);
   });
 
+  it("should get unavailable codes", async () => {
+    if (TestConfig.enableMocks) {
+      const mockedCodes = [utils.randomCode(briefcaseId2),
+      utils.randomCode(briefcaseId2)];
+      utils.mockGetCodes(iModelId, undefined, ...mockedCodes);
+
+      const filter = `?$filter=BriefcaseId+ne+${briefcaseId}`;
+      utils.mockGetCodes(iModelId, filter, ...mockedCodes);
+    }
+    const query = new CodeQuery().unavailableCodes(briefcaseId);
+    const codes = await imodelHubClient.Codes().get(accessToken, iModelId, query);
+    chai.assert(codes);
+    chai.expect(codes.length).to.be.greaterThan(0);
+    codes.forEach((code: Code) => {
+      chai.expect(code.briefcaseId).to.be.not.equal(briefcaseId);
+    });
+  });
+
   it("should not create a query by codes with empty array", () => {
     let error: IModelHubRequestError | undefined;
     try {

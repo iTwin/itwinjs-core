@@ -277,6 +277,19 @@ export class LockQuery extends Query {
     this._isMultiLockQuery = false;
     return super.top(n);
   }
+
+  /**
+   * Query unavailable Locks.
+   * @param briefcaseId Id of the briefcase.
+   * @param lastChangeSetIndex Index of the last changeSet.
+   * @returns This query.
+   */
+  public unavailableLocks(briefcaseId: number, lastChangeSetIndex: string) {
+    let filter = `BriefcaseId+ne+${briefcaseId}`;
+    filter += `+and+(LockLevel+gt+0+or+ReleasedWithChangeSetIndex+gt+${lastChangeSetIndex})`;
+    this.addFilter(filter);
+    return this;
+  }
 }
 
 /**
