@@ -25,11 +25,11 @@
     "@bentley/ecpresentation-controls": "^0.2.1",
     "@bentley/ecpresentation-frontend": "^0.3.1",
     "@bentley/geometry-core": "^8",
-    "@bentley/imodeljs-common": "^0.88",
-    "@bentley/imodeljs-backend": "^0.88",
-    "@bentley/imodeljs-frontend": "^0.88",
+    "@bentley/imodeljs-common": "^0.92",
+    "@bentley/imodeljs-backend": "^0.92.3",
+    "@bentley/imodeljs-frontend": "^0.92",
     "@bentley/imodeljs-e_1_6_11-win32-x64": "^19",
-    "@bentley/imodeljs-n_8-win32-x64": "^19"
+    "@bentley/imodeljs-n_8-win32-x64": "^19.1.1"
   },
   "devDependencies": {
     "nyc": "^11.6.0",

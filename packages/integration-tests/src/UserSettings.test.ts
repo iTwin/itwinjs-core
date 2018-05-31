@@ -236,7 +236,7 @@ describe("UserSettings", async () => {
     expect(boolValue).to.be.equal(!value.equals(new Id64([0, 0])) ? true : false);
   });
 
-  it.only("accessing id64 array setting with different types", async () => {
+  it("accessing id64 array setting with different types", async () => {
     const valueArray = [
       createRandomId(),
       createRandomId(),

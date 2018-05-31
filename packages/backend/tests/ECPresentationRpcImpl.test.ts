@@ -4,7 +4,6 @@
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { PageOptions, KeySet, SettingValueTypes } from "@common/index";
 import { Node } from "@common/hierarchy";
@@ -43,7 +42,7 @@ describe("ECPresentationRpcImpl", () => {
       presentationManagerMock.setup((x) => x.settings).returns(() => settingsMock.object);
       ECPresentation.setManager(presentationManagerMock.object);
       testData = {
-        imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.ReadWrite, "user id"),
+        imodelToken: new IModelToken("key path", "context id", "imodel id", "changeset id"),
         pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
         displayType: "sample display type",
         inputKeys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
@@ -194,7 +193,7 @@ describe("ECPresentationRpcImpl", () => {
 
     describe("setUserSettingValue", () => {
       it("calls settings manager", async () => {
-        settingsMock.setup((x) => x.setValue("rulesetId", "settingId",  { value: "", type: SettingValueTypes.String }))
+        settingsMock.setup((x) => x.setValue("rulesetId", "settingId", { value: "", type: SettingValueTypes.String }))
           .verifiable();
 
         await impl.setUserSettingValue("rulesetId", "settingId", { value: "", type: SettingValueTypes.String });
