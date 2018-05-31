@@ -77,6 +77,16 @@ describe("GeometryPrimitives tests", () => {
     for (const pt of points) { // compare generated polyface points to original points
       expect(pointIsInPolyface(pt, pfPrim.indexedPolyface)).to.be.true;
     }
+
+    /*
+    // this shouldn't really have many facets (it's just a quad)...
+    const visitor = pfPrim.indexedPolyface.createVisitor();
+    let numFacets = 0;
+    do {
+      numFacets++;
+    } while (visitor.moveToNextFacet());
+    expect(numFacets).to.be.lessThan(4);
+    */
   });
 
   it("should produce PrimitivePathGeometry with strokes and no polyfaces", () => {
