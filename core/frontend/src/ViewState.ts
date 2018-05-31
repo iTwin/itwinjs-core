@@ -5,12 +5,12 @@
 import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, Arc3d,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, Arc3d, Range2d, PolyfaceBuilder, StrokeOptions,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -23,6 +23,8 @@ import { DecorateContext } from "./ViewContext";
 import { GraphicList } from "./render/System";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
+import { Viewport } from "./Viewport";
+import { GraphicBuilder } from "./rendering";
 
 export const enum GridOrientationType {
   View = 0,
@@ -1133,23 +1135,129 @@ export abstract class ViewState3d extends ViewState {
     this.drawGroundPlane(context);
   }
 
+  /** Attempt to extract the eyepoint if the camera is on. Otherwise, compute the eye point from the given frustum. */
+  private computeEyePoint(frustum: Frustum): Point3d {
+    if (this.cameraOn)
+      return this.camera.eye;
+
+    const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront));
+
+    const pseudoCameraHalfAngle = 22.5;   // Chosen arbitrarily to match Luxology
+    const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
+    const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Constant.radiansPerDegree));
+
+    return Point3d.add3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, focalLength / delta.magnitude());
+  }
+
+  /** Calculate a UV coordinate from a vector direction, its rotation, and offset along the z axis. */
+  private static getUVForDirection(direction: Vector3d, rotation: number, zOffset: number): Point2d {
+    const radius = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+    const zValue = direction.z - radius * zOffset;
+    const azimuth = (Math.atan2(direction.y, direction.x) + rotation) / (Math.PI * 2);
+    const altitude = Math.atan2(zValue, radius);
+
+    return Point2d.create(0.5 - altitude / (Math.PI * 2), 0.25 - azimuth);
+  }
+
+  /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
+  private drawBackgroundMesh(builder: GraphicBuilder, viewport: Viewport, rotation: number, zOffset: number) {
+    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
+    // we will use a PolyfaceBuilder here to add simple quads in the grid with manually calculated UV params, and then
+    // send the whole polyface grid to the GraphicBuilder
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    strokeOptions.needNormals = false;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+
+    const meshDimension = 10;
+    const delta = 1 / (meshDimension - 1);
+
+    const frustum = viewport.getFrustum();
+    const cameraPos = this.computeEyePoint(frustum);
+
+    for (let row = 1; row < meshDimension; row++) {
+      for (let col = 1; col < meshDimension; col++) {
+        const low = Point2d.create((row - 1) * delta, (col - 1) * delta);
+        const high = Point2d.create(row * delta, col * delta);
+
+        const params: Point2d[] = [];
+        let points: Point3d[] = [];
+
+        const npcZ = .5;
+        points.push(Point3d.create(low.x, low.y, npcZ));
+        points.push(Point3d.create(low.x, high.y, npcZ));
+        points.push(Point3d.create(high.x, high.y, npcZ));
+        points.push(Point3d.create(high.x, low.y, npcZ));
+
+        const worldPoints = points.slice(0);
+        viewport.npcToWorldArray(worldPoints);
+        for (let i = 0; i < 4; i++) {
+          const direction = Vector3d.createStartEnd(cameraPos, worldPoints[i]);
+          params.push(ViewState3d.getUVForDirection(direction, rotation, zOffset));
+        }
+
+        // Avoid seam discontinuities by eliminating cycles
+        const paramRange = Range2d.createArray(params);
+        if ((paramRange.high.x - paramRange.low.x) > .5) {
+          for (let i = 0; i < 4; i++)
+            while (params[i].x < .5)
+              params[i].x += 1;
+        }
+        if ((paramRange.high.y - paramRange.low.y) > .5) {
+          for (let i = 0; i < 4; i++)
+            while (params[i].y < .5)
+              params[i].y += 1;
+        }
+
+        points = worldPoints.slice(0);
+        viewport.worldToViewArray(points);
+        polyfaceBuilder.addQuad(points, params);
+      }
+      if (row === meshDimension - 1)
+        polyfaceBuilder.endFace();
+    }
+
+    const polyface = polyfaceBuilder.claimPolyface();
+    builder.addPolyface(polyface, true);
+  }
+
+  /** Attempts to draw the Skybox, returning true on success and false otherwise. */
   protected drawSkyBox(context: DecorateContext): void {
-    // ###TODO: Check if skybox enabled in display style; draw actual skybox instead of this fake thing
-    const rect = context.viewport.viewRect;
-    const points = [new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height)];
-    const args = new MeshArgs();
-    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
-    for (const point of points)
-      args.points.add(point);
+    const style3d = this.getDisplayStyle3d();
+    if (style3d.getEnvironment().sky.display)
+      return;   // SkyBox is enabled
 
-    args.vertIndices = [3, 2, 0, 2, 1, 0];
+    const vp = context.viewport;
+    style3d.loadSkyBoxMaterial(vp.target.renderSystem);
 
-    const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
-    args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
+    if (style3d.skyboxMaterial !== undefined) {
+      // Create a graphic for the skybox, and assign it the sky material
+      const skyGraphic = context.createViewBackground();
+      const params = new GraphicParams();
+      params.material = style3d.skyboxMaterial;
+      skyGraphic.activateGraphicParams(params);
 
-    const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
-    if (undefined !== gf)
-      context.setViewBackground(gf);
+      // create a 10x10 mesh on the backplane with the sky material mapped to its UV coordinates
+      this.drawBackgroundMesh(skyGraphic, vp, 0.0, this.iModel.globalOrigin.z);
+      context.setViewBackground(skyGraphic.finish());
+    } else {
+      // Skybox material failed to load. Resort to drawing 'fake' version
+      const rect = context.viewport.viewRect;
+      const points = [new Point3d(0, 0, 0), new Point3d(rect.width, 0, 0), new Point3d(rect.width, rect.height), new Point3d(0, rect.height)];
+      const args = new MeshArgs();
+      args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+      for (const point of points)
+        args.points.add(point);
+
+      args.vertIndices = [3, 2, 0, 2, 1, 0];
+
+      const colors = new Uint32Array([ColorByName.red, ColorByName.yellow, ColorByName.cyan, ColorByName.blue]);
+      args.colors.initNonUniform(colors, new Uint16Array([0, 1, 2, 3]), false);
+
+      const gf = IModelApp.renderSystem.createTriMesh(args, this.iModel);
+      if (undefined !== gf)
+        context.setViewBackground(gf);
+    }
   }
 
   protected drawGroundPlane(context: DecorateContext): void {
