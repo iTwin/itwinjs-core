@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as clone from "clone";
 import * as deepAssign from "deep-assign";
 
 import { AccessToken } from "./Token";
@@ -44,7 +43,7 @@ export class DefaultRequestOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: RequestOptions): Promise<void> {
-    const clonedOptions: RequestOptions = clone(options, false);
+    const clonedOptions: RequestOptions = Object.assign({}, options);
     deepAssign(options, this.defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();

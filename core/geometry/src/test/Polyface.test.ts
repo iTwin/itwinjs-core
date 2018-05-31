@@ -399,8 +399,69 @@ describe("Polyface.Faces", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("Triangle and quad polyface param verification with native", () => {
+  it("Add grid w/ params, normals", () => {
+    const facetWidth = 5;
+    const facetHeight = 6;
+    const grid: Point3d[][] = [
+      [Point3d.create(0, 0, 1), Point3d.create(facetWidth, 0, 2), Point3d.create(facetWidth, facetHeight, 3), Point3d.create(0, facetHeight, 4)],
+      [Point3d.create(facetWidth, 0, 5), Point3d.create(facetWidth * 2, 0, 6), Point3d.create(facetWidth * 2, facetHeight, 7), Point3d.create(facetWidth, facetHeight, 8)],
+      [Point3d.create(facetWidth * 2, 0, 9), Point3d.create(facetWidth * 3, 0, 10), Point3d.create(facetWidth * 3, facetHeight, 11), Point3d.create(facetWidth * 2, facetHeight, 12)],
+      [Point3d.create(0, facetHeight, 13), Point3d.create(facetWidth, facetHeight, 14), Point3d.create(facetWidth, facetHeight * 2, 15), Point3d.create(0, facetHeight * 2, 16)],
+      [Point3d.create(facetWidth, facetHeight, 17), Point3d.create(facetWidth * 2, facetHeight, 18), Point3d.create(facetWidth * 2, facetHeight * 2, 19), Point3d.create(facetWidth, facetHeight * 2, 20)],
+      [Point3d.create(facetWidth * 2, facetHeight, 21), Point3d.create(facetWidth * 3, facetHeight, 22), Point3d.create(facetWidth * 3, facetHeight * 2, 23), Point3d.create(facetWidth * 2, facetHeight * 2, 24)],
+      [Point3d.create(0, facetHeight * 2, 25), Point3d.create(facetWidth, facetHeight * 2, 26), Point3d.create(facetWidth, facetHeight * 3, 27), Point3d.create(0, facetHeight * 3, 28)],
+      [Point3d.create(facetWidth, facetHeight * 2, 29), Point3d.create(facetWidth * 2, facetHeight * 2, 30), Point3d.create(facetWidth * 2, facetHeight * 3, 31), Point3d.create(facetWidth, facetHeight * 3, 32)],
+      [Point3d.create(facetWidth * 2, facetHeight * 2, 33), Point3d.create(facetWidth * 3, facetHeight * 2, 34), Point3d.create(facetWidth * 3, facetHeight * 3, 35), Point3d.create(facetWidth * 2, facetHeight * 3, 36)],
+    ];
 
+    const options = new StrokeOptions();
+    options.needParams = true;
+    options.needNormals = true;
+    options.maxEdgeLength = 4;
+
+    const builder = PolyfaceBuilder.create(options);
+    builder.addGrid(grid, undefined, undefined, true);
+    const polyface = builder.claimPolyface(false);
+
+    ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
+    ck.testExactNumber(polyface.pointCount, polyface.paramCount, "Number of params matches point count");
+
+    // Check params
+    for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
+      const currentPoint = polyface.data.point.getPoint3dAt(idx);
+      const currentParam = polyface.data.param![idx];
+      if (idx % 4 === 0) {
+        ck.testCoordinate(currentParam.x, 0);
+        ck.testCoordinate(currentParam.y, 0);
+      } else if (idx % 4 === 1) {
+        const oldPoint = polyface.data.point.getPoint3dAt(idx - 1);
+        ck.testCoordinate(currentParam.x, Math.hypot(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
+        ck.testCoordinate(polyface.data.param![idx].y, 0);
+      }
+      // else if (idx % 4 === 2)
+      // else
+    }
+
+    // Check normals
+    for (let idx = 0; idx < polyface.data.normalIndex!.length - 1; idx++) {
+      if (idx % 4 === 0) {
+        const pointA = polyface.data.point.getPoint3dAt(idx);
+        const pointB = polyface.data.point.getPoint3dAt(idx + 1);
+        const pointC = polyface.data.point.getPoint3dAt(idx + 1);
+        const vecAB = pointA.vectorTo(pointB);
+        const vecAC = pointA.vectorTo(pointC);
+        ck.testCoordinate(polyface.data.normal![idx].dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+        ck.testCoordinate(polyface.data.normal![idx].dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+        ck.testCoordinate(polyface.data.normal![idx + 1].dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+        ck.testCoordinate(polyface.data.normal![idx + 1].dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+        ck.testCoordinate(polyface.data.normal![idx + 2].dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+        ck.testCoordinate(polyface.data.normal![idx + 2].dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+        ck.testCoordinate(polyface.data.normal![idx + 3].dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+        ck.testCoordinate(polyface.data.normal![idx + 3].dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+      }
+    }
+
+    expect(ck.getNumErrors()).equals(0);
   });
 
   it.skip("Solid primitive param verification with native", () => {
