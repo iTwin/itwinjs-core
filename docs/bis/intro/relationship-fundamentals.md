@@ -67,7 +67,7 @@ The ElementOwnsChildElements relationship defines the following constraints:
 
 - An Element may only have one parent. Determined by the Source multiplicity.
 
-Relationships which derive from ElementOwnsChildElements may make the following changes
+Relationships that derive from ElementOwnsChildElements may make the following changes
 
 - Make the relationship mandatory for the parent by changing the target multiplicity to `(1..*)`.
 

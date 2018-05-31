@@ -947,9 +947,7 @@ export class ECSqlStatementCache {
   private readonly statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
   public readonly maxCount: number;
 
-  public constructor(maxCount: number = 20) {
-    this.maxCount = maxCount;
-  }
+  public constructor(maxCount = 20) { this.maxCount = maxCount; }
 
   public add(str: string, stmt: ECSqlStatement): void {
     const existing = this.statements.get(str);
