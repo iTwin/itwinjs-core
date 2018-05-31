@@ -22,10 +22,10 @@ export interface Page<TItem> {
 /**
  * @hidden
  */
-export default class PageContainer<TItem> {
+export default class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
   private _pageSize: number;
   private _maxPages: number;
-  private _pages: Array<Page<TItem>> = [];
+  private _pages: TPage[] = [];
 
   constructor(pageSize: number, maxPages: number) {
     this._pageSize = pageSize;
@@ -42,7 +42,7 @@ export default class PageContainer<TItem> {
 
   public invalidatePages(): void { this._pages = []; }
 
-  public getPage(itemIndex: number): Page<TItem> | undefined {
+  public getPage(itemIndex: number): TPage | undefined {
     for (const page of this._pages) {
       if (page.position.start <= itemIndex && itemIndex <= page.position.end)
         return page;
@@ -70,7 +70,7 @@ export default class PageContainer<TItem> {
     return -1;
   }
 
-  public reservePage(index: number): Page<TItem> {
+  public reservePage(index: number): TPage {
     // find the place for the new page to insert
     let pageIndex: number = 0;
     for (const p of this._pages) {
@@ -105,7 +105,7 @@ export default class PageContainer<TItem> {
       start: pageStartIndex,
       end: pageStartIndex + pageSize - 1,
     };
-    const page = { position };
+    const page = { position } as any;
     this._pages.splice(position.index, 0, page);
     this.reIndexPages(position.index);
     this.disposeFarthestPages(position);

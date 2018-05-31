@@ -8,6 +8,7 @@ import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder from "../common/ContentBuilder";
+import { prioritySortFunction } from "../common/Utils";
 import { CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 
 let favoritesCategory: CategoryDescription | undefined;
@@ -22,17 +23,6 @@ function getFavoritesCategory(): CategoryDescription {
     } as CategoryDescription;
   }
   return favoritesCategory;
-}
-
-interface IPrioritized {
-  priority: number;
-}
-function prioritySortFunction(a: IPrioritized, b: IPrioritized): number {
-  if (a.priority > b.priority)
-    return -1;
-  if (a.priority < b.priority)
-    return 1;
-  return 0;
 }
 
 interface PropertyPaneCallbacks {

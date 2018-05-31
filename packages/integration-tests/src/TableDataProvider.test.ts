@@ -7,7 +7,8 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { GridDataProvider, SortDirection } from "@bentley/ecpresentation-controls";
+import { TableDataProvider } from "@bentley/ecpresentation-controls";
+import { SortDirection } from "@bentley/ui-core";
 import "@helpers/Snapshots";
 
 before(() => {
@@ -31,17 +32,17 @@ const createMeaningfulInstances = async (imodel: IModelConnection): Promise<Mean
   };
 };
 
-describe("GridDataProvider", async () => {
+describe("TableDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
-  let provider: GridDataProvider;
+  let provider: TableDataProvider;
   before(async () => {
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new GridDataProvider(imodel.iModelToken, "SimpleContent");
+    provider = new TableDataProvider(imodel, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();
@@ -96,32 +97,13 @@ describe("GridDataProvider", async () => {
 
   });
 
-  describe("getLoadedRow", () => {
-
-    it("returns undefined when row not loaded", async () => {
-      provider.keys = new KeySet([instances.functionalModel]);
-      const row = provider.getLoadedRow(0);
-      expect(row).to.be.undefined;
-    });
-
-    it("returns a row when it's loaded", async () => {
-      provider.keys = new KeySet([instances.functionalModel]);
-      await provider.getRow(0);
-      const row = provider.getLoadedRow(0);
-      expect(row).to.not.be.undefined;
-    });
-
-  });
-
-  describe("sort", () => {
+  describe("sorting", () => {
 
     it("sorts instances ascending", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.functionalModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Ascending); // sort by display label (column index = 0)
-      const rows = await Promise.all([0, 1, 2].map((index: number) => {
-        return provider.getRow(index);
-      }));
+      const rows = await Promise.all([0, 1, 2].map((index: number) => provider.getRow(index)));
       expect(rows).to.matchSnapshot();
     });
 
@@ -129,24 +111,20 @@ describe("GridDataProvider", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.functionalModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Descending); // sort by display label (column index = 0)
-      const rows = await Promise.all([0, 1, 2].map((index: number) => {
-        return provider.getRow(index);
-      }));
+      const rows = await Promise.all([0, 1, 2].map((index: number) => provider.getRow(index)));
       expect(rows).to.matchSnapshot();
     });
 
   });
 
-  describe("[set] imodelToken", () => {
+  describe("filtering", () => {
 
-    it("invalidates content after imodelToken changes", async () => {
-      provider.keys = new KeySet([instances.functionalModel]);
-      await provider.getRow(0);
-      let row = provider.getLoadedRow(0);
-      expect(row).to.not.be.undefined;
-      provider.imodelToken = { ...imodel.iModelToken };
-      row = provider.getLoadedRow(0);
-      expect(row).to.be.undefined;
+    it("filters instances", async () => {
+      provider.keys = new KeySet([instances.physicalModel, instances.functionalModel, instances.repositoryModel]);
+      provider.filterExpression = `DisplayLabel = "Functional Model-0-H"`;
+      expect(await provider.getRowsCount()).to.eq(1);
+      const row = await provider.getRow(0);
+      expect(row!.key.id).to.eq(instances.functionalModel.id);
     });
 
   });

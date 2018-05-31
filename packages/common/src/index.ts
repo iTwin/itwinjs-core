@@ -13,3 +13,4 @@ export * from "./ECPresentationManager";
 export { default as ECPresentationRpcInterface } from "./ECPresentationRpcInterface";
 export * from "./rules";
 export * from "./UserSettingsManager";
+export * from "./Utils";

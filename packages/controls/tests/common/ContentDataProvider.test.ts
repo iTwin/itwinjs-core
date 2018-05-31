@@ -40,13 +40,20 @@ class Provider extends ContentDataProvider {
   public publicGetContent: ((pageOptions?: PageOptions) => Promise<Readonly<content.Content> | undefined>) & _.MemoizedFunction = this.getContent;
 }
 
+interface MemoizedCacheSpies {
+  defaultDescriptor: any;
+  descriptor: any;
+  size: any;
+  content: any;
+}
+
 describe("ContentDataProvider", () => {
 
   let imodelToken: IModelToken;
   let rulesetId: string;
   let displayType: string;
   let provider: Provider;
-  let memoizedCacheSpies: any[];
+  let memoizedCacheSpies: MemoizedCacheSpies;
   const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
@@ -67,7 +74,7 @@ describe("ContentDataProvider", () => {
   });
 
   const verifyMemoizedCachesCleared = (expectCleared: boolean = true) => {
-    memoizedCacheSpies.forEach((spy) => {
+    Object.values(memoizedCacheSpies).forEach((spy) => {
       if (expectCleared)
         expect(spy).to.be.called();
       else
@@ -76,11 +83,12 @@ describe("ContentDataProvider", () => {
   };
   const resetMemoizedCacheSpies = () => {
     spies.restore();
-    memoizedCacheSpies = [
-      spies.spy.on(provider.publicGetContentDescriptor.cache, "clear"),
-      spies.spy.on(provider.publicGetContentSetSize.cache, "clear"),
-      spies.spy.on(provider.publicGetContent.cache, "clear"),
-    ];
+    memoizedCacheSpies = {
+      defaultDescriptor: spies.spy.on((provider as any).getDefaultContentDescriptor.cache, "clear"),
+      descriptor: spies.spy.on(provider.publicGetContentDescriptor.cache, "clear"),
+      size: spies.spy.on(provider.publicGetContentSetSize.cache, "clear"),
+      content: spies.spy.on(provider.publicGetContent.cache, "clear"),
+    };
   };
 
   describe("constructor", () => {
@@ -176,17 +184,22 @@ describe("ContentDataProvider", () => {
 
     it("clears memoized descriptor", () => {
       provider.invalidateCache({ descriptor: true });
-      expect(memoizedCacheSpies[0]).to.be.called();
+      expect(memoizedCacheSpies.defaultDescriptor).to.be.called();
+    });
+
+    it("clears memoized configured descriptor", () => {
+      provider.invalidateCache({ descriptorConfiguration: true });
+      expect(memoizedCacheSpies.descriptor).to.be.called();
     });
 
     it("clears memoized content set size", () => {
       provider.invalidateCache({ size: true });
-      expect(memoizedCacheSpies[1]).to.be.called();
+      expect(memoizedCacheSpies.size).to.be.called();
     });
 
     it("clears memoized content", () => {
       provider.invalidateCache({ content: true });
-      expect(memoizedCacheSpies[2]).to.be.called();
+      expect(memoizedCacheSpies.content).to.be.called();
     });
 
   });

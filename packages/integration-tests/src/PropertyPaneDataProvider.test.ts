@@ -41,7 +41,7 @@ describe("PropertyPaneDataProvider", async () => {
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new PropertyPaneDataProvider(imodel.iModelToken, "SimpleContent");
+    provider = new PropertyPaneDataProvider(imodel, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();

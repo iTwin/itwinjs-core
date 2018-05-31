@@ -11,11 +11,12 @@ import * as content from "@bentley/ecpresentation-common";
 
 export interface CacheInvalidationProps {
   descriptor?: boolean;
+  descriptorConfiguration?: boolean;
   size?: boolean;
   content?: boolean;
 }
 namespace CacheInvalidationProps {
-  export const full = () => ({ descriptor: true, size: true, content: true });
+  export const full = () => ({ descriptor: true, descriptorConfiguration: true, size: true, content: true });
 }
 
 /**
@@ -84,7 +85,9 @@ export default abstract class ContentDataProvider {
    * Invalidates cached content.
    */
   protected invalidateCache(props: CacheInvalidationProps): void {
-    if (props.descriptor && this.getContentDescriptor)
+    if (props.descriptor && this.getDefaultContentDescriptor)
+      this.getDefaultContentDescriptor.cache.clear();
+    if (props.descriptorConfiguration && this.getContentDescriptor)
       this.getContentDescriptor.cache.clear();
     if (props.size && this.getContentSetSize)
       this.getContentSetSize.cache.clear();
@@ -129,12 +132,17 @@ export default abstract class ContentDataProvider {
   /** Called to check whether the field should be hidden. */
   protected isFieldHidden(_field: content.Field): boolean { return false; }
 
+  // tslint:disable-next-line:naming-convention
+  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
+    return await ECPresentation.presentation.getContentDescriptor(this._connection.iModelToken,
+      this._displayType, this.keys, this.selectionInfo, this.createRequestOptions());
+  });
+
   /**
    * Get the content descriptor.
    */
   protected getContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
-    const descriptor = await ECPresentation.presentation.getContentDescriptor(this._connection.iModelToken,
-      this._displayType, this.keys, this.selectionInfo, this.createRequestOptions());
+    const descriptor = await this.getDefaultContentDescriptor();
     if (!descriptor)
       return undefined;
     return this.configureContentDescriptor(descriptor);

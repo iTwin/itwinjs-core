@@ -13,38 +13,34 @@ Object {
   "label": "Functional Model-0-H",
   "records": Object {
     "Miscellaneous": Array [
-      Object {
+      PropertyRecord {
         "description": "Functional Model-0-H",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "£ábêl",
-          "editor": undefined,
           "name": "DisplayLabel",
           "typename": "string",
         },
-        "unit": "",
         "value": Object {
           "displayValue": "Functional Model-0-H",
           "value": "Functional Model-0-H",
-          "valueFormat": "Primitive",
+          "valueFormat": 0,
         },
       },
-      Object {
+      PropertyRecord {
         "description": "Functional-Tag",
         "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
-          "editor": undefined,
           "name": "FunctionalModel_ModeledElement",
           "typename": "navigation",
         },
-        "unit": "",
         "value": Object {
           "displayValue": "Functional-Tag",
           "value": 17,
-          "valueFormat": "Primitive",
+          "valueFormat": 0,
         },
       },
     ],
