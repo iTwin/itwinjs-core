@@ -366,9 +366,9 @@ export class Ray3d implements BeJSONFunctions {
    */
   public intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined {
     const vectorA = Vector3d.createStartEnd(plane.getOriginRef(), this.origin);
-    const UdotN = this.direction.dotProduct(plane.getNormalRef());
-    const AdotN = vectorA.dotProduct(plane.getNormalRef());
-    const division = Geometry.conditionalDivideFraction(-AdotN, UdotN);
+    const uDotN = this.direction.dotProduct(plane.getNormalRef());
+    const aDotN = vectorA.dotProduct(plane.getNormalRef());
+    const division = Geometry.conditionalDivideFraction(-aDotN, uDotN);
     if (!division)
       return undefined;
 
@@ -378,6 +378,7 @@ export class Ray3d implements BeJSONFunctions {
     return division;
   }
 }
+
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
  * This defines a plane with (possibly skewed) uv coordinates
