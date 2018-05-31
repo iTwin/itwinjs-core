@@ -278,7 +278,7 @@ describe("ECPresentationManager", () => {
     let manager: ECPresentationManager;
     beforeEach(() => {
       testData = {
-        imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.Readonly, "user id"),
+        imodelToken: new IModelToken("key path", "context id", "imodel id", "changeset id"),
         pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
         displayType: faker.random.word(),
         keys: (new KeySet([createRandomECInstanceNodeKey()])).add(createRandomECInstanceKey()),
