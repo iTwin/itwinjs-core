@@ -9,7 +9,10 @@ import { RenderContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
+import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
+import { TileIO } from "./TileIO";
+import { IModelTileIO } from "./IModelTileIO";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);
@@ -75,10 +78,25 @@ export class Tile {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
-    // ###TODO deserialize geometry
+
+    // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
+    this.loadGraphics(props.geometry);
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
+  }
+
+  private loadGraphics(blob?: Uint8Array): void {
+    this.loadStatus = Tile.LoadStatus.Ready;
+    if (undefined === blob)
+      return;
+
+    const reader = IModelTileIO.Reader.create(new TileIO.StreamBuffer(blob.buffer), this.root.model, IModelApp.renderSystem);
+    if (undefined !== reader) {
+      const result = reader.read();
+      if (undefined !== result)
+        this._graphic = result.renderGraphic;
+    }
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
@@ -431,5 +449,12 @@ export namespace TileTree {
     public static fromJSON(props: TileTreeProps, model: GeometricModelState) {
       return new Params(Id64.fromJSON(props.id), props.rootTile, model, Transform.fromJSON(props.location), props.maxTilesToSkip);
     }
+  }
+
+  export enum LoadStatus {
+    NotLoaded,
+    Loading,
+    Loaded,
+    NotFound,
   }
 }
