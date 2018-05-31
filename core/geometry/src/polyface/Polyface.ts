@@ -95,12 +95,15 @@ function reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, 
  * callers, and stored as a FaceData array in PolyfaceData.
  */
 export class FacetFaceData {
-  public readonly paramDistanceRange: Range2d;
-  public readonly paramRange: Range2d;
+  private _paramDistanceRange: Range2d;
+  private _paramRange: Range2d;
+
+  public get paramDistanceRange(): Range2d { return this._paramDistanceRange; }
+  public get paramRange(): Range2d { return this._paramRange; }
 
   private constructor(distanceRange: Range2d, paramRange: Range2d) {
-    this.paramDistanceRange = distanceRange;
-    this.paramRange = paramRange;
+    this._paramDistanceRange = distanceRange;
+    this._paramRange = paramRange;
   }
 
   /** Create a FacetFaceData with null ranges. */
@@ -108,38 +111,48 @@ export class FacetFaceData {
     return new FacetFaceData(Range2d.createNull(), Range2d.createNull());
   }
 
+  /** Create a deep copy of this FacetFaceData object. */
+  public clone(result?: FacetFaceData): FacetFaceData {
+    if (result) {
+      this._paramDistanceRange.clone(result._paramDistanceRange);
+      this._paramRange.clone(result._paramRange);
+      return result;
+    }
+    return new FacetFaceData(this._paramDistanceRange.clone(), this._paramRange.clone());
+  }
+
   /** Restore this FacetFaceData to its null constructor state. */
   public null() {
-    this.paramDistanceRange.setNull();
-    this.paramRange.setNull();
+    this._paramDistanceRange.setNull();
+    this._paramRange.setNull();
   }
 
   /** Return distance-based parameter from stored parameter value. */
   public convertParamToDistance(param: Point2d, result?: Point2d): Point2d {
     result = result ? result : Point2d.create();
-    const paramDelta = this.paramRange.high.minus(this.paramRange.low);
-    result.x = (0 === paramDelta.x) ? param.x : (this.paramDistanceRange.low.x + (param.x - this.paramRange.low.x)
-      * (this.paramDistanceRange.high.x - this.paramDistanceRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? param.y : (this.paramDistanceRange.low.y + (param.y - this.paramRange.low.y)
-      * (this.paramDistanceRange.high.y - this.paramDistanceRange.low.y) / paramDelta.y);
+    const paramDelta = this._paramRange.high.minus(this._paramRange.low);
+    result.x = (0 === paramDelta.x) ? param.x : (this._paramDistanceRange.low.x + (param.x - this._paramRange.low.x)
+      * (this._paramDistanceRange.high.x - this._paramDistanceRange.low.x) / paramDelta.x);
+    result.y = (0.0 === paramDelta.y) ? param.y : (this.paramDistanceRange.low.y + (param.y - this._paramRange.low.y)
+      * (this._paramDistanceRange.high.y - this._paramDistanceRange.low.y) / paramDelta.y);
     return result;
   }
 
   /** Return normalized (0-1) parameter from stored parameter value. */
   public convertParamToNormalized(param: Point2d, result?: Point2d): Point2d {
     result = result ? result : Point2d.create();
-    const paramDelta = this.paramRange.high.minus(this.paramRange.low);
-    result.x = (0.0 === paramDelta.x) ? param.x : ((param.x - this.paramRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? param.y : ((param.y - this.paramRange.low.y) / paramDelta.y);
+    const paramDelta = this._paramRange.high.minus(this._paramRange.low);
+    result.x = (0.0 === paramDelta.x) ? param.x : ((param.x - this._paramRange.low.x) / paramDelta.x);
+    result.y = (0.0 === paramDelta.y) ? param.y : ((param.y - this._paramRange.low.y) / paramDelta.y);
     return result;
   }
 
   /** Scale distance paramaters. */
   public scaleDistances(distanceScale: number) {
-    this.paramDistanceRange.low.x *= distanceScale;
-    this.paramDistanceRange.low.y *= distanceScale;
-    this.paramDistanceRange.high.x *= distanceScale;
-    this.paramDistanceRange.high.y *= distanceScale;
+    this._paramDistanceRange.low.x *= distanceScale;
+    this._paramDistanceRange.low.y *= distanceScale;
+    this._paramDistanceRange.high.x *= distanceScale;
+    this._paramDistanceRange.high.y *= distanceScale;
   }
 
   /**
@@ -210,10 +223,10 @@ export class FacetFaceData {
       );
 
       // TR# 268980 - Add standard deviation to match QV....
-      this.paramDistanceRange.low.set(0, 0);
-      this.paramDistanceRange.high.set(
-        (dS.x + standardDeviation.x) * (this.paramRange.high.x - this.paramRange.low.x),
-        (dS.y + standardDeviation.y) * (this.paramRange.high.y - this.paramRange.low.y),
+      this._paramDistanceRange.low.set(0, 0);
+      this._paramDistanceRange.high.set(
+        (dS.x + standardDeviation.x) * (this._paramRange.high.x - this._paramRange.low.x),
+        (dS.y + standardDeviation.y) * (this._paramRange.high.y - this._paramRange.low.y),
       );
     }
     return true;
@@ -555,12 +568,13 @@ export class IndexedPolyface extends Polyface {
       this.facetToFaceData = [];
   }
   /**
-   * *  Add facets from source to this polyface.
+   * * Add facets from source to this polyface.
    * * optionally reverse the facets.
    * * optionally apply a transform to points.
-   * * does NOT preserve face information from source.
+   * * will only copy param, normal, color, and face data if we are already tracking them AND/OR the source contains them
    */
   public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
+    // Add point data
     const sourceToDestPointIndex = new GrowableFloat64Array();
     sourceToDestPointIndex.ensureCapacity(source.data.pointCount);
     const sourcePoints = source.data.point;
@@ -574,7 +588,7 @@ export class IndexedPolyface extends Polyface {
         sourceToDestPointIndex.push(this.addPoint(xyz));
     }
 
-    // Add facet data
+    // Add point index and facet data
     const numSourceFacets = source.facetStart.length - 1;
     for (let i = 0; i < numSourceFacets; i++) {
       const i0 = source.facetStart[i];
@@ -589,6 +603,88 @@ export class IndexedPolyface extends Polyface {
         }
       }
       this.terminateFacet();
+    }
+
+    // Add param and param index data
+    if (this.data.param && source.data.param && source.data.paramIndex) {
+      const startOfNewParams = this.data.param.length;
+      for (let i = 0; i < source.data.param.length; i++) {
+        const sourceParam = source.data.param[i].clone();
+        if (transform) {
+          // TODO: Perform transformation
+          this.addParam(sourceParam);
+        } else {
+          this.addParam(sourceParam);
+        }
+      }
+      for (let i = 0; i < source.facetStart.length; i++) {  // Expect facet start and ends for points to match normals
+        const i0 = source.facetStart[i];
+        const i1 = source.facetStart[i + 1];
+        if (reversed) {
+          for (let j = i1; j-- > i0;)
+            this.addParamIndex(startOfNewParams + source.data.paramIndex[j - 1]);
+        } else {
+          for (let j = i0; j < i1; j++)
+            this.addPointIndex(startOfNewParams + source.data.paramIndex[j]);
+        }
+      }
+    }
+
+    // Add normal and normal index data
+    if (this.data.normal && source.data.normal && source.data.normalIndex) {
+      const startOfNewNormals = this.data.normal.length;
+      for (let i = 0; i < source.data.normal.length; i++) {
+        const sourceNormal = source.data.normal[i].clone();
+        if (transform) {
+          transform.multiplyVector(sourceNormal, sourceNormal);
+          this.addNormal(sourceNormal);
+        } else {
+          this.addNormal(sourceNormal);
+        }
+      }
+      for (let i = 0; i < source.facetStart.length; i++) {  // Expect facet start and ends for points to match normals
+        const i0 = source.facetStart[i];
+        const i1 = source.facetStart[i + 1];
+        if (reversed) {
+          for (let j = i1; j-- > i0;)
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j - 1]);
+        } else {
+          for (let j = i0; j < i1; j++)
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j]);
+        }
+      }
+    }
+
+    // Add color and color index data
+    if (this.data.color && source.data.color && source.data.colorIndex) {
+      const startOfNewColors = this.data.color.length;
+      for (let i = 0; i < source.data.color.length; i++) {
+        const sourceColor = source.data.color[i];
+        this.addColor(sourceColor);
+      }
+      for (let i = 0; i < source.facetStart.length; i++) {  // Expect facet start and ends for points to match colors
+        const i0 = source.facetStart[i];
+        const i1 = source.facetStart[i + 1];
+        if (reversed) {
+          for (let j = i1; j-- > i0;)
+            this.addColorIndex(startOfNewColors + source.data.colorIndex[j - 1]);
+        } else {
+          for (let j = i0; j < i1; j++)
+            this.addColorIndex(startOfNewColors + source.data.colorIndex[j]);
+        }
+      }
+    }
+
+    // Add face and facetToFace index data
+    if (source.data.face.length !== 0) {
+      const startOfNewFaceData = this.data.face.length;
+      for (let i = 0; i < source.data.face.length; i++) {
+        const sourceFaceData = source.data.face[i].clone();
+        this.data.face.push(sourceFaceData);
+      }
+      for (let i = 0; i < source.facetToFaceData.length; i++) {
+        this.facetToFaceData.push(startOfNewFaceData + source.facetToFaceData[i]);
+      }
     }
   }
 
