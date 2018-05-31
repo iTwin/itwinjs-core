@@ -240,7 +240,7 @@ describe("IModelWriteTest", () => {
     expect(codes.length > initialCodes.length);
   });
 
-  it.skip("should push changes with code conflicts (#integration)", async () => {
+  it("should push changes with code conflicts (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
@@ -297,19 +297,21 @@ describe("IModelWriteTest", () => {
     expect(codes[0].state === CodeState.Reserved);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency (#integration)", async () => {
+  it("should write to briefcase with optimistic concurrency (#integration)", async () => {
+    const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
+
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
-    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
+    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -345,14 +347,14 @@ describe("IModelWriteTest", () => {
 
     // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
     assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
-    assert.isTrue(await rwIModel.concurrencyControl.areAvailable(accessToken));
+    assert.isTrue(await rwIModel.concurrencyControl.areAvailable(adminAccessToken));
 
     timer.end();
     timer = new Timer("reserve Codes");
 
     // Reserve all of the codes that are required by the new model and category.
     try {
-      await rwIModel.concurrencyControl.request(accessToken);
+      await rwIModel.concurrencyControl.request(adminAccessToken);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
         assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
@@ -365,13 +367,13 @@ describe("IModelWriteTest", () => {
     // Verify that the codes are reserved.
     const category = rwIModel.elements.getElement(spatialCategoryId);
     assert.isTrue(category.code.value !== undefined);
-    const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
-    const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
+    const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(adminAccessToken, category.code.spec, category.code.scope);
+    const foundCode: MultiCode[] = codeStates.filter((cs) => (cs.value === category.code.value!) && (cs.state === CodeState.Reserved));
     assert.equal(foundCode.length, 1);
 
     /* NEEDS WORK - query just this one code
   assert.isTrue(category.code.value !== undefined);
-  const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+  const codeStates2 = await iModel.concurrencyControl.codes.query(adminAccessToken, category.code.spec, category.code.scope, category.code.value!);
   assert.equal(codeStates2.length, 1);
   assert.equal(codeStates2[0].values.length, 1);
   assert.equal(codeStates2[0].values[0], category.code.value!);
@@ -398,7 +400,7 @@ describe("IModelWriteTest", () => {
 
     // Push the changes to the hub
     const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(accessToken);
+    await rwIModel.pushChanges(adminAccessToken);
     const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
@@ -406,11 +408,11 @@ describe("IModelWriteTest", () => {
     timer.end();
 
     // Open a readonly copy of the iModel
-    const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenParams.fixedVersion(), IModelVersion.latest());
+    const roIModel: IModelDb = await IModelDb.open(adminAccessToken, testProjectId, rwIModelId!, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(roIModel);
 
-    await rwIModel.close(accessToken, KeepBriefcase.No);
-    await roIModel.close(accessToken);
+    await rwIModel.close(adminAccessToken, KeepBriefcase.No);
+    await roIModel.close(adminAccessToken);
   });
 
   it.skip("should make change sets (#integration)", async () => {

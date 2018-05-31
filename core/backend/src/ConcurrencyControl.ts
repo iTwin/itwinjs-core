@@ -6,7 +6,7 @@
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
-import {  Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
 import { Model } from "./Model";
 import { BriefcaseEntry } from "./BriefcaseManager";
@@ -170,7 +170,7 @@ export class ConcurrencyControl {
     if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
       return undefined;
 
-    return reqAny.Codes().map((cReq: any) => this.buildHubCodes(briefcaseEntry, cReq.Id, cReq.Scope, cReq.Name));
+    return reqAny.Codes.map((cReq: any) => this.buildHubCodes(briefcaseEntry, cReq.Id, cReq.Scope, cReq.Name));
   }
 
   private buildHubCodesFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): HubCode[] | undefined {
