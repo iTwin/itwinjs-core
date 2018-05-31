@@ -188,6 +188,23 @@
       "webRoot": "${workspaceRoot}",
       "sourceMaps": true
     }
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "SimpleViewTest (backend)",
+      "cwd": "${workspaceFolder}/simpleviewtest/",
+      "runtimeExecutable": "${workspaceFolder}\\simpleviewtest\\node_modules\\.bin\\electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/simpleviewtest/lib/backend/ElectronMain.js",
+        "--remote-debugging-port=9223"
+      ],
+      "protocol": "inspector",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ]
+    },
   ],
   "compounds": [
     {

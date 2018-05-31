@@ -1,4 +1,4 @@
-# Frequently used terms in iModelJs
+# Glossary of terms in iModelJs
 
 |Term | Definition
 |------------|------------|--------|--------|-------|
@@ -57,7 +57,7 @@
 |**Model**|A set of Elements used to describe another Element (its *ModeledElement*) in more detail. Every Element is *contained in* one and only one Model via a ModelContainsElements relationship. In this manner, Models form a hierarchy of Elements. There are many subclasses of Model (e.g. PhysicalModel, FunctionalModel, etc.)
 |**ModeledElement**|An Element that is *broken down in more detail* by a Model. Note that the *name* of a Model **is** the name of its ModeledElement, and the *ParentModel* of a Model **is** the Model of its ModeledElement.
 |**ModelSelector**|A named set of Models that are visible in a View. Many ViewDefinitions may point to the same ModelSelector.
-|**Node.js**|An [engine for running JavaScript](https://nodejs.org) outside a web browser.
+|**Node.js**|A [runtime for JavaScript](https://nodejs.org) outside a web browser.
 |**Npm**|[Node Package Manager](https://www.npmjs.com/). A tool for distributing JavaScript packages.
 |**ParentModel**|A derived property of Model that is equal to the Model of its ModeledElement.
 |**PhysicalModel**|A subclass of SpatialModel that holds PhysicalElements.

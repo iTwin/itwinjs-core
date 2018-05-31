@@ -11,4 +11,5 @@ export class Constant {
   public static readonly oneKilometer: number = 1000.0;
   public static readonly diameterOfEarth: number = 12742.0 * Constant.oneKilometer;
   public static readonly circumferenceOfEarth: number = 40075.0 * Constant.oneKilometer;
+  public static readonly radiansPerDegree: number = 0.0174532925;
 }

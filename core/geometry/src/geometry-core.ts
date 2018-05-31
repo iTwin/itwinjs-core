@@ -55,7 +55,7 @@
 
 /**
  * @docs-group-description Bspline
- * A bspline curve or surface is used for cuurved freeform geometry defined by controls points (sometimes called poles).
+ * A bspline curve or surface is used for curved freeform geometry defined by controls points (sometimes called poles).
  * * BSplineCurve --  a curve in XYZ coordinates
  * * BSplineSurfaceXYZ -- a surface with XYZ
  * * BsplineSurfaceXYZW -- a surface with weighted (rational) XYZ coordinates

@@ -11,6 +11,7 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { UserStatisticsQuery, UserStatistics } from "../../imodelhub/UserStatistics";
 import { TestUsers } from "../TestConfig";
+import { IModelHubRequestError, IModelHubRequestErrorId } from "../..";
 
 chai.should();
 
@@ -232,5 +233,17 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     chai.expect(iModelStatistics[0].ownedLocksCount).to.be.equal(user2OwnedLocksCount);
     chai.expect(iModelStatistics[0].briefcasesCount).to.be.equal(user2BriefcasesCount);
     chai.expect(iModelStatistics[0].pushedChangeSetsCount).to.be.equal(user2PushedChangesetsCount);
+  });
+
+  it("should fail to get user statistics without ids", async () => {
+    let error: IModelHubRequestError | undefined;
+    try {
+      await imodelHubClient.UserStatistics().get(accessToken, iModelId, new UserStatisticsQuery().byIds([]));
+    } catch (err) {
+      if (err instanceof IModelHubRequestError)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
   });
 });

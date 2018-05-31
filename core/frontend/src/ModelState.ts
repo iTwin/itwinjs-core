@@ -5,8 +5,9 @@
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
-import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement } from "@bentley/imodeljs-common";
+import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
+import { TileTree } from "./tile/TileTree";
 
 /** the state of a Model */
 export class ModelState extends EntityState implements ModelProps {
@@ -39,14 +40,36 @@ export class ModelState extends EntityState implements ModelProps {
     return val;
   }
   public getExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
+
+  public get isGeometricModel(): boolean { return false; }
 }
 
 /** the state of a geometric model */
 export abstract class GeometricModelState extends ModelState {
+  private _tileTree?: TileTree;
+  private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+
   public abstract get is3d(): boolean;
   public get is2d(): boolean { return !this.is3d; }
+  public get tileTree(): TileTree | undefined { return this._tileTree; }
+  public get isGeometricModel(): boolean { return true; }
+
+  public loadTileTree(): TileTree.LoadStatus {
+    if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
+      this._loadStatus = TileTree.LoadStatus.Loading;
+      const ids = Id64.toIdSet(this.id);
+      this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => { this.setTileTree(result[0]); }).catch((_err) => { this._loadStatus = TileTree.LoadStatus.NotFound; });
+    }
+
+    return this._loadStatus;
+  }
 
   protected constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
+
+  private setTileTree(props: TileTreeProps) {
+    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this));
+    this._loadStatus = TileTree.LoadStatus.Loaded;
+  }
 }
 
 /** the state of a 2d Geometric Model */

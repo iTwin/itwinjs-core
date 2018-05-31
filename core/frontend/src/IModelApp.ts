@@ -107,9 +107,8 @@ export class IModelApp {
     if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
     if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
 
-    if (undefined !== IModelApp._renderSystem) {
+    if (undefined !== IModelApp._renderSystem)
       IModelApp._renderSystem.onInitialized();
-    }
 
     IModelApp.viewManager.onInitialized();
     IModelApp.toolAdmin.onInitialized();
