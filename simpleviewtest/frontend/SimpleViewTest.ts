@@ -1,6 +1,6 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
@@ -241,7 +241,7 @@ async function main() {
   IModelApp.startup("QA", true);
 
   if (ElectronRpcConfiguration.isElectron)
-    ElectronRpcManager.initializeClient({}, [StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
   try {
     // initialize the Project and IModel Api

@@ -5,12 +5,11 @@
 import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
-import { RenderContext } from "../ViewContext";
+import { SceneContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { Viewport } from "../Viewport";
 import { TileIO } from "./TileIO";
 import { IModelTileIO } from "./IModelTileIO";
 
@@ -36,18 +35,6 @@ export class TileRequests {
 
     return found;
   }
-}
-
-export class SceneContext extends RenderContext {
-  public readonly graphics: RenderGraphic[] = [];
-  public readonly requests: TileRequests;
-
-  public constructor(vp: Viewport, requests: TileRequests) {
-    super(vp);
-    this.requests = requests;
-  }
-
-  public outputGraphic(graphic: RenderGraphic): void { this.graphics.push(graphic); }
 }
 
 export class Tile {

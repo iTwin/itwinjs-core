@@ -13,7 +13,8 @@ import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
-import { DecorateContext } from "./ViewContext";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
@@ -407,7 +408,6 @@ export class Viewport {
 
   private invalidateScene(): void {
     this.sync.invalidateScene();
-    this.view.invalidateScene();
   }
 
   private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
@@ -1416,14 +1416,14 @@ export class Viewport {
       this.setupFromView();
 
     if (!sync.isValidScene) {
-      // ###TODO: create scene...
-      // view.requestScene(this, plan, requests);
-      // const scene = view.useReadyScene();
-      // const task = new ChangeSceneTask(priority, target, scene, view.activeVolume);
-      // renderQueue.addTask(task);
+      const context = new SceneContext(this, new TileRequests());
+      view.createScene(context);
+      // ###TODO: request missing tiles
+      target.changeScene(context.graphics);
+
       isRedrawNeeded = true;
       sync.setValidScene();
-      // IModelApp.viewManager.notifyRenderSceneQueued(this);
+      // ###TODO? IModelApp.viewManager.notifyRenderSceneQueued(this);
     }
 
     if (!sync.isValidRenderPlan) {

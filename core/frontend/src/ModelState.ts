@@ -58,7 +58,11 @@ export abstract class GeometricModelState extends ModelState {
     if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
       this._loadStatus = TileTree.LoadStatus.Loading;
       const ids = Id64.toIdSet(this.id);
-      this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => { this.setTileTree(result[0]); }).catch((_err) => { this._loadStatus = TileTree.LoadStatus.NotFound; });
+      this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
+        this.setTileTree(result[0]);
+      }).catch((_err) => {
+        this._loadStatus = TileTree.LoadStatus.NotFound;
+      });
     }
 
     return this._loadStatus;
