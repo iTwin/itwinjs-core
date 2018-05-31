@@ -47,13 +47,13 @@ describe("IModelWriteTest", () => {
     [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
   });
 
-  it.skip("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
-    const firstUser = accessToken;
+  it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
+    const firstUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.super);
     const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
-    const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.user2);
+    const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.manager);
 
     const firstIModel: IModelDb = await IModelDb.open(firstUser, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
-    const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModels[1].id, OpenParams.pullOnly());
+    const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
     const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUser, testProjectId, testIModels[1].id, OpenParams.pullOnly());
     assert.notEqual(firstIModel, secondIModel);
 
@@ -115,6 +115,7 @@ describe("IModelWriteTest", () => {
     }
 
     // --- Test 2: Overlapping changes that are not conflicts  ---
+    /* **************** No. We do not support property-level change-merging.
 
     // firstUser: modify el1.userLabel
     const wasExpectedValueofEl1UserLabel = expectedValueofEl1UserLabel;
@@ -142,6 +143,7 @@ describe("IModelWriteTest", () => {
     if (true) {
       const el1before: Element = secondIModel.elements.getElement(el1);
       assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel);
+
       el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp }); // secondUser changes userProperties
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userProperties");
@@ -171,7 +173,7 @@ describe("IModelWriteTest", () => {
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
       assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
     }
-
+*/
     // --- Test 3: Non-overlapping changes ---
 
   });
