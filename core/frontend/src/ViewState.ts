@@ -342,7 +342,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
     // this.getGridSpacing(spacing);
     // this.getGridOrientation(vp, origin, rMatrix, orientation);
-    // context.drawStandardGrid(origin, rMatrix, spacing gridsPerRef, isoGrid, GridOrientationType.View !== orientation ? fixedRepsAUto : undefined);
+    // context.drawStandardGrid(origin, rMatrix, spacing gridsPerRef, isoGrid, GridOrientationType.View !== orientation ? fixedRepsAuto : undefined);
   }
 
   /**

@@ -35,7 +35,7 @@ Understanding the design and concepts in the iModelJs library requires a basic u
 * [iModels](./iModels) - the persistence layer for iModelJs
 * [IModelHub](./IModelHub) - the cloud-based hub for coordinating access to iModels
 * [iModel Bridges](./imodel-bridges) - the services that connect iModels with external data sources
-* It is also helpful to understand the concepts in [BIS](../bis/intro/introduction), the Base Infrastructure Schema
+* It is also helpful to understand the concepts in [BIS](../bis/index.md), the Base Infrastructure Schema
 * The [Programmer Documentation](../learning/index) explains the API in more detail.
 
 ## JavaScript vs. TypeScript
@@ -54,7 +54,7 @@ The iModelJs library is divided into these sub-packages:
 |---|---
 |**@bentley/bentleyjs-core**|General utilities that can be run in either the frontend or the backend.
 |**@bentley/geometry-core**|Operations on 2d and 3d geometry.
-|**@bentley/imodeljs-backend** |Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface. .
+|**@bentley/imodeljs-backend**|Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface.
 |**@bentley/imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tool) that modify iModels.
-|**@bentley/imodeljs-common** |Common between the frontend and backend.
+|**@bentley/imodeljs-common**|Common between the frontend and backend.
 |**@bentley/imodeljs-native**|Performs low-level I/O to an iModel. @bentley/imodeljs-backend depends on this package.

@@ -46,7 +46,7 @@ export class PolylineFlags {
     this.type = type;
   }
 
-  /** Create a PolylineFlags from a serialized numberic representation. */
+  /** Create a PolylineFlags from a serialized numeric representation. */
   public static unpack(value: number): PolylineFlags {
     const isDisjoint = 0 !== (value & 1);
     const isPlanar = 0 !== (value & 2);

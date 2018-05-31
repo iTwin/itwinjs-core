@@ -10,7 +10,7 @@
 - [iModels](./iModels.md)
 - [IModelHub](./IModelHub.md)
 - [iModel Bridges](./imodel-bridges.md)
-- [BIS Introduction](../bis/intro/introduction.md)
+- [BIS Introduction](../bis/index.md)
 - [iModelJs Architecture](./SoftwareArchitecture.md)
 - [RPC Interfaces](./RpcInterface.md)
 - [iModelJs Packages](./index.md#imodeljs-organization)
