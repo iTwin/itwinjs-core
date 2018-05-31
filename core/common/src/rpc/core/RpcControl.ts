@@ -4,12 +4,16 @@
 /** @module RpcInterface */
 
 import { RpcInterface } from "../../RpcInterface";
-import { RpcManager } from "../../RpcManager";
+import { RpcManager, RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcRequest, RpcRequestEvent, RpcRequestStatus } from "./RpcRequest";
 import { RpcProtocol, RpcProtocolEvent } from "./RpcProtocol";
 import { RpcInvocation } from "./RpcInvocation";
-import * as uuidv4 from "uuid/v4";
+import { RpcOperation } from "./RpcOperation";
+import { RpcRegistry } from "./RpcRegistry";
+import { IModelToken } from "../../IModel";
+import { IModelError } from "../../IModelError";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 // tslint:disable:space-before-function-paren
 let obtainLock = 0;
@@ -39,39 +43,30 @@ export class RpcNotFoundResponse extends RpcControlResponse {
 
 /** Manages requests and responses for an RPC configuration. */
 export class RpcControlChannel {
+  /** @hidden @internal */
+  public static channels: RpcControlChannel[] = [];
   private configuration: RpcConfiguration;
   private pendingInterval: any = undefined;
   private disposeInterval: any = undefined;
   private pending: RpcRequest[] = [];
-
   /** @hidden @internal */
   public requests: Map<string, RpcRequest> = new Map();
-
   private pendingLock: number = 0;
+  private initialized = false;
+  private clientActive = false;
+  private _describeEndpoints: () => Promise<RpcInterfaceEndpoints[]> = undefined as any;
 
   private constructor(configuration: RpcConfiguration) {
     this.configuration = configuration;
     RpcRequest.events.addListener(this.requestEventHandler, this);
     RpcProtocol.events.addListener(this.protocolEventHandler, this);
+    RpcControlChannel.channels.push(this);
+  }
 
-    class Channel extends RpcInterface {
-      public static readonly version = "1.0.0";
-      public static readonly types = () => [];
-      public static readonly id = uuidv4();
-    }
-
-    Object.defineProperty(Channel, "name", { value: Channel.id });
-
-    class ChannelImpl extends RpcInterface {
-    }
-
-    Object.defineProperty(ChannelImpl, "name", { value: Channel.id });
-
-    RpcConfiguration.assign(Channel, () => configuration.constructor as any);
-    RpcManager.registerImpl(Channel, ChannelImpl);
-    RpcManager.initializeInterface(Channel);
-
-    // const channel = RpcManager.getClientForInterface(Channel);
+  /** @hidden @internal */
+  public describeEndpoints() {
+    this.activateClient();
+    return this._describeEndpoints();
   }
 
   /** @hidden @internal */
@@ -240,5 +235,74 @@ export class RpcControlChannel {
       return;
 
     this.disposeInterval = setInterval(this.disposeIntervalHandler, 60000);
+  }
+
+  private channelInterface = class extends RpcInterface {
+    public static readonly version = "1.0.0";
+    public static readonly types = () => [];
+    public describeEndpoints(): Promise<RpcInterfaceEndpoints[]> { return this.forward.apply(this, arguments); }
+  };
+
+  private channelImpl = class extends RpcInterface {
+    public describeEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+      const endpoints: RpcInterfaceEndpoints[] = [];
+
+      this.configuration.interfaces().forEach((definition) => {
+        if (!RpcRegistry.instance.isRpcInterfaceInitialized(definition))
+          return;
+
+        const description: RpcInterfaceEndpoints = { interfaceName: definition.name, interfaceVersion: definition.version, operationNames: [] };
+        RpcOperation.forEach(definition, (operation) => description.operationNames.push(operation.operationName));
+        endpoints.push(description);
+      });
+
+      return Promise.resolve(endpoints);
+    }
+  };
+
+  private computeId(): string {
+    const interfaces: string[] = [];
+    this.configuration.interfaces().forEach((definition) => interfaces.push(`${definition.name}@${definition.version}`));
+    const id = interfaces.sort().join(",");
+
+    if (typeof (btoa) !== "undefined")
+      return btoa(id);
+    else if (typeof (Buffer) !== "undefined")
+      return Buffer.from(id, "binary").toString("base64");
+    else
+      return id;
+  }
+
+  private activateClient() {
+    if (this.clientActive)
+      return;
+
+    if (!this.initialized) {
+      if (this.configuration.interfaces().length)
+        throw new IModelError(BentleyStatus.ERROR, `Invalid state.`);
+
+      this.initialize(); // WIP...handshakes will eliminate this scenario
+    }
+
+    this.clientActive = true;
+    RpcOperation.forEach(this.channelInterface, (operation) => operation.policy.token = (_request) => new IModelToken("none", "none", "none", "none")); // probably need to get this from the app somehow...
+    const client = RpcManager.getClientForInterface(this.channelInterface);
+    this._describeEndpoints = () => client.describeEndpoints();
+  }
+
+  /** @hidden @internal */
+  public initialize() {
+    if (this.initialized)
+      throw new IModelError(BentleyStatus.ERROR, `Already initialized.`);
+
+    this.initialized = true;
+
+    const id = this.computeId();
+    Object.defineProperty(this.channelInterface, "name", { value: id });
+    Object.defineProperty(this.channelImpl, "name", { value: id });
+
+    RpcConfiguration.assign(this.channelInterface, () => this.configuration.constructor as any);
+    RpcManager.registerImpl(this.channelInterface, this.channelImpl);
+    RpcManager.initializeInterface(this.channelInterface);
   }
 }

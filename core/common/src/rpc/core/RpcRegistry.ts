@@ -94,6 +94,10 @@ export class RpcRegistry {
     this.suppliedImplementations.set(definition.name, instance);
   }
 
+  public isRpcInterfaceInitialized<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): boolean {
+    return this.definitionClasses.has(definition.name);
+  }
+
   public initializeRpcInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
     if (this.definitionClasses.has(definition.name))
       return;

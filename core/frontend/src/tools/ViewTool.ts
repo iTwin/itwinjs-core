@@ -73,7 +73,7 @@ export const ViewToolSettings = {
   viewBallRadius: 0.35, // percent of screen width
   walkVelocity: 3.5,      // in meters/second
   walkCameraAngle: Angle.createDegrees(75.6),  // in degrees
-  animationTime: BeDuration.fromSeconds(260),
+  animationTime: BeDuration.fromMilliseconds(260),
   animateZoom: false,
   pickSize: 13,
 };
@@ -614,7 +614,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
-
+    console.log(ViewToolSettings.animationTime.milliseconds); //tslint:disable-line
     if (doUpdate)
       viewport.animateFrustumChange(before, viewport.getFrustum(), ViewToolSettings.animationTime);
 
@@ -1327,8 +1327,7 @@ export class FitViewTool extends ViewTool {
   }
 
   public doFit(viewport: Viewport, oneShot: boolean): boolean {
-    const doAnimate = false; // ###TODO animateFrustumChange() appears to be borked.
-    ViewManip.fitView(viewport, doAnimate);
+    ViewManip.fitView(viewport, true);
     if (oneShot)
       this.exitTool();
     return oneShot;
@@ -1419,7 +1418,7 @@ export class WindowAreaTool extends ViewTool {
       shape[0].y = shape[1].y = corners[0].y;
       shape[2].y = shape[3].y = corners[1].y;
       shape[0].z = shape[1].z = shape[2].z = shape[3].z = corners[0].z;
-      shape[4] = shape[0];
+      shape[4].setFrom(shape[0]);
 
       this.viewport.viewToWorldArray(shape);
 

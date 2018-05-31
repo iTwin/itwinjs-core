@@ -15,8 +15,6 @@ import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
-chai.should();
-
 function mockGetBriefcaseById(imodelId: string, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
     return;

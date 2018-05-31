@@ -4,7 +4,7 @@
 
 import { TileIO } from "./TileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { Triangle } from "../render/primitives/primitives";
+import { Triangle } from "../render/primitives/Primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline } from "@bentley/imodeljs-common";

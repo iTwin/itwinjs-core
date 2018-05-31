@@ -63,6 +63,7 @@ export abstract class RpcConfiguration {
   /** Initializes the RPC interfaces managed by the configuration. */
   public static initializeInterfaces(configuration: RpcConfiguration) {
     configuration.interfaces().forEach((definition) => RpcManager.initializeInterface(definition));
+    configuration.controlChannel.initialize();
   }
 
   /** @hidden @internal */

@@ -262,4 +262,11 @@ describe("RpcInterface", () => {
 
     removeResolver();
   });
+
+  it("should describe available RPC endpoints from the frontend", async () => {
+    const endpoints = await RpcManager.describeAvailableEndpoints();
+    assert.equal(endpoints[0].interfaceName, "IModelReadRpcInterface");
+    assert.equal(endpoints[0].operationNames[0], "openForRead");
+    assert(typeof (endpoints[0].interfaceVersion) === "string");
+  });
 });

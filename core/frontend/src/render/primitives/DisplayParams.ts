@@ -22,7 +22,7 @@ export class DisplayParams {
   public readonly ignoreLighting: boolean; // always true for text and linear geometry; true for meshes only if normals not desired
 
   public constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width: number = 0, linePixels: LinePixels = LinePixels.Solid,
-      fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, textureMapping?: TextureMapping, ignoreLighting: boolean = false) {
+    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, textureMapping?: TextureMapping, ignoreLighting: boolean = false) {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
@@ -83,8 +83,8 @@ export class DisplayParams {
   }
 
   public get hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
-  public get hasFillTransparency(): boolean { return 0 !== this.fillColor.getAlpha(); }
-  public get hasLineTransparency(): boolean { return 0 !== this.lineColor.getAlpha(); }
+  public get hasFillTransparency(): boolean { return 255 !== this.fillColor.getAlpha(); }
+  public get hasLineTransparency(): boolean { return 255 !== this.lineColor.getAlpha(); }
   public get isTextured(): boolean { return false; } // return this.textureMapping.isValid(); }
 
   /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
