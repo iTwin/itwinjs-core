@@ -690,4 +690,32 @@ describe("TileIO", () => {
       }
     }
   });
+
+  it("should obtain tiles from backend", async () => {
+    // This data set contains 4 physical models: 0x1c (empty), 0x22, 0x23, and 0x24. The latter 3 collectively contain 4 spheres.
+    const modelProps = await imodel.models.getProps("0x22");
+    expect(modelProps.length).to.equal(1);
+
+    const treeIds = Id64.toIdSet(modelProps[0].id!);
+    const tileTreeProps = await imodel.tiles.getTileTreeProps(treeIds);
+    expect(tileTreeProps.length).to.equal(1);
+
+    const tree = tileTreeProps[0];
+    expect(tree.id).to.equal(modelProps[0].id);
+    expect(tree.maxTilesToSkip).to.equal(1);
+    expect(tree.rootTile).not.to.be.undefined;
+
+    const rootTile = tree.rootTile;
+    expect(rootTile.id.treeId).to.equal(tree.id);
+    expect(rootTile.id.tileId).to.equal("0/0/0/0:1.000000");
+
+    if (undefined === rootTile.geometry || undefined === rootTile.contentRange)
+      return; // ###TODO: The add-on doesn't wait for tile geometry to be saved to the cache, so it may be undefined...
+
+    expect(rootTile.geometry).not.to.be.undefined;
+    expect(rootTile.contentRange).not.to.be.undefined;
+
+    expect(rootTile.childIds).not.to.be.undefined;
+    expect(rootTile.childIds.length).to.equal(1); // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
+  });
 });
