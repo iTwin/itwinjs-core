@@ -51,6 +51,23 @@ function retrieveConfigurationOverrides(configuration: any) {
   request.send();
 }
 
+// Apply environment overrides to configuration.
+// This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
+function applyConfigurationOverrides(config: any): void {
+  const electron = (window as any).require("electron");
+  const remote = electron.remote;
+  if (undefined === remote)
+    return;
+
+  const filename = remote.process.env.SVT_STANDALONE_FILENAME;
+  const viewName = remote.process.env.SVT_STANDALONE_VIEWNAME;
+  if (undefined !== filename && undefined !== viewName) {
+    config.iModelName = filename;
+    config.viewName = viewName;
+    config.standalone = true;
+  }
+}
+
 // log in to connect
 async function loginToConnect(state: SimpleViewState, userName: string, password: string) {
   // tslint:disable-next-line:no-console
@@ -217,6 +234,7 @@ async function main() {
 
   // override anything that's in the configuration
   retrieveConfigurationOverrides(configuration);
+  applyConfigurationOverrides(configuration);
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
