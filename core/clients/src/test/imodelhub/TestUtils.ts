@@ -455,11 +455,11 @@ export function generateVersion(name?: string, changesetId?: string, smallThumbn
   return result;
 }
 
-export function mockGetVersions(imodelId: string, ...versions: Version[]) {
+export function mockGetVersions(imodelId: string, query?: string, ...versions: Version[]) {
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Version");
+  const requestPath = createRequestUrl(ScopeType.iModel, imodelId, "Version", query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<Version>(versions);
   ResponseBuilder.mockResponse(defaultUrl, RequestType.Get, requestPath, requestResponse);
 }

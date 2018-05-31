@@ -104,7 +104,7 @@ describe("iModelHub VersionHandler", () => {
 
   it("should get named versions", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(iModelId, ...mockedVersions);
+    utils.mockGetVersions(iModelId, undefined, ...mockedVersions);
     // Needs to create before expecting more than 0
     const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
 
@@ -117,9 +117,23 @@ describe("iModelHub VersionHandler", () => {
     }
   });
 
+  it("should query named versions by ChangeSet id", async function (this: Mocha.ITestCallbackContext) {
+    const mockedVersion = utils.generateVersion();
+    utils.mockGetVersions(iModelId, undefined, mockedVersion);
+    utils.mockGetVersions(iModelId, `?$filter=ChangeSetId+eq+%27${mockedVersion.changeSetId!}%27`, mockedVersion);
+
+    const expectedVersion: Version = (await imodelHubClient.Versions().get(accessToken, iModelId))[0];
+    chai.assert(expectedVersion);
+
+    const version: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId, new VersionQuery().byChangeSet(expectedVersion.changeSetId!));
+    chai.assert(version);
+    chai.expect(version.length).to.be.equal(1);
+    chai.expect(version[0].changeSetId).to.be.equal(expectedVersion.changeSetId);
+  });
+
   it("should get named versions with thumbnail id", async () => {
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(iModelId, ...mockedVersions);
+    utils.mockGetVersions(iModelId, undefined, ...mockedVersions);
     let versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId, new VersionQuery());
     chai.expect(versions.length >= 1);
     const firstVersion = versions[versions.length - 1];
@@ -153,7 +167,7 @@ describe("iModelHub VersionHandler", () => {
 
   it("should update named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(iModelId, ...mockedVersions);
+    utils.mockGetVersions(iModelId, undefined, ...mockedVersions);
 
     let version: Version = (await imodelHubClient.Versions().get(accessToken, iModelId))[0];
     chai.assert(!!version);

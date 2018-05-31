@@ -25,6 +25,11 @@ describe("iModelHub ChangeSetHandler", () => {
   const imodelName = "imodeljs-clients ChangeSets test";
   const imodelHubClient: IModelHubClient = utils.getDefaultClient();
 
+  const cumulativeChangeSetBackwardVersionId = "CumulativeChangeSet-backward-Version.Id";
+  const cumulativeChangeSetBackwardChangeSetId = "CumulativeChangeSet-backward-ChangeSet.Id";
+  const followingChangeSetBackwardVersionId = "FollowingChangeSet-backward-Version.Id";
+  const followingChangesetBackwardChangesetId = "FollowingChangeSet-backward-ChangeSet.Id";
+
   before(async () => {
     accessToken = await utils.login();
     await utils.createIModel(accessToken, imodelName);
@@ -142,7 +147,7 @@ describe("iModelHub ChangeSetHandler", () => {
     const lastButOneId = lastButOneChangeSet.id || lastButOneChangeSet.wsgId;
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
-        `?$filter=FollowingChangeSet-backward-ChangeSet.Id+eq+%27${lastButOneId}%27`);
+        `?$filter=${followingChangesetBackwardChangesetId}+eq+%27${lastButOneId}%27`);
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, ResponseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
     }
     const followingChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().fromId(lastButOneId));
@@ -269,10 +274,10 @@ describe("iModelHub ChangeSetHandler", () => {
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
 
-      let filter = `(CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[0].id}%27`;
-      filter += `+and+FollowingChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[2].id}%27)`;
-      filter += `+or+(CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[2].id}%27`;
-      filter += `+and+FollowingChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[0].id}%27)`;
+      let filter = `(${cumulativeChangeSetBackwardChangeSetId}+eq+%27${mockedChangeSets[0].id}%27`;
+      filter += `+and+${followingChangesetBackwardChangesetId}+eq+%27${mockedChangeSets[2].id}%27)`;
+      filter += `+or+(${cumulativeChangeSetBackwardChangeSetId}+eq+%27${mockedChangeSets[2].id}%27`;
+      filter += `+and+${followingChangesetBackwardChangesetId}+eq+%27${mockedChangeSets[0].id}%27)`;
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
         `?$filter=${filter}`);
@@ -296,7 +301,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
 
-      const filter = `CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[2].id}%27`;
+      const filter = `${cumulativeChangeSetBackwardChangeSetId}+eq+%27${mockedChangeSets[2].id}%27`;
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
         `?$filter=${filter}`);
@@ -320,12 +325,12 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get version changesets", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersion = utils.generateVersion();
-      utils.mockGetVersions(iModelId, mockedVersion);
+      utils.mockGetVersions(iModelId, undefined, mockedVersion);
 
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
 
-      const filter = `CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersion.wsgId}%27`;
+      const filter = `${cumulativeChangeSetBackwardVersionId}+eq+%27${mockedVersion.wsgId}%27`;
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
         `?$filter=${filter}`);
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
@@ -348,12 +353,12 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get changesets after version", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersion = Array(3).fill(0).map(() => utils.generateVersion());
-      utils.mockGetVersions(iModelId, ...mockedVersion);
+      utils.mockGetVersions(iModelId, undefined, ...mockedVersion);
 
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
 
-      const filter = `FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersion[1].wsgId}%27`;
+      const filter = `${followingChangeSetBackwardVersionId}+eq+%27${mockedVersion[1].wsgId}%27`;
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
         `?$filter=${filter}`);
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
@@ -376,15 +381,15 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should query changesets between versions", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
-      utils.mockGetVersions(iModelId, ...mockedVersions);
+      utils.mockGetVersions(iModelId, undefined, ...mockedVersions);
 
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
 
-      let filter = `(FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersions[0].wsgId}%27`;
-      filter += `+and+CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersions[2].wsgId}%27)`;
-      filter += `+or+(FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersions[2].wsgId}%27`;
-      filter += `+and+CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersions[0].wsgId}%27)`;
+      let filter = `(${followingChangeSetBackwardVersionId}+eq+%27${mockedVersions[0].wsgId}%27`;
+      filter += `+and+${cumulativeChangeSetBackwardVersionId}+eq+%27${mockedVersions[2].wsgId}%27)`;
+      filter += `+or+(${followingChangeSetBackwardVersionId}+eq+%27${mockedVersions[2].wsgId}%27`;
+      filter += `+and+${cumulativeChangeSetBackwardVersionId}+eq+%27${mockedVersions[0].wsgId}%27)`;
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
         `?$filter=${filter}`);
@@ -410,16 +415,16 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should query changesets between version and changeset", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const mockedVersion = utils.generateVersion();
-      utils.mockGetVersions(iModelId, mockedVersion);
+      utils.mockGetVersions(iModelId, undefined, mockedVersion);
 
       const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
       utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
 
-      let filter = `(CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersion.wsgId}%27+and+`;
-      filter += `FollowingChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[1].id}%27)`;
+      let filter = `(${cumulativeChangeSetBackwardVersionId}+eq+%27${mockedVersion.wsgId}%27+and+`;
+      filter += `${followingChangesetBackwardChangesetId}+eq+%27${mockedChangeSets[1].id}%27)`;
       filter += `+or+`;
-      filter += `(FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersion.wsgId}%27+and+`;
-      filter += `CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[1].id}%27)`;
+      filter += `(${followingChangeSetBackwardVersionId}+eq+%27${mockedVersion.wsgId}%27+and+`;
+      filter += `${cumulativeChangeSetBackwardChangeSetId}+eq+%27${mockedChangeSets[1].id}%27)`;
 
       const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
         `?$filter=${filter}`);
