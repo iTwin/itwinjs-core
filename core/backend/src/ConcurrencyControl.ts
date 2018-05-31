@@ -183,24 +183,6 @@ export class ConcurrencyControl {
     if (!reqAny.hasOwnProperty("Locks") || reqAny.Locks.length === 0)
       return undefined;
 
-    /*
-    const bySpecId: Map<string, any> = new Map();
-    for (const cReq of reqAny.Locks) {
-      let byScope: Map<string, MultiCode> | undefined = bySpecId.get(cReq.Id);
-      if (byScope === undefined)
-        bySpecId.set(cReq.Id, (byScope = new Map()));
-
-      let thisReq: MultiCode | undefined = byScope.get(cReq.Scope);
-      if (thisReq === undefined) {
-        thisReq = this.buildCodeRequest(briefcaseEntry, cReq.Id, cReq.Scope);
-        byScope.set(cReq.Scope, (thisReq = thisReq));
-      }
-
-      thisReq.values.push(cReq.Name);
-    }
-
-    return bySpecId;
-    */
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
