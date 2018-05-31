@@ -10,7 +10,7 @@ import { TestConfig } from "../TestConfig";
 
 import { AccessToken } from "../../";
 import {
-  IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubRequestError, IModelHubRequestErrorId,
+  IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubRequestError, IModelHubRequestErrorId, Version,
 } from "../../imodelhub";
 
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -39,13 +39,17 @@ describe("iModelHub ChangeSetHandler", () => {
     }
     briefcase = (await utils.getBriefcases(accessToken, iModelId, 1))[0];
 
-    // Ensure that at least two exist
-    await utils.createChangeSets(accessToken, iModelId, briefcase, 0, 2);
+    // Ensure that at least 3 exist
+    await utils.createChangeSets(accessToken, iModelId, briefcase, 0, 3);
 
     if (!TestConfig.enableMocks) {
       const changesets = (await imodelHubClient.ChangeSets().get(accessToken, iModelId));
       // Ensure that at least one lock exists
-      await utils.createLocks(accessToken, iModelId, briefcase, 1, 2, 2, changesets[0].id, changesets[0].string);
+      await utils.createLocks(accessToken, iModelId, briefcase, 1, 2, 2, changesets[0].id, changesets[0].index);
+
+      // Create named versions
+      utils.createVersions(accessToken, iModelId, [changesets[0].id!, changesets[1].id!, changesets[2].id!],
+        ["Version 1", "Version 2", "Version 3"]);
     }
 
     if (!fs.existsSync(utils.workDir)) {
@@ -258,5 +262,204 @@ describe("iModelHub ChangeSetHandler", () => {
     }
     chai.assert(error);
     chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
+  });
+
+  it("should query between changesets", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+      utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
+
+      let filter = `(CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[0].id}%27`;
+      filter += `+and+FollowingChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[2].id}%27)`;
+      filter += `+or+(CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[2].id}%27`;
+      filter += `+and+FollowingChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[0].id}%27)`;
+
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=${filter}`);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
+    }
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
+    chai.expect(changeSets.length).to.be.greaterThan(2);
+
+    const selectedChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId,
+      new ChangeSetQuery().betweenChangeSets(changeSets[0].id!, changeSets[2].id));
+    chai.expect(selectedChangeSets.length).to.be.equal(2);
+    chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
+    chai.expect(selectedChangeSets[0].seedFileId).to.be.equal(changeSets[1].seedFileId);
+    chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[2].id);
+    chai.expect(selectedChangeSets[1].seedFileId).to.be.equal(changeSets[2].seedFileId);
+  });
+
+  it("should query between changeset", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+      utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
+
+      const filter = `CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[2].id}%27`;
+
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=${filter}`);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateGetArrayResponse([mockedChangeSets[0], mockedChangeSets[1], mockedChangeSets[2]]));
+    }
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
+    chai.expect(changeSets.length).to.be.greaterThan(2);
+
+    const selectedChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId,
+      new ChangeSetQuery().betweenChangeSets(changeSets[2].id!));
+    chai.expect(selectedChangeSets.length).to.be.equal(3);
+    chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
+    chai.expect(selectedChangeSets[0].seedFileId).to.be.equal(changeSets[0].seedFileId);
+    chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[1].id);
+    chai.expect(selectedChangeSets[1].seedFileId).to.be.equal(changeSets[1].seedFileId);
+    chai.expect(selectedChangeSets[2].id).to.be.equal(changeSets[2].id);
+    chai.expect(selectedChangeSets[2].seedFileId).to.be.equal(changeSets[2].seedFileId);
+  });
+
+  it("should get version changesets", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedVersion = utils.generateVersion();
+      utils.mockGetVersions(iModelId, mockedVersion);
+
+      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+      utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
+
+      const filter = `CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersion.wsgId}%27`;
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=${filter}`);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
+    }
+
+    const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
+    chai.assert(versions);
+    chai.expect(versions.length).to.be.greaterThan(0);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
+    chai.expect(changeSets.length).to.be.greaterThan(2);
+
+    const selectedChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId,
+      new ChangeSetQuery().getVersionChangeSets(versions[versions.length - 1].wsgId));
+    chai.expect(selectedChangeSets.length).to.be.equal(1);
+    chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
+    chai.expect(selectedChangeSets[0].seedFileId).to.be.equal(changeSets[0].seedFileId);
+  });
+
+  it("should get changesets after version", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedVersion = Array(3).fill(0).map(() => utils.generateVersion());
+      utils.mockGetVersions(iModelId, ...mockedVersion);
+
+      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+      utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
+
+      const filter = `FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersion[1].wsgId}%27`;
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=${filter}`);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateGetArrayResponse([mockedChangeSets[2], mockedChangeSets[1]]));
+    }
+
+    const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
+    chai.assert(versions);
+    chai.expect(versions.length).to.be.greaterThan(1);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
+    chai.expect(changeSets.length).to.be.greaterThan(2);
+
+    const selectedChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId,
+      new ChangeSetQuery().afterVersion(versions[versions.length - 2].wsgId));
+    chai.expect(selectedChangeSets.length).to.be.greaterThan(1);
+    chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[2].id);
+    chai.expect(selectedChangeSets[0].seedFileId).to.be.equal(changeSets[2].seedFileId);
+  });
+
+  it("should query changesets between versions", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
+      utils.mockGetVersions(iModelId, ...mockedVersions);
+
+      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+      utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
+
+      let filter = `(FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersions[0].wsgId}%27`;
+      filter += `+and+CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersions[2].wsgId}%27)`;
+      filter += `+or+(FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersions[2].wsgId}%27`;
+      filter += `+and+CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersions[0].wsgId}%27)`;
+
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=${filter}`);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
+    }
+
+    const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
+    chai.assert(versions);
+    chai.expect(versions.length).to.be.greaterThan(1);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
+    chai.expect(changeSets.length).to.be.greaterThan(2);
+
+    const selectedChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId,
+      new ChangeSetQuery().betweenVersions(versions[0].wsgId, versions[2].wsgId));
+    chai.expect(selectedChangeSets.length).to.be.equal(2);
+    chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
+    chai.expect(selectedChangeSets[0].seedFileId).to.be.equal(changeSets[1].seedFileId);
+    chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[2].id);
+    chai.expect(selectedChangeSets[1].seedFileId).to.be.equal(changeSets[2].seedFileId);
+  });
+
+  it("should query changesets between version and changeset", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedVersion = utils.generateVersion();
+      utils.mockGetVersions(iModelId, mockedVersion);
+
+      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+      utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
+
+      let filter = `(CumulativeChangeSet-backward-Version.Id+eq+%27${mockedVersion.wsgId}%27+and+`;
+      filter += `FollowingChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[1].id}%27)`;
+      filter += `+or+`;
+      filter += `(FollowingChangeSet-backward-Version.Id+eq+%27${mockedVersion.wsgId}%27+and+`;
+      filter += `CumulativeChangeSet-backward-ChangeSet.Id+eq+%27${mockedChangeSets[1].id}%27)`;
+
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=${filter}`);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateGetResponse(mockedChangeSets[1]));
+    }
+
+    const versions: Version[] = await imodelHubClient.Versions().get(accessToken, iModelId);
+    chai.assert(versions);
+    chai.expect(versions.length).to.be.greaterThan(0);
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
+    chai.expect(changeSets.length).to.be.greaterThan(2);
+
+    const selectedChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId,
+      new ChangeSetQuery().betweenVersionAndChangeSet(versions[versions.length - 1].wsgId, changeSets[1].id!));
+    chai.expect(selectedChangeSets.length).to.be.equal(1);
+    chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
+    chai.expect(selectedChangeSets[0].seedFileId).to.be.equal(changeSets[1].seedFileId);
+  });
+
+  it("should query changesets by seed file id", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
+      utils.mockGetChangeSet(iModelId, true, undefined, ...mockedChangeSets);
+
+      const filter = `SeedFileId+eq+%27${mockedChangeSets[0].seedFileId!}%27`;
+
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet",
+        `?$filter=${filter}`);
+      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath,
+        ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
+    }
+    const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().selectDownloadUrl());
+    chai.expect(changeSets.length).to.be.greaterThan(0);
+
+    const selectedChangeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(accessToken, iModelId,
+      new ChangeSetQuery().bySeedFileId(changeSets[0].seedFileId!));
+    chai.expect(selectedChangeSets.length).to.be.greaterThan(0);
+    selectedChangeSets.forEach((cs: ChangeSet) => {
+      chai.expect(cs.seedFileId!).to.be.equal(changeSets[0].seedFileId!);
+    });
   });
 });

@@ -263,6 +263,17 @@ export class CodeQuery extends Query {
     this._isMultiCodeQuery = false;
     return super.top(n);
   }
+
+  /**
+   * Query unavailable Codes.
+   * @param briefcaseId Id of the briefcase.
+   * @returns This query.
+   */
+  public unavailableCodes(briefcaseId: number) {
+    const filter = `BriefcaseId+ne+${briefcaseId}`;
+    this.addFilter(filter);
+    return this;
+  }
 }
 
 /**

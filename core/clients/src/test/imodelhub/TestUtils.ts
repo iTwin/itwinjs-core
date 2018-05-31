@@ -14,7 +14,7 @@ import {
 import {
   IModelHubClient, Code, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
-  MultiLock, Lock,
+  MultiLock, Lock, VersionQuery,
 } from "../../imodelhub/";
 import { IModelHubBaseHandler } from "../../imodelhub/BaseHandler";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
@@ -631,6 +631,20 @@ export async function createLocks(accessToken: AccessToken, imodelId: string, br
   }
 
   await client.Locks().update(accessToken, imodelId, generatedLocks);
+}
+
+export async function createVersions(accessToken: AccessToken, imodelId: string, changesetIds: string[], versionNames: string[]) {
+  if (TestConfig.enableMocks)
+    return;
+
+  const client = getDefaultClient();
+  for (let i = 0; i < changesetIds.length; i++) {
+    // check if changeset does not have version
+    const version = await client.Versions().get(accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
+    if (!version || version.length === 0) {
+      await client.Versions().create(accessToken, imodelId, changesetIds[i], versionNames[i]);
+    }
+  }
 }
 
 export class ProgressTracker {
