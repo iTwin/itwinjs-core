@@ -208,7 +208,6 @@ export class GlobalEventSubscriptionHandler {
  * Handler for all methods related to iModel Hub global events.
  */
 export class GlobalEventHandler extends EventBaseHandler {
-  private _handler: IModelHubBaseHandler;
   private _subscriptionHandler: GlobalEventSubscriptionHandler | undefined;
 
   /**

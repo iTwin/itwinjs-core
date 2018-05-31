@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "6.1.2",
+  "version": "6.2.0",
   "description": "Clients for various Bentley Services used by iModelJs",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -60,7 +60,6 @@
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
   ],
   "dependencies": {
-    "clone": "^2.1.1",
     "deep-assign": "^2.0.0",
     "js-base64": "^2.4.0",
     "qs": "^6.5.1",

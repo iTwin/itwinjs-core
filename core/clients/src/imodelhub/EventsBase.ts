@@ -8,6 +8,7 @@ import { DefaultRequestOptionsProvider } from "../Client";
 import { ECJsonTypeMap, WsgInstance } from "../ECJsonTypeMap";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../Token";
+import { IModelHubBaseHandler } from "./BaseHandler";
 
 export abstract class BaseEventSAS extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BaseAddress")
@@ -35,6 +36,7 @@ export abstract class IModelHubBaseEvent {
 }
 
 export abstract class EventBaseHandler {
+  protected _handler: IModelHubBaseHandler;
   /** Gets service bus parser depending on the environment. */
   protected setServiceBusOptions(options: RequestOptions) {
     const parse: (str: string) => any = (message: string) => {
@@ -74,6 +76,7 @@ export abstract class EventBaseHandler {
     const options: RequestOptions = {
       method: "DELETE",
       headers: { authorization: sasToken },
+      agent: this._handler.getAgent(),
     };
 
     // Request timeout is in seconds, wait 50% more than the expected timeout from server
