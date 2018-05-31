@@ -2,11 +2,12 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps } from "@bentley/imodeljs-common";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageSource, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
+import { RenderSystem } from "./rendering";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a View */
 export abstract class DisplayStyleState extends ElementState {
@@ -70,7 +71,7 @@ export class GroundPlane {
   }
 }
 
-/** the SkyBox is a draws in the background of spatial views to provide context. */
+/** the SkyBox is a grid drawn in the background of spatial views to provide context. */
 export class SkyBox {
   public display: boolean = false;
   public twoColor: boolean = false;
@@ -128,6 +129,7 @@ export class Environment {
 
 /** A DisplayStyle for 3d views */
 export class DisplayStyle3dState extends DisplayStyleState {
+  public skyboxMaterial: RenderMaterial | undefined;
   public constructor(props: ElementProps, iModel: IModelConnection) { super(props, iModel); }
   public getHiddenLineParams(): HiddenLine.Params { return new HiddenLine.Params(this.getStyle("hline")); }
   public setHiddenLineParams(params: HiddenLine.Params) { this.setStyle("hline", params); }
@@ -171,4 +173,75 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
+
+  /** Attempts to create a texture and load a SkyBox material from the environment. Returns true on success, and false otherwise. */
+  public loadSkyBoxMaterial(system: RenderSystem): boolean {
+    const env = this.getEnvironment();
+    if (env.sky.display)
+      return true;
+
+    let texture: RenderTexture | undefined;
+
+    // ### TODO
+    // if (env.sky.jpegFile.length !== 0)
+    // Read jpeg data from file
+
+    // we didn't get a jpeg sky, just create a gradient
+    if (!texture) {
+      const gradientPixelCount = 1024;
+      const sizeOfColorDef = 4;
+
+      const buffer = new Uint8Array(gradientPixelCount * sizeOfColorDef);
+      let currentBufferIdx = 0;
+      let color1: ColorDef;
+      let color2: ColorDef;
+
+      // set up the 4 color gradient
+      for (let i = 0; i < gradientPixelCount; i++ , currentBufferIdx++) {
+        let frac = i / gradientPixelCount;
+
+        if (env.sky.twoColor) {
+          color1 = env.sky.zenithColor;
+          color2 = env.sky.nadirColor;
+        } else if (frac > 0.5) {
+          color1 = env.sky.nadirColor;
+          color2 = env.sky.groundColor;
+          frac = 1.0 - (2.0 * (frac - 0.5));
+          frac = Math.pow(frac, env.sky.groundExponent);
+        } else {
+          color1 = env.sky.zenithColor;
+          color2 = env.sky.skyColor;
+          frac = 2.0 * frac;
+          frac = Math.pow(frac, env.sky.skyExponent);
+        }
+
+        color1.lerp(color2, frac);
+        color1.setAlpha(color1.getAlpha() + frac * (color2.getAlpha() - color1.getAlpha()));
+        buffer[currentBufferIdx] = color1.colors.r;
+        buffer[currentBufferIdx + 1] = color1.colors.g;
+        buffer[currentBufferIdx + 2] = color1.colors.b;
+        buffer[currentBufferIdx + 3] = color1.getAlpha();
+      }
+      const image = ImageBuffer.create(buffer, ImageBufferFormat.Rgba, 1);
+      if (!image)
+        return false;
+      texture = system.createTexture(image, this.iModel, RenderTexture.Params.defaults);
+      if (!texture)
+        return false;
+    }
+
+    const matParams = RenderMaterial.Params.defaults;
+    matParams.diffuseColor = ColorDef.white;
+    matParams.shadows = false;
+    matParams.ambient = 1;
+    matParams.diffuse = 0;
+
+    const mapParams = new TextureMapping.Params();
+    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
+    mapParams.textureMatrix = transform;
+    mapParams.textureMatrix.setTransform();
+    matParams.textureMapping = new TextureMapping(texture, mapParams);
+
+    this.skyboxMaterial = system.createMaterial(matParams, this.iModel);
+  }
 }
