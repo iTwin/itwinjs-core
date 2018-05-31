@@ -2,12 +2,18 @@
 
 ## Shared across disciplines
 
-### [SpatialComposition](./building-spatial.md)
+### [SpatialComposition](./spatial-composition.md)
 
-### [ClassificationSystems](./classifications)
+### [ClassificationSystems](./classification-systems.md)
 
-### [Grids](./grids)
+### [Grids](./grids.md)
 
 ## Building discipline
 
-## [BuildingSpatial](./building-spatial)
+### [BuildingSpatial](./building-spatial.md)
+
+## Application
+
+## [Building Concept Station](./building-concept-station.md)
+
+## [AecoSim Building Designer](./building-designer.md)
