@@ -608,8 +608,8 @@ export class IndexedPolyface extends Polyface {
     // Add param and param index data
     if (this.data.param && source.data.param && source.data.paramIndex) {
       const startOfNewParams = this.data.param.length;
-      for (let i = 0; i < source.data.param.length; i++) {
-        const sourceParam = source.data.param[i].clone();
+      for (const param of source.data.param) {
+        const sourceParam = param.clone();
         if (transform) {
           // TODO: Perform transformation
           this.addParam(sourceParam);
@@ -633,8 +633,8 @@ export class IndexedPolyface extends Polyface {
     // Add normal and normal index data
     if (this.data.normal && source.data.normal && source.data.normalIndex) {
       const startOfNewNormals = this.data.normal.length;
-      for (let i = 0; i < source.data.normal.length; i++) {
-        const sourceNormal = source.data.normal[i].clone();
+      for (const normal of source.data.normal) {
+        const sourceNormal = normal.clone();
         if (transform) {
           transform.multiplyVector(sourceNormal, sourceNormal);
           this.addNormal(sourceNormal);
@@ -658,8 +658,7 @@ export class IndexedPolyface extends Polyface {
     // Add color and color index data
     if (this.data.color && source.data.color && source.data.colorIndex) {
       const startOfNewColors = this.data.color.length;
-      for (let i = 0; i < source.data.color.length; i++) {
-        const sourceColor = source.data.color[i];
+      for (const sourceColor of source.data.color) {
         this.addColor(sourceColor);
       }
       for (let i = 0; i < source.facetStart.length; i++) {  // Expect facet start and ends for points to match colors
@@ -678,12 +677,12 @@ export class IndexedPolyface extends Polyface {
     // Add face and facetToFace index data
     if (source.data.face.length !== 0) {
       const startOfNewFaceData = this.data.face.length;
-      for (let i = 0; i < source.data.face.length; i++) {
-        const sourceFaceData = source.data.face[i].clone();
+      for (const face of source.data.face) {
+        const sourceFaceData = face.clone();
         this.data.face.push(sourceFaceData);
       }
-      for (let i = 0; i < source.facetToFaceData.length; i++) {
-        this.facetToFaceData.push(startOfNewFaceData + source.facetToFaceData[i]);
+      for (const facetToFaceIdx of source.facetToFaceData) {
+        this.facetToFaceData.push(startOfNewFaceData + facetToFaceIdx);
       }
     }
   }
