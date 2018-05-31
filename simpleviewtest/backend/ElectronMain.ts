@@ -5,7 +5,7 @@ import * as path from "path";
 import * as url from "url";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
 import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
@@ -62,7 +62,7 @@ function createWindow() {
 
 electron.app.on("ready", () => {
   // Initialize application gateway configuration for the backend
-  ElectronRpcManager.initializeImpl({}, [StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+  ElectronRpcManager.initializeImpl({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
   createWindow();
 });

@@ -424,7 +424,7 @@ export class RenderCommands {
   }
 
   public addPrimitive(prim: Primitive): void {
-    assert(undefined === this._curOvrParams && undefined === this._curBatch);
+    assert(undefined === this._curOvrParams || undefined === this._curBatch);
 
     const command = undefined !== this._curOvrParams ? DrawCommand.createForDecoration(prim, this._curOvrParams) : DrawCommand.createForPrimitive(prim, this._curBatch);
     this.addDrawCommand(command);

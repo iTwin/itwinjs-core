@@ -9,7 +9,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/Analyti
 import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
-
+import { TileRequests } from "./tile/TileTree";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -370,5 +370,16 @@ export class DecorateContext extends RenderContext {
 
     //   context.AddWorldOverlay(* graphic -> Finish());
   }
+}
 
+export class SceneContext extends RenderContext {
+  public readonly graphics: RenderGraphic[] = [];
+  public readonly requests: TileRequests;
+
+  public constructor(vp: Viewport, requests: TileRequests) {
+    super(vp);
+    this.requests = requests;
+  }
+
+  public outputGraphic(graphic: RenderGraphic): void { this.graphics.push(graphic); }
 }

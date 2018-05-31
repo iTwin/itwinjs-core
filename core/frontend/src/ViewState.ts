@@ -19,12 +19,12 @@ import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
-import { DecorateContext } from "./ViewContext";
-import { GraphicList } from "./render/System";
+import { DecorateContext, SceneContext } from "./ViewContext";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
+import { GeometricModelState } from "./ModelState";
 
 export const enum GridOrientationType {
   View = 0,
@@ -168,7 +168,6 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   protected _featureOverridesDirty = false;
   protected _selectionSetDirty = false;
   private _noQuery: boolean = false;
-  protected _scene?: GraphicList;
   private _auxCoordSystem?: AuxCoordSystemState;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
@@ -186,10 +185,6 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   /** get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
-
-  public get scene(): GraphicList | undefined { return this._scene; }
-  public get isSceneReady(): boolean { return undefined !== this.scene; }
-  public invalidateScene(): void { this._scene = undefined; }
 
   /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
@@ -303,6 +298,13 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
    * @note viewRot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
    */
   public abstract setRotation(viewRot: RotMatrix): void;
+
+  /** Execute a function on each viewed model */
+  public abstract forEachModel(func: (model: GeometricModelState) => void): void;
+
+  public createScene(context: SceneContext): void {
+    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));
+  }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -682,6 +684,12 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     cameraDef.setFocusDistance(frontDist); // do this even if the camera isn't currently on.
     this.centerEyePoint(backDist); // do this even if the camera isn't currently on.
     this.verifyFocusPlane(); // changes delta/origin
+  }
+
+  private addModelToScene(model: GeometricModelState, context: SceneContext): void {
+    model.loadTileTree();
+    if (undefined !== model.tileTree)
+      model.tileTree.drawScene(context);
   }
 }
 
@@ -1297,6 +1305,14 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
+
+  public forEachModel(func: (model: GeometricModelState) => void) {
+    for (const modelId of this.modelSelector.models) {
+      const model = this.iModel.models.getLoaded(modelId);
+      if (undefined !== model && model.isGeometricModel)
+        func(model as GeometricModelState);
+    }
+  }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
@@ -1342,6 +1358,11 @@ export class ViewState2d extends ViewState {
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
   public viewsModel(modelId: Id64) { return this.baseModelId.equals(modelId); }
+  public forEachModel(func: (model: GeometricModelState) => void) {
+    const model = this.iModel.models.getLoaded(this.baseModelId.value);
+    if (undefined !== model && model.isGeometricModel)
+      func(model as GeometricModelState);
+  }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
