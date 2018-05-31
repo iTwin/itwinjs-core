@@ -222,18 +222,18 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Optionally provide params and normals, otherwise they will be calculated without reference data.
    * Optionally mark this quad as the last piece of a face in this polyface.
    */
-  public addQuad(points: Point3d[], params?: Point2d[], normals?: Vector3d[], endFace: boolean = false) {
+  public addQuadFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[], endFace: boolean = false) {
     if (this.options.maxEdgeLength !== undefined && this.options.maxEdgeLength < 4) {
       // Add as two triangles, with a diagonal along the shortest distance
       const vectorAC = points[0].vectorTo(points[2]);
       const vectorBD = points[1].vectorTo(points[3]);
 
       if (vectorAC.magnitude() >= vectorBD.magnitude()) {
-        this.addTriangle([points[0], points[1], points[2]], params ? [params[0], params[1], params[2]] : undefined, normals ? [normals[0], normals[1], normals[2]] : undefined);
-        this.addTriangle([points[0], points[2], points[3]], params ? [params[0], params[2], params[3]] : undefined, normals ? [normals[0], normals[2], normals[3]] : undefined);
+        this.addTriangleFacet([points[0], points[1], points[2]], params ? [params[0], params[1], params[2]] : undefined, normals ? [normals[0], normals[1], normals[2]] : undefined);
+        this.addTriangleFacet([points[0], points[2], points[3]], params ? [params[0], params[2], params[3]] : undefined, normals ? [normals[0], normals[2], normals[3]] : undefined);
       } else {
-        this.addTriangle([points[0], points[1], points[3]], params ? [params[0], params[1], params[3]] : undefined, normals ? [normals[0], normals[1], normals[3]] : undefined);
-        this.addTriangle([points[1], points[2], points[3]], params ? [params[1], params[2], params[3]] : undefined, normals ? [normals[1], normals[2], normals[3]] : undefined);
+        this.addTriangleFacet([points[0], points[1], points[3]], params ? [params[0], params[1], params[3]] : undefined, normals ? [normals[0], normals[1], normals[3]] : undefined);
+        this.addTriangleFacet([points[1], points[2], points[3]], params ? [params[1], params[2], params[3]] : undefined, normals ? [normals[1], normals[2], normals[3]] : undefined);
       }
       if (endFace)
         this.endFace();
@@ -244,6 +244,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let idx1 = this.findOrAddPoint(points[1]);
     let idx2 = this.findOrAddPoint(points[2]);
     let idx3 = this.findOrAddPoint(points[3]);
+    this.polyface.terminateFacet();
     this.addIndexedQuadPointIndexes(idx0, idx1, idx2, idx3);
 
     // Add params if needed
@@ -348,10 +349,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Optionally provide params and normals, otherwise they will be calculated without reference data.
    * Optionally mark this triangle as the last piece of a face in this polyface.
    */
-  public addTriangle(points: Point3d[], params?: Point2d[], normals?: Vector3d[], endFace: boolean = false) {
+  public addTriangleFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[], endFace: boolean = false) {
     let idx0 = this.findOrAddPoint(points[0]);
     let idx1 = this.findOrAddPoint(points[1]);
     let idx2 = this.findOrAddPoint(points[2]);
+    this.polyface.terminateFacet();
     this.addIndexedTrianglePointIndexes(idx0, idx1, idx2);
 
     // Add params if needed
@@ -751,9 +753,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const normals = normalArray ? normalArray[i] : undefined;
 
       if (pointArray[i].length === 3)
-        this.addTriangle(pointArray[i], params, normals);
+        this.addTriangleFacet(pointArray[i], params, normals);
       else if (pointArray[i].length === 4)
-        this.addQuad(pointArray[i], params, normals);
+        this.addQuadFacet(pointArray[i], params, normals);
     }
 
     if (endFace)

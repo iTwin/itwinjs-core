@@ -330,8 +330,8 @@ export class PolyfaceData {
   public getParam(i: number): Point2d { return this.param ? this.param[i] : Point2d.create(); }
   /** return indexed color */
   public getColor(i: number): number { return this.color ? this.color[i] : 0; }
-  /** return indexed face data. This is the REFERENCE to the FacetFaceData, not a copy */
-  public getFace(i: number): FacetFaceData { return this.face[i]; }
+  /** return face data using a facet index. This is the REFERENCE to the FacetFaceData, not a copy */
+  public getFaceData(i: number): FacetFaceData { return this.face[i]; }
   /** return indexed visibility */
   public getEdgeVisible(i: number): boolean { return this.edgeVisible[i]; }
   /** Copy the contents (not pointer) of point[i] into dest. */
@@ -960,8 +960,8 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     if (this.param === undefined || this.polyface.data.face.length === 0)
       return undefined;
 
-    const facetIndex = this.currentFacetIndex;
-    return this.polyface.data.face[facetIndex].convertParamToDistance(this.param[index], result);
+    const faceData = this.polyface.data.getFaceData(this.currentFacetIndex);
+    return faceData.convertParamToDistance(this.param[index], result);
   }
 
   /**
@@ -975,8 +975,8 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     if (this.param === undefined || this.polyface.data.face.length === 0)
       return undefined;
 
-    const facetIndex = this.currentFacetIndex;
-    return this.polyface.data.face[facetIndex].convertParamToNormalized(this.param[index], result);
+    const faceData = this.polyface.data.getFaceData(this.currentFacetIndex);
+    return faceData.convertParamToNormalized(this.param[index], result);
   }
 
   public currentReadIndex(): number { return this.currentFacetIndex; }
