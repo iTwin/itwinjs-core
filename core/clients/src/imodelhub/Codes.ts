@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as clone from "clone";
 import * as deepAssign from "deep-assign";
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
@@ -131,7 +130,7 @@ export class DefaultCodeUpdateOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: CodeUpdateOptions): Promise<void> {
-    const clonedOptions: CodeUpdateOptions = clone(options, false);
+    const clonedOptions: CodeUpdateOptions = Object.assign({}, options);
     deepAssign(options, this.defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();
@@ -184,6 +183,15 @@ export class ConflictingCodesError extends IModelHubResponseError {
  * @see CodeHandler.get()
  */
 export class CodeQuery extends Query {
+  private _isMultiCodeQuery = true;
+
+  /**
+   * Used by the hanlder to check whether codes in query can be grouped.
+   */
+  public isMultiCodeQuery() {
+    return this._isMultiCodeQuery;
+  }
+
   /**
    * Query Codes by Briefcase id.
    * @param briefcaseId Id of the Briefcase.
@@ -220,6 +228,7 @@ export class CodeQuery extends Query {
    * @returns This query.
    */
   public byCodes(codes: Code[]) {
+    this._isMultiCodeQuery = false;
     if (codes.length < 1) {
       throw IModelHubRequestError.invalidArgument("codes");
     }
@@ -243,6 +252,17 @@ export class CodeQuery extends Query {
     this.addFilter(filter);
     return this;
   }
+
+  /**
+   * Select only top entries from the query.
+   * This is applied after @see skip parameter.
+   * @param n Number of top entries to select.
+   * @returns This query.
+   */
+  public top(n: number) {
+    this._isMultiCodeQuery = false;
+    return super.top(n);
+  }
 }
 
 /**
@@ -265,8 +285,8 @@ export class CodeHandler {
    * @param imodelId Id of the iModel.
    * @param codeId Id of the code.
    */
-  private getRelativeUrl(imodelId: string, codeId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/Code/${codeId || ""}`;
+  private getRelativeUrl(imodelId: string, multiCode = true, codeId?: string) {
+    return `/Repositories/iModel--${imodelId}/iModelScope/${multiCode ? "MultiCode" : "Code"}/${codeId || ""}`;
   }
 
   /** Convert Codes to MultiCodes. */
@@ -411,7 +431,13 @@ export class CodeHandler {
   public async get(token: AccessToken, imodelId: string, query: CodeQuery = new CodeQuery()): Promise<Code[]> {
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
 
-    const codes = await this._handler.getInstances<Code>(Code, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+    let codes: Code[];
+    if (query.isMultiCodeQuery()) {
+      const multiCodes = await this._handler.getInstances<MultiCode>(MultiCode, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+      codes = CodeHandler.convertMultiCodesToCodes(multiCodes);
+    } else {
+      codes = await this._handler.postQuery<Code>(Code, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+    }
 
     Logger.logTrace(loggingCategory, `Queried ${codes.length} codes for iModel ${imodelId}`);
 
@@ -430,7 +456,7 @@ export class CodeHandler {
     if (!isBriefcaseIdValid(briefcaseId))
       return Promise.reject(IModelHubRequestError.invalidArgument("briefcaseId"));
 
-    await this._handler.delete(token, this.getRelativeUrl(imodelId, `DiscardReservedCodes-${briefcaseId}`));
+    await this._handler.delete(token, this.getRelativeUrl(imodelId, false, `DiscardReservedCodes-${briefcaseId}`));
 
     Logger.logTrace(loggingCategory, `Deleted all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);
   }

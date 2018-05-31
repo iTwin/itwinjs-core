@@ -10,8 +10,7 @@ import { TestConfig } from "../TestConfig";
 
 import { AccessToken } from "../../";
 import {
-  IModelHubClient, Briefcase, ChangeSet, Lock, LockQuery, UserInfo, ChangeSetQuery,
-  UserInfoQuery, IModelHubRequestError, IModelHubRequestErrorId,
+  IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubRequestError, IModelHubRequestErrorId,
 } from "../../imodelhub";
 
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -259,58 +258,5 @@ describe("iModelHub ChangeSetHandler", () => {
     }
     chai.assert(error);
     chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
-  });
-
-  it("should find information on the ChangeSet a specific Element was last modified in", async function (this: Mocha.ITestCallbackContext) {
-    const mockId = utils.generateChangeSetId();
-    if (TestConfig.enableMocks) {
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$filter=LockType+eq+2+and+LockLevel+eq+2&$top=1");
-      const requestResponse = ResponseBuilder.generateGetResponse<Lock>(ResponseBuilder.generateObject<Lock>(Lock,
-        new Map<string, any>([
-          ["objectId", "123"],
-          ["releasedWithChangeSet", mockId],
-          ["userCreated", "1"],
-        ])));
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-    }
-
-    // For a test case, find an element that was recently modified by looking at the first lock
-    const elementLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, new LockQuery().byLockType(2).byLockLevel(2).top(1));
-    chai.expect(elementLocks.length).to.be.equal(1);
-    const testElementId: string = elementLocks[0].objectId!; // Hex or Decimal
-
-    if (TestConfig.enableMocks) {
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "Lock", "?$filter=ObjectId+eq+%27123%27&$top=1");
-      const requestResponse = ResponseBuilder.generateGetResponse<Lock>(ResponseBuilder.generateObject<Lock>(Lock,
-        new Map<string, any>([
-          ["objectId", "123"],
-          ["releasedWithChangeSet", mockId],
-          ["userCreated", "1"],
-        ])));
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-    }
-    // Find the change set that the lock was modified in
-    const queryLocks: Lock[] = await imodelHubClient.Locks().get(accessToken, iModelId, new LockQuery().byObjectId(testElementId).top(1));
-    chai.expect(queryLocks.length).to.be.equal(1);
-
-    const changeSetId: string = queryLocks[0].releasedWithChangeSet!; // Can get changeSetIndex also if necessary to compare against current
-    chai.expect(changeSetId).length.to.be.greaterThan(0);
-
-    if (TestConfig.enableMocks) {
-      const requestResponse = ResponseBuilder.generateGetResponse<ChangeSet>(ResponseBuilder.generateObject<ChangeSet>(ChangeSet,
-        new Map<string, any>([["userCreated", "1"]])));
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "ChangeSet", mockId);
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-    }
-    const changeSet: ChangeSet = (await imodelHubClient.ChangeSets().get(accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
-    chai.assert(!!changeSet);
-
-    if (TestConfig.enableMocks) {
-      const requestResponse = ResponseBuilder.generateGetResponse<UserInfo>(ResponseBuilder.generateObject<UserInfo>(UserInfo));
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "UserInfo", "1");
-      ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Get, requestPath, requestResponse);
-    }
-    const userInfo: UserInfo = (await imodelHubClient.Users().get(accessToken, iModelId, new UserInfoQuery().byId(changeSet.userCreated!)))[0];
-    chai.assert(!!userInfo);
   });
 });

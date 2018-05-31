@@ -21,7 +21,7 @@ function mockGetUserStatistics(iModelId: string, userStatistics: UserStatistics[
   const requestResponse = ResponseBuilder.generateGetArrayResponse<UserStatistics>(userStatistics);
   let requestPath;
   if (query === undefined) {
-    requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "UserInfo", "/$query");
+    requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "UserInfo", "$query");
     ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse);
   } else {
     requestPath = utils.createRequestUrl(ScopeType.iModel, iModelId, "UserInfo", `${query ? query : ""}`);

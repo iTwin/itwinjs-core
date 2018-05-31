@@ -7,7 +7,7 @@ import { Point3dArray } from "../PointHelpers";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { Plane3dByOriginAndUnitNormal } from "../AnalyticGeometry";
-import { Sample } from "../Serialization/GeometrySamples";
+import { Sample } from "../serialization/GeometrySamples";
 
 function exercisePointString3d(ck: Checker, lsA: PointString3d) {
   const numPoints = lsA.numPoints();

@@ -22,6 +22,8 @@ export class IModelHubClient {
   public constructor(public deploymentEnv: DeploymentEnv, fileHandler?: FileHandler) {
     this._handler = new IModelHubBaseHandler(deploymentEnv);
     this._fileHandler = fileHandler;
+    if (this._fileHandler)
+      this._fileHandler.agent = this._handler.getAgent();
   }
 
   /**
@@ -30,6 +32,7 @@ export class IModelHubClient {
    */
   public setFileHandler(fileHandler: FileHandler) {
     this._fileHandler = fileHandler;
+    this._fileHandler.agent = this._handler.getAgent();
   }
 
   /**

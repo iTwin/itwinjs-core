@@ -99,6 +99,7 @@ export class ThumbnailHandler {
       method: "GET",
       headers: { authorization: token.toTokenString() },
       responseType: "arraybuffer",
+      agent: this._handler.getAgent(),
     };
 
     const response = await request(url, options);

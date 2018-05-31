@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import * as clone from "clone";
 import * as deepAssign from "deep-assign";
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
@@ -77,7 +76,7 @@ export class DefaultLockUpdateOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: LockUpdateOptions): Promise<void> {
-    const clonedOptions: LockUpdateOptions = clone(options, false);
+    const clonedOptions: LockUpdateOptions = Object.assign({}, options);
     deepAssign(options, this.defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     return Promise.resolve();
@@ -136,9 +135,6 @@ export class LockBase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
   public briefcaseId?: number;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.AcquiredDate")
-  public acquiredDate?: string;
-
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
   public seedFileId?: string;
 
@@ -171,6 +167,15 @@ export class MultiLock extends LockBase {
  * @see LockHandler.get()
  */
 export class LockQuery extends Query {
+  private _isMultiLockQuery = true;
+
+  /**
+   * Used by the hanlder to check whether locks in query can be grouped.
+   */
+  public isMultiLockQuery() {
+    return this._isMultiLockQuery;
+  }
+
   /**
    * Query Locks by Briefcase id.
    * @param briefcaseId Id of the Briefcase.
@@ -207,6 +212,7 @@ export class LockQuery extends Query {
    * @returns This query.
    */
   public byObjectId(objectId: string) {
+    this._isMultiLockQuery = false;
     this.addFilter(`ObjectId+eq+'${objectId}'`);
     return this;
   }
@@ -257,7 +263,19 @@ export class LockQuery extends Query {
 
     filter += "]";
     this.addFilter(filter);
+    this._isMultiLockQuery = false;
     return this;
+  }
+
+  /**
+   * Select only top entries from the query.
+   * This is applied after @see skip parameter.
+   * @param n Number of top entries to select.
+   * @returns This query.
+   */
+  public top(n: number) {
+    this._isMultiLockQuery = false;
+    return super.top(n);
   }
 }
 
@@ -281,8 +299,8 @@ export class LockHandler {
    * @param imodelId Id of the iModel.
    * @param lockId Id of the lock.
    */
-  private getRelativeUrl(imodelId: string, lockId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/Lock/${lockId || ""}`;
+  private getRelativeUrl(imodelId: string, multilock = true, lockId?: string) {
+    return `/Repositories/iModel--${imodelId}/iModelScope/${multilock ? "MultiLock" : "Lock"}/${lockId || ""}`;
   }
 
   /** Convert Locks to MultiLocks. */
@@ -318,9 +336,8 @@ export class LockHandler {
         const lock = new Lock();
         lock.objectId = value;
         lock.briefcaseId = multiLock.briefcaseId;
-        lock.seedFileId = multiLock.seedFileId;
-        lock.releasedWithChangeSet = multiLock.releasedWithChangeSet;
-        lock.releasedWithChangeSetIndex = multiLock.releasedWithChangeSetIndex;
+        if (lock.seedFileId)
+          lock.seedFileId = multiLock.seedFileId;
         lock.lockLevel = multiLock.lockLevel;
         lock.lockType = multiLock.lockType;
         result.push(lock);
@@ -431,7 +448,23 @@ export class LockHandler {
   public async get(token: AccessToken, imodelId: string, query: LockQuery = new LockQuery()): Promise<Lock[]> {
     Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
 
-    const locks = await this._handler.getInstances<Lock>(Lock, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+    let locks: Lock[];
+    if (query.isMultiLockQuery()) {
+      const result = await this._handler.getInstances<MultiLock>(MultiLock, token, this.getRelativeUrl(imodelId), query.getQueryOptions());
+      locks = LockHandler.convertMultiLocksToLocks(result);
+    } else {
+      locks = await this._handler.postQuery<Lock>(Lock, token, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      locks = locks.map((value: Lock) => {
+        const result = new Lock();
+        result.briefcaseId = value.briefcaseId;
+        result.lockLevel = value.lockLevel;
+        result.lockType = value.lockType;
+        result.objectId = value.objectId;
+        if (value.seedFileId)
+          result.seedFileId = value.seedFileId;
+        return result;
+      });
+    }
 
     Logger.logTrace(loggingCategory, `Queried ${locks.length} locks for iModel ${imodelId}`);
 
@@ -450,7 +483,7 @@ export class LockHandler {
     if (!isBriefcaseIdValid(briefcaseId))
       return Promise.reject(IModelHubRequestError.invalidArgument("briefcaseId"));
 
-    await this._handler.delete(token, this.getRelativeUrl(imodelId, `DeleteAll-${briefcaseId}`));
+    await this._handler.delete(token, this.getRelativeUrl(imodelId, false, `DeleteAll-${briefcaseId}`));
 
     Logger.logTrace(loggingCategory, `Deleted all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
   }
