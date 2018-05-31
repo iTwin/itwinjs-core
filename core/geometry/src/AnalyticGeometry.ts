@@ -357,6 +357,26 @@ export class Ray3d implements BeJSONFunctions {
       return Math.sqrt(this.origin.distanceSquared(spacePoint) - uv * uv * aa);
     else return Math.sqrt(this.origin.distanceSquared(spacePoint));
   }
+
+  /**
+   * Return the intersection of the unbounded ray with a plane.
+   * Stores the point of intersection in the result point given as a parameter,
+   * and returns the parameter along the ray where the intersection occurs.
+   * Returns undefined if the ray and plane are parallel.
+   */
+  public intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined {
+    const vectorA = Vector3d.createStartEnd(plane.getOriginRef(), this.origin);
+    const UdotN = this.direction.dotProduct(plane.getNormalRef());
+    const AdotN = vectorA.dotProduct(plane.getNormalRef());
+    const division = Geometry.conditionalDivideFraction(-AdotN, UdotN);
+    if (!division)
+      return undefined;
+
+    if (result) {
+      this.origin.plusScaled(this.direction, division, result);
+    }
+    return division;
+  }
 }
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
