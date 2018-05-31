@@ -446,7 +446,7 @@ export abstract class WsgClient extends Client {
    * @returns Array of strongly typed instances.
    */
   protected async postQuery<T extends WsgInstance>(typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
-    const url: string = `${await this.getUrl()}${relativeUrlPath}/$query`;
+    const url: string = `${await this.getUrl()}${relativeUrlPath}$query`;
     Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
 
     const options: RequestOptions = {

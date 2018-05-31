@@ -2,7 +2,7 @@
 # StrokeOptions
 
 
-![>](./StrokeOptions.png)
+![>](./figs/StrokeOptions/StrokeOptions.png)
 
 A StrokeOptions structure carries various tolerances applied during (a) curve stroking and (b) surface faceting.
 

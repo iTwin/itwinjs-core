@@ -1,6 +1,6 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
@@ -24,21 +24,15 @@ class SimpleViewState {
   public viewDefinition?: ViewDefinitionProps;
   public viewState?: ViewState;
   public viewPort?: Viewport;
-  constructor() {
-    this.accessToken = undefined;
-    this.project = undefined;
-    this.iModel = undefined;
-    this.iModelConnection = undefined;
-    this.viewDefinition = undefined;
-    this.viewState = undefined;
-    this.viewPort = undefined;
-  }
+  constructor() { }
 }
 
 // Entry point - run the main function
 main();
 
 // retrieves configuration.json from the Public folder, and override configuration values from that.
+// see configuration.json in simpleviewtest/public.
+// alternatively, can open a standalone iModel from disk by setting iModelName to filename and standalone to true.
 function retrieveConfigurationOverrides(configuration: any) {
   const request: XMLHttpRequest = new XMLHttpRequest();
   request.open("GET", "configuration.json", false);
@@ -55,6 +49,23 @@ function retrieveConfigurationOverrides(configuration: any) {
     }
   });
   request.send();
+}
+
+// Apply environment overrides to configuration.
+// This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
+function applyConfigurationOverrides(config: any): void {
+  const electron = (window as any).require("electron");
+  const remote = electron.remote;
+  if (undefined === remote)
+    return;
+
+  const filename = remote.process.env.SVT_STANDALONE_FILENAME;
+  const viewName = remote.process.env.SVT_STANDALONE_VIEWNAME;
+  if (undefined !== filename && undefined !== viewName) {
+    config.iModelName = filename;
+    config.viewName = viewName;
+    config.standalone = true;
+  }
 }
 
 // log in to connect
@@ -78,6 +89,11 @@ async function openProject(state: SimpleViewState, projectName: string) {
 async function openIModel(state: SimpleViewState, iModelName: string) {
   state.iModel = await IModelApi.getIModelByName(state.accessToken!, state.project!.wsgId, iModelName);
   state.iModelConnection = await IModelApi.openIModel(state.accessToken!, state.project!.wsgId, state.iModel!.wsgId, undefined, OpenMode.Readonly);
+}
+
+// opens the configured iModel from disk
+async function openStandaloneIModel(state: SimpleViewState, filename: string) {
+  state.iModelConnection = await IModelConnection.openStandalone(filename);
 }
 
 // selects the configured view.
@@ -218,13 +234,14 @@ async function main() {
 
   // override anything that's in the configuration
   retrieveConfigurationOverrides(configuration);
+  applyConfigurationOverrides(configuration);
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
   IModelApp.startup("QA", true);
 
   if (ElectronRpcConfiguration.isElectron)
-    ElectronRpcManager.initializeClient({}, [IModelReadRpcInterface]);
+    ElectronRpcManager.initializeClient({}, [StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
   try {
     // initialize the Project and IModel Api
@@ -234,17 +251,22 @@ async function main() {
     IModelApp.tools.register(LocateTool);
     IModelApp.tools.register(StandardViewRotationTool);
 
-    // log in.
-    showStatus("logging in as", configuration.userName);
-    await loginToConnect(state, configuration.userName, configuration.password);
+    if (!configuration.standalone) {
+      // log in.
+      showStatus("logging in as", configuration.userName);
+      await loginToConnect(state, configuration.userName, configuration.password);
 
-    // open the specified project
-    showStatus("opening Project", configuration.projectName);
-    await openProject(state, configuration.projectName);
+      // open the specified project
+      showStatus("opening Project", configuration.projectName);
+      await openProject(state, configuration.projectName);
 
-    // open the specified iModel
-    showStatus("opening iModel", configuration.iModelName);
-    await openIModel(state, configuration.iModelName);
+      // open the specified iModel
+      showStatus("opening iModel", configuration.iModelName);
+      await openIModel(state, configuration.iModelName);
+    } else {
+      showStatus("Opening", configuration.iModelName);
+      await openStandaloneIModel(state, configuration.iModelName);
+    }
 
     // open the specified view
     showStatus("opening View", configuration.viewName);

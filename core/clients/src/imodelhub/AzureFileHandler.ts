@@ -6,6 +6,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { FileHandler } from "./FileHandler";
 import * as fs from "fs";
 import * as path from "path";
+import * as https from "https";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -13,6 +14,8 @@ const loggingCategory = "imodeljs-clients.imodelhub";
  * Provides methods to work with the file system and azure storage.
  */
 export class AzureFileHandler implements FileHandler {
+  public agent: https.Agent;
+
   /** Create a directory, recursively setting up the path as necessary */
   private static makeDirectoryRecursive(dirPath: string) {
     if (fs.existsSync(dirPath))
@@ -57,6 +60,7 @@ export class AzureFileHandler implements FileHandler {
       method: "GET",
       stream: writeStream,
       timeout: 600000, // 10 minutes!
+      agent: this.agent,
     };
 
     try {
@@ -91,6 +95,7 @@ export class AzureFileHandler implements FileHandler {
       },
       body: buffer,
       progressCallback: callback,
+      agent: this.agent,
     };
 
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
@@ -130,6 +135,7 @@ export class AzureFileHandler implements FileHandler {
         "Content-Length": blockList.length,
       },
       body: blockList,
+      agent: this.agent,
     };
 
     const uploadUrl = `${uploadUrlString}&comp=blocklist`;

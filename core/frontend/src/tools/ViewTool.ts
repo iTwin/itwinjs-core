@@ -1418,7 +1418,7 @@ export class WindowAreaTool extends ViewTool {
       shape[0].y = shape[1].y = corners[0].y;
       shape[2].y = shape[3].y = corners[1].y;
       shape[0].z = shape[1].z = shape[2].z = shape[3].z = corners[0].z;
-      shape[4] = shape[0];
+      shape[4].setFrom(shape[0]);
 
       this.viewport.viewToWorldArray(shape);
 

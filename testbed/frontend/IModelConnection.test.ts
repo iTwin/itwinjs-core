@@ -115,7 +115,7 @@ describe("IModelConnection", () => {
     expect(range.high.isAlmostEqualXYZ(50.0075, 50.0075, 20.003)).to.be.true;
 
     if (undefined === rootTile.geometry || undefined === rootTile.contentRange)
-      return; // ###TODO: can't tell if this model actually contains any geometry...
+      return; // ###TODO: The add-on doesn't wait for tile geometry to be saved to the cache, so it may be undefined...
 
     expect(rootTile.geometry).not.to.be.undefined;
     expect(rootTile.contentRange).not.to.be.undefined;
