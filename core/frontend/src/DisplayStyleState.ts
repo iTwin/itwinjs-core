@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageSource, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils } from "@bentley/bentleyjs-core";
@@ -243,5 +243,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
     matParams.textureMapping = new TextureMapping(texture, mapParams);
 
     this.skyboxMaterial = system.createMaterial(matParams, this.iModel);
+    return true;
   }
 }

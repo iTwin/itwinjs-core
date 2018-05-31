@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, NpcCorners,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -23,8 +23,8 @@ import { DecorateContext } from "./ViewContext";
 import { GraphicList } from "./render/System";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
-import { GraphicBuilderCreateParams, GraphicBuilder } from "./rendering";
 import { Viewport } from "./Viewport";
+import { GraphicBuilder } from "./rendering";
 
 export const enum GridOrientationType {
   View = 0,
