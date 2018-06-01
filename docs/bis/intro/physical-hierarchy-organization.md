@@ -6,20 +6,29 @@
 
 ## Introduction
 
-Each `Subject` in a BIS Repository can have a `PhysicalPartition` associated with it. This representation of the `Subject`'s existence in the physical world needs to be organized to facilitate the users' understanding of the data and to facilitate the creation of services and applications that operate on the data.
+Each `Subject` in a BIS Repository can have a `PhysicalPartition` associated with it. This representation of the `Subject`'s existence in the physical world needs to be organized to facilitate the users' understanding of the data and to facilitate the creation (and coordination) of services and applications that operate on the data.
 
 ![Top of the PhysicalModel Hierarchy](./media/physical-hierarchy-organization-top-of-the-world.png)
 
-As discussed in [Model Hierarchy](model-hierarchy.md), every `Model` contains `Elements` and many `Elements` can be broken down into more detail ("finer granularity") in `Model`s. This breakdown strategy provides a flexible mechanism upon which to build an organized `Model` hierarchy, but is so generic that by itself the concept of a `Model` hierarchy does not provide much help in organizing a `Subject`'s representation of the physical world. This page describes the strategy, requirements and recommendations for organizing the `PhysicalModel` hierarchy.
+As discussed in [Model Hierarchy](model-hierarchy.md), every `Model` contains `Elements` and many `Elements` can be broken down into more detail ("finer granularity") in breakdown `Model`s. This breakdown strategy provides a flexible mechanism upon which to build an organized `Model` hierarchy, but is so generic that by itself it does not provide much help in organizing a `Subject`'s representation of the physical world. This page describes the strategy, requirements and recommendations for organizing the `PhysicalModel` hierarchy.
 
 ## Organization Strategy
 
-The high-level goals - sometimes conflicting - of an organization for the `PhysicalModel` hierarchy are to:
+### Motivations
+
+The high-level goals - sometimes conflicting - of *an* organization for the `PhysicalModel` hierarchy are to:
 - Allow the users to organize their data in a way that is helpful to them.
 - Guide the users to organize their data in a way that will facilitate their long-term success.
 - Automatically organize the data in a way that is helpful to the users.
 - Ease the creation of products and services by organizing the data in a manner that is conducive to writing software.
 - Provide mechanisms for the users to direct the software, and for the software to understand the users' intent (*if A is placed in B, X will (or will not) happen*).
+
+Some more practical goals of *the* organization of the `PhysicalModel` hierarchy are:
+ - Define clear rules for the data that is created and used by products and services related to multiple disciplines, which are frequently developed by teams that are not under the same management.
+ - Define similar data organization for all "facilities".
+ - Define similar data organization for all "systems".
+  - Define the standard usage of (what should be contained in) the top `Model` of the `PhysicalModel` hierarchy.
+
 
 ### Predictability vs Flexibility / Strong vs Weak Type Safety
 
@@ -27,9 +36,9 @@ A choice must be made between strong type-safety and weak type-safety.
 
 Strong type-safety (*e.g. `RetainingWall` can only be contained in a StructuralSystem Model*), provides strict checking to ensure that type-related rules are always followed, and hence results in very predictable models that software can easily process. However, strong type-safety limits flexibility and can cause frustration (*e.g. I have to create a StructuralSystem Model just to create a single `RetainingWall`?*). Another concern with strong type-safety is that real-project experience with BIS is very limited, so the schema designers understanding of real-world workflows with BIS data is limited; there is a risk of schema designers making strong type-safety decisions that are proved over time to be incorrect.
 
-Therefore, ***Weak type-safety has been selected for the PhysicalModel hierarchy.***
+Therefore, ***Weak type-safety has been selected for the PhysicalModel hierarchy organization.***
 
-Validation rules will be created to determine if PhysicalElements reside in appropriate Models and the `PhysicalModel` hierarchy is *appropriate*,  but there will be no prohibitions that ensure that the `PhysicalModel` hierarchy meets certain standards.
+Validation rules will be created to determine if `PhysicalElement`s reside in appropriate Models and the `PhysicalModel` hierarchy is *appropriate*,  but there will be no prohibitions that ensure that the `PhysicalModel` hierarchy meets certain standards.
 
 This page provides an overview of the basis of those validation rules and the mechanisms for defining them.
 
@@ -37,7 +46,7 @@ This page provides an overview of the basis of those validation rules and the me
 
 As described in [Model Hierarchy](model-hierarchy.md), every `Model` breaks-down an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
 
-In the `PhysicalModel` hierarchy, the `Element` that represents the Entity is of an `PhysicalElement` subclass that corresponds to the type of real-world Entity (e.g. `Building` class corresponds to real world building), but the `PhysicalModel` that corresponds to the real-world Entity is just a `PhysicalModel` (e.g. `PhysicalModel` class corresponds to real-world building). To determine the type of real world Entity that a `PhysicalModel` represents, the class of `Element` that the `PhysicalModel` breaks down must be determined.
+In the `PhysicalModel` hierarchy, the `Element` that represents the Entity is of a `PhysicalElement` subclass that corresponds to the type of real-world Entity (e.g. `Building` class corresponds to real world building), but the `PhysicalModel` that corresponds to the real-world Entity is just a `PhysicalModel` (e.g. `PhysicalModel` class corresponds to real-world building). To determine the type of real world Entity that a `PhysicalModel` represents, the class of `Element` that the `PhysicalModel` breaks down must be determined.
 
 *TODO: Allan makes one last request (not demand): Do we really want to write paragraphs like the one above? Wouldn't it be easier to have Model subclasses that corresponded to the subclass of the Element being broken down? At least for Sites, Facilities and Systems?*
 
@@ -46,10 +55,10 @@ In the `PhysicalModel` hierarchy, the `Element` that represents the Entity is of
 ![Element and Model Modeling Building](./media/physical-hierarchy-organization-building-model.png)
 
 ## ModelAffinity Custom Attribute
-While strong-typing is not used, there is still a desire to provide validation of the organization of data in a `PhysicalModel` hierarchy. To run this validation the software must be able to determine the appropriate `Model` to contain each `Element`. This is determined through the `ModelAffinity` custom attribute.
+While strong-typing is not used, there is still a desire to provide validation of the organization of the data in a `PhysicalModel` hierarchy. To run this validation the software must be able to determine which `Model`s are appropriate containers for each `Element`. This is determined through the `ModelAffinity` custom attribute.
 
 The `ModelAffinity` custom attribute can be applied to any `PhysicalElement` subclass. It declares for the class:
- - Which `Element`'s breakdown `Model`s this `Element` has an affinity for (multiple can be declared).
+ - Which `Element`s' breakdown `Model`s this `Element` has an affinity for (multiple can be declared).
  - The strength of that affinity.
  - The rationale for the affinity.
 
@@ -82,16 +91,25 @@ Here is an example of the `ModelAffinity` custom attribute in use:
 ```
 ### Inherited ModelAffinity
 
-xxxxxxxxx needs better explanation xxxxx
+`ModelAffinity` cannot be *overridden* in subclasses, but it can be *narrowed*. The effective affinity setting for a class is the sum of all the defined `ModelAffinity` attributes in the class and all of its superclasses.
 
-`ModelAffinity` cannot be overridden in subclasses. The effective affinity setting for a class is the sum of all the defined `ModelAffinity` attributes in the class and all of its superclasses.
+For example, if:
+ - There is a `Pipe` class with a `SewerPipe` subclass.
+ - `Pipe` has an affinity to `ISystem`.
+ - `SewerPipe` has an affinity to `SewerSystem`
 
-For example, if a xxxxxxxxxxxxxxx
+Then the validation for `SewerPipe` would confirm:
+ - `SewerPipe` instances reside in `ISystem` `Model`s.
+  - `SewerPipe` instances reside in `SewerSystem` `Model`s.
+
+A `SewerPipe` placed in a `Site` `Model` would generate two warnings (or errors) during validation; one for not being in an `ISystem` `Model` and one for not being in a `SewerSystem` `Model`.
+
+When an ancestor class has already defined a `ModelAffinity`, it only makes sense to define a *narrowing* `ModelAffinity` in a subclass. Defining a conflicting `ModelAffinity` is a symptom of the design of the subclass conflicting with the design of the superclass.
 
 
 ### Syntax Details
 
-**TODO: Remove this section after discussion**
+**TODO: Remove this section after discussion and implementation**
 
 *This custom attribute is written so it could be applied to other Elements (not just PhysicalElements) in the future.*
 
@@ -102,7 +120,7 @@ For example, if a xxxxxxxxxxxxxxx
   <ECEnumerator value="Suggested"  description="Element not residing in this breakdown Model should trigger a validation note."/>
 </ECEnumeration>
 
-<ECCustomAttributeClass typeName="ModelAffinity" description="Applied to an Element subclass to indicate that the subclass has an affinity to certain breakdown Models. This affinity can be used for validation and enhanced UI tools. Inherited ModelAffinities are also applied." appliesTo="Any">
+<ECCustomAttributeClass typeName="ModelAffinity" description="Applied to an Element subclass to indicate that the subclass has an affinity to certain breakdown Models. This affinity can be used for validation and enhanced UI tools. Inherited ModelAffinities are also applied." appliesTo="EntityClass">
   <ECProperty propertyName="AffinityStrength" typeName="ModelAffinityStrength" description="The strength of the affinity to apply to the BreakdownModels"/>
   <ECProperty propertyName="Rationale" typeName="string" description="The reason why the affinity exists."/>
   <ECArrayProperty propertyName="BreakdownModels" typeName="string" description="List of Element subclasses whose breakdown Model is appropriate for the class this custom attribute is applied to. Use format '[SchemaName]:[ClassName]', e.g. 'Fruit:Banana'" minOccurs="1" maxOccurs="unbounded"/>
@@ -113,6 +131,8 @@ For example, if a xxxxxxxxxxxxxxx
 
 `ModelAffinity` custom attribute instances can *refer* to mixin classes, but cannot be *applied* to mixin classes.
 
+The mixin classes `IFacility` and `ISystem` are used in the `ModelAffinity` custom attribute for many key `PhysicalModel` hierarchy classes.
+
 ## PhysicalModel Hierarchy Strategy
 
 While `ModelAffinity` provides a mechanism to declare and enforce a PhysicalModel hierarchy, it does does not define a coordinated strategy. The strategy for organizing the hierarchy relies on classifying PhysicalElements into five types:
@@ -122,14 +142,16 @@ While `ModelAffinity` provides a mechanism to declare and enforce a PhysicalMode
  - *System Component* - A component for a particular system.
  - *General-Use Component* - A component that does not have any `ModelAffinity`.
 
+ The overall `PhysicalModel` hierarchy strategy is defined in the following table:
+
 
 
 | Classification | Affinity to  | Example Classes |
 |----------------|----------------|--------------|----------|
 | Site           | PhysicalPartition, Site | Site     |
-| IFacility       | PhysicalPartition, Site, IFacility, System            | Building, Bridge, Tunnel     |
-| System         | PhysicalPartition, Site, IFacility, ISystem            | SewerSystem, StructuralSystem, etc.     |
-| *System | (inherited from ISystem)        | SewerSystem, StructuralSystem     |
+| IFacility       | PhysicalPartition, Site, IFacility, ISystem  *(declared in implementing classes)*           | Building, Bridge, Tunnel     |
+| ISystem         | PhysicalPartition, Site, IFacility, ISystem *(declared in implementing classes)*           | SewerSystem, StructuralSystem, etc.     |
+| *System | PhysicalPartition, Site, IFacility, ISystem        | SewerSystem, StructuralSystem     |
 | *SystemComponent| *System         | SewerPipe, Beam     |
 | General-Use Component   | (none)          | Bolt, Chair    |
 
@@ -150,7 +172,7 @@ These types and their behaviors are explained below, along with the behaviors of
 
 ### IFacility
 
-`IFacility` is a mixin class that represents a significant multi-disciplinary infrastructure Entity that corresponds well to user concepts. Buildings, bridges, tunnels, wharves, and towers are all examples of Entities that modeled with a `PhysicalElement` that includes the `IFacility` mixin.
+`IFacility` is a mixin class that represents a significant multi-disciplinary infrastructure Entity that corresponds well to user concepts. Buildings, bridges, tunnels, wharves, and towers are all examples of multi-discipline Entities that are modeled with a `PhysicalElement` that includes the `IFacility` mixin.
 
 
 `IFacility` `Models` are `Model`s that break down `IFacility` Elements. These `Model`s are usually referred to by their more-specific `Element` types (e.g. `Building` `Model`s are `Model`s that break down `Building` `Elements`.).
@@ -163,7 +185,7 @@ These types and their behaviors are explained below, along with the behaviors of
 
 ### ISystem
 
-`ISystem` is an abstract class that represents a significant discipline-specific arrangement of Entities intended to fulfill one or more functions. Sewers, roadways, HVAC and fire-suppression are all examples of real-world Entities that are modeled with `System` subclasses. `System` subclasses tend to be suffixed with 'System'.
+`ISystem` is a mixin class that represents a significant discipline-specific arrangement of Entities intended to fulfill one or more functions. Sewers, roadways, HVAC and fire-suppression systems are all examples of real-world Entities that are modeled with `ISystem` subclasses. `ISystem` subclasses tend to be suffixed with 'System'.
 
 Architecture is also considered an `ISystem`, as it is discipline-specific and has the same general behaviors at the other `ISystem`s.
 
@@ -183,7 +205,9 @@ System Components are identified by their `ModelAffinity` with a specific `Syste
 
 System Components rarely have breakdown `Model`s.
 
-`System Component` `Elements` should only be placed in their related `System` `Model`s. `System Component` `Elements` placed in any other `Model` will generate validation warnings.
+System Component `Elements` should only be placed in their related `System` `Model`s. System Component `Elements` placed in any other `Model` will generate validation warnings.
+
+*To implement this behavior every System Component class must define or inherit a `ModelAffinity` custom attribute that indicates a "Recommended" (or stronger) affinity to the particular `ISystem` class that is appropriate for the System Component.*
 
 ### General-Use Components
 
