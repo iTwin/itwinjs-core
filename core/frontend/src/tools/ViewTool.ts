@@ -1432,7 +1432,7 @@ export class WindowAreaTool extends ViewTool {
       graphic.setBlankingFill(this.fillColor);
       graphic.addShape(shape);
 
-      graphic.setSymbology(color, color, ViewHandleWeight.Normal); // ###TODO Thin...
+      graphic.setSymbology(color, color, ViewHandleWeight.Thin);
       graphic.addLineString(shape);
 
       graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
@@ -1444,7 +1444,7 @@ export class WindowAreaTool extends ViewTool {
 
     const gf = context.createViewOverlay();
 
-    gf.setSymbology(color, color, ViewHandleWeight.Normal); // ###TODO Thin...
+    gf.setSymbology(color, color, ViewHandleWeight.Thin);
 
     const viewRect = this.viewport.viewRect;
     const cursorPt = this.lastPtView;
