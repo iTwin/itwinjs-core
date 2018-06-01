@@ -606,15 +606,20 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
+  protected static _useViewAlignedVolume: boolean = false;
   public static fitView(viewport: Viewport, doUpdate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum(scratchFrustum);
 
-    viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
+    // ###TODO: Currently computeViewRange() simply returns the viewed extents, in *world* coords.
+    if (this._useViewAlignedVolume)
+      viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
+    else
+      viewport.view.lookAtVolume(range);
+
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
-    console.log(ViewToolSettings.animationTime.milliseconds); //tslint:disable-line
     if (doUpdate)
       viewport.animateFrustumChange(before, viewport.getFrustum(), ViewToolSettings.animationTime);
 
