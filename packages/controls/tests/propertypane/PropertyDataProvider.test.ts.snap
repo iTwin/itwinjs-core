@@ -1,0 +1,1029 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PropertyDataProvider getData handles records with no values 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "website Assurance",
+      "name": "Inverse",
+    },
+  ],
+  "description": "conglomeration",
+  "label": "Customer deposit",
+  "records": Object {
+    "Inverse": Array [
+      PropertyRecord {
+        "description": undefined,
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Manager quantifying",
+          "editor": Object {
+            "name": "azure",
+            "params": Array [],
+          },
+          "name": "Designer",
+          "typename": "timestamp",
+        },
+        "value": Object {
+          "displayValue": undefined,
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling favorites nested content records 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "Favorite",
+      "name": "Favorite",
+    },
+    Object {
+      "expand": true,
+      "label": "zero defect Bedfordshire",
+      "name": "functionalities",
+    },
+  ],
+  "description": undefined,
+  "label": "Generic Generic",
+  "records": Object {
+    "Favorite": Array [
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Afghani",
+          "name": "International",
+          "typename": "int",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Afghani",
+                "name": "International",
+                "typename": "int",
+              },
+              "value": Object {
+                "members": Object {
+                  "Implementation": PropertyRecord {
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "wireless",
+                      "name": "Implementation",
+                      "typename": "mediumint",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "Iran": PropertyRecord {
+                          "description": "Tasty",
+                          "isMerged": false,
+                          "isReadonly": true,
+                          "property": Object {
+                            "displayLabel": "Garden Ball Towels",
+                            "editor": Object {
+                              "name": "Accountability",
+                              "params": Array [],
+                            },
+                            "name": "Iran",
+                            "typename": "binary",
+                          },
+                          "value": Object {
+                            "displayValue": "Tasty",
+                            "value": "Vista",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Afghani",
+                "name": "International",
+                "typename": "int",
+              },
+              "value": Object {
+                "members": Object {
+                  "Implementation": PropertyRecord {
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "wireless",
+                      "name": "Implementation",
+                      "typename": "mediumint",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "Iran": PropertyRecord {
+                          "description": "Accounts envisioneer circuit",
+                          "isMerged": false,
+                          "isReadonly": true,
+                          "property": Object {
+                            "displayLabel": "Garden Ball Towels",
+                            "editor": Object {
+                              "name": "Accountability",
+                              "params": Array [],
+                            },
+                            "name": "Iran",
+                            "typename": "binary",
+                          },
+                          "value": Object {
+                            "displayValue": "Accounts envisioneer circuit",
+                            "value": "Accounts",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "valueFormat": 1,
+        },
+      },
+    ],
+    "functionalities": Array [
+      PropertyRecord {
+        "description": "Indiana Mobility",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Movies Coordinator",
+          "name": "payment",
+          "typename": "tinyint",
+        },
+        "value": Object {
+          "displayValue": "Indiana Mobility",
+          "value": "Intelligent Rubber Pants",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Afghani",
+          "name": "International",
+          "typename": "int",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Afghani",
+                "name": "International",
+                "typename": "int",
+              },
+              "value": Object {
+                "members": Object {
+                  "Implementation": PropertyRecord {
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "wireless",
+                      "name": "Implementation",
+                      "typename": "mediumint",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "Iran": PropertyRecord {
+                          "description": "Tasty",
+                          "isMerged": false,
+                          "isReadonly": true,
+                          "property": Object {
+                            "displayLabel": "Garden Ball Towels",
+                            "editor": Object {
+                              "name": "Accountability",
+                              "params": Array [],
+                            },
+                            "name": "Iran",
+                            "typename": "binary",
+                          },
+                          "value": Object {
+                            "displayValue": "Tasty",
+                            "value": "Vista",
+                            "valueFormat": 0,
+                          },
+                        },
+                        "synthesize": PropertyRecord {
+                          "description": "Bedfordshire plum",
+                          "isMerged": false,
+                          "isReadonly": false,
+                          "property": Object {
+                            "displayLabel": "El Salvador Colon US Dollar",
+                            "name": "synthesize",
+                            "typename": "timestamp",
+                          },
+                          "value": Object {
+                            "displayValue": "Bedfordshire plum",
+                            "value": "Mouse",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                  "black": PropertyRecord {
+                    "description": "Paradigm",
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "Computer markets",
+                      "editor": Object {
+                        "name": "red",
+                        "params": Array [],
+                      },
+                      "name": "black",
+                      "typename": "time",
+                    },
+                    "value": Object {
+                      "displayValue": "Paradigm",
+                      "value": "transmit",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Afghani",
+                "name": "International",
+                "typename": "int",
+              },
+              "value": Object {
+                "members": Object {
+                  "Implementation": PropertyRecord {
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "wireless",
+                      "name": "Implementation",
+                      "typename": "mediumint",
+                    },
+                    "value": Object {
+                      "members": Object {
+                        "Iran": PropertyRecord {
+                          "description": "Accounts envisioneer circuit",
+                          "isMerged": false,
+                          "isReadonly": true,
+                          "property": Object {
+                            "displayLabel": "Garden Ball Towels",
+                            "editor": Object {
+                              "name": "Accountability",
+                              "params": Array [],
+                            },
+                            "name": "Iran",
+                            "typename": "binary",
+                          },
+                          "value": Object {
+                            "displayValue": "Accounts envisioneer circuit",
+                            "value": "Accounts",
+                            "valueFormat": 0,
+                          },
+                        },
+                        "synthesize": PropertyRecord {
+                          "description": "California",
+                          "isMerged": false,
+                          "isReadonly": false,
+                          "property": Object {
+                            "displayLabel": "El Salvador Colon US Dollar",
+                            "name": "synthesize",
+                            "typename": "timestamp",
+                          },
+                          "value": Object {
+                            "displayValue": "California",
+                            "value": "Web",
+                            "valueFormat": 0,
+                          },
+                        },
+                      },
+                      "valueFormat": 2,
+                    },
+                  },
+                  "black": PropertyRecord {
+                    "description": "Beauty",
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "Computer markets",
+                      "editor": Object {
+                        "name": "red",
+                        "params": Array [],
+                      },
+                      "name": "black",
+                      "typename": "time",
+                    },
+                    "value": Object {
+                      "displayValue": "Beauty",
+                      "value": "white",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "valueFormat": 1,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns empty nested content for nested content with no values 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "end-to-end Handmade Soft Gloves mesh",
+      "name": "Adaptive",
+    },
+  ],
+  "description": undefined,
+  "label": "Fantastic",
+  "records": Object {
+    "Adaptive": Array [
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Lead Investment Account Re-contextualized",
+          "name": "overriding",
+          "typename": "blob",
+        },
+        "value": Object {
+          "items": Array [],
+          "valueFormat": 1,
+        },
+      },
+      PropertyRecord {
+        "description": "Money Market Account innovate deposit",
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Chair Suriname",
+          "editor": Object {
+            "name": "engage",
+            "params": Array [],
+          },
+          "name": "Metal",
+          "typename": "timestamp",
+        },
+        "value": Object {
+          "displayValue": "Money Market Account innovate deposit",
+          "value": "Georgia",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns nested content with multiple nested records 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Saint Martin hacking International",
+      "name": "lime",
+    },
+  ],
+  "description": undefined,
+  "label": "Andorra",
+  "records": Object {
+    "lime": Array [
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "1080p copying Persevering",
+          "name": "responsive",
+          "typename": "varchar",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "1080p copying Persevering",
+                "name": "responsive",
+                "typename": "varchar",
+              },
+              "value": Object {
+                "members": Object {
+                  "National": PropertyRecord {
+                    "description": "Concrete Sausages Assurance",
+                    "isMerged": false,
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Shoes AI",
+                      "name": "National",
+                      "typename": "tinyint",
+                    },
+                    "value": Object {
+                      "displayValue": "Concrete Sausages Assurance",
+                      "value": "Platinum",
+                      "valueFormat": 0,
+                    },
+                  },
+                  "firewall": PropertyRecord {
+                    "description": undefined,
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "Paradigm",
+                      "editor": Object {
+                        "name": "auxiliary",
+                        "params": Array [],
+                      },
+                      "name": "firewall",
+                      "typename": "time",
+                    },
+                    "value": Object {
+                      "displayValue": undefined,
+                      "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "1080p copying Persevering",
+                "name": "responsive",
+                "typename": "varchar",
+              },
+              "value": Object {
+                "members": Object {
+                  "National": PropertyRecord {
+                    "description": "Mauritius Rupee",
+                    "isMerged": false,
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Shoes AI",
+                      "name": "National",
+                      "typename": "tinyint",
+                    },
+                    "value": Object {
+                      "displayValue": "Mauritius Rupee",
+                      "value": "experiences",
+                      "valueFormat": 0,
+                    },
+                  },
+                  "firewall": PropertyRecord {
+                    "description": undefined,
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "Paradigm",
+                      "editor": Object {
+                        "name": "auxiliary",
+                        "params": Array [],
+                      },
+                      "name": "firewall",
+                      "typename": "time",
+                    },
+                    "value": Object {
+                      "displayValue": undefined,
+                      "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "valueFormat": 1,
+        },
+      },
+      PropertyRecord {
+        "description": "synergies Internal scalable",
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Fantastic embrace functionalities",
+          "name": "redundant",
+          "typename": "geometry",
+        },
+        "value": Object {
+          "displayValue": "synergies Internal scalable",
+          "value": "matrices",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns nested content with multiple nested records when there's only one record in caregory 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "bypass encoding Maryland",
+      "name": "Garden",
+    },
+  ],
+  "description": undefined,
+  "label": "Soft",
+  "records": Object {
+    "Garden": Array [
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Thailand",
+          "name": "Principal",
+          "typename": "mediumint",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Thailand",
+                "name": "Principal",
+                "typename": "mediumint",
+              },
+              "value": Object {
+                "members": Object {
+                  "Books": PropertyRecord {
+                    "description": "Fantastic Shirt",
+                    "isMerged": false,
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Investment Account SCSI",
+                      "editor": Object {
+                        "name": "Handmade",
+                        "params": Array [],
+                      },
+                      "name": "Books",
+                      "typename": "point",
+                    },
+                    "value": Object {
+                      "displayValue": "Fantastic Shirt",
+                      "value": "repurpose",
+                      "valueFormat": 0,
+                    },
+                  },
+                  "circuit": PropertyRecord {
+                    "description": undefined,
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "Cambridgeshire Islands",
+                      "name": "circuit",
+                      "typename": "text",
+                    },
+                    "value": Object {
+                      "displayValue": undefined,
+                      "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Thailand",
+                "name": "Principal",
+                "typename": "mediumint",
+              },
+              "value": Object {
+                "members": Object {
+                  "Books": PropertyRecord {
+                    "description": "Manager calculating",
+                    "isMerged": false,
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Investment Account SCSI",
+                      "editor": Object {
+                        "name": "Handmade",
+                        "params": Array [],
+                      },
+                      "name": "Books",
+                      "typename": "point",
+                    },
+                    "value": Object {
+                      "displayValue": "Manager calculating",
+                      "value": "Guinea Franc",
+                      "valueFormat": 0,
+                    },
+                  },
+                  "circuit": PropertyRecord {
+                    "description": undefined,
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "Cambridgeshire Islands",
+                      "name": "circuit",
+                      "typename": "text",
+                    },
+                    "value": Object {
+                      "displayValue": undefined,
+                      "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "valueFormat": 1,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns nested content with single nested record 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "Administrator",
+      "name": "solid state",
+    },
+  ],
+  "description": undefined,
+  "label": "Chief New Hampshire",
+  "records": Object {
+    "solid state": Array [
+      PropertyRecord {
+        "description": "Singapore Dollar Plastic",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "XML Designer",
+          "editor": Object {
+            "name": "silver",
+            "params": Array [],
+          },
+          "name": "Web",
+          "typename": "timestamp",
+        },
+        "value": Object {
+          "displayValue": "Singapore Dollar Plastic",
+          "value": "Expanded",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Missouri Montana ADP",
+          "name": "Pound Sterling",
+          "typename": "point",
+        },
+        "value": Object {
+          "members": Object {
+            "Mountains": PropertyRecord {
+              "description": "disintermediate withdrawal",
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Officer Forest CSS",
+                "name": "Mountains",
+                "typename": "double",
+              },
+              "value": Object {
+                "displayValue": "disintermediate withdrawal",
+                "value": "Gorgeous",
+                "valueFormat": 0,
+              },
+            },
+            "Yemen": PropertyRecord {
+              "description": undefined,
+              "isMerged": false,
+              "isReadonly": false,
+              "property": Object {
+                "displayLabel": "Squares",
+                "editor": Object {
+                  "name": "Paradigm",
+                  "params": Array [],
+                },
+                "name": "Yemen",
+                "typename": "tinyint",
+              },
+              "value": Object {
+                "displayValue": undefined,
+                "value": undefined,
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns nested content with single nested record as a list of struct member records when there's only one record in category 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "USB",
+      "name": "Computers",
+    },
+  ],
+  "description": undefined,
+  "label": "Corporate Borders",
+  "records": Object {
+    "Computers": Array [
+      PropertyRecord {
+        "description": "architecture Malagasy Ariary",
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Corner",
+          "editor": Object {
+            "name": "Savings Account",
+            "params": Array [],
+          },
+          "name": "Creek",
+          "typename": "set",
+        },
+        "value": Object {
+          "displayValue": "architecture Malagasy Ariary",
+          "value": "Michigan",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": undefined,
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Investor",
+          "name": "Steel",
+          "typename": "decimal",
+        },
+        "value": Object {
+          "displayValue": undefined,
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns nested content with single nested record when there's only one record in category 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "HTTP bandwidth",
+      "name": "ability",
+    },
+  ],
+  "description": undefined,
+  "label": "reboot EXE",
+  "records": Object {
+    "ability": Array [
+      PropertyRecord {
+        "description": "Switzerland",
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Home Loan Account",
+          "name": "Tools",
+          "typename": "bigint",
+        },
+        "value": Object {
+          "displayValue": "Switzerland",
+          "value": "Dobra",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": undefined,
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Intelligent Soft",
+          "editor": Object {
+            "name": "neutral",
+            "params": Array [],
+          },
+          "name": "open architecture",
+          "typename": "datetime",
+        },
+        "value": Object {
+          "displayValue": undefined,
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData nested content handling returns nothing for nested content with no values when there's only one record in category 1`] = `
+Object {
+  "categories": Array [],
+  "description": undefined,
+  "label": "South Carolina bus",
+  "records": Object {},
+}
+`;
+
+exports[`PropertyDataProvider getData returns array property data 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "Versatile disintermediate Bedfordshire",
+      "name": "needs-based",
+    },
+  ],
+  "description": "Bike Centralized",
+  "label": "Curve Canada",
+  "records": Object {
+    "needs-based": Array [
+      PropertyRecord {
+        "description": undefined,
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Singapore Dollar forecast utilize",
+          "name": "Metrics",
+          "typename": "Equatorial Guinea",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
+              "description": "some display value 1",
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Singapore Dollar forecast utilize",
+                "name": "Metrics",
+                "typename": "blob",
+              },
+              "value": Object {
+                "displayValue": "some display value 1",
+                "value": "some value 1",
+                "valueFormat": 0,
+              },
+            },
+            PropertyRecord {
+              "description": "some display value 2",
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Singapore Dollar forecast utilize",
+                "name": "Metrics",
+                "typename": "blob",
+              },
+              "value": Object {
+                "displayValue": "some display value 2",
+                "value": "some value 2",
+                "valueFormat": 0,
+              },
+            },
+          ],
+          "valueFormat": 1,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData returns primitive property data 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "deposit transition Car",
+      "name": "back-end",
+    },
+  ],
+  "description": "orchestrate",
+  "label": "Creative Cambridgeshire Mouse",
+  "records": Object {
+    "back-end": Array [
+      PropertyRecord {
+        "description": "Clothing",
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Awesome approach",
+          "editor": Object {
+            "name": "sensor",
+            "params": Array [],
+          },
+          "name": "Kids",
+          "typename": "tinyint",
+        },
+        "value": Object {
+          "displayValue": "Clothing",
+          "value": "auxiliary",
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PropertyDataProvider getData returns struct property data 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": true,
+      "label": "Lead back up",
+      "name": "Identity",
+    },
+  ],
+  "description": "hierarchy",
+  "label": "parsing application fault-tolerant",
+  "records": Object {
+    "Identity": Array [
+      PropertyRecord {
+        "description": undefined,
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "SQL Pants Nebraska",
+          "name": "Handcrafted",
+          "typename": "Synchronised",
+        },
+        "value": Object {
+          "members": Object {
+            "JBOD": PropertyRecord {
+              "description": "some display value",
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Fantastic Concrete Chicken backing up",
+                "name": "JBOD",
+                "typename": "enum",
+              },
+              "value": Object {
+                "displayValue": "some display value",
+                "value": "some value",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+    ],
+  },
+}
+`;

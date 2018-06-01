@@ -353,12 +353,23 @@ describe("ContentBuilder", () => {
             [field2.name]: [{
               primaryKeys: [createRandomECInstanceKey()],
               values: {
-                [field11.name]: "some value 1",
-                [field12.name]: "some value 2",
+                [field11.name]: "some value 1.1",
+                [field12.name]: "some value 1.2",
               },
               displayValues: {
-                [field11.name]: "some display value 1",
-                [field12.name]: "some display value 2",
+                [field11.name]: "some display value 1.1",
+                [field12.name]: "some display value 1.2",
+              },
+              mergedFieldNames: [],
+            }, {
+              primaryKeys: [createRandomECInstanceKey()],
+              values: {
+                [field11.name]: "some value 2.1",
+                [field12.name]: "some value 2.2",
+              },
+              displayValues: {
+                [field11.name]: "some display value 2.1",
+                [field12.name]: "some display value 2.2",
               },
               mergedFieldNames: [],
             }] as content.NestedContent[],

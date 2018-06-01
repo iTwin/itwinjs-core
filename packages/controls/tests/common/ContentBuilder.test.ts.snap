@@ -303,28 +303,75 @@ PropertyRecord {
           "typename": "double",
         },
         "value": Object {
-          "members": Object {
-            "Jamaican Dollar": PropertyRecord {
-              "description": "some display value 2",
+          "items": Array [
+            PropertyRecord {
               "isMerged": false,
-              "isReadonly": false,
+              "isReadonly": true,
               "property": Object {
-                "displayLabel": "multi-byte Research synthesize",
-                "editor": Object {
-                  "name": "Minnesota",
-                  "params": Array [],
-                },
-                "name": "Jamaican Dollar",
+                "displayLabel": "Dynamic Plastic Estates",
+                "name": "Future-proofed",
                 "typename": "double",
               },
               "value": Object {
-                "displayValue": "some display value 2",
-                "value": "some value 2",
-                "valueFormat": 0,
+                "members": Object {
+                  "Jamaican Dollar": PropertyRecord {
+                    "description": "some display value 1.2",
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "multi-byte Research synthesize",
+                      "editor": Object {
+                        "name": "Minnesota",
+                        "params": Array [],
+                      },
+                      "name": "Jamaican Dollar",
+                      "typename": "double",
+                    },
+                    "value": Object {
+                      "displayValue": "some display value 1.2",
+                      "value": "some value 1.2",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
               },
             },
-          },
-          "valueFormat": 2,
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Dynamic Plastic Estates",
+                "name": "Future-proofed",
+                "typename": "double",
+              },
+              "value": Object {
+                "members": Object {
+                  "Jamaican Dollar": PropertyRecord {
+                    "description": "some display value 2.2",
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "multi-byte Research synthesize",
+                      "editor": Object {
+                        "name": "Minnesota",
+                        "params": Array [],
+                      },
+                      "name": "Jamaican Dollar",
+                      "typename": "double",
+                    },
+                    "value": Object {
+                      "displayValue": "some display value 2.2",
+                      "value": "some value 2.2",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "valueFormat": 1,
         },
       },
     },

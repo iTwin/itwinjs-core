@@ -56,7 +56,7 @@ const createPrimitiveValue = (value: any, displayValue: string | undefined): Pri
   } as PrimitiveValue;
 };
 
-const createValue = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription, isMerged: boolean, value: any, displayValue: any): PropertyValue | undefined => {
+const createValue = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription, isMerged: boolean, value: any, displayValue: any): PropertyValue => {
   if (!isMerged) {
     if (typeDescription.valueFormat === content.PropertyValueFormat.Array)
       return createArrayValue(propertyDescription, typeDescription, value, displayValue);
@@ -84,6 +84,7 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
 };
 
 const createNestedStructRecord = (field: content.NestedContentField, nestedContent: content.NestedContent, path?: content.Field[]): PropertyRecord => {
+  path = path ? [...path] : undefined;
   let pathField: content.Field | undefined;
   if (path && 0 !== path.length) {
     pathField = path.shift();

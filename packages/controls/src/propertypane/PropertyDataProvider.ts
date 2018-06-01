@@ -4,7 +4,10 @@
 /** @module Content */
 
 import * as _ from "lodash";
-import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-components";
+import {
+  PropertyDataProvider as IPropertyDataProvider, PropertyData,
+  PropertyCategory, PropertyRecord, PropertyValueFormat, PropertyValue,
+} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder from "../common/ContentBuilder";
@@ -37,30 +40,22 @@ interface CategorizedFields {
   fields: { [categoryName: string]: Field[] };
 }
 
-export interface PropertyCategory {
-  name: string;
-  label: string;
-  expand: boolean;
-}
-
-export interface CategorizedRecords {
+interface CategorizedRecords {
   categories: PropertyCategory[];
   records: { [categoryName: string]: PropertyRecord[] };
 }
 
-export interface PropertyPaneData extends CategorizedRecords {
-  label: string;
-  description?: string;
-}
-
 const isValueEmpty = (v: PropertyValue): boolean => {
-  if (v.valueFormat === PropertyValueFormat.Primitive)
-    return (null === v.value || undefined === v.value || "" === v.value);
-  if (v.valueFormat === PropertyValueFormat.Struct)
-    return !v.members;
-  if (v.valueFormat === PropertyValueFormat.Array)
-    return !v.items || 0 === v.items.length;
-  return false;
+  switch (v.valueFormat) {
+    case PropertyValueFormat.Primitive:
+      return (null === v.value || undefined === v.value || "" === v.value);
+    case PropertyValueFormat.Array:
+      return 0 === v.items.length;
+    case PropertyValueFormat.Struct:
+      return 0 === Object.keys(v.members).length;
+  }
+  /* istanbul ignore next */
+  throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "Unknown property value format");
 };
 
 class PropertyDataBuilder {
@@ -78,34 +73,38 @@ class PropertyDataBuilder {
 
   private createCategorizedFields(): CategorizedFields {
     const categories = new Array<CategoryDescription>();
-    const fields: { [categoryName: string]: Field[] } = {};
-    const includeField = (category: CategoryDescription, field: Field) => {
-      if (!fields.hasOwnProperty(category.name)) {
-        categories.push(category);
-        fields[category.name] = new Array<Field>();
+    const categoryFields: { [categoryName: string]: Field[] } = {};
+    const includeField = (category: CategoryDescription, field: Field, onlyIfFavorite: boolean) => {
+      if (field.isNestedContentField()) {
+        includeFields(field.nestedFields, true);
       }
-      fields[category.name].push(field);
+      if (onlyIfFavorite && getFavoritesCategory().name !== field.category.name)
+        return;
+      if (!categoryFields.hasOwnProperty(category.name)) {
+        categories.push(category);
+        categoryFields[category.name] = new Array<Field>();
+      }
+      categoryFields[category.name].push(field);
     };
-
-    for (const field of this._descriptor.fields) {
-      if (getFavoritesCategory().name !== field.category.name && this._callbacks.isFavorite(field))
-        includeField(getFavoritesCategory(), field);
-      includeField(field.category, field);
-    }
+    const includeFields = (fields: Field[], onlyIfFavorite: boolean) => {
+      fields.forEach((field) => {
+        if (getFavoritesCategory().name !== field.category.name && this._callbacks.isFavorite(field))
+          includeField(getFavoritesCategory(), field, false);
+        includeField(field.category, field, onlyIfFavorite);
+      });
+    };
+    includeFields(this._descriptor.fields, false);
 
     // sort categories
     this._callbacks.sortCategories(categories);
 
     // sort fields
-    for (const category of categories) {
-      const categoryFields = fields[category.name];
-      if (categoryFields && categoryFields.length > 0)
-        this._callbacks.sortFields(category, categoryFields);
-    }
+    for (const category of categories)
+      this._callbacks.sortFields(category, categoryFields[category.name]);
 
     return {
       categories,
-      fields,
+      fields: categoryFields,
     } as CategorizedFields;
   }
 
@@ -132,8 +131,6 @@ class PropertyDataBuilder {
     for (const category of fields.categories) {
       const records = new Array<PropertyRecord>();
       const addRecord = (field: Field, record: PropertyRecord) => {
-        if (!record.value)
-          return;
         if (category.name !== getFavoritesCategory().name) {
           // note: favorite fields should be displayed even if they're hidden
           if (this._callbacks.isHidden(field))
@@ -146,17 +143,11 @@ class PropertyDataBuilder {
       const handleNestedContentRecord = (field: NestedContentField, record: PropertyRecord) => {
         if (1 === fields.fields[category.name].length) {
           // note: special handling if this is the only field in the category
-          if (record.value && record.value.valueFormat === PropertyValueFormat.Array) {
-            if (0 === record.value.items.length) {
-              // don't include empty arrays at all
-              return;
-            }
-            if (1 === record.value.items.length) {
-              // for single element arrays just include the first item
-              record = record.value.items[0];
-            }
+          if (record.value.valueFormat === PropertyValueFormat.Array && 0 === record.value.items.length) {
+            // don't include empty arrays at all
+            return;
           }
-          if (record.value && record.value.valueFormat === PropertyValueFormat.Struct) {
+          if (record.value.valueFormat === PropertyValueFormat.Struct) {
             // for structs just include all their members
             for (const nestedField of field.nestedFields)
               addRecord(nestedField, record.value.members[nestedField.name]);
@@ -190,18 +181,18 @@ class PropertyDataBuilder {
     return result;
   }
 
-  public buildPropertyData(): PropertyPaneData {
+  public buildPropertyData(): PropertyData {
     const fields = this.createCategorizedFields();
     const records = this.createCategorizedRecords(fields);
     return {
       ...records,
       label: this._contentItem.label,
       description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
-    } as PropertyPaneData;
+    } as PropertyData;
   }
 }
 
-export default class PropertyPaneDataProvider extends ContentDataProvider {
+export default class PropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
 
   /** Constructor. */
@@ -226,6 +217,8 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
 
   public get includeFieldsWithNoValues(): boolean { return this._includeFieldsWithNoValues; }
   public set includeFieldsWithNoValues(value: boolean) {
+    if (this._includeFieldsWithNoValues === value)
+      return;
     this._includeFieldsWithNoValues = value;
     this.invalidateCache({ content: true });
   }
@@ -241,7 +234,7 @@ export default class PropertyPaneDataProvider extends ContentDataProvider {
     fields.sort(prioritySortFunction);
   }
 
-  public getData = _.memoize(async (): Promise<PropertyPaneData> => {
+  public getData = _.memoize(async (): Promise<PropertyData> => {
     const content = await this.getContent();
     if (!content || 0 === content.contentSet.length)
       throw new ECPresentationError(ECPresentationStatus.NoContent);
