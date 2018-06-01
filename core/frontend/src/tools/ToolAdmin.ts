@@ -510,6 +510,8 @@ export class ToolAdmin {
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
 
+    // ###TODO: use fromButton for below code
+
     // AccuDraw:: GetInstance()._OnMotion(event);
     const isValidLocation = !tool ? true : tool.isValidLocation(ev, false);
 
@@ -1040,6 +1042,9 @@ export class ToolAdmin {
       this.setViewTool(undefined);
     // else
     //   this.suspendedCursor = this.viewCursor;
+
+    this.toolState.coordLockOvr = CoordinateLockOverrides.All;
+    this.toolState.locateCircleOn = false;
 
     IModelApp.accuSnap.onStartTool();
 
