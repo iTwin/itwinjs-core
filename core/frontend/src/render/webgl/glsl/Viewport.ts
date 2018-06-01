@@ -36,11 +36,11 @@ function computeViewportTransformation(viewRect: ViewRect, nearDepthRange: numbe
   const column3Row2 = nearDepthRange + halfDepth;
   const column3Row3 = 1.0;
 
-  const mat: Matrix4 = Matrix4.fromValues(
-    column0Row0, 0.0, 0.0, 0.0,
-    0.0, column1Row1, 0.0, 0.0,
-    0.0, 0.0, column2Row2, 0.0,
-    column3Row0, column3Row1, column3Row2, column3Row3);
+  const mat = Matrix4.fromValues(
+    column0Row0, 0.0, 0.0, column3Row0,
+    0.0, column1Row1, 0.0, column3Row1,
+    0.0, 0.0, column2Row2, column3Row2,
+    0.0, 0.0, 0.0, column3Row3);
 
   return mat;
 }

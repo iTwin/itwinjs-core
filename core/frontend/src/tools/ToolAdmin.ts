@@ -1052,8 +1052,12 @@ export class ToolAdmin {
     if (this.primitiveTool)
       this.setPrimitiveTool(undefined);
 
-    // this.exitInputCollector();
-    // this.setIncompatibleViewportCursor(true); // Don't restore this...
+    this.exitInputCollector();
+    this.setIncompatibleViewportCursor(true); // Don't restore this...
+
+    this.toolState.coordLockOvr = CoordinateLockOverrides.None;
+    this.toolState.locateCircleOn = false;
+
     IModelApp.accuDraw.onPrimitiveToolInstall();
     IModelApp.accuSnap.onStartTool();
 

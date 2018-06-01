@@ -39,12 +39,8 @@ if (v_lnInfo.w > 0.5) { // line needs pixel trimming
 
   float dist = v_lnInfo.z * dxy.x - dxy.y;
   float distA = abs(dist);
-  if (distA > 0.5 || (distA == 0.5 && dist < 0.0)) {
-    // ###TODO: is trimming all pixels. screen coord inputs are not correct (from modelToWindowCoordinates)
-    bool doPixelTrimming = false;
-    if (doPixelTrimming)
-      discardByLineCode = true;  // borrow this flag to force discard
-  }
+  if (distA > 0.5 || (distA == 0.5 && dist < 0.0))
+    discardByLineCode = true;  // borrow this flag to force discard
 }
 
 return baseColor;
