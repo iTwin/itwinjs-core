@@ -2,6 +2,16 @@
 
 The iModelJs library is a JavaScript API for creating, querying, displaying, and modifying iModels.
 
+## Documentation Overview
+
+This website is organized into sections by tabs at top of each page.
+
+* You are currently looking at the Overview page. Start here.
+* Please read the [Getting Started](../getting-started/index.md) page to install prerequisites for developers and for suggestions for background reading.
+* The [BIS](../bis/index.md) tab explains the Base Infrastructure Schemas. Understand BIS is essential to making sense of the iModelJs apis. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iModelJs.
+* The [Learning](../learning/index) section introduces the building blocks of iModelJs and provides step-by-step instructions for creating applications.
+* The [Reference](../reference/index) section explains the API in more detail with package/class/function level documentation.
+
 ## Using iModelJs
 
 The iModelJs library has a comprehensive set of APIs that can be used anywhere an iModel may be relevant.
@@ -27,16 +37,6 @@ iModelJs applications can be:
 * packaged with any container tool (e.g. [Docker](https://www.docker.com/))
 * managed with any orchestration system (e.g. [Kubernetes](https://kubernetes.io/))
 * installed on desktops and mobile devices
-
-## Getting Started
-
-Understanding the design and concepts in the iModelJs library requires a basic understanding of:
-
-* [iModels](./iModels) - the persistence layer for iModelJs
-* [IModelHub](./IModelHub) - the cloud-based hub for coordinating access to iModels
-* [iModel Bridges](./imodel-bridges) - the services that connect iModels with external data sources
-* It is also helpful to understand the concepts in [BIS](../bis/index.md), the Base Infrastructure Schema
-* The [Programmer Documentation](../learning/index) explains the API in more detail.
 
 ## JavaScript vs. TypeScript
 

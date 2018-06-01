@@ -47,6 +47,7 @@ export const enum StandardViewId {
   RightIso = 7,
 }
 
+/** @private */
 // tslint:disable-next-line:variable-name
 export const StandardView = {
   Top: RotMatrix.identity,
@@ -1366,12 +1367,12 @@ export class ViewState2d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
-/** a view of a DrawingModel */
+/** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
   public static get className() { return "DrawingViewDefinition"; }
 }
 
-/** a view of a SheetModel */
+/** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
 }
