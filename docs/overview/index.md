@@ -1,6 +1,8 @@
 # The iModelJs Library
 
-The iModelJs library is a JavaScript API for creating, querying, displaying, and modifying iModels.
+![](./imodeljs.ico)
+
+The iModelJs  library is a JavaScript API for creating, querying, displaying, and modifying iModels.
 
 ## Documentation Overview
 

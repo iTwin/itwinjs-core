@@ -37,13 +37,17 @@ export * from "./IModelDb"; // must be last
  * Classes for configuring and administering an app - see [learning IModelHost]($docs/learning/backend/IModelHost.md).
  */
 /**
- * @docs-group-description BisCore
- * Classes for working with the major classes such as [BisCore]($backend), [Model]($backend), [Element]($backend), and [Category]($backend) in the BisCore schema - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md) and [BIS Overview]($docs/bis).
+ * @docs-group-description Elements
+ * Classes for working with [Elements]($docs/BIS/intro/element-fundamentals.md).
  */
- /**
-  * @docs-group-description Codes
-  * Classes for working with [Codes]($docs/BIS/intro/element-fundamentals.md#codes).
-  */
+/**
+ * @docs-group-description Models
+ * Classes for working with [Elements]($docs/BIS/intro/model-fundamentals.md).
+ */
+/**
+ * @docs-group-description Codes
+ * Classes for working with [Codes]($docs/BIS/intro/element-fundamentals.md#codes).
+ */
 /**
  * @docs-group-description ECDb
  * Classes for working with ECDb.

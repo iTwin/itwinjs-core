@@ -1,6 +1,6 @@
 # Wire Format
 
-The *wire format* is the way entities are serialized to JSON.
+The *wire format* describes is the way entities are serialized to JSON.
 
 Below are examples of wire formats for .
 
