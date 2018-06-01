@@ -2516,9 +2516,9 @@
       }
     },
     "@bentley/ui-components": {
-      "version": "0.0.2",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/ui-components/-/ui-components-0.0.2.tgz",
-      "integrity": "sha1-F7xTUnRiwQCTEgHT9D8y0oWIVq8=",
+      "version": "0.1.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/ui-components/-/ui-components-0.1.0.tgz",
+      "integrity": "sha1-1szYXzLwXtJOx1js/Q6CpeA9v2k=",
       "requires": {
         "@bentley/imodeljs-i18n": "0.0.1",
         "@bentley/ui-core": "0.0.0",
@@ -2561,7 +2561,7 @@
     },
     "@rush-temp/ecpresentation-backend": {
       "version": "file:projects/ecpresentation-backend.tgz",
-      "integrity": "sha1-sthiL7RPaQw6g8xylQhieObRhjM=",
+      "integrity": "sha1-Efi6XogPbsvgnkgwABFFMHYS218=",
       "requires": {
         "@bentley/bentleyjs-core": "8.4.1",
         "@bentley/imodeljs-backend": "0.92.6",
@@ -2578,7 +2578,7 @@
     },
     "@rush-temp/ecpresentation-common": {
       "version": "file:projects/ecpresentation-common.tgz",
-      "integrity": "sha1-7a9Z+cloWTxQIzf/xMku9sbU2pg=",
+      "integrity": "sha1-/K4D0bn2RwfrsGltjydzln5A2nI=",
       "requires": {
         "@bentley/bentleyjs-core": "8.4.1",
         "@bentley/imodeljs-common": "0.92.3",
@@ -2593,12 +2593,12 @@
     },
     "@rush-temp/ecpresentation-controls": {
       "version": "file:projects/ecpresentation-controls.tgz",
-      "integrity": "sha1-8d4aQmTqo9P/tsdX7k9vEOlUQRs=",
+      "integrity": "sha1-Tli4J/ifslkTOol7ll20nv8SsF8=",
       "requires": {
         "@bentley/bentleyjs-core": "8.4.1",
         "@bentley/imodeljs-common": "0.92.3",
         "@bentley/imodeljs-frontend": "0.92.4",
-        "@bentley/ui-components": "0.0.2",
+        "@bentley/ui-components": "0.1.0",
         "@bentley/ui-core": "0.0.0",
         "@types/lodash": "4.14.109",
         "cross-env": "5.1.6",
@@ -2613,12 +2613,11 @@
     },
     "@rush-temp/ecpresentation-frontend": {
       "version": "file:projects/ecpresentation-frontend.tgz",
-      "integrity": "sha1-PF9fTX+Hlu0K6eb3NKyISq7mhDU=",
+      "integrity": "sha1-40cGLLpwoLOcmmnk4E1QM+vedbA=",
       "requires": {
         "@bentley/bentleyjs-core": "8.4.1",
         "@bentley/imodeljs-common": "0.92.3",
         "@bentley/imodeljs-frontend": "0.92.4",
-        "@bentley/imodeljs-i18n": "0.0.1",
         "cross-env": "5.1.6",
         "nyc": "11.9.0",
         "rimraf": "2.6.2",
@@ -2630,7 +2629,7 @@
     },
     "@rush-temp/integration-tests": {
       "version": "file:projects/integration-tests.tgz",
-      "integrity": "sha1-gFBHy6O9NarGS7NjJ2+w/RDRSpI=",
+      "integrity": "sha1-bcZraxuuaNTZNkLOOYd02doq9/E=",
       "requires": {
         "@bentley/bentleyjs-core": "8.4.1",
         "@bentley/geometry-core": "8.0.0",
@@ -2639,16 +2638,33 @@
         "@bentley/imodeljs-e_2-win32-x64": "20.0.1",
         "@bentley/imodeljs-frontend": "0.92.4",
         "@bentley/imodeljs-n_8-win32-x64": "20.0.1",
+        "@bentley/ui-components": "0.0.2",
+        "@bentley/ui-core": "0.0.0",
         "nyc": "11.9.0",
         "rimraf": "2.6.2",
         "tslint": "5.10.0",
         "typescript": "2.9.1",
         "valid-json-cli": "1.3.0"
+      },
+      "dependencies": {
+        "@bentley/ui-components": {
+          "version": "0.0.2",
+          "resolved": "https://npm.bentley.com/npm/npm/@bentley/ui-components/-/ui-components-0.0.2.tgz",
+          "integrity": "sha1-F7xTUnRiwQCTEgHT9D8y0oWIVq8=",
+          "requires": {
+            "@bentley/imodeljs-i18n": "0.0.1",
+            "@bentley/ui-core": "0.0.0",
+            "inspire-tree": "5.0.1",
+            "react": "16.4.0",
+            "react-data-grid": "3.0.11",
+            "react-dom": "16.4.0"
+          }
+        }
       }
     },
     "@rush-temp/main": {
       "version": "file:projects/main.tgz",
-      "integrity": "sha1-eK7clWO5F/qFpheOne0EEUPEEOo=",
+      "integrity": "sha1-e2eE23URgOl2IBcQaivo1sibouc=",
       "requires": {
         "@bentley/bemetalsmith": "2.3.11",
         "@bentley/bentleyjs-tools": "3.4.1",
@@ -2697,7 +2713,7 @@
     },
     "@rush-temp/sample": {
       "version": "file:projects/sample.tgz",
-      "integrity": "sha1-y/Ds1qSFzbNvUzbQTKE4YdE20bE=",
+      "integrity": "sha1-eU0iUTxyNpoCp24RAlQksx8TC5E=",
       "requires": {
         "@bentley/bentleyjs-core": "8.4.1",
         "@bentley/geometry-core": "8.0.0",

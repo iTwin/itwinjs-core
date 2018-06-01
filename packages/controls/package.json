@@ -40,14 +40,14 @@
   },
   "peerDependencies": {
     "@bentley/ui-core": "^0.0.0",
-    "@bentley/ui-components": "^0.0.2"
+    "@bentley/ui-components": "^0.1.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
     "@bentley/imodeljs-common": "^0.92",
     "@bentley/imodeljs-frontend": "^0.92",
     "@bentley/ui-core": "^0.0.0",
-    "@bentley/ui-components": "^0.0.2",
+    "@bentley/ui-components": "^0.1.0",
     "@types/lodash": "^4.14.0",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",

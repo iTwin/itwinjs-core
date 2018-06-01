@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PropertyPaneDataProvider creates property data 1`] = `
+exports[`PropertyDataProvider creates property data 1`] = `
 Object {
   "categories": Array [
     Object {

@@ -5,7 +5,8 @@ import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as faker from "faker";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { PageOptions, KeySet, SettingValueTypes } from "@common/index";
+import { IModelDb } from "@bentley/imodeljs-backend";
+import { PageOptions, KeySet, SettingValueTypes, ECPresentationError } from "@common/index";
 import { Node } from "@common/hierarchy";
 import { Descriptor, Content } from "@common/content";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
@@ -42,12 +43,21 @@ describe("ECPresentationRpcImpl", () => {
       presentationManagerMock.setup((x) => x.settings).returns(() => settingsMock.object);
       ECPresentation.setManager(presentationManagerMock.object);
       testData = {
-        imodelToken: new IModelToken("key path", "context id", "imodel id", "changeset id"),
+        imodelToken: new IModelToken(),
+        imodelMock: moq.Mock.ofType<IModelDb>(),
         pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
         displayType: "sample display type",
         inputKeys: new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()]),
         extendedOptions: { rulesetId: "aaa", someOtherOption: 789 },
       };
+      testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken);
+      IModelDb.find = () => testData.imodelMock.object;
+    });
+
+    it("throws when using invalid imodel token", async () => {
+      IModelDb.find = () => undefined as any;
+      const request = impl.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
+      await expect(request).to.eventually.be.rejectedWith(ECPresentationError);
     });
 
     describe("setActiveLocale", () => {
@@ -85,7 +95,7 @@ describe("ECPresentationRpcImpl", () => {
     describe("getRootNodes", () => {
       it("calls manager", async () => {
         const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
-        presentationManagerMock.setup((x) => x.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getRootNodes(testData.imodelMock.object, testData.pageOptions, testData.extendedOptions))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions);
@@ -97,7 +107,7 @@ describe("ECPresentationRpcImpl", () => {
     describe("getRootNodesCount", () => {
       it("calls manager", async () => {
         const result = 999;
-        presentationManagerMock.setup((x) => x.getRootNodesCount(testData.imodelToken, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getRootNodesCount(testData.imodelMock.object, testData.extendedOptions))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getRootNodesCount(testData.imodelToken, testData.extendedOptions);
@@ -110,7 +120,7 @@ describe("ECPresentationRpcImpl", () => {
       it("calls manager", async () => {
         const parentNodeKey = createRandomECInstanceNodeKey();
         const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
-        presentationManagerMock.setup((x) => x.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getChildren(testData.imodelMock.object, parentNodeKey, testData.pageOptions, testData.extendedOptions))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.extendedOptions);
@@ -123,7 +133,7 @@ describe("ECPresentationRpcImpl", () => {
       it("calls manager", async () => {
         const parentNodeKey = createRandomECInstanceNodeKey();
         const result = 999;
-        presentationManagerMock.setup((x) => x.getChildrenCount(testData.imodelToken, parentNodeKey, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getChildrenCount(testData.imodelMock.object, parentNodeKey, testData.extendedOptions))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getChildrenCount(testData.imodelToken, parentNodeKey, testData.extendedOptions);
@@ -138,7 +148,7 @@ describe("ECPresentationRpcImpl", () => {
         moq.configureForPromiseResult(descriptorMock);
         descriptorMock.setup((x) => x.resetParentship).verifiable();
         const result = descriptorMock.object;
-        presentationManagerMock.setup((x) => x.getContentDescriptor(testData.imodelToken, testData.displayType, testData.inputKeys, undefined, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getContentDescriptor(testData.imodelMock.object, testData.displayType, testData.inputKeys, undefined, testData.extendedOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getContentDescriptor(testData.imodelToken, testData.displayType,
@@ -148,7 +158,7 @@ describe("ECPresentationRpcImpl", () => {
         expect(actualResult).to.eq(result);
       });
       it("handles undefined descriptor response", async () => {
-        presentationManagerMock.setup((x) => x.getContentDescriptor(testData.imodelToken, testData.displayType, testData.inputKeys, undefined, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getContentDescriptor(testData.imodelMock.object, testData.displayType, testData.inputKeys, undefined, testData.extendedOptions))
           .returns(async () => undefined)
           .verifiable();
         const actualResult = await impl.getContentDescriptor(testData.imodelToken, testData.displayType,
@@ -162,7 +172,7 @@ describe("ECPresentationRpcImpl", () => {
       it("calls manager", async () => {
         const descriptor: Descriptor = createRandomDescriptor();
         const result = 789;
-        presentationManagerMock.setup((x) => x.getContentSetSize(testData.imodelToken, descriptor, testData.inputKeys, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getContentSetSize(testData.imodelMock.object, descriptor, testData.inputKeys, testData.extendedOptions))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getContentSetSize(testData.imodelToken, descriptor,
@@ -180,7 +190,7 @@ describe("ECPresentationRpcImpl", () => {
         moq.configureForPromiseResult(contentMock);
         contentMock.setup((x) => x.descriptor).returns(() => descriptorMock.object);
         contentMock.setup((x) => x.contentSet).returns(() => []);
-        presentationManagerMock.setup((x) => x.getContent(testData.imodelToken, descriptorMock.object, testData.inputKeys, testData.pageOptions, testData.extendedOptions))
+        presentationManagerMock.setup((x) => x.getContent(testData.imodelMock.object, descriptorMock.object, testData.inputKeys, testData.pageOptions, testData.extendedOptions))
           .returns(async () => contentMock.object)
           .verifiable();
         const actualResult = await impl.getContent(testData.imodelToken, descriptorMock.object,

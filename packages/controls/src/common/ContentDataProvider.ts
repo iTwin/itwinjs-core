@@ -134,7 +134,7 @@ export default abstract class ContentDataProvider {
 
   // tslint:disable-next-line:naming-convention
   private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
-    return await ECPresentation.presentation.getContentDescriptor(this._connection.iModelToken,
+    return await ECPresentation.presentation.getContentDescriptor(this._connection,
       this._displayType, this.keys, this.selectionInfo, this.createRequestOptions());
   });
 
@@ -156,7 +156,7 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return 0;
-    return await ECPresentation.presentation.getContentSetSize(this._connection.iModelToken,
+    return await ECPresentation.presentation.getContentSetSize(this._connection,
       descriptor, this.keys, this.createRequestOptions());
   });
 
@@ -168,7 +168,7 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return undefined;
-    return await ECPresentation.presentation.getContent(this._connection.iModelToken,
+    return await ECPresentation.presentation.getContent(this._connection,
       descriptor, this.keys, pageOptions, this.createRequestOptions());
   }, createKeyForPageOptions);
 }

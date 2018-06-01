@@ -8,7 +8,6 @@ import * as spies from "@helpers/Spies";
 import { PromiseContainer } from "@helpers/Promises";
 import * as faker from "faker";
 import { createRandomECInstanceNodeKey, createRandomECInstanceNode } from "@helpers/random/Hierarchy";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
@@ -17,16 +16,13 @@ import TreeDataProvider from "@src/tree/TreeDataProvider";
 
 describe("TreeDataProvider", () => {
 
-  let imodelToken: IModelToken;
   let rulesetId: string;
   let provider: TreeDataProvider;
   let memoizedCacheSpies: any[];
   const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
-    imodelToken = new IModelToken();
     rulesetId = faker.random.word();
-    imodelMock.setup((x) => x.iModelToken).returns(() => imodelToken);
     ECPresentation.presentation = presentationManagerMock.object;
   });
   beforeEach(() => {
@@ -110,7 +106,7 @@ describe("TreeDataProvider", () => {
     it("returns presentation manager result", async () => {
       const result = faker.random.number();
       presentationManagerMock
-        .setup((x) => x.getRootNodesCount(imodelToken, createRequestOptions()))
+        .setup((x) => x.getRootNodesCount(imodelMock.object, createRequestOptions()))
         .returns(async () => result)
         .verifiable();
       const actualResult = await provider.getRootNodesCount();
@@ -121,10 +117,10 @@ describe("TreeDataProvider", () => {
     it("memoizes result", async () => {
       const resultContainers = [new PromiseContainer<number>(), new PromiseContainer<number>()];
       presentationManagerMock
-        .setup((x) => x.getRootNodesCount(imodelToken, createRequestOptions()))
+        .setup((x) => x.getRootNodesCount(imodelMock.object, createRequestOptions()))
         .returns(() => resultContainers[0].promise);
       presentationManagerMock
-        .setup((x) => x.getRootNodesCount(imodelToken, createRequestOptions()))
+        .setup((x) => x.getRootNodesCount(imodelMock.object, createRequestOptions()))
         .returns(() => resultContainers[1].promise);
       const promises = [provider.getRootNodesCount(), provider.getRootNodesCount()];
       resultContainers.forEach((c: PromiseContainer<number>, index: number) => c.resolve(index));
@@ -141,7 +137,7 @@ describe("TreeDataProvider", () => {
       const pageOptions: PageOptions = { pageStart: faker.random.number(), pageSize: faker.random.number() };
       const result = [ createRandomECInstanceNode(), createRandomECInstanceNode() ];
       presentationManagerMock
-        .setup((x) => x.getRootNodes(imodelToken, pageOptions, createRequestOptions()))
+        .setup((x) => x.getRootNodes(imodelMock.object, pageOptions, createRequestOptions()))
         .returns(async () => result)
         .verifiable();
       const actualResult = await provider.getRootNodes(pageOptions);
@@ -152,18 +148,18 @@ describe("TreeDataProvider", () => {
     it("memoizes result", async () => {
       const resultContainers = [new PromiseContainer<Node[]>(), new PromiseContainer<Node[]>(), new PromiseContainer<Node[]>()];
       presentationManagerMock
-        .setup((x) => x.getRootNodes(imodelToken, undefined, createRequestOptions()))
+        .setup((x) => x.getRootNodes(imodelMock.object, undefined, createRequestOptions()))
         .returns(() => resultContainers[0].promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup((x) => x.getRootNodes(imodelToken, { pageStart: 0, pageSize: 0 }, createRequestOptions()))
+        .setup((x) => x.getRootNodes(imodelMock.object, { pageStart: 0, pageSize: 0 }, createRequestOptions()))
         .verifiable(moq.Times.never());
       presentationManagerMock
-        .setup((x) => x.getRootNodes(imodelToken, { pageStart: 1, pageSize: 0 }, createRequestOptions()))
+        .setup((x) => x.getRootNodes(imodelMock.object, { pageStart: 1, pageSize: 0 }, createRequestOptions()))
         .returns(() => resultContainers[1].promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup((x) => x.getRootNodes(imodelToken, { pageStart: 0, pageSize: 1 }, createRequestOptions()))
+        .setup((x) => x.getRootNodes(imodelMock.object, { pageStart: 0, pageSize: 1 }, createRequestOptions()))
         .returns(() => resultContainers[2].promise)
         .verifiable(moq.Times.once());
 
@@ -195,7 +191,7 @@ describe("TreeDataProvider", () => {
       const parentNode = createTreeNodeItem(parentKey);
       const result = faker.random.number();
       presentationManagerMock
-        .setup((x) => x.getChildrenCount(imodelToken, parentKey, createRequestOptions()))
+        .setup((x) => x.getChildrenCount(imodelMock.object, parentKey, createRequestOptions()))
         .returns(async () => result)
         .verifiable();
       const actualResult = await provider.getChildNodesCount(parentNode);
@@ -209,11 +205,11 @@ describe("TreeDataProvider", () => {
       const resultContainers = [new PromiseContainer<number>(), new PromiseContainer<number>()];
 
       presentationManagerMock
-        .setup((x) => x.getChildrenCount(imodelToken, parentKeys[0], createRequestOptions()))
+        .setup((x) => x.getChildrenCount(imodelMock.object, parentKeys[0], createRequestOptions()))
         .returns(() => resultContainers[0].promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup((x) => x.getChildrenCount(imodelToken, parentKeys[1], createRequestOptions()))
+        .setup((x) => x.getChildrenCount(imodelMock.object, parentKeys[1], createRequestOptions()))
         .returns(() => resultContainers[1].promise)
         .verifiable(moq.Times.once());
 
@@ -239,7 +235,7 @@ describe("TreeDataProvider", () => {
       const parentNode = createTreeNodeItem(parentKey);
       const pageOptions: PageOptions = { pageStart: faker.random.number(), pageSize: faker.random.number() };
       presentationManagerMock
-        .setup((x) => x.getChildren(imodelToken, parentKey, pageOptions, createRequestOptions()))
+        .setup((x) => x.getChildren(imodelMock.object, parentKey, pageOptions, createRequestOptions()))
         .returns(async () => [createRandomECInstanceNode(), createRandomECInstanceNode()])
         .verifiable();
       const actualResult = await provider.getChildNodes(parentNode, pageOptions);
@@ -253,18 +249,18 @@ describe("TreeDataProvider", () => {
       const resultContainers = [new PromiseContainer<Node[]>(), new PromiseContainer<Node[]>(), new PromiseContainer<Node[]>()];
 
       presentationManagerMock
-        .setup((x) => x.getChildren(imodelToken, parentKeys[0], undefined, createRequestOptions()))
+        .setup((x) => x.getChildren(imodelMock.object, parentKeys[0], undefined, createRequestOptions()))
         .returns(() => resultContainers[0].promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup((x) => x.getChildren(imodelToken, parentKeys[0], { pageStart: 0, pageSize: 0 }, createRequestOptions()))
+        .setup((x) => x.getChildren(imodelMock.object, parentKeys[0], { pageStart: 0, pageSize: 0 }, createRequestOptions()))
         .verifiable(moq.Times.never());
       presentationManagerMock
-        .setup((x) => x.getChildren(imodelToken, parentKeys[0], { pageStart: 1, pageSize: 0 }, createRequestOptions()))
+        .setup((x) => x.getChildren(imodelMock.object, parentKeys[0], { pageStart: 1, pageSize: 0 }, createRequestOptions()))
         .returns(() => resultContainers[1].promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup((x) => x.getChildren(imodelToken, parentKeys[1], undefined, createRequestOptions()))
+        .setup((x) => x.getChildren(imodelMock.object, parentKeys[1], undefined, createRequestOptions()))
         .returns(() => resultContainers[2].promise)
         .verifiable(moq.Times.once());
 

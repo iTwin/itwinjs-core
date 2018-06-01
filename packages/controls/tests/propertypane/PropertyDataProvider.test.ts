@@ -7,7 +7,6 @@ import * as moq from "@helpers/Mocks";
 import * as spies from "@helpers/Spies";
 import * as faker from "faker";
 import { PropertyRecord } from "@bentley/ui-components";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECPresentationError, ValuesDictionary } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
@@ -39,16 +38,13 @@ interface MemoizedCacheSpies {
 
 describe("PropertyDataProvider", () => {
 
-  let imodelToken: IModelToken;
   let rulesetId: string;
   let provider: Provider;
   let memoizedCacheSpies: MemoizedCacheSpies;
   const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
-    imodelToken = new IModelToken();
     rulesetId = faker.random.word();
-    imodelMock.setup((x) => x.iModelToken).returns(() => imodelToken);
     ECPresentation.presentation = presentationManagerMock.object;
   });
   beforeEach(() => {

@@ -83,7 +83,7 @@ export default class TreeDataProvider {
    * @param pageOptions Information about the requested page of data.
    */
   public getRootNodes = _.memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const nodes = await ECPresentation.presentation.getRootNodes(this.connection.iModelToken, pageOptions, this.createRequestOptions());
+    const nodes = await ECPresentation.presentation.getRootNodes(this.connection, pageOptions, this.createRequestOptions());
     return this.createTreeNodeItems(nodes);
   }, MemoizationHelpers.getRootNodesKeyResolver);
 
@@ -91,7 +91,7 @@ export default class TreeDataProvider {
    * Returns the total number of root nodes.
    */
   public getRootNodesCount = _.memoize(async (): Promise<number> => {
-    return await ECPresentation.presentation.getRootNodesCount(this.connection.iModelToken, this.createRequestOptions());
+    return await ECPresentation.presentation.getRootNodesCount(this.connection, this.createRequestOptions());
   });
 
   /**
@@ -101,7 +101,7 @@ export default class TreeDataProvider {
    */
   public getChildNodes = _.memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
-    const nodes = await ECPresentation.presentation.getChildren(this.connection.iModelToken, parentKey, pageOptions, this.createRequestOptions());
+    const nodes = await ECPresentation.presentation.getChildren(this.connection, parentKey, pageOptions, this.createRequestOptions());
     const items = this.createTreeNodeItems(nodes);
     items.forEach((item: TreeNodeItem) => {
       item.parentId = parentNode.id;
@@ -115,7 +115,7 @@ export default class TreeDataProvider {
    */
   public getChildNodesCount = _.memoize(async (parentNode: TreeNodeItem): Promise<number> => {
     const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
-    return await ECPresentation.presentation.getChildrenCount(this.connection.iModelToken, parentKey, this.createRequestOptions());
+    return await ECPresentation.presentation.getChildrenCount(this.connection, parentKey, this.createRequestOptions());
   }, MemoizationHelpers.getChildNodesCountKeyResolver);
 
   private createTreeNodeItem(node: Readonly<Node>): TreeNodeItem {

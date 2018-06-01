@@ -7,7 +7,6 @@ import * as moq from "@helpers/Mocks";
 import * as spies from "@helpers/Spies";
 import * as faker from "faker";
 import { PromiseContainer } from "@helpers/Promises";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
@@ -49,7 +48,6 @@ interface MemoizedCacheSpies {
 
 describe("ContentDataProvider", () => {
 
-  let imodelToken: IModelToken;
   let rulesetId: string;
   let displayType: string;
   let provider: Provider;
@@ -57,10 +55,8 @@ describe("ContentDataProvider", () => {
   const presentationManagerMock = moq.Mock.ofType<ECPresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   before(() => {
-    imodelToken = new IModelToken();
     rulesetId = faker.random.word();
     displayType = faker.random.word();
-    imodelMock.setup((x) => x.iModelToken).returns(() => imodelToken);
     ECPresentation.presentation = presentationManagerMock.object;
   });
   beforeEach(() => {
@@ -222,7 +218,7 @@ describe("ContentDataProvider", () => {
 
     it("requests presentation manager for descriptor and returns its copy", async () => {
       const result = createRandomDescriptor(displayType);
-      presentationManagerMock.setup((x) => x.getContentDescriptor(imodelToken, displayType, new KeySet(), selection, createRequestOptions()))
+      presentationManagerMock.setup((x) => x.getContentDescriptor(imodelMock.object, displayType, new KeySet(), selection, createRequestOptions()))
         .returns(async () => result)
         .verifiable();
       provider.selectionInfo = selection;

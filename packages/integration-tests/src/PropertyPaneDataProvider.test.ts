@@ -7,7 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
-import { PropertyPaneDataProvider } from "@bentley/ecpresentation-controls";
+import { PropertyDataProvider } from "@bentley/ecpresentation-controls";
 import "@helpers/Snapshots";
 
 before(() => {
@@ -31,17 +31,17 @@ const createMeaningfulInstances = async (imodel: IModelConnection): Promise<Mean
   };
 };
 
-describe("PropertyPaneDataProvider", async () => {
+describe("PropertyDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
-  let provider: PropertyPaneDataProvider;
+  let provider: PropertyDataProvider;
   before(async () => {
     const testIModelName: string = "assets/datasets/1K.bim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     expect(imodel).is.not.null;
     instances = await createMeaningfulInstances(imodel);
-    provider = new PropertyPaneDataProvider(imodel, "SimpleContent");
+    provider = new PropertyDataProvider(imodel, "SimpleContent");
   });
   after(async () => {
     await imodel.closeStandalone();

@@ -256,16 +256,14 @@ describe("ECPresentationManager", () => {
     it("returns imodel addon from IModelDb", () => {
       const mock = moq.Mock.ofType<IModelDb>();
       mock.setup((x) => x.nativeDb).returns(() => ({})).verifiable(moq.Times.atLeastOnce());
-      IModelDb.find = (_token: IModelToken) => mock.object;
-      expect(manager.getNativePlatform().getImodelAddon(new IModelToken())).be.instanceOf(Object);
+      expect(manager.getNativePlatform().getImodelAddon(mock.object)).be.instanceOf(Object);
       mock.verifyAll();
     });
 
     it("throws when fails to find imodel using IModelDb", () => {
       const mock = moq.Mock.ofType<IModelDb>();
       mock.setup((x) => x.nativeDb).returns(() => undefined).verifiable(moq.Times.atLeastOnce());
-      IModelDb.find = (_token: IModelToken) => mock.object;
-      expect(() => manager.getNativePlatform().getImodelAddon(new IModelToken())).to.throw(ECPresentationError);
+      expect(() => manager.getNativePlatform().getImodelAddon(mock.object)).to.throw(ECPresentationError);
       mock.verifyAll();
     });
 
