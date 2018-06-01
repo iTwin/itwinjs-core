@@ -1,6 +1,6 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
@@ -49,6 +49,23 @@ function retrieveConfigurationOverrides(configuration: any) {
     }
   });
   request.send();
+}
+
+// Apply environment overrides to configuration.
+// This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
+function applyConfigurationOverrides(config: any): void {
+  const electron = (window as any).require("electron");
+  const remote = electron.remote;
+  if (undefined === remote)
+    return;
+
+  const filename = remote.process.env.SVT_STANDALONE_FILENAME;
+  const viewName = remote.process.env.SVT_STANDALONE_VIEWNAME;
+  if (undefined !== filename && undefined !== viewName) {
+    config.iModelName = filename;
+    config.viewName = viewName;
+    config.standalone = true;
+  }
 }
 
 // log in to connect
@@ -217,13 +234,14 @@ async function main() {
 
   // override anything that's in the configuration
   retrieveConfigurationOverrides(configuration);
+  applyConfigurationOverrides(configuration);
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
   IModelApp.startup("QA", true);
 
   if (ElectronRpcConfiguration.isElectron)
-    ElectronRpcManager.initializeClient({}, [StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
   try {
     // initialize the Project and IModel Api

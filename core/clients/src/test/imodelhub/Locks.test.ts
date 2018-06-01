@@ -208,6 +208,25 @@ describe("iModelHubClient LockHandler", () => {
     }
   });
 
+  it("should get unavailable locks", async () => {
+    if (TestConfig.enableMocks) {
+      const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared),
+      utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None),
+      utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None)];
+      utils.mockGetLocks(iModelId, undefined, ...mockedLocks);
+
+      const filter = `?$filter=BriefcaseId+ne+${briefcases[0].briefcaseId}+and+(LockLevel+gt+0+or+ReleasedWithChangeSetIndex+gt+${changeSet.index!})`;
+      utils.mockGetLocks(iModelId, filter, ...mockedLocks);
+    }
+    const query = new LockQuery().unavailableLocks(briefcases[0].briefcaseId!, changeSet.index!);
+    const locks = await imodelHubClient.Locks().get(accessToken, iModelId, query);
+    chai.assert(locks);
+    chai.expect(locks.length).to.be.greaterThan(0);
+    locks.forEach((lock: Lock) => {
+      chai.expect(lock.lockLevel).to.be.not.equal(LockLevel.None);
+    });
+  });
+
   it("should fail on conflicting locks", async () => {
     const lock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);
     const lock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId = utils.incrementLockObjectId(lastObjectId), 1, 2, briefcases[0].fileId);

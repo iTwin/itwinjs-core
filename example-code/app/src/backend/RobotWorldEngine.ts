@@ -5,7 +5,6 @@ import { FeatureGates, RelatedElement, RpcInterfaceDefinition, RpcManager, IMode
 import { IModelDb, IModelHost, Element, ECSqlStatement, InformationRecordElement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { EnvMacroSubst, DbResult, Id64Props } from "@bentley/bentleyjs-core";
 import { } from "@bentley/imodeljs-common";
-// import { initializeLogging } from "./Logging";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
 import { Robot } from "./RobotElement";
@@ -32,10 +31,9 @@ const defaultsCfg = {
 export class RobotWorldEngine {
 
   // __PUBLISH_EXTRACT_START__ FeatureGates.defineFeatureGates
-  public static features: FeatureGates = new FeatureGates();
+  public static readonly features = new FeatureGates();
 
   private static readFeatureGates(): void {
-    this.features = new FeatureGates();
 
     // Read the configuration parameters for my service.
     // Some config params might be specified as envvars. Substitute actual values.
@@ -144,7 +142,7 @@ export class RobotWorldEngine {
     };
     return iModelDb.elements.insertElement(props);
   }
-    // __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 
   public static insertBarrier(iModelDb: IModelDb, modelId: Id64Props, location: Point3d, angle: Angle, length: number): Id64Props {
     const props: GeometricElement3dProps = {      // I know what class and category to use.

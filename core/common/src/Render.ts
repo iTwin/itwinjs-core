@@ -46,7 +46,7 @@ export class PolylineFlags {
     this.type = type;
   }
 
-  /** Create a PolylineFlags from a serialized numberic representation. */
+  /** Create a PolylineFlags from a serialized numeric representation. */
   public static unpack(value: number): PolylineFlags {
     const isDisjoint = 0 !== (value & 1);
     const isPlanar = 0 !== (value & 2);
@@ -595,8 +595,11 @@ export namespace ViewFlag {
     public setPresent(flag: PresenceFlag) { this.present |= (1 << flag); }
     public isPresent(flag: PresenceFlag): boolean { return 0 !== (this.present & (1 << flag)); }
 
-    /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags */
-    constructor(flags?: ViewFlags) { this.overrideAll(flags); }
+    /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
+    constructor(flags?: ViewFlags) {
+      if (undefined !== flags)
+        this.overrideAll(flags);
+    }
 
     public overrideAll(flags?: ViewFlags) {
       ViewFlags.createFrom(flags, this.values);

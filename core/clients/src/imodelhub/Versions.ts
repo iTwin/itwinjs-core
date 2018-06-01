@@ -52,6 +52,16 @@ export class VersionQuery extends InstanceIdQuery {
   }
 
   /**
+   * Query version by its changeSet id.
+   * @param changesetId Id of the changeSet.
+   * @returns This query.
+   */
+  public byChangeSet(changesetId: string) {
+    this.addFilter(`ChangeSetId+eq+'${changesetId}'`);
+    return this;
+  }
+
+  /**
    * Query will additionally select given sizes ids of thumbnails.
    * @returns This query.
    */

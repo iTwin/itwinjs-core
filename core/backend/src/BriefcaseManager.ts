@@ -202,24 +202,7 @@ class BriefcaseCache {
   public clear() { this.briefcases.clear(); }
 }
 
-/** Utility to manage briefcases
- *  Folder structure for cached imodels:
- *  /assets/imodels/                => cachePath (can be specified)
- *    iModelId1/                    => iModelPath
- *      csets/                      => csetPath
- *        csetId1.cs
- *        csetid2.cs
- *        ...
- *      bc/
- *        _0/IModelName.bim
- *        _1/IModelName.bim
- *        ...
- *        briefcaseId1/IModelName.bim
- *        briefcaseId2/IModelName.bim
- *        ...
- *    iModelId2/
- *      ...
- */
+/** Utility to manage briefcases */
 export class BriefcaseManager {
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static isCacheInitialized?: boolean;
