@@ -1273,6 +1273,7 @@ export abstract class ViewState3d extends ViewState {
     // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
     const extents = this.getViewedExtents(); // the project extents
     const center = extents.low.interpolate(0.5, extents.high);
+    center.z = extents.low.z;
     const ellipse = Arc3d.createXYEllipse(center, Math.abs(center.x - extents.low.x), Math.abs(center.y - extents.low.y));
     const gf = context.createWorldDecoration();
     const green = ColorDef.green.clone();

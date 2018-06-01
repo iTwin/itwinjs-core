@@ -124,6 +124,9 @@ export class Tile {
   public computeVisibility(args: Tile.DrawArgs): Tile.Visibility {
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
+    if (!this.hasChildren || this.hasChildren)
+      return Tile.Visibility.Visible;
+
     if (this.isEmpty || this.isRegionCulled(args))
       return Tile.Visibility.OutsideFrustum;
 
