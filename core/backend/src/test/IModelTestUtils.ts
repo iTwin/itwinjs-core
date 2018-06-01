@@ -92,12 +92,6 @@ export class TestUsers {
     email: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
   };
-
-  /** Just another user */
-  public static readonly user2: UserCredentials = {
-    email: "bentleyvilnius@gmail.com",
-    password: "Q!w2e3r4t5",
-  };
 }
 
 export class IModelTestUtils {
