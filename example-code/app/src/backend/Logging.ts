@@ -24,14 +24,14 @@ export function initializeLogging(): void {
 
   // Set up to log to the seq service
   if ("seq" in config) {
-    if (SeqLoggerConfig.validateProps(config.seq))
-      BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(config.seq as SeqConfig, "RobotWorld"));
+    SeqLoggerConfig.validateProps(config.seq);
+    BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(config.seq as SeqConfig, "RobotWorld"));
   }
 
   // Configure log levels by category
   if ("loggerConfig" in config) {
-    if (Logger.validateProps(config.loggerConfig))
-      Logger.configureLevels(config.loggerConfig as LoggerLevelsConfig);
+    Logger.validateProps(config.loggerConfig);
+    Logger.configureLevels(config.loggerConfig as LoggerLevelsConfig);
   }
 }
 // __PUBLISH_EXTRACT_END__
