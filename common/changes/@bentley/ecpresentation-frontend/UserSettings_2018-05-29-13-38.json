@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecpresentation-frontend",
+      "comment": "ECPresentationManager now has property settings, which can be used to access and set user setting values.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/ecpresentation-frontend",
+  "email": "aidas.kilinskas@bentley.com"
+}

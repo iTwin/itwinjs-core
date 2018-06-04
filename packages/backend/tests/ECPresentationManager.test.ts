@@ -5,13 +5,14 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
 import * as path from "path";
-import { OpenMode, using } from "@bentley/bentleyjs-core";
+import { using } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-native-platform-api";
-import { PageOptions, SelectionInfo, KeySet, ECPresentationError } from "@common/index";
+import { PageOptions, SelectionInfo, KeySet, ECPresentationError, SettingValueTypes } from "@common/index";
 import { Node, NodeKey, ECInstanceNodeKey } from "@common/index";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@src/ECPresentationManager";
+import UserSettingsManager from "@src/UserSettingsManager";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { createRandomECInstanceKey, createRandomECClassInfo } from "@helpers/random/EC";
 import { createRandomDescriptor, createRandomCategory } from "@helpers/random/Content";
@@ -89,6 +90,17 @@ describe("ECPresentationManager", () => {
         addon.verifyAll();
       });
 
+    });
+
+  });
+
+  describe("settings", () => {
+
+    const addon = moq.Mock.ofType<NodeAddonDefinition>();
+    const manager: ECPresentationManager = new ECPresentationManager({ addon: addon.object });
+
+    it("returns settings manager", () => {
+      expect(manager.settings).to.be.instanceOf(UserSettingsManager);
     });
 
   });
@@ -222,6 +234,25 @@ describe("ECPresentationManager", () => {
       addonMock.verifyAll();
     });
 
+    it("calls addon's setUserSetting", async () => {
+      const value = JSON.stringify({ value: "", type: SettingValueTypes.String });
+      addonMock.setup((x) => x.setUserSetting("rulesetId", "settingId", value))
+        .returns(() => ({}))
+        .verifiable();
+      await manager.getNativePlatform().setUserSetting("rulesetId", "settingId", value);
+      addonMock.verifyAll();
+    });
+
+    it("calls addon's getUserSetting", async () => {
+      const value = faker.random.word();
+      addonMock.setup((x) => x.getUserSetting("rulesetId", "settingId", SettingValueTypes.String))
+        .returns(() => ({ result: value }))
+        .verifiable();
+      const result = await manager.getNativePlatform().getUserSetting("rulesetId", "settingId", SettingValueTypes.String);
+      expect(result).to.be.equal(value);
+      addonMock.verifyAll();
+    });
+
     it("returns imodel addon from IModelDb", () => {
       const mock = moq.Mock.ofType<IModelDb>();
       mock.setup((x) => x.nativeDb).returns(() => ({})).verifiable(moq.Times.atLeastOnce());
@@ -247,7 +278,7 @@ describe("ECPresentationManager", () => {
     let manager: ECPresentationManager;
     beforeEach(() => {
       testData = {
-        imodelToken: new IModelToken("key path", false, "context id", "imodel id", "changeset id", OpenMode.Readonly, "user id"),
+        imodelToken: new IModelToken("key path", "context id", "imodel id", "changeset id"),
         pageOptions: { pageStart: 123, pageSize: 456 } as PageOptions,
         displayType: faker.random.word(),
         keys: (new KeySet([createRandomECInstanceNodeKey()])).add(createRandomECInstanceKey()),

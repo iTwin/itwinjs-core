@@ -8,6 +8,7 @@ import { SelectionInfo, Descriptor, Content } from "./content";
 import { IModelToken } from "@bentley/imodeljs-common";
 import KeySet from "./KeySet";
 import { PresentationRuleSet } from "./rules";
+import { UserSettingsManager } from "./UserSettingsManager";
 
 /** Paging options. */
 export interface PageOptions {
@@ -23,6 +24,11 @@ export interface ECPresentationManager {
    * Currently active locale used to localize presentation data.
    */
   activeLocale: string | undefined;
+
+  /**
+   * Settings manager for accessing and setting user settings.
+   */
+  readonly settings: UserSettingsManager;
 
   /**
    * Register a ruleset

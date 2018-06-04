@@ -5,7 +5,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { KeySet } from "@src/index";
+import { KeySet, SettingValueTypes } from "@src/index";
 import { ECPresentationRpcInterface } from "@src/index";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
@@ -100,6 +100,16 @@ describe("ECPresentationRpcInterface", () => {
       const descriptor = createRandomDescriptor();
       await rpcInterface.getContent(testData.imodelToken, descriptor, new KeySet(), undefined, {});
       mock.verify((x) => x(moq.It.isAny(), descriptor, moq.It.is((a) => a instanceof KeySet), undefined, {}), moq.Times.once());
+    });
+
+    it("forwards setUserSettingValue call", async () => {
+      await rpcInterface.setUserSettingValue("rulesetId", "settingId", { value: "", type: SettingValueTypes.String });
+      mock.verify((x) => x("rulesetId", "settingId", { value: "", type: SettingValueTypes.String }), moq.Times.once());
+    });
+
+    it("forwards getUserSettingValue call", async () => {
+      await rpcInterface.getUserSettingValue("rulesetId", "settingId", SettingValueTypes.String);
+      mock.verify((x) => x("rulesetId", "settingId", SettingValueTypes.String), moq.Times.once());
     });
 
   });

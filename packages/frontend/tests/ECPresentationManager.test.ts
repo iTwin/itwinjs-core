@@ -8,6 +8,7 @@ import * as moq from "@helpers/Mocks";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { KeySet, Content, Descriptor, ECPresentationRpcInterface } from "@common/index";
 import { ECPresentationManager } from "@src/index";
+import UserSettingsManager from "@src/UserSettingsManager";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
@@ -216,6 +217,14 @@ describe("ECPresentationManager", () => {
         .verifiable();
       await manager.clearRuleSets();
       interfaceMock.verifyAll();
+    });
+
+  });
+
+  describe("settings", () => {
+
+    it("returns settings manager", () => {
+      expect(manager.settings).to.be.instanceOf(UserSettingsManager);
     });
 
   });

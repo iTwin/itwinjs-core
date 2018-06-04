@@ -9,6 +9,7 @@ import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
 import { ECPresentationManager as ECPInterface, ECPresentationRpcInterface } from "@bentley/ecpresentation-common";
 import { PresentationRuleSet } from "@bentley/ecpresentation-common";
+import UserSettingsManager from "./UserSettingsManager";
 
 /**
  * Properties used to configure [[ECPresentationManager]].
@@ -28,10 +29,16 @@ export interface Props {
 export default class ECPresentationManager implements ECPInterface {
 
   private _activeLocale?: string;
+  private _settings: UserSettingsManager;
 
   private constructor(props?: Props) {
     if (props)
       this.activeLocale = props.activeLocale;
+    this._settings = new UserSettingsManager();
+  }
+
+  public get settings(): UserSettingsManager {
+    return this._settings;
   }
 
   /**
