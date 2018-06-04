@@ -147,34 +147,34 @@ describe("ECPresentationManager", () => {
       addonMock.verifyAll();
     });
 
-    it("calls addon's handleRequest", async () => {
+    it("calls addon's handleRequest", (done) => {
       addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: "0" }))
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .returns((_db, _options, cb) => cb({ result: "0" }))
         .verifiable();
-      manager.getNativePlatform().handleRequest(undefined, "");
+      expect(manager.getNativePlatform().handleRequest(undefined, "")).eventually.to.be.equal("0").notify(done);
       addonMock.verifyAll();
     });
 
     it("throws on invalid handleRequest response", async () => {
       addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => (undefined as any));
-      expect(() => manager.getNativePlatform().handleRequest(undefined, "")).to.throw(ECPresentationError);
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .returns((_db, _options, cb) => cb(undefined as any));
+      return expect(manager.getNativePlatform().handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError);
     });
 
     it("throws on handleRequest error response", async () => {
       addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ error: { status: NativeECPresentationStatus.Error, message: "test" } }));
-      expect(() => manager.getNativePlatform().handleRequest(undefined, "")).to.throw(ECPresentationError, "test");
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .returns((_db, _options, cb) => cb({ error: { status: NativeECPresentationStatus.Error, message: "test" } }));
+      return expect(manager.getNativePlatform().handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError, "test");
     });
 
     it("throws on handleRequest success response without result", async () => {
       addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: undefined }));
-      expect(() => manager.getNativePlatform().handleRequest(undefined, "")).to.throw(ECPresentationError);
+        .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
+        .returns((_db, _options, cb) => cb({ result: undefined }));
+      return expect(manager.getNativePlatform().handleRequest(undefined, "")).eventually.to.be.rejectedWith(ECPresentationError);
     });
 
     it("calls addon's setupRulesetDirectories", async () => {
@@ -302,7 +302,8 @@ describe("ECPresentationManager", () => {
 
     const setup = (addonResponse: any) => {
       // mock the handleRequest function
-      mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => JSON.stringify(addonResponse));
+      mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+        .returns(async () => JSON.stringify(addonResponse));
     };
     const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
       // verify the addon was called with correct params
@@ -692,7 +693,7 @@ describe("ECPresentationManager", () => {
 
     it("throws on invalid addon response", async () => {
       mock.setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
-      expect(manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions)).to.eventually.be.rejectedWith(Error);
+      return expect(manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.extendedOptions)).to.eventually.be.rejectedWith(Error);
     });
 
   });
