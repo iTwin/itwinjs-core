@@ -203,12 +203,10 @@ const applyLighting = `
     if (u_lightMix.y > 0.0001) { // Default.
       float diffuseIntensity = 0.0, specularIntensity = 0.0;
 
-      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.3, -0.0, 0.7)), 1.0, specularExp);
-      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.272165523, -0.6804138, 0.6804138)), .30, specularExp);
-      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.2, 0.3, 0.5)), 1.0, specularExp);
-      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.25, -0.10, 0.3)), .30, specularExp);
-      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.3, 0.25, 0.7)), 1.0, specularExp);
-      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.25, -0.25, 0.3)), .30, specularExp);
+      // Use a pair of lights that is something in-between portrait lighting & something more out-doorsy with a slightly more overhead main light.
+      // This will make more sense in a wider variety of scenes since this is the only lighting currently supported.
+      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.2, 0.5, 0.5)), 1.0, specularExp);
+      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.3, 0.0, 0.3)), .30, specularExp);
 
       litColor += u_lightMix.y * diffuseWeight * diffuseIntensity * baseColor.rgb + specularIntensity * specularWeight * specularColor;
     }
@@ -250,7 +248,8 @@ export function addLighting(builder: ProgramBuilder) {
       const doDiffuseImageLighting = (undefined === params.target);
       if (doDiffuseImageLighting)
         data[0] = 1.0;
-      else { // Use default lighting, 2 portrait lights & a little bit of ambient.
+      else {
+        // Use default lighting, a pair of directional lights + a little ambient.
         data[1] = 0.92;
         data[3] = 0.08;
       }
