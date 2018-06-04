@@ -20,6 +20,7 @@ import { Entity, EntityMetaData } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
+import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 
 /** @module iModels */
 
@@ -1168,3 +1169,27 @@ export namespace TxnManager {
     readonly _id: string;
   }
 }
+
+/** Utility to cache and retrieve results of long running open IModelDb requests
+ * The cache is keyed on the input arguments passed to open
+ * @hidden
+ */
+class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
+  public constructor() {
+    super(IModelDb.open, (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
+      return `${accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
+    });
+  }
+
+  private superMemoize = this.memoize;
+  public memoize = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): QueryablePromise<IModelDb> => {
+    return this.superMemoize(accessToken, contextId, iModelId, openParams, version);
+  }
+
+  private superDeleteMemoized = this.deleteMemoized;
+  public deleteMemoized = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion) => {
+    this.superDeleteMemoized(accessToken, contextId, iModelId, openParams, version);
+  }
+}
+
+export const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = new OpenIModelDbMemoizer();

@@ -5,11 +5,13 @@
 import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
-import { RenderContext } from "../ViewContext";
+import { SceneContext } from "../ViewContext";
 import { GeometricModelState } from "../ModelState";
 import { RenderGraphic, GraphicBranch } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
+import { IModelApp } from "../IModelApp";
+import { TileIO } from "./TileIO";
+import { IModelTileIO } from "./IModelTileIO";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);
@@ -33,18 +35,6 @@ export class TileRequests {
 
     return found;
   }
-}
-
-export class SceneContext extends RenderContext {
-  public readonly graphics: RenderGraphic[] = [];
-  public readonly requests: TileRequests;
-
-  public constructor(vp: Viewport, requests: TileRequests) {
-    super(vp);
-    this.requests = requests;
-  }
-
-  public outputGraphic(graphic: RenderGraphic): void { this.graphics.push(graphic); }
 }
 
 export class Tile {
@@ -75,10 +65,29 @@ export class Tile {
     this._childIds = props.childIds;
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
-    // ###TODO deserialize geometry
+
+    // ###TODO: Defer loading of graphics (separate request to backend to obtain tile geometry)
+    this.loadGraphics(props.geometry);
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
+
+    // ###TODO: Back-end is not setting maximumSize in json!
+    if (undefined === this.maximumSize)
+      this.maximumSize = this.hasGraphics ? 512 : 0;
+  }
+
+  private loadGraphics(blob?: Uint8Array): void {
+    this.loadStatus = Tile.LoadStatus.Ready;
+    if (undefined === blob)
+      return;
+
+    const reader = IModelTileIO.Reader.create(new TileIO.StreamBuffer(blob.buffer), this.root.model, IModelApp.renderSystem);
+    if (undefined !== reader) {
+      const result = reader.read();
+      if (undefined !== result)
+        this._graphic = result.renderGraphic;
+    }
   }
 
   public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
@@ -254,6 +263,7 @@ export class Tile {
     }
   }
 
+  protected _doCulling: boolean = false;
   private static scratchWorldFrustum = new Frustum();
   private static scratchRootFrustum = new Frustum();
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
@@ -261,7 +271,8 @@ export class Tile {
     const worldBox = box.transformBy(args.location, Tile.scratchWorldFrustum);
     const isOutside = FrustumPlanes.Containment.Outside === args.context.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
-    return isOutside || isClipped;
+    const isCulled = isOutside || isClipped;
+    return this._doCulling && isCulled;
   }
 }
 
@@ -431,5 +442,12 @@ export namespace TileTree {
     public static fromJSON(props: TileTreeProps, model: GeometricModelState) {
       return new Params(Id64.fromJSON(props.id), props.rootTile, model, Transform.fromJSON(props.location), props.maxTilesToSkip);
     }
+  }
+
+  export enum LoadStatus {
+    NotLoaded,
+    Loading,
+    Loaded,
+    NotFound,
   }
 }

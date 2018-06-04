@@ -481,11 +481,12 @@ export class System extends RenderSystem {
    * If no render map exists for the imodel, returns undefined.
    */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
-    const idMap = this.renderCache.get(imodel);
+    let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      return undefined;
+      idMap = new IdMap();
+      this.renderCache.insert(imodel, idMap);
     }
-    return idMap!.getMaterial(params);
+    return idMap.getMaterial(params);
   }
 
   /** Searches through the imodel's render map for a material, given its key. Returns undefined if none found. */
@@ -501,9 +502,10 @@ export class System extends RenderSystem {
    * If no render map exists for the imodel, returns undefined.
    */
   public createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    const idMap = this.renderCache.get(imodel);
+    let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      return undefined;
+      idMap = new IdMap();
+      this.renderCache.insert(imodel, idMap);
     }
     return idMap.getTexture(image, params);
   }
@@ -513,9 +515,10 @@ export class System extends RenderSystem {
    * If no render map exists for the imodel, returns undefined.
    */
   public createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    const idMap = this.renderCache.get(imodel);
+    let idMap = this.renderCache.get(imodel);
     if (!idMap) {
-      return undefined;
+      idMap = new IdMap();
+      this.renderCache.insert(imodel, idMap);
     }
     return idMap.getTextureFromImgSrc(source, width, height, params);
   }
@@ -525,9 +528,11 @@ export class System extends RenderSystem {
    * If no render map exists for the imodel, returns undefined.
    */
   public createGradient(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
-    const idMap = this.renderCache.get(imodel);
-    if (!idMap)
-      return undefined;
+    let idMap = this.renderCache.get(imodel);
+    if (!idMap) {
+      idMap = new IdMap();
+      this.renderCache.insert(imodel, idMap);
+    }
     return idMap.getGradient(symb);
   }
 

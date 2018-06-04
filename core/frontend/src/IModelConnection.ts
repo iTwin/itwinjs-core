@@ -9,7 +9,7 @@ import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
   IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileId, TileTreeProps, TileProps,
+  TileId, TileTreeProps, TileProps, RpcRequest, RpcRequestEvent, RpcOperation,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
@@ -54,6 +54,9 @@ export class IModelConnection extends IModel {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
 
+  /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
+  private static connectionTimeout: number = 5 * 60 * 1000;
+
   private constructor(iModel: IModel, openMode: OpenMode) {
     super(iModel.iModelToken);
     super.initialize(iModel.name, iModel);
@@ -77,13 +80,51 @@ export class IModelConnection extends IModel {
       changeSetId = "0"; // The first version is arbitrarily setup to have changeSetId = "0" since it is required by the RPC interface API.
 
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
-    let openResponse: IModel;
-    if (openMode === OpenMode.ReadWrite)
-      openResponse = await IModelWriteRpcInterface.getClient().openForWrite(accessToken, iModelToken);
-    else
-      openResponse = await IModelReadRpcInterface.getClient().openForRead(accessToken, iModelToken);
 
-    Logger.logTrace(loggingCategory, "IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
+    /* Try opening the iModel repeatedly accommodating any pending responses from the backend
+     * After the first attempt wait for 500 ms. On subsequent attempts, double the wait time the timeout period has reached
+     */
+    let connectionRetryTime: number = 500; // milliseconds
+    connectionRetryTime = Math.min(connectionRetryTime, IModelConnection.connectionTimeout);
+
+    const openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
+    openForReadOperation.policy.retryInterval = () => connectionRetryTime;
+
+    const openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
+    openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
+
+    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ iModelId, openMode, changeSetId }));
+    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ iModelId, openMode, changeSetId }));
+
+    const startTime = Date.now();
+
+    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
+      if (type !== RpcRequestEvent.PendingUpdateReceived || !(request.operation === openForWriteOperation || request.operation === openForReadOperation))
+        return;
+
+      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
+
+      if (Date.now() - startTime > IModelConnection.connectionTimeout) {
+        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ iModelId, openMode, changeSetId }));
+        throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
+      }
+
+      connectionRetryTime = connectionRetryTime * 2;
+      request.retryInterval = connectionRetryTime;
+      Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ iModelId, openMode, changeSetId }));
+    });
+
+    let openResponse: IModel;
+    try {
+      if (openMode === OpenMode.ReadWrite)
+        openResponse = await IModelWriteRpcInterface.getClient().openForWrite(accessToken, iModelToken);
+      else
+        openResponse = await IModelReadRpcInterface.getClient().openForRead(accessToken, iModelToken);
+    } finally {
+      removeListener();
+    }
+
+    Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));
 
     // todo: Setup userId if it is a readWrite open - this is necessary to reopen the same exact briefcase at the backend
     return new IModelConnection(openResponse, openMode);

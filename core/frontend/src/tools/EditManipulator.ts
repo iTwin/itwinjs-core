@@ -85,9 +85,9 @@ export abstract class EditManipulator {
    * If called, the manipulator is responsible for setting the anchor point that will be used by all
    * active manipulators to the center of its selected control. This manipulator can also enable AccuSnap/AccuDraw.
    * @param ev Current button event, point needs to be set to center of selected control.
-   * @note If you merely want a control to handle clicks, implement _OnClick instead.
+   * @note If you merely want a control to handle clicks, implement onClick instead.
    * @return false to reject starting modify dynamics.
-   * @see _OnClick
+   * @see onClick
    */
   public abstract onPreModify(ev: BeButtonEvent): void;
 

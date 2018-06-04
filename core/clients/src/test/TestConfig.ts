@@ -114,12 +114,6 @@ export class TestUsers {
   };
 
   /** Just another user */
-  public static readonly user2: UserCredentials = {
-    email: "bentleyvilnius@gmail.com",
-    password: "Q!w2e3r4t5",
-  };
-
-  /** Just another user */
   public static readonly user3: UserCredentials = {
     email: "vilnius.user1@mailinator.com",
     password: "test123",

@@ -1,10 +1,12 @@
-### Introduction to BIS
-- [Introduction](./intro/introduction.md)
+### BIS
+
+- [Introduction](./index.md)
 - [Modeling with BIS](./intro/modeling-with-bis.md)
 - [BIS Organization](./intro/bis-organization.md)
 - [BIS Ecosystem](./intro/bis-ecosystem.md)
 - [Fabric of the Universe](./intro/fabric-of-the-universe.md)
 - [Element Fundamentals](./intro/element-fundamentals.md)
+- [Codes](./intro/codes.md)
 - [ElementAspect Fundamentals](./intro/elementaspect-fundamentals.md)
 - [Model Fundamentals](./intro/model-fundamentals.md)
 - [Relationship Fundamentals](./intro/relationship-fundamentals.md)
@@ -15,7 +17,7 @@
 - [Information Models and Elements](./intro/information-models-and-elements.md)
 - [Categories](./intro/categories.md)
 - [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time.md)
-- [Schema Versioning and Generations](./intro/schema-versioning-and-generations.md)
+- [Schema Versioning](./intro/schema-versioning-and-generations.md)
 - [Glossary](./intro/glossary.md)
 
 <!-- TODO: The following are not linked in...?
@@ -36,14 +38,10 @@
 
 &nbsp;
 ### BIS Naming Guidelines
-- [Rules and Recommendation](./naming-guidelines/rules-and-recommendations.md)
-- [Rules and Recommendation for Special Terms](./naming-guidelines/rules-and-recommendations-for-special-terms.md)
-- [Summary of Exceptions](./naming-guidelines/summary-of-exceptions.md)
-- [Standard Abbreviations and Acronyms](./naming-guidelines/standard-abbreviations-and-acronyms.md)
-- [Standard Relationship “Strengths” Names](./naming-guidelines/standard-relationship-strengths-names.md)
 
-<!-- TODO: The following are not linked in...?
-./naming-guidelines/appendix.md
-./naming-guidelines/bis-schemas-names.md
-./naming-guidelines/terms-with-specific-semantic-meaning.md
---->
+- [Rules and Recommendation](./naming-guidelines/rules-and-recommendations.md)
+- [Special Terms](./naming-guidelines/rules-and-recommendations-for-special-terms.md)
+- [Summary of Exceptions](./naming-guidelines/summary-of-exceptions.md)
+- [Abbreviations and Acronyms](./naming-guidelines/standard-abbreviations-and-acronyms.md)
+- [Relationship “Strengths”](./naming-guidelines/standard-relationship-strengths-names.md)
+

@@ -202,24 +202,7 @@ class BriefcaseCache {
   public clear() { this.briefcases.clear(); }
 }
 
-/** Utility to manage briefcases
- *  Folder structure for cached imodels:
- *  /assets/imodels/                => cachePath (can be specified)
- *    iModelId1/                    => iModelPath
- *      csets/                      => csetPath
- *        csetId1.cs
- *        csetid2.cs
- *        ...
- *      bc/
- *        _0/IModelName.bim
- *        _1/IModelName.bim
- *        ...
- *        briefcaseId1/IModelName.bim
- *        briefcaseId2/IModelName.bim
- *        ...
- *    iModelId2/
- *      ...
- */
+/** Utility to manage briefcases */
 export class BriefcaseManager {
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static isCacheInitialized?: boolean;
@@ -407,7 +390,9 @@ export class BriefcaseManager {
       BriefcaseManager.makeDirectoryRecursive(BriefcaseManager.cacheDir);
   }
 
-  /** Initialize the briefcase manager cache of in-memory briefcases (if necessary). */
+  /** Initialize the briefcase manager cache of in-memory briefcases (if necessary).
+   * Note: Callers should use memoizedInitCache() instead
+   */
   private static async initCache(accessToken?: AccessToken): Promise<void> {
     if (BriefcaseManager.isCacheInitialized)
       return;
@@ -427,6 +412,16 @@ export class BriefcaseManager {
     BriefcaseManager.isCacheInitialized = true;
   }
 
+  private static _memoizedInitCache?: Promise<void>;
+  /** Memoized initCache - avoids race condition caused by two async calls to briefcase manager */
+  private static async memoizedInitCache(accessToken?: AccessToken) {
+    // NEEDS_WORK: initCache() is to be made synchronous and independent of the accessToken passed in.
+    if (!BriefcaseManager._memoizedInitCache)
+      BriefcaseManager._memoizedInitCache = BriefcaseManager.initCache(accessToken);
+    await BriefcaseManager._memoizedInitCache;
+    BriefcaseManager._memoizedInitCache = undefined;
+  }
+
   /** Get the index of the change set from its id */
   private static async getChangeSetIndexFromId(accessToken: AccessToken, iModelId: string, changeSetId: string): Promise<number> {
     if (changeSetId === "")
@@ -442,7 +437,7 @@ export class BriefcaseManager {
 
   /** Open a briefcase */
   public static async open(accessToken: AccessToken, projectId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
-    await BriefcaseManager.initCache(accessToken);
+    await BriefcaseManager.memoizedInitCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
     const changeSetId: string = await version.evaluateChangeSet(accessToken, iModelId, BriefcaseManager.hubClient);
@@ -868,7 +863,7 @@ export class BriefcaseManager {
 
   /** Purge closed briefcases */
   public static async purgeClosed(accessToken: AccessToken) {
-    await BriefcaseManager.initCache(accessToken);
+    await BriefcaseManager.memoizedInitCache(accessToken);
 
     const briefcases = BriefcaseManager.cache.getFilteredBriefcases((briefcase: BriefcaseEntry) => !briefcase.isOpen);
     for (const briefcase of briefcases) {
@@ -1346,7 +1341,7 @@ export class BriefcaseManager {
 
   /** Create an iModel on the iModelHub */
   public static async create(accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<string> {
-    await BriefcaseManager.initCache(accessToken);
+    await BriefcaseManager.memoizedInitCache(accessToken);
     assert(!!BriefcaseManager.hubClient);
 
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();

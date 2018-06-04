@@ -242,10 +242,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
     let idx0 = this.findOrAddPoint(points[0]);
     let idx1 = this.findOrAddPoint(points[1]);
-    let idx2 = this.findOrAddPoint(points[2]);
-    let idx3 = this.findOrAddPoint(points[3]);
-    this.polyface.terminateFacet();
-    this.addIndexedQuadPointIndexes(idx0, idx1, idx2, idx3);
+    let idx2 = this.findOrAddPoint(points[3]);
+    let idx3 = this.findOrAddPoint(points[2]);
 
     // Add params if needed
     if (this.options.needParams) {
@@ -285,6 +283,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
       this.addIndexedQuadNormalIndexes(idx0, idx1, idx2, idx3);
     }
+
+    // Add point indexes last (terminates the facet)
+    this.addIndexedQuadPointIndexes(idx0, idx1, idx2, idx3);
 
     if (endFace)
       this.endFace();
@@ -353,8 +354,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let idx0 = this.findOrAddPoint(points[0]);
     let idx1 = this.findOrAddPoint(points[1]);
     let idx2 = this.findOrAddPoint(points[2]);
-    this.polyface.terminateFacet();
-    this.addIndexedTrianglePointIndexes(idx0, idx1, idx2);
 
     // Add params if needed
     if (this.options.needParams) {
@@ -390,6 +389,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
       this.addIndexedTriangleNormalIndexes(idx0, idx1, idx2);
     }
+
+    // Add point indexes last (terminates the facet)
+    this.addIndexedTrianglePointIndexes(idx0, idx1, idx2);
 
     if (endFace)
       this.endFace();

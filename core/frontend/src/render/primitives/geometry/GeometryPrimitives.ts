@@ -224,7 +224,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
   }
 
   protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
-    if (this.hasTexture) { // clear parameters
+    if (!this.hasTexture) { // clear parameters
       if (this.polyface.data.param) {
         this.polyface.data.param = [];
       }
