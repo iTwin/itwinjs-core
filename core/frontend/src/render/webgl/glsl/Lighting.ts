@@ -203,6 +203,10 @@ const applyLighting = `
     if (u_lightMix.y > 0.0001) { // Default.
       float diffuseIntensity = 0.0, specularIntensity = 0.0;
 
+      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.3, -0.0, 0.7)), 1.0, specularExp);
+      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.272165523, -0.6804138, 0.6804138)), .30, specularExp);
+      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.2, 0.3, 0.5)), 1.0, specularExp);
+      // computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.25, -0.10, 0.3)), .30, specularExp);
       computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.3, 0.25, 0.7)), 1.0, specularExp);
       computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.25, -0.25, 0.3)), .30, specularExp);
 
@@ -241,12 +245,15 @@ export function addLighting(builder: ProgramBuilder) {
       data[1] = 0.0; // set to 1.0 for default portrait lighting
       data[2] = 0.0; // set to 1.0 for using scene lights
       data[3] = 0.0; // set > 0.0 for constant lighting
+      // ###TODO: IBL - use the following commented out line instead of the one after it which is there just to use params.
       // const doDiffuseImageLighting: boolean = (undefined !== params.target.diffuseMap);
-      const doDiffuseImageLighting = (undefined === params.target); // should always be false so that we use deault lights for now
+      const doDiffuseImageLighting = (undefined === params.target);
       if (doDiffuseImageLighting)
         data[0] = 1.0;
-      else
-        data[1] = 1.0;
+      else { // Use default lighting, 2 portrait lights & a little bit of ambient.
+        data[1] = 0.92;
+        data[3] = 0.08;
+      }
       uniform.setUniform4fv(data);
     });
   });
