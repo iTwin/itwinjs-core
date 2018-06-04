@@ -69,10 +69,6 @@ export * from "./IModelDb"; // must be last
  * Classes to help write portable apps and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps - see [Portability Overview]($docs/learning/Portability.md)
  */
 /**
- * @docs-group-description RpcInterface
- * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/RpcInterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
- */
-/**
  * @docs-group-description Schema
  * Classes for working with ECSchemas - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  */
