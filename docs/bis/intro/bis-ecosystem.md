@@ -32,11 +32,11 @@ iModelHub allows clients to subscribe to events like “A new Revision has been 
 
 ## Revisions
 
-A Revision is a collection of changes required to *revise* a BIS Repository from a pre-revision state to a post-revision state. A Revision is 
+A Revision is a collection of changes required to *revise* a BIS Repository from a pre-revision state to a post-revision state. A Revision is
 
 A Revision file is a binary file used to hold all of changes made to a Briefcase. The Revision includes a SQLite ChangeSet, which records changes to a Briefcase in a compact format.
 
-When you *pull from* and *push to* iModelHub, you are pushing and pulling Revisions. iModelHub requires that before it will accept a Revision the 
+When you *pull from* and *push to* iModelHub, you are pushing and pulling Revisions. iModelHub requires that before it will accept a Revision the
 
 ## BIS Generations
 
@@ -53,3 +53,5 @@ See _**xxxxxxxx**_ for a detailed description of BIS Generations and the motivat
 ## BIS Outside of iModels
 
 BIS is not only intended for the iModel stack; BIS is intended to be schema for applications and services. The use of the same conceptual schema will allow all the facets of the BIS (and Bentley) ecosystem to work together. The expectation is that all new REST APIs exposing user-domain concepts like “user”, “asset”, “project”, “enterprise”, “major infrastructure”, “document”, “transmittal”, “issue”, “deliverable”, “rendition”, “work package” etc. will need to conform to BIS (meaning that there will need to be BIS ECClasses describing the resources exposed by those services and the JSON should use the semantics defined by BIS and a JSON format that is compatible with the overall BIM ecosystem.
+
+> Next: [Fabric of the Universe](./fabric-of-the-universe.md)

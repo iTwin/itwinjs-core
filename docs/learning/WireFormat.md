@@ -1,8 +1,8 @@
 # Wire Format
 
-The *wire format* is the way how entities are serialized to JSON. It is described here: [Wire Format](./ECSQLRowFormat.md).
+The *wire format* describes is the way entities are serialized to JSON.
 
-Below are examples of how different entities look like in the wire format.
+Below are examples of wire formats for .
 
 ## Root Subject
 
@@ -80,7 +80,7 @@ Below is the JSON from the `Placement3d` that will be used to place the `Geometr
 ### GeometricElement3d JSON
 
 Below is the JSON from the `GeometricElement3d`.
-This shows how the JSON from the `GeometricElement3d` contains the JSON from the objects used to create it:
+This shows that the JSON from the `GeometricElement3d` contains the JSON from the objects used to create it:
 
 ```json
 [[include:WireFormat_GeometricElement3d_Element.json]]

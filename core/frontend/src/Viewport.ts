@@ -13,7 +13,8 @@ import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
-import { DecorateContext } from "./ViewContext";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
@@ -407,7 +408,6 @@ export class Viewport {
 
   private invalidateScene(): void {
     this.sync.invalidateScene();
-    this.view.invalidateScene();
   }
 
   private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
@@ -432,18 +432,19 @@ export class Viewport {
 
   private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
   private static readonly scratchDefaultRotatePointHigh = new Point3d(.5, .5, .5);
-  public determineDefaultRotatePoint(result?: Point3d): Point3d {
-    result = result ? result : new Point3d();
-    const view = this.view;
-    const depth = this.determineVisibleDepthNpc();
-
-    // if there are no elements in the view and the camera is on, use the camera target point
-    if (!depth && view.is3d() && view.isCameraOn())
-      return view.getTargetPoint(result);
-
-    Viewport.scratchDefaultRotatePointLow.z = depth ? depth.minimum : 0;
-    Viewport.scratchDefaultRotatePointHigh.z = depth ? depth.maximum : 1.0;
-    return Viewport.scratchDefaultRotatePointLow.interpolate(.5, Viewport.scratchDefaultRotatePointHigh, result);
+  public determineDefaultRotatePoint(out?: Point3d): Point3d {
+    const depth = this.isActive ? this.determineVisibleDepthNpc() : undefined;
+    const scratch = Viewport.scratchDefaultRotatePointLow;
+    scratch.x = scratch.y = 0.5;
+    if (undefined !== depth) {
+      scratch.z = (depth.minimum + depth.maximum) / 2.0;
+      return this.npcToWorld(scratch, out);
+    } else if (this.isCameraOn()) {
+      return this.view.getTargetPoint(out);
+    } else {
+      scratch.z = 0.5;
+      return this.npcToWorld(scratch, out);
+    }
   }
 
   public getFocusPlaneNpc(): number {
@@ -1355,10 +1356,10 @@ export class Viewport {
     graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, true, true, 0.0);
     black.setTransparency(100);
-    graphic.setSymbology(black, black, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
+    graphic.setSymbology(black, black, 1);
     graphic.addArc2d(ellipse2, false, false, 0.0);
     white.setTransparency(20);
-    graphic.setSymbology(white, white, 2); // ###TODO figure out why 1-pixel-wide polylines don't render
+    graphic.setSymbology(white, white, 1);
     graphic.addArc2d(ellipse, false, false, 0.0);
     context.addViewOverlay(graphic.finish()!);
   }
@@ -1416,14 +1417,14 @@ export class Viewport {
       this.setupFromView();
 
     if (!sync.isValidScene) {
-      // ###TODO: create scene...
-      // view.requestScene(this, plan, requests);
-      // const scene = view.useReadyScene();
-      // const task = new ChangeSceneTask(priority, target, scene, view.activeVolume);
-      // renderQueue.addTask(task);
+      const context = new SceneContext(this, new TileRequests());
+      view.createScene(context);
+      // ###TODO: request missing tiles
+      target.changeScene(context.graphics);
+
       isRedrawNeeded = true;
       sync.setValidScene();
-      // IModelApp.viewManager.notifyRenderSceneQueued(this);
+      // ###TODO? IModelApp.viewManager.notifyRenderSceneQueued(this);
     }
 
     if (!sync.isValidRenderPlan) {

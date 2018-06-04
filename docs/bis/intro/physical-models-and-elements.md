@@ -4,7 +4,7 @@
 
 ## Introduction
 
-PhysicalModels and PhysicalElements are used to model the physical world, as it exists currently, as it existed in the past or as it is expected to exist in the future.
+`PhysicalModels` and `PhysicalElements` are used to model the physical world, as it exists currently, as it existed in the past or as it is expected to exist in the future.
 
 Any object in the real world is modeled as a PhysicalElement a maximum of once within a BIS repository. The various disciplines that work together on infrastructure can *not* each have their own PhysicalElement for the same real-world object. Modeling the physical world is a cooperative, coordinated effort.
 
@@ -16,7 +16,7 @@ In BIS, the following classes are central in modeling the physical world:
 
 ## PhysicalElements
 
-PhysicalElements are use to model real world physical entities. PhysicalElements always have a position in real world coordinates that is relevant for infrastructure construction, operation or maintenance.
+`PhysicalElement`s are use to model real world physical entities. PhysicalElements always have a position in real world coordinates that is relevant for infrastructure construction, operation or maintenance.
 
 It is usually easy to determine which objects should be modeled by a PhysicalElement. If the answers to the following three questions are "yes", then the object is a good candidate for modeling with a PhysicalElement:
 
@@ -86,3 +86,5 @@ As discussed in [Modeling with BIS](./modeling-with-bis.md), there are many enti
     ## Physical Model Hierarchy
 4. Supplement with more figures.
 -->
+
+> Next: [Functional Models and Elements](./functional-models-and-elements.md)

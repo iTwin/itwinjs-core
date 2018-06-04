@@ -8,15 +8,18 @@ import { WsgInstance } from "../ECJsonTypeMap";
 import { IModelHubResponseError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
+import * as https from "https";
+import { Config } from "..";
 
 /**
  * Provides default options for iModel Hub requests.
  */
 class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
-  public constructor() {
+  public constructor(agent: https.Agent) {
     super();
     this.defaultOptions.errorCallback = IModelHubResponseError.parse;
     this.defaultOptions.retryCallback = IModelHubResponseError.shouldRetry;
+    this.defaultOptions.agent = agent;
   }
 }
 
@@ -24,8 +27,9 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
  * This class acts as the WsgClient for other iModel Hub Handlers.
  */
 export class IModelHubBaseHandler extends WsgClient {
-  private static _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
+  private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
+  private _agent: https.Agent;
 
   private static readonly defaultUrlDescriptor: UrlDescriptor = {
     DEV: "https://dev-imodelhubapi.bentley.com",
@@ -38,8 +42,10 @@ export class IModelHubBaseHandler extends WsgClient {
    * Creates an instance of IModelHubBaseHandler.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv) {
+  public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000) {
     super(deploymentEnv, "v2.5", "https://connect-wsg20.bentley.com");
+    if (!Config.isBrowser())
+      this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
 
   /**
@@ -49,10 +55,10 @@ export class IModelHubBaseHandler extends WsgClient {
    * @returns Promise resolves after the defaults are setup.
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
-    if (!IModelHubBaseHandler._defaultIModelHubOptionsProvider)
-      IModelHubBaseHandler._defaultIModelHubOptionsProvider = new DefaultIModelHubRequestOptionsProvider();
+    if (!this._defaultIModelHubOptionsProvider)
+      this._defaultIModelHubOptionsProvider = new DefaultIModelHubRequestOptionsProvider(this._agent);
 
-    return IModelHubBaseHandler._defaultIModelHubOptionsProvider.assignOptions(options);
+    return this._defaultIModelHubOptionsProvider.assignOptions(options);
   }
 
   /**
@@ -69,6 +75,14 @@ export class IModelHubBaseHandler extends WsgClient {
    */
   protected getDefaultUrl(): string {
     return IModelHubBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
+  }
+
+  /**
+   * Gets the agenet used for imodelhub connection pooling.
+   * @returns The agenet used for imodelhub connection pooling.
+   */
+  public getAgent(): https.Agent {
+    return this._agent;
   }
 
   /**

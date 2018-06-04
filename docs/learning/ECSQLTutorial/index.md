@@ -14,12 +14,9 @@ The data in iModels can only be modified via the respective APIs. ECSQL is used 
 
 ## How to use the tutorial
 
-The tutorial looks at typical questions and finds the respective ECSQL answer to it. All ECSQL examples used in the lessons can be run by
-yourself by using the [iModelConsole](#imodelconsole) with the tutorial's [Sample iModel](#sample-imodel).
+The tutorial looks at typical questions and finds the respective ECSQL answer to it. The goal of the tutorial is that you can try out all ECSQL statements used in the lessons yourself. The tool to run the ECSQL statements is the [iModelConsole](#imodelconsole) with the tutorial's [Sample iModel](#sample-imodel).
 
 This also enables you to experiment more with ECSQL by modifying the tutorial's ECSQL statements or by trying out your own ECSQL statements.
-
-So make sure to run the [iModelConsole](#imodelconsole) with the sample iModel opened when working with the tutorial.
 
 ### How to open the sample iModel in the iModelConsole
 
@@ -51,11 +48,9 @@ The ECSQL examples in the tutorial work with the sample iModel which you can dow
 
 ### BIS
 
-As every iModel is based upon [BIS](../../bis/intro/introduction.md), the examples throughout the tutorial use the BIS ECSchemas. While not required to learn ECSQL, making yourself familiar with [BIS](../../bis/intro/introduction.md) is a good idea to even get more out of this tutorial (see [BIS Introduction](../../bis/intro/introduction.md)).
+The schemas for iModels are based on [BIS](../../bis/index.md). Therefore, the examples throughout the tutorial use the BIS schemas. While not required to learn ECSQL, familiarity with BIS is a good idea to get more from this tutorial.
 
 ## Tutorial Overview
-
-### Basic lessons
 
 * [Lesson 1: Key to ECSQL](./KeyToECSQL)
 * [Lesson 2: The first examples](./FirstExamples)
@@ -63,8 +58,5 @@ As every iModel is based upon [BIS](../../bis/intro/introduction.md), the exampl
 * [Lesson 4: Relationships and Joins](./Joins)
 * [Lesson 5: Class Polymorphism](./PolymorphicQueries)
 * [Lesson 6: Spatial Queries](./SpatialQueries)
-
-### Advanced lessons
-
 * [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries)
 * [Lesson 8: Querying ChangeSummaries](./ChangeSummaryQueries)

@@ -2,25 +2,28 @@
 ---
 
 ### ($backend)
-- [AppAdministration]($backend:AppAdministration)
-- [BisCore]($backend:BisCore)
+
+- [Administration]($backend:AppAdministration)
 - [Codes]($backend:Codes)
-- [ECDb]($backend:ECDb)
-- [ECSQL]($backend:ECSQL)
-- [FontsAndSymbology]($backend:FontsAndSymbology)
+- [Elements]($backend:Elements)
+- [Models]($backend:Models)
+- [Views]($backend:Views)
+- [Symbology]($backend:FontsAndSymbology)
 - [iModels]($backend:iModels)
 - [Portability]($backend:Portability)
 - [RpcInterface]($backend:RpcInterface)
 - [Schema]($backend:Schema)
-- [Views]($backend:Views)
+- [ECDb]($backend:ECDb)
+- [ECSQL]($backend:ECSQL)
 
 &nbsp;
 ### ($frontend)
-- [AppAdministration]($frontend:AppAdministration)
+
+- [Administration]($frontend:AppAdministration)
 - [BisCore]($frontend:BisCore)
 - [DrawingAids]($frontend:DrawingAids)
 - [iModels]($frontend:iModels)
-- [LocationAndSnapping]($frontend:LocationAndSnapping)
+- [Locating Elements]($frontend:LocationAndSnapping)
 - [Notifications]($frontend:Notifications)
 - [SelectionSet]($frontend:SelectionSet)
 - [Search]($frontend:Search)
@@ -29,16 +32,17 @@
 
 &nbsp;
 ### ($common)
-- [AppAdministration]($common:AppAdministration)
+
+- [Administration]($common:AppAdministration)
 - [BisCore]($common:BisCore)
 - [Codes]($common:Codes)
 - [ECSQL]($common:ECSQL)
 - [Errors]($common:Errors)
-- [FontsAndSymbology]($common:FontsAndSymbology)
+- [Symbology]($common:FontsAndSymbology)
 - [Geometry]($common:Geometry)
 - [Views]($common:Views)
 - [iModels]($common:IModels)
-- [RpcInterface]($common:RpcInterface)
+- [RPC Interface]($common:RpcInterface)
 - [Schema]($common:Schema)
 
 &nbsp;
@@ -48,6 +52,7 @@
 ## Support Packages
 ---
 ### ($bentleyjs-core)
+
 - [BeSQLite]($bentleyjs-core:BeSQLite)
 - [Errors]($bentleyjs-core:Errors)
 - [Events]($bentleyjs-core:Events)
@@ -57,8 +62,9 @@
 
 &nbsp;
 ### ($geometry-core)
-- [CartesianGeometry]($geometry-core:CartesianGeometry)
-- [ArraysAndInterfaces]($geometry-core:ArraysAndInterfaces)
+
+- [Cartesian Geometry]($geometry-core:CartesianGeometry)
+- [Arrays & Interfaces]($geometry-core:ArraysAndInterfaces)
 - [Bspline]($geometry-core:Bspline)
 - [Curve]($geometry-core:Curve)
 - [Numerics]($geometry-core:Numerics)

@@ -1,6 +1,18 @@
 # The iModelJs Library
 
-The iModelJs library is a JavaScript API for creating, querying, displaying, and modifying iModels.
+![](./imodeljs.ico)
+
+The iModelJs  library is a JavaScript API for creating, querying, displaying, and modifying iModels.
+
+## Documentation Overview
+
+This website is organized into sections by tabs at the top of each page.
+
+* You are currently looking at the Overview page. Start here.
+* Please read the [Getting Started](../getting-started/index.md) page to install prerequisites for developers and for suggestions for background reading.
+* The [BIS](../bis/index.md) tab explains the Base Infrastructure Schemas. Understand BIS is essential to making sense of the iModelJs apis. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iModelJs.
+* The [Learning](../learning/index) section introduces the building blocks of iModelJs and provides step-by-step instructions for creating applications.
+* The [Reference](../reference/index) section explains the API in more detail with package/class/function level documentation.
 
 ## Using iModelJs
 
@@ -28,16 +40,6 @@ iModelJs applications can be:
 * managed with any orchestration system (e.g. [Kubernetes](https://kubernetes.io/))
 * installed on desktops and mobile devices
 
-## Getting Started
-
-Understanding the design and concepts in the iModelJs library requires a basic understanding of:
-
-* [iModels](./iModels) - the persistence layer for iModelJs
-* [IModelHub](./IModelHub) - the cloud-based hub for coordinating access to iModels
-* [iModel Bridges](./imodel-bridges) - the services that connect iModels with external data sources
-* It is also helpful to understand the concepts in [BIS](../bis/intro/introduction), the Base Infrastructure Schema
-* The [Programmer Documentation](../learning/index) explains the API in more detail.
-
 ## JavaScript vs. TypeScript
 
 iModelJs is written in [TypeScript](https://www.typescriptlang.org/). Even though it *can* be consumed in a JavaScript application, it is *highly recommended* that iModelJs application developers use TypeScript too when possible. Throughout the iModelJs library, the arguments to functions are decorated with their expected types in TypeScript. The expectation is that the TypeScript compiler will verify the types of callers. Runtime checks to enforce correct types are not encouraged inside iModelJs, given they add overhead and are not necessary for TypeScript callers.
@@ -54,7 +56,7 @@ The iModelJs library is divided into these sub-packages:
 |---|---
 |**@bentley/bentleyjs-core**|General utilities that can be run in either the frontend or the backend.
 |**@bentley/geometry-core**|Operations on 2d and 3d geometry.
-|**@bentley/imodeljs-backend** |Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface. .
+|**@bentley/imodeljs-backend**|Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface.
 |**@bentley/imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tool) that modify iModels.
-|**@bentley/imodeljs-common** |Common between the frontend and backend.
+|**@bentley/imodeljs-common**|Common between the frontend and backend.
 |**@bentley/imodeljs-native**|Performs low-level I/O to an iModel. @bentley/imodeljs-backend depends on this package.

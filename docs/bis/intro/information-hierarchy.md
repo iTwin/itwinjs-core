@@ -178,5 +178,10 @@ TODO: show organization for an iModel created by both:
 
 TODO
 
-![Information Hierarchy](./media/TBD-information-hierarchy.png)
 -->
+
+## Example Information Hierarchy
+
+![Information Hierarchy](./media/information-hierarchy.png)
+
+> Next: [Physical Models and Elements](./physical-models-and-elements.md)

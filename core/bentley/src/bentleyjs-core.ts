@@ -22,12 +22,11 @@ export * from "./Time";
 /** @module Utils */
 
 /** @docs-package-description
- * The bentleyjs-core package contains classes for designed to solve common problems that are
- * needed by many different kinds of apps, both client and server.
+ * The bentleyjs-core package contains classes to solve problems that are common for both client and server use cases.
  */
 /**
  * @docs-group-description BeSQLite
- * Classes and enums for working with the SQLite database that underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
+ * Classes for working with SQLite databases. SQLite underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
  * @docs-group-description Errors

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-/** @module BisCore */
+/** @module Schema */
 
 import { Schema, Schemas } from "./Schema";
 import { ClassRegistry } from "./ClassRegistry";
@@ -13,7 +13,7 @@ import * as categoryMod from "./Category";
 import * as viewMod from "./ViewDefinition";
 import * as linkMod from "./LinkTableRelationship";
 
-/** Represents the BisCore schema.
+/** The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.
  * <p><em>Example:</em>
  * ``` ts
  * [[include:BisCore.registerSchemaAndGetClass]]

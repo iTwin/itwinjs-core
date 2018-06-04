@@ -8,6 +8,7 @@ import { stringify, IStringifyOptions } from "qs";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
 
+import * as https from "https";
 const loggingCategory = "imodeljs-clients.Request";
 
 // HTTP response type (status / 100)
@@ -81,6 +82,7 @@ export interface RequestOptions {
   errorCallback?: (response: any) => ResponseError;
   retryCallback?: (error: any, response: any) => boolean;
   progressCallback?: (progress: ProgressInfo) => void;
+  agent?: https.Agent;
 }
 
 /** Response object if the request was successful. Note that the status within the range of 200-299
@@ -226,6 +228,10 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
   if (options.parser) {
     sareq.parse(options.parser);
+  }
+
+  if (options.agent) {
+    sareq.agent(options.agent);
   }
 
   if (options.progressCallback) {

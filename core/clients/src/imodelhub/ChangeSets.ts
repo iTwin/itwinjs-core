@@ -100,6 +100,90 @@ export class ChangeSetQuery extends InstanceIdQuery {
     this._query.$orderby = "Index+desc";
     return this;
   }
+
+  /**
+   * Query ChangeSets between changeSets.
+   * @param firstChangeSetId Id of the first changeSet.
+   * @param secondChangeSetId Id of the second changeSet.
+   * @returns This query.
+   */
+  public betweenChangeSets(firstChangeSetId: string, secondChangeSetId?: string) {
+    let query: string;
+    if (!secondChangeSetId) {
+      query = `CumulativeChangeSet-backward-ChangeSet.Id+eq+'${firstChangeSetId}'`;
+    } else {
+      query = `(CumulativeChangeSet-backward-ChangeSet.Id+eq+'${firstChangeSetId}'`;
+      query += `+and+FollowingChangeSet-backward-ChangeSet.Id+eq+'${secondChangeSetId}')`;
+      query += `+or+(CumulativeChangeSet-backward-ChangeSet.Id+eq+'${secondChangeSetId}'`;
+      query += `+and+FollowingChangeSet-backward-ChangeSet.Id+eq+'${firstChangeSetId}')`;
+    }
+
+    this.addFilter(query);
+    return this;
+  }
+
+  /**
+   * Query version changeSets.
+   * @param versionId Id of the version.
+   * @returns This query.
+   */
+  public getVersionChangeSets(versionId: string) {
+    this.addFilter(`CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'`);
+    return this;
+  }
+
+  /**
+   * Query changeSets after version.
+   * @param versionId Id of the version.
+   * @returns This query.
+   */
+  public afterVersion(versionId: string) {
+    this.addFilter(`FollowingChangeSet-backward-Version.Id+eq+'${versionId}'`);
+    return this;
+  }
+
+  /**
+   * Query changeSets between two versions.
+   * @param sourceVersionId Id of the source version.
+   * @param destinationVersionId Id of the destination version.
+   * @returns This query.
+   */
+  public betweenVersions(sourceVersionId: string, destinationVersionId: string) {
+    let query: string;
+    query = `(FollowingChangeSet-backward-Version.Id+eq+'${sourceVersionId}'`;
+    query += `+and+CumulativeChangeSet-backward-Version.Id+eq+'${destinationVersionId}')`;
+    query += `+or+(FollowingChangeSet-backward-Version.Id+eq+'${destinationVersionId}'`;
+    query += `+and+CumulativeChangeSet-backward-Version.Id+eq+'${sourceVersionId}')`;
+
+    this.addFilter(query);
+    return this;
+  }
+
+  /**
+   * Query changeSets between version and changeSet.
+   * @param versionId Id of the version.
+   * @param changeSetId Id of the changeSet.
+   * @returns This query.
+   */
+  public betweenVersionAndChangeSet(versionId: string, changeSetId: string) {
+    let query: string;
+    query = `(CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'+and+FollowingChangeSet-backward-ChangeSet.Id+eq+'${changeSetId}')`;
+    query += `+or+`;
+    query += `(FollowingChangeSet-backward-Version.Id+eq+'${versionId}'+and+CumulativeChangeSet-backward-ChangeSet.Id+eq+'${changeSetId}')`;
+
+    this.addFilter(query);
+    return this;
+  }
+
+  /**
+   * Query changeSets by seed file id.
+   * @param seedFileId Id of the seed file.
+   * @returns This query.
+   */
+  public bySeedFileId(seedFileId: string) {
+    this.addFilter(`SeedFileId+eq+'${seedFileId}'`);
+    return this;
+  }
 }
 
 /**

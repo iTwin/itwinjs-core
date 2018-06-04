@@ -37,13 +37,17 @@ export * from "./IModelDb"; // must be last
  * Classes for configuring and administering an app - see [learning IModelHost]($docs/learning/backend/IModelHost.md).
  */
 /**
- * @docs-group-description BisCore
- * Classes for working with the major classes such as [BisCore]($backend), [Model]($backend), [Element]($backend), and [Category]($backend) in the BisCore schema - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md) and [BIS Overview]($docs/bis).
+ * @docs-group-description Elements
+ * Classes for working with [Elements]($docs/BIS/intro/element-fundamentals.md).
  */
- /**
-  * @docs-group-description Codes
-  * Classes for working with Codes.
-  */
+/**
+ * @docs-group-description Models
+ * Classes for working with [Elements]($docs/BIS/intro/model-fundamentals.md).
+ */
+/**
+ * @docs-group-description Codes
+ * Classes for working with [Codes]($docs/BIS/intro/codes.md).
+ */
 /**
  * @docs-group-description ECDb
  * Classes for working with ECDb.
@@ -63,10 +67,6 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Portability
  * Classes to help write portable apps and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps - see [Portability Overview]($docs/learning/Portability.md)
- */
-/**
- * @docs-group-description RpcInterface
- * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/RpcInterface) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
  */
 /**
  * @docs-group-description Schema

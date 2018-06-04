@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module BisCore */
+/** @module Elements */
 
 import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
@@ -17,7 +17,7 @@ import {
 
 /**
  * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
- * Each element represents an entity in the real world. Sets of Elements (contained in Models) are used to model
+ * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
  * Elements can represent entities at any scale. Elements can represent physical things or abstract concepts
  * or simply be information records.
@@ -27,20 +27,20 @@ import {
  * to hold a GUID, if the element was assigned that GUID by some other federated database. The iModel database enforces
  * uniqueness of id, code, and federationGuid.
  *
- * See [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
+ * See [Element Fundamentals]($docs/bis/intro/element-fundamentals.md) and [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
  */
 export abstract class Element extends Entity implements ElementProps {
-  /** the ModelId of the Model containing this element */
+  /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64;
-  /** the code for this element */
+  /** The [Code]($docs/bis/intro/codes.md) for this element */
   public readonly code: Code;
-  /** the parent element, if present, of this element. */
+  /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
-  /** a GUID assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
   public federationGuid?: Guid;
-  /** a user-assigned label for this element. */
+  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
-  /** optional json properties of this element. */
+  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
   public readonly jsonProperties: any;
 
   /** constructor for Element. */
@@ -78,13 +78,13 @@ export abstract class Element extends Entity implements ElementProps {
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
-  /** get a set of JSON user properties by namespace */
+  /** Get a set of JSON user properties by namespace */
   public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
 
-  /** change a set of user JSON properties of this Element by namespace. */
+  /** Change a set of user JSON properties of this Element by namespace. */
   public setUserProperties(nameSpace: string, value: any) { this.getAllUserProperties()[nameSpace] = value; }
 
-  /** remove a set of JSON user properties, specified by namespace, from this Element */
+  /** Remove a set of JSON user properties, specified by namespace, from this Element */
   public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
 
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
@@ -97,8 +97,7 @@ export abstract class Element extends Entity implements ElementProps {
 }
 
 /**
- * Geometric Element is an abstract base class used to model real world entities that intrinsically have
- * geometry.
+ * An abstract base class to model real world entities that intrinsically have geometry.
  */
 export abstract class GeometricElement extends Element implements GeometricElementProps {
   public category: Id64;
@@ -125,8 +124,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
 }
 
 /**
- * 3d Geometric Element is an abstract base class used to model real world entities that intrinsically
- * have 3d geometry.
+ * An abstract base class to model real world entities that intrinsically have 3d geometry.
  */
 export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
   public placement: Placement3d;
@@ -153,8 +151,7 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
 }
 
 /**
- * 2d Geometric Element is an abstract base class used to model information entities that intrinsically have
- * 2d geometry.
+ * An abstract base class to model information entities that intrinsically have 2d geometry.
  */
 export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
   public placement: Placement2d;
@@ -177,8 +174,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
 }
 
 /**
- * Abstract base class for 2d Geometric Elements that are used to convey information within graphical presentations
- * (like drawings).
+ * An abstract base class for 2d Geometric Elements that are used to convey information within graphical presentations (like drawings).
  */
 export abstract class GraphicalElement2d extends GeometricElement2d {
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
@@ -198,44 +194,47 @@ export class DrawingGraphic extends GraphicalElement2d {
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** 2D Text Annotation */
 export class TextAnnotation2d extends AnnotationElement2d {
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** 3D Text Annotation */
 export class TextAnnotation3d extends GraphicalElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/**
+ * Represents an attachment of a [[ViewDefinition]] to a [[SheetModel]].
+ */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
   public view?: Id64;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
- * A Spatial Element occupies real world space.
+ * An Element that occupies real world space. Its coordinates are in the project space of its iModel.
  */
 export abstract class SpatialElement extends GeometricElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
- * A Physical Element is spatially located, has mass, and can be 'touched'.
+ * An Element that is spatially located, has mass, and can be 'touched'.
  */
 export abstract class PhysicalElement extends SpatialElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
- * A Physical Portion represents an arbitrary portion of a larger Physical Element that will be broken
- * down in more detail in a separate (sub) Physical Model.
+ * An arbitrary portion of a larger Physical Element that will be broken down in more detail in a separate (sub) Physical Model.
  */
 export abstract class PhysicalPortion extends PhysicalElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
- * A Spatial Location Element identifies a 'tracked' real world location but has no mass and cannot be
- * 'touched'.
+ * Identifies a *tracked* real world location but has no mass and cannot be *touched*.
  */
 export abstract class SpatialLocationElement extends SpatialElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
@@ -290,7 +289,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
 }
 
 /**
- * A Document is an InformationContentElement that identifies the content of a document.
+ * An InformationContentElement that identifies the content of a document.
  * The realized form of a document is called a DocumentCarrier (different class than Document).
  * For example, a will is a legal document. The will published into a PDF file is an ElectronicDocumentCopy.
  * The will printed onto paper is a PrintedDocumentCopy.
@@ -300,6 +299,7 @@ export abstract class Document extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** A document that represents a drawing, that is, 2-D graphical representation of engineering data. A Drawing element is modelled by a [[DrawingModel]]. */
 export class Drawing extends Document {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -314,16 +314,22 @@ export class Drawing extends Document {
   }
 }
 
+/**
+ * A document that represents a section drawing, that is, 2-D graphical documentation derived from a planar
+ * section of some other spatial model. A SectionDrawing element is modelled by a [[SectionDrawingModel]].
+ */
 export class SectionDrawing extends Drawing {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** @hidden */
 export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
   public height?: number;
   public width?: number;
   public constructor(props: SheetBorderTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** @hidden */
 export class SheetTemplate extends Document implements SheetTemplateProps {
   public height?: number;
   public width?: number;
@@ -331,6 +337,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]]. */
 export class Sheet extends Document implements SheetProps {
   public scale?: number;
   public height?: number;
@@ -348,7 +355,7 @@ export abstract class InformationCarrierElement extends Element {
 }
 
 /**
- * A Document Carrier is an Information Carrier that carries a Document. An electronic file is a good example.
+ * An Information Carrier that carries a Document. An electronic file is a good example.
  */
 export abstract class DocumentCarrier extends InformationCarrierElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -384,7 +391,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
 }
 
 /**
- * Defines a recipe for generating a type.
+ * Defines a recipe for generating a *type*.
  */
 export abstract class RecipeDefinitionElement extends DefinitionElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -400,21 +407,21 @@ export abstract class PhysicalType extends TypeDefinitionElement {
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with a Spatial Location.
+ * Defines a set of properties (the 'type') that can be associated with a spatial location.
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
- * A recipe that uses a 3D template for creating new instances.
+ * A recipe that uses a 3d template for creating new instances.
  */
 export class TemplateRecipe3d extends RecipeDefinitionElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with a 2D Graphical Element.
+ * Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.
  */
 export abstract class GraphicalType2d extends TypeDefinitionElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -428,9 +435,9 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 }
 
 /**
- * Information Partition is an abstract base class for elements that introduce a new modeling
+ * An abstract base class for elements that introduce a new modeling
  * perspective within the overall iModel information hierarchy. An Information Partition is always parented
- * to a Subject and broken down by a Model.
+ * to a `Subject` and broken down by a `Model`.
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   public description?: string;
@@ -446,7 +453,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
 }
 
 /**
- * A Definition Partition element indicates that there is a definition-related modeling perspective within
+ * An Element that indicates that there is a definition-related modeling perspective within
  * the overall iModel information hierarchy. A Definition Partition is always parented to a Subject and
  * broken down by a Definition Model.
  */

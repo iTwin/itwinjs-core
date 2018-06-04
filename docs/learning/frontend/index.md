@@ -1,6 +1,6 @@
 # The @bentley/imodeljs-frontend package
 
-The **imodeljs-frontend** package always runs inside a web browser:
+The `imodeljs-frontend` npm package contains code that *always* runs inside a web browser:
 
 * When used with a backend service via HTTP, it can run in any modern web browser (see compatibility list.)
 * When used with a desktop apps, it runs inside the Electron frontend process in Chrome.
@@ -9,7 +9,7 @@ The **imodeljs-frontend** package always runs inside a web browser:
 ## Frontend Services
 
 * [Login and obtain AccessTokens](../common/AccessToken.md)
-* [Open iModel connections](./IModelConnection.md)
+* [Open a "connection" to an iModel](./IModelConnection.md)
 * [Adminstration](./IModelApp.md) via the IModelApp class
 * [Localization](./Localization.md) of strings and user interface
 * Writing [Tools](./Tools.md) for handling events from users

@@ -67,7 +67,7 @@ The ElementOwnsChildElements relationship defines the following constraints:
 
 - An Element may only have one parent. Determined by the Source multiplicity.
 
-Relationships which derive from ElementOwnsChildElements may make the following changes
+Relationships that derive from ElementOwnsChildElements may make the following changes
 
 - Make the relationship mandatory for the parent by changing the target multiplicity to `(1..*)`.
 
@@ -128,3 +128,5 @@ For sealed Navigation Properties, a single foreign key database column is used t
 Regarding subclassable Navigation Property relationships, ElementOwnsChildElements relationship can be reviewed as an example. This relationship is not sealed (it can be, and often is, subclassed) so two database columns are used to store it. The relationship has a multiplicity of `(0..1)` on the source side (every Element has 0 or 1 parent), so the relationship is stored in the Parent navigation property of the target.
 
 Lastly, Navigation Properties can also be defined for Link table relationships. In this case, the link table relationship is specified as an end point of the Navigation Property relationship.
+
+> Next: [Schemas](./schemas-domains.md)

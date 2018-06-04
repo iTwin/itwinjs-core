@@ -44,7 +44,7 @@ export class TestConfig {
 
   /** Login the specified user and return the AuthorizationToken */
   public static async login(user: UserCredentials = TestUsers.user1): Promise<AuthorizationToken> {
-    if (TestConfig.deploymentEnv === "DEV")
+    if (TestConfig.deploymentEnv === "DEV" || TestConfig.deploymentEnv === "PERF")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
 
     const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient("QA")).getToken(user.email, user.password);
@@ -111,12 +111,6 @@ export class TestUsers {
   public static readonly user1: UserCredentials = {
     email: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
-  };
-
-  /** Just another user */
-  public static readonly user2: UserCredentials = {
-    email: "bentleyvilnius@gmail.com",
-    password: "Q!w2e3r4t5",
   };
 
   /** Just another user */

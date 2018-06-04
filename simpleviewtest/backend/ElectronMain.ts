@@ -5,7 +5,7 @@ import * as path from "path";
 import * as url from "url";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
 import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
@@ -25,11 +25,14 @@ Logger.initializeToConsole(); // configure logging for imodeljs-core
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
 const isDevBuild = (process.env.NODE_ENV === "development");
+const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 let winRef: any;
 
 function createWindow() {
 
   const win = new electron.BrowserWindow({
+    width: 1024,
+    height: 800,
     webPreferences: {
       webSecurity: !isDevBuild, // Workaround for CORS issue in dev build
       experimentalFeatures: true, // Needed for CSS Grid support
@@ -37,7 +40,8 @@ function createWindow() {
     autoHideMenuBar: true,
   });
   winRef = win;
-  winRef.toggleDevTools();
+  if (autoOpenDevTools)
+    winRef.toggleDevTools();
 
   if (isDevBuild) {
     win.loadURL(url.format({
@@ -60,7 +64,7 @@ function createWindow() {
 
 electron.app.on("ready", () => {
   // Initialize application gateway configuration for the backend
-  ElectronRpcManager.initializeImpl({}, [IModelReadRpcInterface]);
+  ElectronRpcManager.initializeImpl({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
   createWindow();
 });

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module BisCore */
+/** @module Elements */
 
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -124,6 +124,7 @@ export class ElementDrivesElement extends LinkTableRelationship implements Eleme
   }
 }
 
+/** Specifies the source and target elements of a [[IModelDbLinkTableRelationships]] instance. */
 export interface SourceAndTarget {
   sourceId: Id64;
   targetId: Id64;

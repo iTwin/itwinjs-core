@@ -50,18 +50,19 @@ export class DrawParams extends ShaderProgramParams {
     super(target, pass);
     this.geometry = geometry;
     this.modelMatrix = Matrix4.fromTransform(modelMatrix);
-
+    let mvMat: Matrix4;
     if (this.isViewCoords) {
       // TFS#811077: Zero out Z...see clipping tools in ClipViewTools.cpp...
-      this.modelViewMatrix = this.modelMatrix.clone();
       const tf = modelMatrix.clone(DrawParams._scratchTransform);
       tf.matrix.coffs[2] = tf.matrix.coffs[5] = tf.matrix.coffs[8] = 0.0;
-      this.modelViewMatrix = Matrix4.fromTransform(tf);
+      mvMat = Matrix4.fromTransform(tf);
     } else {
-      const modelViewMatrix = target.viewMatrix.clone(DrawParams._scratchTransform);
-      modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
-      this.modelViewMatrix = Matrix4.fromTransform(modelViewMatrix);
+      let modelViewMatrix = target.viewMatrix.clone(DrawParams._scratchTransform);
+      modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+      mvMat = Matrix4.fromTransform(modelViewMatrix);
     }
+
+    this.modelViewMatrix = mvMat;
   }
 }
 
@@ -424,7 +425,7 @@ export class RenderCommands {
   }
 
   public addPrimitive(prim: Primitive): void {
-    assert(undefined === this._curOvrParams && undefined === this._curBatch);
+    assert(undefined === this._curOvrParams || undefined === this._curBatch);
 
     const command = undefined !== this._curOvrParams ? DrawCommand.createForDecoration(prim, this._curOvrParams) : DrawCommand.createForPrimitive(prim, this._curBatch);
     this.addDrawCommand(command);

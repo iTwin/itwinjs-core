@@ -9,11 +9,18 @@ import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core";
 import { Code } from "../Code";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
+import { RpcNotFoundResponse } from "./core/RpcControl";
 import { EntityQueryParams } from "../EntityProps";
 import { IModel, IModelToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
+
+/** Response if the IModelDb was not found at the backend
+ * (if the service has moved)
+ */
+export class IModelNotFoundResponse extends RpcNotFoundResponse {
+}
 
 /**
  * The RPC interface for reading from an iModel.
@@ -36,6 +43,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     Vector3d,
     Date,
     Code,
+    IModelNotFoundResponse,
   ]
 
   /** Returns the IModelReadRpcInterface instance for the frontend. */
@@ -62,7 +70,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   /** Detaches the Change Cache file to the specified iModel, if it has been attached before.
    *  > Does not throw if no Change Cache file was attached before. This is a different behavior from the
    *  > backend method to make the RPC call chunkier by not requiring clients to call
-   *  > [IModelReadRpcInterface.isChangeCacheAttached]($common).
+   *  > [[isChangeCacheAttached]].
    */
   public detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
 }
