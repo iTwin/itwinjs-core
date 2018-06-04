@@ -170,7 +170,7 @@ export class MeshBuilder {
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
     // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
     // Detect beforehand instead.
-    if (vertices[0].position === vertices[1].position || vertices[0].position === vertices[2].position || vertices[1].position === vertices[2].position)
+    if (vertices[0].position.equals(vertices[1].position) || vertices[0].position.equals(vertices[2].position) || vertices[1].position.equals(vertices[2].position))
       return undefined;
 
     return vertices;

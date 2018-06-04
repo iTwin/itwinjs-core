@@ -1176,6 +1176,7 @@ export abstract class ViewState3d extends ViewState {
     // and then send that over to the GraphicBuilder
     const strokeOptions = new StrokeOptions();
     strokeOptions.needParams = true;
+    strokeOptions.shouldTriangulate = true;
     const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
 
     const meshDimension = 10;
