@@ -233,6 +233,8 @@ export abstract class RenderMaterial {
     this.key = params.key;
     this.textureMapping = params.textureMapping;
   }
+
+  public get hasTexture(): boolean { return this.textureMapping !== undefined && this.textureMapping.texture !== undefined; }
 }
 
 export namespace RenderMaterial {
@@ -595,8 +597,11 @@ export namespace ViewFlag {
     public setPresent(flag: PresenceFlag) { this.present |= (1 << flag); }
     public isPresent(flag: PresenceFlag): boolean { return 0 !== (this.present & (1 << flag)); }
 
-    /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags */
-    constructor(flags?: ViewFlags) { this.overrideAll(flags); }
+    /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
+    constructor(flags?: ViewFlags) {
+      if (undefined !== flags)
+        this.overrideAll(flags);
+    }
 
     public overrideAll(flags?: ViewFlags) {
       ViewFlags.createFrom(flags, this.values);
@@ -1054,7 +1059,7 @@ export namespace Gradient {
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
-      const image = new Float32Array(4 * width * height);
+      const image = new Float32Array(width * height);
       let currentIdx = image.length - 1;
       let shift;
       if (this.shift)
@@ -1536,7 +1541,7 @@ export namespace TextureMapping {
 
     public constructor(t00: number = 1, t01: number = 0, t02: number = 0, t10: number = 0, t11: number = 1, t12: number = 0) {
       const vals = this._vals;
-      vals[0][0] = t00; vals[0][1] = t01; vals[0][2] = t02; vals[1][0] = t10; vals[1][1] = t11; vals[1][2] = t12;
+      vals[0] = [t00, t01, t02]; vals[1] = [t10, t11, t12];
     }
 
     public setTransform(): void {
@@ -1546,8 +1551,8 @@ export namespace TextureMapping {
         for (let j = 0; j < len; ++j)
           matrix.setAt(i, j, vals[i][j]);
 
-      matrix.setAt(0, 3, vals[0][2]);
-      matrix.setAt(1, 3, vals[1][2]);
+      transform.origin.x = vals[0][2];
+      transform.origin.y = vals[1][2];
 
       this._transform = transform;
     }

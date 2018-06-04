@@ -350,6 +350,7 @@ export class ShaderBuilder extends ShaderVariables {
       }
 
       if (isLit) {
+        /* ###TODO: Source Lighting
         // ###TODO: May end up needing to change this to 8 for unrolled lighting loop...see ShaderBuilder.cpp...
         const maxShaderLights = 64;
         src.addline("const int kMaxShaderLights = " + maxShaderLights);
@@ -359,6 +360,7 @@ export class ShaderBuilder extends ShaderVariables {
         src.addline("#define cosHTheta(i) u_lightData[i*3+1].w");
         src.addline("#define LightDir(i) u_lightData[i*3+2].xyz");
         src.addline("#define cosHPhi(i) u_lightData[i*3+2].w");
+        */
       }
     }
 

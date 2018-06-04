@@ -3,13 +3,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64 } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, BeEvent } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Range3d } from "@bentley/geometry-core";
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
   IModelDb, ECSqlStatement, Entity, EntityMetaData, PrimitiveTypeCode,
-  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel,
+  Model, DictionaryModel, Category, SubCategory, SpatialCategory, ElementGroupsMembers, LightLocation, PhysicalModel, AutoPushEventType, AutoPush, AutoPushState, AutoPushEventHandler,
 } from "../../backend";
 import {
   GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
@@ -17,6 +17,10 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { AccessToken } from "@bentley/imodeljs-clients";
+
+let lastPushTimeMillis = 0;
+let lastAutoPushEventType: AutoPushEventType | undefined;
 
 // spell-checker: disable
 
@@ -989,6 +993,122 @@ describe("iModel", () => {
     await testPromise;
 
     assert.equal(callbackcount, 2);
+  });
+
+  // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
+  it.skip("should test AutoPush", async () => {
+    let isIdle: boolean = true;
+    const activityMonitor = {
+      isIdle: () => isIdle,
+    };
+
+    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
+    const millisToWaitForAutoPush = (15 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
+
+    const iModel = {
+      pushChanges: async (_clientAccessToken: AccessToken) => {
+        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, to simulate time spent doing push
+        lastPushTimeMillis = Date.now();
+      },
+      iModelToken: {
+        changeSetId: "",
+        iModelId: "fake",
+      },
+      concurrencyControl: {
+        request: async (_clientAccessToken: AccessToken) => { },
+      },
+      onBeforeClose: new BeEvent<() => void>(),
+      txns: {
+        hasLocalChanges: () => true,
+      },
+    };
+    const fakeAccessToken2 = {} as AccessToken;
+    IModelDb.updateAccessToken(iModel.iModelToken.iModelId, fakeAccessToken2);
+
+    lastPushTimeMillis = 0;
+    lastAutoPushEventType = undefined;
+
+    // Create an autopush in manual-schedule mode.
+    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, activityMonitor);
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
+    assert.isFalse(autoPush.autoSchedule);
+
+    // Schedule the next push
+    autoPush.scheduleNextPush();
+    assert.equal(autoPush.state, AutoPushState.Scheduled);
+
+    // Wait long enough for the auto-push to happen
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
+
+    // Verify that push happened during the time that I was asleep.
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
+    assert.notEqual(lastPushTimeMillis, 0);
+    assert.isAtLeast(autoPush.durationOfLastPushMillis, fakePushTimeRequired);
+    assert.isUndefined(lastAutoPushEventType);  // not listening to events yet.
+
+    // Cancel the next scheduled push
+    autoPush.cancel();
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "cancel does NOT automatically schedule the next push");
+
+    // Register an event handler
+    const autoPushEventHandler: AutoPushEventHandler = (etype: AutoPushEventType, _theAutoPush: AutoPush) => { lastAutoPushEventType = etype; };
+    autoPush.event.addListener(autoPushEventHandler);
+
+    lastPushTimeMillis = 0;
+
+    // Explicitly schedule the next auto-push
+    autoPush.scheduleNextPush();
+    assert.equal(autoPush.state, AutoPushState.Scheduled);
+
+    // wait long enough for the auto-push to happen
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
+    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
+    assert.notEqual(lastPushTimeMillis, 0);
+    assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
+
+    // Just verify that this doesn't blow up.
+    autoPush.reserveCodes();
+
+    // Now turn on auto-schedule and verify that we get a few auto-pushes
+    lastPushTimeMillis = 0;
+    autoPush.autoSchedule = true;
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.notEqual(lastPushTimeMillis, 0);
+    lastPushTimeMillis = 0;
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.notEqual(lastPushTimeMillis, 0);
+    autoPush.cancel();
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert(autoPush.state === AutoPushState.NotRunning);
+    assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
+
+    // Test auto-push when isIdle returns false
+    isIdle = false;
+    lastPushTimeMillis = 0;
+    autoPush.autoSchedule = true; // start running AutoPush...
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
+    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
+    autoPush.cancel();
+    isIdle = true;
+
+    // Test auto-push when Txn.hasLocalChanges returns false
+    iModel.txns.hasLocalChanges = () => false;
+    lastPushTimeMillis = 0;
+    autoPush.cancel();
+    autoPush.autoSchedule = true; // start running AutoPush...
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
+    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
+    autoPush.cancel();
+
+    // ... now turn it back on
+    iModel.txns.hasLocalChanges = () => true;
+    autoPush.autoSchedule = true; // start running AutoPush...
+    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
+    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
+
+    autoPush.cancel();
   });
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", () => {

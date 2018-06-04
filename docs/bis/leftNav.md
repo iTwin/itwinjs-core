@@ -6,6 +6,7 @@
 - [BIS Ecosystem](./intro/bis-ecosystem.md)
 - [Fabric of the Universe](./intro/fabric-of-the-universe.md)
 - [Element Fundamentals](./intro/element-fundamentals.md)
+- [Codes](./intro/codes.md)
 - [ElementAspect Fundamentals](./intro/elementaspect-fundamentals.md)
 - [Model Fundamentals](./intro/model-fundamentals.md)
 - [Relationship Fundamentals](./intro/relationship-fundamentals.md)

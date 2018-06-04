@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This section briefly describes a few core concepts that form the foundation of BIS. All information in a BIS Repository is defined using Elements, ElementAspects, Models and Relationships. We refer to these core concepts a “the fabric of the universe”.
+This section briefly describes the few core concepts that form the foundation for all of BIS. All information in a BIS Repository is defined using `Element`s, `ElementAspect`s, `Model`s and relationships. We refer to these core concepts a “the fabric of the universe”.
 
 BIS is expressed using the EC Information Modeling Language (aka “using ECSchemas”). However BIS imposes additional rules, naming conventions, and other restrictions. It is assumed that the reader is familiar with ECObjects. See \_\_\_\_\_ ECObjects 3.0 Specification\_\_\_\_\_.
 
@@ -28,7 +28,7 @@ See [Model Fundamentals](./model-fundamentals.md) for a more detailed discussion
 
 ## Relationships
 
-Various ECRelationshipClasses are defined in BisCore to relate Models, Elements and ElementAspects. See [Relationship Fundamentals](./relationship-fundamentals.md) for a more detailed discussion of Relationships.
+Various ECRelationship classes are defined in BisCore to relate Models, Elements and ElementAspects. See [Relationship Fundamentals](./relationship-fundamentals.md) for a more detailed discussion of Relationships.
 
 ## No other Data Types
 

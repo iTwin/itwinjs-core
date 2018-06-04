@@ -1,14 +1,11 @@
 import { expect, assert } from "chai";
-import { Id64, DbOpcode, BeEvent } from "@bentley/bentleyjs-core";
+import { Id64, DbOpcode } from "@bentley/bentleyjs-core";
 import { Code, IModelVersion, Appearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, AutoPush, AutoPushState, AutoPushEventHandler, AutoPushEventType, BriefcaseManager } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, SpatialCategory, BriefcaseManager } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { TestIModelInfo, MockAccessToken } from "../MockAssetUtil";
 import { AccessToken, CodeState, IModel as HubIModel, Code as HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
-
-let lastPushTimeMillis = 0;
-let lastAutoPushEventType: AutoPushEventType | undefined;
 
 export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
   // Create a new physical model.
@@ -47,13 +44,13 @@ describe("IModelWriteTest", () => {
     [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
   });
 
-  it.skip("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
-    const firstUser = accessToken;
+  it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
+    const firstUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.super);
     const secondUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
-    const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.user2);
+    const neutralObserverUser = await IModelTestUtils.getTestUserAccessToken(TestUsers.manager);
 
     const firstIModel: IModelDb = await IModelDb.open(firstUser, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
-    const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModels[1].id, OpenParams.pullOnly());
+    const secondIModel: IModelDb = await IModelDb.open(secondUser, testProjectId, testIModels[1].id, OpenParams.pullAndPush());
     const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUser, testProjectId, testIModels[1].id, OpenParams.pullOnly());
     assert.notEqual(firstIModel, secondIModel);
 
@@ -115,6 +112,7 @@ describe("IModelWriteTest", () => {
     }
 
     // --- Test 2: Overlapping changes that are not conflicts  ---
+    /* **************** No. We do not support property-level change-merging.
 
     // firstUser: modify el1.userLabel
     const wasExpectedValueofEl1UserLabel = expectedValueofEl1UserLabel;
@@ -142,6 +140,7 @@ describe("IModelWriteTest", () => {
     if (true) {
       const el1before: Element = secondIModel.elements.getElement(el1);
       assert.equal(el1before.userLabel, wasExpectedValueofEl1UserLabel);
+
       el1before.setUserProperties(secondUserPropNs, { property: expectedValueOfSecondUserProp }); // secondUser changes userProperties
       secondIModel.elements.updateElement(el1before);
       secondIModel.saveChanges("secondUser modified el1.userProperties");
@@ -171,7 +170,7 @@ describe("IModelWriteTest", () => {
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
       assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
     }
-
+*/
     // --- Test 3: Non-overlapping changes ---
 
   });
@@ -238,7 +237,7 @@ describe("IModelWriteTest", () => {
     expect(codes.length > initialCodes.length);
   });
 
-  it.skip("should push changes with code conflicts (#integration)", async () => {
+  it("should push changes with code conflicts (#integration)", async () => {
     const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
@@ -295,19 +294,21 @@ describe("IModelWriteTest", () => {
     expect(codes[0].state === CodeState.Reserved);
   });
 
-  it.skip("should write to briefcase with optimistic concurrency (#integration)", async () => {
+  it("should write to briefcase with optimistic concurrency (#integration)", async () => {
+    const adminAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
+
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "ReadWriteTest";
-    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
+      await BriefcaseManager.hubClient.IModels().delete(adminAccessToken, testProjectId, iModelTemp.wsgId);
     }
     timer.end();
 
     // Create a new iModel on the Hub (by uploading a seed file)
     timer = new Timer("create iModel");
-    const rwIModel: IModelDb = await IModelDb.create(accessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
+    const rwIModel: IModelDb = await IModelDb.create(adminAccessToken, testProjectId, "ReadWriteTest", { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
     assert.isNotEmpty(rwIModelId);
     timer.end();
@@ -343,14 +344,14 @@ describe("IModelWriteTest", () => {
 
     // iModel.concurrencyControl should have recorded the codes that are required by the new elements.
     assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests());
-    assert.isTrue(await rwIModel.concurrencyControl.areAvailable(accessToken));
+    assert.isTrue(await rwIModel.concurrencyControl.areAvailable(adminAccessToken));
 
     timer.end();
     timer = new Timer("reserve Codes");
 
     // Reserve all of the codes that are required by the new model and category.
     try {
-      await rwIModel.concurrencyControl.request(accessToken);
+      await rwIModel.concurrencyControl.request(adminAccessToken);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
         assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
@@ -363,13 +364,13 @@ describe("IModelWriteTest", () => {
     // Verify that the codes are reserved.
     const category = rwIModel.elements.getElement(spatialCategoryId);
     assert.isTrue(category.code.value !== undefined);
-    const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope);
-    const foundCode: MultiCode[] = codeStates.filter((cs) => cs.values!.includes(category.code.value!) && (cs.state === CodeState.Reserved));
+    const codeStates: MultiCode[] = await rwIModel.concurrencyControl.codes.query(adminAccessToken, category.code.spec, category.code.scope);
+    const foundCode: MultiCode[] = codeStates.filter((cs) => (cs.value === category.code.value!) && (cs.state === CodeState.Reserved));
     assert.equal(foundCode.length, 1);
 
     /* NEEDS WORK - query just this one code
   assert.isTrue(category.code.value !== undefined);
-  const codeStates2 = await iModel.concurrencyControl.codes.query(accessToken, category.code.spec, category.code.scope, category.code.value!);
+  const codeStates2 = await iModel.concurrencyControl.codes.query(adminAccessToken, category.code.spec, category.code.scope, category.code.value!);
   assert.equal(codeStates2.length, 1);
   assert.equal(codeStates2[0].values.length, 1);
   assert.equal(codeStates2[0].values[0], category.code.value!);
@@ -396,7 +397,7 @@ describe("IModelWriteTest", () => {
 
     // Push the changes to the hub
     const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(accessToken);
+    await rwIModel.pushChanges(adminAccessToken);
     const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
@@ -404,13 +405,14 @@ describe("IModelWriteTest", () => {
     timer.end();
 
     // Open a readonly copy of the iModel
-    const roIModel: IModelDb = await IModelDb.open(accessToken, testProjectId, rwIModelId!, OpenParams.fixedVersion(), IModelVersion.latest());
+    const roIModel: IModelDb = await IModelDb.open(adminAccessToken, testProjectId, rwIModelId!, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(roIModel);
 
-    await rwIModel.close(accessToken, KeepBriefcase.No);
-    await roIModel.close(accessToken);
+    await rwIModel.close(adminAccessToken, KeepBriefcase.No);
+    await roIModel.close(adminAccessToken);
   });
 
+  /* This is skipped because iModel.concurrencyControl.request is not yet implemented for locks */
   it.skip("should make change sets (#integration)", async () => {
     const iModel: IModelDb = await IModelDb.open(accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush());
     assert.exists(iModel);
@@ -420,7 +422,7 @@ describe("IModelWriteTest", () => {
     let newModelId: Id64;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
 
-    const spatialCategoryId: Id64 = SpatialCategory.create(dictionary, "Cat1").insert();
+    const spatialCategoryId: Id64 = iModel.elements.insertElement(SpatialCategory.create(dictionary, "Cat1"));
 
     // Insert a few elements
     const elements: Element[] = [
@@ -440,116 +442,6 @@ describe("IModelWriteTest", () => {
     iModel.saveChanges("inserted generic objects");
 
     await iModel.close(accessToken);
-  });
-
-  it.skip("should test AutoPush (#integration)", async () => {
-    let isIdle: boolean = true;
-    const activityMonitor = {
-      isIdle: () => isIdle,
-    };
-
-    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
-    const millisToWaitForAutoPush = (5 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
-
-    const iModel = {
-      pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, to simulate time spent doing push
-        lastPushTimeMillis = Date.now();
-      },
-      iModelToken: {
-        changeSetId: "",
-      },
-      concurrencyControl: {
-        request: async (_clientAccessToken: AccessToken) => { },
-      },
-      onBeforeClose: new BeEvent<() => void>(),
-      Txns: {
-        hasLocalChanges: () => true,
-      },
-    };
-    lastPushTimeMillis = 0;
-    lastAutoPushEventType = undefined;
-
-    // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false }, activityMonitor);
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.isFalse(autoPush.autoSchedule);
-
-    // Schedule the next push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // Wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-
-    // Verify that push happened during the time that I was asleep.
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.isAtLeast(autoPush.durationOfLastPushMillis, fakePushTimeRequired);
-    assert.isUndefined(lastAutoPushEventType);  // not listening to events yet.
-
-    // Cancel the next scheduled push
-    autoPush.cancel();
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "cancel does NOT automatically schedule the next push");
-
-    // Register an event handler
-    const autoPushEventHandler: AutoPushEventHandler = (etype: AutoPushEventType, _theAutoPush: AutoPush) => { lastAutoPushEventType = etype; };
-    autoPush.event.addListener(autoPushEventHandler);
-
-    lastPushTimeMillis = 0;
-
-    // Explicitly schedule the next auto-push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
-
-    // Just verify that this doesn't blow up.
-    autoPush.reserveCodes();
-
-    // Now turn on auto-schedule and verify that we get a few auto-pushes
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    lastPushTimeMillis = 0;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    autoPush.cancel();
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert(autoPush.state === AutoPushState.NotRunning);
-    assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
-
-    // Test auto-push when isIdle returns false
-    isIdle = false;
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-    isIdle = true;
-
-    // Test auto-push when Txn.hasLocalChanges returns false
-    iModel.Txns.hasLocalChanges = () => false;
-    lastPushTimeMillis = 0;
-    autoPush.cancel();
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-
-    // ... now turn it back on
-    iModel.Txns.hasLocalChanges = () => true;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
-
   });
 
 });

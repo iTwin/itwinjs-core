@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
@@ -18,6 +18,10 @@ describe("IModelConnection", () => {
   before(async () => {
     IModelApp.startup();
     await TestData.load();
+
+    Logger.initializeToConsole();
+    Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
+
     iModel = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
 

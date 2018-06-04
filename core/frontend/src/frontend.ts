@@ -43,7 +43,7 @@ export * from "./IModelApp";
 
 /**
  * @docs-group-description AppAdministration
- * Classes for configuring and administering an app.
+ * Classes for configuring and administering an iModelJs application.
  */
 
 /**
@@ -53,7 +53,7 @@ export * from "./IModelApp";
 
 /**
  * @docs-group-description DrawingAids
- * Drawing aids
+ * Drawing aids provide helpful assistance for creating and modifying elements in a view.
  */
 
 /**
@@ -63,12 +63,12 @@ export * from "./IModelApp";
 
 /**
  * @docs-group-description LocationAndSnapping
- * Classes for location and snapping.
+ * Classes for location and snapping to elements in views
  */
 
 /**
  * @docs-group-description Notifications
- * Classes for notifications.
+ * Notifications provide feedback to the user of something of interest.
  */
 
 /**

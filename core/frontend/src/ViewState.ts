@@ -5,7 +5,7 @@
 import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, Arc3d, Range2d, PolyfaceBuilder, StrokeOptions,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
@@ -19,12 +19,13 @@ import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
-import { DecorateContext } from "./ViewContext";
-import { GraphicList } from "./render/System";
+import { DecorateContext, SceneContext } from "./ViewContext";
 import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
+import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
+import { GeometricModelState } from "./ModelState";
 
 export const enum GridOrientationType {
   View = 0,
@@ -47,6 +48,7 @@ export const enum StandardViewId {
   RightIso = 7,
 }
 
+/** @private */
 // tslint:disable-next-line:variable-name
 export const StandardView = {
   Top: RotMatrix.identity,
@@ -168,7 +170,6 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   protected _featureOverridesDirty = false;
   protected _selectionSetDirty = false;
   private _noQuery: boolean = false;
-  protected _scene?: GraphicList;
   private _auxCoordSystem?: AuxCoordSystemState;
   public static get className() { return "ViewDefinition"; }
   public description?: string;
@@ -186,10 +187,6 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   /** get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
-
-  public get scene(): GraphicList | undefined { return this._scene; }
-  public get isSceneReady(): boolean { return undefined !== this.scene; }
-  public invalidateScene(): void { this._scene = undefined; }
 
   /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
@@ -303,6 +300,13 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
    * @note viewRot must be ortho-normal. For 2d views, only the rotation angle about the z axis is used.
    */
   public abstract setRotation(viewRot: RotMatrix): void;
+
+  /** Execute a function on each viewed model */
+  public abstract forEachModel(func: (model: GeometricModelState) => void): void;
+
+  public createScene(context: SceneContext): void {
+    this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context));
+  }
 
   public static getStandardViewMatrix(id: StandardViewId): RotMatrix { if (id < StandardViewId.Top || id > StandardViewId.RightIso) id = StandardViewId.Top; return standardViewMatrices[id]; }
 
@@ -682,6 +686,12 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     cameraDef.setFocusDistance(frontDist); // do this even if the camera isn't currently on.
     this.centerEyePoint(backDist); // do this even if the camera isn't currently on.
     this.verifyFocusPlane(); // changes delta/origin
+  }
+
+  private addModelToScene(model: GeometricModelState, context: SceneContext): void {
+    model.loadTileTree();
+    if (undefined !== model.tileTree)
+      model.tileTree.drawScene(context);
   }
 }
 
@@ -1162,11 +1172,10 @@ export abstract class ViewState3d extends ViewState {
   /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
   private drawBackgroundMesh(builder: GraphicBuilder, viewport: Viewport, rotation: number, zOffset: number) {
     /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
-    // we will use a PolyfaceBuilder here to add simple quads in the grid with manually calculated UV params, and then
-    // send the whole polyface grid to the GraphicBuilder
+    // we will use a PolyfaceBuilder here to add simple quads in the grid with manually calculated UV params, claim the polyface when finished,
+    // and then send that over to the GraphicBuilder
     const strokeOptions = new StrokeOptions();
     strokeOptions.needParams = true;
-    strokeOptions.needNormals = false;
     const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
 
     const meshDimension = 10;
@@ -1175,25 +1184,24 @@ export abstract class ViewState3d extends ViewState {
     const frustum = viewport.getFrustum();
     const cameraPos = this.computeEyePoint(frustum);
 
+    const points = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
+    const params = [Point2d.create(), Point2d.create(), Point2d.create(), Point2d.create()];
+
     for (let row = 1; row < meshDimension; row++) {
       for (let col = 1; col < meshDimension; col++) {
         const low = Point2d.create((row - 1) * delta, (col - 1) * delta);
         const high = Point2d.create(row * delta, col * delta);
 
-        const params: Point2d[] = [];
-        let points: Point3d[] = [];
-
         const npcZ = .5;
-        points.push(Point3d.create(low.x, low.y, npcZ));
-        points.push(Point3d.create(low.x, high.y, npcZ));
-        points.push(Point3d.create(high.x, high.y, npcZ));
-        points.push(Point3d.create(high.x, low.y, npcZ));
+        Point3d.create(low.x, low.y, npcZ, points[0]);
+        Point3d.create(high.x, low.y, npcZ, points[1]);
+        Point3d.create(high.x, high.y, npcZ, points[2]);
+        Point3d.create(low.x, high.y, npcZ, points[3]);
 
-        const worldPoints = points.slice(0);
-        viewport.npcToWorldArray(worldPoints);
+        viewport.npcToWorldArray(points);
         for (let i = 0; i < 4; i++) {
-          const direction = Vector3d.createStartEnd(cameraPos, worldPoints[i]);
-          params.push(ViewState3d.getUVForDirection(direction, rotation, zOffset));
+          const direction = Vector3d.createStartEnd(cameraPos, points[i]);
+          params[i].setFrom(ViewState3d.getUVForDirection(direction, rotation, zOffset));
         }
 
         // Avoid seam discontinuities by eliminating cycles
@@ -1209,23 +1217,19 @@ export abstract class ViewState3d extends ViewState {
               params[i].y += 1;
         }
 
-        points = worldPoints.slice(0);
         viewport.worldToViewArray(points);
-        polyfaceBuilder.addQuad(points, params);
+        polyfaceBuilder.addQuadFacet(points, params);
       }
-      if (row === meshDimension - 1)
-        polyfaceBuilder.endFace();
     }
 
-    const polyface = polyfaceBuilder.claimPolyface();
+    const polyface = polyfaceBuilder.claimPolyface(false);
     builder.addPolyface(polyface, true);
   }
 
-  /** Attempts to draw the Skybox, returning true on success and false otherwise. */
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
-    if (style3d.getEnvironment().sky.display)
-      return;   // SkyBox is enabled
+    // if (style3d.getEnvironment().sky.display)
+    //  return;   // SkyBox is enabled
 
     const vp = context.viewport;
     style3d.loadSkyBoxMaterial(vp.target.renderSystem);
@@ -1260,17 +1264,80 @@ export abstract class ViewState3d extends ViewState {
     }
   }
 
+  /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
+  public getGroundElevation(): number {
+    const env = this.getDisplayStyle3d().getEnvironment();
+    return env.ground.elevation + this.iModel.globalOrigin.z;
+  }
+
+  /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
+  public getGroundExtents(vp: Viewport): AxisAlignedBox3d {
+    const displayStyle = this.getDisplayStyle3d();
+    const extents = new AxisAlignedBox3d();
+    if (!displayStyle.getEnvironment().ground.display)
+      return extents; // Ground plane is not enabled
+
+    const elevation = this.getGroundElevation();
+
+    const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+    const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+
+    // first determine whether the ground plane is displayed in the view
+    const worldFrust = vp.getFrustum();
+    for (const point of worldFrust.points) {
+      viewRay.origin = point;   // We never modify the reference
+      const xyzPoint = Point3d.create();
+      const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+      if (param === undefined)
+        return extents;   // View does not show ground plane
+    }
+
+    extents.setFrom(this.iModel.projectExtents);
+    extents.low.z = extents.high.z = elevation;
+
+    const center = extents.low.interpolate(.5, extents.high);
+
+    const radius = extents.low.distance(extents.high);
+    extents.setNull();
+    extents.extendPoint(center);  // Extents now contains single point
+    extents.low.addScaledInPlace(Vector3d.create(-1, -1, -1), radius);
+    extents.high.addScaledInPlace(Vector3d.create(1, 1, 1), radius);
+    extents.low.z = extents.high.z = elevation;
+    return extents;
+  }
+
   protected drawGroundPlane(context: DecorateContext): void {
-    // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
-    const extents = this.getViewedExtents(); // the project extents
-    const center = extents.low.interpolate(0.5, extents.high);
-    const ellipse = Arc3d.createXYEllipse(center, Math.abs(center.x - extents.low.x), Math.abs(center.y - extents.low.y));
-    const gf = context.createWorldDecoration();
-    const green = ColorDef.green.clone();
-    gf.setSymbology(green, green, 2);
-    gf.addArc(ellipse, true, true);
-    gf.addRangeBox(extents);
-    context.addWorldDecoration(gf.finish()!);
+    const extents = this.getGroundExtents(context.viewport);
+    if (extents.isNull()) {
+      return;
+    }
+    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
+    points[1].y = extents.high.y;
+    points[3].y = extents.low.y;
+
+    const aboveGround = this.isEyePointAbove(extents.low.z);
+    const colors: ColorDef[] = [];
+    const material = this.getDisplayStyle3d().createGroundPlaneMaterial(context.viewport.target.renderSystem, aboveGround, colors);
+
+    const params = new GraphicParams();
+    params.setLineColor(colors[0]);
+    params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
+    params.material = material;
+
+    const builder = context.createWorldDecoration();
+    builder.activateGraphicParams(params);
+
+    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
+    // we will use a PolyfaceBuilder here to add the ground plane as a quad, claim the polyface, and then send that to the GraphicBuilder
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(0, 1), Point2d.create(1, 1), Point2d.create(1, 0)];
+    polyfaceBuilder.addQuadFacet(points, uvParams);
+    const polyface = polyfaceBuilder.claimPolyface();
+
+    builder.addPolyface(polyface, true);
+    context.addWorldDecoration(builder.finish());
   }
 }
 
@@ -1297,6 +1364,14 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
+
+  public forEachModel(func: (model: GeometricModelState) => void) {
+    for (const modelId of this.modelSelector.models) {
+      const model = this.iModel.models.getLoaded(modelId);
+      if (undefined !== model && model.isGeometricModel)
+        func(model as GeometricModelState);
+    }
+  }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
@@ -1342,15 +1417,20 @@ export class ViewState2d extends ViewState {
   public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: RotMatrix) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
   public viewsModel(modelId: Id64) { return this.baseModelId.equals(modelId); }
+  public forEachModel(func: (model: GeometricModelState) => void) {
+    const model = this.iModel.models.getLoaded(this.baseModelId.value);
+    if (undefined !== model && model.isGeometricModel)
+      func(model as GeometricModelState);
+  }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
-/** a view of a DrawingModel */
+/** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
   public static get className() { return "DrawingViewDefinition"; }
 }
 
-/** a view of a SheetModel */
+/** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
 }
