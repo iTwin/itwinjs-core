@@ -9,6 +9,7 @@ import CategoryDescription from "./Category";
 import EditorDescription from "./Editor";
 import Property from "./Property";
 import { TypeDescription } from "./TypeDescription";
+import { Value, DisplayValue } from "./Value";
 
 /**
  * Data structure for a [[Field]] serialized to JSON.
@@ -281,7 +282,7 @@ export class NestedContentField extends Field {
 /** Data structure that describes nested content value */
 export interface NestedContent {
   primaryKeys: ec.InstanceKey[];
-  values: ValuesDictionary<any>;
-  displayValues: ValuesDictionary<any>;
+  values: ValuesDictionary<Value>;
+  displayValues: ValuesDictionary<DisplayValue>;
   mergedFieldNames: string[];
 }

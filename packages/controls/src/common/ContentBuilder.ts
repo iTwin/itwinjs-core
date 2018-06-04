@@ -4,6 +4,7 @@
 /** @module Content */
 
 import { assert } from "@bentley/bentleyjs-core";
+import { ValuesDictionary, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import {
   PropertyDescription, PropertyRecord,
@@ -11,7 +12,30 @@ import {
   PropertyValue, PrimitiveValue, ArrayValue, StructValue,
 } from "@bentley/ui-components";
 
-const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: content.ArrayTypeDescription, values: any[], displayValues: Array<string | undefined>): ArrayValue => {
+const isNestedContent = (v: content.Value): v is content.NestedContent[] => {
+  // note: we don't guarantee by 100% that v is NestedContent[], but merely make compiler happy.
+  // we have other means to determine the type of value.
+  if (!v)
+    return false;
+  return Array.isArray(v);
+};
+const isArray = (v: content.Value | content.DisplayValue): v is content.ValuesArray | content.DisplayValuesArray => {
+  // note: we don't guarantee by 100% that v is ValuesArray | DisplayValuesArray, but merely make compiler happy.
+  // we have other means to determine the type of value.
+  if (!v)
+    return false;
+  return Array.isArray(v);
+};
+const isMap = (v: content.Value | content.DisplayValue): v is content.ValuesMap | content.DisplayValuesMap => {
+  if (!v)
+    return false;
+  return typeof v === "object";
+};
+const isPrimitive = (v: content.Value | content.DisplayValue): v is string | number | boolean | undefined => {
+  return !isArray(v) && !isMap(v);
+};
+
+const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: content.ArrayTypeDescription, values: content.Value[], displayValues: content.DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();
   assert(values.length === displayValues.length);
   for (let i = 0; i < values.length; ++i) {
@@ -30,7 +54,7 @@ const createArrayValue = (propertyDescription: PropertyDescription, arrayDescrip
   };
 };
 
-const createStructValue = (description: content.StructTypeDescription, valueObj: { [key: string]: any }, displayValueObj: { [key: string]: string | undefined }): StructValue => {
+const createStructValue = (description: content.StructTypeDescription, valueObj: ValuesDictionary<content.Value>, displayValueObj: ValuesDictionary<content.DisplayValue>): StructValue => {
   const members: { [name: string]: PropertyRecord } = {};
   for (const memberTypeDescription of description.members) {
     const memberPropertyDescription = {
@@ -48,7 +72,7 @@ const createStructValue = (description: content.StructTypeDescription, valueObj:
   } as StructValue;
 };
 
-const createPrimitiveValue = (value: any, displayValue: string | undefined): PrimitiveValue => {
+const createPrimitiveValue = (value: content.Value, displayValue: content.DisplayValue): PrimitiveValue => {
   return {
     valueFormat: PropertyValueFormat.Primitive,
     value,
@@ -56,25 +80,32 @@ const createPrimitiveValue = (value: any, displayValue: string | undefined): Pri
   } as PrimitiveValue;
 };
 
-const createValue = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription, isMerged: boolean, value: any, displayValue: any): PropertyValue => {
+const createValue = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription, isMerged: boolean, value: content.Value, displayValue: content.DisplayValue): PropertyValue => {
   if (!isMerged) {
-    if (typeDescription.valueFormat === content.PropertyValueFormat.Array)
+    if (typeDescription.valueFormat === content.PropertyValueFormat.Array) {
+      if (!isArray(value) || !isArray(displayValue))
+        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "value and displayValue should both be arrays");
       return createArrayValue(propertyDescription, typeDescription, value, displayValue);
-    if (typeDescription.valueFormat === content.PropertyValueFormat.Struct)
+    }
+    if (typeDescription.valueFormat === content.PropertyValueFormat.Struct) {
+      if (!isMap(value) || !isMap(displayValue))
+        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "value and displayValue should both be of map type");
       return createStructValue(typeDescription, value, displayValue);
+    }
   }
   return createPrimitiveValue(value, displayValue);
 };
 
-const createRecordDescription = (typeDescription: content.TypeDescription, displayValue: any): string | undefined => {
+const createRecordDescription = (typeDescription: content.TypeDescription, displayValue: content.DisplayValue): string | undefined => {
   if (content.PropertyValueFormat.Array === typeDescription.valueFormat || content.PropertyValueFormat.Struct === typeDescription.valueFormat)
     return undefined;
-  assert(content.PropertyValueFormat.Primitive === typeDescription.valueFormat);
+  if (content.PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
+    throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "displayValue is of wrong type");
   return displayValue;
 };
 
 const createRecord = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription,
-  value: any, displayValue: any, isReadOnly: boolean, isMerged: boolean): PropertyRecord => {
+  value: content.Value, displayValue: content.DisplayValue, isReadOnly: boolean, isMerged: boolean): PropertyRecord => {
   const valueObj = createValue(propertyDescription, typeDescription, isMerged, value, displayValue);
   const record = new PropertyRecord(valueObj, propertyDescription);
   record.description = createRecordDescription(typeDescription, displayValue);
@@ -114,15 +145,21 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
   let value: PropertyValue;
 
   if (isMerged) {
+    const displayValue = item.displayValues[field.name];
+    if (!isPrimitive(displayValue))
+      throw new ECPresentationError(ECPresentationStatus.Error, "displayValue should be primitive");
     // if the value is merged, just take the display value
     value = {
       valueFormat: PropertyValueFormat.Primitive,
       value: undefined,
-      displayValue: item.displayValues[field.name],
+      displayValue: displayValue || "",
     };
   } else {
+    const dictionaryValue = item.values[field.name];
+    if (!isNestedContent(dictionaryValue))
+      throw new ECPresentationError(ECPresentationStatus.Error, "value should be nested content");
     // nested content value is in NestedContent[] format
-    const nestedContentArray: content.NestedContent[] = item.values[field.name];
+    const nestedContentArray: content.NestedContent[] = dictionaryValue;
     value = {
       valueFormat: PropertyValueFormat.Array,
       items: nestedContentArray.map((r) => createNestedStructRecord(field, r, path)),

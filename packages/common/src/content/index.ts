@@ -12,3 +12,4 @@ export { Field, PropertiesField, NestedContentField, NestedContent } from "./Fie
 export { default as Item } from "./Item";
 export { default as Property } from "./Property";
 export { PropertyValueFormat, TypeDescription, PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "./TypeDescription";
+export * from "./Value";

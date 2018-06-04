@@ -5,6 +5,7 @@
 
 import * as ec from "../EC";
 import { ValuesDictionary } from "../Utils";
+import { Value, DisplayValue } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -14,8 +15,8 @@ export interface ItemJSON {
   label: string;
   imageId: string;
   classInfo?: ec.ClassInfo;
-  values: ValuesDictionary<any>;
-  displayValues: ValuesDictionary<any>;
+  values: ValuesDictionary<Value>;
+  displayValues: ValuesDictionary<DisplayValue>;
   mergedFieldNames: string[];
 }
 
@@ -32,9 +33,9 @@ export default class Item {
   /** For cases when item consists only of same class instances, information about the ECClass */
   public classInfo?: Readonly<ec.ClassInfo>;
   /** Raw values dictionary */
-  public values: Readonly<ValuesDictionary<any>>;
+  public values: Readonly<ValuesDictionary<Value>>;
   /** Display values dictionary */
-  public displayValues: Readonly<ValuesDictionary<any>>;
+  public displayValues: Readonly<ValuesDictionary<DisplayValue>>;
   /** List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging)) */
   public mergedFieldNames: string[];
 
@@ -49,7 +50,7 @@ export default class Item {
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging))
    */
   public constructor(primaryKeys: ec.InstanceKey[], label: string, imageId: string, classInfo: ec.ClassInfo | undefined,
-    values: ValuesDictionary<any>, displayValues: ValuesDictionary<any>, mergedFieldNames: string[]) {
+    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]) {
     this.primaryKeys = primaryKeys;
     this.label = label;
     this.imageId = imageId;

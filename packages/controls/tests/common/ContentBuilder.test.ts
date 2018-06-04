@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { ECPresentationError } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription } from "@helpers/random/Content";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomRelationshipPath } from "@helpers/random/EC";
@@ -81,6 +82,29 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
+    it("throws on invalid primitive value", () => {
+      const property: content.Property = {
+        property: {
+          classInfo: createRandomECClassInfo(),
+          name: faker.random.word(),
+          type: faker.database.type(),
+        },
+        relatedClassPath: [],
+      };
+      const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), [property]);
+      const values = {
+        [field.name]: ["some value"],
+      };
+      const displayValues = {
+        [field.name]: ["some display value"],
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
+    });
+
     it("creates record with merged primitive value", () => {
       const property: content.Property = {
         property: {
@@ -132,6 +156,34 @@ describe("ContentBuilder", () => {
         faker.random.uuid(), undefined, values, displayValues, []);
       const record = ContentBuilder.createPropertyRecord(field, item);
       expect(record).to.matchSnapshot();
+    });
+
+    it("throws on invalid array value", () => {
+      const property: content.Property = {
+        property: {
+          classInfo: createRandomECClassInfo(),
+          name: faker.random.word(),
+          type: faker.database.type(),
+        },
+        relatedClassPath: [],
+      };
+      const typeDescription: content.ArrayTypeDescription = {
+        valueFormat: content.PropertyValueFormat.Array,
+        typeName: faker.random.word(),
+        memberType: createRandomPrimitiveTypeDescription(),
+      };
+      const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), typeDescription, faker.random.boolean(),
+        faker.random.number(), [property]);
+      const values = {
+        [field.name]: undefined,
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
     });
 
     it("creates record with merged array value", () => {
@@ -200,6 +252,38 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
+    it("throws on invalid struct value", () => {
+      const property: content.Property = {
+        property: {
+          classInfo: createRandomECClassInfo(),
+          name: faker.random.word(),
+          type: faker.database.type(),
+        },
+        relatedClassPath: [],
+      };
+      const typeDescription: content.StructTypeDescription = {
+        valueFormat: content.PropertyValueFormat.Struct,
+        typeName: faker.random.word(),
+        members: [{
+          name: faker.random.word(),
+          label: faker.random.words(),
+          type: createRandomPrimitiveTypeDescription(),
+        }],
+      };
+      const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), typeDescription, faker.random.boolean(),
+        faker.random.number(), [property]);
+      const values = {
+        [field.name]: undefined,
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw();
+    });
+
     it("creates record with merged struct value", () => {
       const property: content.Property = {
         property: {
@@ -259,6 +343,22 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
+    it("throws when nested content value is of wrong format", () => {
+      const nestedField = createRandomPrimitiveField();
+      const field = new content.NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+      const values = {
+        [field.name]: undefined,
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
+    });
+
     it("creates record with multiple nested content values", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new content.NestedContentField(createRandomCategory(), faker.random.word(),
@@ -309,6 +409,39 @@ describe("ContentBuilder", () => {
         faker.random.uuid(), undefined, values, displayValues, [field.name]);
       const record = ContentBuilder.createPropertyRecord(field, item);
       expect(record).to.matchSnapshot();
+    });
+
+    it("handles undefined display value of merged nested content value", async () => {
+      const nestedField = createRandomPrimitiveField();
+      const field = new content.NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+      const values = {
+        [field.name]: undefined,
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, [field.name]);
+      const record = ContentBuilder.createPropertyRecord(field, item);
+      expect(await record.getDisplayValue()).to.eq("");
+    });
+
+    it("throws when display value of merged nested content is not primitive", () => {
+      const nestedField = createRandomPrimitiveField();
+      const field = new content.NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+      const values = {
+        [field.name]: undefined,
+      };
+      const displayValues = {
+        [field.name]: ["merged"],
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, [field.name]);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(ECPresentationError);
     });
 
     it("creates record with merged inside nested content value", () => {
