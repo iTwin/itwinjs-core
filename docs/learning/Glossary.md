@@ -74,7 +74,7 @@
 |**TentativePoint**|A TypeScript class in the frontend that implements a technique for *tentatively* snapping to interesting points in a View. Usually the TentativePoint action is mapped to the center mouse button.
 |**TextString**|A TypeScript class that holds a *run* of unicode-encoded text that all has the same size, font, style, etc.
 |**Thumbnail**|A small JPEG or PNG encoded image that provides a *rough snapshot* of an Element. Some thumbnails (e.g. view thumbnails and the overall iModel thumbnail) are stored as FileProperties.
-|**Tool**|A TypeScript class in the frontend that associates a [ToolId]($frontend) with an action. Subclasses of [Tool]($frontend) can react to user input.
+|**Tool**|A TypeScript class in the frontend that associates a ToolId with an action. Subclasses of [Tool]($frontend) can react to user input.
 |**ToolId**|A short **string** that unambiguously identifies a Tool.
 |**UserLabel**|An optional string that holds a user-assigned *alias* for an Element. UserLabels are **not** enforced to be unique.
 |**View**|An abstract concept that forms a relationship between a rectangular region on a screen and content in an iModel. All of the classes involved in that mapping are collectively referred to as a View.
