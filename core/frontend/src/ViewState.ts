@@ -1228,7 +1228,7 @@ export abstract class ViewState3d extends ViewState {
 
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
-    //if (style3d.getEnvironment().sky.display)
+    // if (style3d.getEnvironment().sky.display)
     //  return;   // SkyBox is enabled
 
     const vp = context.viewport;
