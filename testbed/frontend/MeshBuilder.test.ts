@@ -186,7 +186,7 @@ describe("Mesh Builder Tests", () => {
     const fillColor = ColorDef.white.tbgr;
     mb.addFromPolyface(pfPrim.indexedPolyface, { includeParams, fillColor });
 
-    expect(mb.triangleSet.length).to.equal(4);
+    expect(mb.triangleSet.length).to.equal(2);
   });
 
   it("addFromPolyfaceVisitor", () => {
