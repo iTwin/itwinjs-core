@@ -47,6 +47,7 @@ export const enum StandardViewId {
   RightIso = 7,
 }
 
+/** @private */
 // tslint:disable-next-line:variable-name
 export const StandardView = {
   Top: RotMatrix.identity,
@@ -1272,6 +1273,7 @@ export abstract class ViewState3d extends ViewState {
     // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
     const extents = this.getViewedExtents(); // the project extents
     const center = extents.low.interpolate(0.5, extents.high);
+    center.z = extents.low.z;
     const ellipse = Arc3d.createXYEllipse(center, Math.abs(center.x - extents.low.x), Math.abs(center.y - extents.low.y));
     const gf = context.createWorldDecoration();
     const green = ColorDef.green.clone();
@@ -1366,12 +1368,12 @@ export class ViewState2d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
-/** a view of a DrawingModel */
+/** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
   public static get className() { return "DrawingViewDefinition"; }
 }
 
-/** a view of a SheetModel */
+/** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
 }

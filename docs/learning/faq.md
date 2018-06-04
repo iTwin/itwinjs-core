@@ -1,13 +1,6 @@
 # Frequently Asked Questions
 
 This document provides answers to some of the frequently asked questions about iModelJs.
-If you have a question that is not covered here, you might find an answer on one of iModelJs community resources.
+If you have a question that is not covered here, you might find an answer on one of the iModelJs community resources.
 
 ## Features and Compatibility
-
-#### Question 1?
-Answer
-
-## Building iModelJs
-
-#### how do i...

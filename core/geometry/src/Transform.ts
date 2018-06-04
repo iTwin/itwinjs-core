@@ -2039,7 +2039,7 @@ export class Transform implements BeJSONFunctions {
   public setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void {
     if (Transform.scratchPoint === undefined)
       Transform.scratchPoint = Point3d.create();
-    RotMatrix.XYZPlusMatrixTimesXYZ(transformA._origin, transformB._matrix, transformB._origin, Transform.scratchPoint);
+    RotMatrix.XYZPlusMatrixTimesXYZ(transformA._origin, transformA._matrix, transformB._origin, Transform.scratchPoint);
     this._origin.setFrom(Transform.scratchPoint);
     transformA._matrix.multiplyMatrixMatrix(transformB._matrix, this._matrix);
   }

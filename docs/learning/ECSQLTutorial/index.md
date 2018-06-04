@@ -51,7 +51,7 @@ The ECSQL examples in the tutorial work with the sample iModel which you can dow
 
 ### BIS
 
-The schemas for iModels is based on [BIS](../../bis/index.md). Therefore, the examples throughout the tutorial use the BIS schemas. While not required to learn ECSQL, familiarity with BIS is a good idea to get more from this tutorial.
+The schemas for iModels are based on [BIS](../../bis/index.md). Therefore, the examples throughout the tutorial use the BIS schemas. While not required to learn ECSQL, familiarity with BIS is a good idea to get more from this tutorial.
 
 ## Tutorial Overview
 

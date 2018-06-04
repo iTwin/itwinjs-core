@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module BisCore */
+/** @module Models */
 
 import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { ModelProps, GeometricModel2dProps, RelatedElement } from "@bentley/imodeljs-common";

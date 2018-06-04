@@ -71,6 +71,10 @@ export class Tile {
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
+
+    // ###TODO: Back-end is not setting maximumSize in json!
+    if (undefined === this.maximumSize)
+      this.maximumSize = this.hasGraphics ? 512 : 0;
   }
 
   private loadGraphics(blob?: Uint8Array): void {
@@ -259,6 +263,7 @@ export class Tile {
     }
   }
 
+  protected _doCulling: boolean = false;
   private static scratchWorldFrustum = new Frustum();
   private static scratchRootFrustum = new Frustum();
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
@@ -266,7 +271,8 @@ export class Tile {
     const worldBox = box.transformBy(args.location, Tile.scratchWorldFrustum);
     const isOutside = FrustumPlanes.Containment.Outside === args.context.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
-    return isOutside || isClipped;
+    const isCulled = isOutside || isClipped;
+    return this._doCulling && isCulled;
   }
 }
 

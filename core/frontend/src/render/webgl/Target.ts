@@ -4,7 +4,7 @@
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -24,6 +24,7 @@ import { SceneCompositor } from "./SceneCompositor";
 import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
+import { ShaderLights } from "./Lighting";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -154,6 +155,9 @@ export abstract class Target extends RenderTarget {
   private _overlayRenderState: RenderState;
   public readonly compositor: SceneCompositor;
   private _clipMask?: TextureHandle;
+  private _fStop: number = 0;
+  private _ambientLight: Float32Array = new Float32Array(3);
+  private _shaderLights: ShaderLights | undefined;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -165,7 +169,9 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  public readonly environmentMap = undefined; // ###TODO...
+  public readonly environmentMap: TextureHandle | undefined = undefined; // ###TODO: for IBL
+  public readonly diffuseMap: TextureHandle | undefined = undefined; // ###TODO: for IBL
+  public readonly imageSolar: ImageLight.Solar | undefined = undefined; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   private _currentOverrides?: FeatureOverrides;
@@ -195,6 +201,10 @@ export abstract class Target extends RenderTarget {
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
   public get areDecorationOverridesActive(): boolean { return false; } // ###TODO
   public get currentPickTable(): PickTable | undefined { return this._currentPickTable; }
+
+  public get fStop(): number { return this._fStop; }
+  public get ambientLight(): Float32Array { return this._ambientLight; }
+  public get shaderLights(): ShaderLights | undefined { return this._shaderLights; }
 
   public get scene(): GraphicList { return this._scene; }
   public get decorations(): Decorations { return this._decorations; }
@@ -440,6 +450,15 @@ export abstract class Target extends RenderTarget {
 
       this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
       this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
+    }
+    // this.shaderlights.clear // ###TODO : Lighting
+    this._fStop = 0.0;
+    this._ambientLight[0] = 0.2;
+    this._ambientLight[1] = 0.2;
+    this._ambientLight[2] = 0.2;
+    if (plan.is3d && undefined !== plan.lights) {
+      // convertLights(...); // TODO: Lighting
+      this._fStop = plan.lights.fstop;
     }
   }
 
