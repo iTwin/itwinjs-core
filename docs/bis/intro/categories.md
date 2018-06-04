@@ -92,3 +92,5 @@ DrawingCategories are similar to drawing layer/level standards and are ultimatel
 Each iModel Bridge job should create a `DefinitionModel` for its Categories. That way each bridge can have its own set of Categories without risk of name collision with other jobs.
 
 iModel Bridges should respect and use the standard SpatialCategories defined by the Domains.
+
+> Next: [Data Evolution](./appendix-a-data-evolution-across-time.md)

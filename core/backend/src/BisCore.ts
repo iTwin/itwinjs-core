@@ -13,7 +13,7 @@ import * as categoryMod from "./Category";
 import * as viewMod from "./ViewDefinition";
 import * as linkMod from "./LinkTableRelationship";
 
-/** The [BisCore]($docs/bis/intro/schemas-domains.md#the-biscore-layer) schema is the lowest level Schema in an iModel.
+/** The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.
  * <p><em>Example:</em>
  * ``` ts
  * [[include:BisCore.registerSchemaAndGetClass]]

@@ -9,6 +9,7 @@ A Code conveys information to people and programs that understands the structure
 Different domains and organizations have different ways of *encoding* business information.
 
 Every Element has a Code. But, for some classes of Elements a Code is required. For other classes of Elements, Code is optional (i.e., it may be `null`.)
+
 Examples uses for Code include:
 
 - Asset Tracking Number
@@ -48,3 +49,5 @@ In many contexts, CodeValue is colloquially referred to as the *Element's Code*.
 Elements representing real-world entities that don’t have a meaningful real-world identifier, e.g. a piece of baseboard, a pile of dirt, an average bolt, will have `null` for its `CodeValue`.
 
 A `CodeValue` should be a human-understandable string, *not* a Guid. `FederationGuid` fulfills that purpose.
+
+> Next: [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
