@@ -187,9 +187,10 @@ function startWindowArea(_event: any) {
   IModelApp.tools.run("View.WindowArea", theViewport!);
 }
 
-// starts View Scroll (I don't see a Zoom command)
-function startZoom(_event: any) {
-  // IModelApp.tools.run("View.Scroll", theViewport!);
+// starts element selection tool
+function startSelect(_event: any) {
+  // ###TODO: SelectTool is busted in various ways...use LocateTool for demo.
+  // IModelApp.tools.run("Select");
   IModelApp.tools.run("View.Locate", theViewport!);
 }
 
@@ -212,7 +213,7 @@ function switchStandardRotation(_event: any) {
 function wireIconsToFunctions() {
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
-  document.getElementById("startZoom")!.addEventListener("click", startZoom);
+  document.getElementById("startZoom")!.addEventListener("click", startSelect);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);

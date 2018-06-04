@@ -365,7 +365,7 @@ export class ToolAdmin {
   public readonly toolState = new ToolState();
   // private suspended?: SuspendedToolState;
   private inputCollectorSave?: SuspendedToolState;
-  public cursorInView = false;
+  public cursorInView = true;
   private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
