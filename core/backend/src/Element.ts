@@ -194,21 +194,26 @@ export class DrawingGraphic extends GraphicalElement2d {
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** 2D Text Annotation */
 export class TextAnnotation2d extends AnnotationElement2d {
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** 3D Text Annotation */
 export class TextAnnotation3d extends GraphicalElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/**
+ * Represents an attachment of a [[ViewDefinition]] to a [[SheetModel]].
+ */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
   public view?: Id64;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
- * An `Element` that occupies real world space. Its coordinates are in the project space of its iModel.
+ * An Element that occupies real world space. Its coordinates are in the project space of its iModel.
  */
 export abstract class SpatialElement extends GeometricElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
@@ -294,6 +299,7 @@ export abstract class Document extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** A document that represents a drawing, that is, 2-D graphical representation of engineering data. A Drawing element is modelled by a [[DrawingModel]]. */
 export class Drawing extends Document {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -308,16 +314,22 @@ export class Drawing extends Document {
   }
 }
 
+/**
+ * A document that represents a section drawing, that is, 2-D graphical documentation derived from a planar
+ * section of some other spatial model. A SectionDrawing element is modelled by a [[SectionDrawingModel]].
+ */
 export class SectionDrawing extends Drawing {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** @hidden */
 export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
   public height?: number;
   public width?: number;
   public constructor(props: SheetBorderTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** @hidden */
 export class SheetTemplate extends Document implements SheetTemplateProps {
   public height?: number;
   public width?: number;
@@ -325,6 +337,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
+/** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]]. */
 export class Sheet extends Document implements SheetProps {
   public scale?: number;
   public height?: number;

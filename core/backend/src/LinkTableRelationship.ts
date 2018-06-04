@@ -124,6 +124,7 @@ export class ElementDrivesElement extends LinkTableRelationship implements Eleme
   }
 }
 
+/** Specifies the source and target elements of a [[IModelDbLinkTableRelationships]] instance. */
 export interface SourceAndTarget {
   sourceId: Id64;
   targetId: Id64;
