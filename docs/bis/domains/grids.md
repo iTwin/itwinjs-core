@@ -2,7 +2,8 @@
 
 This schema contains class definitions for grids.
 
-These are used to build structural,spaceplanning and other grids. A `Grid` is a collection of GridSurfaces. Every `GridSurface` has a `GridAxis`, which is currently primarily used for grouping surfaces into subgroupsidSurfaceCreatesGridCurve` relationship).
+These are used to build structural,spaceplanning and other grids. A `Grid` is a collection of GridSurfaces. Every `GridSurface` has a `GridAxis`, which is currently primarily used for grouping surfaces into subgroups. intersection of GridSurfaces may create a `GridCurve` (driven by `GridSurfaceCreatesGridCurve` relationship).
+
 <u>Schema:</u>
 
 ```xml
@@ -23,11 +24,11 @@ These are used to build structural,spaceplanning and other grids. A `Grid` is a 
 
 ---
 
-An object representing a gridcurve. Gridcurve is similar to `IfcGridAxis` in that it represents a curve geometry on a (usually planar) surface. it is also similar to Grid Curves as known in `AECOsim Building Designer`. Gridcurves can be found in submodels of `GridCurvesPortion` elements.
+An object representing a grid curve. `Gridcurve` is similar to `IfcGridAxis` in that it represents a curve geometry on a (usually planar) surface. it is also similar to Grid Curves as known in `AECOsim Building Designer`. Gridcurves can be found in submodels of `GridCurvesPortion` elements.
 
 <u>Naming:</u>
 
-1.  matches with GridCurve in `AECOsim Building Designer`
+1.  matches with Grid Curve in `AECOsim Building Designer`
 
 <u>Geometry Use:</u>
 
@@ -42,20 +43,149 @@ An object representing a gridcurve. Gridcurve is similar to `IfcGridAxis` in tha
     </ECEntityClass>
 ```
 
+### GridLine
+
+---
+
+An object representing a grid line. `GridLine` can be created by 2 intersecting instances of `GridPlanarSurface`.
+
+<u>Naming:</u>
+
+1.  matches with Grid Line in `AECOsim Building Designer`
+
+<u>Geometry Use:</u>
+
+1.  open `CurveVector` with a single line
+2.  inherits from baseclass. Local Coordinates : origin at the start of the curve, aligned to creating `GridSurface`.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridLine">
+      <BaseClass>GridCurve</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### GridArc
+
+---
+
+An object representing a grid arc. `GridArc` can be created by intersecting instances of `GridPlanarSurface` and `GridArcSurface` together.
+
+<u>Naming:</u>
+
+1.  matches with Grid Arc in `AECOsim Building Designer`
+
+<u>Geometry Use:</u>
+
+1.  open `CurveVector` with a single arc
+2.  inherits from baseclass. Local Coordinates : origin at the start of the curve, aligned to creating `GridSurface`.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridLine">
+      <BaseClass>GridCurve</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### GridSpline
+
+---
+
+An object representing a grid spline. `GridSpline` can be created by intersecting instances of `GridPlanarSurface` and `GridSplineSurface` together.
+
+<u>Naming:</u>
+
+1.  matches with Grid Spline in `AECOsim Building Designer`
+
+<u>Geometry Use:</u>
+
+1.  open `CurveVector` with a single spline
+2.  inherits from baseclass. Local Coordinates : origin at the start of the curve, aligned to creating `GridSurface`.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridLine">
+      <BaseClass>GridCurve</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### GeneralGridCurve
+
+---
+
+GridCurve representing other geometry (typically 3d splines). `GeneralGridCurve` can be created by intersecting other pairs of `GridSurface` instances.
+
+<u>Naming:</u>
+
+1.  matches with Grid Curve in `AECOsim Building Designer`
+
+<u>Geometry Use:</u>
+
+1.  open `CurveVector` with a single curve
+2.  inherits from baseclass. Local Coordinates : origin at the start of the curve, aligned to creating `GridSurface`.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridLine">
+      <BaseClass>GridCurve</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
 ### Grid
 
 ---
 
 A collection of GridSurfaces.
 
-Naming :
+<u>Naming:</u>
 
 1.  Equivalent with IAI IfcGrid
 
 <u>Geometry Use:</u>
 
-1.  no geometrdinates : defines the origin for surfaces
-    <u>Schema:</u>
+1.  no geometry
+2.  Local Coordinates : defines the origin for surfaces
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="Grid" modifier="Abstract"  description="A grid is a collection of gridsurfaces.">
+      <BaseClass>bis:SpatialLocationPortion</BaseClass>
+    </ECEntityClass>
+```
+
+### ElevationGrid
+
+---
+
+A collection of ElevationGridSurfaces. typically used to slice a building. every surface is positioned across the Z axis of ElevationGrid Placement.
+
+<u>Naming:</u>
+
+1.  ElevationGrid because GridSurfaces are positioned based on their .Elevation and grid .Placement properties
+
+<u>Geometry Use:</u>
+
+1.  no geometry
+2.  Local Coordinates : defines the origin and direction for surfaces
+
+<u>Schema:</u>
 
 ```xml
     <ECEntityClass typeName="Grid" modifier="Abstract"  description="A grid is a collection of gridsurfaces.">
@@ -69,7 +199,10 @@ Naming :
 
 a subcollection of GridSurfaces in a Grid. Typically used to group parallel surfaces together.
 
-<u>Naming:</u>th GridAxis in `AECOsim Building Designer`
+<u>Naming:</u>
+
+1.  matches with GridAxis in `AECOsim Building Designer`
+
 <u>Schema:</u>
 
 ```xml
@@ -86,27 +219,18 @@ a subcollection of GridSurfaces in a Grid. Typically used to group parallel surf
 
 A space represents a volume bounded physically or only logically. Spaces provide for certain functions to be performed within a building.
 
-Naming :
+<u>Naming:</u>
 
-1.  a `Portion` that contains `GridCurves`
+1.  a `Portion` that contains `GridCurves` in the submodel
 
-<u>Geometry Use:</u>
-
-1.  2d closed `CurveVector` defining a volume when combined with height property.
-    ![SpaceGeometryUse2d](./media/IfcSpace_2D-Layout1.gif)
-
-2.  3d volume.
-    ![SpaceGeometryUse2d](./media/IfcSpace_Standard-Layout1.gif)
-
-3.  Holesdinates : z points away from the center of the earth.
-    <u>Schema:</u>
+<u>Schema:</u>
 
 ```xml
-    <ECEntityClass typeName="Space" displayLabel="Space">
-        <BaseClass>spcomp:ComposedVolume</BaseClass>
-        <ECCustomAttributes>
-            <ClassHasHandler xmlns="BisCore.01.00" />
-        </ECCustomAttributes>
+    <ECEntityClass typeName="GridCurvesPortion" description="a portion which holds GridCurves">
+      <BaseClass>bis:SpatialLocationPortion</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
     </ECEntityClass>
 ```
 
@@ -120,10 +244,11 @@ Naming :
 
 Defines space adjacencies for spaces bounded by walls.
 
-Naming :
+<u>Naming:</u>
 
-1.  Sometimes r space functions like corridor.
-    <u>Schema:</u>
+1.  Sometimes referred to as Room, space is a more general term including other space functions like corridor.
+
+<u>Schema:</u>
 
 ```xml
     <ECRelationshipClass typeName="SpaceHasAdjacentSpaces" modifier="None" strength="referencing">
