@@ -87,11 +87,19 @@ export class IModelConnection extends IModel {
     let connectionRetryTime: number = 500; // milliseconds
     connectionRetryTime = Math.min(connectionRetryTime, IModelConnection.connectionTimeout);
 
-    const openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
-    openForReadOperation.policy.retryInterval = () => connectionRetryTime;
-
-    const openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
-    openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
+    let openForReadOperation: RpcOperation | undefined;
+    let openForWriteOperation: RpcOperation | undefined;
+    if (openMode === OpenMode.Readonly) {
+      openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
+      if (!openForReadOperation)
+        throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
+      openForReadOperation.policy.retryInterval = () => connectionRetryTime;
+    } else {
+      openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
+      if (!openForWriteOperation)
+        throw new IModelError(BentleyStatus.ERROR, "IModelWriteRpcInterface.openForWrite() is not available");
+      openForWriteOperation.policy.retryInterval = () => connectionRetryTime;
+    }
 
     Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ iModelId, openMode, changeSetId }));
     Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryTime} milliseconds in IModelConnection.open`, () => ({ iModelId, openMode, changeSetId }));
@@ -99,7 +107,9 @@ export class IModelConnection extends IModel {
     const startTime = Date.now();
 
     const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
-      if (type !== RpcRequestEvent.PendingUpdateReceived || !(request.operation === openForWriteOperation || request.operation === openForReadOperation))
+      if (type !== RpcRequestEvent.PendingUpdateReceived)
+        return;
+      if (!(openForReadOperation && request.operation === openForReadOperation) && !(openForWriteOperation && request.operation === openForWriteOperation))
         return;
 
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ iModelId, openMode, changeSetId }));

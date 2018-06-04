@@ -20,7 +20,7 @@ Guess, how it looks like in **ECSQL**? Here it is:
 
   `SELECT FirstName, LastName FROM Employee WHERE Company='ACME'`
 
-As you can see, there is **no syntactical difference** between ECSQL and SQL in that example. And that is true for the vast majority of ECSQL. There are only a very few exceptions which are covered by this tutorial.
+As you can see, there is **no syntactical difference** between ECSQL and SQL in that example. And that is true for ECSQL in general.
 
 There is a **semantic** difference however: ECSQL targets the **business data model**, i.e. your domain's ECSchema, whereas SQL targets the **database's schema**.
 
@@ -34,3 +34,5 @@ Summarizing the two key points of ECSQL:
 - ECSQL targets the business data model (ECSchemas)
 
 In particular this means, that you never have to know anything about the database schema in the iModel. You never hvae to know table or column names. **All you need to know is your ECSchemas and their ECClasses and ECProperties.**
+
+[Next lesson: First Examples](./FirstExamples)

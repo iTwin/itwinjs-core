@@ -4,6 +4,9 @@
 
 import { FragmentShaderBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ColorDef } from "@bentley/imodeljs-common";
+/* ###TODO: IBL
+import { Matrix3 } from "../Matrix";
+*/
 
 export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
   const windowCoordsToTexCoords = `vec2 windowCoordsToTexCoords(vec2 wc) { return wc * u_invScreenSize; }`;
@@ -28,6 +31,18 @@ export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
   });
   frag.set(FragmentShaderComponent.ReverseWhiteOnWhite, reverseWhiteOnWhite);
 }
+
+/* ###TODO: IBL
+export function addNormalMatrixF(frag: FragmentShaderBuilder) {
+  frag.addUniform("u_nmx", VariableType.Mat3, (prog) => {
+    prog.addGraphicUniform("u_nmx", (uniform, params) => {
+      const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
+      if (undefined !== rotMat)
+        uniform.setMatrix3(rotMat);
+    });
+  });
+}
+*/
 
 const reverseWhiteOnWhite = `
   if (u_reverseWhiteOnWhite > 0.5) {
