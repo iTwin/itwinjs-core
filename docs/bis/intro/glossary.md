@@ -1,14 +1,11 @@
 # BIS Glossary
 
-Key BIS terms used in this documentation set are defined in this page.
+Key BIS terms used in this documentation set are defined on this page.
 
 <!--
 **TODO - Style Questions**
-- "BIS Class" vs "ECClass" vs "class" (SS votes "class")
-- ECSchema vs Schema (SS votes "schema")
 - How long is too long for a definition?
 - Is it ok to refer from the glossary to other pages (for more details....)?
-- Should any references to iModel exist in this glossary? (some items have little relevance outside an iModel-like implementation)
 -->
 
 <!-- NOTE: Need to use HTML named anchors because markdown doesn't have that concept yet. -->

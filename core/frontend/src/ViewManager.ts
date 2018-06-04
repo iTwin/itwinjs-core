@@ -99,6 +99,9 @@ export class ViewManager {
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
 
+    // See DgnClientFxViewport::Initialize()
+    this.selectedView = newVp;
+
     // Start up the render loop if necessary.
     if (1 === this._viewports.length) requestAnimationFrame(() => { this.renderLoop(); });
     this.onViewOpen.raiseEvent(newVp);

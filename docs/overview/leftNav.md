@@ -10,9 +10,9 @@
 ### Helpful Background Information
 
 - [iModels](./iModels.md)
-- [IModelHub](./IModelHub.md)
+- [iModelHub](./IModelHub.md)
 - [iModel Bridges](./imodel-bridges.md)
 - [BIS Introduction](../bis/index.md)
-- [RPC Interfaces](./RpcInterface.md)
+- [Remote Procedure Calls](./RpcInterface.md)
 - [iModelJs Packages](./index.md#imodeljs-organization)
 - [Glossary](../learning/glossary.md)
