@@ -181,23 +181,24 @@ const applyLighting = `
     float   specularWeight = useDefaults ? .4 : u_material.g;
     vec3    litColor = vec3(0.0);
 
-    // ##TODO: IBL
-    // baseColor.rgb = applyReflection(baseColor.rgb, normal, u_reflect);
+    /* ##TODO: IBL
+    baseColor.rgb = applyReflection(baseColor.rgb, normal, u_reflect);
 
-    // if (u_lightMix.x > 0.0001) {
-    //   vec3    normalWorld = normal * u_nmx;
-    //   vec3 normalWorld = normal * u_nmx;
-    //   vec3 imageDiffuse = sampleRGBM(u_diffuseMap, normalWorld);
+    if (u_lightMix.x > 0.0001) {
+      vec3    normalWorld = normal * u_nmx;
+      vec3 normalWorld = normal * u_nmx;
+      vec3 imageDiffuse = sampleRGBM(u_diffuseMap, normalWorld);
 
-    //   litColor += u_lightMix.x * toLuminance (imageDiffuse) * baseColor.rgb;
+      litColor += u_lightMix.x * toLuminance (imageDiffuse) * baseColor.rgb;
 
-    //   if (0.0 != u_imageSolar.w) {
-    //     float diffuseIntensity = 0.0, specularIntensity = 0.0;
+      if (0.0 != u_imageSolar.w) {
+        float diffuseIntensity = 0.0, specularIntensity = 0.0;
 
-    //     computeSimpleLight(diffuseIntensity, specularIntensity, normalWorld, toEye, u_imageSolar.xyz, 1.0, specularExp);
-    //     litColor += u_lightMix.x * (u_imageSolar.w * diffuseWeight * diffuseIntensity * baseColor.rgb + specularIntensity * specularWeight * specularColor);
-    //   }
-    // }
+        computeSimpleLight(diffuseIntensity, specularIntensity, normalWorld, toEye, u_imageSolar.xyz, 1.0, specularExp);
+        litColor += u_lightMix.x * (u_imageSolar.w * diffuseWeight * diffuseIntensity * baseColor.rgb + specularIntensity * specularWeight * specularColor);
+      }
+    }
+    */
 
     if (u_lightMix.y > 0.0001) { // Default.
       float diffuseIntensity = 0.0, specularIntensity = 0.0;
@@ -208,12 +209,13 @@ const applyLighting = `
       litColor += u_lightMix.y * diffuseWeight * diffuseIntensity * baseColor.rgb + specularIntensity * specularWeight * specularColor;
     }
 
-    // ###TODO: Source Lighting
-    // if (u_lightMix.z > 0.0) // Source.
-    //     litColor += u_lightMix.z * computeSourceLighting(normal, toEye, v_pos, specularExp, specularColor, baseColor.rgb);
+    /* ###TODO: Source Lighting
+    if (u_lightMix.z > 0.0) // Source.
+        litColor += u_lightMix.z * computeSourceLighting(normal, toEye, v_pos, specularExp, specularColor, baseColor.rgb);
+    */
 
-    // if (u_lightMix.a > 0.0)
-    //     litColor.rgb += u_lightMix.a * baseColor.rgb;
+    if (u_lightMix.a > 0.0)
+        litColor.rgb += u_lightMix.a * baseColor.rgb;
 
     // Clamp while preserving hue.
     float   maxIntensity = max(litColor.r, max(litColor.g, litColor.b));
