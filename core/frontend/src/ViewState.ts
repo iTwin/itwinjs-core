@@ -1194,9 +1194,9 @@ export abstract class ViewState3d extends ViewState {
 
         const npcZ = .5;
         Point3d.create(low.x, low.y, npcZ, points[0]);
-        Point3d.create(low.x, high.y, npcZ, points[1]);
+        Point3d.create(high.x, low.y, npcZ, points[1]);
         Point3d.create(high.x, high.y, npcZ, points[2]);
-        Point3d.create(high.x, low.y, npcZ, points[3]);
+        Point3d.create(low.x, high.y, npcZ, points[3]);
 
         viewport.npcToWorldArray(points);
         for (let i = 0; i < 4; i++) {

@@ -223,7 +223,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Optionally mark this quad as the last piece of a face in this polyface.
    */
   public addQuadFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[], endFace: boolean = false) {
-    if (this.options.maxEdgeLength !== undefined && this.options.maxEdgeLength < 4) {
+    if (this.options.shouldTriangulate) {
       // Add as two triangles, with a diagonal along the shortest distance
       const vectorAC = points[0].vectorTo(points[2]);
       const vectorBD = points[1].vectorTo(points[3]);

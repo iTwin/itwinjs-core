@@ -40,6 +40,8 @@ export class StrokeOptions {
   public needConvexFacets?: boolean;
   /** minimum strokes on a primitive */
   public minStrokesPerPrimitive?: number;
+  /** whether or not to triangulate each added facet */
+  public shouldTriangulate: boolean = true;
 
   public needNormals?: boolean;
   public needParams?: boolean;
