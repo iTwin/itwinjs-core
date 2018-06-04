@@ -1,6 +1,6 @@
 # Creating Elements
 
-Use [Elements.insertElement]($backend) to insert a new element into an IModelDb. This method takes as its input an [ElementProps]($backend) or a subclass of it, which defines the class and all required properties of the new element.
+Use [Elements.insertElement]($backend) to insert a new element into an IModelDb. This method takes as its input an [ElementProps]($common) or a subclass of it, which defines the class and all required properties of the new element.
 
 *Example:*
 ``` ts

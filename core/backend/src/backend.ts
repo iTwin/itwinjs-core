@@ -46,7 +46,7 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Codes
- * Classes for working with [Codes]($docs/BIS/intro/element-fundamentals.md#codes).
+ * Classes for working with [Codes]($docs/BIS/intro/codes.md).
  */
 /**
  * @docs-group-description ECDb

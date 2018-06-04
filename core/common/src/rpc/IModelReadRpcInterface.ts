@@ -70,7 +70,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   /** Detaches the Change Cache file to the specified iModel, if it has been attached before.
    *  > Does not throw if no Change Cache file was attached before. This is a different behavior from the
    *  > backend method to make the RPC call chunkier by not requiring clients to call
-   *  > [IModelReadRpcInterface.isChangeCacheAttached]($common).
+   *  > [[isChangeCacheAttached]].
    */
   public detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
 }
