@@ -55,6 +55,8 @@ export class Tile {
   private readonly _contentRange?: ElementAlignedBox3d;
   private _graphic?: RenderGraphic;
 
+  // ###TODO: Artificially limiting depth for now until tile selection is fixed...
+  protected _maxDepth: number = 3;
   public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
@@ -77,8 +79,7 @@ export class Tile {
     if (undefined === this.maximumSize)
       this.maximumSize = this.hasGraphics ? 512 : 0;
 
-    // ###TODO: Loading children currently causes stack overflow in DgnPlatform...this._childrenLoadStatus = this.hasChildren ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
-    this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
+    this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
   private loadGraphics(blob?: Uint8Array): void {
