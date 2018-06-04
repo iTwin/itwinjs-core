@@ -1,4 +1,4 @@
-# Appendix - Data Evolution Across Time
+# Data Evolution Across Time
 
 ## Introduction
 
@@ -73,3 +73,5 @@ All of these modeling approaches will all be available through the schema, but w
 Other schema designers can create Aspects that can be attached to Stair or one of its superclasses. The Stair class designer does not need to predict all Aspects that may need to be associated with Stair in the future. Users may take advantage of these Aspects at any point in time.
 
 Relationships – like Aspects – can be defined for the Stair class (and its superclasses) without any knowledge by the Stair class designer. Users may take advantage of these Relationships to other Elements at any point in time.
+
+> Next: [Schema Versioning](schema-versioning-and-generations.md)

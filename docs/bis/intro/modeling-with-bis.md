@@ -85,3 +85,5 @@ The Code is often used to identify Entities on drawings and in GUIs and may be u
 The FederationGuid is optional but can be used to precisely identify an Entity that is represented in many different systems, including those that do not use BIS.
 
 UserLabel is an optional property of an Element that can be used as an informal name in the GUI, but it does not have to be unique. In some GUIs, if the UserLabel is null, the CodeValue will be used as a display label.
+
+> Next: [BIS Organization](./bis-organization.md)

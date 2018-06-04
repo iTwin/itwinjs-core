@@ -30,7 +30,7 @@ export interface EcefLocationProps {
   orientation: YawPitchRollProps;
 }
 
-/** the location/orientation of an iModel on the earth via ECEF (Earth Centered Earth Fixed) coordinates */
+/** the location/orientation of an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
 export class EcefLocation implements EcefLocationProps {
   public origin: Point3d;
   public orientation: YawPitchRollAngles;

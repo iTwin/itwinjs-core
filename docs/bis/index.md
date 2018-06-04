@@ -35,3 +35,5 @@ BIS supports the full lifecycle of infrastructure. Two phrases to keep in mind a
 *All projects are brownfield projects* tells us that projects occur in an existing context, either a brownfield of existing infrastructure or a natural context that must be taken into account. One should be able to use existing BIS data (for operations) as the starting point for new design/construction modeling.
 
 The BIS philosophy for modeling the full infrastructure lifecycle is to continually *enhance* the data over time, *not* transform or recreate it for each separate application or lifecycle phase.
+
+> Next: [Modeling with BIS](./intro/modeling-with-bis.md)
