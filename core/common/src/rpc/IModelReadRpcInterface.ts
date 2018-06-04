@@ -62,6 +62,10 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward.apply(this, arguments); }
   public getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<any> { return this.forward.apply(this, arguments); }
   public readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward.apply(this, arguments); }
+  /** Determines whether the *Change Cache file* is attached to the specified iModel or not
+   * @param iModel iModel to check whether a *Change Cache file* is attached
+   * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
+   */
   public isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
   /** Attaches the Change Cache file to the specified iModel.
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.

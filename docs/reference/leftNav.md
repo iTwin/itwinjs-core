@@ -11,7 +11,6 @@
 - [Symbology]($backend:FontsAndSymbology)
 - [iModels]($backend:iModels)
 - [Portability]($backend:Portability)
-- [RpcInterface]($backend:RpcInterface)
 - [Schema]($backend:Schema)
 - [ECDb]($backend:ECDb)
 - [ECSQL]($backend:ECSQL)
