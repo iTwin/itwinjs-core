@@ -102,9 +102,9 @@ export class MeshBuilder {
   public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {
     const visitor = polyface.createVisitor();
 
-    do {
+    while (visitor.moveToNextFacet()) {
       this.addFromPolyfaceVisitor(visitor, props);
-    } while (visitor.moveToNextFacet());
+    }
 
     this.endPolyface();
   }
@@ -150,7 +150,7 @@ export class MeshBuilder {
     // If we do not have UVParams stored on the IndexedPolyface, compute them now
     let params: Point2d[] | undefined;
     if (haveParam && options.mappedTexture) {
-      assert(this.mesh.points.length === 0 || this.mesh.features !== undefined);
+      assert(this.mesh.points.length === 0 || this.mesh.uvParams.length !== 0);
       const mappedTexture = options.mappedTexture;
       const transformToImodel = mappedTexture.params.textureMatrix.transform;
       if (transformToImodel)

@@ -272,7 +272,7 @@ describe("MeshBuilderMap Tests", () => {
 
     expect(map.length).to.equal(1);
     const builder = map.getBuilder(pfPrim.displayParams, Mesh.PrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
-    expect(builder.triangleSet.length).to.equal(4);
+    expect(builder.triangleSet.length).to.equal(2);
   });
 
   it("loadIndexedPolyface", () => {
@@ -327,7 +327,7 @@ describe("MeshBuilderMap Tests", () => {
 
     expect(map.length).to.equal(1);
     const builder = map.getBuilder(pfPrim.displayParams, Mesh.PrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
-    expect(builder.triangleSet.length).to.equal(4);
+    expect(builder.triangleSet.length).to.equal(2);
 
     // test case: when polyface has no points, no builder is created
     map = new MeshBuilderMap(tolerance, range, is2d);

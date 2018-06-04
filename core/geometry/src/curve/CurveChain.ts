@@ -10,6 +10,7 @@
 import { Geometry } from "../Geometry";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive, GeometryQuery } from "./CurvePrimitive";
+import {Point3d} from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
 import { RecursiveCurveProcessor, RecursiveCurveProcessorWithStack } from "./CurveProcessor";
@@ -325,6 +326,12 @@ export class Loop extends CurveChain {
     for (const curve of curves) { result.children.push(curve); }
     return result;
   }
+  public static createPolygon(points: Point3d[]): Loop {
+    const linestring = LineString3d.create (points);
+    linestring.addClosurePoint ();
+    return Loop.create (linestring);
+  }
+
   public dgnBoundaryType(): number { return 2; }  // (2) all "Loop" become "outer"
 
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {

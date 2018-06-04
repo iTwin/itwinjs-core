@@ -9,11 +9,18 @@ import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core";
 import { Code } from "../Code";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
+import { RpcNotFoundResponse } from "./core/RpcControl";
 import { EntityQueryParams } from "../EntityProps";
 import { IModel, IModelToken } from "../IModel";
 import { IModelVersion } from "../IModelVersion";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
+
+/** Response if the IModelDb was not found at the backend
+ * (if the service has moved)
+ */
+export class IModelNotFoundResponse extends RpcNotFoundResponse {
+}
 
 /**
  * The RPC interface for reading from an iModel.
@@ -36,6 +43,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     Vector3d,
     Date,
     Code,
+    IModelNotFoundResponse,
   ]
 
   /** Returns the IModelReadRpcInterface instance for the frontend. */
