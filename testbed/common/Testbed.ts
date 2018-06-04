@@ -9,4 +9,5 @@ export const CONSTANTS = {
   REGISTER_TEST_RPCIMPL2_CLASS_MESSAGE: "registerTestRpcImpl2Class",
   REPLACE_TEST_RPCIMPL2_INSTANCE_MESSAGE: "replaceTestRpcImpl2Instance",
   UNREGISTER_TEST_RPCIMPL2_CLASS_MESSAGE: "unregisterTestRpcImpl2Class",
+  RESTART_BACKEND: "restartBackend",
 };

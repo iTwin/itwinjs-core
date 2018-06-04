@@ -33,6 +33,10 @@ ipcMain.on("testbed", (event: any, arg: any) => {
   } else if (msg.name === CONSTANTS.UNREGISTER_TEST_RPCIMPL2_CLASS_MESSAGE) {
     TestRpcImpl2.unregister();
     event.returnValue = true;
+  } else if (msg.name === CONSTANTS.RESTART_BACKEND) {
+    IModelHost.shutdown();
+    IModelHost.startup();
+    event.returnValue = true;
   }
 });
 

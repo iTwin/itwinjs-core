@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
+import { Light, LightType, ViewFlags, HiddenLine, ColorDef, ColorByName, ElementProps, RenderTexture, ImageBuffer, ImageBufferFormat, RenderMaterial, TextureMapping, Gradient } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils } from "@bentley/bentleyjs-core";
@@ -174,12 +174,55 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
-  /** Attempts to create a texture and load a SkyBox material from the environment. Returns true on success, and false otherwise. */
-  public loadSkyBoxMaterial(system: RenderSystem): boolean {
-    const env = this.getEnvironment();
-    if (env.sky.display)
-      return true;
+  /**
+   * Attempts to create a texture and material for the groundplane of the environment.
+   * Stores the resulting colors in the ColorDef array provided, if any.
+   * Returns the material on success, and undefined otherwise.
+   */
+  public createGroundPlaneMaterial(system: RenderSystem, aboveGround: boolean, resultingColors: ColorDef[]): RenderMaterial | undefined {
+    const ground = this.getEnvironment().ground;
 
+    const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
+    const color = aboveGround ? ground.aboveColor : ground.belowColor;
+    resultingColors.length = 0;
+    resultingColors.push(color.clone());
+    resultingColors.push(color.clone());
+    resultingColors.push(color.clone());
+
+    const alpha = aboveGround ? 0x80 : 0x85;
+    resultingColors[0].setAlpha(0xff);
+    resultingColors[1].setAlpha(alpha);
+    resultingColors[2].setAlpha(alpha);
+
+    const gradient = new Gradient.Symb();
+    gradient.mode = Gradient.Mode.Cylindrical;
+    gradient.keys = [{ color: resultingColors[0], value: values[0] }, { color: resultingColors[1], value: values[1] }, { color: resultingColors[2], value: values[2] }];
+    const groundImage = gradient.getImage(64, 64);
+    const texture = system.createTexture(groundImage, this.iModel, RenderTexture.Params.defaults);
+    if (!texture)
+      return undefined;
+
+    const matParams = RenderMaterial.Params.defaults;
+    matParams.diffuseColor = ColorDef.white;
+    matParams.shadows = false;
+    matParams.ambient = 1;
+    matParams.diffuse = 0;
+
+    const mapParams = new TextureMapping.Params();
+    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
+    mapParams.textureMatrix = transform;
+    mapParams.textureMatrix.setTransform();
+    matParams.textureMapping = new TextureMapping(texture, mapParams);
+
+    return system.createMaterial(matParams, this.iModel);
+  }
+
+  /** Attempts to create a texture and material for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
+  public loadSkyBoxMaterial(system: RenderSystem): boolean {
+    if (this.skyboxMaterial !== undefined)
+      return true;  // material has already been loaded
+
+    const env = this.getEnvironment();
     let texture: RenderTexture | undefined;
 
     // ### TODO
@@ -197,7 +240,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
       let color2: ColorDef;
 
       // set up the 4 color gradient
-      for (let i = 0; i < gradientPixelCount; i++ , currentBufferIdx++) {
+      for (let i = 0; i < gradientPixelCount; i++ , currentBufferIdx += 4) {
         let frac = i / gradientPixelCount;
 
         if (env.sky.twoColor) {

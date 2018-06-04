@@ -113,7 +113,7 @@ export class Triangulator {
         break;
     }
 
-    let startingNode = Triangulator.createFaceLoop(data, 0, outerLen, true);
+    let startingNode = Triangulator.createFaceLoop(data, 0, outerLen, true, true);
 
     if (!startingNode) return Triangulator.returnGraph;
 
@@ -152,7 +152,7 @@ export class Triangulator {
   /**
    * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
    */
-  private static createFaceLoop(data: Point3d[], start: number, end: number, returnPositiveAreaLoop: boolean): HalfEdge | undefined {
+  private static createFaceLoop(data: Point3d[], start: number, end: number, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     let i;
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     let base: HalfEdge | undefined;
@@ -164,7 +164,9 @@ export class Triangulator {
       base = base.faceSuccessor;
       const area = base.signedFaceArea();
       base.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
-      base.edgeMate.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
+      base.edgeMate.setMaskAroundFace(
+        markExterior ? (HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE | HalfEdgeMask.EXTERIOR)
+          : (HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE));
       if (area > 0 === returnPositiveAreaLoop)
         return base;
       else return base.vertexSuccessor;
@@ -402,7 +404,7 @@ export class Triangulator {
     for (i = 0, len = holeIndices.length; i < len; i++) {
       start = holeIndices[i];
       end = i < len - 1 ? holeIndices[i + 1] : data.length;
-      list = Triangulator.createFaceLoop(data, start, end, false);
+      list = Triangulator.createFaceLoop(data, start, end, false, false);
       if (list && list === list.faceSuccessor) list.steiner = true;
       queue.push(Triangulator.getLeftmost(list));
     }

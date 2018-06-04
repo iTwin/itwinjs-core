@@ -11,6 +11,8 @@ import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
 } from "@bentley/imodeljs-frontend";
+import { TestbedConfig } from "../common/TestbedConfig";
+import { CONSTANTS } from "../common/Testbed";
 
 describe("IModelConnection", () => {
   let iModel: IModelConnection;
@@ -91,6 +93,33 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
 
+  });
+
+  it("should be able to re-establish IModelConnection if the backend is shut down (#integration)", async () => {
+    const roIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ReadOnlyTest");
+    const roIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, roIModelId);
+
+    assert.exists(roIModel);
+    assert.isTrue(roIModel instanceof IModelConnection);
+
+    let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
+    assert.equal(elementProps.length, 1);
+    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
+
+    let queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    assert.isAtLeast(queryElementIds.size, 1);
+
+    // Restart Backend!!!
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.RESTART_BACKEND, value: undefined }));
+
+    elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
+    assert.equal(elementProps.length, 1);
+    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
+
+    queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    assert.isAtLeast(queryElementIds.size, 1);
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
