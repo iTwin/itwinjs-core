@@ -12,13 +12,15 @@ import { Transform } from "../Transform";
 import { Range3d } from "../Range";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/CurveChain";
+import { SweepContour } from "../solid/SweepContour";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { GeometryCoreTestIO } from "./IModelJson.test";
 import { StrokeOptions } from "../geometry-core";
-
+import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
@@ -501,4 +503,37 @@ describe("Polyface.Faces", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+});
+
+it("facets from sweep contour", () => {
+  const ck = new Checker();
+
+  // sawtooth. Triangulate leading portions that are valid polygons (edge from origin does not cross)
+  const fullSawtooth = [
+    Point3d.create(0, 0, 0),
+    Point3d.create(3, 0, 0),
+    Point3d.create(3, 2, 0),
+    Point3d.create(2, 2, 0),
+    Point3d.create(2, 1, 0),
+    Point3d.create(1, 1, 0),
+    Point3d.create(1, 2, 0),
+    Point3d.create(0, 2, 0)];
+  for (const numPoints of [3, 5, 6, 7, 8]) {
+    const polygonPoints = fullSawtooth.slice(0, numPoints);
+    const loop = Loop.createPolygon(polygonPoints);
+    const sweepContour = SweepContour.createForLinearSweep(loop);
+
+    const options = new StrokeOptions();
+    options.needNormals = false;
+    options.needParams = false;
+    const builder = PolyfaceBuilder.create(options);
+
+    sweepContour!.emitFacets(builder, options, false);
+    const polyface = builder.claimPolyface(true);
+    if (!ck.testExactNumber(polygonPoints.length - 2, polyface.facetCount, "Triangle count in polygon")) {
+      const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
+      console.log(prettyPrint(jsPolyface));
+    }
+  }
+  expect(ck.getNumErrors()).equals(0);
 });
