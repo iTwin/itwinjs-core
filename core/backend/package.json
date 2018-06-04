@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.92.4",
+  "version": "0.92.5",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -42,7 +42,7 @@
     "@bentley/geometry-core": "8",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-native-platform-api": "~19.2.0"
+    "@bentley/imodeljs-native-platform-api": "~20.0.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -75,7 +75,7 @@
     "*** Keep this in synch with tools/native-platform-installer ***"
   ],
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~19.2.0",
+    "@bentley/imodeljs-native-platform-api": "~20.0.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.0",
     "glob": "^7.1.2"
@@ -91,10 +91,10 @@
     "*** Keep this in synch with tools/native-platform-installer ***"
   ],
   "optionalDependencies": {
-    "@bentley/imodeljs-n_8-darwin-x64": "~19.2.0",
-    "@bentley/imodeljs-n_8-linux-x64": "~19.2.0",
-    "@bentley/imodeljs-n_8-win32-x64": "~19.2.0",
-    "@bentley/imodeljs-e_2-win32-x64": "~19.2.0"
+    "@bentley/imodeljs-n_8-darwin-x64": "~20.0.0",
+    "@bentley/imodeljs-n_8-linux-x64": "~20.0.0",
+    "@bentley/imodeljs-n_8-win32-x64": "~20.0.0",
+    "@bentley/imodeljs-e_2-win32-x64": "~20.0.0"
   },
   "nyc": {
     "include": [
