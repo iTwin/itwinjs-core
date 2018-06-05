@@ -41,7 +41,7 @@ export class StrokeOptions {
   /** minimum strokes on a primitive */
   public minStrokesPerPrimitive?: number;
   /** whether or not to triangulate each added facet */
-  public shouldTriangulate: boolean = true;
+  public shouldTriangulate: boolean = false;
 
   public needNormals?: boolean;
   public needParams?: boolean;

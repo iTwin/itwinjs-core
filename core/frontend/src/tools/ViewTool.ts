@@ -1574,9 +1574,9 @@ export class WindowAreaTool extends ViewTool {
       if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
         return;
     } else {
+      vp.rotMatrix.multiplyVectorInPlace(corners[0]);
+      vp.rotMatrix.multiplyVectorInPlace(corners[1]);
       const viewRange = Range3d.createArray(corners);
-      vp.rotMatrix.multiplyVectorInPlace(viewRange.low);
-      vp.rotMatrix.multiplyVectorInPlace(viewRange.high);
 
       delta = viewRange.low.vectorTo(viewRange.high);
       delta.z = view.getExtents().z; // preserve z depth

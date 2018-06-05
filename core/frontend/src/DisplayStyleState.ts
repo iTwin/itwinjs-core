@@ -190,12 +190,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
     resultingColors.push(color.clone());
 
     const alpha = aboveGround ? 0x80 : 0x85;
-    resultingColors[0].setAlpha(0xff);
-    resultingColors[1].setAlpha(alpha);
-    resultingColors[2].setAlpha(alpha);
+    resultingColors[0].setTransparency(0xff);
+    resultingColors[1].setTransparency(alpha);
+    resultingColors[2].setTransparency(alpha);
 
     const gradient = new Gradient.Symb();
-    gradient.mode = Gradient.Mode.Cylindrical;
+    gradient.mode = Gradient.Mode.Spherical;
     gradient.keys = [{ color: resultingColors[0], value: values[0] }, { color: resultingColors[1], value: values[1] }, { color: resultingColors[2], value: values[2] }];
     const groundImage = gradient.getImage(64, 64);
     const texture = system.createTexture(groundImage, this.iModel, RenderTexture.Params.defaults);

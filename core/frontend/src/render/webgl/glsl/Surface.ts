@@ -45,6 +45,10 @@ if (useMatColor) {
 if (useTextureWeight) {
   vec4 texColor = TEXTURE(s_texture, v_texCoord);
   baseColor = mix(baseColor, texColor, u_textureWeight);
+
+  // Textures do NOT contain premultiplied alpha. Multiply here.
+  // ###TODO: This won't produce correct results if u_textureWeight < 1.0 and baseColor.a < 1.0 - handle.
+  return applyPreMultipliedAlpha(baseColor);
 }
 
 return baseColor;`;
