@@ -78,3 +78,7 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description ElementAspects
  * Subclasses of [ElementAspects]($docs/bis/intro/elementaspect-fundamentals.md).
  */
+/**
+ * @docs-group-description Categories
+ * Classes for [Categories]($docs/bis/intro/categories.md).
+ */

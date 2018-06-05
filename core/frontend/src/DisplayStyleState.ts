@@ -61,6 +61,8 @@ export class GroundPlane {
   public elevation: number = 0.0;  // the Z height to draw the ground plane
   public aboveColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from above
   public belowColor: ColorDef;     // the color to draw the ground plane if the view shows the ground from below
+  private aboveSymb?: Gradient.Symb; // symbology for ground plane when view is from above
+  private belowSymb?: Gradient.Symb; // symbology for ground plane when view is from below
 
   public constructor(ground: any) {
     ground = ground ? ground : {};
@@ -68,6 +70,47 @@ export class GroundPlane {
     this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
     this.aboveColor = ground.aboveColor ? ColorDef.fromJSON(ground.aboveColor) : new ColorDef(ColorByName.darkGreen);
     this.belowColor = ground.belowColor ? ColorDef.fromJSON(ground.belowColor) : new ColorDef(ColorByName.darkBrown);
+  }
+
+  /**
+   * Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
+   * Will store the ground colors used in the optional ColorDef array provided.
+   */
+  public getGroundPlaneTextureSymb(aboveGround: boolean, groundColors?: ColorDef[]): Gradient.Symb {
+    if (aboveGround) {
+      if (this.aboveSymb) {
+        return this.aboveSymb;
+      }
+    } else {
+      if (this.belowSymb)
+        return this.belowSymb;
+    }
+
+    const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
+    const color = aboveGround ? this.aboveColor : this.belowColor;
+    groundColors = groundColors !== undefined ? groundColors : [];
+    groundColors.length = 0;
+    groundColors.push(color.clone());
+    groundColors.push(color.clone());
+    groundColors.push(color.clone());
+
+    const alpha = aboveGround ? 0x80 : 0x85;
+    groundColors[0].setTransparency(0xff);
+    groundColors[1].setTransparency(alpha);
+    groundColors[2].setTransparency(alpha);
+
+    // Get the possibly cached gradient from the system, specific to whether or not we want ground from above or below.
+    const gradient = new Gradient.Symb();
+    gradient.mode = Gradient.Mode.Spherical;
+    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
+
+    // Store the gradient for possible future use
+    if (aboveGround)
+      this.aboveSymb = gradient;
+    else
+      this.belowSymb = gradient;
+
+    return gradient;
   }
 }
 
@@ -174,49 +217,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
   public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
-  /**
-   * Attempts to create a texture and material for the groundplane of the environment.
-   * Stores the resulting colors in the ColorDef array provided, if any.
-   * Returns the material on success, and undefined otherwise.
-   */
-  public createGroundPlaneMaterial(system: RenderSystem, aboveGround: boolean, resultingColors: ColorDef[]): RenderMaterial | undefined {
-    const ground = this.getEnvironment().ground;
-
-    const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
-    const color = aboveGround ? ground.aboveColor : ground.belowColor;
-    resultingColors.length = 0;
-    resultingColors.push(color.clone());
-    resultingColors.push(color.clone());
-    resultingColors.push(color.clone());
-
-    const alpha = aboveGround ? 0x80 : 0x85;
-    resultingColors[0].setTransparency(0xff);
-    resultingColors[1].setTransparency(alpha);
-    resultingColors[2].setTransparency(alpha);
-
-    const gradient = new Gradient.Symb();
-    gradient.mode = Gradient.Mode.Spherical;
-    gradient.keys = [{ color: resultingColors[0], value: values[0] }, { color: resultingColors[1], value: values[1] }, { color: resultingColors[2], value: values[2] }];
-    const groundImage = gradient.getImage(64, 64);
-    const texture = system.createTexture(groundImage, this.iModel, RenderTexture.Params.defaults);
-    if (!texture)
-      return undefined;
-
-    const matParams = RenderMaterial.Params.defaults;
-    matParams.diffuseColor = ColorDef.white;
-    matParams.shadows = false;
-    matParams.ambient = 1;
-    matParams.diffuse = 0;
-
-    const mapParams = new TextureMapping.Params();
-    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
-    mapParams.textureMatrix = transform;
-    mapParams.textureMatrix.setTransform();
-    matParams.textureMapping = new TextureMapping(texture, mapParams);
-
-    return system.createMaterial(matParams, this.iModel);
-  }
-
   /** Attempts to create a texture and material for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise. */
   public loadSkyBoxMaterial(system: RenderSystem): boolean {
     if (this.skyboxMaterial !== undefined)
@@ -273,7 +273,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
         return false;
     }
 
-    const matParams = RenderMaterial.Params.defaults;
+    const matParams = new RenderMaterial.Params();
     matParams.diffuseColor = ColorDef.white;
     matParams.shadows = false;
     matParams.ambient = 1;

@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -26,7 +26,6 @@ import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
-import { IsTranslucent } from "./RenderFlags";
 
 export const enum ContextState {
   Uninitialized,
@@ -302,11 +301,6 @@ export class IdMap {
         return existingTexture;
     }
 
-    const isTranslucent = params.isRGBE ? IsTranslucent.Yes : ((img.format === ImageBufferFormat.Rgba) ? IsTranslucent.Maybe : IsTranslucent.No);
-    if (isTranslucent === IsTranslucent.Maybe) {
-      // premultiplyOrStripAlpha
-    }
-
     return this.createTexture(img, params);
   }
 
@@ -320,7 +314,6 @@ export class IdMap {
       return existingGrad;
 
     const image: ImageBuffer = grad.getImage(0x100, 0x100);
-    // preMultiplyOrStripAlpha
 
     const textureHandle = TextureHandle.createForImageBuffer(image);
     if (!textureHandle)
@@ -529,7 +522,7 @@ export class System extends RenderSystem {
    * Creates a texture using gradient symbology and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
-  public createGradient(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
+  public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();
