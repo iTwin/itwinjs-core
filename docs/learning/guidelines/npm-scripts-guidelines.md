@@ -4,7 +4,7 @@ This document is intended to provide suggestions for writing your own package's 
 
 npm scripts are used by adding properties to the "scripts" object in a package's package.json file. These properties correspond to names that can be passed to the `npm run` command to execute the properties' values as shell commands. For more information on creating and running scripts with npm, [this article](https://www.keithcirkel.co.uk/how-to-use-npm-as-a-build-tool/) may be helpful to read.
 
-The bentleyjs-tools repository includes a number of preconfigured node.js scripts to ease the development process. This includes scripts for testing, linting, and basic code coverage numbers. More information about these scripts can be found in the root bentleyjs-tools [README](../README.md).
+The bentleyjs-tools repository includes a number of preconfigured node.js scripts to ease the development process. This includes scripts for testing, linting, and basic code coverage numbers. More information about these scripts can be found in the root bentleyjs-tools README.
 
 ## Building
 

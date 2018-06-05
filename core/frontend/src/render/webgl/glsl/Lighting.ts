@@ -203,8 +203,10 @@ const applyLighting = `
     if (u_lightMix.y > 0.0001) { // Default.
       float diffuseIntensity = 0.0, specularIntensity = 0.0;
 
-      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.3, 0.25, 0.7)), 1.0, specularExp);
-      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.25, -0.25, 0.3)), .30, specularExp);
+      // Use a pair of lights that is something in-between portrait lighting & something more out-doorsy with a slightly more overhead main light.
+      // This will make more sense in a wider variety of scenes since this is the only lighting currently supported.
+      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(0.2, 0.5, 0.5)), 1.0, specularExp);
+      computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.3, 0.0, 0.3)), .30, specularExp);
 
       litColor += u_lightMix.y * diffuseWeight * diffuseIntensity * baseColor.rgb + specularIntensity * specularWeight * specularColor;
     }
@@ -241,12 +243,16 @@ export function addLighting(builder: ProgramBuilder) {
       data[1] = 0.0; // set to 1.0 for default portrait lighting
       data[2] = 0.0; // set to 1.0 for using scene lights
       data[3] = 0.0; // set > 0.0 for constant lighting
+      // ###TODO: IBL - use the following commented out line instead of the one after it which is there just to use params.
       // const doDiffuseImageLighting: boolean = (undefined !== params.target.diffuseMap);
-      const doDiffuseImageLighting = (undefined === params.target); // should always be false so that we use deault lights for now
+      const doDiffuseImageLighting = (undefined === params.target);
       if (doDiffuseImageLighting)
         data[0] = 1.0;
-      else
-        data[1] = 1.0;
+      else {
+        // Use default lighting, a pair of directional lights + a little ambient.
+        data[1] = 0.92;
+        data[3] = 0.08;
+      }
       uniform.setUniform4fv(data);
     });
   });

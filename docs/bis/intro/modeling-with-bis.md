@@ -56,7 +56,7 @@ Thus, BIS supports two ways of modeling an Object and its parts:
 
 1. The class of Element modeling the Object can be "atomic" (not allowing any child Elements) and be broken-down as many Elements in a finer-grained "sub-Model". BIS calls this a "sub-modeled Element". The sub-modeled Element is intentionally redundant with the Elements in its sub-Model.
 
-2. The class of Element modeling the Object can allow "child" Elements, but then it is not allowed to be broken-down in a sub-Model. BIS calls this a "parent Element"—essentially modeling an Entity as an [aggregate](./glossary.md#aggregate). A parent Element is not redundant with its child Elements.
+2. The class of Element modeling the Object can allow "child" Elements, but then it is not allowed to be broken-down in a sub-Model. BIS calls this a "parent Element"—essentially modeling an Entity as an aggregate. A parent Element is not redundant with its child Elements.
 
 At a minimum, a parent Element represents the identity of the aggregate. Optionally, it may model part the "substance" of the aggregate, in which case, its part of the "substance" should not be redundant with it child Elements. For example, the physical geometry of the DoorElement should not contain the geometry of the door hardware (assuming it has a DoorHardware child Element that contains that geometry.) You can model a "pure" assembly PhysicalElement by giving the parent Element no geometry and add child Elements that hold all of the geometry of the aggregate Entity.
 
@@ -85,3 +85,5 @@ The Code is often used to identify Entities on drawings and in GUIs and may be u
 The FederationGuid is optional but can be used to precisely identify an Entity that is represented in many different systems, including those that do not use BIS.
 
 UserLabel is an optional property of an Element that can be used as an informal name in the GUI, but it does not have to be unique. In some GUIs, if the UserLabel is null, the CodeValue will be used as a display label.
+
+> Next: [BIS Organization](./bis-organization.md)

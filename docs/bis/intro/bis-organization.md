@@ -54,3 +54,5 @@ The conversion of products to use BIS Domain Schemas can occur incrementally, bu
 A key organizational strategy for both the BIS schemas and the organization of data within BIS repositories is the “physical backbone”. For schema design the physical world is a unifying reality upon which all disciplines can agree when coming to a consensus on how to represent something in BIS.
 
 Within a BIS repository, the representation of the physical world becomes the framework upon which we can organize other data. All data in BIS repositories is expected to be about or related to physical infrastructure. The physical infrastructure is modeled as a hierarchy and other non-physical information is stored relative to that hierarchy.
+
+> Next: [BIS Ecosystem](./bis-ecosystem.md)

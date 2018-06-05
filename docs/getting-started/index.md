@@ -1,4 +1,4 @@
-# Getting Started
+# Getting Started With iModelJs
 
 ## Required Tools
 
@@ -32,8 +32,6 @@ The following tools are very helpful and highly suggested for working with iMode
 - [Node Package Manager (npm)](https://www.npmjs.com/)
   - `npm` is used to install and manage dependencies of an iModelJs application.
   - The `npm` [command line](https://docs.npmjs.com/cli/npm) and `npm` [scripts](https://docs.npmjs.com/misc/scripts) are used to build and test iModelJs applications.
-
-## Configuration
 
 <!-- TODO: add link when external NPM package server is accessible -->
 

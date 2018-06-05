@@ -36,7 +36,7 @@ export class IModelHubClient {
   }
 
   /**
-   * Gets the (delegation) access token to acess the service
+   * Gets the (delegation) access token to access the service
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */

@@ -56,7 +56,7 @@ export class Tile {
   private _graphic?: RenderGraphic;
 
   // ###TODO: Artificially limiting depth for now until tile selection is fixed...
-  protected _maxDepth: number = 3;
+  protected _maxDepth: number = 2;
   public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
@@ -292,6 +292,8 @@ export class Tile {
           for (const prop of props)
             this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this)));
           }
+
+        IModelApp.viewManager.onNewTilesReady();
         }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
     }
 

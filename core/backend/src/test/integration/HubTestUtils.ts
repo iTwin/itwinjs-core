@@ -60,6 +60,13 @@ export class HubTestUtils {
     return iModels[0];
   }
 
+  private static async queryIModelById(accessToken: AccessToken, projectId: string, iModelId: string): Promise<HubIModel | undefined> {
+    const iModels = await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId));
+    if (iModels.length === 0)
+      return undefined;
+    return iModels[0];
+  }
+
   /**
    * Queries the project id by its name
    * @param accessToken AccessToken
@@ -100,19 +107,15 @@ export class HubTestUtils {
     return changeSets;
   }
 
-  /** Download an IModel's seed files and change sets from the Hub */
-  public static async downloadIModel(accessToken: AccessToken, projectName: string, iModelName: string, downloadDir: string): Promise<void> {
-    const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
-
-    const iModel: HubIModel | undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
-    if (!iModel)
-      return Promise.reject(`IModel ${iModelName} not found`);
-    const iModelId = iModel.wsgId;
-
+  public static async downloadIModelById(accessToken: AccessToken, projectId: string, iModelId: string, downloadDir: string): Promise<void> {
     // Recreate the download folder if necessary
     if (IModelJsFs.existsSync(downloadDir))
       HubTestUtils.deleteDirectoryRecursive(downloadDir);
     HubTestUtils.makeDirectoryRecursive(downloadDir);
+
+    const iModel: HubIModel | undefined = await HubTestUtils.queryIModelById(accessToken, projectId, iModelId);
+    if (!iModel)
+      return Promise.reject(`IModel with id ${iModelId} not found`);
 
     // Write the JSON representing the iModel
     const iModelJsonStr = JSON.stringify(iModel, undefined, 4);
@@ -130,6 +133,18 @@ export class HubTestUtils {
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
+  }
+
+  /** Download an IModel's seed files and change sets from the Hub */
+  public static async downloadIModelByName(accessToken: AccessToken, projectName: string, iModelName: string, downloadDir: string): Promise<void> {
+    const projectId: string = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
+
+    const iModel: HubIModel | undefined = await HubTestUtils.queryIModelByName(accessToken, projectId, iModelName);
+    if (!iModel)
+      return Promise.reject(`IModel ${iModelName} not found`);
+    const iModelId = iModel.wsgId;
+
+    await HubTestUtils.downloadIModelById(accessToken, projectId, iModelId, downloadDir);
   }
 
   /** Delete an IModel from the hub

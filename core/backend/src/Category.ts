@@ -9,7 +9,7 @@ import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
 
-/** a SubCategory defines the appearance for graphics in Geometric elements */
+/** Defines the appearance for graphics in Geometric elements */
 export class SubCategory extends DefinitionElement {
   public appearance: Appearance;
   public description?: string;
@@ -43,7 +43,7 @@ export class SubCategory extends DefinitionElement {
   public isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
 }
 
-/** a Category for a Geometric element */
+/** A Category element is the target of the `category` member of [[GeometricElement]]. */
 export class Category extends DefinitionElement implements CategoryProps {
   public rank: Rank = Rank.User;
   public constructor(props: CategoryProps, iModel: IModelDb) {
@@ -72,7 +72,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   }
 }
 
-/** Categorizes 2d graphical elements. */
+/** Categorizes 2d GeometricElements. */
 export class DrawingCategory extends Category {
   /** Construct a DrawingCategory
    * @param opts  The properties of the new DrawingCategory

@@ -7,6 +7,7 @@ import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
+import { IModelApp } from "./IModelApp";
 import { TileTree } from "./tile/TileTree";
 
 /** the state of a Model */
@@ -60,6 +61,7 @@ export abstract class GeometricModelState extends ModelState {
       const ids = Id64.toIdSet(this.id);
       this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
         this.setTileTree(result[0]);
+        IModelApp.viewManager.onNewTilesReady();
       }).catch((_err) => {
         this._loadStatus = TileTree.LoadStatus.NotFound;
       });
