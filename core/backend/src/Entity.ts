@@ -61,13 +61,13 @@ export class Entity implements EntityProps {
     // subclasses must override this method to build a request for the locks and codes and other concurrency control token that they know that they need.
   }
 
-  /** call a function for each property of this Entity. Function arguments are property name and property metadata. */
+  /** Call a function for each property of this Entity. Function arguments are property name and property metadata. */
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { EntityMetaData.forEach(this.iModel, this.classFullName, true, func, includeCustom); }
 
-  /** static method to get the full name of this class, in the form "schema:class"  */
+  /** Get the full name of this class, in the form "schema:class"  */
   public static get classFullName(): string { return this.schema.name + ":" + this.name; }
 
-  /** get full class name of this Entity in the form "schema:class". */
+  /** Get full class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this.schemaName + ":" + this.className; }
 
   /** Get the name of the schema that defines this class */
@@ -138,7 +138,7 @@ export class PropertyMetaData {
     this.customAttributes = jsonObj.customAttributes;
   }
 
-  /** create a typed value, or array of values, from a factory and an input object */
+  /** Create a typed value, or array of values, from a factory and an input object */
   private createValueOrArray(func: FactoryFunc, jsonObj: any) {
     if (undefined === this.minOccurs)
       return func(jsonObj); // not an array
@@ -206,8 +206,7 @@ export class EntityMetaData {
   /**
    * Invoke a callback on each property of the specified class, optionally including superclass properties.
    * @param iModel  The IModel that contains the schema
-   * @param schemaName The schema that defines the class
-   * @param className The name of the class
+   * @param classFullName The full class name to load the metadata, if necessary
    * @param wantSuper If true, superclass properties will also be processed
    * @param func The callback to be invoked on each property
    * @param includeCustom If true, include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.

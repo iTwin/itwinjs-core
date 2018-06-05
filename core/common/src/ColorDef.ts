@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 // spell-checker: disable
 
-/** @module FontsAndSymbology */
+/** @module Symbology */
 
 /**
  * A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).

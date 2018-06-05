@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Render */
+
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { BeTimePoint, assert } from "@bentley/bentleyjs-core";
 

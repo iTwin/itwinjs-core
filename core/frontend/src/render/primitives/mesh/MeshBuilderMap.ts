@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Render */
+
 import { Comparable, compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { PolyfacePrimitive } from "../Polyface";

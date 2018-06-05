@@ -27,6 +27,10 @@ class SimpleViewState {
   constructor() { }
 }
 
+const activeViewState: SimpleViewState = new SimpleViewState();
+const viewMap = new Map<string, ViewState>();
+let theViewport: Viewport | undefined;
+
 // Entry point - run the main function
 main();
 
@@ -60,10 +64,9 @@ function applyConfigurationOverrides(config: any): void {
     return;
 
   const filename = remote.process.env.SVT_STANDALONE_FILENAME;
-  const viewName = remote.process.env.SVT_STANDALONE_VIEWNAME;
-  if (undefined !== filename && undefined !== viewName) {
+  if (undefined !== filename) {
     config.iModelName = filename;
-    config.viewName = viewName;
+    config.viewName = remote.process.env.SVT_STANDALONE_VIEWNAME; // optional
     config.standalone = true;
   }
 }
@@ -97,19 +100,27 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
 }
 
 // selects the configured view.
-async function selectView(state: SimpleViewState, viewName: string) {
+async function buildViewList(state: SimpleViewState, config: { viewName?: string }) {
+  const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
   const viewProps: ViewDefinitionProps[] = await state.iModelConnection!.views.queryProps(viewQueryParams);
   for (const viewProp of viewProps) {
     // look for view of the expected name.
-    if (viewProp.code && viewProp.id && (viewProp.code.value === viewName)) {
-      state.viewState = await state.iModelConnection!.views.load(viewProp.id);
-      return;
+    if (viewProp.code && viewProp.id) {
+      const option = document.createElement("option");
+      option.text = viewProp.code.value!;
+      viewList.add(option);
+      const viewState = await state.iModelConnection!.views.load(viewProp.id);
+      viewMap.set(viewProp.code.value!, viewState);
+      if (undefined === config.viewName)
+        config.viewName = viewProp.code.value!;
+      if (viewProp.code.value === config.viewName) {
+        viewList!.value = viewProp.code.value;
+        state.viewState = viewState;
+      }
     }
   }
 }
-
-let theViewport: Viewport | undefined;
 
 export class LocateTool extends ViewTool {
   public static toolId = "View.Locate";
@@ -172,9 +183,13 @@ async function openView(state: SimpleViewState) {
   if (htmlCanvas) {
     const target = IModelApp.renderSystem.createTarget(htmlCanvas);
     theViewport = new Viewport(htmlCanvas, state.viewState!, target);
-    await theViewport.changeView(state.viewState!);
+    await _changeView(state.viewState!);
     IModelApp.viewManager.addViewport(theViewport);
   }
+}
+
+async function _changeView(view: ViewState) {
+  await theViewport!.changeView(view);
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -209,8 +224,15 @@ function switchStandardRotation(_event: any) {
   IModelApp.tools.run("View.StandardRotation", theViewport!);
 }
 
+// start rotate view.
+function changeView(event: any) {
+  const viewName = event.target.selectedOptions["0"].label;
+  _changeView(viewMap.get(viewName)!);
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
+  document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
   document.getElementById("startZoom")!.addEventListener("click", startSelect);
@@ -222,15 +244,12 @@ function wireIconsToFunctions() {
 // ----------------------------------------------------------
 // main entry point.
 async function main() {
-  const state: SimpleViewState = new SimpleViewState();
-
   // this is the default configuration
   const configuration: any = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
     projectName: "plant-sta",
     iModelName: "NabeelQATestiModel",
-    viewName: "GistTop",
   };
 
   // override anything that's in the configuration
@@ -244,6 +263,9 @@ async function main() {
   if (ElectronRpcConfiguration.isElectron)
     ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
+  const spinner = document.getElementById("spinner") as HTMLDivElement;
+  spinner.style.display = "block";
+
   try {
     // initialize the Project and IModel Api
     await ProjectApi.init();
@@ -255,32 +277,34 @@ async function main() {
     if (!configuration.standalone) {
       // log in.
       showStatus("logging in as", configuration.userName);
-      await loginToConnect(state, configuration.userName, configuration.password);
+      await loginToConnect(activeViewState, configuration.userName, configuration.password);
 
       // open the specified project
       showStatus("opening Project", configuration.projectName);
-      await openProject(state, configuration.projectName);
+      await openProject(activeViewState, configuration.projectName);
 
       // open the specified iModel
       showStatus("opening iModel", configuration.iModelName);
-      await openIModel(state, configuration.iModelName);
+      await openIModel(activeViewState, configuration.iModelName);
     } else {
       showStatus("Opening", configuration.iModelName);
-      await openStandaloneIModel(state, configuration.iModelName);
+      await openStandaloneIModel(activeViewState, configuration.iModelName);
     }
 
     // open the specified view
     showStatus("opening View", configuration.viewName);
-    await selectView(state, configuration.viewName);
+    await buildViewList(activeViewState, configuration);
 
     // now connect the view to the canvas
-    await openView(state);
+    await openView(activeViewState);
 
     showStatus("View Ready");
   } catch (reason) {
     alert(reason);
     return;
   }
+
+  spinner.style.display = "none";
 
   wireIconsToFunctions();
   console.log("This is from frontend/main");

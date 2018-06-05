@@ -1,18 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module ViewDefinitions */
 
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, ViewDefinitionProps, ViewDefinition3dProps, ViewDefinition2dProps, SpatialViewDefinitionProps, ModelSelectorProps,
-  CategorySelectorProps, Camera,
+  CategorySelectorProps, Camera, AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, ViewAttachmentProps, LightLocationProps,
 } from "@bentley/imodeljs-common";
-import { DefinitionElement } from "./Element";
+import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** A DisplayStyle defines the parameters for 'styling' the contents of a View */
+/** A DisplayStyle defines the parameters for 'styling' the contents of a view */
 export class DisplayStyle extends DefinitionElement {
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -98,7 +98,9 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     return json;
   }
 
+  /** Type guard for instanceof ViewDefinition3d  */
   public isView3d(): this is ViewDefinition3d { return this instanceof ViewDefinition3d; }
+  /** Type guard for instanceof SpatialViewDefinition  */
   public isSpatialView(): this is SpatialViewDefinition { return this instanceof SpatialViewDefinition; }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -112,7 +114,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   }
 }
 
-/** Defines a view of 3d models. */
+/** Defines a view of one or more 3d models. */
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
   public cameraOn: boolean;  // if true, camera is valid.
   public origin: Point3d;        // The lower left back corner of the view frustum.
@@ -143,8 +145,10 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
 /**
  * Defines a view of one or more SpatialModels.
  * The list of viewed models is stored by the ModelSelector.
+ *
  * This is how a SpatialViewDefinition selects the elements to display:
- * SpatialViewDefinition
+ *
+ *  SpatialViewDefinition
  *    * ModelSelector
  *        * ModelIds  -------> SpatialModels    <----------GeometricElement3d.Model
  *    * CategorySelector
@@ -165,7 +169,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** Defines a view of a 2d model. */
+/** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view. */
 export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
   public baseModelId: Id64;
   public origin: Point2d;
@@ -203,4 +207,60 @@ export class TemplateViewDefinition2d extends ViewDefinition2d {
 
 /** A ViewDefinition used to display a 3d template model. */
 export class TemplateViewDefinition3d extends ViewDefinition3d {
+}
+
+/**
+ * An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
+ * coordinate information in different units and/or orientations.
+ */
+export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
+  public type!: number;
+  public description?: string;
+  public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
+}
+
+/**
+ * A 2d coordinate system.
+ */
+export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
+  public origin?: Point2d;
+  public angle!: number;
+  public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
+}
+
+/**
+ * A 3d coordinate system.
+ */
+export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
+  public origin?: Point3d;
+  public yaw!: number;
+  public pitch!: number;
+  public roll!: number;
+  public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
+}
+
+/**
+ * A spatial coordinate system.
+ */
+export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
+}
+
+/**
+ * Represents an attachment of a [[ViewDefinition]] to a [[SheetModel]].
+ */
+export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
+  public view?: Id64;
+  public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
+}
+
+/**
+ * The spatial location of a light source
+ */
+export class LightLocation extends SpatialLocationElement implements LightLocationProps {
+  public enabled!: boolean;
+  constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
+}
+
+/** Defines a rendering texture. */
+export class Texture extends DefinitionElement {
 }

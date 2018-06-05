@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";

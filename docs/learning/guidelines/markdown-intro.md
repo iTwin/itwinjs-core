@@ -5,7 +5,7 @@ The goal is to combine the programmer guide documentation (extracted from markdo
 
 [There](http://assemble.io/docs/Cheatsheet-Markdown.html) are [tons](https://www.cheatography.com/simon-fermor/cheat-sheets/markdown/) of [cheatsheets](https://beegit.com/markdown-cheat-sheet) for markdown, and wide support for the format in source code editors (including VS Code).
 
->**Note**: If you are editing Markdown VS Code, please install the [Markdown Lint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) and the [Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) extensions.
+>**Note**: If you are editing Markdown in VS Code, please install the [Markdown Lint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) and the [Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) extensions.
 
 You may also find the [Markdown Preview Enhanced](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced) extension helpful.
 
@@ -21,9 +21,6 @@ Examples of the markdown syntax are below...
 
 Paragraphs are separated
 by a blank line.
-
-Two spaces at the end of a line leave a
-line break.
 
 Text attributes: _italic_, *italic*, __bold__, **bold**, `monospace`, ~~strikethrough~~.
 

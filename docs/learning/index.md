@@ -2,14 +2,14 @@
 
 This section provides explanations of the concepts you'll encounter in iModelJs, as well as instructions for developing various types of applications using iModelJs.
 
-Helpful background articles:
+Helpful articles:
 
 * [Frontend classes](./frontend/index)
 * [Backend classes](./backend/index)
 * [Common classes](./common/index)
 * [ECSQL](./ECSQL)
 * [Change Summaries](./ChangeSummaries)
-* [Remote procedure call Interfaces](./RpcInterface)
+* [Remote Procedure Call (RPC) Interfaces](./RpcInterface)
 
 Step by step instructions to:
 

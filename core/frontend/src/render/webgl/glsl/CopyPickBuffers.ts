@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
@@ -12,7 +13,7 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 const computeBaseColor = `return vec4(1.0);`;
 
 const assignFragData =
- `FragColor0 = TEXTURE(u_pickElementId0, v_texCoord);
+  `FragColor0 = TEXTURE(u_pickElementId0, v_texCoord);
   FragColor1 = TEXTURE(u_pickElementId1, v_texCoord);
   FragColor2 = TEXTURE(u_pickDepthAndOrder, v_texCoord);
 `;
