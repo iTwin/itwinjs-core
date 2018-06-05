@@ -6,9 +6,10 @@
 - [Administration]($backend:AppAdministration)
 - [Codes]($backend:Codes)
 - [Elements]($backend:Elements)
+- [Element Aspects]($backend:ElementAspects)
 - [Models]($backend:Models)
-- [Views]($backend:Views)
-- [Symbology]($backend:FontsAndSymbology)
+- [Relationships]($backend:Relationships)
+- [View Definitions]($backend:ViewDefinitions)
 - [iModels]($backend:iModels)
 - [Portability]($backend:Portability)
 - [Schema]($backend:Schema)
@@ -43,9 +44,6 @@
 - [iModels]($common:IModels)
 - [RPC Interface]($common:RpcInterface)
 - [Schema]($common:Schema)
-
-&nbsp;
-### ($clients)
 
 &nbsp;
 ## Support Packages
