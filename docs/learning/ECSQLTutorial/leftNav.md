@@ -10,4 +10,4 @@ ignore: true
 * [Lesson 5: Class Polymorphism](./PolymorphicQueries)
 * [Lesson 6: Spatial Queries](./SpatialQueries)
 * [Lesson 7: Querying ECSchemas (Meta queries)](./MetaQueries)
-* [Lesson 8: Querying ChangeSummaries](./ChangeSummaryQueries)
+* [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries)

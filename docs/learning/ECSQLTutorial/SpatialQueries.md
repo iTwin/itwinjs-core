@@ -11,13 +11,15 @@ The index is exposed to ECSQL via the ECClass `BisCore.SpatialIndex`. See [ECSQL
 >
 > *Goal:* Return all Elements that are contained or overlap a cube defined by the minimum coordinate (0|0|0) and maximum coordinate (10|10|10).
 >
-> *ECSQL:* `SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId
-> WHERE i.MinX<=10 AND i.MinY<=10 AND i.MinZ<=10 AND i.MaxX>=0 AND i.MaxY>=0 AND i.MaxZ>=0`
+> *ECSQL*
+> ```sql
+> SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId
+> WHERE i.MinX<=10 AND i.MinY<=10 AND i.MinZ<=10 AND i.MaxX>=0 AND i.MaxY>=0 AND i.MaxZ>=0
+> ```
 >
 > *Result*
->
 > ECInstanceId | CodeValue
-> -- | --
+> --- | ---
 > 0x1 | XXX
 
 For more complex spatial criteria the `MATCH` keyword together with the special built-in spatial index matching function `iModel_spatial_overlap_aabb` is used. The MATCH clause acts like a sub-selection that generates a set of ECInstanceIds, which it gathers from the spatial index rows that match the specified criteria.
@@ -30,10 +32,12 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 >
 > *Goal:* Return all Elements that overlap the Element with id 444 and are in the Category with id 333.
 >
-> *ECSQL:* `SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId
-> WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=333`
->
-> *Sample code:*
+> *ECSQL*
+> ```sql
+> SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId
+> WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=333
+> ```
+> *Sample code*
 > ```ts
 > const element444: SpatialElement = iModelDb.elements.getElement(444) as SpatialElement;
 >
@@ -52,3 +56,7 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 > { id : 10, codeValue: "hhh" }
 > { id : 11, codeValue: "fff" }
 > ```
+
+---
+
+**< Previous** [Lession 5: Class Polymorphism](./PolymorphicQueries.md) &nbsp; **Next >** [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)

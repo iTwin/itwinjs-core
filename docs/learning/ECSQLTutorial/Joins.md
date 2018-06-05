@@ -1,7 +1,7 @@
 ---
 ignore: true
 ---
-# Joins and ECRelationshipClasses
+# Relationships and Joins
 
 ## ECRelationshipClasses
 
@@ -18,12 +18,13 @@ Property | Description
 >
 > *Goal:* Return the child Elements (id and class id) of the parent Element 123
 >
-> *ECSQL:* `SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElement WHERE SourceECInstanceId=123`
->
+> *ECSQL*
+> ```sql
+>  SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElement WHERE SourceECInstanceId=123
+> ```
 > *Result*
->
 > ChildId | ChildClassId
-> -- | --
+> --- | ---
 > lll | 123
 > xxx | 123
 
@@ -75,12 +76,14 @@ As explained above using navigation properties instead of joins is preferred. So
 >
 > *Goal:* Return the Model that contains the Element with code 'bla bla'.
 >
-> *ECSQL:* `SELECT Model FROM bis.Element WHERE CodeValue='bla bla'`
+> *ECSQL*
+> ```sql
+>  SELECT Model FROM bis.Element WHERE CodeValue='bla bla'
+> ```
 >
 > *Result*
->
 > Model |
-> -- |
+> --- |
 > {"id": "0xlll", "relClassName":"BisCore.ModelContainsElements"} |
 
 Note that the above ECSQL implies to navigate from the `Element` ECClass to the `Model` ECClass using the ECRelationshipClass `ModelContainsElements`. But none of that has to be expressed in the ECSQL. It is all hidden behind the navigation property and makes the ECSQL straight-forward.
@@ -91,12 +94,14 @@ The following ECSQL is the same as above but uses joins instead of the navigatio
 >
 > *Goal:* Return the Model that contains the Element with code 'bla bla'.
 >
-> *ECSQL:* `SELECT rel.SourceECInstanceId ModelId FROM bis.ModelContainsElement rel JOIN bis.Element ON rel.TargetECInstanceId=Element.ECInstanceId WHERE Element.CodeValue='bla bla'`
+> *ECSQL*
+> ```sql
+> SELECT rel.SourceECInstanceId ModelId FROM bis.ModelContainsElement rel JOIN bis.Element ON rel.TargetECInstanceId=Element.ECInstanceId WHERE Element.CodeValue='bla bla'
+> ```
 >
 > *Result*
->
 > ModelId |
-> -- |
+> --- |
 > 0xlll |
 
 If you want to return something else than just the id of the related instance, you can still use the navigation property but you need a join to bring in the related instance's class.
@@ -105,12 +110,13 @@ If you want to return something else than just the id of the related instance, y
 >
 > *Goal:* Return the id, the modeled element and the parent model of the Model that contains the Element with code 'bla bla'.
 >
-> *ECSQL:* `SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Model JOIN bis.Element ON Element.Model.Id=Model.ECInstanceId WHERE Element.CodeValue='bla bla'`
->
+> *ECSQL*
+> ```sql
+> SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Model JOIN bis.Element ON Element.Model.Id=Model.ECInstanceId WHERE Element.CodeValue='bla bla'
+> ```
 > *Result*
->
 > ECInstanceId | ModelElementId | ParentModelId
-> -- | -- | --
+> --- | --- | ---
 > lll | 123 | 222
 
 Again for the purpose of learning, the same ECSQL expressed with relationship classes instead of navigation properties looks like this.
@@ -119,10 +125,16 @@ Again for the purpose of learning, the same ECSQL expressed with relationship cl
 >
 > *Goal:* Return the id, the modeled element and the parent model of the Model that contains the Element with code 'bla bla'.
 >
-> *ECSQL:* `SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Element JOIN bis.ModelContainsElement rel ON Element.ECInstanceId=rel.TargetECInstanceId JOIN bis.Model ON rel.SourceECInstanceId=Model.ECInstanceId WHERE Element.CodeValue='bla bla'`
+> *ECSQL*
+> ```sql
+> SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Element JOIN bis.ModelContainsElement rel ON Element.ECInstanceId=rel.TargetECInstanceId JOIN bis.Model ON rel.SourceECInstanceId=Model.ECInstanceId WHERE Element.CodeValue='bla bla'
+> ```
 >
 > *Result*
->
 > ECInstanceId | ModelElementId | ParentModelId
-> -- | -- | --
+> --- | --- | ---
 > lll | 123 | 222
+
+---
+
+**< Previous** [Lession 3: ECSQL Data Types](./ECSQLDataTypes.md) &nbsp; **Next >** [Lesson 5: Class Polymorphism](./PolymorphicQueries.md)
