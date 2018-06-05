@@ -182,12 +182,6 @@ export abstract class RenderSystem {
   /** Find a previously-created Material by key. Returns null if no such material exists. */
   public abstract findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined;
 
-  // /**
-  //  * Get or create a material from a material element, by id
-  //  * The default implementation uses _FindMaterial() and calls _CreateMaterial() if not found.
-  //  */
-  // public abstract getMaterial(id: Id64, imodel: IModel): Material;
-
   /** Create a Material from parameters */
   public abstract createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined;
 
@@ -233,14 +227,8 @@ export abstract class RenderSystem {
   /** Get or create a Texture from a RenderTexture element. Note that there is a cache of textures stored on an IModel, so this may return a pointer to a previously-created texture. */
   public abstract findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined;
 
-  // /** Get or create a Texture from a GradientSymb. Note that there is a cache of textures stored on a DgnDb, so this may return a pointer to a previously-created texture. */
-  // public abstract getTexture(id: Id64, imodel: IModel): Texture;
-
-  // /** Create a Material from parameters */
-  // public abstract getGradientTexture(gradient: GradientSymb, imodel: IModel): Texture;
-
   /** Create a new Texture from gradient symbology. */
-  public abstract createGradient(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined;
+  public abstract getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined;
 
   /** Create a new Texture from an ImageBuffer. */
   public abstract createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;

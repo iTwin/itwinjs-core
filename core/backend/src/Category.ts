@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Elements */
+/** @module Categories */
 
 import { Id64, Id64Props, JsonUtils } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, Appearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";

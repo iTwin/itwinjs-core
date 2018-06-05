@@ -1,15 +1,17 @@
 ## iModelJs Packages
+
 ---
 
 ### ($backend)
 
-- [Administration]($backend:AppAdministration)
+- [IModelHost]($backend:IModelHost)
 - [Codes]($backend:Codes)
 - [Elements]($backend:Elements)
 - [Element Aspects]($backend:ElementAspects)
 - [Models]($backend:Models)
 - [Relationships]($backend:Relationships)
 - [View Definitions]($backend:ViewDefinitions)
+- [Categories]($backend:Categories)
 - [iModels]($backend:iModels)
 - [Portability]($backend:Portability)
 - [Schema]($backend:Schema)
@@ -20,11 +22,11 @@
 
 ### ($frontend)
 
-- [Administration]($frontend:AppAdministration)
+- [IModelApp]($frontend:IModelApp)
+- [IModelConnection]($frontend:IModelConnection)
 - [ElementState]($frontend:ElementState)
 - [ModelState]($frontend:ModelState)
 - [AccuDraw]($frontend:AccuDraw)
-- [iModels]($frontend:iModels)
 - [Locating Elements]($frontend:LocationAndSnapping)
 - [Notifications]($frontend:Notifications)
 - [Selection Set]($frontend:SelectionSet)
@@ -34,6 +36,7 @@
 - [Rendering]($frontend:Rendering)
 
 ---
+
 ### ($common)
 
 - [Administration]($common:AppAdministration)
@@ -51,6 +54,7 @@
 &nbsp;
 ## Support Packages
 ---
+
 ### ($bentleyjs-core)
 
 - [BeSQLite]($bentleyjs-core:BeSQLite)
@@ -61,6 +65,7 @@
 - [Utils]($bentleyjs-core:Utils)
 
 ---
+
 ### ($geometry-core)
 
 - [Cartesian Geometry]($geometry-core:CartesianGeometry)

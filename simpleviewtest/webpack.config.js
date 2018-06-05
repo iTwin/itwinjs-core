@@ -2,7 +2,7 @@ const path = require("path");
 const glob = require("glob");
 
 module.exports = {
-  entry: glob.sync (path.resolve(__dirname, "lib/frontend/**/*.js")),
+  entry: glob.sync(path.resolve(__dirname, "lib/frontend/**/*.js")),
   output: {
     path: path.resolve(__dirname, "./lib/backend/public"),
     filename: "bundle.js",
@@ -10,7 +10,7 @@ module.exports = {
   },
   devtool: "nosources-source-map",
   module: {
-    rules:[
+    rules: [
       {
         test: /\.js$/,
         use: "source-map-loader",
@@ -22,5 +22,8 @@ module.exports = {
       }
     ]
   },
-  stats: "errors-only"
+  stats: "errors-only",
+  externals: {
+    electron: "require('electron')"
+  }
 };

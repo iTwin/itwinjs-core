@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -1321,7 +1321,25 @@ export abstract class ViewState3d extends ViewState {
 
     const aboveGround = this.isEyePointAbove(extents.low.z);
     const colors: ColorDef[] = [];
-    const material = this.getDisplayStyle3d().createGroundPlaneMaterial(context.viewport.target.renderSystem, aboveGround, colors);
+    const gradient = this.getDisplayStyle3d().getEnvironment().ground.getGroundPlaneTextureSymb(aboveGround, colors);
+    const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
+    if (!texture)
+      return;
+
+    const matParams = new RenderMaterial.Params();
+    matParams.diffuseColor = ColorDef.white;
+    matParams.shadows = false;
+    matParams.ambient = 1;
+    matParams.diffuse = 0;
+
+    const mapParams = new TextureMapping.Params();
+    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
+    mapParams.textureMatrix = transform;
+    mapParams.textureMatrix.setTransform();
+    matParams.textureMapping = new TextureMapping(texture, mapParams);
+    const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
+    if (!material)
+      return;
 
     const params = new GraphicParams();
     params.setLineColor(colors[0]);
