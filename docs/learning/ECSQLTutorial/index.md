@@ -14,12 +14,9 @@ The data in iModels can only be modified via the respective APIs. ECSQL is used 
 
 ## How to use the tutorial
 
-The tutorial looks at typical questions and finds the respective ECSQL answer to it. All ECSQL examples used in the lessons can be run by
-yourself by using the [iModelConsole](#imodelconsole) with the tutorial's [Sample iModel](#sample-imodel).
+The tutorial looks at typical questions and finds the respective ECSQL answer to it. The goal of the tutorial is that you can try out all ECSQL statements used in the lessons yourself. The tool to run the ECSQL statements is the [iModelConsole](#imodelconsole) with the tutorial's [Sample iModel](#sample-imodel).
 
 This also enables you to experiment more with ECSQL by modifying the tutorial's ECSQL statements or by trying out your own ECSQL statements.
-
-So make sure to run the [iModelConsole](#imodelconsole) with the sample iModel opened when working with the tutorial.
 
 ### How to open the sample iModel in the iModelConsole
 
@@ -55,16 +52,11 @@ The schemas for iModels are based on [BIS](../../bis/index.md). Therefore, the e
 
 ## Tutorial Overview
 
-### Basic lessons
-
 * [Lesson 1: Key to ECSQL](./KeyToECSQL)
 * [Lesson 2: The first examples](./FirstExamples)
 * [Lesson 3: ECSQL Data Types](./ECSQLDataTypes)
 * [Lesson 4: Relationships and Joins](./Joins)
 * [Lesson 5: Class Polymorphism](./PolymorphicQueries)
 * [Lesson 6: Spatial Queries](./SpatialQueries)
-
-### Advanced lessons
-
 * [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries)
 * [Lesson 8: Querying ChangeSummaries](./ChangeSummaryQueries)

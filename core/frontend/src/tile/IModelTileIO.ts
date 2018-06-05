@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tile */
 
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
@@ -183,7 +184,7 @@ export namespace IModelTileIO {
       const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);
       const ignoreLighting = JsonUtils.asBool(json.ignoreLighting);
 
-      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, undefined, undefined, undefined, ignoreLighting);
+      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, undefined, undefined, ignoreLighting);
     }
   }
 }

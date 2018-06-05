@@ -1,8 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Render */
 
-import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
+import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial } from "@bentley/imodeljs-common";
 import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
 
 /** This class is used to determine if things can be batched together for display. */
@@ -13,7 +14,6 @@ export class DisplayParams {
   // ###TODO
   // textureMapping should be a getter that uses material's textureMapping if defined otherwise uses gradient to create textureMapping
   // for now just filling in a default map
-  public readonly textureMapping?: TextureMapping; // only if m_material is null (e.g. gradients, glyph bitmaps)
   public readonly lineColor: ColorDef; // all types of geometry (edge color for meshes)
   public readonly fillColor: ColorDef; // meshes only
   public readonly width: number; // linear and mesh (edges)
@@ -22,11 +22,10 @@ export class DisplayParams {
   public readonly ignoreLighting: boolean; // always true for text and linear geometry; true for meshes only if normals not desired
 
   public constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width: number = 0, linePixels: LinePixels = LinePixels.Solid,
-    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, textureMapping?: TextureMapping, ignoreLighting: boolean = false) {
+    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false) {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
-    this.textureMapping = textureMapping;
     this.lineColor = lineColor;
     this.fillColor = fillColor;
     this.width = width;
@@ -40,12 +39,11 @@ export class DisplayParams {
     const lineColor = gf.lineColor.clone();
     switch (type) {
       case DisplayParams.Type.Mesh:
-        // ###TODO: set texturemapping if m_material is undefined, and base it on gradient
         return new DisplayParams(type, lineColor, gf.fillColor.clone(), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, undefined);
       case DisplayParams.Type.Linear:
         return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
       default: // DisplayParams.Type.Text
-        return new DisplayParams(type, lineColor, lineColor, 0, LinePixels.Solid, FillFlags.Always, undefined, undefined, undefined, true);
+        return new DisplayParams(type, lineColor, lineColor, 0, LinePixels.Solid, FillFlags.Always, undefined, undefined, true);
     }
   }
 
@@ -85,7 +83,7 @@ export class DisplayParams {
   public get hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
   public get hasFillTransparency(): boolean { return 255 !== this.fillColor.getAlpha(); }
   public get hasLineTransparency(): boolean { return 255 !== this.lineColor.getAlpha(); }
-  public get isTextured(): boolean { return false; } // return this.textureMapping.isValid(); }
+  public get isTextured(): boolean { return this.material !== undefined && this.material.hasTexture; }
 
   /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
   public equals(rhs: DisplayParams, purpose: DisplayParams.ComparePurpose = DisplayParams.ComparePurpose.Strict): boolean {

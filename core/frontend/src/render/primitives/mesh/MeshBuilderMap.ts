@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Render */
+
 import { Comparable, compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { PolyfacePrimitive } from "../Polyface";
@@ -84,7 +86,8 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public loadIndexedPolyface(polyface: PolyfacePrimitive): void {
     const { indexedPolyface, displayParams, isPlanar } = polyface;
     const { pointCount, normalCount } = indexedPolyface;
-    const { fillColor, textureMapping, isTextured } = displayParams;
+    const { fillColor, isTextured } = displayParams;
+    const textureMapping = displayParams.material ? displayParams.material.textureMapping : undefined;
 
     if (pointCount === 0)
       return;

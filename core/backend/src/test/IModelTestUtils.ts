@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64 } from "@bentley/bentleyjs-core";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, DeploymentEnv } from "@bentley/imodeljs-clients";
 import { Appearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
@@ -119,13 +119,11 @@ export class IModelTestUtils {
     return [accessToken, testProjectId, cacheDir];
   }
 
-  public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
-    if (userCredentials === undefined)
-      userCredentials = TestUsers.regular;
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient("QA")).getToken(userCredentials.email, userCredentials.password);
+  public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular, deploymentEnv: DeploymentEnv = "QA"): Promise<AccessToken> {
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(deploymentEnv)).getToken(userCredentials.email, userCredentials.password);
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient("QA")).getToken(authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient(deploymentEnv)).getToken(authToken!);
     assert(accessToken);
 
     return accessToken;

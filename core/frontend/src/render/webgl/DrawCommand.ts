@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
@@ -186,7 +187,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands: DrawCommands[] = [ [], [], [], [], [], [], [], [], [] ];
+  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], []];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -264,7 +265,7 @@ export class RenderCommands {
     }
 
     let ovrType = FeatureIndexType.Empty;
-    if  (this._opaqueOverrides || this._translucentOverrides)
+    if (this._opaqueOverrides || this._translucentOverrides)
       ovrType = this.hasDecorationOverrides ? FeatureIndexType.Uniform : command.featureIndexType;
 
     const haveFeatureOverrides = FeatureIndexType.Empty !== ovrType;
@@ -355,8 +356,8 @@ export class RenderCommands {
 
     let cmds: DrawCommands;
     const emptyRenderPass = RenderPass.None === this._forcedRenderPass,
-          start           = emptyRenderPass ? 0 : this._forcedRenderPass as number,
-          end             = emptyRenderPass ? this._commands.length : start + 1;
+      start = emptyRenderPass ? 0 : this._forcedRenderPass as number,
+      end = emptyRenderPass ? this._commands.length : start + 1;
 
     for (let i = start; i < end; ++i) {
       cmds = this._commands[i];

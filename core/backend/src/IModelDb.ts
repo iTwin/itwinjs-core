@@ -8,6 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
+  IModelNotFoundResponse,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -593,7 +594,7 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry)
-      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logError, loggingCategory, () => ({ iModelId: iModelToken.iModelId }));
+      throw new IModelNotFoundResponse();
     assert(!!briefcaseEntry.iModelDb);
     return briefcaseEntry.iModelDb!;
   }

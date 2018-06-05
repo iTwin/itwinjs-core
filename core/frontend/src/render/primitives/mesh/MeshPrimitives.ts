@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Render */
+
 import { assert } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d } from "@bentley/geometry-core";
 import {
@@ -164,8 +166,11 @@ export class MeshArgs {
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
     // mesh.toFeatureIndex(this.features);
 
-    // ###TODO this.texture = mesh.displayParams.GetTextureMapping().GetTexture());
     this.material = mesh.displayParams.material;
+    this.texture = undefined;
+    if (this.material) {
+      this.texture = this.material.textureMapping ? this.material.textureMapping.texture : undefined;
+    }
     this.fillFlags = mesh.displayParams.fillFlags;
     this.isPlanar = mesh.isPlanar;
     this.is2d = mesh.is2d;

@@ -127,7 +127,7 @@ export class ChangeSummaryManager {
    * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
    * the iModel is moved back to the original changeset.
    * @param options Extraction options
-   * @throws [IModelError]($common/IModelError) if the iModel is standalone
+   * @throws [IModelError]($common) if the iModel is standalone
    */
   public static async extractChangeSummaries(iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<void> {
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone())

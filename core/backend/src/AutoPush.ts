@@ -36,7 +36,7 @@ export interface AutoPushParams {
   pushIntervalSecondsMin: number;
   /** Maximum delay in seconds until the next push. */
   pushIntervalSecondsMax: number;
-  /** Should AutoPush automatically schedule pushes? If not, the app must call [[AutoPush.scheduleNextPush]] */
+  /** Should AutoPush automatically schedule pushes? If not, the app must call [[AutoPush#scheduleNextPush]] */
   autoSchedule: boolean;
 }
 
@@ -182,7 +182,7 @@ export class AutoPush {
       this.scheduleNextPush();
   }
 
-  // Schedules an auto-push. See [[doAutoPush]].
+  /** Schedules an auto-push. */
   public scheduleNextPush(intervalSeconds?: number) {
     assert(this._state === AutoPushState.NotRunning);
     const intervalMillis = intervalSeconds ? (intervalSeconds * 1000) : this._pushIntervalMillisMin;
@@ -195,6 +195,7 @@ export class AutoPush {
     return this._iModel.concurrencyControl.request(this.getAccessToken());
   }
 
+  /** Callback invoked just before auto-pushing */
   private onPushStart() {
     Logger.logTrace(loggingCategory, "AutoPush - pushing...");
     this._state = AutoPushState.Pushing;
@@ -203,6 +204,7 @@ export class AutoPush {
       this.event.raiseEvent(AutoPushEventType.PushStarted, this);
   }
 
+  /** Callback invoked when the next scheduled autopush is cancelled */
   private onPushCancelled() {
     Logger.logTrace(loggingCategory, "AutoPush - cancelling.");
     assert(this._state === AutoPushState.NotRunning);
@@ -210,6 +212,7 @@ export class AutoPush {
       this.event.raiseEvent(AutoPushEventType.PushCancelled, this);
   }
 
+  /** Callback invoked just after auto-pushing */
   private onPushEnd() {
     this._endOfPushMillis = Date.now();
     this._state = AutoPushState.NotRunning;

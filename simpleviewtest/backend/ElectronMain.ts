@@ -31,6 +31,8 @@ let winRef: any;
 function createWindow() {
 
   const win = new electron.BrowserWindow({
+    width: 1024,
+    height: 800,
     webPreferences: {
       webSecurity: !isDevBuild, // Workaround for CORS issue in dev build
       experimentalFeatures: true, // Needed for CSS Grid support

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { ColorDef } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { UniformHandle } from "./Handle";

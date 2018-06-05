@@ -1,14 +1,15 @@
 # Element Codes
 
 Every BIS `Element` has a *Code* that represents its formal identifier in the real world.
-A Code is a human-readable string that is used to uniquely identify something.
+A Code holds a human-readable string that is used to uniquely identify something.
 
 Codes are enforced to be unique within a BIS repository.
 
-A Code conveys information to people and programs that understands the structure of the string and are therefore able to *decode* it.
+A Code conveys information to people and programs that understand the structure of the string and are therefore able to *decode* it.
 Different domains and organizations have different ways of *encoding* business information.
 
-Every Element has a Code. But, for some classes of Elements a Code is required. For other classes of Elements, Code is optional (i.e., it may be `null`.)
+Every Element has a Code. For some subclasses of Element, a Code is required and for other subclasses of Element, Code is optional (i.e., it may be `null`.)
+
 Examples uses for Code include:
 
 - Asset Tracking Number
@@ -22,15 +23,16 @@ Examples uses for Code include:
 - RFID
 - Etc.
 
-When the identified entity is physical in nature, it will often have its *code* physically affixed to it (as in the VIN Number on a car or the Manufacturer’s Serial Number on a guitar).
+When the identified entity is physical in nature, it will often have its *code* physically affixed to it (as in the VIN Number on a car or the Manufacturer’s Serial Number on an instrument).
 
-A `Code` is a three-part identifier that consists of a `CodeSpec`, a `CodeScope` and a `CodeValue`.
+**Code** is a three-part identifier that consists of a `CodeSpec`, a `CodeScope` and a `CodeValue`.
 
 ## CodeSpec
 
-A `CodeSpec` (aka **Code Specification**) captures the rules for encoding and decoding significant business information into and from a [Code](./codes.md).
+A `CodeSpec` (aka **Code Specification**) captures the rules for encoding and decoding significant business information into and from a Code.
 A Code Specification is used to generate and validate Codes.
-A BIS Repository (e.g. an iModel) can persist multiple Code Specifications because different classes of Elements can have different coding conventions.
+
+A single BIS Repository (e.g. an iModel) may use many Code Specifications, because different classes of Elements can have different coding conventions.
 
 Each `Element` has a relationship to the `CodeSpec` that should be used to encode or decode the Code for that instance.
 
@@ -48,3 +50,5 @@ In many contexts, CodeValue is colloquially referred to as the *Element's Code*.
 Elements representing real-world entities that don’t have a meaningful real-world identifier, e.g. a piece of baseboard, a pile of dirt, an average bolt, will have `null` for its `CodeValue`.
 
 A `CodeValue` should be a human-understandable string, *not* a Guid. `FederationGuid` fulfills that purpose.
+
+> Next: [ElementAspect Fundamentals](./elementaspect-fundamentals.md)

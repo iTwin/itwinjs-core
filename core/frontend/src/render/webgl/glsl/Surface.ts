@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { ColorDef } from "@bentley/imodeljs-common";
 import {
@@ -23,8 +24,7 @@ import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbo
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
-import { TextureHandle } from "../Texture";
-import { System } from "../System";
+import { Texture } from "../Texture";
 import { assert } from "@bentley/bentleyjs-core";
 
 const applyMaterialOverrides = `
@@ -301,10 +301,8 @@ export function createSurfaceBuilder(feat: FeatureMode, clip: WithClipVolume): P
       const surfFlags = surfGeom.computeSurfaceFlags(params);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         assert(undefined !== surfGeom.texture);
-        // ###TODO: bind surfGeom.texture as the real WebGLTexture
-        const wtex = System.instance.context.createTexture();
-        if (null !== wtex)
-          TextureHandle.bindSampler(uniform, wtex, TextureUnit.Zero);
+        const texture = surfGeom.texture! as Texture;
+        texture.texture.bindSampler(uniform, TextureUnit.Zero);
       }
     });
   });

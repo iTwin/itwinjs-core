@@ -30,7 +30,7 @@ describe("ApplyChangeSets (#integration)", () => {
     const iModelDir = path.join(iModelRootDir, iModelName);
 
     Logger.logInfo(HubTestUtils.logCategory, "Downloading seed file and all available change sets");
-    await HubTestUtils.downloadIModel(accessToken, projectName, iModelName, iModelDir);
+    await HubTestUtils.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
 
     const seedPathname = HubTestUtils.getSeedPathname(iModelDir);
     const iModelPathname = path.join(iModelDir, path.basename(seedPathname));

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Render */
+
 import { assert } from "@bentley/bentleyjs-core";
 import {
   Point3d,
@@ -102,9 +104,9 @@ export class MeshBuilder {
   public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {
     const visitor = polyface.createVisitor();
 
-    do {
+    while (visitor.moveToNextFacet()) {
       this.addFromPolyfaceVisitor(visitor, props);
-    } while (visitor.moveToNextFacet());
+    }
 
     this.endPolyface();
   }
@@ -150,7 +152,7 @@ export class MeshBuilder {
     // If we do not have UVParams stored on the IndexedPolyface, compute them now
     let params: Point2d[] | undefined;
     if (haveParam && options.mappedTexture) {
-      assert(this.mesh.points.length === 0 || this.mesh.features !== undefined);
+      assert(this.mesh.points.length === 0 || this.mesh.uvParams.length !== 0);
       const mappedTexture = options.mappedTexture;
       const transformToImodel = mappedTexture.params.textureMatrix.transform;
       if (transformToImodel)
@@ -163,14 +165,14 @@ export class MeshBuilder {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
       const position = QPoint3d.create(point.getPoint3dAt(vertexIndex), qPointParams);
       const normal = requireNormals ? new OctEncodedNormal(visitor.getNormal(vertexIndex)) : undefined;
-      const uvParam: Point2d | undefined = params ? params[i] : undefined;
+      const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam };
     }
 
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
     // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
     // Detect beforehand instead.
-    if (vertices[0].position === vertices[1].position || vertices[0].position === vertices[2].position || vertices[1].position === vertices[2].position)
+    if (vertices[0].position.equals(vertices[1].position) || vertices[0].position.equals(vertices[2].position) || vertices[1].position.equals(vertices[2].position))
       return undefined;
 
     return vertices;
@@ -193,8 +195,6 @@ export class MeshBuilder {
       edgeVisible[triangleIndex + 1],
       triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false,
     );
-
-    // ###TODO handle mappedTexture param
 
     // set each triangle index to the index associated with the vertex key location in the vertex map
     vertices.forEach((vertexProps: VertexKeyProps, i: number) => {

@@ -33,7 +33,7 @@ where the schema is:
 
 Once an ECSchema has been imported into an iModel, you can work with Elements, Models, and ElementAspects from that schema without writing TypeScript classes to represent them. A JavaScript class will be generated dynamically to represent each ECClass that you access, if there is no pre-registered TypeScript class to represent it.
 
-You *may* write a TypeScript Schema class to represent an ECSchema and TypeScript Element-based or ElementAspect-based classes to represent some or all of its ECClasses. The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods, to provide and centralize business logic for applications to use when working with that specific class.
+You *may* write a TypeScript Schema class to represent an ECSchema and TypeScript Element-based or ElementAspect-based classes to represent some or all of its ECClasses. The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods to provide and centralize business logic for applications to use when working with that specific class.
 
 *Example:*
 ``` ts

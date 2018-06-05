@@ -4,7 +4,7 @@ Concurrency control is a way to coordinate simultaneous transactions (briefcases
 
 1. [Reserve Codes](#code-reservation) before using them.
 1. Optionally lock models and elements before modifying them, depending on the iModel's [concurrency control policy](#concurrency-control-policies)
-1. [Pull and merge](./IModelDb.sync.md) before pushing.
+1. [Pull and merge](./IModelDbSync.md) before pushing.
 
 An iModel has a concurrency control policy that specifies how multiple briefcases may modify models and elements. The policy may stipulate that locks must be used, forcing transactions to be sequential (pessimistic), or it may specify change-merging with conflict-resolution to combine the results of simultaneous transactions (optimistic).
 
@@ -40,7 +40,7 @@ This article assumes that you already know that:
 |**Optimistic Concurrency Control**|A policy that allows apps to change models and elements without acquiring locks.
 |**Pessimistic Concurrency Control**|A policy that requires apps to acquire locks before changing models or elements.
 |**Push**|Upload a ChangeSet to iModelHub
-|**Pull**|Download a ChangeSet from iModelHub. See [IModelDb synchronization](./IModelDb.sync.md)
+|**Pull**|Download a ChangeSet from iModelHub. See [IModelDb synchronization](./IModelDbSync.md)
 |**Rebase**|Adjust a ChangeSet so that its pre-change state matches the post-change state of some other ChangeSet.
 |**Revision**|The state of an iModel as of a specific point in its [timeline](../../overview/IModelHub.md#the-timeline-of-changes), that is, the result of the ChangeSets up to that point.
 |**Tip**|The most recent revision of an iModel. Also, the most recent ChangeSet in the [timeline](../../overview/IModelHub.md#the-timeline-of-changes).

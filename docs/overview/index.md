@@ -6,13 +6,13 @@ The iModelJs  library is a JavaScript API for creating, querying, displaying, an
 
 ## Documentation Overview
 
-This website is organized into sections by tabs at top of each page.
+This website is organized into sections by tabs at the top of each page.
 
 * You are currently looking at the Overview page. Start here.
 * Please read the [Getting Started](../getting-started/index.md) page to install prerequisites for developers and for suggestions for background reading.
 * The [BIS](../bis/index.md) tab explains the Base Infrastructure Schemas. Understand BIS is essential to making sense of the iModelJs apis. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iModelJs.
 * The [Learning](../learning/index) section introduces the building blocks of iModelJs and provides step-by-step instructions for creating applications.
-* The [Reference](../reference/index) section explains the API in more detail with package/class/function level documentation.
+* The [API Reference](../reference/index) section explains the API in more detail with package/class/function level documentation.
 
 ## Using iModelJs
 

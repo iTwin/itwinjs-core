@@ -6,31 +6,34 @@
 - [Administration]($backend:AppAdministration)
 - [Codes]($backend:Codes)
 - [Elements]($backend:Elements)
+- [Element Aspects]($backend:ElementAspects)
 - [Models]($backend:Models)
-- [Views]($backend:Views)
-- [Symbology]($backend:FontsAndSymbology)
+- [Relationships]($backend:Relationships)
+- [View Definitions]($backend:ViewDefinitions)
 - [iModels]($backend:iModels)
 - [Portability]($backend:Portability)
-- [RpcInterface]($backend:RpcInterface)
 - [Schema]($backend:Schema)
 - [ECDb]($backend:ECDb)
 - [ECSQL]($backend:ECSQL)
 
-&nbsp;
+---
+
 ### ($frontend)
 
 - [Administration]($frontend:AppAdministration)
-- [BisCore]($frontend:BisCore)
-- [DrawingAids]($frontend:DrawingAids)
+- [ElementState]($frontend:ElementState)
+- [ModelState]($frontend:ModelState)
+- [AccuDraw]($frontend:AccuDraw)
 - [iModels]($frontend:iModels)
 - [Locating Elements]($frontend:LocationAndSnapping)
 - [Notifications]($frontend:Notifications)
-- [SelectionSet]($frontend:SelectionSet)
+- [Selection Set]($frontend:SelectionSet)
 - [Search]($frontend:Search)
 - [Tools]($frontend:Tools)
 - [Views]($frontend:Views)
+- [Rendering]($frontend:Rendering)
 
-&nbsp;
+---
 ### ($common)
 
 - [Administration]($common:AppAdministration)
@@ -46,9 +49,6 @@
 - [Schema]($common:Schema)
 
 &nbsp;
-### ($clients)
-
-&nbsp;
 ## Support Packages
 ---
 ### ($bentleyjs-core)
@@ -60,7 +60,7 @@
 - [Logging]($bentleyjs-core:Logging)
 - [Utils]($bentleyjs-core:Utils)
 
-&nbsp;
+---
 ### ($geometry-core)
 
 - [Cartesian Geometry]($geometry-core:CartesianGeometry)
