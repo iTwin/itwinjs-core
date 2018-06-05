@@ -146,14 +146,14 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       pageOptions,
       options,
     });
-    return this.request(token, params);
+    return this.request<Node[]>(token, params);
   }
 
   public async getRootNodesCount(token: Readonly<IModelToken>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodesCount, {
       options,
     });
-    return this.request(token, params);
+    return this.request<number>(token, params);
   }
 
   public async getChildren(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
@@ -162,7 +162,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       pageOptions,
       options,
     });
-    return this.request(token, params);
+    return this.request<Node[]>(token, params);
   }
 
   public async getChildrenCount(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
@@ -170,7 +170,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       nodeKey: parentKey,
       options,
     });
-    return this.request(token, params);
+    return this.request<number>(token, params);
   }
 
   public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
@@ -180,7 +180,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       selection,
       options,
     });
-    return this.request(token, params, Descriptor.reviver);
+    return this.request<Descriptor | undefined>(token, params, Descriptor.reviver);
   }
 
   public async getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
@@ -189,7 +189,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       options,
     });
-    return this.request(token, params);
+    return this.request<number>(token, params);
   }
 
   public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
@@ -199,12 +199,12 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       pageOptions,
       options,
     });
-    return this.request(token, params, Content.reviver);
+    return this.request<Content>(token, params, Content.reviver);
   }
 
-  private request<T>(token: Readonly<IModelToken>, params: string, reviver?: (key: string, value: any) => any): T {
+  private async request<T>(token: Readonly<IModelToken>, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
     const imodelAddon = this.getNativePlatform().getImodelAddon(token);
-    const serializedResponse = this.getNativePlatform().handleRequest(imodelAddon, params);
+    const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, params);
     if (!serializedResponse)
       throw new ECPresentationError(ECPresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
     return JSON.parse(serializedResponse, reviver);
@@ -221,7 +221,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
 
 /** @hidden */
 export interface NodeAddonDefinition extends IDisposable {
-  handleRequest(db: any, options: string): string;
+  handleRequest(db: any, options: string): Promise<string>;
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
   setActiveLocale(locale: string): void;
@@ -262,8 +262,16 @@ const createAddonImpl = () => {
     public dispose() {
       this._nativeAddon.dispose();
     }
-    public handleRequest(db: any, options: string): string {
-      return this.handleResult(this._nativeAddon.handleRequest(db, options));
+    public handleRequest(db: any, options: string): Promise<string> {
+      return new Promise((resolve, reject) => {
+        this._nativeAddon.handleRequest(db, options, (response) => {
+          try {
+            resolve(this.handleResult(response));
+          } catch (error) {
+            reject(error);
+          }
+        });
+      });
     }
     public setupRulesetDirectories(directories: string[]): void {
       this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
