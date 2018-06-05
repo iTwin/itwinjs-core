@@ -30,6 +30,8 @@
 .topdiv {
   display: flex;
   align-items: center;
+  padding-left:2.5px;
+  padding-right:2.5px;
 }
 
 .statusspan {

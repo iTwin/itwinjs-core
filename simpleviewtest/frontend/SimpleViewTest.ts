@@ -5,6 +5,7 @@ import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
+import { remote } from "electron";
 
 // tslint:disable:no-console
 
@@ -27,7 +28,7 @@ class SimpleViewState {
   constructor() { }
 }
 
-const activeViewState: SimpleViewState = new SimpleViewState();
+let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState>();
 let theViewport: Viewport | undefined;
 
@@ -58,11 +59,6 @@ function retrieveConfigurationOverrides(configuration: any) {
 // Apply environment overrides to configuration.
 // This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
 function applyConfigurationOverrides(config: any): void {
-  const electron = (window as any).require("electron");
-  const remote = electron.remote;
-  if (undefined === remote)
-    return;
-
   const filename = remote.process.env.SVT_STANDALONE_FILENAME;
   if (undefined !== filename) {
     config.iModelName = filename;
@@ -100,7 +96,8 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
 }
 
 // selects the configured view.
-async function buildViewList(state: SimpleViewState, config: { viewName?: string }) {
+async function buildViewList(state: SimpleViewState, configurations?: { viewName?: string }) {
+  const config = undefined !== configurations ? configurations : {};
   const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
   const viewProps: ViewDefinitionProps[] = await state.iModelConnection!.views.queryProps(viewQueryParams);
@@ -230,8 +227,39 @@ function changeView(event: any) {
   _changeView(viewMap.get(viewName)!);
 }
 
+async function clearViews() {
+  await activeViewState.iModelConnection!.closeStandalone();
+  activeViewState = new SimpleViewState();
+  viewMap.clear();
+  document.getElementById("viewList")!.innerHTML = "";
+}
+
+async function resetStandaloneIModel(filename: string) {
+  const spinner = document.getElementById("spinner") as HTMLDivElement;
+  spinner.style.display = "block";
+  IModelApp.viewManager.dropViewport(theViewport!);
+  IModelApp.renderSystem.onShutDown();
+  await clearViews();
+  await openStandaloneIModel(activeViewState, filename);
+  await buildViewList(activeViewState);
+  await openView(activeViewState);
+  spinner.style.display = "none";
+}
+
+function selectIModel(): void {
+  const options: Electron.OpenDialogOptions = {
+    properties: ["openFile"],
+    filters: [{ name: "IModels", extensions: [ "ibim", "bim" ] }],
+  };
+  remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
+    if (undefined !== filePaths)
+      await resetStandaloneIModel(filePaths[0]);
+  });
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
+  document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
   document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
