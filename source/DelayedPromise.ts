@@ -37,7 +37,6 @@ export class DelayedPromise<T> implements Promise<T> {
 
   /**
    * Explicitly starts the asynchronous operation behind this DelayedPromise (if it hasn't started already).
-   * @return A Promise for the completion of the asynchronous operation behind this DelayedPromise.
    */
   public start: () => Promise<T>;
 
