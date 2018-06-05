@@ -96,7 +96,6 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in DEV", async () => {
-
     const accessToken1: AccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1, "QA");
 
     // Restart host on DEV
@@ -104,6 +103,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
     hostConfig.iModelHubDeployConfig = "DEV";
     IModelHost.startup(hostConfig);
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
 
     const projectId = "bffa4aea-5f3f-4b60-8ecb-4656081ea480";
     const iModelId = "5e8f5fbb-6613-479a-afb1-ce8de037ef0e";
