@@ -64,10 +64,9 @@ function applyConfigurationOverrides(config: any): void {
     return;
 
   const filename = remote.process.env.SVT_STANDALONE_FILENAME;
-  const viewName = remote.process.env.SVT_STANDALONE_VIEWNAME;
-  if (undefined !== filename && undefined !== viewName) {
+  if (undefined !== filename) {
     config.iModelName = filename;
-    config.viewName = viewName;
+    config.viewName = remote.process.env.SVT_STANDALONE_VIEWNAME; // optional
     config.standalone = true;
   }
 }
