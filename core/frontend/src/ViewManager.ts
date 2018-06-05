@@ -122,7 +122,7 @@ export class ViewManager {
     for (let i = 0; i < vpList.length; ++i) {
       if (vpList[i] === vp) {
         vp.setEventController(undefined);
-        vpList.slice(i, 1);
+        vpList.splice(i, 1);
         didDrop = true;
         break;
       }
