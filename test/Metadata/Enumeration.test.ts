@@ -50,6 +50,7 @@ describe("Enumeration", () => {
             backingTypeName: "integer",
             enumerators: [
               {
+                name: "ZeroValue",
                 value: 0,
                 label: "None",
               },
@@ -109,8 +110,8 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: 6 },
-            { value: 8, label: "An enumerator label" },
+            { name: "SixValue", value: 6 },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
         await testEnumSansPrimType.fromJson(json);
@@ -125,8 +126,8 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: 6 },
-            { value: 8, label: "An enumerator label" },
+            { name: "SixValue", value: 6 },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
         await testEnum.fromJson(json);
@@ -140,8 +141,8 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: 6 },
-            { value: 8, label: "An enumerator label" },
+            { name: "SixValue", value: 6 },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
         await testEnum.fromJson(json);
@@ -156,8 +157,8 @@ describe("Enumeration", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
           enumerators: [
-            { value: "6" },
-            { value: "8", label: "An enumerator label" },
+            { name: "SixValue", value: "6" },
+            { name: "EightValue", value: "8", label: "An enumerator label" },
           ],
         };
         await testEnumSansPrimType.fromJson(json);
@@ -268,6 +269,163 @@ describe("Enumeration", () => {
     it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
       expect(testEnum).to.exist;
       await testEnum.accept({});
+    });
+  });
+  describe("EC 3.2 Props", () => {
+    const baseJson = { schemaItemType: "Enumeration" };
+    let testIntEnum: Enumeration;
+    let testStringEnum: Enumeration;
+
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testIntEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
+      testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
+    });
+
+    function assertValidIntEnumeration(enumeration: Enumeration, enumVal: number , label?: string, description?: string) {
+      expect(enumeration.isInt()).to.be.true;
+      expect(enumeration.isString()).to.be.false;
+      expect(enumeration.getEnumerator(enumVal)).to.exist;
+      if (typeof(label) !== undefined)
+        expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
+      if (typeof(description) !== undefined)
+        expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
+    }
+
+    function assertValidStringEnumeration(enumeration: Enumeration, enumVal: string, label?: string, description?: string) {
+      expect(enumeration.isInt()).to.be.false;
+      expect(enumeration.isString()).to.be.true;
+      expect(enumeration.getEnumerator(enumVal)).to.exist;
+      if (typeof(label) !== undefined)
+        expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
+      if (typeof(description) !== undefined)
+        expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
+    }
+
+    it("Duplicate name", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "SixValue", value: 6 },
+          { name: "SixValue", value: 8, label: "An enumerator label" },
+        ],
+      };
+      await expect(testIntEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The enumerator SixValue has a duplicate name or value.`);
+    });
+    it("Duplicate value", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "SixValue", value: 6 },
+          { name: "EightValue", value: 6},
+        ],
+      };
+      await expect(testIntEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The enumerator EightValue has a duplicate name or value.`);
+    });
+    it("Duplicate name and value", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "SixValue", value: 6 },
+          { name: "SixValue", value: 6, label: "An enumerator label" },
+        ],
+      };
+      await expect(testIntEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The enumerator SixValue has a duplicate name or value.`);
+    });
+    it("Basic test with number values", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "OneValue", value: 1, label: "Label for the first value", description: "description for the first value" },
+          { name: "TwoValue", value: 2, label: "Label for the second value", description: "description for the second value" },
+          { name: "ThreeValue", value: 3, label: "Label for the third value", description: "description for the third value" },
+          { name: "FourValue", value: 4, label: "Label for the fourth value", description: "description for the fourth value" },
+          { name: "FiveValue", value: 5, label: "Label for the fifth value", description: "description for the fifth value" },
+        ],
+      };
+      await testIntEnum.fromJson(json);
+      assertValidIntEnumeration(testIntEnum, 3, "Label for the third value", "description for the third value");
+    });
+    it("Basic test with string values", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "OneValue", value: "one", label: "Label for the first value", description: "description for the first value" },
+          { name: "TwoValue", value: "two", label: "Label for the second value", description: "description for the second value" },
+          { name: "ThreeValue", value: "three", label: "Label for the third value", description: "description for the third value" },
+          { name: "FourValue", value: "four", label: "Label for the fourth value", description: "description for the fourth value" },
+          { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
+        ],
+      };
+      await testStringEnum.fromJson(json);
+      assertValidStringEnumeration(testStringEnum, "three", "Label for the third value", "description for the third value");
+    });
+    it("ECName comparison is case insensitive", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "ONEVALUE", value: "one", label: "Label for the first value", description: "description for the first value" },
+          { name: "onevalue", value: "two", label: "Label for the second value", description: "description for the second value" },
+        ],
+      };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The enumerator onevalue has a duplicate name or value.`);
+    });
+    it("Description is not a string", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "ONEVALUE", value: "one", label: "Label for the first value", description: 1 },
+        ],
+      };
+      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
+    });
+    it("Get enumerator by name", async () => {
+      const json = {
+        ...baseJson,
+        backingTypeName: "string",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "OneValue", value: "one", label: "Label for the first value", description: "description for the first value" },
+          { name: "TwoValue", value: "two", label: "Label for the second value", description: "description for the second value" },
+          { name: "ThreeValue", value: "three", label: "Label for the third value", description: "description for the third value" },
+          { name: "FourValue", value: "four", label: "Label for the fourth value", description: "description for the fourth value" },
+          { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
+        ],
+      };
+      await testStringEnum.fromJson(json);
+      expect(testStringEnum.getEnumeratorByName("OneValue")).to.exist;
+      expect(testStringEnum.getEnumeratorByName("onevalue")!.description).to.eql("description for the first value");
+      expect(testStringEnum.getEnumeratorByName("fourVALUE")!.label).to.eql("Label for the fourth value");
     });
   });
 });

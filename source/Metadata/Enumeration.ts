@@ -4,13 +4,15 @@
 
 import SchemaItem from "./SchemaItem";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { PrimitiveType, SchemaItemType } from "../ECObjects";
+import { PrimitiveType, SchemaItemType, ECName } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export interface Enumerator<T> {
-  value: T;
-  label?: string;
+  readonly name: ECName;
+  readonly value: T;
+  readonly label?: string;
+  readonly description?: string;
 }
 export type AnyEnumerator = Enumerator<string | number>;
 
@@ -49,6 +51,15 @@ export default class Enumeration extends SchemaItem {
   public isString(): this is StringEnumeration { return this.primitiveType === PrimitiveType.String; }
 
   /**
+   * Gets an enumerator that matches the name provided.
+   * @param name The ECName of the Enumerator to find.
+   */
+
+  public getEnumeratorByName(name: string): AnyEnumerator | undefined {
+    return this.enumerators.find((item) => item.name.name.toLowerCase() === name.toLowerCase());
+  }
+
+  /**
    * Gets an enumerator that matches the value provided.
    * @param value The value of the Enumerator to find.
    */
@@ -60,15 +71,18 @@ export default class Enumeration extends SchemaItem {
 
   /**
    * Creates an Enumerator with the provided value and label and adds it to the this Enumeration.
+   * @param enumName The name of the enumerator
    * @param value The value of the enumerator. The type of this value is dependent on the backing type of the this Enumeration.
    * @param label The label to be used
+   * @param description A localized display label that is used instead of the name in a GUI.
    */
-  public createEnumerator(value: string | number, label?: string) {
-    if ((typeof(value) === "string" && this.primitiveType !== PrimitiveType.String) ||
-        (typeof(value) === "number" && this.primitiveType !== PrimitiveType.Integer))
-      throw new ECObjectsError(ECObjectsStatus.InvalidEnumValue, `The value`);
-
-    this.enumerators.push({value, label});
+  public createEnumerator(enumName: string, value: string | number, label?: string, description?: string) {
+    this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
+      if (element.name.name.toLowerCase() === enumName.toLowerCase() || element.value === value)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The enumerator ${enumName} has a duplicate name or value.`);
+    });
+    const name = new ECName(enumName);
+    this.enumerators.push({name, value, label, description});
   }
 
   /**
@@ -135,11 +149,14 @@ export default class Enumeration extends SchemaItem {
           if (typeof(enumerator.label) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
         }
-
-        // TODO: Guard against duplicate values
+        if (undefined !== enumerator.description) {
+          if (typeof(enumerator.description) !== "string")
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
+        }
+        this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description); // throws ECObjectsError if there are duplicate values
       });
     }
-    this._enumerators = jsonObj.enumerators;
+    // this._enumerators = jsonObj.enumerators;
   }
 
   public async accept(visitor: SchemaItemVisitor) {
