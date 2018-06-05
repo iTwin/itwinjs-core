@@ -31,6 +31,7 @@ describe("Localization", async () => {
     const nodes = await ECPresentation.presentation.getRootNodes(imodel.iModelToken, undefined, { RulesetId: "LocalizationTest" });
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label).to.eq("test value");
+    expect(nodes[0].description).to.eq("test nested value");
   });
 
 });
