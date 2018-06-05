@@ -1553,11 +1553,9 @@ export class WindowAreaTool extends ViewTool {
 
       const lensAngle = view.getLensAngle();
 
-      // vp.viewToNpcArray(corners);
       vp.worldToNpcArray(corners);
       corners[0].z = corners[1].z = npcZ;
 
-      // vp.npcToViewArray(corners);  // put the corners back in view
       vp.npcToWorldArray(corners); // put the corners back in world at correct depth
       const viewPts = [corners[0], corners[1]];
       vp.rotMatrix.multiplyVectorArrayInPlace(viewPts); // rotate to view orientation to get extents
@@ -1569,7 +1567,6 @@ export class WindowAreaTool extends ViewTool {
       if (focusDist < view.minimumFrontDistance())
         focusDist = view.minimumFrontDistance();
 
-      // vp.viewToWorldArray(corners);
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
