@@ -2,10 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import "@helpers/MockFrontendEnvironment";
+import * as path from "path";
 import { expect } from "chai";
 import * as moq from "@helpers/Mocks";
 import * as spies from "@helpers/Spies";
 import * as faker from "faker";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { PropertyRecord } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECPresentationError, ValuesDictionary } from "@bentley/ecpresentation-common";
@@ -46,6 +48,9 @@ describe("PropertyDataProvider", () => {
   before(() => {
     rulesetId = faker.random.word();
     ECPresentation.presentation = presentationManagerMock.object;
+    ECPresentation.i18n = new I18N([], "", {
+      urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
+    });
   });
   beforeEach(() => {
     presentationManagerMock.reset();

@@ -9,24 +9,32 @@ import {
   PropertyCategory, PropertyRecord, PropertyValueFormat, PropertyValue,
 } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import {
+  CategoryDescription, Descriptor, ContentFlags,
+  Field, NestedContentField, DefaultContentDisplayTypes, Item,
+  ECPresentationError, ECPresentationStatus,
+} from "@bentley/ecpresentation-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder from "../common/ContentBuilder";
-import { prioritySortFunction } from "../common/Utils";
-import { CategoryDescription, Descriptor, ContentFlags, Field, NestedContentField, DefaultContentDisplayTypes, Item, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
+import { prioritySortFunction, translate } from "../common/Utils";
 
-let favoritesCategory: CategoryDescription | undefined;
-function getFavoritesCategory(): CategoryDescription {
-  if (undefined === favoritesCategory) {
-    favoritesCategory = {
-      name: "Favorite",
-      label: "Favorite", // wip: localization
-      description: "", // wip: localization
+const favoritesCategoryName = "Favorite";
+let favoritesCategoryPromise: Promise<CategoryDescription> | undefined;
+const getFavoritesCategory = async (): Promise<CategoryDescription> => {
+  if (!favoritesCategoryPromise) {
+    favoritesCategoryPromise = Promise.all([
+      translate("categories.favorite.label"),
+      translate("categories.favorite.description"),
+    ]).then(([label, description]): CategoryDescription => ({
+      name: favoritesCategoryName,
+      label,
+      description,
       priority: Number.MAX_VALUE,
       expand: true,
-    } as CategoryDescription;
+    }));
   }
-  return favoritesCategory;
-}
+  return await favoritesCategoryPromise;
+};
 
 interface PropertyPaneCallbacks {
   isFavorite(field: Field): boolean;
@@ -71,14 +79,15 @@ class PropertyDataBuilder {
     this._includeWithNoValues = includeWithNoValues;
   }
 
-  private createCategorizedFields(): CategorizedFields {
+  private async createCategorizedFields(): Promise<CategorizedFields> {
+    const favoritesCategory = await getFavoritesCategory();
     const categories = new Array<CategoryDescription>();
     const categoryFields: { [categoryName: string]: Field[] } = {};
     const includeField = (category: CategoryDescription, field: Field, onlyIfFavorite: boolean) => {
       if (field.isNestedContentField()) {
         includeFields(field.nestedFields, true);
       }
-      if (onlyIfFavorite && getFavoritesCategory().name !== field.category.name)
+      if (onlyIfFavorite && favoritesCategoryName !== field.category.name)
         return;
       if (!categoryFields.hasOwnProperty(category.name)) {
         categories.push(category);
@@ -88,8 +97,8 @@ class PropertyDataBuilder {
     };
     const includeFields = (fields: Field[], onlyIfFavorite: boolean) => {
       fields.forEach((field) => {
-        if (getFavoritesCategory().name !== field.category.name && this._callbacks.isFavorite(field))
-          includeField(getFavoritesCategory(), field, false);
+        if (favoritesCategoryName !== field.category.name && this._callbacks.isFavorite(field))
+          includeField(favoritesCategory, field, false);
         includeField(field.category, field, onlyIfFavorite);
       });
     };
@@ -131,7 +140,7 @@ class PropertyDataBuilder {
     for (const category of fields.categories) {
       const records = new Array<PropertyRecord>();
       const addRecord = (field: Field, record: PropertyRecord) => {
-        if (category.name !== getFavoritesCategory().name) {
+        if (category.name !== favoritesCategoryName) {
           // note: favorite fields should be displayed even if they're hidden
           if (this._callbacks.isHidden(field))
             return;
@@ -181,8 +190,8 @@ class PropertyDataBuilder {
     return result;
   }
 
-  public buildPropertyData(): PropertyData {
-    const fields = this.createCategorizedFields();
+  public async buildPropertyData(): Promise<PropertyData> {
+    const fields = await this.createCategorizedFields();
     const records = this.createCategorizedRecords(fields);
     return {
       ...records,
@@ -248,6 +257,6 @@ export default class PropertyDataProvider extends ContentDataProvider implements
     };
     const builder = new PropertyDataBuilder(content.descriptor, contentItem,
       this.includeFieldsWithNoValues, callbacks);
-    return builder.buildPropertyData();
+    return await builder.buildPropertyData();
   });
 }

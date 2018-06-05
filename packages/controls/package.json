@@ -19,7 +19,8 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -p ./src",
+    "build": "tsc -p ./src && npm run build:assets",
+    "build:assets": "cpx ./public/**/* ./lib/public && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage",
     "docs": "npm run docs:reference && npm run docs:changelog",
@@ -28,6 +29,7 @@
     "extract": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../out/docs/extract",
     "lint": "tslint -p ./src",
     "pack": "node ../../scripts/pack.js",
+    "pseudolocalize": "node ../../node_modules/@bentley/bentleyjs-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "node ../../scripts/run-tests.js --testsDir ./tests",
     "test+cover": "cross-env TS_NODE_PROJECT=./tests nyc npm test -- --coverage --report",
     "validatePackageJson": "validjson ./package.json",
@@ -39,16 +41,19 @@
     "lodash": "^4.14.0"
   },
   "peerDependencies": {
+    "@bentley/imodeljs-i18n": "^0.0.1",
     "@bentley/ui-core": "^0.0.0",
     "@bentley/ui-components": "^0.1.0"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "^8",
+    "@bentley/imodeljs-i18n": "^0.0.1",
     "@bentley/imodeljs-common": "^0.92",
     "@bentley/imodeljs-frontend": "^0.92",
     "@bentley/ui-core": "^0.0.0",
     "@bentley/ui-components": "^0.1.0",
     "@types/lodash": "^4.14.0",
+    "cpx": "^1.5",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",
