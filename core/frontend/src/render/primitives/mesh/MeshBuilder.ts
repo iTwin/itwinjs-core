@@ -163,7 +163,7 @@ export class MeshBuilder {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
       const position = QPoint3d.create(point.getPoint3dAt(vertexIndex), qPointParams);
       const normal = requireNormals ? new OctEncodedNormal(visitor.getNormal(vertexIndex)) : undefined;
-      const uvParam: Point2d | undefined = params ? params[i] : undefined;
+      const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam };
     }
 
@@ -193,8 +193,6 @@ export class MeshBuilder {
       edgeVisible[triangleIndex + 1],
       triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false,
     );
-
-    // ###TODO handle mappedTexture param
 
     // set each triangle index to the index associated with the vertex key location in the vertex map
     vertices.forEach((vertexProps: VertexKeyProps, i: number) => {

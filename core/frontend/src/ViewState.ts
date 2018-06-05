@@ -1176,8 +1176,10 @@ export abstract class ViewState3d extends ViewState {
     // and then send that over to the GraphicBuilder
     const strokeOptions = new StrokeOptions();
     strokeOptions.needParams = true;
-    strokeOptions.shouldTriangulate = true;
+    strokeOptions.needNormals = true;
+    strokeOptions.shouldTriangulate = false;
     const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.toggleReversedFacetFlag();
 
     const meshDimension = 10;
     const delta = 1 / (meshDimension - 1);
@@ -1188,8 +1190,8 @@ export abstract class ViewState3d extends ViewState {
     const points = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
     const params = [Point2d.create(), Point2d.create(), Point2d.create(), Point2d.create()];
 
-    for (let row = 1; row < meshDimension; row++) {
-      for (let col = 1; col < meshDimension; col++) {
+    for (let row = 1; row < meshDimension; ++row) {
+      for (let col = 1; col < meshDimension; ++col) {
         const low = Point2d.create((row - 1) * delta, (col - 1) * delta);
         const high = Point2d.create(row * delta, col * delta);
 
@@ -1219,7 +1221,7 @@ export abstract class ViewState3d extends ViewState {
         }
 
         viewport.worldToViewArray(points);
-        polyfaceBuilder.addQuadFacet(points, params);
+        polyfaceBuilder.addQuadFacet(points, params, undefined, );
       }
     }
 

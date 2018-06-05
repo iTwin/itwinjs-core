@@ -11,6 +11,9 @@ import {
   LineString3d,
   Loop,
   Transform,
+  Point2d,
+  StrokeOptions,
+  PolyfaceBuilder,
 } from "@bentley/geometry-core";
 import * as path from "path";
 import {
@@ -432,5 +435,35 @@ describe("Mesh Builder Tests", () => {
     triangle.setIndices(0, 0, 0);
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
     expect(() => mb.addTriangle(triangle)).to.throw("Programmer Error");
+  });
+
+  it.skip("creates same triangles as native", () => {
+    // Create polyface
+    const points: Point3d[] = [
+      Point3d.create(100, 128, 68),
+      Point3d.create(250, 128, 68),
+      Point3d.create(250, 267, 68),
+      Point3d.create(100, 267, 68)
+    ];
+    const params: Point2d[] = [
+      Point2d.create(.1, .2),
+      Point2d.create(.45, .232),
+      Point2d.create(.68983, .232454),
+      Point2d.create(.8, .4)
+    ];
+
+    const options = new StrokeOptions();
+    options.needParams = true;
+    const builder = PolyfaceBuilder.create(options);
+
+    builder.addQuadFacet(points, params);
+    const polyface = builder.claimPolyface();
+
+    // Set up PrimitiveBuilder
+    const viewport = new Viewport(canvas, spatialView);
+    const gfParams = GraphicBuilderCreateParams.create(GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(System.instance, gfParams);
+    primBuilder.addPolyface(polyface);
+    primBuilder.finish();
   });
 });
