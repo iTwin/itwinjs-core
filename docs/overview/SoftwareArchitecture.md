@@ -12,7 +12,7 @@ The software architecture of iModelJs was driven by the following goals:
 - Application Backend (TypeScript)
 - iModelJs Backend Framework (TypeScript)
 - JavaScript Runtime with C++ Interoperability
-- Bentley Native Libraries (C++)
+- iModelJs Native Libraries (C++)
 
 [Frontend](../learning/Glossary.md#frontend) Architecture Layers:
 
@@ -25,7 +25,7 @@ The software architecture of iModelJs was driven by the following goals:
 
 iModelJs Web App backends are [Node.js](http://www.nodejs.org) applications.
 Node.js provides the [V8 JavaScript Engine](https://developers.google.com/v8/) and the [N-API](https://github.com/nodejs/abi-stable-node) for writing Node Addons in C++.
-This is how the Bentley Native Libraries are exposed to the iModelJs backend framework.
+This is how the iModelJs Native Libraries are exposed to the iModelJs backend framework.
 Portable application logic is written in TypeScript and calls TypeScript APIs exposed from the `@bentley/imodeljs-backend` package.
 
 Notice that the backend architecture is identical between Agents and interactive Web Applications.

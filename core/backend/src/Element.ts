@@ -4,15 +4,14 @@
 /** @module Elements */
 
 import { Id64, Guid, DbOpcode } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform } from "@bentley/geometry-core";
+import { Transform } from "@bentley/geometry-core";
 import { Entity, EntityMetaData } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
-  ViewAttachmentProps, SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, LightLocationProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
-  AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps,
+  SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
+  InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps,
 } from "@bentley/imodeljs-common";
 
 /**
@@ -202,14 +201,6 @@ export class TextAnnotation2d extends AnnotationElement2d {
 /** 3D Text Annotation */
 export class TextAnnotation3d extends GraphicalElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/**
- * Represents an attachment of a [[ViewDefinition]] to a [[SheetModel]].
- */
-export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
-  public view?: Id64;
-  public constructor(props: ViewAttachmentProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /**
@@ -585,47 +576,4 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId, value: codeValue });
   }
-}
-
-export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
-  public type!: number;
-  public description?: string;
-  public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/**
- * A 2d coordinate system.
- */
-export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
-  public origin?: Point2d;
-  public angle!: number;
-  public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/**
- * A 3d coordinate system.
- */
-export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
-  public origin?: Point3d;
-  public yaw!: number;
-  public pitch!: number;
-  public roll!: number;
-  public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/**
- * A spatial coordinate system.
- */
-export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
-}
-
-/**
- * The spatial location of a light source
- */
-export class LightLocation extends SpatialLocationElement implements LightLocationProps {
-  public enabled!: boolean;
-  constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-export class Texture extends DefinitionElement {
 }

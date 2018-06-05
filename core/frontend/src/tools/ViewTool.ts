@@ -78,6 +78,7 @@ export const ViewToolSettings = {
   pickSize: 13,
 };
 
+/** An InteractiveTool that manipulates a view. */
 export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
