@@ -1524,15 +1524,21 @@ export class WindowAreaTool extends ViewTool {
     const view = vp.view;
     const startFrust = vp.getWorldFrustum(scratchFrustum);
 
-    vp.worldToViewArray(corners);
-    const viewRange = Range3d.createArray(corners);
+    vp.viewToWorldArray(corners);
     let delta: Vector3d;
     if (view.is3d() && view.isCameraOn()) {
       let npcZ: number;
 
+      const windowRange = Range3d.createArray(corners);
+      windowRange.low = vp.worldToView(windowRange.low);
+      windowRange.high = vp.worldToView(windowRange.high);
+
+      const windowRangeScale = 0.9;
+      windowRange.scaleAboutCenterInPlace(windowRangeScale);
+
       // Try to get nearest Z within rectangle directly from depth buffer
       const viewRect = new ViewRect();
-      viewRect.initFromRange(viewRange);
+      viewRect.initFromRange(windowRange);
       const depthRange = vp.pickRange(viewRect);
       if (depthRange) {
         npcZ = depthRange.minimum;
@@ -1548,25 +1554,31 @@ export class WindowAreaTool extends ViewTool {
 
       const lensAngle = view.getLensAngle();
 
-      vp.viewToNpcArray(corners);
+      vp.worldToNpcArray(corners);
       corners[0].z = corners[1].z = npcZ;
-      vp.npcToViewArray(corners);  // put the corners back in view
 
-      Range3d.createArray(corners, viewRange);
-      delta = viewRange.high.vectorTo(viewRange.low);
+      vp.npcToWorldArray(corners); // put the corners back in world at correct depth
+      const viewPts = [corners[0], corners[1]];
+      vp.rotMatrix.multiplyVectorArrayInPlace(viewPts); // rotate to view orientation to get extents
+
+      const range = Range3d.createArray(viewPts);
+      delta = range.low.vectorTo(range.high);
 
       let focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2.0));
       if (focusDist < view.minimumFrontDistance())
         focusDist = view.minimumFrontDistance();
 
-      vp.viewToWorldArray(corners);
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
       if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
         return;
     } else {
-      delta = viewRange.high.vectorTo(viewRange.low);
+      const viewRange = Range3d.createArray(corners);
+      vp.rotMatrix.multiplyVectorInPlace(viewRange.low);
+      vp.rotMatrix.multiplyVectorInPlace(viewRange.high);
+
+      delta = viewRange.low.vectorTo(viewRange.high);
       delta.z = view.getExtents().z; // preserve z depth
 
       // make sure its not too big or too small
@@ -1574,7 +1586,7 @@ export class WindowAreaTool extends ViewTool {
         return;
 
       view.setExtents(delta);
-      vp.toView(viewRange.low);
+      vp.rotMatrix.multiplyTransposeVectorInPlace(viewRange.low);
       view.setOrigin(viewRange.low);
     }
 
