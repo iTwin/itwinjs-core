@@ -292,6 +292,8 @@ export class Tile {
           for (const prop of props)
             this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this)));
           }
+
+        IModelApp.viewManager.onNewTilesReady();
         }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
     }
 
