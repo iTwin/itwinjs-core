@@ -55,7 +55,7 @@ export class LinkTableRelationship extends Entity implements LinkTableRelationsh
 }
 
 /**
- * BisCore:ElementRefersToElements
+ * A LinkTableRelationship where one Element refers to another Element
  */
 export class ElementRefersToElements extends LinkTableRelationship {
   /** Create an instance of the ElementRefersToElements relationship.
@@ -76,7 +76,7 @@ export interface ElementGroupsMembersProps extends LinkTableRelationshipProps {
 }
 
 /**
- * BisCore:ElementGroupsMembers
+ * An ElementRefersToElements relationship where one Element *groups* a set of other Elements.
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
   public memberPriority!: number;
@@ -103,7 +103,7 @@ export interface ElementDrivesElementProps extends LinkTableRelationshipProps {
 }
 
 /**
- * BisCore:ElementDrivesElement
+ * A LinkTableRelationship where one Element *drives* another Element
  */
 export class ElementDrivesElement extends LinkTableRelationship implements ElementDrivesElementProps {
   public status!: number;

@@ -55,8 +55,8 @@ export * from "./IModelApp";
  * AccuDraw provides helpful assistance for creating and modifying elements in a view.
  */
 /**
- * @docs-group-description iModels
- * Classes for working with iModels - see [iModel Overview]($docs/overview/IModels.md)
+ * @docs-group-description IModelConnection
+ * Classes for working with a connection to an iModel on the backend - see [iModel Overview]($docs/overview/IModels.md)
  */
 /**
  * @docs-group-description LocationAndSnapping
