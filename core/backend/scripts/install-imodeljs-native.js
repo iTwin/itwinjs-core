@@ -4,10 +4,8 @@
 var exec = require('child_process').exec;
 var path = require('path');
 
-let version = require("../node_modules/@bentley/imodeljs-nodeaddon/package.json").version;
+let version = require(path.join("..", "node_modules", "@bentley", "imodeljs-native-platform-api", "package.json")).version;
 
-
-// *** NEEDS WORK: Move this into imodeljs_addon/NodeAddonLoader.js
 function computeAddonPackageName() {
     if (typeof (process) === "undefined" || process.version === "")
         throw new Error("NodeAddonLoader could not determine process type");
