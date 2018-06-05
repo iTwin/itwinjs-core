@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { LinePixels, HiddenLine } from "@bentley/imodeljs-common";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";

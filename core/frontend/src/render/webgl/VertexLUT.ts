@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex, QPoint2d, QParams2d, QParams3d } from "@bentley/imodeljs-common";

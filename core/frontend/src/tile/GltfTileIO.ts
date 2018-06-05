@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tile */
 
 import { TileIO } from "./TileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";

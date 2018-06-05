@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tile */
 
 import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
@@ -291,10 +292,10 @@ export class Tile {
         if (undefined !== props) {
           for (const prop of props)
             this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this)));
-          }
+        }
 
         IModelApp.viewManager.onNewTilesReady();
-        }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
+      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
     }
 
     return this._childrenLoadStatus;

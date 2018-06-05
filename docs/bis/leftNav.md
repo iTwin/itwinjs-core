@@ -37,7 +37,8 @@
 ./intro/units.md
 -->
 
-&nbsp;
+---
+
 ### BIS Naming Guidelines
 
 - [Rules and Recommendations](./naming-guidelines/rules-and-recommendations.md)
@@ -45,4 +46,3 @@
 - [Summary of Exceptions](./naming-guidelines/summary-of-exceptions.md)
 - [Abbreviations and Acronyms](./naming-guidelines/standard-abbreviations-and-acronyms.md)
 - [Relationship “Strengths”](./naming-guidelines/standard-relationship-strengths-names.md)
-

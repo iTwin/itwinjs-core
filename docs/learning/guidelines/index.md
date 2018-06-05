@@ -1,8 +1,8 @@
-# Guidelines and Tips
+# Tips and Guidelines for iModelJs
 
-* [TypeScript Coding](./typescript-coding-guidelines.md)
-* [Converting C++ to TypeScript](./tips-for-converting-c++.md)
-* [Markdown](./markdown-intro.md)
+* [TypeScript Coding Guideline](./typescript-coding-guidelines.md)
+* [Tips for Converting C++ to TypeScript](./tips-for-converting-c.md)
+* [Markdown Introduction](./markdown-intro.md)
 * [NPM Scripts](./npm-scripts-guidelines.md)
 
 <!-- TODO: decide what to do with "semantic-versioning-guidelines.md" -->

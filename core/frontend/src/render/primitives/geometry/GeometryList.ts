@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Render */
+
 import { Iterable } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";

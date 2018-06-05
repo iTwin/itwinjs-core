@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 if (typeof (WebGLRenderingContext) === "undefined") {
   (global as any).WebGLRenderingContext = new Proxy({}, { get: () => 0 });
 }

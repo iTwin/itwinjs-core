@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { QParams3d, QPoint3dList, PolylineFlags, PolylineData, RenderMode } from "@bentley/imodeljs-common";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../../IModelConnection";

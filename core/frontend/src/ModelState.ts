@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module BisCore */
+/** @module ModelState */
+
 import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d } from "@bentley/geometry-core";

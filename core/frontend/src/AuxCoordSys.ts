@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module DrawingAid */
+/** @module Views */
+
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel } from "@bentley/imodeljs-common";
 import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, RotMatrix } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";

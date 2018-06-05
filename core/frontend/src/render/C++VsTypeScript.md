@@ -1,3 +1,7 @@
+---
+ignore: true
+---
+
 # Mapping of C++ types to TypeScript types
 
 |Native Name |Native Path |TS Name |TS Path | Notes |

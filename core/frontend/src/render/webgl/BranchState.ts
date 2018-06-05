@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { Transform } from "@bentley/geometry-core";
 import { ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";

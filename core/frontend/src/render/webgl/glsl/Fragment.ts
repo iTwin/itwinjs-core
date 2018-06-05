@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { FragmentShaderBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ColorDef } from "@bentley/imodeljs-common";

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
@@ -18,7 +19,7 @@ import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 
-// Represents a geometric primitive ready to be submitted to the GPU for rendering.
+/** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry {
   // Returns true if white portions of this geometry should render as black on white background
   protected _wantWoWReversal(_target: Target): boolean { return false; }
@@ -36,11 +37,11 @@ export abstract class CachedGeometry {
   // Returns true if this is a lit surface
   public get isLitSurface(): boolean { return false; }
 
-  // Returns the origin of this geometry's quantization parameters.
+  /** Returns the origin of this geometry's quantization parameters. */
   public abstract get qOrigin(): Float32Array;
-  // Returns the scale of this geometry's quantization parameters.
+  /** Returns the scale of this geometry's quantization parameters. */
   public abstract get qScale(): Float32Array;
-  // Binds this geometry's vertex data to the vertex attribute.
+  /** Binds this geometry's vertex data to the vertex attribute. */
   public abstract bindVertexArray(handle: AttributeHandle): void;
   // Draws this geometry
   public abstract draw(): void;

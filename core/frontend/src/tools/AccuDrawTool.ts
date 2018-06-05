@@ -2,6 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
+
 import { SavedState, AccuDraw, AccuDrawFlags, RotationMode, ContextMode, LockedStates, ThreeAxes, ItemField, KeyinStatus, CompassMode } from "../AccuDraw";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { TentativeOrAccuSnap } from "../AccuSnap";

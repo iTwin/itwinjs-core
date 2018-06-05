@@ -27,13 +27,11 @@ export * from "./ViewDefinition";
 export * from "./BisCore";
 export * from "./IModelDb"; // must be last
 
-/** @module iModels */
-
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase. It contains classes that [backend code]($docs/learning/backend/index.md) can use to work with directly with iModels. - see [learning about backends]($docs/learning/backend/index.md).
  */
 /**
- * @docs-group-description AppAdministration
+ * @docs-group-description IModelHost
  * Classes for configuring and administering the backend [host]($docs/learning/backend/IModelHost.md).
  */
 /**
