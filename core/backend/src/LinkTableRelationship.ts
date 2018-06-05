@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Elements */
+/** @module Relationships */
 
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -61,7 +61,7 @@ export class ElementRefersToElements extends LinkTableRelationship {
   /** Create an instance of the ElementRefersToElements relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
-   * @param targetId The targetId of teh relationship, that is, the driven element
+   * @param targetId The targetId of the relationship, that is, the driven element
    * @param classFullName The full name of the ElementRefersToElements class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementRefersToElements base class.
    * @return an instance of the specified class.
    */
@@ -87,7 +87,7 @@ export class ElementGroupsMembers extends ElementRefersToElements {
   /** Create an instance of the ElementGroupsMembers relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
-   * @param targetId The targetId of teh relationship, that is, the driven element
+   * @param targetId The targetId of the relationship, that is, the driven element
    * @param classFullName The full name of the ElementGroupsMembers class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementGroupsMembers base class.
    * @return an instance of the specified class.
    */
@@ -115,7 +115,7 @@ export class ElementDrivesElement extends LinkTableRelationship implements Eleme
   /** Create an instance of the ElementDrivesElement relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
-   * @param targetId The targetId of teh relationship, that is, the driven element
+   * @param targetId The targetId of the relationship, that is, the driven element
    * @param classFullName The full name of the ElementDrivesElement class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementDrivesElement base class.
    * @return an instance of the specified class.
    */
