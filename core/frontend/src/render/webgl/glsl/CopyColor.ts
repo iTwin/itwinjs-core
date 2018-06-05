@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";

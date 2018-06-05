@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { GL } from "./GL";
 import { System } from "./System";
@@ -37,10 +38,10 @@ export class RenderStateFlags {
 
   public equals(rhs: RenderStateFlags): boolean {
     return this.cull === rhs.cull
-        && this.depthTest === rhs.depthTest
-        && this.blend === rhs.blend
-        && this.stencilTest === rhs.stencilTest
-        && this.depthMask === rhs.depthMask;
+      && this.depthTest === rhs.depthTest
+      && this.blend === rhs.blend
+      && this.stencilTest === rhs.stencilTest
+      && this.depthMask === rhs.depthMask;
   }
 
   public apply(previousFlags: RenderStateFlags): void {
@@ -117,12 +118,12 @@ export class RenderStateBlend {
 
   public equals(rhs: RenderStateBlend): boolean {
     return this.equalColors(rhs)
-        && this.equationRgb === rhs.equationRgb
-        && this.equationAlpha === rhs.equationAlpha
-        && this.functionSourceRgb === rhs.functionSourceRgb
-        && this.functionSourceAlpha === rhs.functionSourceAlpha
-        && this.functionDestRgb === rhs.functionDestRgb
-        && this.functionDestAlpha === rhs.functionDestAlpha;
+      && this.equationRgb === rhs.equationRgb
+      && this.equationAlpha === rhs.equationAlpha
+      && this.functionSourceRgb === rhs.functionSourceRgb
+      && this.functionSourceAlpha === rhs.functionSourceAlpha
+      && this.functionDestRgb === rhs.functionDestRgb
+      && this.functionDestAlpha === rhs.functionDestAlpha;
   }
 
   public equalColors(rhs: RenderStateBlend): boolean {
@@ -299,12 +300,12 @@ export class RenderState {
 
   public equals(rhs: RenderState): boolean {
     return this.flags.equals(rhs.flags)
-        && this.blend.equals(rhs.blend)
-        // && this.stencil.equals(rhs.stencil)
-        && this.frontFace === rhs.frontFace
-        && this.cullFace === rhs.cullFace
-        && this.depthFunc === rhs.depthFunc
-        && this.stencilMask === rhs.stencilMask;
+      && this.blend.equals(rhs.blend)
+      // && this.stencil.equals(rhs.stencil)
+      && this.frontFace === rhs.frontFace
+      && this.cullFace === rhs.cullFace
+      && this.depthFunc === rhs.depthFunc
+      && this.stencilMask === rhs.stencilMask;
   }
 
   public apply(prevState: RenderState): void {

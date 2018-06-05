@@ -65,7 +65,7 @@ this by specifying the **Id** member of a navigation property.
 
 ### Struct properties
 
-You can either parameterize a struct property as a whole or parametrize individual members of the struct. See "[Struct properties in ECSQL](../ECSQL#structs)" for the ECSQL background.
+You can either parameterize a struct property as a whole or parameterize individual members of the struct. See "[Struct properties in ECSQL](../ECSQL#structs)" for the ECSQL background.
 
 > The ECSQL examples used in this section refer to the sample ECSchema in "[Struct properties in ECSQL](../ECSQL#structs)".
 

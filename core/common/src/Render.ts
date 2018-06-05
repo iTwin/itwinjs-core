@@ -928,7 +928,7 @@ export namespace Gradient {
     public flags: Flags = Flags.None;
     public angle?: Angle;
     public tint?: number;
-    public shift?: number;
+    public shift: number = 0;
     public thematicSettings?: ThematicProps;
     public keys: KeyColor[] = [];
 
@@ -941,7 +941,7 @@ export namespace Gradient {
       result.flags = (json.flags === undefined) ? Flags.None : json.flags;
       result.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
       result.tint = json.tint;
-      result.shift = json.shift;
+      result.shift = json.shift ? json.shift : 0;
       json.keys.forEach((key) => result.keys.push(key));
       return result;
     }
@@ -1059,13 +1059,9 @@ export namespace Gradient {
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
-      const image = new Float32Array(width * height);
+      const image = new Uint8Array(width * height * 4);
       let currentIdx = image.length - 1;
-      let shift;
-      if (this.shift)
-        shift = Math.min(1.0, Math.abs(this.shift));
-      else
-        shift = 1.0;
+      const shift = Math.min(1.0, Math.abs(this.shift));
 
       switch (this.mode) {
         case Mode.Linear:
@@ -1101,7 +1097,11 @@ export namespace Gradient {
                 else
                   f = Math.sin(Math.PI / 2 * (1.0 - d / dMin));
               }
-              image[currentIdx--] = this.mapColor(f).tbgr;
+              const color = this.mapColor(f);
+              image[currentIdx--] = color.getAlpha();
+              image[currentIdx--] = color.colors.b;
+              image[currentIdx--] = color.colors.g;
+              image[currentIdx--] = color.colors.r;
             }
           }
           break;
@@ -1116,7 +1116,11 @@ export namespace Gradient {
               const xr = 0.8 * (x * cosA + y * sinA);
               const yr = y * cosA - x * sinA;
               const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
-              image[currentIdx--] = this.mapColor(f).tbgr;
+              const color = this.mapColor(f);
+              image[currentIdx--] = color.getAlpha();
+              image[currentIdx--] = color.colors.b;
+              image[currentIdx--] = color.colors.g;
+              image[currentIdx--] = color.colors.r;
             }
           }
           break;
@@ -1130,7 +1134,11 @@ export namespace Gradient {
             for (let i = 0; i < width; i++) {
               const x = xs + i / 255.0 - 0.5;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
-              image[currentIdx--] = this.mapColor(f).tbgr;
+              const color = this.mapColor(f);
+              image[currentIdx--] = color.getAlpha();
+              image[currentIdx--] = color.colors.b;
+              image[currentIdx--] = color.colors.g;
+              image[currentIdx--] = color.colors.r;
             }
           }
           break;
@@ -1143,7 +1151,11 @@ export namespace Gradient {
             for (let i = 0; i < width; i++) {
               const x = i / 255.0 - xs;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
-              image[currentIdx--] = this.mapColor(f).tbgr;
+              const color = this.mapColor(f);
+              image[currentIdx--] = color.getAlpha();
+              image[currentIdx--] = color.colors.b;
+              image[currentIdx--] = color.colors.g;
+              image[currentIdx--] = color.colors.r;
             }
           }
           break;
@@ -1157,10 +1169,10 @@ export namespace Gradient {
           // TBD - Stepped and isolines...
           for (let j = 0; j < height; j++) {
             let f = 1 - j / height;
-            let color = 0;
+            let color: ColorDef;
 
             if (f < settings.margin || f > 1.0 - settings.margin) {
-              color = settings.marginColor.tbgr;
+              color = settings.marginColor;
             } else {
               f = (f - settings.margin) / (1 - 2 * settings.margin);
               switch (settings.mode) {
@@ -1170,24 +1182,28 @@ export namespace Gradient {
                     const fStep = Math.floor(f * settings.stepCount + .99999) / settings.stepCount;
                     const delimitFraction = 1 / 1024;
                     if (settings.mode === ThematicMode.SteppedWithDelimeter && Math.abs(fStep - f) < delimitFraction)
-                      color = 0xff000000;
+                      color = new ColorDef(0xff000000);
                     else
-                      color = this.mapColor(fStep).tbgr;
+                      color = this.mapColor(fStep);
                   }
                   break;
                 }
                 case ThematicMode.Smooth:
-                  color = this.mapColor(f).tbgr;
+                  color = this.mapColor(f);
                   break;
               }
             }
-            for (let i = 0; i < width; i++)
-              image[currentIdx--] = color;
+            for (let i = 0; i < width; i++) {
+              image[currentIdx--] = color!.getAlpha();
+              image[currentIdx--] = color!.colors.b;
+              image[currentIdx--] = color!.colors.g;
+              image[currentIdx--] = color!.colors.r;
+            }
           }
         }
       }
 
-      const imageBuffer = ImageBuffer.create(new Uint8Array(image.buffer), ImageBufferFormat.Rgba, width);
+      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
       assert(undefined !== imageBuffer);
       return imageBuffer!;
     }

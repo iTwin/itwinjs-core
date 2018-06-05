@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";

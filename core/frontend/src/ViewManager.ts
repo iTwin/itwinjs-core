@@ -150,6 +150,8 @@ export class ViewManager {
 
   public validateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
 
+  public onNewTilesReady(): void { this._newTilesReady = true; }
+
   // Invoked by requestAnimationFrame() whenever we have at least one viewport
   private renderLoop(): void {
     if (0 === this._viewports.length) return;

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module FontsAndSymbology */
+/** @module Symbology */
 
 import { Id64Props, DbResult, Id64, IModelStatus } from "@bentley/bentleyjs-core";
 import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
@@ -142,7 +142,7 @@ export namespace LineStyleDefinition {
     NoScale = 0x02,
   }
 
-  /** Point symbol component defintion [[ComponentType.PointSymbol]].
+  /** Point symbol component definition [[ComponentType.PointSymbol]].
    * A point symbol component identifies a GeometryPart for reference by a [[SymbolProps]].
    */
   export interface PointSymbolProps {

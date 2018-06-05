@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { System } from "./System";
@@ -36,14 +38,13 @@ export class LUTDimensions {
     }
 
     // Compute height
-    let height = nRgba / width;
-    if (width * height < nRgba) {
-      ++height;
-    }
+    const height = Math.ceil(nRgba / width);
 
     assert(height <= maxSize);
     assert(width <= maxSize);
     assert(width * height >= nRgba);
+    assert(Math.floor(height) === height);
+    assert(Math.floor(width) === width);
 
     // Row padding should never be necessary...
     assert(0 === width % nRgbaPerEntry);

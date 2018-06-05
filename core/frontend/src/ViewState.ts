@@ -1176,7 +1176,10 @@ export abstract class ViewState3d extends ViewState {
     // and then send that over to the GraphicBuilder
     const strokeOptions = new StrokeOptions();
     strokeOptions.needParams = true;
+    strokeOptions.needNormals = true;
+    strokeOptions.shouldTriangulate = false;
     const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.toggleReversedFacetFlag();
 
     const meshDimension = 10;
     const delta = 1 / (meshDimension - 1);
@@ -1187,8 +1190,8 @@ export abstract class ViewState3d extends ViewState {
     const points = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
     const params = [Point2d.create(), Point2d.create(), Point2d.create(), Point2d.create()];
 
-    for (let row = 1; row < meshDimension; row++) {
-      for (let col = 1; col < meshDimension; col++) {
+    for (let row = 1; row < meshDimension; ++row) {
+      for (let col = 1; col < meshDimension; ++col) {
         const low = Point2d.create((row - 1) * delta, (col - 1) * delta);
         const high = Point2d.create(row * delta, col * delta);
 
@@ -1218,7 +1221,7 @@ export abstract class ViewState3d extends ViewState {
         }
 
         viewport.worldToViewArray(points);
-        polyfaceBuilder.addQuadFacet(points, params);
+        polyfaceBuilder.addQuadFacet(points, params, undefined);
       }
     }
 
@@ -1312,8 +1315,8 @@ export abstract class ViewState3d extends ViewState {
       return;
     }
     const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
-    points[1].y = extents.high.y;
-    points[3].y = extents.low.y;
+    points[1].x = extents.high.x;
+    points[3].x = extents.low.x;
 
     const aboveGround = this.isEyePointAbove(extents.low.z);
     const colors: ColorDef[] = [];
@@ -1324,7 +1327,7 @@ export abstract class ViewState3d extends ViewState {
     params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
-    const builder = context.createWorldDecoration();
+    const builder = context.createWorldOverlay();
     builder.activateGraphicParams(params);
 
     /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
@@ -1332,12 +1335,13 @@ export abstract class ViewState3d extends ViewState {
     const strokeOptions = new StrokeOptions();
     strokeOptions.needParams = true;
     const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(0, 1), Point2d.create(1, 1), Point2d.create(1, 0)];
+    polyfaceBuilder.toggleReversedFacetFlag();
+    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
     polyfaceBuilder.addQuadFacet(points, uvParams);
-    const polyface = polyfaceBuilder.claimPolyface();
+    const polyface = polyfaceBuilder.claimPolyface(false);
 
     builder.addPolyface(polyface, true);
-    context.addWorldDecoration(builder.finish());
+    context.addWorldOverlay(builder.finish());
   }
 }
 

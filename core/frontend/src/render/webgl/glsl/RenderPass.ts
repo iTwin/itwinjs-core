@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { RenderPass } from "../RenderFlags";
@@ -11,15 +12,15 @@ import { RenderPass } from "../RenderFlags";
  */
 export function addRenderPass(builder: ShaderBuilder) {
   builder.addUniform("u_renderPass", VariableType.Float, (prog) => {
-      prog.addProgramUniform("u_renderPass", (uniform, params) => {
-        let renderPass = params.renderPass;
-        if (RenderPass.HiddenEdge === renderPass) {
-          renderPass = RenderPass.OpaqueGeneral; // no distinction from shader POV...
-        }
+    prog.addProgramUniform("u_renderPass", (uniform, params) => {
+      let renderPass = params.renderPass;
+      if (RenderPass.HiddenEdge === renderPass) {
+        renderPass = RenderPass.OpaqueGeneral; // no distinction from shader POV...
+      }
 
-        uniform.setUniform1f(renderPass);
-      });
+      uniform.setUniform1f(renderPass);
     });
+  });
 
   builder.addGlobal("kRenderPass_Background", VariableType.Float, "0.0", true);
   builder.addGlobal("kRenderPass_OpaqueLinear", VariableType.Float, "1.0", true);

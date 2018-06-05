@@ -27,6 +27,7 @@ description of the class
 <u>Naming:</u>
 
 1.  naming consideration - 1
+2.  `DgnCode`: ("value", parentId, Element) | default
 
 <u>Geometry Use:</u>
 
@@ -80,7 +81,6 @@ relationship description here
 ```
 
 ## Code
-
 
 | Name      | Value                     |
 | --------- | ------------------------- |

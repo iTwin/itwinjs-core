@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { ClipVector, ClipPlane, Transform } from "@bentley/geometry-core";
 import { ShaderProgramExecutor } from "./ShaderProgram";

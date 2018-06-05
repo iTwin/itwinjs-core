@@ -190,9 +190,9 @@ export class DisplayStyle3dState extends DisplayStyleState {
     resultingColors.push(color.clone());
 
     const alpha = aboveGround ? 0x80 : 0x85;
-    resultingColors[0].setAlpha(0xff);
-    resultingColors[1].setAlpha(alpha);
-    resultingColors[2].setAlpha(alpha);
+    resultingColors[0].setTransparency(0xff);
+    resultingColors[1].setTransparency(alpha);
+    resultingColors[2].setTransparency(alpha);
 
     const gradient = new Gradient.Symb();
     gradient.mode = Gradient.Mode.Cylindrical;

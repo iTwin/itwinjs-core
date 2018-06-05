@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";

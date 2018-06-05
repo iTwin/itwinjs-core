@@ -72,9 +72,8 @@ export class AzureFileHandler implements FileHandler {
    * @param bufferedDownload Set true, if writing to files should be buffered.
    * @param highWaterMark Threshold in bytes to start writing to file.
    */
-  constructor(bufferedDownload?: boolean, highWaterMark = 1000000) {
-    if (bufferedDownload)
-      this._bufferedDownload = bufferedDownload;
+  constructor(bufferedDownload = true, highWaterMark = 1000000) {
+    this._bufferedDownload = bufferedDownload;
     this._highWaterMark = highWaterMark;
   }
 

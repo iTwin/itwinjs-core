@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Elements */
+/** @module ElementAspects */
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Entity } from "./Entity";
