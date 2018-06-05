@@ -35,15 +35,21 @@
       <img class="simpleicon" src="zoom.svg" id="startZoom" />
       <img class="simpleicon" src="walk.svg" id="startWalk" />
       <img class="simpleicon" src="rotate-left.svg" id="startRotateView" />
-      <div class="simpleicon" id="switchStandardRotation" />
-      <i class="bim-icon-viewtop"></i>
+      <div class="simpleicon" id="switchStandardRotation">
+        <i class="bim-icon-viewtop"></i>
+      </div>
+      <div class="simpleicon" id="doUndo">
+        <i class="bim-icon-undo"></i>
+      </div>
+      <div class="simpleicon" id="doRedo">
+        <i class="bim-icon-redo"></i>
+      </div>
+      <span class="statusspan" id="showstatus" />
     </div>
-    <span class="statusspan" id="showstatus" />
-  </div>
-  <div id="spinner" class="bim-spinner-container">
-    <div class="bim-spinner"></div>
-  </div>
-  <canvas class="imodelview" id="imodelview"></canvas>
+    <div id="spinner" class="bim-spinner-container">
+      <div class="bim-spinner"></div>
+    </div>
+    <canvas class="imodelview" id="imodelview"></canvas>
   </div>
   <!--
       This HTML file is a template.

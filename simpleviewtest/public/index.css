@@ -219,3 +219,9 @@
 .bim-icon-measure-tool:before {
       content: "\e9b4"
 }
+.bim-icon-undo:before {
+      content: "\e982"
+}
+.bim-icon-redo:before {
+      content: "\e983"
+}

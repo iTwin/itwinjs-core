@@ -230,6 +230,16 @@ function changeView(event: any) {
   _changeView(viewMap.get(viewName)!);
 }
 
+// undo prev view manipulation
+function doUndo(_event: any) {
+  IModelApp.tools.run("View.Undo", theViewport!);
+}
+
+// redo view manipulation
+function doRedo(_event: any) {
+  IModelApp.tools.run("View.Redo", theViewport!);
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   document.getElementById("viewList")!.addEventListener("change", changeView);
@@ -239,6 +249,8 @@ function wireIconsToFunctions() {
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);
+  document.getElementById("doUndo")!.addEventListener("click", doUndo);
+  document.getElementById("doRedo")!.addEventListener("click", doRedo);
 }
 
 // ----------------------------------------------------------
