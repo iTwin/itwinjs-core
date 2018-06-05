@@ -1221,7 +1221,7 @@ export abstract class ViewState3d extends ViewState {
         }
 
         viewport.worldToViewArray(points);
-        polyfaceBuilder.addQuadFacet(points, params, undefined, );
+        polyfaceBuilder.addQuadFacet(points, params, undefined);
       }
     }
 
