@@ -35,4 +35,6 @@ Summarizing the two key points of ECSQL:
 
 In particular this means, that you never have to know anything about the database schema in the iModel. You never hvae to know table or column names. **All you need to know is your ECSchemas and their ECClasses and ECProperties.**
 
-[Next lesson: First Examples](./FirstExamples)
+---
+
+**< Previous** [Learning ECSQL](./index.md) &nbsp; **Next >** [Lesson 2: First Examples](./FirstExamples)

@@ -11,12 +11,18 @@ We will start off the tutorial by a simple ECSQL example:
 >
 > *Goal:* Return all Elements in the iModel.
 >
-> *ECSQL:* `SELECT ECInstanceId, CodeValue FROM bis.Element`
+> *ECSQL:*
+> ```sql
+> SELECT ECInstanceId, CodeValue FROM bis.Element
+> ```
 >
 > *Result*
 > ECInstanceId | CodeValue
-> -- | --
-> 1 | BlueRow
+> --- | ---
+> 1 | BlueRod
+> 2 | YellowRod
+> 3 | Room 1
+> 4 | Floor A
 
 ## Fully qualified class names
 
@@ -32,9 +38,18 @@ The example from above uses the schema alias. If you replace it by the schema na
 >
 > *Goal:* Return all Elements in the iModel.
 >
-> *ECSQL:* `SELECT ECInstanceId, CodeValue FROM BisCore.Element`
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId, CodeValue FROM BisCore.Element
+> ```
 >
 > *Result:* As in [First ECSQL](#first-ecsql)
+> ECInstanceId | CodeValue
+> --- | ---
+> 1 | BlueRod
+> 2 | YellowRod
+> 3 | Room 1
+> 4 | Floor A
 
 If you omit the schema, you will get an error:
 
@@ -42,9 +57,13 @@ If you omit the schema, you will get an error:
 >
 > *Goal:* Return all Elements in the iModel.
 >
-> *ECSQL:* `SELECT ECInstanceId, CodeValue FROM Element`
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId, CodeValue FROM Element
+> ```
 >
-> *Result:*
+> *Result*
+>
 > `Failed to execute the ECSQL: Invalid ECSQL class expression: Valid syntax: [<table space>.]<schema name or alias>.<class name>`
 
 ## Element Count
@@ -55,13 +74,15 @@ The above example is not very meaningful. In large iModels the query might retur
 >
 > *Goal:* Find out how many Elements there are in the iModel.
 >
-> *ECSQL:* `SELECT COUNT(*) FROM bis.Element`
+> *ECSQL*
+> ```sql
+> SELECT count(*) FROM bis.Element
+> ```
 >
 > *Result*
->
-> COUNT(*) |
-> -- |
-> 10 |
+> count(*) |
+> --- |
+> 4 |
 
 ## Limiting the result set
 
@@ -69,17 +90,33 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 
 > **Try it yourself**
 >
-> *Goal:* Return the first 50 Elements only.
+> *Goal:* Return the first two Elements only.
 >
-> *ECSQL:* `SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 50`
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 2
+> ```
+> *Result*
+> ECInstanceId | CodeValue
+> --- | ---
+> 1 | BlueRod
+> 2 | YellowRod
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Return the 201st through 250th Element only.
+> *Goal:* Return the third and fourth Element only.
 >
-> *ECSQL:* `SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 50 OFFSET 200`
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 2 OFFSET 3
+> ```
+> *Result*
+> ECInstanceId | CodeValue
+> --- | ---
+> 3 | Room 1
+> 4 | Floor A
 
 ## Formatting the Output
 
@@ -89,12 +126,13 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 >
 > *Goal:* Find out how many Elements there are in the iModel and give the resulting column the more meaningful name *Element Count*.
 >
-> *ECSQL:* `SELECT COUNT(*) ElementCount FROM bis.Element`
->
+> *ECSQL*
+> ```sql
+> SELECT count(*) ElementCount FROM bis.Element
+> ```
 > *Result*
->
 > ElementCount |
-> -- |
+> --- |
 > 10 |
 
 ---
@@ -103,12 +141,13 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 >
 > *Goal:* Return id and code of all Elements in the iModel and give the id column the name *ElementId* and the code value column the name *Code*.
 >
-> *ECSQL:* `SELECT ECInstanceId ElementId, CodeValue Code FROM bis.Element`
->
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId ElementId, CodeValue Code FROM bis.Element
+> ```
 > *Result*
->
 > ElementId | Code
-> -- | --
+> --- | ---
 > 10 | lll
 
 One aspect of the power of ECSQL (and SQL) is the richness of expressiveness. Instead of just returning the property values from
@@ -118,12 +157,13 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 >
 > *Goal:* Compute the perimeter and area of a circle with a radius of 10 cm.
 >
-> *ECSQL:* `SELECT 10 Radius, (2 * 3.1415 * 10) Perimeter, (3.1415 * 10 * 10) Area FROM bis.Element LIMIT 1`
->
+> *ECSQL*
+> ```sql
+> SELECT 10 Radius, (2 * 3.1415 * 10) Perimeter, (3.1415 * 10 * 10) Area FROM bis.Element LIMIT 1
+> ```
 > *Result*
->
 > Radius | Perimeter | Area
-> -- | -- | --
+> --- | --- | ---
 > 10 | 62.8 | 314.15
 
 Using **aliases** is also helpful when working with the iModelJs API. The API returns query results as JavaScript object literals where
@@ -132,13 +172,13 @@ each expression of the SELECT clause becomes the member of the object.
 If you, for example, used the [Element Count example](#element-count) with the iModeljs API, you would get this JavaScript object literal:
 
  ```ts
- { "cOUNT(*)" : 10}
+ { "count(*)" : 10}
  ```
 
 The power of JavaScript object literals is lost here, because `count(*)` is not a valid member name. If you applied an alias to
 the count expression though
 
-`SELECT COUNT(*) elementCount FROM bis.Element`
+`SELECT count(*) elementCount FROM bis.Element`
 
 the JavaScript object would now look like this:
 
@@ -166,13 +206,14 @@ To reuse the same ECSQL statement with different values, parameters can be used.
 >
 > *Goal:* Return all Models that do not have a parent Model.
 >
-> *ECSQL:* `SELECT ECInstanceId,ECClassId FROM bis.Model WHERE ParentModel=?`
->
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE ParentModel=?
+> ```
 > *Result*
->
 > ECInstanceId | ECClassId
-> -- | --
-> 0x1 | BisCore.RepositoryModel
+> --- | ---
+> 1 | BisCore.RepositoryModel
 
 As you cannot bind values to parameters in the iModelConsole, the above query returns the same as if you did the following.
 
@@ -180,13 +221,14 @@ As you cannot bind values to parameters in the iModelConsole, the above query re
 >
 > *Goal:* Return all Models that do not have a parent Model.
 >
-> *ECSQL:* `SELECT ECInstanceId FROM bis.Model WHERE ParentModel IS NULL`
->
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE ParentModel IS NULL
+> ```
 > *Result*
->
 > ECInstanceId | ECClassId
-> -- | --
-> 0x1 | BisCore.RepositoryModel
+> --- | ---
+> 1 | BisCore.RepositoryModel
 
 ## SQL Functions
 
@@ -196,12 +238,17 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 >
 > *Goal:* Return all Elements whose UserLabel contains the string 'Recreation'
 >
-> *ECSQL:* `SELECT ECInstanceId, CodeValue FROM bis.Element WHERE instr(UserLabel,'Recreation')`
->
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId, CodeValue FROM bis.Element WHERE instr(UserLabel,'Recreation')
+> ```
 > *Result*
->
 > ECInstanceId | CodeValue
-> -- | --
+> --- | ---
 > lll | XX
 > xxx | YY
 > xxx | ZZ
+
+---
+
+**< Previous** [Lession 1: Key to ECSQL](./KeyToECSQL.md) &nbsp; **Next >** [Lesson 3: ECSQL Data Types](./ECSQLDataTypes.md)

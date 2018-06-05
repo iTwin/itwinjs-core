@@ -8,26 +8,6 @@ This tutorial allows you to learn how to use ECSQL to read and query the busines
 ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It sticks to
 standard SQL (SQL-92 and SQL-99) wherever possible.
 
-## Scope
-
-The data in iModels can only be modified via the respective APIs. ECSQL is used to query the data from iModels. Therefore the tutorial only covers the query portion of ECSQL, i.e. **ECSQL SELECT** statements.
-
-## How to use the tutorial
-
-The tutorial looks at typical questions and finds the respective ECSQL answer to it. The goal of the tutorial is that you can try out all ECSQL statements used in the lessons yourself. The tool to run the ECSQL statements is the [iModelConsole](#imodelconsole) with the tutorial's [Sample iModel](#sample-imodel).
-
-This also enables you to experiment more with ECSQL by modifying the tutorial's ECSQL statements or by trying out your own ECSQL statements.
-
-### How to open the sample iModel in the iModelConsole
-
-Once you fired up the iModelConsole run this command:
-
-`.open -path:<path to sample imodel>`
-
-### How to run an ECSQL in the iModelConsole
-
-Once you opened the iModel just type in the ECSQL (without a leading .) and hit *Enter* to execute it.
-
 ## Prerequisites
 
 ### SQL
@@ -50,6 +30,42 @@ The ECSQL examples in the tutorial work with the sample iModel which you can dow
 
 The schemas for iModels are based on [BIS](../../bis/index.md). Therefore, the examples throughout the tutorial use the BIS schemas. While not required to learn ECSQL, familiarity with BIS is a good idea to get more from this tutorial.
 
+## Scope
+
+The data in iModels can only be modified via the respective APIs. ECSQL is used to query the data from iModels. Therefore the tutorial only covers the query portion of ECSQL, i.e. **ECSQL SELECT** statements.
+
+## How to use the tutorial
+
+The tutorial looks at typical questions and finds the respective ECSQL answer to it. The goal of the tutorial is that you can try out all ECSQL statements used in the lessons yourself. The tool to run the ECSQL statements is the [iModelConsole](#imodelconsole) with the tutorial's [Sample iModel](#sample-imodel).
+
+This also enables you to experiment more with ECSQL by modifying the tutorial's ECSQL statements or by trying out your own ECSQL statements.
+
+### Step 1 - Start the iModelConsole
+
+> TBD
+
+### Step 2 - Open the sample iModel
+
+Run this command:
+
+> `.open -path:<path to sample imodel>`
+
+### Step 3 - Run an ECSQL in the iModelConsole
+
+Once you opened the iModel just type in the ECSQL (without a leading .) and hit *Enter* to execute it.
+
+> **Try it yourself**
+>
+> *ECSQL*
+> ```sql
+> SELECT count(*) ElementCount FROM bis.Element
+> ```
+> *Result*
+>
+> ElementCount |
+> -- |
+> 10 |
+
 ## Tutorial Overview
 
 * [Lesson 1: Key to ECSQL](./KeyToECSQL)
@@ -59,4 +75,8 @@ The schemas for iModels are based on [BIS](../../bis/index.md). Therefore, the e
 * [Lesson 5: Class Polymorphism](./PolymorphicQueries)
 * [Lesson 6: Spatial Queries](./SpatialQueries)
 * [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries)
-* [Lesson 8: Querying ChangeSummaries](./ChangeSummaryQueries)
+* [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries)
+
+---
+
+**Next >** [Lesson 1: Key to ECSQL](./KeyToECSQL)
