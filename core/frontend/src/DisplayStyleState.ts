@@ -195,14 +195,14 @@ export class DisplayStyle3dState extends DisplayStyleState {
     resultingColors[2].setTransparency(alpha);
 
     const gradient = new Gradient.Symb();
-    gradient.mode = Gradient.Mode.Cylindrical;
+    gradient.mode = Gradient.Mode.Spherical;
     gradient.keys = [{ color: resultingColors[0], value: values[0] }, { color: resultingColors[1], value: values[1] }, { color: resultingColors[2], value: values[2] }];
     const groundImage = gradient.getImage(64, 64);
     const texture = system.createTexture(groundImage, this.iModel, RenderTexture.Params.defaults);
     if (!texture)
       return undefined;
 
-    const matParams = RenderMaterial.Params.defaults;
+    const matParams = new RenderMaterial.Params();
     matParams.diffuseColor = ColorDef.white;
     matParams.shadows = false;
     matParams.ambient = 1;
@@ -273,7 +273,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
         return false;
     }
 
-    const matParams = RenderMaterial.Params.defaults;
+    const matParams = new RenderMaterial.Params();
     matParams.diffuseColor = ColorDef.white;
     matParams.shadows = false;
     matParams.ambient = 1;

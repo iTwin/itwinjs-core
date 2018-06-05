@@ -254,7 +254,7 @@ export namespace RenderMaterial {
     public ambient: number = .3;
     public shadows = true;
 
-    private constructor() { }
+    public constructor() { }
 
     /** Create a RenderMaterial params object with QVision default values. */
     public static readonly defaults = new Params();
@@ -272,6 +272,7 @@ export namespace RenderMaterial {
     }
   }
 }
+Object.freeze(RenderMaterial.Params.defaults);
 
 export namespace ImageLight {
   export class Solar {
@@ -1081,9 +1082,9 @@ export namespace Gradient {
             }
           }
           for (let j = 0; j < height; j++) {
-            const y = j / 255 - ys;
+            const y = j / height - ys;
             for (let i = 0; i < width; i++) {
-              const x = i / 255 - xs;
+              const x = i / width - xs;
               d = x * cosA + y * sinA;
               let f;
               if (this.mode === Mode.Linear) {
@@ -1110,9 +1111,9 @@ export namespace Gradient {
           const xs = 0.5 + 0.5 * sinA - 0.25 * shift * cosA;
           const ys = 0.5 - 0.5 * cosA - 0.25 * shift * sinA;
           for (let j = 0; j < height; j++) {
-            const y = j / 255 - ys;
+            const y = j / height - ys;
             for (let i = 0; i < width; i++) {
-              const x = i / 255 - xs;
+              const x = i / width - xs;
               const xr = 0.8 * (x * cosA + y * sinA);
               const yr = y * cosA - x * sinA;
               const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
@@ -1130,9 +1131,9 @@ export namespace Gradient {
           const xs = 0.5 * shift * (cosA + sinA) * r;
           const ys = 0.5 * shift * (sinA - cosA) * r;
           for (let j = 0; j < height; j++) {
-            const y = ys + j / 255.0 - 0.5;
+            const y = ys + j / height - 0.5;
             for (let i = 0; i < width; i++) {
-              const x = xs + i / 255.0 - 0.5;
+              const x = xs + i / width - 0.5;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
               const color = this.mapColor(f);
               image[currentIdx--] = color.getAlpha();
@@ -1147,9 +1148,9 @@ export namespace Gradient {
           const xs = 0.5 + 0.5 * sinA - 0.5 * shift * cosA;
           const ys = 0.5 - 0.5 * cosA - 0.5 * shift * sinA;
           for (let j = 0; j < height; j++) {
-            const y = j / 255.0 - ys;
+            const y = j / height - ys;
             for (let i = 0; i < width; i++) {
-              const x = i / 255.0 - xs;
+              const x = i / width - xs;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
               const color = this.mapColor(f);
               image[currentIdx--] = color.getAlpha();
