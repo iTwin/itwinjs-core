@@ -195,7 +195,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     resultingColors[2].setTransparency(alpha);
 
     const gradient = new Gradient.Symb();
-    gradient.mode = Gradient.Mode.Cylindrical;
+    gradient.mode = Gradient.Mode.Spherical;
     gradient.keys = [{ color: resultingColors[0], value: values[0] }, { color: resultingColors[1], value: values[1] }, { color: resultingColors[2], value: values[2] }];
     const groundImage = gradient.getImage(64, 64);
     const texture = system.createTexture(groundImage, this.iModel, RenderTexture.Params.defaults);

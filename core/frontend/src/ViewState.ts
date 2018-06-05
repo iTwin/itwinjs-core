@@ -1273,11 +1273,12 @@ export abstract class ViewState3d extends ViewState {
     return env.ground.elevation + this.iModel.globalOrigin.z;
   }
 
+  protected _forceGroundPlane: boolean = false;
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
   public getGroundExtents(vp: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (!displayStyle.getEnvironment().ground.display)
+    if (!displayStyle.getEnvironment().ground.display && !this._forceGroundPlane)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
