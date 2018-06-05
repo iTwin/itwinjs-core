@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ImageSource, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget } from "../System";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -26,7 +26,6 @@ import { PointStringPrimitive } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
-import { IsTranslucent } from "./RenderFlags";
 
 export const enum ContextState {
   Uninitialized,

@@ -1042,10 +1042,12 @@ export namespace Gradient {
 
       const color0 = this.keys[idx].color;
       const color1 = this.keys[idx + 1].color;
-      const red = w0 * color0.colors.r + w1 * color1.colors.r;
-      const green = w0 * color0.colors.g + w1 * color1.colors.g;
-      const blue = w0 * color0.colors.b + w1 * color1.colors.b;
-      const transparency = w0 * color0.colors.t + w1 * color1.colors.t;
+      const colors0 = color0.colors;
+      const colors1 = color1.colors;
+      const red = w0 * colors0.r + w1 * colors1.r;
+      const green = w0 * colors0.g + w1 * colors1.g;
+      const blue = w0 * colors0.b + w1 * colors1.b;
+      const transparency = w0 * colors0.t + w1 * colors1.t;
 
       return ColorDef.from(this.roundToByte(red), this.roundToByte(green), this.roundToByte(blue), this.roundToByte(transparency));
     }
@@ -1204,6 +1206,7 @@ export namespace Gradient {
         }
       }
 
+      assert(-1 === currentIdx);
       const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
       assert(undefined !== imageBuffer);
       return imageBuffer!;
