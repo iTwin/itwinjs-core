@@ -63,7 +63,7 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 > *Result*
 >
 > ElementCount |
-> -- |
+> --- |
 > 10 |
 
 ## Tutorial Overview
