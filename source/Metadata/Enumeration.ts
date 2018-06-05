@@ -156,7 +156,6 @@ export default class Enumeration extends SchemaItem {
         this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description); // throws ECObjectsError if there are duplicate values
       });
     }
-    // this._enumerators = jsonObj.enumerators;
   }
 
   public async accept(visitor: SchemaItemVisitor) {
