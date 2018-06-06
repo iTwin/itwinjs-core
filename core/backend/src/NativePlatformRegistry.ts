@@ -15,8 +15,7 @@ try {
   realrequire = eval("require");
 } catch (e) { }
 
-/** Internal class to manage the native code behind imodeljs-backend -- *rarely used by apps* -- See [[IModelHost]].
- */
+/** @hidden */
 export class NativePlatformRegistry {
   private static _platform: any;
 
@@ -76,7 +75,7 @@ export class NativePlatformRegistry {
     return realrequire(addonFileName);
   }
 
-  /** Internal method to load and register the standard platform -- *rarely used by apps* -- See [[IModelHost]]. */
+  /** @hidden */
   public static loadAndRegisterStandardNativePlatform(dir?: string) {
 
     if (Platform.imodeljsMobile !== undefined) {
@@ -107,7 +106,7 @@ export class NativePlatformRegistry {
   }
 }
 
-/** Internal utility to compute the native package for the current environment -- *rarely used by apps* -- See [[IModelHost]]. */
+/** @hidden */
 class NodeAddonPackageName {
 
   /** @hidden */
