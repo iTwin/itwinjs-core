@@ -1,12 +1,10 @@
+---
+tableRowAnchors: true
+---
+
 # BIS Glossary
 
-Key BIS terms used in this documentation set are defined on this page.
-
-<!--
-**TODO - Style Questions**
-- How long is too long for a definition?
-- Is it ok to refer from the glossary to other pages (for more details....)?
--->
+Key BIS terms used in this documentation are defined on this page.
 
 <!-- NOTE: Need to use HTML named anchors because markdown doesn't have that concept yet. -->
 <!-- NOTE: The named anchor should be the glossary term in lowercase with words separated by "-" -->
