@@ -201,6 +201,9 @@ class PropertyDataBuilder {
   }
 }
 
+/**
+ * Presentation Rules-driven property data provider implementation.
+ */
 export default class PropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
 
@@ -222,8 +225,17 @@ export default class PropertyDataProvider extends ContentDataProvider implements
     super.invalidateCache(props);
   }
 
-  protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field) && !this.isFieldFavorite(field); }
+  /** Excludes fields that are hidden and not favorite. */
+  protected shouldExcludeFromDescriptor(field: Field): boolean {
+    return this.isFieldHidden(field) && !this.isFieldFavorite(field);
+  }
 
+  /**
+   * Should fields with no values be included in the property list. No value means:
+   * - For *primitive* fields: null, undefined, "" (empty string)
+   * - For *array* fields: [] (empty array)
+   * - For *struct* fields: {} (object with no members)
+   */
   public get includeFieldsWithNoValues(): boolean { return this._includeFieldsWithNoValues; }
   public set includeFieldsWithNoValues(value: boolean) {
     if (this._includeFieldsWithNoValues === value)
@@ -232,17 +244,28 @@ export default class PropertyDataProvider extends ContentDataProvider implements
     this.invalidateCache({ content: true });
   }
 
-  /** Is the specified field in the favorites list. */
+  /** Should the specified field be included in the favorites category. */
   protected isFieldFavorite(_field: Field): boolean { return false; }
 
+  /**
+   * Sorts the specified list of categories by priority. May be overriden
+   * to supply a different sorting algorithm.
+   */
   protected sortCategories(categories: CategoryDescription[]): void {
     categories.sort(prioritySortFunction);
   }
 
+  /**
+   * Sorts the specified list of fields by priority. May be overriden
+   * to supply a different sorting algorithm.
+   */
   protected sortFields(_category: CategoryDescription, fields: Field[]): void {
     fields.sort(prioritySortFunction);
   }
 
+  /**
+   * Returns property data.
+   */
   public getData = _.memoize(async (): Promise<PropertyData> => {
     const content = await this.getContent();
     if (!content || 0 === content.contentSet.length)

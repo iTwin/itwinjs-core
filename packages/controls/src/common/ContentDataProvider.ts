@@ -9,14 +9,46 @@ import { KeySet, PageOptions, SelectionInfo } from "@bentley/ecpresentation-comm
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 import * as content from "@bentley/ecpresentation-common";
 
+/**
+ * Properties for invalidating content cache.
+ */
 export interface CacheInvalidationProps {
+  /**
+   * Invalidate content descriptor. Should be set when invalidating
+   * after changing anything that affects how the descriptor is built:
+   * `keys`, `selectionInfo`, `connection`, `rulesetId`.
+   */
   descriptor?: boolean;
+
+  /**
+   * Invalidate configured content descriptor. Should be set when
+   * invalidating something that affects how descriptor is configured
+   * in the `configureContentDescriptor` callback, e.g. hidden fields,
+   * sorting, filtering, etc.
+   */
   descriptorConfiguration?: boolean;
+
+  /**
+   * Invalidate cached content size. Should be set after changing anything
+   * that may affect content size. Generally, it should always be set when
+   * the `descriptor` flag is set. Additionally, it should also be set after
+   * setting `filterExpression` or similar descriptor properties.
+   */
   size?: boolean;
+
+  /**
+   * Invalidate cached content. Should be set after changing anything that may
+   * affect content. Generally, it should always be set when the `descriptor`
+   * flag is set. Additionally, it should also be set after setting `sortingField`,
+   * `sortDirection`, `filterExpression` and similar fields.
+   */
   content?: boolean;
 }
 namespace CacheInvalidationProps {
-  export const full = () => ({ descriptor: true, descriptorConfiguration: true, size: true, content: true });
+  /**
+   * Create CacheInvalidationProps to fully invalidate all caches.
+   */
+  export const full = (): CacheInvalidationProps => ({ descriptor: true, descriptorConfiguration: true, size: true, content: true });
 }
 
 /**
@@ -150,7 +182,6 @@ export default abstract class ContentDataProvider {
 
   /**
    * Get the number of content records.
-   * @returns The total number of records (without paging).
    */
   protected getContentSetSize = _.memoize(async (): Promise<number> => {
     const descriptor = await this.getContentDescriptor();

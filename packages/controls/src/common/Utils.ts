@@ -4,9 +4,18 @@
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
 
+/**
+ * An interface of something that has a priority.
+ * @hidden
+ */
 export interface IPrioritized {
   priority: number;
 }
+/**
+ * A sorting algorithm for `Array.sort` that sorts items by priority.
+ * Higher priority items appear first in the list.
+ * @hidden
+ */
 export const prioritySortFunction = (a: IPrioritized, b: IPrioritized): number => {
   if (a.priority > b.priority)
     return -1;
@@ -16,6 +25,12 @@ export const prioritySortFunction = (a: IPrioritized, b: IPrioritized): number =
 };
 
 let localizationNamespace: I18NNamespace | undefined;
+/**
+ * Translate a string with the specified id from `ECPresentationControls`
+ * localization namespace. The `stringId` should not contain namespace - it's
+ * prepended automatically.
+ * @hidden
+ */
 export const translate = async (stringId: string): Promise<string> => {
   const localizationNamespaceName = "ECPresentationControls";
   if (!localizationNamespace) {

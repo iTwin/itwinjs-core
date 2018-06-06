@@ -5,6 +5,7 @@
 
 import { Node } from "@bentley/ecpresentation-common";
 
+/** @hidden */
 export interface ColorMap {
   [name: string]: number;
 }

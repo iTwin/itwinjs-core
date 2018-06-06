@@ -26,7 +26,7 @@ class MemoizationHelpers {
 }
 
 /**
- * Tree data provider which uses ECPresentation to query nodes
+ * Presentation Rules-driven tree data provider.
  */
 export default class TreeDataProvider {
   private _rulesetId: string;
@@ -74,17 +74,13 @@ export default class TreeDataProvider {
     };
   }
 
-  private static getNodeKeyFromTreeNodeItem(item: TreeNodeItem): NodeKey {
-    return item.extendedData.key as NodeKey;
-  }
-
   /**
    * Returns the root nodes.
    * @param pageOptions Information about the requested page of data.
    */
   public getRootNodes = _.memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
     const nodes = await ECPresentation.presentation.getRootNodes(this.connection, pageOptions, this.createRequestOptions());
-    return this.createTreeNodeItems(nodes);
+    return createTreeNodeItems(nodes);
   }, MemoizationHelpers.getRootNodesKeyResolver);
 
   /**
@@ -100,9 +96,9 @@ export default class TreeDataProvider {
    * @param pageOptions Information about the requested page of data.
    */
   public getChildNodes = _.memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
+    const parentKey = getNodeKeyFromTreeNodeItem(parentNode);
     const nodes = await ECPresentation.presentation.getChildren(this.connection, parentKey, pageOptions, this.createRequestOptions());
-    const items = this.createTreeNodeItems(nodes);
+    const items = createTreeNodeItems(nodes);
     items.forEach((item: TreeNodeItem) => {
       item.parentId = parentNode.id;
     });
@@ -114,32 +110,36 @@ export default class TreeDataProvider {
    * @param parentNode The parent node to return children count for.
    */
   public getChildNodesCount = _.memoize(async (parentNode: TreeNodeItem): Promise<number> => {
-    const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
+    const parentKey = getNodeKeyFromTreeNodeItem(parentNode);
     return await ECPresentation.presentation.getChildrenCount(this.connection, parentKey, this.createRequestOptions());
   }, MemoizationHelpers.getChildNodesCountKeyResolver);
-
-  private createTreeNodeItem(node: Readonly<Node>): TreeNodeItem {
-    const item: TreeNodeItem = {
-      id: [...node.key.pathFromRoot].reverse().join("/"),
-      label: node.label,
-      description: node.description || "",
-      hasChildren: node.hasChildren || false,
-      labelForeColor: StyleHelper.getForeColor(node),
-      labelBackColor: StyleHelper.getBackColor(node),
-      labelBold: StyleHelper.isBold(node),
-      labelItalic: StyleHelper.isItalic(node),
-      displayCheckBox: node.isCheckboxVisible || false,
-      checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
-      isCheckBoxEnabled: node.isCheckboxEnabled || false,
-      extendedData: { key: node.key },
-    };
-    return item;
-  }
-
-  private createTreeNodeItems(nodes: ReadonlyArray<Readonly<Node>>): TreeNodeItem[] {
-    const list = new Array<TreeNodeItem>();
-    for (const node of nodes)
-      list.push(this.createTreeNodeItem(node));
-    return list;
-  }
 }
+
+const getNodeKeyFromTreeNodeItem = (item: TreeNodeItem): NodeKey => {
+  return item.extendedData.key as NodeKey;
+};
+
+const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>): TreeNodeItem[] => {
+  const list = new Array<TreeNodeItem>();
+  for (const node of nodes)
+    list.push(createTreeNodeItem(node));
+  return list;
+};
+
+const createTreeNodeItem = (node: Readonly<Node>): TreeNodeItem => {
+  const item: TreeNodeItem = {
+    id: [...node.key.pathFromRoot].reverse().join("/"),
+    label: node.label,
+    description: node.description || "",
+    hasChildren: node.hasChildren || false,
+    labelForeColor: StyleHelper.getForeColor(node),
+    labelBackColor: StyleHelper.getBackColor(node),
+    labelBold: StyleHelper.isBold(node),
+    labelItalic: StyleHelper.isItalic(node),
+    displayCheckBox: node.isCheckboxVisible || false,
+    checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
+    isCheckBoxEnabled: node.isCheckboxEnabled || false,
+    extendedData: { key: node.key },
+  };
+  return item;
+};

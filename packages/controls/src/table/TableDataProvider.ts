@@ -18,6 +18,9 @@ interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
 }
 
+/**
+ * Presentation Rules-driven table data provider.
+ */
 export default class TableDataProvider extends ContentDataProvider implements ITableDataProvider {
   private _sortColumnKey: string | undefined;
   private _sortDirection: SortDirection = SortDirection.NoSort;
@@ -30,6 +33,9 @@ export default class TableDataProvider extends ContentDataProvider implements IT
     this._pages = new PageContainer(pageSize, cachedPagesCount);
   }
 
+  /**
+   * `ECExpression` for filtering data in the table.
+   */
   public get filterExpression(): string | undefined { return this._filterExpression; }
   public set filterExpression(value: string | undefined) {
     if (this._filterExpression === value)
@@ -38,6 +44,9 @@ export default class TableDataProvider extends ContentDataProvider implements IT
     this.invalidateCache({ descriptorConfiguration: true, size: true, content: true });
   }
 
+  /**
+   * Get the column which is used for sorting data in the table.
+   */
   public get sortColumn(): Promise<ColumnDescription | undefined> {
     return (async () => {
       if (!this._sortColumnKey)
@@ -47,9 +56,31 @@ export default class TableDataProvider extends ContentDataProvider implements IT
     })();
   }
 
+  /**
+   * Get key of the column which is used for sorting data in the table.
+   */
   public get sortColumnKey() { return this._sortColumnKey; }
 
+  /**
+   * Get sort direction. Defaults to `SortDirection.NoSort` which means
+   * undefined sorting.
+   */
   public get sortDirection() { return this._sortDirection; }
+
+  /**
+   * Sorts the data in this data provider.
+   * @param columnIndex Index of the column to sort on.
+   * @param sortDirection Sorting direction.
+   */
+  public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
+    const columns = await this.getColumns();
+    const sortingColumn = columns[columnIndex];
+    if (!sortingColumn)
+      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "Invalid column index");
+    this._sortColumnKey = sortingColumn.key;
+    this._sortDirection = sortDirection;
+    this.invalidateCache({ descriptorConfiguration: true, content: true });
+  }
 
   protected invalidateCache(props: CacheInvalidationProps): void {
     if (props.descriptor) {
@@ -89,27 +120,16 @@ export default class TableDataProvider extends ContentDataProvider implements IT
   }
 
   /**
-   * Sorts the data in this data provider.
-   * @param columnIndex Index of the column to sort on.
-   * @param sortDirection Sorting direction.
+   * Returns column definitions.
    */
-  public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
-    const columns = await this.getColumns();
-    const sortingColumn = columns[columnIndex];
-    if (!sortingColumn)
-      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "Invalid column index");
-    this._sortColumnKey = sortingColumn.key;
-    this._sortDirection = sortDirection;
-    this.invalidateCache({ descriptorConfiguration: true, content: true });
-  }
-
-  /** Returns column definitions for the content. */
   public getColumns = _.memoize(async (): Promise<ColumnDescription[]> => {
     const descriptor = await this.getContentDescriptor();
     return createColumns(descriptor);
   });
 
-  /** Get the total number of rows in the content. */
+  /**
+   * Get the total number of rows.
+   */
   public async getRowsCount() {
     return await this.getContentSetSize();
   }

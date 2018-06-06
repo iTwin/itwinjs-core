@@ -175,8 +175,18 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
   return record;
 };
 
+/**
+ * A helper class which creates `ui-components` objects from `ecpresentation` objects.
+ */
 export default class ContentBuilder {
-
+  /**
+   * Create a property record for specified field and item
+   * @param field Content field to create the record for
+   * @param item Content item containing the values for `field`
+   * @param path Optional path that specifies a path of fields to be
+   * included in the record. Only makes sense if `field` is `NestedContentField`.
+   * Should start from the first nested field inside `field`.
+   */
   public static createPropertyRecord(field: content.Field, item: content.Item, path?: content.Field[]): PropertyRecord {
     if (field.isNestedContentField())
       return createNestedContentRecord(field, item, path);
@@ -187,6 +197,10 @@ export default class ContentBuilder {
       isValueReadOnly, item.isFieldMerged(field.name));
   }
 
+  /**
+   * Create a property description for the specified field
+   * @param field Content field to create description for
+   */
   public static createPropertyDescription(field: content.Field): PropertyDescription {
     const descr: PropertyDescription = {
       name: field.name,
