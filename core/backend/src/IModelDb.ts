@@ -23,8 +23,6 @@ import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 
-/** @module iModels */
-
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 

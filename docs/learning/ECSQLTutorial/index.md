@@ -60,6 +60,7 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 > ```sql
 > SELECT count(*) ElementCount FROM bis.Element
 > ```
+>
 > *Result*
 >
 > ElementCount |
@@ -79,4 +80,4 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 
 ---
 
-**Next >** [Lesson 1: Key to ECSQL](./KeyToECSQL)
+[**Next >**](./KeyToECSQL)

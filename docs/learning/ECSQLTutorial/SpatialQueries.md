@@ -18,6 +18,7 @@ The index is exposed to ECSQL via the ECClass `BisCore.SpatialIndex`. See [ECSQL
 > ```
 >
 > *Result*
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > 0x1 | XXX
@@ -59,4 +60,4 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 
 ---
 
-**< Previous** [Lession 5: Class Polymorphism](./PolymorphicQueries.md) &nbsp; **Next >** [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
+[**< Previous**](./PolymorphicQueries.md) &nbsp; | &nbsp; [**Next >**](./MetaQueries.md)

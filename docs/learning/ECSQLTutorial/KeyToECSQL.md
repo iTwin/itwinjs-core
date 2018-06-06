@@ -12,13 +12,17 @@ Let's start by looking at the differences between ECSQL and SQL.
 
 This is a simple **SQL** statement:
 
-  `SELECT FirstName, LastName FROM Employee WHERE Company='ACME'`
+```sql
+SELECT FirstName, LastName FROM Employee WHERE Company='ACME'
+```
 
 It returns the first and last name of all employees working for the company ACME.
 
 Guess, how it looks like in **ECSQL**? Here it is:
 
-  `SELECT FirstName, LastName FROM Employee WHERE Company='ACME'`
+```sql
+SELECT FirstName, LastName FROM Employee WHERE Company='ACME'
+```
 
 As you can see, there is **no syntactical difference** between ECSQL and SQL in that example. And that is true for ECSQL in general.
 
@@ -32,6 +36,7 @@ As you can see, there is **no syntactical difference** between ECSQL and SQL in 
 > ```
 >
 > *Result*
+>
 > count(*) |
 > --- |
 > 4 |
@@ -51,4 +56,4 @@ That abstraction is a huge simplification for ECSQL users. The database schema o
 
 ---
 
-**< Previous** [Learning ECSQL](./index.md) &nbsp; **Next >** [Lesson 2: First Examples](./FirstExamples)
+[**< Previous**](./index.md)  &nbsp; | &nbsp; [**Next >**](./FirstExamples)
