@@ -9,8 +9,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItem } from "..";
 
 /**
- * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
- * first-class concept is to allow the iModel to not be dependent on any hard-coded Units
+ * An InvertedUnit is a a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
  */
 export default class InvertedUnit extends SchemaItem {
   public readonly schema: Schema;
