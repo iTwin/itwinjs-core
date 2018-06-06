@@ -2,6 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
+
 import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
 import { Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
@@ -18,6 +19,7 @@ const s_focused: any = {};
 const s_notSnappable: any = {};
 const s_appFiltered: any = {};
 
+/** @hidden */
 export class AccuSnapToolState {
   public enabled = false;
   public locate = false;
@@ -58,6 +60,7 @@ class AccuSnapSettings {
   public popupDelay = 5; // delay before info balloon pops up - in 10th of a second
 }
 
+/** A aide for snapping to interesting points on elements as the cursor moves over them. */
 export class AccuSnap {
   public currHit?: HitDetail;                            // currently active hit
   public aSnapHits?: HitList;                            // current list of hits.
@@ -154,7 +157,7 @@ export class AccuSnap {
     return this.totalMotionSq > this.motionToleranceSq;
   }
 
-  /** clear any AccuSnap info on the screen and release any hit path references */
+  /** Clear any AccuSnap info on the screen and release any hit path references */
   public clear(): void { this.setCurrHit(undefined); }
   public setCurrHit(newHit?: HitDetail): void {
     const newSnap = AccuSnap.toSnapDetail(newHit);
@@ -656,7 +659,7 @@ export class AccuSnap {
     return undefined;
   }
 
-  /** when in auto-locate mode, advance to the next hit without searching again. */
+  /** When in auto-locate mode, advance to the next hit without searching again. */
   public resetButton(): SnapStatus {
     let snap: SnapDetail | undefined;
     const out = new LocateResponse();
@@ -812,7 +815,7 @@ export class AccuSnap {
     return preferred;
   }
 
-  /** find the best snap point according to the current cursor location */
+  /** Find the best snap point according to the current cursor location */
   public onMotion(ev: BeButtonEvent): void {
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
@@ -916,7 +919,7 @@ export class AccuSnap {
   }
 
   /**
-   * AccuSnap to reevaluate the snap at the current cursor location.
+   * Force AccuSnap to reevaluate the snap at the current cursor location.
    * This is useful of an application changes the snap mode and wants AccuSnap to choose it immediately, without
    * requiring the user to move the mouse.
    */
