@@ -16,7 +16,7 @@ describe("Constant tests", () => {
       testConstant = new Constant(schema, "TestEnumeration");
     });
 
-    it("should call visitInvertedUnit on a SchemaItemVisitor object", async () => {
+    it("should call visitConstant on a SchemaItemVisitor object", async () => {
       expect(testConstant).to.exist;
       const mockVisitor = { visitConstant: sinon.spy() };
       await testConstant.accept(mockVisitor);
@@ -24,7 +24,7 @@ describe("Constant tests", () => {
       expect(mockVisitor.visitConstant.calledWithExactly(testConstant)).to.be.true;
     });
 
-    it("should safely handle a SchemaItemVisitor without visitInvertedUnit defined", async () => {
+    it("should safely handle a SchemaItemVisitor without visitConstant defined", async () => {
       expect(testConstant).to.exist;
       await testConstant.accept({});
     });
