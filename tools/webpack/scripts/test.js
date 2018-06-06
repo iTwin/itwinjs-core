@@ -45,15 +45,22 @@ exports.handler = (argv) => {
   const paths = require("../config/paths");
   const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 
+  
   // Support jest-style args for updating all snapshots
   if (argv.updateSnapshot || argv.u)
-    process.env.CHAI_JEST_SNAPSHOT_UPDATE_ALL = "true";
-
+  process.env.CHAI_JEST_SNAPSHOT_UPDATE_ALL = "true";
+  
   // Some additional options are required for CI builds
-  const reporterOptions = (!CONTINUOUS_INTEGRATION) ? [ "--inline-diffs",  "--colors" ] : [
-    "--reporter", "mocha-junit-reporter",
-    "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
-  ];
+  let reporterOptions = [ "--inline-diffs",  "--colors" ];
+  if (CONTINUOUS_INTEGRATION) { 
+    const reportDir = (argv.subdirectory) ? path.join(baseConfig.appLib, argv.subdirectory) : baseConfig.appLib;
+    const appJUnitTestResults = path.resolve(reportDir, "junit_results.xml"),
+
+    reporterOptions = [
+      "--reporter", "mocha-junit-reporter",
+      "--reporter-options", `mochaFile=${appJUnitTestResults}`,
+    ];
+  }
 
   const watchOptions = (!CONTINUOUS_INTEGRATION && argv.watch) ? ["--watch", "--interactive"] : [];
   const debugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];

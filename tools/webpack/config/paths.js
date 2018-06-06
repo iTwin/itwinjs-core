@@ -92,7 +92,6 @@ module.exports = {
   // lib/
   appLibPublic: path.resolve(baseConfig.appLib, "public"),
   appBuiltMainJs: path.resolve(baseConfig.appLib, "main.js"),
-  appJUnitTestResults: path.resolve(baseConfig.appLib, "junit_results.xml"),
   appFrontendStats: path.resolve(baseConfig.appLib, "frontend.stats.json"),
   appBackendStats: path.resolve(baseConfig.appLib, "backend.stats.json"),
 
