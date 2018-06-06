@@ -5,18 +5,19 @@
 ### ($backend)
 
 - [IModelHost]($backend:IModelHost)
-- [Codes]($backend:Codes)
-- [Elements]($backend:Elements)
-- [Element Aspects]($backend:ElementAspects)
-- [Models]($backend:Models)
-- [Relationships]($backend:Relationships)
-- [View Definitions]($backend:ViewDefinitions)
-- [Categories]($backend:Categories)
 - [iModels]($backend:iModels)
-- [Portability]($backend:Portability)
 - [Schema]($backend:Schema)
+- [Models]($backend:Models)
+- [Elements]($backend:Elements)
+- [Codes]($backend:Codes)
+- [View Definitions]($backend:ViewDefinitions)
+- [Relationships]($backend:Relationships)
+- [Element Aspects]($backend:ElementAspects)
+- [Categories]($backend:Categories)
+- [Symbology]($backend:Symbology)
 - [ECDb]($backend:ECDb)
 - [ECSQL]($backend:ECSQL)
+- [Portability]($backend:Portability)
 
 ---
 
@@ -26,14 +27,15 @@
 - [IModelConnection]($frontend:IModelConnection)
 - [ElementState]($frontend:ElementState)
 - [ModelState]($frontend:ModelState)
-- [AccuDraw]($frontend:AccuDraw)
-- [Locating Elements]($frontend:LocationAndSnapping)
-- [Notifications]($frontend:Notifications)
-- [Selection Set]($frontend:SelectionSet)
-- [Search]($frontend:Search)
 - [Tools]($frontend:Tools)
 - [Views]($frontend:Views)
+- [Locating Elements]($frontend:LocationAndSnapping)
+- [AccuDraw]($frontend:AccuDraw)
+- [Notifications]($frontend:Notifications)
+- [Selection Set]($frontend:SelectionSet)
 - [Rendering]($frontend:Rendering)
+- [Tile]($frontend:Tile)
+- [WebGL]($frontend:WebGL)
 
 ---
 
