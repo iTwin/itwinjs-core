@@ -88,26 +88,18 @@ function getClientEnvironment(publicUrl) {
       return env;
     }, {}),
   };
-
-  // On the backend, we still want to use Webpack DefinePlugin to make these compile-time environment variables available (and fixed),
-  // but we *also* want to preserve other run-time environment variables (as long as they aren't overridden by this baked-in subset).
-  const backendStringified = {
-    "process.env": `Object.assign({}, process.env, ${ JSON.stringify(raw) })`,
-  };
-
-  // Also, (for backend builds) because we may hide a lot of debugging or assertion code inside something like:
-  // ```
-  //   if (process.env.NODE_ENV === "development") {...}
-  // ```
-  // We'll use Webpack DefinePlugin to rewrite specific values (i.e., `process.env.NODE_ENV` ===> `"development"`)
-  // ***before*** we rewrite other instances of `process.env` (via backendStringified - i.e., `process.env` ===> `Object.assign(`...)
-  // This way, the UglifyJS optimizer can see that these are constant values and do proper dead code removal of those if statements.
-  const individualStringified = Object.keys(raw).reduce((env, key) => {
+  
+  // On the backend, we still want to use Webpack DefinePlugin to make these 
+  // compile-time environment variables available (and fixed), but we *also*
+  //  want to preserve other run-time environment variables.
+  // So we'll use Webpack DefinePlugin to rewrite specific values (i.e., `process.env.NODE_ENV` ===> `"development"`)
+  // ***but not*** other instances of `process.env`.
+  const backendStringified = Object.keys(raw).reduce((env, key) => {
     env[`process.env.${key}`] = JSON.stringify(raw[key]);
     return env;
   }, {});
 
-  return { raw, frontendStringified, backendStringified, individualStringified };
+  return { raw, frontendStringified, backendStringified };
 }
 
 module.exports = getClientEnvironment;

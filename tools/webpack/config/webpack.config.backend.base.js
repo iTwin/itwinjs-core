@@ -143,7 +143,6 @@ module.exports = (publicPath) => {
       new plugins.CopyNativeAddonsPlugin(),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
-      new webpack.DefinePlugin(env.individualStringified),
       new webpack.DefinePlugin(env.backendStringified),
       new webpack.DefinePlugin({ "global.GENTLY": false }),
       // Watcher doesn't work well if you mistype casing in a path so we use
@@ -153,4 +152,3 @@ module.exports = (publicPath) => {
     ]
   };
 };
-  
