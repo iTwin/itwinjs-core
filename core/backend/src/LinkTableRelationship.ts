@@ -130,6 +130,7 @@ export interface SourceAndTarget {
   targetId: Id64;
 }
 
+/** Manages [[LinkTableRelationship]]s. */
 export class IModelDbLinkTableRelationships {
   private _iModel: IModelDb;
 

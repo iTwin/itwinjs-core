@@ -10,6 +10,7 @@ import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 
+/** Monitors backend activity. */
 export interface AppActivityMonitor {
   /** Check if the app is idle, that is, not busy. */
   isIdle(): boolean;
@@ -40,12 +41,14 @@ export interface AutoPushParams {
   autoSchedule: boolean;
 }
 
+/** Identifies the current state of an AutoPush object. */
 export enum AutoPushState {
   NotRunning,
   Scheduled,
   Pushing,
 }
 
+/** Identifies an AutoPush event. */
 export enum AutoPushEventType {
   PushStarted,
   PushFinished,

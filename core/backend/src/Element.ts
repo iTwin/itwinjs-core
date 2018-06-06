@@ -145,6 +145,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   }
 }
 
+/** A 3D Graphical Element */
 export abstract class GraphicalElement3d extends GeometricElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }

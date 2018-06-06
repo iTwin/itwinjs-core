@@ -23,7 +23,7 @@ export class IModelHostConfiguration {
   /** Deployment configuration of Connect and IModelHub services - these are used to find Projects and iModels */
   public iModelHubDeployConfig: DeploymentEnv = "QA";
 
-  /** The native platform to use. Normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
+  /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;
 
   private _briefcaseCacheDir: string = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"));

@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module RpcInterface */
+
 import { RpcDefaultConfiguration, RpcConfiguration } from "./core/RpcConfiguration";
 import { RpcInterfaceDefinition } from "../RpcInterface";
 
@@ -15,6 +17,7 @@ import { RpcInterfaceDefinition } from "../RpcInterface";
 // It will not work if one side uses TestRpcManager and the other uses some other protocol (say, cloud).
 // That means that you must actually program the backend to know when it is running in direct test
 // mode and to employ TestRpcManager in that case.
+/** @hidden */
 export class TestRpcManager {
   public static initialize(interfaces: RpcInterfaceDefinition[]) {
     const config = class extends RpcDefaultConfiguration {

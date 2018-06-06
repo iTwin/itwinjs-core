@@ -15,14 +15,12 @@ try {
   realrequire = eval("require");
 } catch (e) { }
 
-/** Class that holds the singleton platform instance that was loaded by the app for this iModelJs session. It is up to the app to load the platform. */
+/** Internal class to manage the native code behind imodeljs-backend -- *rarely used by apps* -- See [[IModelHost]].
+ */
 export class NativePlatformRegistry {
   private static _platform: any;
 
-  /** Return the singleton platform instance configured for this iModelJs session.
-   * See [[NativePlatformRegistry.register]]
-   * @throws [[IModelError]] if the platform was not loaded.
-   */
+  /** @hidden */
   public static getNativePlatform(): any {
     if (!NativePlatformRegistry._platform)
       throw new IModelError(IModelStatus.FileNotLoaded, "Node platform not loaded");
@@ -35,7 +33,7 @@ export class NativePlatformRegistry {
     return NativePlatformRegistry._platform !== undefined;
   }
 
-  /** Call this function to register the platform */
+  /** @hidden */
   public static register(platform: any): void {
     NativePlatformRegistry._platform = platform;
 
@@ -66,7 +64,7 @@ export class NativePlatformRegistry {
     }
   }
 
-  /** Load the appropriate version of the standard addon. */
+  /** @hidden */
   public static loadStandardAddon(dir?: string): any | undefined {
     if (typeof (process) === "undefined" || process.version === "")
       throw new Error("could not determine process type");
@@ -78,7 +76,7 @@ export class NativePlatformRegistry {
     return realrequire(addonFileName);
   }
 
-  /** Load and register the standard platform. */
+  /** Internal method to load and register the standard platform -- *rarely used by apps* -- See [[IModelHost]]. */
   public static loadAndRegisterStandardNativePlatform(dir?: string) {
 
     if (Platform.imodeljsMobile !== undefined) {
@@ -109,15 +107,10 @@ export class NativePlatformRegistry {
   }
 }
 
-/** Utility class to help apps compute the name of the default platform package that should be used in the current environment.
- * Normally, only an Electron app should have to use this class.
- * NB: This class is NOT to be used directly by the backend.
- */
-export class NodeAddonPackageName {
+/** Internal utility to compute the native package for the current environment -- *rarely used by apps* -- See [[IModelHost]]. */
+class NodeAddonPackageName {
 
-  /** Compute the name of default platform package that should be used for this environment. This method uses the same naming formula that is used by
-   * the bb part that generates and publishes the default platform packages (iModelJsNodeAddon:MakePackages).
-   */
+  /** @hidden */
   public static computeDefaultImodelNodeAddonPackageName(): string {
 
     // *** KEEP THIS CONSISTENT WITH iModelJsNodeAddon/MakePackages.py IN MERCURIAL ***
@@ -137,9 +130,7 @@ export class NodeAddonPackageName {
     return path.join("@bentley", "imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch);
   }
 
-  /** Compute the name of default addon that should be used for this environment. This method uses the same naming formula that is used by
-   * the bb part that generates and publishes the default platform packages (iModelJsNodeAddon:MakePackages).
-   */
+  /** @hidden */
   public static computeDefaultImodelNodeAddonName(): string {
     return path.join(NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName(), "addon", "imodeljs.node");
   }

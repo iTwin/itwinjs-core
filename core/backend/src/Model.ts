@@ -183,5 +183,6 @@ export class LinkModel extends InformationModel {
 export class DictionaryModel extends DefinitionModel {
 }
 
+/** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system. */
 export class WebMercatorModel extends SpatialModel {
 }
