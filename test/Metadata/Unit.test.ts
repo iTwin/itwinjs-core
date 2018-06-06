@@ -14,7 +14,7 @@ describe("Unit tests", () => {
   describe("accept", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      testUnit = new Unit(schema, "TestEnumeration");
+      testUnit = new Unit(schema, "TestUnit");
     });
 
     it("should call visitUnit on a SchemaItemVisitor object", async () => {

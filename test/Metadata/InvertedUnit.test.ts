@@ -14,7 +14,7 @@ describe("Inverted Unit tests", () => {
   describe("accept", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      testUnit = new InvertedUnit(schema, "TestEnumeration");
+      testUnit = new InvertedUnit(schema, "TestInvertedUnit");
     });
 
     it("should call visitInvertedUnit on a SchemaItemVisitor object", async () => {
