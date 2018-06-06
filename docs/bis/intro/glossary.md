@@ -1,3 +1,7 @@
+---
+tableRowAnchors: true
+---
+
 # BIS Glossary
 
 Key BIS terms used in this documentation are defined on this page.
