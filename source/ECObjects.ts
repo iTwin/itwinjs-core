@@ -30,6 +30,7 @@ export const enum SchemaItemType {
   InvertedUnit,
   Constant,
   Phenomenon,
+  UnitSystem,
 }
 
 /**
@@ -155,6 +156,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
     case "invertedunit": return SchemaItemType.InvertedUnit;
     case "constant": return SchemaItemType.Constant;
     case "phenomenon": return SchemaItemType.Phenomenon;
+    case "unitsystem": return SchemaItemType.UnitSystem;
   }
   return undefined;
 }

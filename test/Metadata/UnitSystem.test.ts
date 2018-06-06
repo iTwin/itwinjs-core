@@ -1,0 +1,100 @@
+/*---------------------------------------------------------------------------------------------
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+*--------------------------------------------------------------------------------------------*/
+
+import { assert, expect } from "chai";
+import Schema from "../../source/Metadata/Schema";
+import UnitSystem from "../../source/Metadata/UnitSystem";
+import { ECObjectsError } from "../../source/Exception";
+import * as sinon from "sinon";
+
+describe("UnitSystem tests", () => {
+  let testUnitSystem: UnitSystem;
+  describe("accept", () => {
+    beforeEach(() => {
+      const schema = new Schema("TestSchema", 1, 0, 0);
+      testUnitSystem = new UnitSystem(schema, "TestEnumeration");
+    });
+
+    it("should call visitUnitSystem on a SchemaItemVisitor object", async () => {
+      expect(testUnitSystem).to.exist;
+      const mockVisitor = { visitUnitSystem: sinon.spy() };
+      await testUnitSystem.accept(mockVisitor);
+      expect(mockVisitor.visitUnitSystem.calledOnce).to.be.true;
+      expect(mockVisitor.visitUnitSystem.calledWithExactly(testUnitSystem)).to.be.true;
+    });
+
+    it("should safely handle a SchemaItemVisitor without visitUnitSystem defined", async () => {
+      expect(testUnitSystem).to.exist;
+      await testUnitSystem.accept({});
+    });
+  });
+  describe("fromJson", () => {
+    beforeEach(() => {
+      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      testUnitSystem = new UnitSystem(schema, "IMPERIAL");
+    });
+    it("Basic test", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "IMPERIAL",
+        label: "Imperial",
+      };
+      await testUnitSystem.fromJson(json);
+      assert(testUnitSystem.label, "Imperial");
+      assert(testUnitSystem.description === undefined);
+    });
+    it("Name is required", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        label: "Imperial",
+        description: "Units of measure from the british imperial empire",
+      };
+      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The UnitSystem IMPERIAL does not have the required 'name' attribute.`);
+
+    });
+    it("Name must be a valid ECName", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "12IMPERIAL",
+        label: "Imperial",
+        description: "Units of measure from the british imperial empire",
+      };
+      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
+    });
+    it("Label must be a string", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "IMPERIAL",
+        label: 1,
+        description: "Units of measure from the british imperial empire",
+      };
+      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'label' attribute. It should be of type 'string'.`);
+
+    });
+    it("Description must be a string", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        schemaItemType: "UnitSystem",
+        name: "IMPERIAL",
+        label: "Imperial",
+        description: 1,
+      };
+      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
+    });
+    it("$schema URL doesnt match EC3.2 URL", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/",
+        schemaItemType: "UnitSystem",
+        name: "IMPERIAL",
+        label: "Imperial",
+        description: "Units of measure from the british imperial empire",
+      };
+      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The UnitSystem IMPERIAL does not have the required schema URL.`);
+    });
+  });
+});

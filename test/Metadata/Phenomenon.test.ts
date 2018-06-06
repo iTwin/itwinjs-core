@@ -8,7 +8,7 @@ import Phenomenon from "../../source/Metadata/Phenomenon";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
 
-describe.only("Phenomenon tests", () => {
+describe("Phenomenon tests", () => {
   let testPhenomenon: Phenomenon;
   describe("accept", () => {
     beforeEach(() => {
