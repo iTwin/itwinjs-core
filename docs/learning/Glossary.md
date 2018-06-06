@@ -1,3 +1,7 @@
+---
+tableRowAnchors: true
+---
+
 # Glossary of terms in iModelJs
 
 |Term | Definition

@@ -7,9 +7,10 @@ import { assert } from "@bentley/bentleyjs-core";
 import {
   Transform,
   Range3d,
-  LineString3d,
   Loop,
   Path,
+  CurveChain,
+  GrowableXYZArray,
   Point3d,
   StrokeOptions,
   Angle,
@@ -121,16 +122,15 @@ export class PrimitivePathGeometry extends Geometry {
     return strksList;
   }
 
-  private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, loopOrPath: Loop | Path, facetOptions: StrokeOptions, trans: Transform) {
-    const strokes: LineString3d = loopOrPath.cloneStroked(facetOptions) as LineString3d;
-    assert(strokes instanceof LineString3d);
-    const pt: Point3d = Point3d.create(0, 0, 0);
-    const pts: Point3d[] = [];
-    for (let i = 0; i < strokes.numPoints(); i++) {
-      strokes.pointAt(i, pt);
-      pts.push(trans.multiplyPoint3d(pt));
+  private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, loopOrPath: CurveChain, facetOptions: StrokeOptions, trans: Transform) {
+    const strokes = loopOrPath.getPackedStrokes(facetOptions);
+    if (strokes) {
+      if (strokes instanceof GrowableXYZArray) {
+        const pts = strokes.getPoint3dArray();
+        trans.multiplyPoint3dArrayInPlace(pts);
+        strksPts.push(new StrokesPrimitivePointList(0, pts));
+      }
     }
-    strksPts.push(new StrokesPrimitivePointList(0, pts));
   }
 }
 
