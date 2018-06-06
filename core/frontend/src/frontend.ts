@@ -36,11 +36,15 @@ export * from "./ViewState";
 export * from "./IModelApp";
 
 /** @docs-package-description
- * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]]($docs/learning/frontend/index.md).
+ * The ($frontend) package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description IModelApp
  * Classes for configuring and administering an iModelJs application.
+ */
+/**
+ * @docs-group-description IModelConnection
+ * Classes for working with a connection to an iModel on the backend - see [iModel Overview]($docs/overview/IModels.md)
  */
 /**
  * @docs-group-description ElementState
@@ -51,16 +55,20 @@ export * from "./IModelApp";
  * Classes for working with the *state* of Models in the frontend
  */
 /**
+ * @docs-group-description Tools
+ * Classes for working with Tools - see [learning about tools]($docs/learning/frontend/Tools.md)
+ */
+/**
+ * @docs-group-description Views
+ * Classes for working with Views - see [learning about views]($docs/learning/frontend/Views.md)
+ */
+/**
+ * @docs-group-description LocatingElements
+ * Classes for locating and snapping to elements in views
+ */
+/**
  * @docs-group-description AccuDraw
  * AccuDraw provides helpful assistance for creating and modifying elements in a view.
- */
-/**
- * @docs-group-description iModels
- * Classes for working with iModels - see [iModel Overview]($docs/overview/IModels.md)
- */
-/**
- * @docs-group-description LocationAndSnapping
- * Classes for location and snapping to elements in views
  */
 /**
  * @docs-group-description Notifications
@@ -71,18 +79,14 @@ export * from "./IModelApp";
  * Classes for working with the SelectionSet.
  */
 /**
- * @docs-group-description Search
- * Classes for searching
- */
-/**
- * @docs-group-description Tools
- * Classes for working with Tools - see [learning about tools]($docs/learning/frontend/Tools.md)
- */
-/**
- * @docs-group-description Views
- * Classes for working with Views - see [learning about views]($docs/learning/frontend/Views.md)
- */
-/**
  * @docs-group-description Rendering
  * Classes for rendering the contents of views.
+ */
+/**
+ * @docs-group-description Tile
+ * Classes for selecting and drawing tiles in views.
+ */
+/**
+ * @docs-group-description WebGL
+ * Classes for interfacing to WebGL in browsers.
  */

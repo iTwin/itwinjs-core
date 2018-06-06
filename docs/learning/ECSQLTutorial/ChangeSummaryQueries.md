@@ -9,4 +9,4 @@ Exercises for this lesson are not yet available. [Change Summaries](../ChangeSum
 
 ---
 
-**< Previous** [Lession 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
+[**< Previous**](./MetaQueries.md)

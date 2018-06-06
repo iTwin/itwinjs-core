@@ -5,7 +5,7 @@
 
 import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d } from "@bentley/geometry-core";
 
-/** The 8 corners of the NPC cube. */
+/** The 8 corners of the [NPC]($docs/learning/glossary.md#npc) cube. */
 export const enum Npc {
   _000 = 0,  // Left bottom rear
   _100 = 1,  // Right bottom rear
@@ -47,7 +47,7 @@ Object.freeze(NpcCenter);
 
 /**
  * The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
- * It is stored as 8 points, in NpcCorner order, that must define a truncated pyramid.
+ * It is stored as 8 points, in [[NpcCorners]] order, that must define a truncated pyramid.
  */
 export class Frustum {
   public readonly points: Point3d[] = [];

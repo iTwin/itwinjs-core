@@ -8,7 +8,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline } from "@bentley/imodeljs-common";
+import { FeatureTable, QPoint3d, QPoint3dList, QParams3d, OctEncodedNormal, MeshPolyline, MeshPolylineList, MeshEdges, MeshEdge, OctEncodedNormalPair } from "@bentley/imodeljs-common";
 import { Id64, assert, JsonUtils, StringUtils } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
@@ -348,17 +348,17 @@ export namespace GltfTileIO {
             return undefined;
 
           this.readUVParams(mesh.uvParams, primitive.attributes, "TEXCOORD_0");
-          // ###TODO: read mesh edges...
+          this.readMeshEdges(mesh, primitive.edges);
           break;
         }
         case Mesh.PrimitiveType.Polyline:
         case Mesh.PrimitiveType.Point: {
-          if (!this.readPolylines(mesh, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
+          if (undefined !== mesh.polylines && !this.readPolylines(mesh.polylines, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
             return undefined;
           break;
         }
         default: {
-          assert(false, "unhandled primitive type"); // ###TODO: points and polylines...
+          assert(false, "unhandled primitive type");
           return undefined;
         }
       }
@@ -475,7 +475,65 @@ export namespace GltfTileIO {
       return true;
     }
 
-    protected readPolylines(mesh: Mesh, json: any, accessorName: string, disjoint: boolean): boolean {
+    protected readMeshEdges(mesh: Mesh, json: any): boolean {
+      if (undefined === json || undefined === mesh)
+        return false;
+
+      mesh.edges = new MeshEdges();
+      const visEdges = this.readEdgeIndices(json, "visibles");
+      if (undefined !== visEdges)
+        mesh.edges.visible = visEdges;
+
+      if (undefined !== json.silhouettes) {
+        const normPairs = this.readNormalPairs(json.silhouettes, "normalPairs");
+        if (undefined !== normPairs)
+          mesh.edges.silhouetteNormals = normPairs;
+        const silEdges = this.readEdgeIndices(json.silhouettes, "indices");
+        if (undefined !== silEdges)
+          mesh.edges.silhouette = silEdges;
+      }
+
+      mesh.edges.polylines = new MeshPolylineList();
+      return this.readPolylines(mesh.edges.polylines, json, "polylines", false);
+    }
+
+    protected readEdgeIndices(json: any, accessorName: string): MeshEdge[] | undefined {
+      const data = this.readBufferData32(json, accessorName);
+      if (undefined === data)
+        return undefined;
+
+      const edges = new Array<MeshEdge>(data.count / 2);
+
+      let e = 0;
+      for (let i = 0; i < data.count; i += 2)
+        edges[e++] = new MeshEdge(data.buffer[i], data.buffer[i + 1]);
+
+      return edges;
+    }
+
+    protected readNormalPairs(json: any, accessorName: string): OctEncodedNormalPair[] | undefined {
+      const view = this.getBufferView(json.attributes, accessorName);
+      if (undefined === view || DataType.UnsignedByte !== view.type)
+        return undefined;
+      const data = this.readBufferData8(json, accessorName);
+      if (undefined === data)
+        return undefined;
+
+      const normPairs = new Array<OctEncodedNormalPair>(data.count);
+
+      // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
+      for (let i = 0; i < data.count; i++) {
+        // ###TODO? not clear why ray writes these as pairs of uint8...
+        const index = i * 4;
+        const normal0 = data.buffer[index] | (data.buffer[index + 1] << 8);
+        const normal1 = data.buffer[index + 2] | (data.buffer[index + 3] << 8);
+        normPairs[i] = new OctEncodedNormalPair(new OctEncodedNormal(normal0), new OctEncodedNormal(normal1));
+      }
+
+      return normPairs;
+    }
+
+    protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
       const view = this.getBufferView(json, accessorName);
       if (undefined === view)
         return false;
@@ -515,7 +573,7 @@ export namespace GltfTileIO {
           }
         }
 
-        mesh.addPolyline(new MeshPolyline(startDistance[0], indices));
+        polylines.push(new MeshPolyline(startDistance[0], indices));
       }
 
       return true;

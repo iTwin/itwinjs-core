@@ -23,8 +23,6 @@ import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 
-/** @module iModels */
-
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 
@@ -101,8 +99,9 @@ export class OpenParams {
 
 /**
  * Represents a physical copy (a briefcase) of an iModel that can be accessed as a file on the local computer.
+ *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
- * @see []($docs/learning/backend/IModelDb.md)
+ * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
  */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000; // default limit for batching queries

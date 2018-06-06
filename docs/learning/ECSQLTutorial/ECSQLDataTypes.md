@@ -25,6 +25,7 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 > SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=123
 > ```
 > *Result*
+>
 > ECClassId | CodeValue
 > --- | ---
 > Generic.PhysicalObject | Blue Rod
@@ -46,6 +47,7 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 > SELECT CodeValue, IsCameraOn FROM bis.ViewDefinition3d
 > ```
 > *Result*
+>
 > CodeValue | IsCameraOn
 > --- | ---
 > 1 | True
@@ -69,6 +71,7 @@ boolean value already.
 > are equivalent.
 >
 > *Result*
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > 1 | lll
@@ -91,6 +94,7 @@ And the same example with `False`:
 > are equivalent.
 >
 > *Result*
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > 1 | lll
@@ -112,6 +116,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 > SELECT CodeValue,LastMod FROM bis.Element WHERE LastMod > DATE '2018-01-01'
 > ```
 > *Result*
+>
 > CodeValue | LastMod
 > --- | ---
 > lll | 2018-11-13T00:38:06.374Z
@@ -128,6 +133,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 > SELECT CodeValue,LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2018-07-16T08:00:00Z' AND TIMESTAMP '2018-07-16T18:00:00Z'
 > ```
 > *Result*
+>
 > CodeValue | LastMod
 > --- | ---
 > lll | 2018-07-16T09:23.100Z
@@ -158,6 +164,7 @@ Property | Description
 > ```
 >
 > *Result*
+>
 > CodeValue | Origin
 > --- | ---
 > lll | {"x":3500010,"y":5700010,"z":0}
@@ -188,6 +195,7 @@ Property | Description
 > SELECT Parent FROM bis.Element WHERE ECInstanceId=123
 > ```
 > *Result*
+>
 > Parent |
 > --- |
 > {"id":"0x4","relClassName":"BisCore.ElementOwnsChildElements"} |
@@ -203,6 +211,7 @@ Property | Description
 > SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=123
 > ```
 > *Result*
+>
 > Parent.Id |
 > --- |
 > 0x4 |
@@ -219,8 +228,9 @@ Property | Description
 > ```
 >
 > *Result*
+>
 > Parent.Id | Parent.RelECClassId
-> -_- | _--
+> --- | ---
 > 4 | BisCore.ElementOwnsChildElements
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
@@ -243,4 +253,4 @@ In ECSQL you can refer to Array ECProperties only as a whole.
 
 ---
 
-**< Previous** [Lession 2: First Examples](./FirstExamples.md) &nbsp; **Next >** [Lesson 4: Relationships and Joins](./Joins.md)
+[**< Previous**](./FirstExamples.md) &nbsp; | &nbsp; [**Next >**](./Joins.md)

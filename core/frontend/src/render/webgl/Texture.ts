@@ -171,7 +171,7 @@ class TextureCreateParams {
   private static getImageProperties(isTranslucent: boolean, type: ImageTextureType): TextureImageProperties {
     const wrapMode = ImageTextureType.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
     const useMipMaps: TextureFlag = (ImageTextureType.TileSection !== type) ? true : undefined;
-    const interpolate: TextureFlag = (ImageTextureType.TileSection === type) ? true : undefined;
+    const interpolate: TextureFlag = true; // WTF? (ImageTextureType.TileSection === type) ? true : undefined;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     return { format, wrapMode, useMipMaps, interpolate };
   }

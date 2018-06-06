@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Render */
+/** @module Rendering */
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d } from "@bentley/geometry-core";
@@ -181,6 +181,9 @@ export class MeshArgs {
     const meshEdges = mesh.edges;
     if (undefined === meshEdges)
       return true;
+
+    this.edges.edges.init(mesh.edges);
+    this.edges.silhouettes.init(mesh.edges);
 
     const polylines: PolylineData[] = [];
     meshEdges.polylines.forEach((meshPolyline: MeshPolyline) => {

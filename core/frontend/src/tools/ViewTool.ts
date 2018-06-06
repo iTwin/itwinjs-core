@@ -1907,3 +1907,31 @@ export abstract class InputCollector extends InteractiveTool {
   public exitTool() { IModelApp.toolAdmin.exitInputCollector(); }
   public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 }
+
+export class ViewUndoTool extends ViewTool {
+  public static toolId = "View.Undo";
+  private viewport: Viewport;
+
+  constructor(vp: Viewport) { super(); this.viewport = vp; }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this.viewport.doUndo(ViewToolSettings.animationTime);
+  }
+
+  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
+}
+
+export class ViewRedoTool extends ViewTool {
+  public static toolId = "View.Redo";
+  private viewport: Viewport;
+
+  constructor(vp: Viewport) { super(); this.viewport = vp; }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this.viewport.doRedo(ViewToolSettings.animationTime);
+  }
+
+  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
+}

@@ -23,6 +23,7 @@ Property | Description
 >  SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElement WHERE SourceECInstanceId=123
 > ```
 > *Result*
+>
 > ChildId | ChildClassId
 > --- | ---
 > lll | 123
@@ -82,6 +83,7 @@ As explained above using navigation properties instead of joins is preferred. So
 > ```
 >
 > *Result*
+>
 > Model |
 > --- |
 > {"id": "0xlll", "relClassName":"BisCore.ModelContainsElements"} |
@@ -100,6 +102,7 @@ The following ECSQL is the same as above but uses joins instead of the navigatio
 > ```
 >
 > *Result*
+>
 > ModelId |
 > --- |
 > 0xlll |
@@ -115,6 +118,7 @@ If you want to return something else than just the id of the related instance, y
 > SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Model JOIN bis.Element ON Element.Model.Id=Model.ECInstanceId WHERE Element.CodeValue='bla bla'
 > ```
 > *Result*
+>
 > ECInstanceId | ModelElementId | ParentModelId
 > --- | --- | ---
 > lll | 123 | 222
@@ -131,10 +135,11 @@ Again for the purpose of learning, the same ECSQL expressed with relationship cl
 > ```
 >
 > *Result*
+>
 > ECInstanceId | ModelElementId | ParentModelId
 > --- | --- | ---
 > lll | 123 | 222
 
 ---
 
-**< Previous** [Lession 3: ECSQL Data Types](./ECSQLDataTypes.md) &nbsp; **Next >** [Lesson 5: Class Polymorphism](./PolymorphicQueries.md)
+[**< Previous**](./ECSQLDataTypes.md) &nbsp; | &nbsp; [**Next >**](./PolymorphicQueries.md)

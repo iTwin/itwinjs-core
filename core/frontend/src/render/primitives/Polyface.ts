@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Rendering */
 
 import { IndexedPolyface, Transform } from "@bentley/geometry-core";
 import { DisplayParams } from "./DisplayParams";

@@ -9,20 +9,32 @@ We will start off the tutorial by a simple ECSQL example:
 
 > **Try it yourself**
 >
-> *Goal:* Return all Elements in the iModel.
+> *Goal:* Return id, subclass and code of all `SpatialLocationElement`s in the iModel.
 >
 > *ECSQL:*
 > ```sql
-> SELECT ECInstanceId, CodeValue FROM bis.Element
+> SELECT ECInstanceId, ECClassId, CodeValue FROM bis.SpatialLocationElement
 > ```
 >
 > *Result*
-> ECInstanceId | CodeValue
-> --- | ---
-> 1 | BlueRod
-> 2 | YellowRod
-> 3 | Room 1
-> 4 | Floor A
+>
+> ECInstanceId | ECClassId | CodeValue
+> --- | --- | ---
+> 0x10000000012 | MyDomain.Building | Building A
+> 0x10000000014 | MyDomain.Space | A-G-1
+> 0x10000000015 | MyDomain.Space | A-G-2
+> 0x10000000017 | MyDomain.Space | A-1-1
+> 0x10000000019 | MyDomain.Space | A-2-1
+> 0x1000000001a | MyDomain.Space | A-2-2
+> 0x1000000001b | MyDomain.Space | A-2-3
+> 0x1000000001c | MyDomain.Space | A-2-4
+> 0x1000000001d | MyDomain.Space | A-2-5
+> 0x1000000001e | MyDomain.Space | A-2-6
+> 0x1000000001f | MyDomain.Space | A-2-7
+> 0x10000000020 | MyDomain.Space | A-2-8
+> 0x10000000013 | MyDomain.Story | A-G
+> 0x10000000016 | MyDomain.Story | A-1
+> 0x10000000018 | MyDomain.Story | A-2
 
 ## Fully qualified class names
 
@@ -36,30 +48,42 @@ The example from above uses the schema alias. If you replace it by the schema na
 
 > **Try it yourself**
 >
-> *Goal:* Return all Elements in the iModel.
+> *Goal:* Return id, subclass and code of all `SpatialLocationElement`s in the iModel.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue FROM BisCore.Element
+> SELECT ECInstanceId, ECClassId, CodeValue FROM BisCore.SpatialLocationElement
 > ```
 >
 > *Result:* As in [First ECSQL](#first-ecsql)
-> ECInstanceId | CodeValue
-> --- | ---
-> 1 | BlueRod
-> 2 | YellowRod
-> 3 | Room 1
-> 4 | Floor A
+>
+> ECInstanceId | ECClassId | CodeValue
+> --- | --- | ---
+> 0x10000000012 | MyDomain.Building | Building A
+> 0x10000000014 | MyDomain.Space | A-G-1
+> 0x10000000015 | MyDomain.Space | A-G-2
+> 0x10000000017 | MyDomain.Space | A-1-1
+> 0x10000000019 | MyDomain.Space | A-2-1
+> 0x1000000001a | MyDomain.Space | A-2-2
+> 0x1000000001b | MyDomain.Space | A-2-3
+> 0x1000000001c | MyDomain.Space | A-2-4
+> 0x1000000001d | MyDomain.Space | A-2-5
+> 0x1000000001e | MyDomain.Space | A-2-6
+> 0x1000000001f | MyDomain.Space | A-2-7
+> 0x10000000020 | MyDomain.Space | A-2-8
+> 0x10000000013 | MyDomain.Story | A-G
+> 0x10000000016 | MyDomain.Story | A-1
+> 0x10000000018 | MyDomain.Story | A-2
 
 If you omit the schema, you will get an error:
 
 > **Try it yourself**
 >
-> *Goal:* Return all Elements in the iModel.
+> *Goal:* Return id, subclass and code of all `SpatialLocationElement`s in the iModel.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue FROM Element
+> SELECT ECInstanceId, ECClassId, CodeValue FROM SpatialLocationElement
 > ```
 >
 > *Result*
@@ -80,43 +104,91 @@ The above example is not very meaningful. In large iModels the query might retur
 > ```
 >
 > *Result*
+>
 > count(*) |
 > --- |
-> 4 |
+> 80 |
+
+This query considers all kinds of `Element`s. If we want to focus only on Elements which represent realworld assets, we can use the BIS class `SpatialElement` instead.
+
+> **Try it yourself**
+>
+> *Goal:* Find out how many SpatialElements there are in the iModel.
+>
+> *ECSQL*
+> ```sql
+> SELECT count(*) FROM bis.SpatialElement
+> ```
+>
+> *Result*
+>
+> count(*) |
+> --- |
+> 26 |
+
+Let's compute some more Element statistic with ECSQL. We want to find out how many SpatialElements there are in the iModel per actual element type (where element type here refers to the subclasses of the `Element` ECClass).
+
+> **Try it yourself**
+>
+> *Goal:* Find out how many SpatialElements there are in the iModel.
+>
+> *ECSQL*
+> ```sql
+> SELECT ECClassId, count(*) ElementCount FROM bis.SpatialElement GROUP BY ECClassId ORDER BY ECClassId
+> ```
+>
+> *Result*
+>
+> ECClassId | ElementCount
+> --- | ---
+> MyDomain.Building | 1
+> MyDomain.Device | 11
+> MyDomain.Space | 11
+> MyDomain.Story | 3
 
 ## Limiting the result set
 
 Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See [LIMIT and OFFSET in ECSQL Reference](../ECSQL.md#limit-and-offset) for details.
 
+Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first ECSQL example](#first-ecsql)) to shrink the returned rows to a more digestible number.
+
 > **Try it yourself**
 >
-> *Goal:* Return the first two Elements only.
+> *Goal:* Return the first 5 Element only.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 2
+> SELECT ECInstanceId, ECClassId, CodeValue FROM bis.SpatialLocationElement LIMIT 5
 > ```
 > *Result*
-> ECInstanceId | CodeValue
-> --- | ---
-> 1 | BlueRod
-> 2 | YellowRod
+>
+> ECInstanceId | ECClassId | CodeValue
+> --- | --- | ---
+> 0x10000000012 | MyDomain.Building | Building A
+> 0x10000000014 | MyDomain.Space | A-G-1
+> 0x10000000015 | MyDomain.Space | A-G-2
+> 0x10000000017 | MyDomain.Space | A-1-1
+> 0x10000000019 | MyDomain.Space | A-2-1
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Return the third and fourth Element only.
+> *Goal:* Return the 11th through 15th Element only.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 2 OFFSET 3
+> SELECT ECInstanceId, ECClassId, CodeValue FROM bis.SpatialLocationElement LIMIT 5 OFFSET 5
 > ```
 > *Result*
-> ECInstanceId | CodeValue
-> --- | ---
-> 3 | Room 1
-> 4 | Floor A
+>
+> ECInstanceId | ECClassId | CodeValue
+> --- | --- | ---
+> 0x1000000001f | MyDomain.Space | A-2-7
+> 0x10000000020 | MyDomain.Space | A-2-8
+> 0x10000000013 | MyDomain.Story | A-G
+> 0x10000000016 | MyDomain.Story | A-1
+> 0x10000000018 | MyDomain.Story | A-2
 
 ## Formatting the Output
 
@@ -128,12 +200,13 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 >
 > *ECSQL*
 > ```sql
-> SELECT count(*) ElementCount FROM bis.Element
+> SELECT count(*) ElementCount FROM bis.SpatialElement
 > ```
 > *Result*
+>
 > ElementCount |
 > --- |
-> 10 |
+> 26 |
 
 ---
 
@@ -143,12 +216,14 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId ElementId, CodeValue Code FROM bis.Element
+> SELECT ECInstanceId ElementId, ECClassId, CodeValue Code FROM bis.Element LIMIT 3
 > ```
 > *Result*
-> ElementId | Code
-> --- | ---
-> 10 | lll
+>
+> ElementId | ECClassId | Code
+> 0x1 | BisCore.Subject | My Campus
+> 0xe | BisCore.LinkPartition | BisCore.RealityDataSources
+> 0x10 | BisCore.DefinitionPartition | BisCore.DictionaryModel
 
 One aspect of the power of ECSQL (and SQL) is the richness of expressiveness. Instead of just returning the property values from
 some class, you can let ECSQL do calculations. The following example uses ECSQL as a simple calculator.
@@ -162,6 +237,7 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 > SELECT 10 Radius, (2 * 3.1415 * 10) Perimeter, (3.1415 * 10 * 10) Area FROM bis.Element LIMIT 1
 > ```
 > *Result*
+>
 > Radius | Perimeter | Area
 > --- | --- | ---
 > 10 | 62.8 | 314.15
@@ -172,24 +248,24 @@ each expression of the SELECT clause becomes the member of the object.
 If you, for example, used the [Element Count example](#element-count) with the iModeljs API, you would get this JavaScript object literal:
 
  ```ts
- { "count(*)" : 10}
+ { "count(*)" : 26 }
  ```
 
 The power of JavaScript object literals is lost here, because `count(*)` is not a valid member name. If you applied an alias to
-the count expression though
+the count expression though so that the ECSQL would look like this:
 
-`SELECT count(*) elementCount FROM bis.Element`
+`SELECT count(*) elementCount FROM bis.SpatialElement`
 
 the JavaScript object would now look like this:
 
 ```ts
- { elementCount : 10}
+ { elementCount : 26 }
  ```
 
 Now the result can be consumed in TypeScript as desired:
 
 ```ts
- iModelDb.withPreparedStatement("SELECT count(*) elementCount FROM bis.Element", (stmt: ECSqlStatement) => {
+ iModelDb.withPreparedStatement("SELECT count(*) elementCount FROM bis.SpatialElement", (stmt: ECSqlStatement) => {
     stmt.step();
     const row: any = stmt.getRow();
     console.log("Element count: " + row.elementCount);
@@ -204,13 +280,14 @@ To reuse the same ECSQL statement with different values, parameters can be used.
 
 > **Try it yourself**
 >
-> *Goal:* Return all Models that do not have a parent Model.
+> *Goal:* Return all `SpatialElement`s that do not have a user label.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE ParentModel=?
+> SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel=? LIMIT 5
 > ```
 > *Result*
+>
 > ECInstanceId | ECClassId
 > --- | ---
 > 1 | BisCore.RepositoryModel
@@ -223,12 +300,17 @@ As you cannot bind values to parameters in the iModelConsole, the above query re
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId,ECClassId FROM bis.Model WHERE ParentModel IS NULL
+> SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel IS NULL LIMIT 5
 > ```
 > *Result*
+>
 > ECInstanceId | ECClassId
 > --- | ---
-> 1 | BisCore.RepositoryModel
+> 0x10000000012 | MyDomain.Building
+> 0x10000000021 | MyDomain.Device
+> 0x10000000022 | MyDomain.Device
+> 0x10000000023 | MyDomain.Device
+> 0x10000000024 | MyDomain.Device
 
 ## SQL Functions
 
@@ -236,19 +318,42 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 
 > **Try it yourself**
 >
-> *Goal:* Return all Elements whose UserLabel contains the string 'Recreation'
->
+> *Goal:* For all `SpatialElement`s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'. >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue FROM bis.Element WHERE instr(UserLabel,'Recreation')
+> SELECT ECInstanceId, CodeValue, replace(CodeValue,'DEV','Device') ReadableCode FROM bis.SpatialElement WHERE instr(CodeValue,'DEV') LIMIT 5
 > ```
 > *Result*
-> ECInstanceId | CodeValue
-> --- | ---
-> lll | XX
-> xxx | YY
-> xxx | ZZ
+>
+> ECInstanceId | CodeValue | ReadableCode
+> --- | --- | ---
+> 0x10000000021 | DEV-A-G-1 | Device-A-G-1
+> 0x10000000022 | DEV-A-G-2 | Device-A-G-2
+> 0x10000000023 | DEV-A-1-1 | Device-A-1-1
+> 0x10000000024 | DEV-A-2-1 | Device-A-2-1
+> 0x10000000025 | DEV-A-2-2 | Device-A-2-2
 
+The example uses the SQLite functions [replace](https://www.sqlite.org/lang_corefunc.html#replace) to replace the substring 'DEV' in the code and
+[instr](https://www.sqlite.org/lang_corefunc.html#instr) to only do this on rows where the code contains the substring 'DEV' at all.
+
+Note, that the `instr` function can be replaced by using the standard SQL `LIKE` operator together with the wildcard `%`.
+
+> **Try it yourself**
+>
+> *Goal:* For all `SpatialElement`s whose code contains the string 'DEV' return a more human-readable form of the code by replacing 'DEV' by 'Device'. >
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId, CodeValue, replace(CodeValue,'DEV','Device') ReadableCode FROM bis.SpatialElement WHERE CodeValue LIKE '%DEV%' LIMIT 5
+> ```
+> *Result*
+>
+> ECInstanceId | CodeValue | ReadableCode
+> --- | --- | ---
+> 0x10000000021 | DEV-A-G-1 | Device-A-G-1
+> 0x10000000022 | DEV-A-G-2 | Device-A-G-2
+> 0x10000000023 | DEV-A-1-1 | Device-A-1-1
+> 0x10000000024 | DEV-A-2-1 | Device-A-2-1
+> 0x10000000025 | DEV-A-2-2 | Device-A-2-2
 ---
 
-**< Previous** [Lession 1: Key to ECSQL](./KeyToECSQL.md) &nbsp; **Next >** [Lesson 3: ECSQL Data Types](./ECSQLDataTypes.md)
+[**< Previous**](./KeyToECSQL.md)  &nbsp; | &nbsp; [**Next >**](./ECSQLDataTypes.md)
