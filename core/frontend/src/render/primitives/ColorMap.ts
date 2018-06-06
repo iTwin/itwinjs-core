@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Render */
+/** @module Rendering */
 
 import { assert, IndexMap, compareNumbers } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
