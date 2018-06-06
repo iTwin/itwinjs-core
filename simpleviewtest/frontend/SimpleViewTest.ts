@@ -5,6 +5,7 @@ import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
+import { remote } from "electron";
 
 // tslint:disable:no-console
 
@@ -26,6 +27,10 @@ class SimpleViewState {
   public viewPort?: Viewport;
   constructor() { }
 }
+
+let activeViewState: SimpleViewState = new SimpleViewState();
+const viewMap = new Map<string, ViewState>();
+let theViewport: Viewport | undefined;
 
 // Entry point - run the main function
 main();
@@ -54,16 +59,10 @@ function retrieveConfigurationOverrides(configuration: any) {
 // Apply environment overrides to configuration.
 // This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
 function applyConfigurationOverrides(config: any): void {
-  const electron = (window as any).require("electron");
-  const remote = electron.remote;
-  if (undefined === remote)
-    return;
-
   const filename = remote.process.env.SVT_STANDALONE_FILENAME;
-  const viewName = remote.process.env.SVT_STANDALONE_VIEWNAME;
-  if (undefined !== filename && undefined !== viewName) {
+  if (undefined !== filename) {
     config.iModelName = filename;
-    config.viewName = viewName;
+    config.viewName = remote.process.env.SVT_STANDALONE_VIEWNAME; // optional
     config.standalone = true;
   }
 }
@@ -97,19 +96,28 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
 }
 
 // selects the configured view.
-async function selectView(state: SimpleViewState, viewName: string) {
+async function buildViewList(state: SimpleViewState, configurations?: { viewName?: string }) {
+  const config = undefined !== configurations ? configurations : {};
+  const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
   const viewProps: ViewDefinitionProps[] = await state.iModelConnection!.views.queryProps(viewQueryParams);
   for (const viewProp of viewProps) {
     // look for view of the expected name.
-    if (viewProp.code && viewProp.id && (viewProp.code.value === viewName)) {
-      state.viewState = await state.iModelConnection!.views.load(viewProp.id);
-      return;
+    if (viewProp.code && viewProp.id) {
+      const option = document.createElement("option");
+      option.text = viewProp.code.value!;
+      viewList.add(option);
+      const viewState = await state.iModelConnection!.views.load(viewProp.id);
+      viewMap.set(viewProp.code.value!, viewState);
+      if (undefined === config.viewName)
+        config.viewName = viewProp.code.value!;
+      if (viewProp.code.value === config.viewName) {
+        viewList!.value = viewProp.code.value;
+        state.viewState = viewState;
+      }
     }
   }
 }
-
-let theViewport: Viewport | undefined;
 
 export class LocateTool extends ViewTool {
   public static toolId = "View.Locate";
@@ -172,9 +180,13 @@ async function openView(state: SimpleViewState) {
   if (htmlCanvas) {
     const target = IModelApp.renderSystem.createTarget(htmlCanvas);
     theViewport = new Viewport(htmlCanvas, state.viewState!, target);
-    await theViewport.changeView(state.viewState!);
+    await _changeView(state.viewState!);
     IModelApp.viewManager.addViewport(theViewport);
   }
+}
+
+async function _changeView(view: ViewState) {
+  await theViewport!.changeView(view);
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -187,9 +199,10 @@ function startWindowArea(_event: any) {
   IModelApp.tools.run("View.WindowArea", theViewport!);
 }
 
-// starts View Scroll (I don't see a Zoom command)
-function startZoom(_event: any) {
-  // IModelApp.tools.run("View.Scroll", theViewport!);
+// starts element selection tool
+function startSelect(_event: any) {
+  // ###TODO: SelectTool is busted in various ways...use LocateTool for demo.
+  // IModelApp.tools.run("Select");
   IModelApp.tools.run("View.Locate", theViewport!);
 }
 
@@ -208,28 +221,75 @@ function switchStandardRotation(_event: any) {
   IModelApp.tools.run("View.StandardRotation", theViewport!);
 }
 
+// start rotate view.
+function changeView(event: any) {
+  const viewName = event.target.selectedOptions["0"].label;
+  _changeView(viewMap.get(viewName)!);
+}
+
+async function clearViews() {
+  await activeViewState.iModelConnection!.closeStandalone();
+  activeViewState = new SimpleViewState();
+  viewMap.clear();
+  document.getElementById("viewList")!.innerHTML = "";
+}
+
+async function resetStandaloneIModel(filename: string) {
+  const spinner = document.getElementById("spinner") as HTMLDivElement;
+  spinner.style.display = "block";
+  IModelApp.viewManager.dropViewport(theViewport!);
+  IModelApp.renderSystem.onShutDown();
+  await clearViews();
+  await openStandaloneIModel(activeViewState, filename);
+  await buildViewList(activeViewState);
+  await openView(activeViewState);
+  spinner.style.display = "none";
+}
+
+function selectIModel(): void {
+  const options: Electron.OpenDialogOptions = {
+    properties: ["openFile"],
+    filters: [{ name: "IModels", extensions: ["ibim", "bim"] }],
+  };
+  remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
+    if (undefined !== filePaths)
+      await resetStandaloneIModel(filePaths[0]);
+  });
+}
+
+// undo prev view manipulation
+function doUndo(_event: any) {
+  IModelApp.tools.run("View.Undo", theViewport!);
+}
+
+// redo view manipulation
+function doRedo(_event: any) {
+  IModelApp.tools.run("View.Redo", theViewport!);
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
+  document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
+  document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
-  document.getElementById("startZoom")!.addEventListener("click", startZoom);
+  document.getElementById("startZoom")!.addEventListener("click", startSelect);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);
+  document.getElementById("doUndo")!.addEventListener("click", doUndo);
+  document.getElementById("doRedo")!.addEventListener("click", doRedo);
 }
 
 // ----------------------------------------------------------
 // main entry point.
 async function main() {
-  const state: SimpleViewState = new SimpleViewState();
-
   // this is the default configuration
   const configuration: any = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
     projectName: "plant-sta",
     iModelName: "NabeelQATestiModel",
-    viewName: "GistTop",
   };
 
   // override anything that's in the configuration
@@ -243,6 +303,9 @@ async function main() {
   if (ElectronRpcConfiguration.isElectron)
     ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
+  const spinner = document.getElementById("spinner") as HTMLDivElement;
+  spinner.style.display = "block";
+
   try {
     // initialize the Project and IModel Api
     await ProjectApi.init();
@@ -254,32 +317,34 @@ async function main() {
     if (!configuration.standalone) {
       // log in.
       showStatus("logging in as", configuration.userName);
-      await loginToConnect(state, configuration.userName, configuration.password);
+      await loginToConnect(activeViewState, configuration.userName, configuration.password);
 
       // open the specified project
       showStatus("opening Project", configuration.projectName);
-      await openProject(state, configuration.projectName);
+      await openProject(activeViewState, configuration.projectName);
 
       // open the specified iModel
       showStatus("opening iModel", configuration.iModelName);
-      await openIModel(state, configuration.iModelName);
+      await openIModel(activeViewState, configuration.iModelName);
     } else {
       showStatus("Opening", configuration.iModelName);
-      await openStandaloneIModel(state, configuration.iModelName);
+      await openStandaloneIModel(activeViewState, configuration.iModelName);
     }
 
     // open the specified view
     showStatus("opening View", configuration.viewName);
-    await selectView(state, configuration.viewName);
+    await buildViewList(activeViewState, configuration);
 
     // now connect the view to the canvas
-    await openView(state);
+    await openView(activeViewState);
 
     showStatus("View Ready");
   } catch (reason) {
     alert(reason);
     return;
   }
+
+  spinner.style.display = "none";
 
   wireIconsToFunctions();
   console.log("This is from frontend/main");

@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Search */
+/** @module Tools */
+
 import * as Fuse from "fuse.js";
 
 export class FuzzySearch<T> {

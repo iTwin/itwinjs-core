@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { assert } from "@bentley/bentleyjs-core";
 import {
   ProgramBuilder,

@@ -2,9 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
+import { Logger, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { AxisAlignedBox3d, RpcInterface, RpcManager, IModel, IModelToken, IModelVersion, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../IModelDb";
+import { AxisAlignedBox3d, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelToken, IModelVersion, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
+
+const loggingCategory = "imodeljs-backend.IModelWriteRpcImpl";
 
 /**
  * The backend implementation of IModelWriteRpcInterface.
@@ -15,8 +18,29 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async openForWrite(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
     const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    const accessTokenObj = AccessToken.fromJson(accessToken);
+    const openParams = OpenParams.pullAndPush();
 
-    return await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId!, iModelToken.iModelId!, OpenParams.pullAndPush(), iModelVersion);
+    Logger.logTrace(loggingCategory, "Received open request in IModelWriteRpcImpl.openForWrite", () => (iModelToken));
+
+    // If the frontend wants a readOnly connection, we assume, for now, that they cannot change versions - i.e., cannot pull changes
+    const qp = memoizeOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+
+    if (qp.isPending()) {
+      Logger.logTrace(loggingCategory, "Issuing pending status in IModelWriteRpcImpl.openForWrite", () => (iModelToken));
+      throw new RpcPendingResponse();
+    }
+
+    deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+
+    if (qp.isFulfilled()) {
+      Logger.logTrace(loggingCategory, "Completed open request in IModelWriteRpcImpl.openForWrite", () => (iModelToken));
+      return qp.result!;
+    }
+
+    assert(qp.isRejected());
+    Logger.logTrace(loggingCategory, "Rejected open request in IModelWriteRpcImpl.openForWrite", () => (iModelToken));
+    throw qp.error!;
   }
 
   public async saveChanges(iModelToken: IModelToken, description?: string): Promise<void> { IModelDb.find(iModelToken).saveChanges(description); }

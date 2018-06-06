@@ -78,4 +78,6 @@ As defined in [Schema Versioning and Generations](./schema-versioning-and-genera
 - Moving of properties between classes (as a simple case, from PhysicalElementType subclass to its related PhysicalElement subclass)
 - Rearrangement of Model hierarchy
 
+<!-- TODO
 There needs to be a default strategy for converting the dynamic schemas to descent from the new BIS schemas, and for the conversion of dynamic data. We cannot rely on custom code to perform the upgrade; the entity that created the custom schemas may not even be in business any more.
+-->

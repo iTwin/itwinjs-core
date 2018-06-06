@@ -2,6 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
+
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
 import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
@@ -78,6 +79,7 @@ export const ViewToolSettings = {
   pickSize: 13,
 };
 
+/** An InteractiveTool that manipulates a view. */
 export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
@@ -606,15 +608,20 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
+  protected static _useViewAlignedVolume: boolean = false;
   public static fitView(viewport: Viewport, doUpdate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum(scratchFrustum);
 
-    viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
+    // ###TODO: Currently computeViewRange() simply returns the viewed extents, in *world* coords.
+    if (this._useViewAlignedVolume)
+      viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
+    else
+      viewport.view.lookAtVolume(range);
+
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
-    console.log(ViewToolSettings.animationTime.milliseconds); //tslint:disable-line
     if (doUpdate)
       viewport.animateFrustumChange(before, viewport.getFrustum(), ViewToolSettings.animationTime);
 
@@ -1427,7 +1434,7 @@ export class WindowAreaTool extends ViewTool {
       graphic.setBlankingFill(this.fillColor);
       graphic.addShape(shape);
 
-      graphic.setSymbology(color, color, ViewHandleWeight.Normal); // ###TODO Thin...
+      graphic.setSymbology(color, color, ViewHandleWeight.Thin);
       graphic.addLineString(shape);
 
       graphic.setSymbology(color, color, ViewHandleWeight.FatDot);
@@ -1439,7 +1446,7 @@ export class WindowAreaTool extends ViewTool {
 
     const gf = context.createViewOverlay();
 
-    gf.setSymbology(color, color, ViewHandleWeight.Normal); // ###TODO Thin...
+    gf.setSymbology(color, color, ViewHandleWeight.Thin);
 
     const viewRect = this.viewport.viewRect;
     const cursorPt = this.lastPtView;
@@ -1517,15 +1524,21 @@ export class WindowAreaTool extends ViewTool {
     const view = vp.view;
     const startFrust = vp.getWorldFrustum(scratchFrustum);
 
-    vp.worldToViewArray(corners);
-    const viewRange = Range3d.createArray(corners);
+    vp.viewToWorldArray(corners);
     let delta: Vector3d;
     if (view.is3d() && view.isCameraOn()) {
       let npcZ: number;
 
+      const windowRange = Range3d.createArray(corners);
+      windowRange.low = vp.worldToView(windowRange.low);
+      windowRange.high = vp.worldToView(windowRange.high);
+
+      const windowRangeScale = 0.9;
+      windowRange.scaleAboutCenterInPlace(windowRangeScale);
+
       // Try to get nearest Z within rectangle directly from depth buffer
       const viewRect = new ViewRect();
-      viewRect.initFromRange(viewRange);
+      viewRect.initFromRange(windowRange);
       const depthRange = vp.pickRange(viewRect);
       if (depthRange) {
         npcZ = depthRange.minimum;
@@ -1541,25 +1554,31 @@ export class WindowAreaTool extends ViewTool {
 
       const lensAngle = view.getLensAngle();
 
-      vp.viewToNpcArray(corners);
+      vp.worldToNpcArray(corners);
       corners[0].z = corners[1].z = npcZ;
-      vp.npcToViewArray(corners);  // put the corners back in view
 
-      Range3d.createArray(corners, viewRange);
-      delta = viewRange.high.vectorTo(viewRange.low);
+      vp.npcToWorldArray(corners); // put the corners back in world at correct depth
+      const viewPts = [corners[0], corners[1]];
+      vp.rotMatrix.multiplyVectorArrayInPlace(viewPts); // rotate to view orientation to get extents
+
+      const range = Range3d.createArray(viewPts);
+      delta = range.low.vectorTo(range.high);
 
       let focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2.0));
       if (focusDist < view.minimumFrontDistance())
         focusDist = view.minimumFrontDistance();
 
-      vp.viewToWorldArray(corners);
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
       if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
         return;
     } else {
-      delta = viewRange.high.vectorTo(viewRange.low);
+      vp.rotMatrix.multiplyVectorInPlace(corners[0]);
+      vp.rotMatrix.multiplyVectorInPlace(corners[1]);
+      const viewRange = Range3d.createArray(corners);
+
+      delta = viewRange.low.vectorTo(viewRange.high);
       delta.z = view.getExtents().z; // preserve z depth
 
       // make sure its not too big or too small
@@ -1567,7 +1586,7 @@ export class WindowAreaTool extends ViewTool {
         return;
 
       view.setExtents(delta);
-      vp.toView(viewRange.low);
+      vp.rotMatrix.multiplyTransposeVectorInPlace(viewRange.low);
       view.setOrigin(viewRange.low);
     }
 
@@ -1887,4 +1906,32 @@ export abstract class InputCollector extends InteractiveTool {
 
   public exitTool() { IModelApp.toolAdmin.exitInputCollector(); }
   public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
+}
+
+export class ViewUndoTool extends ViewTool {
+  public static toolId = "View.Undo";
+  private viewport: Viewport;
+
+  constructor(vp: Viewport) { super(); this.viewport = vp; }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this.viewport.doUndo(ViewToolSettings.animationTime);
+  }
+
+  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
+}
+
+export class ViewRedoTool extends ViewTool {
+  public static toolId = "View.Redo";
+  private viewport: Viewport;
+
+  constructor(vp: Viewport) { super(); this.viewport = vp; }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this.viewport.doRedo(ViewToolSettings.animationTime);
+  }
+
+  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
 }

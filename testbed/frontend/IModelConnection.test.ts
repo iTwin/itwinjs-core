@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
@@ -11,6 +11,8 @@ import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
 } from "@bentley/imodeljs-frontend";
+import { TestbedConfig } from "../common/TestbedConfig";
+import { CONSTANTS } from "../common/Testbed";
 
 describe("IModelConnection", () => {
   let iModel: IModelConnection;
@@ -18,6 +20,10 @@ describe("IModelConnection", () => {
   before(async () => {
     IModelApp.startup();
     await TestData.load();
+
+    Logger.initializeToConsole();
+    Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
+
     iModel = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
 
@@ -87,6 +93,33 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
 
+  });
+
+  it("should be able to re-establish IModelConnection if the backend is shut down (#integration)", async () => {
+    const roIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ReadOnlyTest");
+    const roIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, roIModelId);
+
+    assert.exists(roIModel);
+    assert.isTrue(roIModel instanceof IModelConnection);
+
+    let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
+    assert.equal(elementProps.length, 1);
+    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
+
+    let queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    assert.isAtLeast(queryElementIds.size, 1);
+
+    // Restart Backend!!!
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.RESTART_BACKEND, value: undefined }));
+
+    elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
+    assert.equal(elementProps.length, 1);
+    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.isTrue(iModel.models.repositoryModelId.equals(RelatedElement.idFromJson(elementProps[0].model)));
+
+    queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    assert.isAtLeast(queryElementIds.size, 1);
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {

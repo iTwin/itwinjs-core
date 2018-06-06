@@ -5,9 +5,9 @@
 
 import { Logger, Id64Set, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken, IModelVersion, ModelProps, ElementProps } from "@bentley/imodeljs-common";
+import { EntityQueryParams, RpcInterface, RpcManager, RpcPendingResponse, IModel, IModelReadRpcInterface, IModelToken, IModelVersion, ModelProps, ElementProps } from "@bentley/imodeljs-common";
 import { EntityMetaData } from "../Entity";
-import { IModelDb, OpenParams } from "../IModelDb";
+import { IModelDb, OpenParams, memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
@@ -16,12 +16,34 @@ const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
  * @hidden
  */
 export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface {
+
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
+
   public async openForRead(accessToken: AccessToken, iModelToken: IModelToken): Promise<IModel> {
     const iModelVersion = iModelToken.changeSetId === "0" ? IModelVersion.first() : IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    const accessTokenObj = AccessToken.fromJson(accessToken);
+    const openParams = OpenParams.fixedVersion();
+
+    Logger.logTrace(loggingCategory, "Received open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
 
     // If the frontend wants a readOnly connection, we assume, for now, that they cannot change versions - i.e., cannot pull changes
-    return await IModelDb.open(AccessToken.fromJson(accessToken)!, iModelToken.contextId!, iModelToken.iModelId!, OpenParams.fixedVersion(), iModelVersion);
+    const qp = memoizeOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+
+    if (qp.isPending()) {
+      Logger.logTrace(loggingCategory, "Issuing pending status in IModelReadRpcImpl.openForRead", () => (iModelToken));
+      throw new RpcPendingResponse();
+    }
+
+    deleteMemoizedOpenIModelDb(accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+
+    if (qp.isFulfilled()) {
+      Logger.logTrace(loggingCategory, "Completed open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
+      return qp.result!;
+    }
+
+    assert(qp.isRejected());
+    Logger.logTrace(loggingCategory, "Rejected open request in IModelReadRpcImpl.openForRead", () => (iModelToken));
+    throw qp.error!;
   }
 
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {

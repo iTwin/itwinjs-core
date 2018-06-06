@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
@@ -68,9 +69,9 @@ export class TechniqueFlags {
 
   public buildDescription(): string {
     const parts = [this.isTranslucent ? "Translucent" : "Opaque"];
-    if (this.isHilite)      parts.push("hilite");
+    if (this.isHilite) parts.push("hilite");
     if (this.hasClipVolume) parts.push("clip");
-    if (this.hasFeatures)   parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
+    if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
     return parts.join("; ");
   }
 

@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
  |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ShaderProgram } from "./ShaderProgram";
@@ -46,38 +47,38 @@ export const enum VariablePrecision {
 namespace Convert {
   export function typeToString(type: VariableType): string {
     switch (type) {
-      case VariableType.Boolean:      return "bool";
-      case VariableType.Int:          return "int";
-      case VariableType.UInt:         return "uint";
-      case VariableType.Float:        return "float";
-      case VariableType.Vec2:         return "vec2";
-      case VariableType.Vec3:         return "vec3";
-      case VariableType.Vec4:         return "vec4";
-      case VariableType.Mat3:         return "mat3";
-      case VariableType.Mat4:         return "mat4";
-      case VariableType.Sampler2D:    return "sampler2D";
-      case VariableType.SamplerCube:  return "samplerCube";
-      default:                        assert(false); return "undefined";
+      case VariableType.Boolean: return "bool";
+      case VariableType.Int: return "int";
+      case VariableType.UInt: return "uint";
+      case VariableType.Float: return "float";
+      case VariableType.Vec2: return "vec2";
+      case VariableType.Vec3: return "vec3";
+      case VariableType.Vec4: return "vec4";
+      case VariableType.Mat3: return "mat3";
+      case VariableType.Mat4: return "mat4";
+      case VariableType.Sampler2D: return "sampler2D";
+      case VariableType.SamplerCube: return "samplerCube";
+      default: assert(false); return "undefined";
     }
   }
 
   export function scopeToString(scope: VariableScope): string {
     switch (scope) {
-      case VariableScope.Global:    return "";
-      case VariableScope.Varying:   return "varying";
-      case VariableScope.Uniform:   return "uniform";
+      case VariableScope.Global: return "";
+      case VariableScope.Varying: return "varying";
+      case VariableScope.Uniform: return "uniform";
       case VariableScope.Attribute: return "attribute";
-      default:                      assert(false); return "undefined";
+      default: assert(false); return "undefined";
     }
   }
 
   export function precisionToString(precision: VariablePrecision): string {
     switch (precision) {
       case VariablePrecision.Default: return "";
-      case VariablePrecision.Low:     return "lowp";
-      case VariablePrecision.Medium:  return "mediump";
-      case VariablePrecision.High:    return "highp";
-      default:                        assert(false); return "undefined";
+      case VariablePrecision.Low: return "lowp";
+      case VariablePrecision.Medium: return "mediump";
+      case VariablePrecision.High: return "highp";
+      default: assert(false); return "undefined";
     }
   }
 }
@@ -269,7 +270,7 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   protected addComponent(index: number, component: string): void {
-    assert(index < this._components.length );
+    assert(index < this._components.length);
 
     // assume if caller is replacing an existing component, they know what they're doing...
     this._components[index] = component;
@@ -350,6 +351,7 @@ export class ShaderBuilder extends ShaderVariables {
       }
 
       if (isLit) {
+        /* ###TODO: Source Lighting
         // ###TODO: May end up needing to change this to 8 for unrolled lighting loop...see ShaderBuilder.cpp...
         const maxShaderLights = 64;
         src.addline("const int kMaxShaderLights = " + maxShaderLights);
@@ -359,6 +361,7 @@ export class ShaderBuilder extends ShaderVariables {
         src.addline("#define cosHTheta(i) u_lightData[i*3+1].w");
         src.addline("#define LightDir(i) u_lightData[i*3+2].xyz");
         src.addline("#define cosHPhi(i) u_lightData[i*3+2].w");
+        */
       }
     }
 

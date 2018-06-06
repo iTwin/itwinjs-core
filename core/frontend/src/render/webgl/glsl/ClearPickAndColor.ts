@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";

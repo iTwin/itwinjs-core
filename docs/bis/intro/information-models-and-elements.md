@@ -112,4 +112,6 @@ The following tables lists the Model types that typically contains specific subc
 | GroupInformationElement     | GroupInformationModel |
 | Document                    | DocumentListModel |
 
-TODO - mention *any model* rules for LinkElement and InformationRecordElement?
+<!-- TODO:  mention *any model* rules for LinkElement and InformationRecordElement? -->
+
+> Next: [Categories](./categories.md)

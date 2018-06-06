@@ -88,3 +88,5 @@ Other domains in Road & Rail disciplines focusing on Analytical perspectives inc
 Additionally, concepts defined in these Road & Rail domains are needed in other disciplines, such as Site and Building – Physical as well as analytical, such as for Site optimization – calling for references from these other domains into the appropriate Road & Rail domains depicted below.
 
 Lastly, several Civil applications can be built on top of all these Road & Rail domains. These Civil applications may focus on specific assets and lifecycle phases in the Road & Rail disciplines. However, BIS ECSchemas referenced by them are expected to be useful across the entire lifecycle of assets in the Road & Rail disciplines.
+
+> Next: [Information Hierarchy](./information-hierarchy.md)

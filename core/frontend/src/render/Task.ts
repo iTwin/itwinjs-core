@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Rendering */
+
 import { Decorations, RenderTarget, RenderSystem } from "./System";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
@@ -188,7 +190,7 @@ export class RenderQueue {
 
   constructor(tasks: Task[] = []) { this._tasks = tasks; }
 
-  public onInitialized(): void {}
+  public onInitialized(): void { }
 
   /**
    * Add a Render::Task to the render queue. The Task will replace any existing pending entries in the Queue
@@ -198,11 +200,11 @@ export class RenderQueue {
    */
   public addTask(task: Task): void {
     this._tasks = this._tasks
-                    .map((t: Task) => {
-                      if (t.operation === TaskOperation.Idle || (task.target === t.target && task.replaces(t)))  t.outcome = TaskOutcome.Abandoned;
-                      return t;
-                    })
-                    .filter((t: Task) => t.outcome !== TaskOutcome.Abandoned);
+      .map((t: Task) => {
+        if (t.operation === TaskOperation.Idle || (task.target === t.target && task.replaces(t))) t.outcome = TaskOutcome.Abandoned;
+        return t;
+      })
+      .filter((t: Task) => t.outcome !== TaskOutcome.Abandoned);
     this._tasks.push(task);
     this._tasks.sort((a: Task, b: Task) => a.priority.value - b.priority.value);
   }
@@ -212,7 +214,7 @@ export class RenderQueue {
    * @note This method may only be called from the main thread and will wait indefinitely for the existing render tasks to complete
    * [WIP]
    */
-  public waitForIdle(): void {}
+  public waitForIdle(): void { }
 
   /**
    * Add a task to the Queue and wait for it (and all previously queued Tasks) to complete.

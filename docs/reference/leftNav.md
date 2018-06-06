@@ -1,35 +1,44 @@
 ## iModelJs Packages
+
 ---
 
 ### ($backend)
 
-- [Administration]($backend:AppAdministration)
-- [BisCore]($backend:BisCore)
+- [IModelHost]($backend:IModelHost)
+- [iModels]($backend:iModels)
+- [Schema]($backend:Schema)
+- [Models]($backend:Models)
+- [Elements]($backend:Elements)
 - [Codes]($backend:Codes)
+- [View Definitions]($backend:ViewDefinitions)
+- [Relationships]($backend:Relationships)
+- [Element Aspects]($backend:ElementAspects)
+- [Categories]($backend:Categories)
+- [Symbology]($backend:Symbology)
 - [ECDb]($backend:ECDb)
 - [ECSQL]($backend:ECSQL)
-- [Symbology]($backend:FontsAndSymbology)
-- [iModels]($backend:iModels)
 - [Portability]($backend:Portability)
-- [RpcInterface]($backend:RpcInterface)
-- [Schema]($backend:Schema)
-- [Views]($backend:Views)
 
-&nbsp;
+---
+
 ### ($frontend)
 
-- [Administration]($frontend:AppAdministration)
-- [BisCore]($frontend:BisCore)
-- [DrawingAids]($frontend:DrawingAids)
-- [iModels]($frontend:iModels)
-- [Locating Elements]($frontend:LocationAndSnapping)
-- [Notifications]($frontend:Notifications)
-- [SelectionSet]($frontend:SelectionSet)
-- [Search]($frontend:Search)
+- [IModelApp]($frontend:IModelApp)
+- [IModelConnection]($frontend:IModelConnection)
+- [ElementState]($frontend:ElementState)
+- [ModelState]($frontend:ModelState)
 - [Tools]($frontend:Tools)
 - [Views]($frontend:Views)
+- [Locating Elements]($frontend:LocationAndSnapping)
+- [AccuDraw]($frontend:AccuDraw)
+- [Notifications]($frontend:Notifications)
+- [Selection Set]($frontend:SelectionSet)
+- [Rendering]($frontend:Rendering)
+- [Tile]($frontend:Tile)
+- [WebGL]($frontend:WebGL)
 
-&nbsp;
+---
+
 ### ($common)
 
 - [Administration]($common:AppAdministration)
@@ -45,11 +54,9 @@
 - [Schema]($common:Schema)
 
 &nbsp;
-### ($clients)
-
-&nbsp;
 ## Support Packages
 ---
+
 ### ($bentleyjs-core)
 
 - [BeSQLite]($bentleyjs-core:BeSQLite)
@@ -59,7 +66,8 @@
 - [Logging]($bentleyjs-core:Logging)
 - [Utils]($bentleyjs-core:Utils)
 
-&nbsp;
+---
+
 ### ($geometry-core)
 
 - [Cartesian Geometry]($geometry-core:CartesianGeometry)

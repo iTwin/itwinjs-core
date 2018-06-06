@@ -8,6 +8,7 @@ import {
   Code, CodeSpec, ElementProps, ElementAspectProps, IModel, IModelProps, IModelVersion, ModelProps,
   IModelError, IModelStatus, AxisAlignedBox3d, EntityQueryParams, EntityProps, ViewDefinitionProps,
   FontMap, FontMapProps, FontProps, ElementLoadProps, CreateIModelProps, FilePropertyProps, IModelToken, TileTreeProps, TileProps,
+  IModelNotFoundResponse,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { Element, Subject } from "./Element";
@@ -20,8 +21,7 @@ import { Entity, EntityMetaData } from "./Entity";
 import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
-
-/** @module iModels */
+import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -99,8 +99,9 @@ export class OpenParams {
 
 /**
  * Represents a physical copy (a briefcase) of an iModel that can be accessed as a file on the local computer.
+ *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
- * @see []($docs/learning/backend/IModelDb.md)
+ * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
  */
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000; // default limit for batching queries
@@ -592,7 +593,7 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry)
-      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logError, loggingCategory, () => ({ iModelId: iModelToken.iModelId }));
+      throw new IModelNotFoundResponse();
     assert(!!briefcaseEntry.iModelDb);
     return briefcaseEntry.iModelDb!;
   }
@@ -1168,3 +1169,27 @@ export namespace TxnManager {
     readonly _id: string;
   }
 }
+
+/** Utility to cache and retrieve results of long running open IModelDb requests
+ * The cache is keyed on the input arguments passed to open
+ * @hidden
+ */
+class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
+  public constructor() {
+    super(IModelDb.open, (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
+      return `${accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
+    });
+  }
+
+  private superMemoize = this.memoize;
+  public memoize = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): QueryablePromise<IModelDb> => {
+    return this.superMemoize(accessToken, contextId, iModelId, openParams, version);
+  }
+
+  private superDeleteMemoized = this.deleteMemoized;
+  public deleteMemoized = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion) => {
+    this.superDeleteMemoized(accessToken, contextId, iModelId, openParams, version);
+  }
+}
+
+export const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = new OpenIModelDbMemoizer();

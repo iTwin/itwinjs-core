@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
@@ -50,18 +51,19 @@ export class DrawParams extends ShaderProgramParams {
     super(target, pass);
     this.geometry = geometry;
     this.modelMatrix = Matrix4.fromTransform(modelMatrix);
-
+    let mvMat: Matrix4;
     if (this.isViewCoords) {
       // TFS#811077: Zero out Z...see clipping tools in ClipViewTools.cpp...
-      this.modelViewMatrix = this.modelMatrix.clone();
       const tf = modelMatrix.clone(DrawParams._scratchTransform);
       tf.matrix.coffs[2] = tf.matrix.coffs[5] = tf.matrix.coffs[8] = 0.0;
-      this.modelViewMatrix = Matrix4.fromTransform(tf);
+      mvMat = Matrix4.fromTransform(tf);
     } else {
-      const modelViewMatrix = target.viewMatrix.clone(DrawParams._scratchTransform);
-      modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
-      this.modelViewMatrix = Matrix4.fromTransform(modelViewMatrix);
+      let modelViewMatrix = target.viewMatrix.clone(DrawParams._scratchTransform);
+      modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+      mvMat = Matrix4.fromTransform(modelViewMatrix);
     }
+
+    this.modelViewMatrix = mvMat;
   }
 }
 
@@ -185,7 +187,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _commands: DrawCommands[] = [ [], [], [], [], [], [], [], [], [] ];
+  private readonly _commands: DrawCommands[] = [[], [], [], [], [], [], [], [], []];
   private readonly _stack: BranchStack;
   private _curBatch?: Batch = undefined;
   private _curOvrParams?: FeatureSymbology.Appearance = undefined;
@@ -198,8 +200,17 @@ export class RenderCommands {
   public get hasDecorationOverrides(): boolean { return undefined !== this._curOvrParams; }
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get compositeFlags(): CompositeFlags {
-    const flags = this.hasCommands(RenderPass.Translucent) ? CompositeFlags.Translucent : CompositeFlags.None;
-    return this.hasCommands(RenderPass.Hilite) ? (flags | CompositeFlags.Hilite) : flags;
+    let flags = CompositeFlags.None;
+    if (this.hasCommands(RenderPass.Translucent))
+      flags |= CompositeFlags.Translucent;
+
+    if (this.hasCommands(RenderPass.Hilite))
+      flags |= CompositeFlags.Hilite;
+
+    assert(4 === RenderPass.Translucent);
+    assert(6 === RenderPass.Hilite);
+
+    return flags;
   }
 
   public hasCommands(pass: RenderPass): boolean { return 0 !== this.getCommands(pass).length; }
@@ -263,7 +274,7 @@ export class RenderCommands {
     }
 
     let ovrType = FeatureIndexType.Empty;
-    if  (this._opaqueOverrides || this._translucentOverrides)
+    if (this._opaqueOverrides || this._translucentOverrides)
       ovrType = this.hasDecorationOverrides ? FeatureIndexType.Uniform : command.featureIndexType;
 
     const haveFeatureOverrides = FeatureIndexType.Empty !== ovrType;
@@ -354,8 +365,8 @@ export class RenderCommands {
 
     let cmds: DrawCommands;
     const emptyRenderPass = RenderPass.None === this._forcedRenderPass,
-          start           = emptyRenderPass ? 0 : this._forcedRenderPass as number,
-          end             = emptyRenderPass ? this._commands.length : start + 1;
+      start = emptyRenderPass ? 0 : this._forcedRenderPass as number,
+      end = emptyRenderPass ? this._commands.length : start + 1;
 
     for (let i = start; i < end; ++i) {
       cmds = this._commands[i];

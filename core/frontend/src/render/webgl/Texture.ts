@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
 
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
@@ -170,7 +171,7 @@ class TextureCreateParams {
   private static getImageProperties(isTranslucent: boolean, type: ImageTextureType): TextureImageProperties {
     const wrapMode = ImageTextureType.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
     const useMipMaps: TextureFlag = (ImageTextureType.TileSection !== type) ? true : undefined;
-    const interpolate: TextureFlag = (ImageTextureType.TileSection === type) ? true : undefined;
+    const interpolate: TextureFlag = true; // WTF? (ImageTextureType.TileSection === type) ? true : undefined;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     return { format, wrapMode, useMipMaps, interpolate };
   }

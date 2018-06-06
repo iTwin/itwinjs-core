@@ -5,12 +5,12 @@
 import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
-  AxisOrder, Angle, Geometry, Constant, ClipVector, Arc3d, Range2d, PolyfaceBuilder, StrokeOptions,
+  AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -24,6 +24,7 @@ import { MeshArgs } from "./render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
+import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
 import { GeometricModelState } from "./ModelState";
 
 export const enum GridOrientationType {
@@ -47,6 +48,7 @@ export const enum StandardViewId {
   RightIso = 7,
 }
 
+/** @private */
 // tslint:disable-next-line:variable-name
 export const StandardView = {
   Top: RotMatrix.identity,
@@ -1170,12 +1172,14 @@ export abstract class ViewState3d extends ViewState {
   /** Given a graphic builder, construct a mesh grid with corresponding UV coordinates, using data contained within the viewport. */
   private drawBackgroundMesh(builder: GraphicBuilder, viewport: Viewport, rotation: number, zOffset: number) {
     /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
-    // we will use a PolyfaceBuilder here to add simple quads in the grid with manually calculated UV params, and then
-    // send the whole polyface grid to the GraphicBuilder
+    // we will use a PolyfaceBuilder here to add simple quads in the grid with manually calculated UV params, claim the polyface when finished,
+    // and then send that over to the GraphicBuilder
     const strokeOptions = new StrokeOptions();
     strokeOptions.needParams = true;
-    strokeOptions.needNormals = false;
+    strokeOptions.needNormals = true;
+    strokeOptions.shouldTriangulate = false;
     const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.toggleReversedFacetFlag();
 
     const meshDimension = 10;
     const delta = 1 / (meshDimension - 1);
@@ -1183,25 +1187,24 @@ export abstract class ViewState3d extends ViewState {
     const frustum = viewport.getFrustum();
     const cameraPos = this.computeEyePoint(frustum);
 
-    for (let row = 1; row < meshDimension; row++) {
-      for (let col = 1; col < meshDimension; col++) {
+    const points = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
+    const params = [Point2d.create(), Point2d.create(), Point2d.create(), Point2d.create()];
+
+    for (let row = 1; row < meshDimension; ++row) {
+      for (let col = 1; col < meshDimension; ++col) {
         const low = Point2d.create((row - 1) * delta, (col - 1) * delta);
         const high = Point2d.create(row * delta, col * delta);
 
-        const params: Point2d[] = [];
-        let points: Point3d[] = [];
-
         const npcZ = .5;
-        points.push(Point3d.create(low.x, low.y, npcZ));
-        points.push(Point3d.create(low.x, high.y, npcZ));
-        points.push(Point3d.create(high.x, high.y, npcZ));
-        points.push(Point3d.create(high.x, low.y, npcZ));
+        Point3d.create(low.x, low.y, npcZ, points[0]);
+        Point3d.create(high.x, low.y, npcZ, points[1]);
+        Point3d.create(high.x, high.y, npcZ, points[2]);
+        Point3d.create(low.x, high.y, npcZ, points[3]);
 
-        const worldPoints = points.slice(0);
-        viewport.npcToWorldArray(worldPoints);
+        viewport.npcToWorldArray(points);
         for (let i = 0; i < 4; i++) {
-          const direction = Vector3d.createStartEnd(cameraPos, worldPoints[i]);
-          params.push(ViewState3d.getUVForDirection(direction, rotation, zOffset));
+          const direction = Vector3d.createStartEnd(cameraPos, points[i]);
+          params[i].setFrom(ViewState3d.getUVForDirection(direction, rotation, zOffset));
         }
 
         // Avoid seam discontinuities by eliminating cycles
@@ -1217,23 +1220,19 @@ export abstract class ViewState3d extends ViewState {
               params[i].y += 1;
         }
 
-        points = worldPoints.slice(0);
         viewport.worldToViewArray(points);
-        polyfaceBuilder.addQuad(points, params);
+        polyfaceBuilder.addQuadFacet(points, params, undefined);
       }
-      if (row === meshDimension - 1)
-        polyfaceBuilder.endFace();
     }
 
-    const polyface = polyfaceBuilder.claimPolyface();
+    const polyface = polyfaceBuilder.claimPolyface(false);
     builder.addPolyface(polyface, true);
   }
 
-  /** Attempts to draw the Skybox, returning true on success and false otherwise. */
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
-    if (style3d.getEnvironment().sky.display)
-      return;   // SkyBox is enabled
+    // if (style3d.getEnvironment().sky.display)
+    //  return;   // SkyBox is enabled
 
     const vp = context.viewport;
     style3d.loadSkyBoxMaterial(vp.target.renderSystem);
@@ -1268,17 +1267,100 @@ export abstract class ViewState3d extends ViewState {
     }
   }
 
+  /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
+  public getGroundElevation(): number {
+    const env = this.getDisplayStyle3d().getEnvironment();
+    return env.ground.elevation + this.iModel.globalOrigin.z;
+  }
+
+  protected _forceGroundPlane: boolean = false;
+  /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
+  public getGroundExtents(vp: Viewport): AxisAlignedBox3d {
+    const displayStyle = this.getDisplayStyle3d();
+    const extents = new AxisAlignedBox3d();
+    if (!displayStyle.getEnvironment().ground.display && !this._forceGroundPlane)
+      return extents; // Ground plane is not enabled
+
+    const elevation = this.getGroundElevation();
+
+    const viewRay = Ray3d.create(Point3d.create(), vp.rotMatrix.rowZ());
+    const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+
+    // first determine whether the ground plane is displayed in the view
+    const worldFrust = vp.getFrustum();
+    for (const point of worldFrust.points) {
+      viewRay.origin = point;   // We never modify the reference
+      const xyzPoint = Point3d.create();
+      const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+      if (param === undefined)
+        return extents;   // View does not show ground plane
+    }
+
+    extents.setFrom(this.iModel.projectExtents);
+    extents.low.z = extents.high.z = elevation;
+
+    const center = extents.low.interpolate(.5, extents.high);
+
+    const radius = extents.low.distance(extents.high);
+    extents.setNull();
+    extents.extendPoint(center);  // Extents now contains single point
+    extents.low.addScaledInPlace(Vector3d.create(-1, -1, -1), radius);
+    extents.high.addScaledInPlace(Vector3d.create(1, 1, 1), radius);
+    extents.low.z = extents.high.z = elevation;
+    return extents;
+  }
+
   protected drawGroundPlane(context: DecorateContext): void {
-    // ###TODO: Check if enabled in display style; draw actual ground plane instead of this fake thing
-    const extents = this.getViewedExtents(); // the project extents
-    const center = extents.low.interpolate(0.5, extents.high);
-    const ellipse = Arc3d.createXYEllipse(center, Math.abs(center.x - extents.low.x), Math.abs(center.y - extents.low.y));
-    const gf = context.createWorldDecoration();
-    const green = ColorDef.green.clone();
-    gf.setSymbology(green, green, 2);
-    gf.addArc(ellipse, true, true);
-    gf.addRangeBox(extents);
-    context.addWorldDecoration(gf.finish()!);
+    const extents = this.getGroundExtents(context.viewport);
+    if (extents.isNull()) {
+      return;
+    }
+    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
+    points[1].x = extents.high.x;
+    points[3].x = extents.low.x;
+
+    const aboveGround = this.isEyePointAbove(extents.low.z);
+    const colors: ColorDef[] = [];
+    const gradient = this.getDisplayStyle3d().getEnvironment().ground.getGroundPlaneTextureSymb(aboveGround, colors);
+    const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
+    if (!texture)
+      return;
+
+    const matParams = new RenderMaterial.Params();
+    matParams.diffuseColor = ColorDef.white;
+    matParams.shadows = false;
+    matParams.ambient = 1;
+    matParams.diffuse = 0;
+
+    const mapParams = new TextureMapping.Params();
+    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
+    mapParams.textureMatrix = transform;
+    mapParams.textureMatrix.setTransform();
+    matParams.textureMapping = new TextureMapping(texture, mapParams);
+    const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
+    if (!material)
+      return;
+
+    const params = new GraphicParams();
+    params.setLineColor(colors[0]);
+    params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
+    params.material = material;
+
+    const builder = context.createWorldDecoration();
+    builder.activateGraphicParams(params);
+
+    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
+    // we will use a PolyfaceBuilder here to add the ground plane as a quad, claim the polyface, and then send that to the GraphicBuilder
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.toggleReversedFacetFlag();
+    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    polyfaceBuilder.addQuadFacet(points, uvParams);
+    const polyface = polyfaceBuilder.claimPolyface(false);
+
+    builder.addPolyface(polyface, true);
+    context.addWorldDecoration(builder.finish());
   }
 }
 
@@ -1366,12 +1448,12 @@ export class ViewState2d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
-/** a view of a DrawingModel */
+/** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
   public static get className() { return "DrawingViewDefinition"; }
 }
 
-/** a view of a SheetModel */
+/** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
 }

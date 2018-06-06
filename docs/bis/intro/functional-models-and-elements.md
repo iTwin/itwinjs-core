@@ -57,3 +57,5 @@ In the Plant functional domain there is a complete set of classes that define th
 Plant does have functional breakdown for pipelines and instrument loops that group functional components and are always the end of the function breakdown hierarchy. They are only configurable by adding properties. There are many non-configurable relations that relate functional components to one another to define the layout of the function model. **See diagram.
 
 ![Model Hierarchy](./media/plantfuncmodel.png)
+
+> Next: [Information Models and Elements](./information-models-and-elements.md)

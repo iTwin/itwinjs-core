@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module BisCore */
+/** @module Models */
 
 import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { ModelProps, GeometricModel2dProps, RelatedElement } from "@bentley/imodeljs-common";
@@ -110,19 +110,21 @@ export class SpatialLocationModel extends SpatialModel {
 }
 
 /**
- * A container for persisting drawing graphics.
+ * A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
  */
 export class DrawingModel extends GraphicalModel2d {
 }
 
 /**
- * A container for persisting section drawing graphics.
+ * A container for persisting section [[DrawingGraphic]]s.
  */
 export class SectionDrawingModel extends DrawingModel {
 }
 
 /**
- * A container for persisting sheet views and graphics.
+ * A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
+ * A SheetModel is a digital representation of a *sheet of paper*. SheetModels are 2d models in bounded paper coordinates.
+ * SheetModels may contain annotation Elements as well as references to 2d or 3d Views.
  */
 export class SheetModel extends GraphicalModel2d {
 }

@@ -1,5 +1,6 @@
 ### Using iModelJs
-- [App Architecture](./SoftwareArchitecture.md)
+
+- [iModelJs Architecture](./SoftwareArchitecture.md)
 - [Agents and Services](./SoftwareArchitecture.md#web)
 - [Web Apps](./SoftwareArchitecture.md#web)
 - [Desktop Apps](./SoftwareArchitecture.md#desktop)
@@ -7,10 +8,11 @@
 
 &nbsp;
 ### Helpful Background Information
+
 - [iModels](./iModels.md)
-- [IModelHub](./IModelHub.md)
+- [iModelHub](./IModelHub.md)
 - [iModel Bridges](./imodel-bridges.md)
 - [BIS Introduction](../bis/index.md)
-- [iModelJs Architecture](./SoftwareArchitecture.md)
-- [RPC Interfaces](./RpcInterface.md)
+- [Remote Procedure Calls](./RpcInterface.md)
 - [iModelJs Packages](./index.md#imodeljs-organization)
+- [Glossary](../learning/glossary.md)

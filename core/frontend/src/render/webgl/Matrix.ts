@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-  |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WebGL */
+
 import { Vector3d, Point3d, RotMatrix, Transform, Matrix4d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 
@@ -219,8 +221,8 @@ export class Matrix4 {
   // left, right, bottom, top, near, far
   public frustum(l: number, r: number, b: number, t: number, n: number, f: number): void {
     this.setValues((2 * n) / (r - l), 0, (r + l) / (r - l), 0, 0, (2 * n) / (t - b),
-        (t + b) / (t - b), 0, 0, 0, -(f + n) / (f - n),
-        -(2 * f * n) / (f - n), 0, 0, -1, 0);
+      (t + b) / (t - b), 0, 0, 0, -(f + n) / (f - n),
+      -(2 * f * n) / (f - n), 0, 0, -1, 0);
   }
   public static fromFrustum(l: number, r: number, b: number, t: number, n: number, f: number, out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();

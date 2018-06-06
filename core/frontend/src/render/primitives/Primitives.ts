@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Rendering */
+
 import { assert, SortedArray } from "@bentley/bentleyjs-core";
 import { GraphicBuilderCreateParams } from "../GraphicBuilder";
 

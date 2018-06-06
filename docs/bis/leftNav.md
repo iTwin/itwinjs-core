@@ -6,6 +6,7 @@
 - [BIS Ecosystem](./intro/bis-ecosystem.md)
 - [Fabric of the Universe](./intro/fabric-of-the-universe.md)
 - [Element Fundamentals](./intro/element-fundamentals.md)
+- [Codes](./intro/codes.md)
 - [ElementAspect Fundamentals](./intro/elementaspect-fundamentals.md)
 - [Model Fundamentals](./intro/model-fundamentals.md)
 - [Relationship Fundamentals](./intro/relationship-fundamentals.md)
@@ -15,6 +16,7 @@
 - [Functional Models and Elements](./intro/functional-models-and-elements.md)
 - [Information Models and Elements](./intro/information-models-and-elements.md)
 - [Categories](./intro/categories.md)
+- [Schema Customization](./intro/schema-customization.md)
 - [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time.md)
 - [Schema Versioning](./intro/schema-versioning-and-generations.md)
 - [Glossary](./intro/glossary.md)
@@ -35,12 +37,14 @@
 ./intro/units.md
 -->
 
+---
+
 &nbsp;
+
 ### BIS Naming Guidelines
 
-- [Rules and Recommendation](./naming-guidelines/rules-and-recommendations.md)
-- [Special Terms](./naming-guidelines/rules-and-recommendations-for-special-terms.md)
+- [Rules and Recommendations](./naming-guidelines/rules-and-recommendations.md)
+- [Special Terms](./naming-guidelines/special-terms.md)
 - [Summary of Exceptions](./naming-guidelines/summary-of-exceptions.md)
 - [Abbreviations and Acronyms](./naming-guidelines/standard-abbreviations-and-acronyms.md)
 - [Relationship “Strengths”](./naming-guidelines/standard-relationship-strengths-names.md)
-

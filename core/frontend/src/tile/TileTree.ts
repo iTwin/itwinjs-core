@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Tile */
 
 import { compareNumbers, compareStrings, SortedArray, Id64, BeTimePoint, BeDuration, JsonUtils } from "@bentley/bentleyjs-core";
 import { ElementAlignedBox3d, ViewFlag, Frustum, FrustumPlanes, TileProps, TileTreeProps, TileId } from "@bentley/imodeljs-common";
@@ -50,10 +51,13 @@ export class Tile {
   public readonly zoomFactor?: number;
   private readonly _childIds: string[];
   private _childrenLastUsed: BeTimePoint;
+  private _childrenLoadStatus: TileTree.LoadStatus;
   private _children?: Tile[];
   private readonly _contentRange?: ElementAlignedBox3d;
   private _graphic?: RenderGraphic;
 
+  // ###TODO: Artificially limiting depth for now until tile selection is fixed...
+  protected _maxDepth: number = 2;
   public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
@@ -71,6 +75,12 @@ export class Tile {
 
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
+
+    // ###TODO: Back-end is not setting maximumSize in json!
+    if (undefined === this.maximumSize)
+      this.maximumSize = this.hasGraphics ? 512 : 0;
+
+    this._childrenLoadStatus = this.hasChildren && this.depth < this._maxDepth ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.Loaded;
   }
 
   private loadGraphics(blob?: Uint8Array): void {
@@ -116,7 +126,7 @@ export class Tile {
   public get hasGraphics(): boolean { return undefined !== this.graphics; }
   public get hasZoomFactor(): boolean { return undefined !== this.zoomFactor; }
   public get children(): Tile[] | undefined { return this._children; }
-  // ###TODO public loadChildren()
+  public get iModel(): IModelConnection { return this.root.iModel; }
 
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
@@ -209,7 +219,7 @@ export class Tile {
       }
     }
 
-    // ###TODO: load children
+    this.loadChildren(); // NB: asynchronous
     const children = canSkipThisTile ? this.children : undefined;
     if (undefined !== children) {
       this._childrenLastUsed = args.now;
@@ -256,9 +266,11 @@ export class Tile {
         child.setAbandoned();
 
       children.length = 0;
+      this._childrenLoadStatus = TileTree.LoadStatus.NotLoaded;
     }
   }
 
+  protected _doCulling: boolean = false;
   private static scratchWorldFrustum = new Frustum();
   private static scratchRootFrustum = new Frustum();
   private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
@@ -266,7 +278,27 @@ export class Tile {
     const worldBox = box.transformBy(args.location, Tile.scratchWorldFrustum);
     const isOutside = FrustumPlanes.Containment.Outside === args.context.frustumPlanes.computeFrustumContainment(worldBox);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
-    return isOutside || isClipped;
+    const isCulled = isOutside || isClipped;
+    return this._doCulling && isCulled;
+  }
+
+  private loadChildren(): TileTree.LoadStatus {
+    if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
+      this._childrenLoadStatus = TileTree.LoadStatus.Loading;
+      const childIds: TileId[] = this._childIds.map((childId: string) => new TileId(this.root.id, childId));
+      this.iModel.tiles.getTileProps(childIds).then((props: TileProps[]) => {
+        this._children = [];
+        this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
+        if (undefined !== props) {
+          for (const prop of props)
+            this._children.push(new Tile(Tile.Params.fromJSON(prop, this.root, this)));
+        }
+
+        IModelApp.viewManager.onNewTilesReady();
+      }).catch((_err) => { this._childrenLoadStatus = TileTree.LoadStatus.NotFound; });
+    }
+
+    return this._childrenLoadStatus;
   }
 }
 

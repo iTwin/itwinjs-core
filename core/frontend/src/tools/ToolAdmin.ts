@@ -2,6 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
+
 import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core";
 import { ViewStatus } from "../ViewState";
 import { Viewport } from "../Viewport";
@@ -365,7 +366,7 @@ export class ToolAdmin {
   public readonly toolState = new ToolState();
   // private suspended?: SuspendedToolState;
   private inputCollectorSave?: SuspendedToolState;
-  public cursorInView = false;
+  public cursorInView = true;
   private _viewCursor?: BeCursor;
   private viewTool?: ViewTool;
   private primitiveTool?: PrimitiveTool;
@@ -509,6 +510,8 @@ export class ToolAdmin {
     const ev = ToolAdmin.scratchButtonEvent1;
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
+
+    // ###TODO: use fromButton for below code
 
     // AccuDraw:: GetInstance()._OnMotion(event);
     const isValidLocation = !tool ? true : tool.isValidLocation(ev, false);
@@ -1041,6 +1044,9 @@ export class ToolAdmin {
     // else
     //   this.suspendedCursor = this.viewCursor;
 
+    this.toolState.coordLockOvr = CoordinateLockOverrides.All;
+    this.toolState.locateCircleOn = false;
+
     IModelApp.accuSnap.onStartTool();
 
     this.viewCursor = BeCursor.CrossHair;
@@ -1052,8 +1058,12 @@ export class ToolAdmin {
     if (this.primitiveTool)
       this.setPrimitiveTool(undefined);
 
-    // this.exitInputCollector();
-    // this.setIncompatibleViewportCursor(true); // Don't restore this...
+    this.exitInputCollector();
+    this.setIncompatibleViewportCursor(true); // Don't restore this...
+
+    this.toolState.coordLockOvr = CoordinateLockOverrides.None;
+    this.toolState.locateCircleOn = false;
+
     IModelApp.accuDraw.onPrimitiveToolInstall();
     IModelApp.accuSnap.onStartTool();
 

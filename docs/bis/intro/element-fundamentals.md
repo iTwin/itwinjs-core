@@ -2,56 +2,21 @@
 
 A BIS `Element` represents an entity in the real world, e.g. pumps, beams, contracts, companies, processes, requirements, documents, persons, etc.
 
-## Codes
-
-Every BIS `Element` has the ability to store a *Code* that represents its formal identifier in the real world.
-A Code is a human-readable string that is used to uniquely identify something.
-Codes are enforced to be unique within a BIS repository.
-A Code conveys information to the reader that understands the structure of the string and is therefore able to *decode* it.
-Different domains and organizations have different ways of *encoding* business information.
-For some classes of Elements, a Code is required.
-For other classes of Elements, a Code is optional.
-However, the notion of a formal naming system is pervasive enough to have as a first-class BIS property directly on `Element`.
-Examples uses for Code include:
-
-- Asset Tracking Number
-- Tag Number
-- Serial Number
-- VIN Number
-- Social Security Number
-- Document Tracking Number
-- Contract Number
-- Project Number
-- RFID
-- Etc.
-
-When the identified entity is physical in nature, it will often have its *code* physically affixed to it (as in the VIN Number on a car or the Manufacturer’s Serial Number on a guitar).
-
-A Code is a three-part identifier that consists of a `CodeSpec`, a `CodeScope` and a `CodeValue`.
-
 ## BIS Element Properties
+
+The properties of an element are defined in its [Schema](./schemas-domains.md). Every Element in BIS derives from the `Element` class. This section describes the properties of the Element class, and therefore the properties that *every* Element in an iModel has.
 
 ### CodeSpec
 
-A `CodeSpec` (aka **Code Specification**) captures the rules for encoding and decoding significant business information into and from a Code (string).
-A Code Specification is used to generate and validate Codes.
-A BIS Repository (e.g. an iModel) can persist multiple Code Specifications because different classes of Elements can have different coding conventions.
-
-Each `Element` has a relationship to the `CodeSpec` that should be used to encode or decode the Code for that instance.
+See [CodeSpec](./codes.md#codespec)
 
 ### CodeScope
 
-Each `Element` has a relationship to another Element that provides the uniqueness scope for its Code.
-For example, a Floor Code (like "1" or "2") must be unique within a Building, but is not unique across Buildings.
-In this example, the Building instance is providing the CodeScope for the Floor.
+See [CodeScope](./codes.md#codescope)
 
 ### CodeValue
 
-Each `Element` stores a `CodeValue` (a text string).
-In many contexts, CodeValue is colloquially referred to as the *Element's Code*.
-A `CodeValue` should be a human-understandable string, *not* a Guid. `FederationGuid` fulfills that purpose.
-
-Elements representing real-world entities that don’t have a meaningful real-world identifier, e.g. a piece of baseboard, a pile of dirt, an average bolt, will have `null` for its `CodeValue`.
+See [CodeValue](./codes.md#codevalue)
 
 ### FederationGuid
 
@@ -282,3 +247,5 @@ Element owns child Elements
 Element->ElementAspect
 (other)
 -->
+
+> Next: [Codes](./codes.md)

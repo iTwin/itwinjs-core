@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module AppAdministration */
+/** @module IModelApp */
 
 import { DeploymentEnv, IModelHubClient } from "@bentley/imodeljs-clients";
 import { ViewManager } from "./ViewManager";
@@ -23,13 +23,13 @@ import * as viewTool from "./tools/ViewTool";
 import * as idleTool from "./tools/IdleTool";
 
 /**
- * An instance of IModelApp is the administrator for applications that read, write, or display an iModel in a browser.
+ * An instance of IModelApp is the frontend administrator for applications that read, write, or display an iModel in a browser.
  * It connects the user interface with the iModelJs services. There can be only one IModelApp active in a session.
  *
  * Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different
  * implementations of them.
  *
- * Before any interactive operations may be performed, IModelApp.startup must be called (typically on a subclass of IModelApp)
+ * Before any interactive operations may be performed, [[IModelApp.startup]] must be called (typically on a subclass of IModelApp)
  */
 export class IModelApp {
   protected static _initialized = false;
@@ -51,17 +51,16 @@ export class IModelApp {
   public static get hasRenderSystem() { return undefined !== this._renderSystem; }
 
   /**
-   * Gets the instance of the RenderSystem which provides display capabilities. Display capabilities must be explicitly requested by
+   * Gets the instance of the [[RenderSystem]] that provides display capabilities. Display capabilities must be explicitly requested by
    * passing 'true' as the second argument to startup().
-   * @return the instance of the RenderSystem.
+   * @returns The instance of the RenderSystem.
    * @throws [[IModelError]] if display capabilities are not enabled.
    */
   public static get renderSystem() {
-    if (undefined === this._renderSystem) {
+    if (undefined === this._renderSystem)
       throw new IModelError(BentleyStatus.ERROR, "Display capabilities unavailable");
-    } else {
-      return this._renderSystem;
-    }
+
+    return this._renderSystem;
   }
 
   /**
@@ -118,6 +117,7 @@ export class IModelApp {
     IModelApp.tentativePoint.onInitialized();
   }
 
+  /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
     if (undefined !== IModelApp._renderSystem) {
       IModelApp._renderSystem.onShutDown();
@@ -129,17 +129,17 @@ export class IModelApp {
 
   /**
    * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
-   * <em>note:</em> The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
+   * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
   protected static onStartup(): void { }
 
   /**
-   * Implement this method to supply options for the initialization of the internationalization.
+   * Implement this method to supply options for the initialization of the [I18N]($imodeljs-i18n) system.
    */
   protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
 
   /**
-   * Implement this method to supply the RenderSystem which provides display capabilities.
+   * Implement this method to supply the RenderSystem that provides display capabilities.
    */
   protected static supplyRenderSystem(): RenderSystem | undefined { return System.create(); }
 }

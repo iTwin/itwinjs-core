@@ -5,8 +5,8 @@ import * as path from "path";
 import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelDb, OpenParams } from "../../backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
+import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { HubTestUtils } from "./HubTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -20,19 +20,19 @@ describe.skip("DebugHubIssues (#integration)", () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
   });
 
-  it("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
+  it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
     const projectName = "NodeJsTestProject";
     const iModelName = "TestModel";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.downloadIModel(accessToken, projectName, iModelName, iModelDir);
+    await HubTestUtils.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
   });
 
-  it("should be able to delete any iModel on the Hub", async () => {
+  it.skip("should be able to delete any iModel on the Hub", async () => {
     await HubTestUtils.deleteIModel(accessToken, "NodeJsTestProject", "TestModel");
   });
 
-  it("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
+  it.skip("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
     const projectName = "NodeJsTestProject";
     const iModelName = "TestModel";
 
@@ -40,7 +40,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await HubTestUtils.uploadIModel(accessToken, projectName, iModelDir);
   });
 
-  it("should be able to open any iModel on the Hub", async () => {
+  it.skip("should be able to open any iModel on the Hub", async () => {
     const projectName = "NodeJsTestProject";
     const iModelName = "TestModel";
 
@@ -54,7 +54,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     iModel.close(accessToken);
   });
 
-  it("should be able to create a change set from a standalone iModel)", async () => {
+  it.skip("should be able to create a change set from a standalone iModel)", async () => {
     const dbName = "D:\\temp\\Defects\\879278\\DPIntegrationTestProj79.bim";
     const iModel: IModelDb = IModelDb.openStandalone(dbName, OpenMode.ReadWrite, true); // could throw Error
     assert.exists(iModel);
@@ -65,7 +65,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSetToken);
   });
 
-  it("should be able to open any iModel on the Hub", async () => {
+  it.skip("should be able to open any iModel on the Hub", async () => {
     const projectName = "AbdTestProject";
     const iModelName = "ATP_2018050310145994_scenario22";
 
@@ -77,6 +77,42 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
     iModel.close(accessToken);
+  });
+
+  it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in PROD", async () => {
+    const accessToken1: AccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.regular, "PROD");
+
+    // Restart host on PROD
+    IModelHost.shutdown();
+    const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
+    hostConfig.iModelHubDeployConfig = "PROD";
+    IModelHost.startup(hostConfig);
+
+    const projectName = "1MWCCN01 - North Project";
+    const iModelName = "1MWCCN01";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubTestUtils.downloadIModelByName(accessToken1, projectName, iModelName, iModelDir);
+  });
+
+  it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in DEV", async () => {
+    const accessToken1: AccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.user1, "QA");
+
+    // Restart host on DEV
+    IModelHost.shutdown();
+    const hostConfig: IModelHostConfiguration = new IModelHostConfiguration();
+    hostConfig.iModelHubDeployConfig = "DEV";
+    IModelHost.startup(hostConfig);
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Turn off SSL validation in DEV
+
+    const projectId = "bffa4aea-5f3f-4b60-8ecb-4656081ea480";
+    const iModelId = "5e8f5fbb-6613-479a-afb1-ce8de037ef0e";
+    const iModelDir = path.join(iModelRootDir, iModelId);
+
+    const startTime = Date.now();
+    await HubTestUtils.downloadIModelById(accessToken1, projectId, iModelId, iModelDir);
+    const finishTime = Date.now();
+    console.log(`Time taken to download is ${finishTime - startTime} milliseconds`); // tslint:disable-line:no-console
   });
 
 });

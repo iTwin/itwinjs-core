@@ -8,7 +8,7 @@ import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
 import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 const compatibleVersion = IModelReadRpcInterface.version;
 
 let pendingsSent = 0;
@@ -40,6 +40,10 @@ ipcMain.on("testbed", (event: any, arg: any) => {
   } else if (msg.name === CONSTANTS.RESTORE_COMPATIBLE_INTERFACE_VERSION) {
     IModelReadRpcInterface.version = compatibleVersion;
     event.returnValue = true;
+  } else if (msg.name === CONSTANTS.RESTART_BACKEND) {
+    IModelHost.shutdown();
+    IModelHost.startup();
+    event.returnValue = true;
   }
 });
 
@@ -51,6 +55,9 @@ IModelHost.startup();
 TestRpcImpl.register();
 TestRpcImpl3.register();
 TestbedConfig.initializeRpcBackend();
+
+Logger.initializeToConsole();
+Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
 
 if (TestbedConfig.cloudRpc) {
   const app = express();

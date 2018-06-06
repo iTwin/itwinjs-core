@@ -99,6 +99,9 @@ export class ViewManager {
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
 
+    // See DgnClientFxViewport::Initialize()
+    this.selectedView = newVp;
+
     // Start up the render loop if necessary.
     if (1 === this._viewports.length) requestAnimationFrame(() => { this.renderLoop(); });
     this.onViewOpen.raiseEvent(newVp);
@@ -119,7 +122,7 @@ export class ViewManager {
     for (let i = 0; i < vpList.length; ++i) {
       if (vpList[i] === vp) {
         vp.setEventController(undefined);
-        vpList.slice(i, 1);
+        vpList.splice(i, 1);
         didDrop = true;
         break;
       }
@@ -146,6 +149,8 @@ export class ViewManager {
   public invalidateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.invalidateScene()); }
 
   public validateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
+
+  public onNewTilesReady(): void { this._newTilesReady = true; }
 
   // Invoked by requestAnimationFrame() whenever we have at least one viewport
   private renderLoop(): void {

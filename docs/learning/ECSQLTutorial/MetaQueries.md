@@ -9,11 +9,14 @@ Every iModel includes the **ECDbMeta** ECSchema. It exposes the content of all s
 >
 > *Goal:* Return the name, alias and version of all schemas in the iModel
 >
-> *ECSQL:* `SELECT Name, Alias, VersionMajor, VersionWrite, VersionMinor from meta.ECSchemaDef ORDER BY Name`
->
+> *ECSQL*
+> ```sql
+> SELECT Name, Alias, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef ORDER BY Name
+> ```
 > *Result*
+>
 > Name | Alias | VersionMajor | VersionWrite | VersionMinor
-> -- | -- | -- | -- | --
+> --- | --- | --- | --- | ---
 > BisCore | bis | 1 | 0 | 0
 > CoreCustomAttributes | CoreCA | 1 | 0 | 0
 > ECDbFileInfo | ecdbf | 2 | 0 | 0
@@ -29,11 +32,15 @@ Every iModel includes the **ECDbMeta** ECSchema. It exposes the content of all s
 >
 > *Goal:* Return the properties and their types for the Element class
 >
-> *ECSQL:* `SELECT p.Name from meta.ECPropertyDef p JOIN meta.ECClassDef c ON c.ECInstanceId=p.Class.Id WHERE c.Name='Element' ORDER BY p.Ordinal`
+> *ECSQL*
+> ```sql
+> SELECT p.Name from meta.ECPropertyDef p JOIN meta.ECClassDef c ON c.ECInstanceId=p.Class.Id WHERE c.Name='Element' ORDER BY p.Ordinal
+> ```
 >
 > *Result*
+>
 > Name |
-> -- |
+> --- |
 > Model |
 > LastMod |
 > CodeSpec |
@@ -52,15 +59,19 @@ Another advantage of accessing the schemas via ECSQL is that you can combine tha
 >
 > *Goal:* Return the sub class names of all Elements in the iModel.
 >
-> *ECSQL:* `SELECT element.ECInstanceId ElementId, class.Name ClassName FROM bis.Element element JOIN meta.ECClassDef class ON element.ECClassId=class.ECInstanceId`
+> *ECSQL*
+> ```sql
+> SELECT element.ECInstanceId ElementId, class.Name ClassName FROM bis.Element element JOIN meta.ECClassDef class ON element.ECClassId=class.ECInstanceId
+> ```
 >
 > *Result*
+>
 > ElementId | ClassName
-> -- | --
-> 0x1 | AnnotationElement2d
-> 0x2 | AnnotationElement2d
-> 0x3 | DrawingCategory
-> 0x4 | PhysicalObject
+> --- | ---
+> 1 | AnnotationElement2d
+> 2 | AnnotationElement2d
+> 3 | DrawingCategory
+> 4 | PhysicalObject
 
 Of course, the ECSQL is not precise yet because you would usually want to know the schema name for the classes as well, because a class with the same name can exist in more than one schema. This requires to bring in the `ECSchemaDef` class again.
 
@@ -68,12 +79,20 @@ Of course, the ECSQL is not precise yet because you would usually want to know t
 >
 > *Goal:* Return the fully qualified names of the sub classes of all Elements in the iModel.
 >
-> *ECSQL:* `SELECT element.ECInstanceId ElementId, schema.Name SchemaName, class.Name ClassName FROM bis.Element element JOIN meta.ECClassDef class ON element.ECClassId=class.ECInstanceId JOIN meta.ECSchemaDef schema ON schema.ECInstanceId=class.Schema.Id`
+> *ECSQL*
+> ```sql
+> SELECT element.ECInstanceId ElementId, schema.Name SchemaName, class.Name ClassName FROM bis.Element element JOIN meta.ECClassDef class ON element.ECClassId=class.ECInstanceId JOIN meta.ECSchemaDef schema ON schema.ECInstanceId=class.Schema.Id
+> ```
 >
 > *Result*
+>
 > ElementId | SchemaName | ClassName
-> -- | -- | --
-> 0x1 | BisCore | AnnotationElement2d
-> 0x2 | BisCore | AnnotationElement2d
-> 0x3 | BisCore | DrawingCategory
-> 0x4 | Gemeric | PhysicalObject
+> --- | --- | ---
+> 1 | BisCore | AnnotationElement2d
+> 2 | BisCore | AnnotationElement2d
+> 3 | BisCore | DrawingCategory
+> 4 | Gemeric | PhysicalObject
+
+---
+
+[**< Previous**](./SpatialQueries.md) &nbsp; | &nbsp; [**Next >**](./ChangeSummaryQueries.md)

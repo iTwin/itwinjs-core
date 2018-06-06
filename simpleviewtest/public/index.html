@@ -13,6 +13,7 @@
       height: 100%;
       width: 100%;
       margin: 0;
+      position: relative;
     }
 
     #root {
@@ -28,13 +29,28 @@
   </noscript>
   <div id="root">
     <div class=topdiv>
+      <div class="simpleicon" id="selectIModel">
+        <i class="bim-icon-briefcases"></i>
+      </div>
+      <select id="viewList"></select>
       <img class="simpleicon" src="fit-to-view.svg" id="startFit" />
       <img class="simpleicon" src="window-area.svg" id="startWindowArea" />
       <img class="simpleicon" src="zoom.svg" id="startZoom" />
       <img class="simpleicon" src="walk.svg" id="startWalk" />
       <img class="simpleicon" src="rotate-left.svg" id="startRotateView" />
-      <img class="simpleicon" src="rotate-left.svg" id="switchStandardRotation" />
+      <div class="simpleicon" id="switchStandardRotation">
+        <i class="bim-icon-viewtop"></i>
+      </div>
+      <div class="simpleicon" id="doUndo">
+        <i class="bim-icon-undo"></i>
+      </div>
+      <div class="simpleicon" id="doRedo">
+        <i class="bim-icon-redo"></i>
+      </div>
       <span class="statusspan" id="showstatus" />
+    </div>
+    <div id="spinner" class="bim-spinner-container">
+      <div class="bim-spinner"></div>
     </div>
     <canvas class="imodelview" id="imodelview"></canvas>
   </div>

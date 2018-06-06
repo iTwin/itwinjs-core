@@ -23,6 +23,7 @@
     "publish:clients": "cd core/clients && npm publish",
     "publish:frontend": "cd core/frontend && npm publish",
     "publish:i18n": "cd core/i18n && npm publish",
+    "publish:dev-cors-proxy-server": "cd tools/dev-cors-proxy-server && npm publish",
     "predocs": "echo NOTE: use 'rush docs' instead",
     "docs": " ",
     "buildDocSite": "node tools/bemetalsmith/buildDocSite",
@@ -67,7 +68,7 @@
     "WIP: Temporarily workaround monorepo/symlink issues by adding a devDependencies on @bentley/bentleyjs-core, @bentley/geometry-core and @bentley/imodeljs-clients"
   ],
   "devDependencies": {
-    "@bentley/bemetalsmith": "^2.3.4",
+    "@bentley/bemetalsmith": "2",
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "5",
     "@bentley/geometry-core": "8",
