@@ -81,7 +81,11 @@ export class ViewRect {
   }
 }
 
-/** the minimum and maximum values for the "depth" of a rectangle of screen space. Values are in "npc" so they will be between 0 and 1.0 */
+/**
+ * The minimum and maximum values for the "depth" of a rectangle of screen space.
+ *
+ * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0
+ */
 export class DepthRangeNpc {
   constructor(public minimum = 0, public maximum = 1.0) { }
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
@@ -91,13 +95,13 @@ export class DepthRangeNpc {
 export const enum CoordSystem {
   /** Coordinates are relative to the origin of the view */
   View,
-  /** Coordinates are relative to normalized plane coordinates. */
+  /** Coordinates are in NPC [normalized plane coordinates]($docs/learning/glossary.md#npc). */
   Npc,
   /** Coordinates are relative to the world coordinate system for the physical elements in the iModel */
   World,
 }
 
-/** object to animate frustum transition of a viewport */
+/** Object to animate frustum transition of a viewport */
 class Animator {
   private currFrustum = new Frustum();
   private startTime?: BeTimePoint;
@@ -117,7 +121,7 @@ class Animator {
   }
 
   /**
-   * move to the appropriate frame, based on the current time, for the current animation.
+   * Move to the appropriate frame, based on the current time, for the current animation.
    * @return true when finished
    */
   public animate(): boolean {
@@ -180,7 +184,6 @@ export interface ViewportAnimator {
  * active, decorations will be invalidated on each frame. The animator's
  * animateDecorations() function will be invoked to update any animation state; then
  * decorations will be re-requested and rendered.
- * decorations each frame for a set duration.
  */
 export class DecorationAnimator implements ViewportAnimator {
   private start: BeTimePoint;
@@ -220,7 +223,6 @@ export class DecorationAnimator implements ViewportAnimator {
  * the viewing parameters.
  */
 export class Viewport {
-  /** Called whenever this viewport is synchronized with its ViewState */
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
@@ -252,17 +254,18 @@ export class Viewport {
   public readonly rotMatrix = new RotMatrix();
   public readonly rootToView = Map4d.createIdentity();
   public readonly rootToNpc = Map4d.createIdentity();
+  /** Called whenever this viewport is synchronized with its ViewState */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   public readonly hilite = new Hilite.Settings();
 
   /**
    * Determine whether this Viewport is currently active. Viewports become "active" after they have
-   * been initialized and connected to an Render::Target.
+   * been initialized and connected to an RenderTarget.
    */
   public get isActive(): boolean { return !!this._view && !!this._target; }
 
   /**
-   * Determine whether the Grid display is currently enabled in this DgnViewport.
+   * Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
@@ -271,6 +274,7 @@ export class Viewport {
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
+  /** The IModelConnection of the ViewSate of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
 
   public isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
@@ -304,7 +308,7 @@ export class Viewport {
     }
   }
 
-  /** change the cursor for this Viewport */
+  /** Change the cursor for this Viewport */
   public setCursor(cursor: BeCursor = BeCursor.Default) { this.canvas.style.cursor = cursor; }
 
   public setFlashed(id: string | undefined, duration: number): void {
@@ -323,7 +327,7 @@ export class Viewport {
   public toView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyVectorInPlace(Viewport.copyOutput(from, to)); }
   public fromView(from: XYZ, to?: XYZ) { this.rotMatrix.multiplyTransposeVectorInPlace(Viewport.copyOutput(from, to)); }
 
-  /** adjust the front and back planes to encompass the entire viewed volume */
+  /** Adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
     const view = this.view;
     if (!view.is3d()) // only necessary for 3d views
@@ -391,7 +395,8 @@ export class Viewport {
     camera.setFocusDistance(focusDistance);
   }
 
-  /** Change the ViewState that this ViewPort
+  /**
+   * Change the ViewState of this ViewPort
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
@@ -406,9 +411,7 @@ export class Viewport {
       this._target.queueReset();
   }
 
-  private invalidateScene(): void {
-    this.sync.invalidateScene();
-  }
+  private invalidateScene(): void { this.sync.invalidateScene(); }
 
   private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
   private static readonly depthRect = new ViewRect();

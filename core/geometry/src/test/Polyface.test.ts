@@ -12,7 +12,7 @@ import { Transform } from "../Transform";
 import { Range3d } from "../Range";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/CurveChain";
+import { ParityRegion, Loop } from "../curve/CurveChain";
 import { SweepContour } from "../solid/SweepContour";
 import { Checker } from "./Checker";
 import { expect } from "chai";
@@ -537,4 +537,27 @@ it("facets from sweep contour", () => {
     }
   }
   expect(ck.getNumErrors()).equals(0);
+});
+
+it("facets from sweep contour with holes", () => {
+  const ck = new Checker();
+  const region = ParityRegion.create(
+    Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), 5, 5)),
+    Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 1, 0), 1, 1)));
+  const sweepContour = SweepContour.createForLinearSweep(region);
+
+  const options = new StrokeOptions();
+  options.needNormals = false;
+  options.needParams = false;
+  const builder = PolyfaceBuilder.create(options);
+
+  sweepContour!.emitFacets(builder, options, false);
+  const polyface = builder.claimPolyface(true);
+  //    The real test -- when triangulator is ready . . .if (!ck.testExactNumber(8, polyface.facetCount, "Triangle count in retangle with rectangle hole")) {
+  if (true) {
+    const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
+    console.log(prettyPrint(jsPolyface));
+  }
+  expect(ck.getNumErrors()).equals(0);
+
 });

@@ -8,6 +8,7 @@ import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
 import { Point3d, Vector3d } from "../PointVector";
 import { RotMatrix } from "../Transform";
 import { Geometry } from "../Geometry";
+import { GrowableXYZArray } from "../GrowableArray";
 
 export class Triangulator {
   // HalfEdgeGraph that is used by many of the private methods inside of the Triangulator class, until being returned at the end of triangulation
@@ -93,7 +94,40 @@ export class Triangulator {
 
     graph.clearMask(HalfEdgeMask.VISITED);
   }
-
+  /**
+   *
+   * @param strokedLoops an array of loops as GrowableXYZArray.
+   * @returns triangulated graph, or undefined if bad data.
+   */
+  public static triangulateStrokedLoops(strokedLoops: GrowableXYZArray[]): HalfEdgeGraph | undefined {
+    if (strokedLoops.length < 1)
+      return undefined;
+    Triangulator.returnGraph = new HalfEdgeGraph();
+    let maxArea = strokedLoops[0].areaXY();
+    let largestLoopIndex = 0;
+    for (let i = 0; i < strokedLoops.length; i++) {
+      const area = Math.abs(strokedLoops[i].areaXY());
+      if (area > maxArea) {
+        maxArea = area;
+        largestLoopIndex = i;
+      }
+    }
+    // NOW WE KNOW ...
+    // strokedLoops[largestAreaIndex] is the largest loop.  (Hence outer, but orientation is not guaranteed.)
+    const holeLoops = [];
+    const startingNode = Triangulator.createFaceLoopFromGrowableXYZArray(strokedLoops[largestLoopIndex], true, true);
+    if (!startingNode)
+      return Triangulator.returnGraph;
+    for (let i = 0; i < strokedLoops.length; i++) {
+      if (i !== largestLoopIndex) {
+        const holeLoop = Triangulator.createFaceLoopFromGrowableXYZArray(strokedLoops[i], false, true);
+        if (holeLoop)
+          holeLoops.push(holeLoop);
+      }
+    }
+    // HERE .. NATE ... all the hole loops been created.  Make sure the settings for returnPositiveAreaLoop and markExterior had the effect you need !!!
+    return undefined;
+  }
   /**
    * Triangulate the polygon made up of by a series of points
    *
@@ -149,16 +183,35 @@ export class Triangulator {
     return Triangulator.returnGraph;
   }
 
-  /**
-   * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
-   */
-  private static createFaceLoop(data: Point3d[], start: number, end: number, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  private static directcreateFaceLoopFromGrowableXYZ(graph: HalfEdgeGraph, data: GrowableXYZArray): HalfEdge | undefined {
+    let i;
+    // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
+    let base: HalfEdge | undefined;
+    const xyz = Point3d.create();
+    for (i = 0; i < data.length; i++) {
+      data.getPoint3dAt(i, xyz);
+      base = graph.splitEdge(base, xyz.x, xyz.y, xyz.z);
+    }
+    return base;
+  }
+
+  private static directCreateFaceLoopFromPointArraySubset(graph: HalfEdgeGraph, data: Point3d[], start: number, end: number): HalfEdge | undefined {
     let i;
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     let base: HalfEdge | undefined;
     for (i = start; i < end; i++) {
-      base = Triangulator.returnGraph.splitEdge(base, data[i].x, data[i].y, data[i].z);
+      base = graph.splitEdge(base, data[i].x, data[i].y, data[i].z);
     }
+    return base;
+  }
+
+  /**
+   * @param graph the containing graph
+   * @praam base base node of newly created loop.
+   * @param returnPositiveAreaLoop if true, return the start node on the side with positive area.  otherwise return the left side as given.
+   * @param markExterior
+   */
+  private static assignMasksToNewFaceLoop(_graph: HalfEdgeGraph, base: HalfEdge | undefined, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     // base is the final coordinates
     if (base) {
       base = base.faceSuccessor;
@@ -172,6 +225,23 @@ export class Triangulator {
       else return base.vertexSuccessor;
     }
     return undefined;   // caller should not be calling with start <= end
+  }
+  /**
+   * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
+   */
+  private static createFaceLoop(data: Point3d[], start: number, end: number, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+    const graph = Triangulator.returnGraph;
+    const base = Triangulator.directCreateFaceLoopFromPointArraySubset(graph, data, start, end);
+    return Triangulator.assignMasksToNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
+  }
+
+  /**
+   * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
+   */
+  public static createFaceLoopFromGrowableXYZArray(data: GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+    const graph = Triangulator.returnGraph;
+    const base = Triangulator.directcreateFaceLoopFromGrowableXYZ(graph, data);
+    return Triangulator.assignMasksToNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
   }
 
   /** eliminate colinear or duplicate points using starting and ending nodes */
