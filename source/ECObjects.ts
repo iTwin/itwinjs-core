@@ -28,6 +28,7 @@ export const enum SchemaItemType {
   PropertyCategory,
   Unit,
   InvertedUnit,
+  Constant,
 }
 
 /**
@@ -151,6 +152,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
     case "propertycategory": return SchemaItemType.PropertyCategory;
     case "unit": return SchemaItemType.Unit;
     case "invertedunit": return SchemaItemType.InvertedUnit;
+    case "constant": return SchemaItemType.Constant;
   }
   return undefined;
 }
