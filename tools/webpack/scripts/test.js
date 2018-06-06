@@ -53,8 +53,8 @@ exports.handler = (argv) => {
   // Some additional options are required for CI builds
   let reporterOptions = [ "--inline-diffs",  "--colors" ];
   if (CONTINUOUS_INTEGRATION) { 
-    const reportDir = (argv.subdirectory) ? path.join(baseConfig.appLib, argv.subdirectory) : baseConfig.appLib;
-    const appJUnitTestResults = path.resolve(reportDir, "junit_results.xml"),
+    const reportDir = (argv.subdirectory) ? path.join(paths.appLib, argv.subdirectory) : paths.appLib;
+    const appJUnitTestResults = path.resolve(reportDir, "junit_results.xml");
 
     reporterOptions = [
       "--reporter", "mocha-junit-reporter",
