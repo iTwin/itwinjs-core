@@ -10,12 +10,12 @@
 import { Geometry } from "../Geometry";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive, GeometryQuery } from "./CurvePrimitive";
-import {Point3d} from "../PointVector";
+import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryHandler } from "../GeometryHandler";
-import {SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext} from "./CurveSearches";
+import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 export type AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection;
 export type AnyRegion = Loop | ParityRegion | UnionRegion;
 
@@ -86,8 +86,8 @@ export abstract class CurveCollection extends GeometryQuery {
    */
   public abstract tryAddChild(child: AnyCurve): boolean;
   public abstract getChild(i: number): AnyCurve | undefined;
-/** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed)
- */
+  /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed)
+   */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const children = this.children;
     if (children) {
@@ -203,6 +203,13 @@ export class Path extends CurveChain {
     for (const curve of curves) { result.children.push(curve); }
     return result;
   }
+  public cloneStroked(options?: StrokeOptions): AnyCurve {
+    const strokes = LineString3d.create();
+    for (const curve of this.children)
+      curve.emitStrokes(strokes, options);
+    return Path.create(strokes);
+  }
+
   public dgnBoundaryType(): number { return 1; }
   public cyclicCurvePrimitive(index: number): CurvePrimitive | undefined {
     if (index >= 0 && index < this.children.length)
@@ -228,9 +235,15 @@ export class Loop extends CurveChain {
     return result;
   }
   public static createPolygon(points: Point3d[]): Loop {
-    const linestring = LineString3d.create (points);
-    linestring.addClosurePoint ();
-    return Loop.create (linestring);
+    const linestring = LineString3d.create(points);
+    linestring.addClosurePoint();
+    return Loop.create(linestring);
+  }
+  public cloneStroked(options?: StrokeOptions): AnyCurve {
+    const strokes = LineString3d.create();
+    for (const curve of this.children)
+      curve.emitStrokes(strokes, options);
+    return Loop.create(strokes);
   }
 
   public dgnBoundaryType(): number { return 2; }  // (2) all "Loop" become "outer"
