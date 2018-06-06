@@ -420,7 +420,7 @@ export abstract class Target extends RenderTarget {
       this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
       this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee);
     } else if (plan.fraction > 0.999) { // ortho
-      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magngtude() * 0.5;
+      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
       const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
       const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3).magnitude();
 

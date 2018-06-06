@@ -26,8 +26,41 @@ export class FeatureOverrides {
   public get isUniform(): boolean { return !this.isNonUniform; }
 }
 
-// ###TODO this is just a placeholder
 export type PickTable = FeatureOverrides;
+
+// export interface UniformPickTable {
+//   public readonly elemId0: Uint8Array; // 4 bytes
+//   public readonly elemId1: Uint8Array; // 4 bytes
+// }
+// 
+// export interface NonUniformPickTable {
+//   public readonly lut: TextureHandle;   // lookup table containing 64-bit element IDs - 2 RGBA per ID.
+//   public readonly params: Float32Array; // 2 floats - width & height of lut
+// }
+// 
+// export interface PickTable {
+//   public readonly uniform?: UniformPickTable;
+//   public readonly nonUniform?: NonUniformPickTable;
+// }
+// 
+// function createUniformPickTable(elemId: Id64): UniformPickTable {
+//   const lo = elemId.getLow();
+//   const hi = elemId.getHigh();
+// }
+// 
+// function createNonUniformPickTable(features: FeatureTable): NonUniformPickTable | undefined {
+// }
+// 
+// function createPickTable(features: FeatureTable): PickTable | undefined {
+//   if (!features.anyDefined)
+//     return undefined;
+//   else if (features.isUniform)
+//     return { uniform: createUniformPickTable(features.uniform!.elementId) };
+//   else {
+//     const nonUniform = createNonUniformPickTable(features);
+//     return undefined !== nonUniform ? { nonUniform } : undefined;
+//   }
+// }
 
 export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
   // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.

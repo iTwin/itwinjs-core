@@ -144,6 +144,30 @@ export class Id64 {
     return new Id64([localId, briefcaseId]);
   }
 
+  public getLowUint32(): number {
+    if (!this.isValid())
+      return 0;
+
+    let start = 2;
+    const len = this.value.length;
+    if (len > 10)
+      start = len - 8;
+
+    return Id64.toHex(this.value.slice(start));
+  }
+
+  public getHighUint32(): number {
+    if (!this.isValid())
+      return 0;
+
+    const len = this.value.length;
+    if (len <= 10)
+      return 0;
+
+    const start = len - 8;
+    return Id64.toHex(this.value.slice(2, start));
+  }
+
   /** Convert an Id64Arg into an Id64Set.
    * This method can be used by functions that accept an Id64Arg to conveniently process the value(s).
    *

@@ -117,6 +117,11 @@ describe("Ids", () => {
       expect(id64.value).to.equal(id.str);
       expect(id64.getLow()).to.equal(id.localId);
       expect(id64.getHigh()).to.equal(id.briefcaseId);
+
+      const low = id64.getLowUint32();
+      const high = id64.getHighUint32();
+      expect(low).to.equal(id.low);
+      expect(high).to.equal(id.high);
     }
   });
 
