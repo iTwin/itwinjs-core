@@ -9,4 +9,6 @@ export const CONSTANTS = {
   REGISTER_TEST_RPCIMPL2_CLASS_MESSAGE: "registerTestRpcImpl2Class",
   REPLACE_TEST_RPCIMPL2_INSTANCE_MESSAGE: "replaceTestRpcImpl2Instance",
   UNREGISTER_TEST_RPCIMPL2_CLASS_MESSAGE: "unregisterTestRpcImpl2Class",
+  SET_INCOMPATIBLE_INTERFACE_VERSION: "setIncompatibleInterfaceVersion",
+  RESTORE_COMPATIBLE_INTERFACE_VERSION: "restoreIncompatibleInterfaceVersion",
 };

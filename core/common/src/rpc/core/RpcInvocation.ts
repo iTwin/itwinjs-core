@@ -33,7 +33,7 @@ export class RpcInvocation {
   public readonly request: SerializedRpcRequest;
 
   /** The operation of the request. */
-  public readonly operation: RpcOperation;
+  public readonly operation: RpcOperation = undefined as any;
 
   /** The implementation response. */
   public readonly result: Promise<any>;
@@ -73,17 +73,30 @@ export class RpcInvocation {
     this._timeIn = new Date().getTime();
     this.protocol = protocol;
     this.request = request;
-    this.operation = RpcOperation.lookup(request.operation.interfaceDefinition, request.operation.operationName);
-    this.operation.policy.invocationCallback(this);
-    protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
     try {
+      try {
+        this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
+      } catch (error) {
+        if (this.handleUnknownOperation(error)) {
+          this.operation = RpcOperation.lookup(this.request.operation.interfaceDefinition, this.request.operation.operationName);
+        } else {
+          throw error;
+        }
+      }
+
+      this.operation.policy.invocationCallback(this);
+      protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
       this.result = this.resolve();
     } catch (error) {
       this.result = this.reject(error);
     }
 
     this.fulfillment = this.result.then((value) => this.fulfillResolved(value), (reason) => this.fulfillRejected(reason));
+  }
+
+  private handleUnknownOperation(error: any): boolean {
+    return this.protocol.configuration.controlChannel.handleUnknownOperation(this, error);
   }
 
   private resolve(): Promise<any> {
