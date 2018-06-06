@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { IModelApp, I18NNamespace } from "@bentley/imodeljs-frontend";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, StandaloneIModelRpcInterface, IModelReadRpcInterface, RpcOperation, IModelToken } from "@bentley/imodeljs-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
@@ -21,7 +22,7 @@ BentleyCloudRpcManager.initializeClient(rpcParams, [...otherRpcInterfaces, ECPre
 
 const interfaces = [...otherRpcInterfaces, ECPresentationRpcInterface];
 for (const def of interfaces)
-  RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", false, "test", "test"));
+  RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
 // subclass of IModelApp needed to use IModelJs API
 export class SampleApp extends IModelApp {

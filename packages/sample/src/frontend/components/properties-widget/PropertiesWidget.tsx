@@ -1,10 +1,9 @@
 import * as React from "react";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionChangeEventArgs, ISelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
-import { PropertyPaneDataProvider, PropertyRecord, PropertyCategory } from "@bentley/ecpresentation-controls";
-import { isPrimitiveValue, isStructValue, isArrayValue } from "@bentley/ecpresentation-controls";
+import { PropertyDataProvider } from "@bentley/ecpresentation-controls";
+import { PropertyRecord, PropertyCategory, PropertyValueFormat } from "@bentley/ui-components";
 import "./PropertiesWidget.css";
 
 export interface Props {
@@ -21,7 +20,7 @@ export default class PropertiesWidget extends React.Component<Props> {
       <div className="PropertiesWidget">
         <h3>{IModelApp.i18n.translate("Sample:controls.properties")}</h3>
         <div className="ContentContainer">
-          <PropertyPane imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} />
+          <PropertyPane imodel={this.props.imodel} rulesetId={this.props.rulesetId} />
         </div>
       </div>
     );
@@ -29,7 +28,7 @@ export default class PropertiesWidget extends React.Component<Props> {
 }
 
 interface PropertyPaneProps {
-  imodelToken: IModelToken;
+  imodel: IModelConnection;
   rulesetId: string;
 }
 interface PropertyDisplayInfo {
@@ -49,29 +48,30 @@ const initialState: PropertyPaneState = {
   error: undefined,
 };
 class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState> {
-  private _dataProvider: PropertyPaneDataProvider;
+  private _dataProvider: PropertyDataProvider;
   private _selectionHandler: SelectionHandler;
   private _hasSelection: boolean;
+
   constructor(props: PropertyPaneProps, context?: any) {
     super(props, context);
     this.state = initialState;
     this._hasSelection = false;
-    this._dataProvider = new PropertyPaneDataProvider(props.imodelToken, props.rulesetId);
-    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Properties", props.imodelToken, props.rulesetId, this.onSelectionChanged);
+    this._dataProvider = new PropertyDataProvider(props.imodel, props.rulesetId);
+    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Properties", props.imodel.iModelToken, props.rulesetId, this.onSelectionChanged);
   }
 
   // tslint:disable-next-line:naming-convention
   private onSelectionChanged = (_evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
     this._hasSelection = false;
     for (let i = _evt.level; i >= 0; i--) {
-      const selection = selectionProvider.getSelection(this.props.imodelToken, i);
+      const selection = selectionProvider.getSelection(this.props.imodel.iModelToken, i);
       this._hasSelection = !selection.isEmpty;
       if (this._hasSelection) {
-        this.fetchProperties(this.props.imodelToken, selection);
+        this.fetchProperties(selection);
         return;
       }
     }
-    this.fetchProperties(this.props.imodelToken, new KeySet());
+    this.fetchProperties(new KeySet());
   }
 
   public componentWillUnmount() {
@@ -79,10 +79,13 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
   }
 
   public componentWillReceiveProps(newProps: PropertyPaneProps) {
-    if (newProps.rulesetId !== this.props.rulesetId || newProps.imodelToken !== this.props.imodelToken) {
+    if (newProps.rulesetId !== this.props.rulesetId) {
       this._selectionHandler.rulesetId = newProps.rulesetId;
-      this._selectionHandler.imodelToken = newProps.imodelToken;
-      this._dataProvider = new PropertyPaneDataProvider(newProps.imodelToken, newProps.rulesetId);
+      this._dataProvider.rulesetId = newProps.rulesetId;
+    }
+    if (newProps.imodel !== this.props.imodel) {
+      this._selectionHandler.imodelToken = newProps.imodel.iModelToken;
+      this._dataProvider.connection = newProps.imodel;
     }
   }
 
@@ -91,7 +94,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     const recordValue = record.value;
     if (!recordValue) {
       values.push({ label: record.property.displayLabel, value: "" });
-    } else if (isPrimitiveValue(recordValue)) {
+    } else if (recordValue.valueFormat === PropertyValueFormat.Primitive) {
       let displayValue = "";
       if (!recordValue.displayValue)
         displayValue = "";
@@ -102,7 +105,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
       else
         displayValue = recordValue.displayValue!.toString();
       values.push({ label: record.property.displayLabel, value: displayValue });
-    } else if (isStructValue(recordValue)) {
+    } else if (recordValue.valueFormat === PropertyValueFormat.Struct) {
       for (const key in recordValue.members) {
         if (recordValue.members.hasOwnProperty(key)) {
           const member = recordValue.members[key];
@@ -110,7 +113,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
           values.push(...memberValues);
         }
       }
-    } else if (isArrayValue(recordValue)) {
+    } else if (recordValue.valueFormat === PropertyValueFormat.Array) {
       for (const member of recordValue.items) {
         const memberValues = this.createRecordDisplayValues(member);
         values.push(...memberValues);
@@ -119,7 +122,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     return values;
   }
 
-  private async fetchProperties(_imodelToken: IModelToken, selection: Readonly<KeySet>) {
+  private async fetchProperties(selection: Readonly<KeySet>) {
     this.setState(initialState);
 
     if (selection.isEmpty || !this._dataProvider)

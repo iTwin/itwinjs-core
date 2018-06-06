@@ -1,9 +1,9 @@
 import * as React from "react";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, KeySet } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionChangeEventArgs, ISelectionProvider, SelectionHandler } from "@bentley/ecpresentation-frontend";
-import { GridDataProvider } from "@bentley/ecpresentation-controls";
+import { TableDataProvider } from "@bentley/ecpresentation-controls";
+import { PropertyRecord, RowItem } from "@bentley/ui-components";
 import "./GridWidget.css";
 
 export interface Props {
@@ -21,7 +21,7 @@ export default class GridWidget extends React.Component<Props> {
       <div className="GridWidget">
         <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
         <div className="ContentContainer">
-          <Grid imodelToken={this.props.imodel.iModelToken} rulesetId={this.props.rulesetId} />
+          <Grid imodel={this.props.imodel} rulesetId={this.props.rulesetId} />
         </div>
       </div>
     );
@@ -29,7 +29,7 @@ export default class GridWidget extends React.Component<Props> {
 }
 
 interface GridProps {
-  imodelToken: IModelToken;
+  imodel: IModelConnection;
   rulesetId: string;
 }
 interface ColumnDefinition {
@@ -52,7 +52,7 @@ const initialState: GridState = {
   error: undefined,
 };
 class Grid extends React.Component<GridProps, GridState> {
-  private _dataProvider: GridDataProvider;
+  private _dataProvider: TableDataProvider;
   private _selectionHandler: SelectionHandler;
   private _hasSelection: boolean;
 
@@ -60,24 +60,27 @@ class Grid extends React.Component<GridProps, GridState> {
     super(props, context);
     this.state = initialState;
     this._hasSelection = false;
-    this._dataProvider = new GridDataProvider(props.imodelToken, props.rulesetId);
-    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Grid", props.imodelToken, props.rulesetId, this.onSelectionChanged);
+    this._dataProvider = new TableDataProvider(props.imodel, props.rulesetId);
+    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Grid", props.imodel.iModelToken, props.rulesetId, this.onSelectionChanged);
   }
 
   // tslint:disable-next-line:naming-convention
   private onSelectionChanged = (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
     if (evt.level !== 0)
       return;
-    const selectedItems = selectionProvider.getSelection(this.props.imodelToken, 0);
+    const selectedItems = selectionProvider.getSelection(this.props.imodel.iModelToken, 0);
     this._hasSelection = !selectedItems.isEmpty;
-    this.fetchData(this.props.imodelToken, selectedItems);
+    this.fetchData(selectedItems);
   }
 
   public componentWillReceiveProps(newProps: GridProps) {
-    if (newProps.rulesetId !== this.props.rulesetId || newProps.imodelToken !== this.props.imodelToken) {
+    if (newProps.rulesetId !== this.props.rulesetId) {
       this._selectionHandler.rulesetId = newProps.rulesetId;
-      this._selectionHandler.imodelToken = newProps.imodelToken;
-      this._dataProvider = new GridDataProvider(newProps.imodelToken, newProps.rulesetId);
+      this._dataProvider.rulesetId = newProps.rulesetId;
+    }
+    if (newProps.imodel !== this.props.imodel) {
+      this._selectionHandler.imodelToken = newProps.imodel.iModelToken;
+      this._dataProvider.connection = newProps.imodel;
     }
   }
 
@@ -85,17 +88,15 @@ class Grid extends React.Component<GridProps, GridState> {
     this._selectionHandler.dispose();
   }
 
-  private createCellDisplayValue(value: any): string {
-    if (!value)
+  private async createCellDisplayValue(record?: PropertyRecord | string): Promise<string> {
+    if (!record)
       return "";
-    if (typeof (value) === "string")
-      return value;
-    if (typeof (value) === "object" || Array.isArray(value))
-      return JSON.stringify(value);
-    return value.toString();
+    if (typeof record === "string")
+      return record;
+    return await record.getDisplayValue();
   }
 
-  private async fetchData(_imodelToken: IModelToken, selection: Readonly<KeySet>) {
+  private async fetchData(selection: Readonly<KeySet>) {
     this.setState(initialState);
 
     if (selection.isEmpty || !this._dataProvider)
@@ -103,21 +104,27 @@ class Grid extends React.Component<GridProps, GridState> {
 
     try {
       this._dataProvider.keys = selection;
-      const columns = new Array<ColumnDefinition>();
       const columnDescriptions = await this._dataProvider.getColumns();
-      for (const columnDescription of columnDescriptions)
-        columns.push({ name: columnDescription.key, label: columnDescription.label });
+      const columns = columnDescriptions.map((col): ColumnDefinition => ({
+        name: col.key,
+        label: col.label || "",
+      }));
       this.setState({ ...initialState, columns });
 
       const rowsCount = await this._dataProvider.getRowsCount();
-      const rows = new Array<RowDefinition>();
-      for (let i = 0; i < rowsCount; ++i) {
-        const row = await this._dataProvider.getRow(i);
+      const rowItems = await Promise.all((() => {
+        const promises = new Array<Promise<RowItem>>();
+        for (let i = 0; i < rowsCount; ++i)
+          promises.push(this._dataProvider.getRow(i));
+        return promises;
+      })());
+      const rows = await Promise.all(rowItems.map(async (item): Promise<RowDefinition> => {
         const values: { [key: string]: string } = {};
-        for (const cell of row.cells)
-          values[cell.key] = this.createCellDisplayValue(cell.displayValue);
-        rows.push({ values, selected: false, instanceKey: row.key });
-      }
+        await Promise.all(item.cells.map(async (cell) => {
+          values[cell.key] = await this.createCellDisplayValue(cell.record);
+        }));
+        return { instanceKey: item.key, selected: false, values };
+      }));
       this.setState({ ...initialState, columns, rows });
 
     } catch (error) {

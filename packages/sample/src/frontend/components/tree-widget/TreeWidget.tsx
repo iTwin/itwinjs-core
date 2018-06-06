@@ -3,7 +3,8 @@ import Tree, { TreeNode } from "rc-tree";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/ecpresentation-common";
 import { ECPresentation, SelectionHandler } from "@bentley/ecpresentation-frontend";
-import { TreeDataProvider, TreeNodeItem } from "@bentley/ecpresentation-controls";
+import { TreeDataProvider } from "@bentley/ecpresentation-controls";
+import { TreeNodeItem } from "@bentley/ui-components";
 
 import "./TreeWidget.css";
 
@@ -27,12 +28,12 @@ export default class TreeWidget extends React.Component<Props, State> {
     this._items = new Map<string, TreeData>();
     this.state = { treeData: [] };
     this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Tree", props.imodel.iModelToken, props.rulesetId);
-    this._dataProvider = new TreeDataProvider(props.imodel.iModelToken, props.rulesetId);
+    this._dataProvider = new TreeDataProvider(props.imodel, props.rulesetId);
     this.loadNodes();
   }
 
   public componentWillReceiveProps(nextProps: Props) {
-    this._dataProvider = new TreeDataProvider(nextProps.imodel.iModelToken, nextProps.rulesetId);
+    this._dataProvider = new TreeDataProvider(nextProps.imodel, nextProps.rulesetId);
     this._selectionHandler.imodelToken = nextProps.imodel.iModelToken;
     this._selectionHandler.rulesetId = nextProps.rulesetId;
     this._items.clear();

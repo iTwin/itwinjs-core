@@ -138,7 +138,7 @@ export default class TableDataProvider extends ContentDataProvider implements IT
    * Get a single row.
    * @param rowIndex Index of the row to return.
    */
-  public async getRow(rowIndex: number): Promise<RowItem | undefined> {
+  public async getRow(rowIndex: number): Promise<RowItem> {
     let page = this._pages.getPage(rowIndex);
     if (!page) {
       page = this._pages.reservePage(rowIndex);

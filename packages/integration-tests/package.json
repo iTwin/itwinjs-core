@@ -31,7 +31,7 @@
     "@bentley/imodeljs-e_2-win32-x64": "^20",
     "@bentley/imodeljs-n_8-win32-x64": "^20",
     "@bentley/ui-core": "^0.0.0",
-    "@bentley/ui-components": "^0.0.2"
+    "@bentley/ui-components": "^0.1.3"
   },
   "devDependencies": {
     "nyc": "^11.6.0",
