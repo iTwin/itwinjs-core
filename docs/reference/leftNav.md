@@ -1,39 +1,44 @@
 ## iModelJs Packages
+
 ---
 
 ### ($backend)
 
-- [Administration]($backend:AppAdministration)
-- [Codes]($backend:Codes)
-- [Elements]($backend:Elements)
-- [Element Aspects]($backend:ElementAspects)
-- [Models]($backend:Models)
-- [Relationships]($backend:Relationships)
-- [View Definitions]($backend:ViewDefinitions)
+- [IModelHost]($backend:IModelHost)
 - [iModels]($backend:iModels)
-- [Portability]($backend:Portability)
 - [Schema]($backend:Schema)
+- [Models]($backend:Models)
+- [Elements]($backend:Elements)
+- [Codes]($backend:Codes)
+- [View Definitions]($backend:ViewDefinitions)
+- [Relationships]($backend:Relationships)
+- [Element Aspects]($backend:ElementAspects)
+- [Categories]($backend:Categories)
+- [Symbology]($backend:Symbology)
 - [ECDb]($backend:ECDb)
 - [ECSQL]($backend:ECSQL)
+- [Portability]($backend:Portability)
 
 ---
 
 ### ($frontend)
 
-- [Administration]($frontend:AppAdministration)
+- [IModelApp]($frontend:IModelApp)
+- [IModelConnection]($frontend:IModelConnection)
 - [ElementState]($frontend:ElementState)
 - [ModelState]($frontend:ModelState)
-- [AccuDraw]($frontend:AccuDraw)
-- [iModels]($frontend:iModels)
-- [Locating Elements]($frontend:LocationAndSnapping)
-- [Notifications]($frontend:Notifications)
-- [Selection Set]($frontend:SelectionSet)
-- [Search]($frontend:Search)
 - [Tools]($frontend:Tools)
 - [Views]($frontend:Views)
+- [Locating Elements]($frontend:LocationAndSnapping)
+- [AccuDraw]($frontend:AccuDraw)
+- [Notifications]($frontend:Notifications)
+- [Selection Set]($frontend:SelectionSet)
 - [Rendering]($frontend:Rendering)
+- [Tile]($frontend:Tile)
+- [WebGL]($frontend:WebGL)
 
 ---
+
 ### ($common)
 
 - [Administration]($common:AppAdministration)
@@ -51,6 +56,7 @@
 &nbsp;
 ## Support Packages
 ---
+
 ### ($bentleyjs-core)
 
 - [BeSQLite]($bentleyjs-core:BeSQLite)
@@ -61,6 +67,7 @@
 - [Utils]($bentleyjs-core:Utils)
 
 ---
+
 ### ($geometry-core)
 
 - [Cartesian Geometry]($geometry-core:CartesianGeometry)

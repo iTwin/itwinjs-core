@@ -26,7 +26,7 @@ export const enum PrimitiveTypeCode {
 /** a callback function to process properties of an Entity */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-/** Base class for all Entities. */
+/** Base class for all Entities in an iModel. */
 export class Entity implements EntityProps {
   [propName: string]: any;
 

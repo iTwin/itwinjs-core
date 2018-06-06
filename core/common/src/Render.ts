@@ -140,7 +140,7 @@ export class MeshEdge {
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
-  public polylines: MeshPolyline[] = [];
+  public polylines: MeshPolylineList = new MeshPolylineList();
   public silhouetteNormals: OctEncodedNormalPair[] = [];
   public constructor() { }
 }
@@ -254,7 +254,7 @@ export namespace RenderMaterial {
     public ambient: number = .3;
     public shadows = true;
 
-    private constructor() { }
+    public constructor() { }
 
     /** Create a RenderMaterial params object with QVision default values. */
     public static readonly defaults = new Params();
@@ -272,6 +272,7 @@ export namespace RenderMaterial {
     }
   }
 }
+Object.freeze(RenderMaterial.Params.defaults);
 
 export namespace ImageLight {
   export class Solar {
@@ -1041,10 +1042,12 @@ export namespace Gradient {
 
       const color0 = this.keys[idx].color;
       const color1 = this.keys[idx + 1].color;
-      const red = w0 * color0.colors.r + w1 * color1.colors.r;
-      const green = w0 * color0.colors.g + w1 * color1.colors.g;
-      const blue = w0 * color0.colors.b + w1 * color1.colors.b;
-      const transparency = w0 * color0.colors.t + w1 * color1.colors.t;
+      const colors0 = color0.colors;
+      const colors1 = color1.colors;
+      const red = w0 * colors0.r + w1 * colors1.r;
+      const green = w0 * colors0.g + w1 * colors1.g;
+      const blue = w0 * colors0.b + w1 * colors1.b;
+      const transparency = w0 * colors0.t + w1 * colors1.t;
 
       return ColorDef.from(this.roundToByte(red), this.roundToByte(green), this.roundToByte(blue), this.roundToByte(transparency));
     }
@@ -1081,9 +1084,9 @@ export namespace Gradient {
             }
           }
           for (let j = 0; j < height; j++) {
-            const y = j / 255 - ys;
+            const y = j / height - ys;
             for (let i = 0; i < width; i++) {
-              const x = i / 255 - xs;
+              const x = i / width - xs;
               d = x * cosA + y * sinA;
               let f;
               if (this.mode === Mode.Linear) {
@@ -1110,9 +1113,9 @@ export namespace Gradient {
           const xs = 0.5 + 0.5 * sinA - 0.25 * shift * cosA;
           const ys = 0.5 - 0.5 * cosA - 0.25 * shift * sinA;
           for (let j = 0; j < height; j++) {
-            const y = j / 255 - ys;
+            const y = j / height - ys;
             for (let i = 0; i < width; i++) {
-              const x = i / 255 - xs;
+              const x = i / width - xs;
               const xr = 0.8 * (x * cosA + y * sinA);
               const yr = y * cosA - x * sinA;
               const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
@@ -1130,9 +1133,9 @@ export namespace Gradient {
           const xs = 0.5 * shift * (cosA + sinA) * r;
           const ys = 0.5 * shift * (sinA - cosA) * r;
           for (let j = 0; j < height; j++) {
-            const y = ys + j / 255.0 - 0.5;
+            const y = ys + j / height - 0.5;
             for (let i = 0; i < width; i++) {
-              const x = xs + i / 255.0 - 0.5;
+              const x = xs + i / width - 0.5;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
               const color = this.mapColor(f);
               image[currentIdx--] = color.getAlpha();
@@ -1147,9 +1150,9 @@ export namespace Gradient {
           const xs = 0.5 + 0.5 * sinA - 0.5 * shift * cosA;
           const ys = 0.5 - 0.5 * cosA - 0.5 * shift * sinA;
           for (let j = 0; j < height; j++) {
-            const y = j / 255.0 - ys;
+            const y = j / height - ys;
             for (let i = 0; i < width; i++) {
-              const x = i / 255.0 - xs;
+              const x = i / width - xs;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
               const color = this.mapColor(f);
               image[currentIdx--] = color.getAlpha();
@@ -1203,6 +1206,7 @@ export namespace Gradient {
         }
       }
 
+      assert(-1 === currentIdx);
       const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
       assert(undefined !== imageBuffer);
       return imageBuffer!;

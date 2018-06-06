@@ -39,6 +39,8 @@
 
 ---
 
+&nbsp;
+
 ### BIS Naming Guidelines
 
 - [Rules and Recommendations](./naming-guidelines/rules-and-recommendations.md)

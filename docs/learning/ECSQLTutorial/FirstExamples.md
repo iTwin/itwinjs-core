@@ -17,6 +17,7 @@ We will start off the tutorial by a simple ECSQL example:
 > ```
 >
 > *Result*
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > 1 | BlueRod
@@ -44,6 +45,7 @@ The example from above uses the schema alias. If you replace it by the schema na
 > ```
 >
 > *Result:* As in [First ECSQL](#first-ecsql)
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > 1 | BlueRod
@@ -80,6 +82,7 @@ The above example is not very meaningful. In large iModels the query might retur
 > ```
 >
 > *Result*
+>
 > count(*) |
 > --- |
 > 4 |
@@ -97,6 +100,7 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 > SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 2
 > ```
 > *Result*
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > 1 | BlueRod
@@ -113,6 +117,7 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 > SELECT ECInstanceId, CodeValue FROM bis.Element LIMIT 2 OFFSET 3
 > ```
 > *Result*
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > 3 | Room 1
@@ -131,6 +136,7 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 > SELECT count(*) ElementCount FROM bis.Element
 > ```
 > *Result*
+>
 > ElementCount |
 > --- |
 > 10 |
@@ -146,6 +152,7 @@ Another way to deal with large query results is to use `LIMIT` and `OFFSET`. See
 > SELECT ECInstanceId ElementId, CodeValue Code FROM bis.Element
 > ```
 > *Result*
+>
 > ElementId | Code
 > --- | ---
 > 10 | lll
@@ -162,6 +169,7 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 > SELECT 10 Radius, (2 * 3.1415 * 10) Perimeter, (3.1415 * 10 * 10) Area FROM bis.Element LIMIT 1
 > ```
 > *Result*
+>
 > Radius | Perimeter | Area
 > --- | --- | ---
 > 10 | 62.8 | 314.15
@@ -172,7 +180,7 @@ each expression of the SELECT clause becomes the member of the object.
 If you, for example, used the [Element Count example](#element-count) with the iModeljs API, you would get this JavaScript object literal:
 
  ```ts
- { "count(*)" : 10}
+ { "count(*)" : 10 }
  ```
 
 The power of JavaScript object literals is lost here, because `count(*)` is not a valid member name. If you applied an alias to
@@ -183,7 +191,7 @@ the count expression though
 the JavaScript object would now look like this:
 
 ```ts
- { elementCount : 10}
+ { elementCount : 10 }
  ```
 
 Now the result can be consumed in TypeScript as desired:
@@ -211,6 +219,7 @@ To reuse the same ECSQL statement with different values, parameters can be used.
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE ParentModel=?
 > ```
 > *Result*
+>
 > ECInstanceId | ECClassId
 > --- | ---
 > 1 | BisCore.RepositoryModel
@@ -226,6 +235,7 @@ As you cannot bind values to parameters in the iModelConsole, the above query re
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE ParentModel IS NULL
 > ```
 > *Result*
+>
 > ECInstanceId | ECClassId
 > --- | ---
 > 1 | BisCore.RepositoryModel
@@ -243,6 +253,7 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 > SELECT ECInstanceId, CodeValue FROM bis.Element WHERE instr(UserLabel,'Recreation')
 > ```
 > *Result*
+>
 > ECInstanceId | CodeValue
 > --- | ---
 > lll | XX
@@ -251,4 +262,4 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 
 ---
 
-**< Previous** [Lession 1: Key to ECSQL](./KeyToECSQL.md) &nbsp; **Next >** [Lesson 3: ECSQL Data Types](./ECSQLDataTypes.md)
+[**< Previous**](./KeyToECSQL.md)  &nbsp; | &nbsp; [**Next >**](./ECSQLDataTypes.md)

@@ -14,6 +14,7 @@ Every iModel includes the **ECDbMeta** ECSchema. It exposes the content of all s
 > SELECT Name, Alias, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef ORDER BY Name
 > ```
 > *Result*
+>
 > Name | Alias | VersionMajor | VersionWrite | VersionMinor
 > --- | --- | --- | --- | ---
 > BisCore | bis | 1 | 0 | 0
@@ -37,6 +38,7 @@ Every iModel includes the **ECDbMeta** ECSchema. It exposes the content of all s
 > ```
 >
 > *Result*
+>
 > Name |
 > --- |
 > Model |
@@ -63,6 +65,7 @@ Another advantage of accessing the schemas via ECSQL is that you can combine tha
 > ```
 >
 > *Result*
+>
 > ElementId | ClassName
 > --- | ---
 > 1 | AnnotationElement2d
@@ -82,6 +85,7 @@ Of course, the ECSQL is not precise yet because you would usually want to know t
 > ```
 >
 > *Result*
+>
 > ElementId | SchemaName | ClassName
 > --- | --- | ---
 > 1 | BisCore | AnnotationElement2d
@@ -91,4 +95,4 @@ Of course, the ECSQL is not precise yet because you would usually want to know t
 
 ---
 
-**< Previous** [Lession 6: Spatial Queries](./SpatialQueries.md) &nbsp; **Next >** [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
+[**< Previous**](./SpatialQueries.md) &nbsp; | &nbsp; [**Next >**](./ChangeSummaryQueries.md)

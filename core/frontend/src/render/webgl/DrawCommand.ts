@@ -200,8 +200,17 @@ export class RenderCommands {
   public get hasDecorationOverrides(): boolean { return undefined !== this._curOvrParams; }
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get compositeFlags(): CompositeFlags {
-    const flags = this.hasCommands(RenderPass.Translucent) ? CompositeFlags.Translucent : CompositeFlags.None;
-    return this.hasCommands(RenderPass.Hilite) ? (flags | CompositeFlags.Hilite) : flags;
+    let flags = CompositeFlags.None;
+    if (this.hasCommands(RenderPass.Translucent))
+      flags |= CompositeFlags.Translucent;
+
+    if (this.hasCommands(RenderPass.Hilite))
+      flags |= CompositeFlags.Hilite;
+
+    assert(4 === RenderPass.Translucent);
+    assert(6 === RenderPass.Hilite);
+
+    return flags;
   }
 
   public hasCommands(pass: RenderPass): boolean { return 0 !== this.getCommands(pass).length; }

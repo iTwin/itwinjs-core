@@ -17,6 +17,7 @@ We begin the lesson by using a simple ECSQL similar to the ones used at the begi
 > ```
 >
 > *Result*
+>
 > ECInstanceId | ECClassId
 > --- | ---
 > lll | XX
@@ -41,6 +42,7 @@ Now let's turn the query into a non-polymorphic one.
 > ```
 >
 > *Result*
+>
 > ECInstanceId | ECClassId
 > --- | ---
 > no rows |
@@ -57,6 +59,7 @@ As expected the query does not return anything, because `Element` is an abstract
 > ```
 >
 > *Result*
+>
 > CodeValue |
 > --- |
 > My demo file |
@@ -73,6 +76,7 @@ Let's go back to explore more how to work with the ECClassId to tell between sub
 > ```
 >
 > *Result*
+>
 > CodeValue | ECClassId
 > --- | ---
 > lll | XX
@@ -91,6 +95,7 @@ As usually the class ids are not known, you need to look them up first. You can 
 > ```
 >
 > *Result*
+>
 > CodeValue | ECClassId
 > --- | ---
 > lll | XX
@@ -109,6 +114,7 @@ The following shows how you can perform simple statistics on the distribution of
 > ```
 >
 > *Result*
+>
 > ECClassId | ElementCount
 > --- | ---
 > XX | 10
@@ -117,4 +123,4 @@ The following shows how you can perform simple statistics on the distribution of
 
 ---
 
-**< Previous** [Lession 4: Relationships and Joins](./Joins.md) &nbsp; **Next >** [Lesson 6: Spatial Queries](./SpatialQueries.md)
+[**< Previous**](./Joins.md) &nbsp; | &nbsp; [**Next >**](./SpatialQueries.md)
