@@ -13,12 +13,25 @@ exports.builder = (yargs) =>
       type: "string",
       describe: `The port to listen on for (inspector) debugging.`
     },
-  })
-  .options({
     "watch": {
       alias: "w",
       type: "boolean",
       describe: `Start the tests in interactive watch mode.`
+    },
+    "updateSnapshot": {
+      alias: "u",
+      type: "boolean",
+      describe: `Use this flag to re-record every snapshot that fails during this test run.`
+    },
+    "include": {
+      alias: "i",
+      type: "string",
+      describe: `An additional file to include with every test run. Useful for specifying global mocha hooks.`
+    },
+    "subdirectory": {
+      alias: "s",
+      type: "string",
+      describe: `Limits the test run to tests defined in a given test subdirectory.`
     },
   });
 
@@ -44,8 +57,10 @@ exports.handler = (argv) => {
 
   const watchOptions = (!CONTINUOUS_INTEGRATION && argv.watch) ? ["--watch", "--interactive"] : [];
   const debugOptions = (argv.debug) ? ["--inspect-brk=" + argv.debug] : [];
+  const includeOptions = (argv.include) ? ["--include", argv.include] : [];
 
   const webpackConfig = require.resolve(`../config/webpack.config.${(isCoverage) ? "coverage" : "test" }.js`);
+  const testDir = (argv.subdirectory) ? path.join(paths.appTest, argv.subdirectory) : paths.appTest;
 
   // Start the tests
   const args = [
@@ -54,9 +69,10 @@ exports.handler = (argv) => {
     "--webpack-config",  webpackConfig,
     "--require", require.resolve("./utils/jsdomSetup"),
     "--include", require.resolve("./utils/testSetup"),
+    ...includeOptions,
     ...watchOptions,
     ...reporterOptions,
-    path.resolve(paths.appTest, "**/*.@(js|jsx|ts|tsx)"),
+    path.resolve(testDir, "**/*.@(js|jsx|ts|tsx)"),
   ];
 
   // If we're running coverage, we need to include the app source dir

@@ -105,10 +105,6 @@ module.exports = {
   // public/
   appHtml: path.resolve(baseConfig.appPublic, "index.html"),
 
-  // coverage/
-  appLcovReport: path.resolve(baseConfig.appCoverage, "lcov-report/index.html"),
-  appCoberturaReport: path.resolve(baseConfig.appCoverage, "cobertura-coverage.xml"),
-
   // node_modules
   appBentleyNodeModules: path.resolve(baseConfig.appNodeModules, "@bentley"),
 
