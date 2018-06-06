@@ -15,6 +15,8 @@ import CustomAttributeClass from "./Metadata/CustomAttributeClass";
 import Enumeration from "./Metadata/Enumeration";
 import KindOfQuantity from "./Metadata/KindOfQuantity";
 import PropertyCategory from "./Metadata/PropertyCategory";
+import Unit from "./Metadata/Unit";
+import InvertedUnit from "./Metadata/InvertedUnit";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
 export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<Property>;
@@ -35,7 +37,9 @@ export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass 
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
 
 export interface SchemaItemVisitor {
+  /* async */ visitInvertedUnit?: (invertedUnit: InvertedUnit) => Promise<void>;
   /* async */ visitEnumeration?: (enumeration: Enumeration) => Promise<void>;
+  /* async */ visitUnit?: (unit: Unit) => Promise<void>;
   /* async */ visitKindOfQuantity?: (koq: KindOfQuantity) => Promise<void>;
   /* async */ visitPropertyCategory?: (category: PropertyCategory) => Promise<void>;
   /* async */ visitClass?: (ecClass: AnyClass) => Promise<void>;

@@ -26,6 +26,8 @@ export const enum SchemaItemType {
   Enumeration,
   KindOfQuantity,
   PropertyCategory,
+  Unit,
+  InvertedUnit,
 }
 
 /**
@@ -147,6 +149,8 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
     case "enumeration": return SchemaItemType.Enumeration;
     case "kindofquantity": return SchemaItemType.KindOfQuantity;
     case "propertycategory": return SchemaItemType.PropertyCategory;
+    case "unit": return SchemaItemType.Unit;
+    case "invertedunit": return SchemaItemType.InvertedUnit;
   }
   return undefined;
 }

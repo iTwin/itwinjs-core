@@ -30,7 +30,7 @@ export interface IntEnumeration extends Enumeration {
  * A Typescript class representation of an ECEnumeration.
  */
 export default class Enumeration extends SchemaItem {
-  public readonly type!: SchemaItemType.Enumeration; // tslint:disable-line
+  public readonly type!: SchemaItemType; // tslint:disable-line
   protected _primitiveType?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
@@ -73,8 +73,8 @@ export default class Enumeration extends SchemaItem {
    * Creates an Enumerator with the provided value and label and adds it to the this Enumeration.
    * @param enumName The name of the enumerator
    * @param value The value of the enumerator. The type of this value is dependent on the backing type of the this Enumeration.
-   * @param label The label to be used
-   * @param description A localized display label that is used instead of the name in a GUI.
+   * @param label A localized display label that is used instead of the name in a GUI.
+   * @param description A localized description for the enumerator.
    */
   public createEnumerator(enumName: string, value: string | number, label?: string, description?: string) {
     this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
@@ -83,17 +83,6 @@ export default class Enumeration extends SchemaItem {
     });
     const name = new ECName(enumName);
     this.enumerators.push({name, value, label, description});
-  }
-
-  /**
-   *
-   * @param enumerator The Enumerator to add to the this Enumeration
-   */
-  // Not sure if we want to keep this in the public api.
-  public addEnumerator(enumerator: AnyEnumerator): void {
-    // TODO: Need to validate that the enumerator has a unique value.
-
-    this.enumerators.push(enumerator);
   }
 
   /**
@@ -139,6 +128,14 @@ export default class Enumeration extends SchemaItem {
       jsonObj.enumerators.forEach((enumerator: any) => {
         if (typeof(enumerator) !== "object")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+
+        if (undefined !== enumerator.name) {
+          if (typeof (enumerator.name) !== "string")
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
+        } else { // name is required
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'name'.`);
+        }
+
         if (undefined === enumerator.value)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);
 
@@ -149,6 +146,7 @@ export default class Enumeration extends SchemaItem {
           if (typeof(enumerator.label) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
         }
+
         if (undefined !== enumerator.description) {
           if (typeof(enumerator.description) !== "string")
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
