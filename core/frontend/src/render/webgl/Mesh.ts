@@ -115,6 +115,14 @@ export class MeshParams extends MeshInfo {
   }
 }
 
+export enum MeshGraphicType {
+  kSurface,
+  kEdge,
+  kSilhouette,
+  kPolyline,
+  kCOUNT,
+}
+
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: MeshPrimitive[] = [];
@@ -133,14 +141,14 @@ export class MeshGraphic extends Graphic {
       this._primitives.push(surface);
 
     // ###TODO edges
-    // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
+    // if (args.edges.silhouettes.isValid) { this._primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
     const convertPolylineEdges = args.edges.polylines.isValid && !wantJointTriangles(args.edges.width, args.is2d);
     if (convertPolylineEdges) {
       // const simpleEdges = new SimplePolylineEdgeArgs(args.edges.polylines, args.edges.edges);
-      // this.primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
+      // this._primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
     } else {
-      // if (args.edges.edges.isValid()) { this.primitives[MeshGraphicType.kEdge] = new EdgePrimitive(args.edges.edges, this); }
-      // if (args.edges.polylines.isValid()) { this.primitives[MeshGraphicType.kPolyline] = new PolylineEdgePrimitive.create(args, this); }
+      // if (args.edges.edges.isValid) { this._primitives[MeshGraphicType.kEdge] = new EdgePrimitive(args.edges.edges, this); }
+      // if (args.edges.polylines.isValid) { this._primitives[MeshGraphicType.kPolyline] = new PolylineEdgePrimitive.create(args, this); }
     }
   }
 
