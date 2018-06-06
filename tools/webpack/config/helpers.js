@@ -58,6 +58,8 @@ const mergeWebpackConfigs = merge({
       });
 
       return [..._.unionWith(a, preAndPostRules, uniteRules.bind(null, {}, key)), oneOfRule];
+    } else if (key === "externals") {
+      return [...b, ...a];
     }
 
     // Fall back to default merging
