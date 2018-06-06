@@ -21,7 +21,7 @@ export default class InvertedUnit extends SchemaItem {
   private readonly ec32Url: string = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
 
   constructor(schema: Schema, name: string) {
-    super(schema, name, SchemaItemType.Unit);
+    super(schema, name, SchemaItemType.InvertedUnit);
     this.schema = schema;
     this._name = new ECName(name);
     this._invertsUnit = "";
@@ -58,13 +58,13 @@ export default class InvertedUnit extends SchemaItem {
     if (undefined !== jsonObj.label) { // label is optional
       if (typeof(jsonObj.label) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${jsonObj.name} has an invalid 'label' attribute. It should be of type 'string'.`);
-      this._label = jsonObj.label; // if json label is defined, assign it to the label variable for this Unit
+      this._label = jsonObj.label; // if json label is defined, assign it to the label variable for this InvertedUnit
     }
 
     if (undefined !== jsonObj.description) { // description is optional
       if (typeof(jsonObj.description) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${jsonObj.name} has an invalid 'description' attribute. It should be of type 'string'.`);
-      this._description = jsonObj.description; // if json description is defined, assign it to the description variable for this Unit
+      this._description = jsonObj.description; // if json description is defined, assign it to the description variable for this InvertedUnit
     }
 
     if (undefined !== jsonObj.invertsUnit) { // InvertsUnit is required
