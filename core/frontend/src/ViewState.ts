@@ -1346,7 +1346,7 @@ export abstract class ViewState3d extends ViewState {
     params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
-    const builder = context.createWorldOverlay();
+    const builder = context.createWorldDecoration();
     builder.activateGraphicParams(params);
 
     /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
@@ -1360,7 +1360,7 @@ export abstract class ViewState3d extends ViewState {
     const polyface = polyfaceBuilder.claimPolyface(false);
 
     builder.addPolyface(polyface, true);
-    context.addWorldOverlay(builder.finish());
+    context.addWorldDecoration(builder.finish());
   }
 }
 
