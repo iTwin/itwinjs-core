@@ -182,6 +182,9 @@ export class MeshArgs {
     if (undefined === meshEdges)
       return true;
 
+    this.edges.edges.init(mesh.edges);
+    this.edges.silhouettes.init(mesh.edges);
+
     const polylines: PolylineData[] = [];
     meshEdges.polylines.forEach((meshPolyline: MeshPolyline) => {
       const polyline = new PolylineData();

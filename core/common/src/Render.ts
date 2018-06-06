@@ -140,7 +140,7 @@ export class MeshEdge {
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
-  public polylines: MeshPolyline[] = [];
+  public polylines: MeshPolylineList = new MeshPolylineList();
   public silhouetteNormals: OctEncodedNormalPair[] = [];
   public constructor() { }
 }
