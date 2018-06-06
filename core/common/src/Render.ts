@@ -126,7 +126,7 @@ export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args:
 export class MeshEdge {
   public indices = [0, 0];
   public constructor(index0?: number, index1?: number) {
-    if (!index0 || !index1) { return; }
+    if (undefined === index0 || undefined === index1) { return; }
     if (index0 < index1) {
       this.indices[0] = index0;
       this.indices[1] = index1;

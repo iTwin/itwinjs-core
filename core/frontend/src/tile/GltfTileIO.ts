@@ -512,9 +512,6 @@ export namespace GltfTileIO {
     }
 
     protected readNormalPairs(json: any, accessorName: string): OctEncodedNormalPair[] | undefined {
-      const view = this.getBufferView(json.attributes, accessorName);
-      if (undefined === view || DataType.UnsignedByte !== view.type)
-        return undefined;
       const data = this.readBufferData8(json, accessorName);
       if (undefined === data)
         return undefined;
@@ -565,6 +562,9 @@ export namespace GltfTileIO {
               i16Bytes[b] = view.data[ndx++];
             indices[i] = index16[0];
           }
+          // Need to skip padding if we had an odd number of 16-bit indices.
+          if (0 !== numIndices[0] % 2)
+            ndx += 2;
         } else if (DataType.UInt32 === view.type) {
           for (let i = 0; i < numIndices[0]; ++i) {
             for (let b = 0; b < 4; ++b)
