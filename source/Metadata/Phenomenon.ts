@@ -12,7 +12,7 @@ export default class Phenomenon extends SchemaItem {
   protected _name: ECName;
   protected _label?: string;
   protected _description?: string;
-  protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses 
+  protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
   private readonly ec32Url: string = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
 
   constructor(schema: Schema, name: string) {
