@@ -14,6 +14,7 @@ import { Point3d } from "../PointVector";
 import { Range3d } from "../Range";
 import { Transform } from "../Transform";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { GrowableXYZArray } from "../GrowableArray";
 import { GeometryHandler } from "../GeometryHandler";
 import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 export type AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection;
@@ -164,6 +165,18 @@ export abstract class CurveChain extends CurveCollection {
    */
   public abstract cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
 
+  public getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined {
+    const tree = this.cloneStroked(options);
+    if (tree instanceof CurveChain) {
+      const children = tree.children;
+      if (children.length === 1) {
+        const ls = children[0];
+        if (ls instanceof LineString3d)
+        return ls.packedPoints;
+      }
+    }
+    return undefined;
+  }
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)

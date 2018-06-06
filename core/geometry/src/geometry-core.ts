@@ -123,6 +123,7 @@ export * from "./Geometry";
 export * from "./Transform";
 export * from "./Range";
 export * from "./Constant";
+export * from "./GrowableArray";
 export * from "./numerics/ClipPlanes";
 export * from "./numerics/ClipPrimitives";
 export * from "./numerics/ClipVector";
