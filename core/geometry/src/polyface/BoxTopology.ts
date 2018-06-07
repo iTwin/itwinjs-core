@@ -17,7 +17,14 @@ import { Point3d } from "../PointVector";
 //      0------------------1
 //
 export class BoxTopology {
-  public static points = [
+  /**
+   * static readonly array with the coordinates of the 8 unit cube corners in standard order, which is:
+   * x varies fastest
+   * * The point indices for the x edges are (0 to 1), (2 to 3), (4 to 5), (6 to 7)
+   * * The point indices for the y edges are (0 to 2), (1 to 3), (4 to 6), (5 to 7)
+   * * The point indices for the z edges are (0 to 4), (1 to 5), (2 to 6), (3 to 7)
+   */
+  public static readonly points = [
     Point3d.create(0, 0, 0),
     Point3d.create(1, 0, 0),
     Point3d.create(0, 1, 0),
