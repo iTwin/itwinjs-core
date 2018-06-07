@@ -13,7 +13,7 @@ These are used to build structural,spaceplanning and other grids. A `Grid` is a 
 ```
 
 ![Grids](./media/grids.png)
-![Grids](./media/grids_instance.png)
+![Grids](./media/gridsystem_instance.png)
 
 ## Classes
 

@@ -11,8 +11,7 @@ These are used to classify elements as conforming to certain classifications lik
     <ECSchemaReference name="BisCore" version="01.00.00" alias="bis" />
 ```
 
-![Grids](./media/grids.png)
-![Grids](./media/grids_instance.png)
+![Grids](./media/ClassificationSystems.png)
 
 ## Classes
 
