@@ -80,7 +80,7 @@ export default class InvertedUnit extends SchemaItem {
     if (undefined !== jsonObj.unitSystem) { // unitSystem is required
       if (typeof(jsonObj.unitSystem) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${jsonObj.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-      if (this._unitSystem !== undefined && jsonObj.unitSystem.toLowerCase() !== this._unitSystem.toLowerCase())
+      else if (this._unitSystem !== undefined && jsonObj.unitSystem.toLowerCase() !== this._unitSystem.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       else if (this._unitSystem === undefined) // if we have yet to define the unitSystem variable, assign it the json unitSystem
         this._unitSystem = jsonObj.unitSystem;

@@ -8,14 +8,15 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItem } from "..";
 
 export interface Unit {
-  readonly name: ECName;
-  readonly value: string;
+  name: ECName;
+  label?: string;
 }
 
+// A Composite defines additional information about a format and whether the magnitude should be split and display using multiple Units.
 export interface Composite {
-  readonly spacer?: string;
-  readonly includeZero?: boolean;
-  readonly units?: Unit[];
+  spacer?: string;
+  includeZero?: boolean;
+  units?: Unit[];
 }
 
 export default class Format extends SchemaItem {
@@ -89,6 +90,22 @@ export default class Format extends SchemaItem {
           }
         });
       }
+  }
+
+    /**
+     * Creates a Unit with the provided name and label and adds it to the this Composite.
+     * @param name The name of the Unit
+     * @param label A localized display label that is used instead of the name in a GUI.
+     */
+  public createUnit(name: string, label?: string) {
+    if ((typeof(name) !== "string") || (label !== undefined && typeof(label) !== "string")) // throws if name isnt a string or if label is defined and isnt a string
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
+    this._composite!.units!.forEach((unit: Unit) => { // Name must be unique within the Composite
+      if (unit.name.name.toLowerCase() === name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${name} has a duplicate name.`);
+    });
+    const enumName = new ECName(name);
+    this._composite!.units!.push({name: enumName, label});
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -199,29 +216,35 @@ export default class Format extends SchemaItem {
     }
 
     if (undefined !== jsonObj.decimalSeparator) { // optional
-      if (typeof(jsonObj.decimalSeparator) !== "string")
+      if (typeof(jsonObj.decimalSeparator) !== "string") // not a string or not a one character string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
+      else if (typeof(jsonObj.decimalSeparator) === "string" && jsonObj.decimalSeparator.length !== 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'decimalSeparator' attribute.`);
       this._decimalSeparator = jsonObj.decimalSeparator;
     }
 
     if (undefined !== jsonObj.thousandSeparator) { // optional
       if (typeof(jsonObj.thousandSeparator) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
+      else if (typeof(jsonObj.thousandSeparator) === "string" && jsonObj.thousandSeparator.length !== 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'thousandSeparator' attribute.`);
       this._thousandSeparator = jsonObj.thousandSeparator;
     }
 
     if (undefined !== jsonObj.uomSeparator) { // optional; default is " "
       if (typeof(jsonObj.uomSeparator) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
-      else if (jsonObj.uomSeparator !==  this.uomSeparator) // if json's uomSeparator isnt default value of " ", reassign uomSeparator variable
-        this._uomSeparator = jsonObj.uomSeparator;
+      else if (typeof(jsonObj.uomSeparator) === "string" && jsonObj.uomSeparator.length !== 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'uomSeparator' attribute.`);
+      this._uomSeparator = jsonObj.uomSeparator;
     }
 
     if (undefined !== jsonObj.stationSeparator) { // optional; default is "+"
       if (typeof(jsonObj.stationSeparator) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
-      else if (jsonObj.stationSeparator !==  this.stationSeparator) // if json's stationSeparator isnt default value of "+", reassign stationSeparator variable
-        this._stationSeparator = jsonObj.stationSeparator;
+      else if (typeof(jsonObj.stationSeparator) === "string" && jsonObj.stationSeparator.length !== 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'stationSeparator' attribute.`);
+      this._stationSeparator = jsonObj.stationSeparator;
     }
 
     if (undefined !== jsonObj.stationOffsetSize && this.formattype === "station") { // stationOffsetSize is required if type is station
@@ -232,6 +255,26 @@ export default class Format extends SchemaItem {
       this._stationOffsetSize = jsonObj.stationOffsetSize;
     } else if (this.formattype === "station") // if the type is station and stationOffsetSize is undefined, throw
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} does not have the required 'stationOffsetSize' attribute.`);
+
+    if (undefined !== jsonObj.composite) { // optional
+      this._composite = {includeZero: true, spacer: " ", units: new Array<Unit>()};
+      if (jsonObj.composite.includeZero !== undefined) {
+        if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+        this._composite!.includeZero = jsonObj.composite.includeZero; // if includeZero is defined and it is a boolean, we can assign it to this composite
+      }
+      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
+        if ((typeof(jsonObj.composite.spacer) === "string" && jsonObj.composite.spacer.length !== 1) || typeof(jsonObj.composite.spacer) !== "string") // spacer must be a one character string
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'spacer' attribute.`);
+        this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
+      }
+      if (jsonObj.composite.units !== undefined && jsonObj.composite.units instanceof Array) { // Composite requires at least one unit, which must be an array of unit objects
+        jsonObj.composite.units.forEach((unit: any) => { // for each unit
+          this.createUnit(unit.name, unit.label); // create the unit
+        });
+      } else
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'units' attribute. It should be of type 'string[]'.`);
+    }
 
     if (undefined !== jsonObj.$schema) {
       if (typeof(jsonObj.$schema) !== "string")

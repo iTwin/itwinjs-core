@@ -541,6 +541,68 @@ describe("Format tests", () => {
         await testFormat.fromJson(json);
         assert(testFormat.stationOffsetSize === undefined);
       });
+      it("decimalSeparator, thousandSeparator, uomSeparator, stationSeparator cannot be more than one character", async () => {
+        const jsonDecimalSeparator = {
+          schemaItemType: "Format",
+          name: "AmerMYFI4",
+          label: "myfi4",
+          type: "decimal",
+          description: "",
+          showSignOption: "onlyNegative",
+          formatTraits: "keepSingleZero|trailZeroes",
+          precision: 3,
+          decimalSeparator: "..",
+          thousandSeparator: ",",
+          uomSeparator: " ",
+        };
+        const jsonThousandSeparator = {
+          schemaItemType: "Format",
+          name: "AmerMYFI4",
+          label: "myfi4",
+          type: "scientific",
+          scientificType: "normalized",
+          description: "",
+          showSignOption: "onlyNegative",
+          formatTraits: "keepSingleZero|trailZeroes",
+          precision: 0,
+          decimalSeparator: ".",
+          thousandSeparator: ",.",
+          uomSeparator: " ",
+        };
+        const jsonUOMSeparator = {
+          schemaItemType: "Format",
+          name: "AmerMYFI4",
+          label: "myfi4",
+          type: "station",
+          stationOffsetSize: 3,
+          description: "",
+          showSignOption: "onlyNegative",
+          formatTraits: "keepSingleZero|trailZeroes",
+          precision: 12,
+          decimalSeparator: ".",
+          thousandSeparator: ",",
+          uomSeparator: "  ",
+        };
+        const jsonStationSeparator = {
+          schemaItemType: "Format",
+          name: "AmerMYFI4",
+          label: "myfi4",
+          type: "station",
+          stationOffsetSize: 3,
+          description: "",
+          showSignOption: "onlyNegative",
+          formatTraits: "keepSingleZero|trailZeroes",
+          precision: 12,
+          decimalSeparator: ".",
+          thousandSeparator: ",",
+          uomSeparator: " ",
+          stationSeparator: "++",
+        };
+        await expect(testFormat.fromJson(jsonDecimalSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'decimalSeparator' attribute.`);
+        await expect(testFormat.fromJson(jsonThousandSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'thousandSeparator' attribute.`);
+        await expect(testFormat.fromJson(jsonUOMSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'uomSeparator' attribute.`);
+        await expect(testFormat.fromJson(jsonStationSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationSeparator' attribute.`);
+      });
     });
     describe("fromJson FormatTraits Tests", () => {
       it("String with valid options", async () => {
@@ -711,10 +773,44 @@ describe("Format tests", () => {
       });
     });
   });
-  describe("Tests with Composite", () => {
+  describe.only("Tests with Composite", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       testFormat = new Format(schema, "AmerMYFI4");
+    });
+    it("Basic test", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+            {
+              name: "YRD",
+              label: "yrd(s)",
+            },
+            {
+              name: "FT",
+              label: "'",
+            },
+            {
+              name: "IN",
+              label: "\"",
+            },
+          ],
+        },
+      };
+      await testFormat.fromJson(json);
+      assert(testFormat.composite!.units!.length === 4);
+      assert(testFormat.composite!.includeZero === false);
+      assert(testFormat.composite!.spacer === "-");
     });
   });
 });
