@@ -1318,11 +1318,19 @@ class ViewWalk extends ViewNavigate {
 /** tool that performs a fit view */
 export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
-  constructor(public viewport: Viewport, public oneShot: boolean) { super(); }
+  public viewport: Viewport;
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: Viewport, oneShot: boolean, doAnimate = true) {
+    super();
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
 
   public onDataButtonDown(_ev: BeButtonEvent): boolean {
     if (_ev.viewport) {
-      return this.doFit(_ev.viewport, false);
+      return this.doFit(_ev.viewport, false, this.doAnimate);
     }
     return false;
   }
@@ -1330,11 +1338,11 @@ export class FitViewTool extends ViewTool {
   public onPostInstall() {
     super.onPostInstall();
     if (this.viewport)
-      this.doFit(this.viewport, this.oneShot);
+      this.doFit(this.viewport, this.oneShot, this.doAnimate);
   }
 
-  public doFit(viewport: Viewport, oneShot: boolean): boolean {
-    ViewManip.fitView(viewport, true);
+  public doFit(viewport: Viewport, oneShot: boolean, doAnimate = true): boolean {
+    ViewManip.fitView(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
     return oneShot;
