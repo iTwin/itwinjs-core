@@ -186,6 +186,10 @@ async function _changeView(view: ViewState) {
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
+function startToggleCamera(_event: any) {
+  IModelApp.tools.run("View.ToggleCamera", theViewport!);
+}
+
 function startFit(_event: any) {
   IModelApp.tools.run("View.Fit", theViewport!, true);
 }
@@ -262,6 +266,7 @@ function doRedo(_event: any) {
 function wireIconsToFunctions() {
   document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
   document.getElementById("viewList")!.addEventListener("change", changeView);
+  document.getElementById("startToggleCamera")!.addEventListener("click", startToggleCamera);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
   document.getElementById("startZoom")!.addEventListener("click", startSelect);

@@ -1943,3 +1943,26 @@ export class ViewRedoTool extends ViewTool {
 
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
 }
+
+export class ViewToggleCameraTool extends ViewManip {
+  public static toolId = "View.ToggleCamera";
+
+  constructor(viewport: Viewport) { super(viewport, ViewHandleType.ViewPan, false, false, false); this.viewport = viewport; }
+
+  public onPostInstall() {
+    // If we are in a 3d view, check if the camera is on or off, and then toggle it
+    if (this.viewport) {
+      if (this.viewport.view.is3d) {
+        if (this.viewport.isCameraOn()) {
+          (this.viewport.view as ViewState3d).turnCameraOff();
+          this.viewport.synchWithView(false);
+        } else {
+          this.viewport.turnCameraOn();
+          this.viewport.synchWithView(false);
+        }
+      }
+    }
+  }
+
+  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
+}

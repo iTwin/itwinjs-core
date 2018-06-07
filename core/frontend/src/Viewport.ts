@@ -602,7 +602,7 @@ export class Viewport {
     this.viewDelta.setFrom(delta);
     this.zClipAdjusted = false;
 
-    if (view.is3d()) {
+    if (view.is3d()) {  // 3d viewport
       if (!view.allow3dManipulations()) {
         // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
         this.alignWithRootZ(); // make sure we're in a z Up view
