@@ -932,41 +932,159 @@ A class for `GridSurface` instances of sketched spline surfaces in `SketchGrid`
     </ECEntityClass>
 ```
 
+### GridCurveBundle
+
+---
+
+A bundle class for `GridCurve` creation. Drives the creation of GridCurve
+
+<u>Naming:</u>
+
+1.  a bundle for driving `GridCurve`
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridCurveBundle" displayLabel="GridCurve bundle">
+      <BaseClass>bis:DriverBundleElement</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
 ## Relationships
 
 ---
 
 ---
 
-### SpaceHasAdjacentSpaces
+### GridDrivesGridSurface
 
-Defines space adjacencies for spaces bounded by walls.
+---
+
+a driving relationship which tells that a grid is driving a gridsurface.
 
 <u>Naming:</u>
 
-1.  Sometimes referred to as Room, space is a more general term including other space functions like corridor.
+1.  named as per standards - noting that `Grid` drives `GridSurface`.
 
 <u>Schema:</u>
 
 ```xml
-    <ECRelationshipClass typeName="SpaceHasAdjacentSpaces" modifier="None" strength="referencing">
-      <BaseClass>bis:ElementRefersToElements</BaseClass>
-        <Source multiplicity="(0..*)" roleLabel="is adjacent to" polymorphic="true">
-            <Class class="Space"/>
-        </Source>
-        <Target multiplicity="(0..*)" roleLabel="is adjacent to" polymorphic="true">
-            <Class class="Space"/>
-        </Target>
+    <ECRelationshipClass typeName="GridDrivesGridSurface" modifier="None" strength="referencing" description="a driving relationship which tells that a grid is driving a gridsurface.">
+      <BaseClass>bis:ElementDrivesElement</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00"/>
+      </ECCustomAttributes>
+      <Source multiplicity="(1..1)" roleLabel="drives" polymorphic="true">
+        <Class class="Grid"/>
+      </Source>
+      <Target multiplicity="(0..*)" roleLabel="is driven by" polymorphic="true">
+        <Class class="GridSurface"/>
+      </Target>
     </ECRelationshipClass>
 ```
 
-## Code
+### GridSurfaceDrivesGridCurveBundle
 
-| Name      | Value                     |
-| --------- | ------------------------- |
-| CodeValue | NULL                      |
-| CodeScope | CodeScopeSpec::Repository |
-| CodeSpec  | bis:NullCodeSpec          |
+---
+
+a driving relationship which tells that gridsurface influences the creation of GridCurve
+
+<u>Naming:</u>
+
+1.  noting that `GridSurface` drives `GridCurveBundle`.
+
+<u>Schema:</u>
+
+```xml
+    <ECRelationshipClass typeName="GridSurfaceDrivesGridCurveBundle" modifier="None" strength="referencing" description="a driving relationship which tells that gridsurface influences the creation of GridCurve">
+      <BaseClass>bis:ElementDrivesElement</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00"/>
+      </ECCustomAttributes>
+      <Source multiplicity="(0..*)" roleLabel="influences" polymorphic="true">
+        <Class class="GridSurface"/>
+      </Source>
+      <Target multiplicity="(0..*)" roleLabel="is influenced by" polymorphic="true">
+        <Class class="GridCurveBundle"/>
+      </Target>
+    </ECRelationshipClass>
+```
+
+### GridCurveBundleCreatesGridCurve
+
+---
+
+a driving relationship which tells that gridcurve was created by the mapped GridCurveBundle
+
+<u>Naming:</u>
+
+1.  noting that `GridCurveBundle` creates `GridCurve`.
+
+<u>Schema:</u>
+
+```xml
+    <ECRelationshipClass typeName="GridCurveBundleCreatesGridCurve" modifier="None" strength="referencing" description="a driving relationship which tells that gridcurve was created by the mapped GridCurveBundle">
+      <BaseClass>bis:ElementDrivesElement</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00"/>
+      </ECCustomAttributes>
+      <Source multiplicity="(1..1)" roleLabel="creates" polymorphic="true">
+        <Class class="GridCurveBundle"/>
+      </Source>
+      <Target multiplicity="(0..1)" roleLabel="is created by" polymorphic="true">
+        <Class class="GridCurve"/>
+      </Target>
+    </ECRelationshipClass>
+```
+
+### GridHasAxes
+
+---
+
+a relationship to map grid to its axes
+
+<u>Naming:</u>
+
+1.  named as per standards - noting that `Grid` references `GridAxis`
+
+<u>Schema:</u>
+
+```xml
+    <ECRelationshipClass typeName="GridHasAxes" strength="embedding" modifier="None" description="maps grid to its axes">
+      <Source multiplicity="(1..1)" roleLabel="Has Axis" polymorphic="true">
+        <Class class="Grid"/>
+      </Source>
+      <Target multiplicity="(0..*)" roleLabel="is axis of" polymorphic="true">
+        <Class class="GridAxis"/>
+      </Target>
+    </ECRelationshipClass>
+```
+
+### GridAxisContainsGridSurfaces
+
+---
+
+a relationship to map grid to its axes
+
+<u>Naming:</u>
+
+1.  named as per standards - noting that `GridAxis` contains `GridSurface` instances.
+
+<u>Schema:</u>
+
+```xml
+    <ECRelationshipClass typeName="GridAxisContainsGridSurfaces" modifier="None" strength="embedding" description="maps axis to grouped surfaces">
+      <Source multiplicity="(1..1)" roleLabel="contains" polymorphic="true">
+        <Class class="GridAxis"/>
+      </Source>
+      <Target multiplicity="(0..*)" roleLabel="is contained in" polymorphic="true">
+        <Class class="GridSurface"/>
+      </Target>
+    </ECRelationshipClass>
+```
 
 ## Domain Standardization of SpatialCategories
 
