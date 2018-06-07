@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module ElementProps */
+/** @module WireFormats */
 
 import { Id64, Id64Props, GuidProps } from "@bentley/bentleyjs-core";
 import { CodeProps } from "./Code";

@@ -29,7 +29,7 @@
 - [ModelState]($frontend:ModelState)
 - [Tools]($frontend:Tools)
 - [Views]($frontend:Views)
-- [Locating Elements]($frontend:LocationAndSnapping)
+- [Locating Elements]($frontend:LocatingElements)
 - [AccuDraw]($frontend:AccuDraw)
 - [Notifications]($frontend:Notifications)
 - [Selection Set]($frontend:SelectionSet)
@@ -41,17 +41,16 @@
 
 ### ($common)
 
-- [Administration]($common:AppAdministration)
-- [BisCore]($common:BisCore)
+- [Wire Formats]($common:WireFormats)
 - [Codes]($common:Codes)
-- [ECSQL]($common:ECSQL)
-- [Errors]($common:Errors)
-- [Symbology]($common:FontsAndSymbology)
 - [Geometry]($common:Geometry)
 - [Views]($common:Views)
-- [iModels]($common:IModels)
+- [Symbology]($common:Symbology)
+- [Rendering]($common:Rendering)
+- [iModels]($common:iModels)
 - [RPC Interface]($common:RpcInterface)
-- [Schema]($common:Schema)
+- [ECSQL]($common:ECSQL)
+- [Feature Gates]($common:FeatureGates)
 
 &nbsp;
 ## Support Packages

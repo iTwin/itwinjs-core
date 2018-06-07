@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module WireFormats */
 
 import { Id64Props, Id64 } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps } from "@bentley/geometry-core";

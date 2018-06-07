@@ -5,16 +5,24 @@
 
 import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d } from "@bentley/geometry-core";
 
-/** The 8 corners of the [NPC]($docs/learning/glossary.md#npc) cube. */
+/** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube. */
 export const enum Npc {
-  _000 = 0,  // Left bottom rear
-  _100 = 1,  // Right bottom rear
-  _010 = 2,  // Left top rear
-  _110 = 3,  // Right top rear
-  _001 = 4,  // Left bottom front
-  _101 = 5,  // Right bottom front
-  _011 = 6,  // Left top front
-  _111 = 7,  // Right top front
+  /** Left bottom rear */
+  _000 = 0,
+  /** Right bottom rear */
+  _100 = 1,
+  /** Left top rear */
+  _010 = 2,
+  /** Right top rear */
+  _110 = 3,
+  /** Left bottom front */
+  _001 = 4,
+  /** Right bottom front */
+  _101 = 5,
+  /** Left top front */
+  _011 = 6,
+  /** Right top front */
+  _111 = 7,
 
   LeftBottomRear = 0,
   RightBottomRear = 1,
@@ -24,6 +32,7 @@ export const enum Npc {
   RightBottomFront = 5,
   LeftTopFront = 6,
   RightTopFront = 7,
+  /** useful for sizing arrays */
   CORNER_COUNT = 8,
 }
 

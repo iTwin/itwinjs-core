@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module IModels */
+/** @module iModels */
 
 import { Id64, GuidProps } from "@bentley/bentleyjs-core";
 import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles } from "@bentley/geometry-core";

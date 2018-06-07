@@ -44,7 +44,7 @@ export * from "./IModelApp";
  */
 /**
  * @docs-group-description IModelConnection
- * Classes for working with a connection to an iModel on the backend - see [iModel Overview]($docs/overview/IModels.md)
+ * Classes for working with a connection to an iModel briefcase - see [iModel Overview]($docs/overview/IModels.md)
  */
 /**
  * @docs-group-description ElementState
@@ -76,7 +76,7 @@ export * from "./IModelApp";
  */
 /**
  * @docs-group-description SelectionSet
- * Classes for working with the SelectionSet.
+ * Classes for working with the set of selected elements.
  */
 /**
  * @docs-group-description Rendering

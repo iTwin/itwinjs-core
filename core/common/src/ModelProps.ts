@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module BisCore */
+/** @module WireFormats */
 
 import { EntityProps, EntityQueryParams } from "./EntityProps";
 import { XYProps } from "@bentley/geometry-core";

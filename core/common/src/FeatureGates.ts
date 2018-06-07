@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module AppAdministration */
+/** @module FeatureGates */
 
 /**
  * A set of "gates" that can enable or disable features at runtime - see [learning about Feature Gates]($docs/learning/common/FeatureGates.md).
@@ -12,7 +12,7 @@ export class FeatureGates {
   /**
    * Get the value of a potentially gated feature.
    * @param feature the name of the feature to check. May be a "path" of period-separated feature sub-groups (e.g. "feature1.groupA.showMe").
-   * Feature names are case-sensitive.
+   *       Feature names are case-sensitive.
    * @param defaultVal optionally, value to return if feature is undefined.
    */
   public check(feature: string, defaultVal?: any): any {
@@ -37,7 +37,7 @@ export class FeatureGates {
   /**
    * Gate access to a feature.
    * @param feature the name of the feature to gate. May be a "path" of period-separated feature sub-groups (e.g. "feature1.groupA.showMe").
-   * Feature names are case-sensitive.
+   *  Feature names are case-sensitive.
    * @param val value to set
    */
   public setGate(feature: string, val: any): void {

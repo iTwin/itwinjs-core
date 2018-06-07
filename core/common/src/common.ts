@@ -45,33 +45,16 @@ export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
 
 /** @docs-package-description
- * The imodeljs-common package contains classes for working with iModels in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
- */
-
-/**
- * @docs-group-description AppAdministration
- * Classes for configuring and administering an app.
- */
-/**
- * @docs-group-description BisCore
- * Classes for working with the major classes in the BisCore schema - see [BIS Overview]($docs/bis)
+ * The imodeljs-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
  /**
-  * @docs-group-description Codes
-  * Classes for working with Codes.
+  * @docs-group-description WireFormats
+  * Definitions of the "props" interfaces and types that define the [wire format]($docs/earning/wireformat.md) for communication between the frontend and backend
   */
-/**
- * @docs-group-description ECSQL
- * Classes for working with ECSQL - see [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Built-in Geometry Functions]($docs/learning/GeometrySqlFuncs.md)
- */
-/**
- * @docs-group-description Errors
- * Classes for working with errors.
- */
-/**
- * @docs-group-description FontsAndSymbology
- * Classes for working with fonts, colors, and other symbology.
- */
+ /**
+  * @docs-group-description Codes
+  * Classes for working with [Codes]($docs/bis/intro/codes.md)
+  */
 /**
  * @docs-group-description Geometry
  * Classes for working with geometry.
@@ -81,14 +64,26 @@ export * from "./rpc/StandaloneIModelRpcInterface";
  * Classes for working with views of models and elements.
  */
 /**
+ * @docs-group-description Rendering
+ * Classes for rendering geometry in views.
+ */
+/**
+ * @docs-group-description Symbology
+ * Classes that affect the appearance of geometry in a view
+ */
+/**
  * @docs-group-description iModels
- * Classes for working with iModels - see [iModel Overview]($docs/overview/IModels.md)
+ * Classes for working with [iModels]($docs/overview/IModels.md) in both the frontend and backend
  */
 /**
  * @docs-group-description RpcInterface
- * Classes for working with RpcInterfaces - see [RpcInterface Overview]($docs/overview/RpcInterface.md) and [RpcInterface Learning]($docs/learning/RpcInterface.md).
+ * Classes for working with [RpcInterfaces]($docs/learning/RpcInterface.md).
  */
 /**
- * @docs-group-description Schema
- * Classes for working with ECSchemas - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
+ * @docs-group-description ECSQL
+ * Classes for working with [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Built-in Geometry Functions]($docs/learning/GeometrySqlFuncs.md)
+ */
+/**
+ * @docs-group-description FeatureGates
+ * Classes for configuring and gating (i.e. limiting at runtime) access to features.
  */

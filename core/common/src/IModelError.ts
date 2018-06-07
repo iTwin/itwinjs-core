@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Errors */
+/** @module iModels */
 
 import { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, RepositoryStatus, ChangeSetStatus } from "@bentley/bentleyjs-core";
 export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, RepositoryStatus, ChangeSetStatus } from "@bentley/bentleyjs-core";

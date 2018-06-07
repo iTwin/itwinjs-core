@@ -225,13 +225,14 @@ export type ColorDefProps = number | ColorDef;
 /**
  * A integer representation of a color.
  * Colors are stored as 4 components: Red, Blue, Green, and Transparency (0=fully opaque). Each is an 8-bit integer between 0-255.
+ *
  * Much confusion results from attempting to interpret those 4 one-byte values as a 4 byte integer. There are generally two sources
  * of confusion:
- * 1. the order the Red, Green, and Blue bytes
- * 2. whether to specify transparency or opacity (sometimes referred to as "alpha")
+ *  1. the order the Red, Green, and Blue bytes
+ *  2. whether to specify transparency or opacity (sometimes referred to as "alpha")
  *
- * Generally, iModelJs prefers to use 0xTTBBGGRR (red in the low byte. 0==fully opaque in high byte) but this class provides methods
- * to convert to 0xRRGGBB (see #getRgb) and 0xAABBGGRR (red in the low byte, 0==fully transparent in high byte. see #getAbgr).
+ * Generally, iModelJs prefers to use `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte) but this class provides methods
+ * to convert to `0xRRGGBB` (see [[getRgb]]) and `0xAABBGGRR` (red in the low byte, 0==fully transparent in high byte. see [[getAbgr]]).
  * The constructor also accepts strings in the common HTML formats.
  */
 export class ColorDef {

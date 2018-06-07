@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module Rendering */
 
 import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorByName } from "./ColorDef";

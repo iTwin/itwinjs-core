@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @module SelectionSet */
 
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -19,6 +19,7 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { FenceParams } from "../FenceParams";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 
+/** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
   Pick,
@@ -28,6 +29,7 @@ export const enum SelectionMethod {
   Box,
 }
 
+/** The mode for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMode {
   /** Identified elements replace the current selection set (use control key to add or remove) */
   Replace,
@@ -39,6 +41,7 @@ export const enum SelectionMode {
 
 export const enum ManipulatorPreference { Disabled, Placement, Geometry }
 
+/** Tool for picking a set of elements of interest, selected by the user. */
 export class SelectionTool extends PrimitiveTool {
   public static hidden = true;
   public static toolId = "Select";

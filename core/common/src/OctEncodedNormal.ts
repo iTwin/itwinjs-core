@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module Rendering */
 
 import { Vector3d } from "@bentley/geometry-core";
 import { PointUtil } from "./Utility";
