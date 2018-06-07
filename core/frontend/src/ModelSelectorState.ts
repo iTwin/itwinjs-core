@@ -27,6 +27,23 @@ export class ModelSelectorState extends ElementState {
     return val;
   }
 
+  public equalState(other: ModelSelectorState): boolean {
+    if (this.models.size !== other.models.size)
+      return false;
+
+    if (this.name !== other.name)
+      return false;
+
+    const otherIter = other.models.keys();
+    let otherRes = otherIter.next();
+    for (let thisIter = this.models.keys(), thisRes = thisIter.next(); !thisRes.done; thisRes = thisIter.next(), otherRes = otherIter.next()) {
+      if (thisRes.value !== otherRes.value)
+        return false;
+    }
+
+    return true;
+  }
+
   /** Add one or more models to this ModelSelectorState */
   public addModels(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.models.add(id)); }
 

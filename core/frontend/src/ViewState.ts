@@ -191,6 +191,26 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
+  /** determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
+  public equalState(other: ViewState): boolean {
+    if (this.isPrivate !== other.isPrivate)
+      return false;
+
+    if (!this.categorySelector.id.equals(other.categorySelector.id))
+      return false;
+
+    if (!this.displayStyle.id.equals(other.displayStyle.id))
+      return false;
+
+    if (!this.categorySelector.equalState(other.categorySelector))
+      return false;
+
+    if (!this.displayStyle.equalState(other.displayStyle))
+      return false;
+
+    return JSON.stringify(this.getDetails()) === (JSON.stringify(other.getDetails()));
+  }
+
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelector.id;
@@ -779,6 +799,19 @@ export abstract class ViewState3d extends ViewState {
     assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
+  }
+
+  public equalState(other: ViewState3d): boolean {
+    if (!this.origin.isAlmostEqual(other.origin) || !this.extents.isAlmostEqual(other.extents) || !this.rotation.isAlmostEqual(other.rotation))
+      return false;
+
+    if (this.isCameraOn() !== other.isCameraOn())
+      return false;
+
+    if (this.isCameraOn() && this.camera.equals(other.camera)) // ###TODO: should this be less precise equality?
+      return false;
+
+    return super.equalState(other);
   }
 
   public isCameraOn(): boolean { return this.cameraOn; }
@@ -1376,6 +1409,16 @@ export class SpatialViewState extends ViewState3d {
   }
   public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
+  public equalState(other: SpatialViewState): boolean {
+    if (!super.equalState(other))
+      return false;
+
+    if (!this.modelSelector.id.equals(other.modelSelector.id))
+      return false;
+
+    return this.modelSelector.equalState(other.modelSelector);
+  }
+
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
@@ -1427,6 +1470,22 @@ export class ViewState2d extends ViewState {
     val.angle = this.angle;
     val.baseModelId = this.baseModelId;
     return val;
+  }
+
+  public equalState(other: ViewState2d): boolean {
+    if (!this.baseModelId.equals(other.baseModelId))
+      return false;
+
+    if (!this.origin.isAlmostEqual(other.origin))
+      return false;
+
+    if (!this.delta.isAlmostEqual(other.delta))
+      return false;
+
+    if (!this.angle.isAlmostEqualNoPeriodShift(other.angle))
+      return false;
+
+    return super.equalState(other);
   }
 
   public onRenderFrame(): void { }

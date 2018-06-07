@@ -754,7 +754,7 @@ export class Viewport {
     // the first time we're called we need to establish the "baseline"
     if (!this.currentBaseline) { this.currentBaseline = this.view.clone<ViewState>(); return; }
 
-    if (this.view.equals(this.currentBaseline)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+    if (this.view.equalState(this.currentBaseline)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
       return; // nothing changed, we're done
 
     if (this.backStack.length >= this.maxUndoSteps) // don't save more than max

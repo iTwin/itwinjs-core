@@ -20,6 +20,10 @@ export abstract class DisplayStyleState extends ElementState {
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
   }
 
+  public equalState(other: DisplayStyleState): boolean {
+    return JSON.stringify(this.getStyles()) === JSON.stringify(other.getStyles());
+  }
+
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
 
