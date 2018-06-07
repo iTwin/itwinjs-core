@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, ColorDef } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
@@ -18,6 +18,8 @@ import { ColorInfo } from "./ColorInfo";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
+import { Material } from "./Material";
+import { FloatRgb } from "./FloatRGBA";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry {
@@ -297,7 +299,47 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
 
 export abstract class EdgeGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
-export abstract class MaterialData { /* ###TODO */ }
+export class MaterialData {
+  public rgb: FloatRgb;
+  public specularColor: ColorDef;
+  public reflectColor: ColorDef;
+  public alpha?: number;
+  public textureWeight: number;
+  public specularExponent: number;
+  // Legacy...
+  public reflect: number = 0;
+  public diffuseWeight: number = 0.6;
+  public specularWeight: number = 0.4;
+
+  public constructor(material?: Material) {
+    if (!material) {
+      this.rgb = new FloatRgb(1, 1, 1);
+      this.specularColor = ColorDef.from(1, 1, 1);
+      this.reflectColor = ColorDef.from(1, 1, 1);
+      this.specularExponent = Material.Params.defaults.specularExponent;
+      this.textureWeight = 1;
+      this.reflect = 0;
+    } else {
+      if (material.alpha !== undefined)
+        this.alpha = material.alpha;
+
+      this.rgb = material.diffuseColor ? FloatRgb.fromColorDef(material.diffuseColor) : new FloatRgb(1, 1, 1);
+      this.specularColor = material.specularColor ? material.specularColor.clone() : ColorDef.from(1, 1, 1);
+      this.specularExponent = material.specularExponent;
+      this.textureWeight = material.textureWeight;
+      this.diffuseWeight = material.weights[0];
+      this.specularWeight = material.weights[1];
+
+      // Force 100% efficiency to avoid dark display (PirtyBike materials with low diffuse.)
+      const totalWeight = this.diffuseWeight + this.specularWeight;
+      this.diffuseWeight /= totalWeight;
+      this.specularWeight /= totalWeight;
+
+      this.reflect = material.weights[2];
+      this.reflectColor = material.reflectColor ? material.reflectColor.clone() : ColorDef.from(1, 1, 1);
+    }
+  }
+}
 
 export class PolylineBuffers {
   public indices: BufferHandle;

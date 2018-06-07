@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../../IModelConnection";
 import { ViewFlags, FeatureTable } from "@bentley/imodeljs-common";
 import { ClipVector, Transform } from "@bentley/geometry-core";
@@ -13,7 +13,7 @@ import { Clip } from "./ClipVolume";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle } from "./Texture";
-import { LUTDimension } from "./FeatureDimensions";
+import { LUTDimension, LUTDimensions } from "./FeatureDimensions";
 
 export class FeatureOverrides {
   // ###TODO this is just a placeholder
@@ -26,8 +26,66 @@ export class FeatureOverrides {
   public get isUniform(): boolean { return !this.isNonUniform; }
 }
 
-// ###TODO this is just a placeholder
-export type PickTable = FeatureOverrides;
+export interface UniformPickTable {
+  readonly elemId0: Float32Array; // 4 bytes
+  readonly elemId1: Float32Array; // 4 bytes
+}
+
+export type NonUniformPickTable = TextureHandle;
+
+export interface PickTable {
+  readonly uniform?: UniformPickTable;
+  readonly nonUniform?: NonUniformPickTable;
+}
+
+const scratchUint32 = new Uint32Array(1);
+const scratchBytes = new Uint8Array(scratchUint32.buffer);
+function uint32ToFloatArray(value: number): Float32Array {
+  scratchUint32[0] = value;
+  const floats = new Float32Array(4);
+  for (let i = 0; i < 4; i++)
+    floats[i] = scratchBytes[i] / 255.0;
+
+  return floats;
+}
+
+function createUniformPickTable(elemId: Id64): UniformPickTable {
+  return {
+    elemId0: uint32ToFloatArray(elemId.getLowUint32()),
+    elemId1: uint32ToFloatArray(elemId.getHighUint32()),
+  };
+}
+
+function createNonUniformPickTable(features: FeatureTable): NonUniformPickTable | undefined {
+  const nFeatures = features.length;
+  if (nFeatures <= 1) {
+    assert(false);
+    return undefined;
+  }
+
+  const dims = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
+  assert(dims.width * dims.height >= nFeatures);
+
+  const bytes = new Uint8Array(dims.width * dims.height * 4);
+  const ids = new Uint32Array(bytes.buffer);
+  for (const entry of features.getArray()) {
+    const elemId = entry.value.elementId;
+    const index = entry.index;
+    ids[index * 2] = elemId.getLowUint32();
+    ids[index * 2 + 1] = elemId.getHighUint32();
+  }
+
+  return TextureHandle.createForData(dims.width, dims.height, bytes);
+}
+
+function createPickTable(features: FeatureTable): PickTable {
+  if (!features.anyDefined)
+    return { };
+  else if (features.isUniform)
+    return { uniform: createUniformPickTable(features.uniform!.elementId) };
+  else
+    return { nonUniform: createNonUniformPickTable(features) };
+}
 
 export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
   // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
@@ -45,19 +103,30 @@ export abstract class Graphic extends RenderGraphic {
 }
 
 export class Batch extends Graphic {
-  public get graphic(): RenderGraphic { return this._graphic; }
-  public get featureTable(): FeatureTable { return this._features; }
+  public readonly graphic: RenderGraphic;
+  public readonly featureTable: FeatureTable;
+  private _pickTable?: PickTable;
+
+  public constructor(graphic: RenderGraphic, features: FeatureTable) {
+    super(graphic.iModel);
+    this.graphic = graphic;
+    this.featureTable = features;
+  }
+
+  public get pickTable(): PickTable | undefined {
+    if (undefined === this._pickTable)
+      this._pickTable = createPickTable(this.featureTable);
+
+    return this._pickTable;
+  }
+
+  public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
+
+  // ###TODO:
   // public get overrides(): FeatureOverrides[] { return this._overrides; }
-  // public get pickTable(): PickTable { return this._pickTable; }
-  constructor(private _graphic: RenderGraphic,
-    private _features: FeatureTable,
-    // private _overrides: FeatureOverrides[] = [],
-    // private _pickTable: PickTable
-  ) { super(_graphic.iModel); }
   // public onTargetDestroyed(target: Target): void {
   //   this._overrides.erase(target);
   // }
-  public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
 }
 
 export class Branch extends Graphic {

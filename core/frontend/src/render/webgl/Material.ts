@@ -6,20 +6,20 @@
 import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
 
 export class Material extends RenderMaterial {
-  public static readonly material: Material = new Material(RenderMaterial.Params.defaults);
+  public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
-  public readonly color?: ColorDef;
+  public readonly diffuseColor?: ColorDef;
   public readonly specularColor?: ColorDef;
   public readonly reflectColor?: ColorDef;
   public readonly alpha?: number;
   public readonly specularExponent: number;
-  public readonly textureWeight?: number;
+  public readonly textureWeight: number = 0;
   public readonly weights: Float32Array;  // [diffuse weight, specular weight, reflect]
 
   public constructor(materialParams: RenderMaterial.Params) {
     super(materialParams);
     if (materialParams.diffuseColor) {
-      this.color = ColorDef.from(materialParams.diffuseColor.colors.r / 255, materialParams.diffuseColor.colors.g / 255, materialParams.diffuseColor.colors.b / 255);
+      this.diffuseColor = ColorDef.from(materialParams.diffuseColor.colors.r / 255, materialParams.diffuseColor.colors.g / 255, materialParams.diffuseColor.colors.b / 255);
     }
     if (materialParams.specularColor) {
       this.specularColor = ColorDef.from(materialParams.specularColor.colors.r / 255, materialParams.specularColor.colors.g / 255, materialParams.specularColor.colors.b / 255);
@@ -38,4 +38,4 @@ export class Material extends RenderMaterial {
   }
 }
 
-Object.freeze(Material.material);
+Object.freeze(Material.default);

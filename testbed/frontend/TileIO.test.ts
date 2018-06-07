@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { Mesh, DisplayParams, System, Batch, MeshGraphic, GraphicsList, SurfaceType, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/rendering";
-import { LinePixels, GeometryClass, ModelProps, RelatedElementProps } from "@bentley/imodeljs-common";
+import { LinePixels, GeometryClass, ModelProps, RelatedElementProps, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Id64, Id64Props } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
@@ -506,7 +506,7 @@ describe("TileIO", () => {
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(PolylinePrimitive);
         const plinePrim = batch.graphic as PolylinePrimitive;
-        expect(plinePrim.featureIndexType).to.equal(0);
+        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.isPlanar).to.be.false;
@@ -693,7 +693,7 @@ describe("TileIO", () => {
 
         expect(list.graphics[0]).to.be.instanceOf(PolylinePrimitive);
         let plinePrim = list.graphics[0] as PolylinePrimitive;
-        expect(plinePrim.featureIndexType).to.equal(0);
+        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.isPlanar).to.be.false;
@@ -707,7 +707,7 @@ describe("TileIO", () => {
 
         expect(list.graphics[1]).to.be.instanceOf(PolylinePrimitive);
         plinePrim = list.graphics[1] as PolylinePrimitive;
-        expect(plinePrim.featureIndexType).to.equal(0);
+        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.NonUniform);
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.isPlanar).to.be.false;

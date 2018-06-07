@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { Id64, Id64Arg, Id64Props, Id64Set, Logger, OpenMode, BentleyStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64Props, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
@@ -33,6 +33,7 @@ export class IModelConnection extends IModel {
   public readonly selectionSet: SelectionSet;
   public readonly tiles: IModelConnectionTiles;
   public readonly openMode: OpenMode;
+  public readonly transientIds = new TransientIdSequence();
 
   /** Check if this iModel has been opened read-only or not. */
   public isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }

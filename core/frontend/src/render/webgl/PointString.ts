@@ -47,6 +47,7 @@ export class PointStringGeometry extends LUTGeometry {
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this.pointString.features; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);

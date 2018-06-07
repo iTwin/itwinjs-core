@@ -238,4 +238,12 @@ describe("IModelConnection", () => {
       await testIModel.close(TestData.accessToken);
     }
   }); // .timeout(99999);
+
+  it("should generate unique transient IDs", () => {
+    for (let i = 1; i < 40; i++) {
+      const id = iModel.transientIds.next;
+      expect(id.getLow()).to.equal(i); // auto-incrementing local ID beginning at 1
+      expect(id.getHigh()).to.equal(0xffffffff); // illegal briefcase ID
+    }
+  });
 });

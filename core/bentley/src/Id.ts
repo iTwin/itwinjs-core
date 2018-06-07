@@ -144,6 +144,36 @@ export class Id64 {
     return new Id64([localId, briefcaseId]);
   }
 
+  /** Extract an unsigned 32-bit integer from the low 4 bytes of an Id64's value.
+   * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
+   */
+  public getLowUint32(): number {
+    if (!this.isValid())
+      return 0;
+
+    let start = 2;
+    const len = this.value.length;
+    if (len > 10)
+      start = len - 8;
+
+    return Id64.toHex(this.value.slice(start));
+  }
+
+  /** Extract an unsigned 32-bit integer from the high 4 bytes of an Id64's value.
+   * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
+   */
+  public getHighUint32(): number {
+    if (!this.isValid())
+      return 0;
+
+    const len = this.value.length;
+    if (len <= 10)
+      return 0;
+
+    const start = len - 8;
+    return Id64.toHex(this.value.slice(2, start));
+  }
+
   /** Convert an Id64Arg into an Id64Set.
    * This method can be used by functions that accept an Id64Arg to conveniently process the value(s).
    *
@@ -170,6 +200,18 @@ export class Id64 {
 
   /** Obtain an Id64 instance with an invalid value. */
   public static invalidId: Id64 = new Id64();
+}
+
+/**
+ * Generates unique Id64 values in sequence, which are guaranteed not to conflict with Id64s associated with persistent elements or models.
+ * This is useful for associating stable, non-persistent identifiers with things like view decorations.
+ * A TransientIdSequence can generate a maximum of (2^40)-2 unique IDs.
+ */
+export class TransientIdSequence {
+  private _localId: number = 0;
+
+  /** Generate and return the next transient Id64 in the sequence. */
+  public get next(): Id64 { return new Id64([++this._localId, 0xffffffff]); }
 }
 
 /** A string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid.

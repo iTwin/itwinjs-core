@@ -28,6 +28,7 @@ import {
   RenderMode,
   RenderMaterial,
 } from "@bentley/imodeljs-common";
+import { Material } from "./Material";
 
 export class MeshInfo {
   public readonly edgeWidth: number;
@@ -51,7 +52,7 @@ export class MeshInfo {
 
 export class MeshData extends MeshInfo {
   public readonly lut: VertexLUT.Data;
-  public readonly material?: MaterialData | RenderMaterial; // ###TODO implement MaterialData, remove RenderMaterial as option
+  public readonly material?: MaterialData;
   public readonly animation: any; // should be a AnimationLookupTexture;
 
   public static create(params: MeshParams): MeshData | undefined {
@@ -62,7 +63,7 @@ export class MeshData extends MeshInfo {
   private constructor(lut: VertexLUT.Data, params: MeshParams) {
     super(params.type, params.edgeWidth, params.edgeLineCode, params.fillFlags, params.isPlanar, params.features, params.texture);
     this.lut = lut;
-    this.material = params.material;
+    this.material = params.material ? new MaterialData(params.material as Material) : undefined;  // If we have a RenderMaterial, we should be able to cast it to Material
     this.animation = undefined;
   }
 }
@@ -114,6 +115,14 @@ export class MeshParams extends MeshInfo {
   }
 }
 
+export enum MeshGraphicType {
+  kSurface,
+  kEdge,
+  kSilhouette,
+  kPolyline,
+  kCOUNT,
+}
+
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: MeshPrimitive[] = [];
@@ -132,14 +141,14 @@ export class MeshGraphic extends Graphic {
       this._primitives.push(surface);
 
     // ###TODO edges
-    // if (args.edges.silhouettes.isValid()) { this.primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
+    // if (args.edges.silhouettes.isValid) { this._primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
     const convertPolylineEdges = args.edges.polylines.isValid && !wantJointTriangles(args.edges.width, args.is2d);
     if (convertPolylineEdges) {
       // const simpleEdges = new SimplePolylineEdgeArgs(args.edges.polylines, args.edges.edges);
-      // this.primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
+      // this._primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
     } else {
-      // if (args.edges.edges.isValid()) { this.primitives[MeshGraphicType.kEdge] = new EdgePrimitive(args.edges.edges, this); }
-      // if (args.edges.polylines.isValid()) { this.primitives[MeshGraphicType.kPolyline] = new PolylineEdgePrimitive.create(args, this); }
+      // if (args.edges.edges.isValid) { this._primitives[MeshGraphicType.kEdge] = new EdgePrimitive(args.edges.edges, this); }
+      // if (args.edges.polylines.isValid) { this._primitives[MeshGraphicType.kPolyline] = new PolylineEdgePrimitive.create(args, this); }
     }
   }
 
@@ -165,7 +174,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
   public get edgeLineCode() { return this.mesh.edgeLineCode; }
-  public get features() { return this.mesh.features; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this.mesh.features; }
   public get surfaceType() { return this.mesh.type; }
   public get fillFlags() { return this.mesh.fillFlags; }
   public get isPlanar() { return this.mesh.isPlanar; }

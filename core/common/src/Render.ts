@@ -1504,6 +1504,7 @@ export class FeatureTable extends IndexMap<Feature> {
   public get maxFeatures(): number { return this.maximumSize; }
   public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this.array[0].value.isDefined); }
   public get isUniform(): boolean { return 1 === this.length; }
+  public get uniform(): Feature | undefined { return 1 === this.length ? this.array[0].value : undefined; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {
@@ -1522,6 +1523,9 @@ export class FeatureTable extends IndexMap<Feature> {
     const entry = new IndexedValue<Feature>(feature, index);
     this.array.splice(bound.index, 0, entry);
   }
+
+  /** @hidden */
+  public getArray(): Array<IndexedValue<Feature>> { return this.array; }
 }
 
 export class TextureMapping {
