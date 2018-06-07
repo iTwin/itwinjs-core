@@ -12,6 +12,7 @@ import UserSettingsManager from "@src/UserSettingsManager";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceNode, createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
 import { initializeRpcInterface } from "@helpers/RpcHelper";
+import { IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 
 describe("ECPresentationManager", () => {
 
@@ -19,6 +20,7 @@ describe("ECPresentationManager", () => {
   let manager: ECPresentationManager;
   const testData = {
     imodelToken: new IModelToken(),
+    imodelMock: moq.Mock.ofType<IModelConnection>(),
     pageOptions: { pageStart: 1, pageSize: 2 },
     extendedData: { some: "test object" },
     presentationRuleSet: { ruleSetId: "testRuleset" },
@@ -28,6 +30,7 @@ describe("ECPresentationManager", () => {
     initializeRpcInterface(ECPresentationRpcInterface);
     interfaceMock = moq.Mock.ofType<ECPresentationRpcInterface>();
     ECPresentationRpcInterface.getClient = () => interfaceMock.object;
+    testData.imodelMock.setup((x) => x.iModelToken).returns(() => testData.imodelToken);
     manager = ECPresentationManager.create();
   });
 
@@ -65,7 +68,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getRootNodes(testData.imodelToken, testData.pageOptions, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await manager.getRootNodes(testData.imodelToken, testData.pageOptions, testData.pageOptions);
+      const actualResult = await manager.getRootNodes(testData.imodelMock.object, testData.pageOptions, testData.pageOptions);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
     });
@@ -80,7 +83,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getRootNodesCount(testData.imodelToken, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await manager.getRootNodesCount(testData.imodelToken, testData.pageOptions);
+      const actualResult = await manager.getRootNodesCount(testData.imodelMock.object, testData.pageOptions);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
     });
@@ -96,7 +99,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await manager.getChildren(testData.imodelToken, parentNodeKey, testData.pageOptions, testData.pageOptions);
+      const actualResult = await manager.getChildren(testData.imodelMock.object, parentNodeKey, testData.pageOptions, testData.pageOptions);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
     });
@@ -112,7 +115,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getChildrenCount(testData.imodelToken, parentNodeKey, testData.pageOptions))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await manager.getChildrenCount(testData.imodelToken, parentNodeKey, testData.pageOptions);
+      const actualResult = await manager.getChildrenCount(testData.imodelMock.object, parentNodeKey, testData.pageOptions);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
     });
@@ -130,7 +133,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData);
+      const actualResult = await manager.getContentDescriptor(testData.imodelMock.object, "test", keyset, undefined, testData.extendedData);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship, moq.Times.once());
@@ -142,7 +145,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData))
         .returns(async () => undefined)
         .verifiable();
-      const actualResult = await manager.getContentDescriptor(testData.imodelToken, "test", keyset, undefined, testData.extendedData);
+      const actualResult = await manager.getContentDescriptor(testData.imodelMock.object, "test", keyset, undefined, testData.extendedData);
       expect(actualResult).to.be.undefined;
       interfaceMock.verifyAll();
     });
@@ -159,7 +162,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getContentSetSize(testData.imodelToken, moq.It.is((d) => deepEqual(d, descriptor.createStrippedDescriptor())), keyset, testData.extendedData))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await manager.getContentSetSize(testData.imodelToken, descriptor, keyset, testData.extendedData);
+      const actualResult = await manager.getContentSetSize(testData.imodelMock.object, descriptor, keyset, testData.extendedData);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
     });
@@ -180,7 +183,7 @@ describe("ECPresentationManager", () => {
         .setup((x) => x.getContent(testData.imodelToken, moq.It.is((d) => deepEqual(d, descriptorMock.object.createStrippedDescriptor())), keyset, testData.pageOptions, testData.extendedData))
         .returns(() => Promise.resolve(result))
         .verifiable();
-      const actualResult = await manager.getContent(testData.imodelToken, descriptorMock.object, keyset, testData.pageOptions, testData.extendedData);
+      const actualResult = await manager.getContent(testData.imodelMock.object, descriptorMock.object, keyset, testData.pageOptions, testData.extendedData);
       expect(actualResult).to.eq(result);
       interfaceMock.verifyAll();
       descriptorMock.verify((x) => x.rebuildParentship(), moq.Times.once());

@@ -3,11 +3,161 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { Node } from "@bentley/ecpresentation-common";
 
 /** @hidden */
+export interface ColorMap {
+  [name: string]: number;
+}
+
+const colors: ColorMap = {
+  AliceBlue: 0xF0F8FFFF,
+  AntiqueWhite: 0xFAEBD7FF,
+  Aqua: 0x00FFFFFF,
+  Aquamarine: 0x7FFFD4FF,
+  Azure: 0xF0FFFFFF,
+  Beige: 0xF5F5DCFF,
+  Bisque: 0xFFE4C4FF,
+  Black: 0x000000FF,
+  BlanchedAlmond: 0xFFEBCDFF,
+  Blue: 0x0000FFFF,
+  BlueViolet: 0x8A2BE2FF,
+  Brown: 0xA52A2AFF,
+  BurlyWood: 0xDEB887FF,
+  CadetBlue: 0x5F9EA0FF,
+  Chartreuse: 0x7FFF00FF,
+  Chocolate: 0xD2691EFF,
+  Coral: 0xFF7F50FF,
+  CornflowerBlue: 0x6495EDFF,
+  Cornsilk: 0xFFF8DCFF,
+  Crimson: 0xDC143CFF,
+  Cyan: 0x00FFFFFF,
+  DarkBlue: 0x00008BFF,
+  DarkCyan: 0x008B8BFF,
+  DarkGoldenrod: 0xB8860BFF,
+  DarkGray: 0xA9A9A9FF,
+  DarkGreen: 0x006400FF,
+  DarkKhaki: 0xBDB76BFF,
+  DarkMagenta: 0x8B008BFF,
+  DarkOliveGreen: 0x556B2FFF,
+  DarkOrange: 0xFF8C00FF,
+  DarkOrchid: 0x9932CCFF,
+  DarkRed: 0x8B0000FF,
+  DarkSalmon: 0xE9967AFF,
+  DarkSeaGreen: 0x8FBC8BFF,
+  DarkSlateBlue: 0x483D8BFF,
+  DarkSlateGray: 0x2F4F4FFF,
+  DarkTurquoise: 0x00CED1FF,
+  DarkViolet: 0x9400D3FF,
+  DeepPink: 0xFF1493FF,
+  DeepSkyBlue: 0x00BFFFFF,
+  DimGray: 0x696969FF,
+  DodgerBlue: 0x1E90FFFF,
+  Firebrick: 0xB22222FF,
+  FloralWhite: 0xFFFAF0FF,
+  ForestGreen: 0x228B22FF,
+  Fuchsia: 0xFF00FFFF,
+  Gainsboro: 0xDCDCDCFF,
+  GhostWhite: 0xF8F8FFFF,
+  Gold: 0xFFD700FF,
+  Goldenrod: 0xDAA520FF,
+  Gray: 0x808080FF,
+  Green: 0x008000FF,
+  GreenYellow: 0xADFF2FFF,
+  Honeydew: 0xF0FFF0FF,
+  HotPink: 0xFF69B4FF,
+  IndianRed: 0xCD5C5CFF,
+  Indigo: 0x4B0082FF,
+  Ivory: 0xFFFFF0FF,
+  Khaki: 0xF0E68CFF,
+  Lavender: 0xE6E6FAFF,
+  LavenderBlush: 0xFFF0F5FF,
+  LawnGreen: 0x7CFC00FF,
+  LemonChiffon: 0xFFFACDFF,
+  LightBlue: 0xADD8E6FF,
+  LightCoral: 0xF08080FF,
+  LightCyan: 0xE0FFFFFF,
+  LightGoldenrodYellow: 0xFAFAD2FF,
+  LightGray: 0xD3D3D3FF,
+  LightGreen: 0x90EE90FF,
+  LightPink: 0xFFB6C1FF,
+  LightSalmon: 0xFFA07AFF,
+  LightSeaGreen: 0x20B2AAFF,
+  LightSkyBlue: 0x87CEFAFF,
+  LightSlateGray: 0x778899FF,
+  LightSteelBlue: 0xB0C4DEFF,
+  LightYellow: 0xFFFFE0FF,
+  Lime: 0x00FF00FF,
+  LimeGreen: 0x32CD32FF,
+  Linen: 0xFAF0E6FF,
+  Magenta: 0xFF00FFFF,
+  Maroon: 0x800000FF,
+  MediumAquamarine: 0x66CDAAFF,
+  MediumBlue: 0x0000CDFF,
+  MediumOrchid: 0xBA55D3FF,
+  MediumPurple: 0x9370DBFF,
+  MediumSeaGreen: 0x3CB371FF,
+  MediumSlateBlue: 0x7B68EEFF,
+  MediumSpringGreen: 0x00FA9AFF,
+  MediumTurquoise: 0x48D1CCFF,
+  MediumVioletRed: 0xC71585FF,
+  MidnightBlue: 0x191970FF,
+  MintCream: 0xF5FFFAFF,
+  MistyRose: 0xFFE4E1FF,
+  Moccasin: 0xFFE4B5FF,
+  NavajoWhite: 0xFFDEADFF,
+  Navy: 0x000080FF,
+  OldLace: 0xFDF5E6FF,
+  Olive: 0x808000FF,
+  OliveDrab: 0x6B8E23FF,
+  Orange: 0xFFA500FF,
+  OrangeRed: 0xFF4500FF,
+  Orchid: 0xDA70D6FF,
+  PaleGoldenrod: 0xEEE8AAFF,
+  PaleGreen: 0x98FB98FF,
+  PaleTurquoise: 0xAFEEEEFF,
+  PaleVioletRed: 0xDB7093FF,
+  PapayaWhip: 0xFFEFD5FF,
+  PeachPuff: 0xFFDAB9FF,
+  Peru: 0xCD853FFF,
+  Pink: 0xFFC0CBFF,
+  Plum: 0xDDA0DDFF,
+  PowderBlue: 0xB0E0E6FF,
+  Purple: 0x800080FF,
+  Red: 0xFF0000FF,
+  RosyBrown: 0xBC8F8FFF,
+  RoyalBlue: 0x4169E1FF,
+  SaddleBrown: 0x8B4513FF,
+  Salmon: 0xFA8072FF,
+  SandyBrown: 0xF4A460FF,
+  SeaGreen: 0x2E8B57FF,
+  SeaShell: 0xFFF5EEFF,
+  Sienna: 0xA0522DFF,
+  Silver: 0xC0C0C0FF,
+  SkyBlue: 0x87CEEBFF,
+  SlateBlue: 0x6A5ACDFF,
+  SlateGray: 0x708090FF,
+  Snow: 0xFFFAFAFF,
+  SpringGreen: 0x00FF7FFF,
+  SteelBlue: 0x4682B4FF,
+  Tan: 0xD2B48CFF,
+  Teal: 0x008080FF,
+  Thistle: 0xD8BFD8FF,
+  Tomato: 0xFF6347FF,
+  Transparent: 0xFFFFFFFF,
+  Turquoise: 0x40E0D0FF,
+  Violet: 0xEE82EEFF,
+  Wheat: 0xF5DEB3FF,
+  White: 0xFFFFFFFF,
+  WhiteSmoke: 0xF5F5F5FF,
+  Yellow: 0xFFFF00FF,
+  YellowGreen: 0x9ACD32FF,
+};
+
+/** @hidden */
 export default class StyleHelper {
+  public static get availableColors(): ColorMap { return colors; }
+
   private static getColor(name: string): number {
     name = name.trim();
     if (name.indexOf("#") === 0 && name.length === 7)
@@ -18,151 +168,9 @@ export default class StyleHelper {
   }
 
   private static getColorFromColorName(name: string): number {
-    switch (name) {
-      case "AliceBlue": return 0xF0F8FFFF;
-      case "AntiqueWhite": return 0xFAEBD7FF;
-      case "Aqua": return 0x00FFFFFF;
-      case "Aquamarine": return 0x7FFFD4FF;
-      case "Azure": return 0xF0FFFFFF;
-      case "Beige": return 0xF5F5DCFF;
-      case "Bisque": return 0xFFE4C4FF;
-      case "Black": return 0x000000FF;
-      case "BlanchedAlmond": return 0xFFEBCDFF;
-      case "Blue": return 0x0000FFFF;
-      case "BlueViolet": return 0x8A2BE2FF;
-      case "Brown": return 0xA52A2AFF;
-      case "BurlyWood": return 0xDEB887FF;
-      case "CadetBlue": return 0x5F9EA0FF;
-      case "Chartreuse": return 0x7FFF00FF;
-      case "Chocolate": return 0xD2691EFF;
-      case "Coral": return 0xFF7F50FF;
-      case "CornflowerBlue": return 0x6495EDFF;
-      case "Cornsilk": return 0xFFF8DCFF;
-      case "Crimson": return 0xDC143CFF;
-      case "Cyan": return 0x00FFFFFF;
-      case "DarkBlue": return 0x00008BFF;
-      case "DarkCyan": return 0x008B8BFF;
-      case "DarkGoldenrod": return 0xB8860BFF;
-      case "DarkGray": return 0xA9A9A9FF;
-      case "DarkGreen": return 0x006400FF;
-      case "DarkKhaki": return 0xBDB76BFF;
-      case "DarkMagenta": return 0x8B008BFF;
-      case "DarkOliveGreen": return 0x556B2FFF;
-      case "DarkOrange": return 0xFF8C00FF;
-      case "DarkOrchid": return 0x9932CCFF;
-      case "DarkRed": return 0x8B0000FF;
-      case "DarkSalmon": return 0xE9967AFF;
-      case "DarkSeaGreen": return 0x8FBC8BFF;
-      case "DarkSlateBlue": return 0x483D8BFF;
-      case "DarkSlateGray": return 0x2F4F4FFF;
-      case "DarkTurquoise": return 0x00CED1FF;
-      case "DarkViolet": return 0x9400D3FF;
-      case "DeepPink": return 0xFF1493FF;
-      case "DeepSkyBlue": return 0x00BFFFFF;
-      case "DimGray": return 0x696969FF;
-      case "DodgerBlue": return 0x1E90FFFF;
-      case "Firebrick": return 0xB22222FF;
-      case "FloralWhite": return 0xFFFAF0FF;
-      case "ForestGreen": return 0x228B22FF;
-      case "Fuchsia": return 0xFF00FFFF;
-      case "Gainsboro": return 0xDCDCDCFF;
-      case "GhostWhite": return 0xF8F8FFFF;
-      case "Gold": return 0xFFD700FF;
-      case "Goldenrod": return 0xDAA520FF;
-      case "Gray": return 0x808080FF;
-      case "Green": return 0x008000FF;
-      case "GreenYellow": return 0xADFF2FFF;
-      case "Honeydew": return 0xF0FFF0FF;
-      case "HotPink": return 0xFF69B4FF;
-      case "IndianRed": return 0xCD5C5CFF;
-      case "Indigo": return 0x4B0082FF;
-      case "Ivory": return 0xFFFFF0FF;
-      case "Khaki": return 0xF0E68CFF;
-      case "Lavender": return 0xE6E6FAFF;
-      case "LavenderBlush": return 0xFFF0F5FF;
-      case "LawnGreen": return 0x7CFC00FF;
-      case "LemonChiffon": return 0xFFFACDFF;
-      case "LightBlue": return 0xADD8E6FF;
-      case "LightCoral": return 0xF08080FF;
-      case "LightCyan": return 0xE0FFFFFF;
-      case "LightGoldenrodYellow": return 0xFAFAD2FF;
-      case "LightGray": return 0xD3D3D3FF;
-      case "LightGreen": return 0x90EE90FF;
-      case "LightPink": return 0xFFB6C1FF;
-      case "LightSalmon": return 0xFFA07AFF;
-      case "LightSeaGreen": return 0x20B2AAFF;
-      case "LightSkyBlue": return 0x87CEFAFF;
-      case "LightSlateGray": return 0x778899FF;
-      case "LightSteelBlue": return 0xB0C4DEFF;
-      case "LightYellow": return 0xFFFFE0FF;
-      case "Lime": return 0x00FF00FF;
-      case "LimeGreen": return 0x32CD32FF;
-      case "Linen": return 0xFAF0E6FF;
-      case "Magenta": return 0xFF00FFFF;
-      case "Maroon": return 0x800000FF;
-      case "MediumAquamarine": return 0x66CDAAFF;
-      case "MediumBlue": return 0x0000CDFF;
-      case "MediumOrchid": return 0xBA55D3FF;
-      case "MediumPurple": return 0x9370DBFF;
-      case "MediumSeaGreen": return 0x3CB371FF;
-      case "MediumSlateBlue": return 0x7B68EEFF;
-      case "MediumSpringGreen": return 0x00FA9AFF;
-      case "MediumTurquoise": return 0x48D1CCFF;
-      case "MediumVioletRed": return 0xC71585FF;
-      case "MidnightBlue": return 0x191970FF;
-      case "MintCream": return 0xF5FFFAFF;
-      case "MistyRose": return 0xFFE4E1FF;
-      case "Moccasin": return 0xFFE4B5FF;
-      case "NavajoWhite": return 0xFFDEADFF;
-      case "Navy": return 0x000080FF;
-      case "OldLace": return 0xFDF5E6FF;
-      case "Olive": return 0x808000FF;
-      case "OliveDrab": return 0x6B8E23FF;
-      case "Orange": return 0xFFA500FF;
-      case "OrangeRed": return 0xFF4500FF;
-      case "Orchid": return 0xDA70D6FF;
-      case "PaleGoldenrod": return 0xEEE8AAFF;
-      case "PaleGreen": return 0x98FB98FF;
-      case "PaleTurquoise": return 0xAFEEEEFF;
-      case "PaleVioletRed": return 0xDB7093FF;
-      case "PapayaWhip": return 0xFFEFD5FF;
-      case "PeachPuff": return 0xFFDAB9FF;
-      case "Peru": return 0xCD853FFF;
-      case "Pink": return 0xFFC0CBFF;
-      case "Plum": return 0xDDA0DDFF;
-      case "PowderBlue": return 0xB0E0E6FF;
-      case "Purple": return 0x800080FF;
-      case "Red": return 0xFF0000FF;
-      case "RosyBrown": return 0xBC8F8FFF;
-      case "RoyalBlue": return 0x4169E1FF;
-      case "SaddleBrown": return 0x8B4513FF;
-      case "Salmon": return 0xFA8072FF;
-      case "SandyBrown": return 0xF4A460FF;
-      case "SeaGreen": return 0x2E8B57FF;
-      case "SeaShell": return 0xFFF5EEFF;
-      case "Sienna": return 0xA0522DFF;
-      case "Silver": return 0xC0C0C0FF;
-      case "SkyBlue": return 0x87CEEBFF;
-      case "SlateBlue": return 0x6A5ACDFF;
-      case "SlateGray": return 0x708090FF;
-      case "Snow": return 0xFFFAFAFF;
-      case "SpringGreen": return 0x00FF7FFF;
-      case "SteelBlue": return 0x4682B4FF;
-      case "Tan": return 0xD2B48CFF;
-      case "Teal": return 0x008080FF;
-      case "Thistle": return 0xD8BFD8FF;
-      case "Tomato": return 0xFF6347FF;
-      case "Transparent": return 0xFFFFFFFF;
-      case "Turquoise": return 0x40E0D0FF;
-      case "Violet": return 0xEE82EEFF;
-      case "Wheat": return 0xF5DEB3FF;
-      case "White": return 0xFFFFFFFF;
-      case "WhiteSmoke": return 0xF5F5F5FF;
-      case "Yellow": return 0xFFFF00FF;
-      case "YellowGreen": return 0x9ACD32FF;
-    }
-    assert(false, "Invalid color name: " + name);
-    return 0x0;
+    if (colors.hasOwnProperty(name))
+      return colors[name];
+    throw new Error("Invalid color name");
   }
 
   private static getColorFromRGB(name: string): number {

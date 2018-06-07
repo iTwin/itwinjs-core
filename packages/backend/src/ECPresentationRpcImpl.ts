@@ -4,7 +4,11 @@
 /** @module RPC */
 
 import { IModelToken } from "@bentley/imodeljs-common";
-import { ECPresentationRpcInterface, SettingValue, SettingValueTypes } from "@bentley/ecpresentation-common";
+import { IModelDb } from "@bentley/imodeljs-backend";
+import { ECPresentationRpcInterface,
+  SettingValue, SettingValueTypes,
+  ECPresentationError, ECPresentationStatus,
+} from "@bentley/ecpresentation-common";
 import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
 import { Node, NodeKey } from "@bentley/ecpresentation-common";
 import { SelectionInfo, Descriptor, Content } from "@bentley/ecpresentation-common";
@@ -31,6 +35,13 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return ECPresentation.manager;
   }
 
+  private getIModel(token: IModelToken): IModelDb {
+    const imodel = IModelDb.find(token);
+    if (!imodel)
+      throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "IModelToken doesn't point to any iModel");
+    return imodel;
+  }
+
   public setActiveLocale(locale: string | undefined): Promise<void> {
     this.getManager().activeLocale = locale;
     return Promise.resolve();
@@ -48,35 +59,35 @@ export default class ECPresentationRpcImpl extends ECPresentationRpcInterface {
     return await this.getManager().clearRuleSets();
   }
 
-  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this.getManager().getRootNodes(token, pageOptions, options);
+  public async getRootNodes(token: IModelToken, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+    return await this.getManager().getRootNodes(this.getIModel(token), pageOptions, options);
   }
 
-  public async getRootNodesCount(token: Readonly<IModelToken>, options: object): Promise<number> {
-    return await this.getManager().getRootNodesCount(token, options);
+  public async getRootNodesCount(token: IModelToken, options: object): Promise<number> {
+    return await this.getManager().getRootNodesCount(this.getIModel(token), options);
   }
 
-  public async getChildren(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this.getManager().getChildren(token, parentKey, pageOptions, options);
+  public async getChildren(token: IModelToken, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+    return await this.getManager().getChildren(this.getIModel(token), parentKey, pageOptions, options);
   }
 
-  public async getChildrenCount(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
-    return await this.getManager().getChildrenCount(token, parentKey, options);
+  public async getChildrenCount(token: IModelToken, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
+    return await this.getManager().getChildrenCount(this.getIModel(token), parentKey, options);
   }
 
-  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
-    const descriptor = await this.getManager().getContentDescriptor(token, displayType, keys, selection, options);
+  public async getContentDescriptor(token: IModelToken, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
+    const descriptor = await this.getManager().getContentDescriptor(this.getIModel(token), displayType, keys, selection, options);
     if (descriptor)
       descriptor.resetParentship();
     return descriptor;
   }
 
-  public async getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
-    return await this.getManager().getContentSetSize(token, descriptor, keys, options);
+  public async getContentSetSize(token: IModelToken, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
+    return await this.getManager().getContentSetSize(this.getIModel(token), descriptor, keys, options);
   }
 
-  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
-    const content: Content = await this.getManager().getContent(token, descriptor, keys, pageOptions, options);
+  public async getContent(token: IModelToken, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
+    const content: Content = await this.getManager().getContent(this.getIModel(token), descriptor, keys, pageOptions, options);
     content.descriptor.resetParentship();
     return content;
   }

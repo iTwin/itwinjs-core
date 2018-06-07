@@ -14,10 +14,11 @@ const options = {
   timeoutsEnabled: yargs.noTimeouts || true, // measure tests' coverage
   coverage: yargs.coverage || false, // create test coverage report
   report: yargs.report || false, // create test run report
+  extensions: [".ts", ".tsx"], // source file extensions
 };
 const testsName = path.basename(path.resolve("./"));
 
-process.env.TS_NODE_PROJECT = options.testsDir;
+process.env.TS_NODE_PROJECT = path.join(options.testsDir, "tsconfig.json");
 
 let extensionsRegistered = false;
 const registerExtensions = () => {
@@ -25,6 +26,8 @@ const registerExtensions = () => {
     require("ts-node/register");
     require("tsconfig-paths/register");
     require("source-map-support/register");
+    require("jsdom-global/register");
+    require("ignore-styles");
     extensionsRegistered = true;
   }
 };
@@ -43,9 +46,9 @@ const requireLibModules = (dir) => {
     requireLibModules(filePath);
   });
   files.filter((fileName) => {
-    return fileName.endsWith(".ts") && !fileName.endsWith(".test.ts");
+    return options.extensions.some((ext) => fileName.endsWith(ext) && !fileName.endsWith(".test" + ext));
   }).forEach((fileName) => {
-    const requirePath = path.resolve(dir, path.basename(fileName, ".ts"));
+    const requirePath = path.resolve(dir, path.basename(fileName));
     require(requirePath);
   });
 };
@@ -57,7 +60,9 @@ const getTestFiles = () => {
     files.filter(shouldRecurseIntoDirectory).forEach((filePath) => {
       addFilesRecursively(filePath);
     });
-    files.filter((filePath) => filePath.endsWith(".ts")).forEach((filePath) => {
+    files.filter((filePath) => {
+      return options.extensions.some((ext) => filePath.endsWith(ext));
+    }).forEach((filePath) => {
       testFiles.push(filePath);
     });
   };
@@ -99,12 +104,13 @@ const runOnce = () => {
   let mocha = new Mocha({
     ui: "bdd",
   });
-  mocha = setupReporter(mocha)  
+  mocha = setupReporter(mocha)
     .timeout(10 * 60 * 1000) // 10 minutes
-    .enableTimeouts(options.timeoutsEnabled)  
+    .enableTimeouts(options.timeoutsEnabled)
     .ignoreLeaks(false)
-    .useColors(true)
-    .fullTrace();
+    .useColors(true);
+  if (!options.watch)
+    mocha = mocha.fullTrace();
   getTestFiles().forEach((file) => {
     mocha.addFile(file);
   });
@@ -119,8 +125,9 @@ const runOnce = () => {
   });
 };
 
+let current = Promise.resolve();
 const run = () => {
-  let chain = Promise.resolve();
+  let chain = current;
   for (let i = 0; i < options.repeat; ++i) {
     chain = chain.then(() => {
       clearTestFilesCache();
@@ -129,24 +136,29 @@ const run = () => {
       return runOnce();
     });
   }
-  chain.catch((err) => {
-    if (options.watch)
-      return;
+  chain = chain.catch((err) => {
     if (err)
       console.log(err);
-    process.exit(1);
+    if (!options.watch)
+      process.exit(1);
   });
+  current = chain;
 };
 
 run();
 
 if (options.watch) {
-  const watcher = chokidar.watch('', {
-    ignored: "**/node_modules/**",
+  const watchPaths = [];
+  options.extensions.forEach((ext) => watchPaths.push("./src/**/*" + ext));
+  options.extensions.forEach((ext) => watchPaths.push("./tests/**/*" + ext));
+  watchPaths.push("../test-helpers/**/*.ts");
+  const watcher = chokidar.watch(watchPaths, {
+    ignored: ["**/node_modules/**", "**/lib/**, **/dist/**"],
     ignoreInitial: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 200,
+    },
   });
-  watcher.add("./**/*.ts");
-  watcher.add("../test-helpers/**/*.ts");
   watcher.on("all", (evt, filePath) => {
     // wip: might want to make this part smarter to only re-run affected tests
     // un-cache the changed file

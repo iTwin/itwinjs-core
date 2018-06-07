@@ -5,6 +5,7 @@
 
 import * as ec from "../EC";
 import { ValuesDictionary } from "../Utils";
+import { Value, DisplayValue } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -14,8 +15,8 @@ export interface ItemJSON {
   label: string;
   imageId: string;
   classInfo?: ec.ClassInfo;
-  values: ValuesDictionary<any>;
-  displayValues: ValuesDictionary<string | undefined>;
+  values: ValuesDictionary<Value>;
+  displayValues: ValuesDictionary<DisplayValue>;
   mergedFieldNames: string[];
 }
 
@@ -24,19 +25,19 @@ export interface ItemJSON {
  */
 export default class Item {
   /** Keys of instances whose data is contained in this item */
-  public readonly primaryKeys: Array<Readonly<ec.InstanceKey>>;
+  public primaryKeys: Array<Readonly<ec.InstanceKey>>;
   /** Display label of the item */
-  public readonly label: string;
+  public label: string;
   /** ID of the image associated with this item */
-  public readonly imageId: string;
+  public imageId: string;
   /** For cases when item consists only of same class instances, information about the ECClass */
-  public readonly classInfo?: Readonly<ec.ClassInfo>;
+  public classInfo?: Readonly<ec.ClassInfo>;
   /** Raw values dictionary */
-  public readonly values: Readonly<ValuesDictionary<any>>;
+  public values: Readonly<ValuesDictionary<Value>>;
   /** Display values dictionary */
-  public readonly displayValues: Readonly<ValuesDictionary<string | undefined>>;
+  public displayValues: Readonly<ValuesDictionary<DisplayValue>>;
   /** List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging)) */
-  public readonly mergedFieldNames: string[];
+  public mergedFieldNames: string[];
 
   /**
    * Creates an instance of Item.
@@ -49,7 +50,7 @@ export default class Item {
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging))
    */
   public constructor(primaryKeys: ec.InstanceKey[], label: string, imageId: string, classInfo: ec.ClassInfo | undefined,
-    values: ValuesDictionary<any>, displayValues: ValuesDictionary<string | undefined>, mergedFieldNames: string[]) {
+    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]) {
     this.primaryKeys = primaryKeys;
     this.label = label;
     this.imageId = imageId;

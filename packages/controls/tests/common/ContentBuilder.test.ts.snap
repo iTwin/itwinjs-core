@@ -1,0 +1,464 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ContentBuilder createPropertyDescription creates description with choices 1`] = `
+Object {
+  "displayLabel": "Sleek Metal Keyboard Computers embrace",
+  "editor": Object {
+    "name": "grow",
+    "params": Array [],
+  },
+  "enum": Object {
+    "choices": Array [
+      Object {
+        "label": "JBOD",
+        "value": 35723,
+      },
+      Object {
+        "label": "withdrawal",
+        "value": 39336,
+      },
+    ],
+    "isStrict": true,
+  },
+  "name": "cross-platform",
+  "typename": "enum",
+}
+`;
+
+exports[`ContentBuilder createPropertyDescription creates description with editor 1`] = `
+Object {
+  "displayLabel": "web services",
+  "editor": Object {
+    "name": "Salad",
+    "params": Array [],
+  },
+  "name": "Gorgeous",
+  "typename": "double",
+}
+`;
+
+exports[`ContentBuilder createPropertyDescription creates simple description 1`] = `
+Object {
+  "displayLabel": "redefine Principal Licensed Plastic Shoes",
+  "name": "European Unit of Account 17(E.U.A.-17)",
+  "typename": "real",
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with array value 1`] = `
+PropertyRecord {
+  "description": undefined,
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "SAS",
+    "name": "green",
+    "typename": "Chief",
+  },
+  "value": Object {
+    "items": Array [
+      PropertyRecord {
+        "description": "some display value 1",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "SAS",
+          "name": "green",
+          "typename": "bigint",
+        },
+        "value": Object {
+          "displayValue": "some display value 1",
+          "value": "some value 1",
+          "valueFormat": 0,
+        },
+      },
+      PropertyRecord {
+        "description": "some display value 2",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "SAS",
+          "name": "green",
+          "typename": "bigint",
+        },
+        "value": Object {
+          "displayValue": "some display value 2",
+          "value": "some value 2",
+          "valueFormat": 0,
+        },
+      },
+    ],
+    "valueFormat": 1,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with merged array value 1`] = `
+PropertyRecord {
+  "description": undefined,
+  "isMerged": true,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "bypass convergence",
+    "name": "Czech Koruna",
+    "typename": "Forward",
+  },
+  "value": Object {
+    "displayValue": "merged",
+    "value": undefined,
+    "valueFormat": 0,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with merged inside nested content value 1`] = `
+PropertyRecord {
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "payment Unbranded revolutionary",
+    "name": "invoice",
+    "typename": "blob",
+  },
+  "value": Object {
+    "members": Object {
+      "withdrawal": PropertyRecord {
+        "description": "merged",
+        "isMerged": true,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "productize",
+          "editor": Object {
+            "name": "Pula",
+            "params": Array [],
+          },
+          "name": "withdrawal",
+          "typename": "geometry",
+        },
+        "value": Object {
+          "displayValue": "merged",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    },
+    "valueFormat": 2,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with merged outside nested content value 1`] = `
+PropertyRecord {
+  "isMerged": true,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "Facilitator",
+    "name": "payment",
+    "typename": "binary",
+  },
+  "value": Object {
+    "displayValue": "merged",
+    "value": undefined,
+    "valueFormat": 0,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with merged primitive value 1`] = `
+PropertyRecord {
+  "description": "merged",
+  "isMerged": true,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "Fantastic Wooden Pants wireless navigating",
+    "name": "Synchronised",
+    "typename": "mediumint",
+  },
+  "value": Object {
+    "displayValue": "merged",
+    "value": undefined,
+    "valueFormat": 0,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with merged struct value 1`] = `
+PropertyRecord {
+  "description": undefined,
+  "isMerged": true,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "protocol Automotive",
+    "name": "back-end",
+    "typename": "enterprise",
+  },
+  "value": Object {
+    "displayValue": "merged",
+    "value": undefined,
+    "valueFormat": 0,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with multiple nested content values 1`] = `
+PropertyRecord {
+  "isMerged": false,
+  "isReadonly": false,
+  "property": Object {
+    "displayLabel": "Tasty",
+    "name": "knowledge user",
+    "typename": "set",
+  },
+  "value": Object {
+    "items": Array [
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Tasty",
+          "name": "knowledge user",
+          "typename": "set",
+        },
+        "value": Object {
+          "members": Object {
+            "world-class": PropertyRecord {
+              "description": "some display value 1",
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "green payment lavender",
+                "editor": Object {
+                  "name": "users",
+                  "params": Array [],
+                },
+                "name": "world-class",
+                "typename": "varchar",
+              },
+              "value": Object {
+                "displayValue": "some display value 1",
+                "value": "some value 1",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Tasty",
+          "name": "knowledge user",
+          "typename": "set",
+        },
+        "value": Object {
+          "members": Object {
+            "world-class": PropertyRecord {
+              "description": "some display value 2",
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "green payment lavender",
+                "editor": Object {
+                  "name": "users",
+                  "params": Array [],
+                },
+                "name": "world-class",
+                "typename": "varchar",
+              },
+              "value": Object {
+                "displayValue": "some display value 2",
+                "value": "some value 2",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+    ],
+    "valueFormat": 1,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with only properties in field path 1`] = `
+PropertyRecord {
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "backing up orchestration",
+    "name": "Supervisor",
+    "typename": "geometry",
+  },
+  "value": Object {
+    "members": Object {
+      "Future-proofed": PropertyRecord {
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Dynamic Plastic Estates",
+          "name": "Future-proofed",
+          "typename": "double",
+        },
+        "value": Object {
+          "items": Array [
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Dynamic Plastic Estates",
+                "name": "Future-proofed",
+                "typename": "double",
+              },
+              "value": Object {
+                "members": Object {
+                  "Jamaican Dollar": PropertyRecord {
+                    "description": "some display value 1.2",
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "multi-byte Research synthesize",
+                      "editor": Object {
+                        "name": "Minnesota",
+                        "params": Array [],
+                      },
+                      "name": "Jamaican Dollar",
+                      "typename": "double",
+                    },
+                    "value": Object {
+                      "displayValue": "some display value 1.2",
+                      "value": "some value 1.2",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+            PropertyRecord {
+              "isMerged": false,
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Dynamic Plastic Estates",
+                "name": "Future-proofed",
+                "typename": "double",
+              },
+              "value": Object {
+                "members": Object {
+                  "Jamaican Dollar": PropertyRecord {
+                    "description": "some display value 2.2",
+                    "isMerged": false,
+                    "isReadonly": false,
+                    "property": Object {
+                      "displayLabel": "multi-byte Research synthesize",
+                      "editor": Object {
+                        "name": "Minnesota",
+                        "params": Array [],
+                      },
+                      "name": "Jamaican Dollar",
+                      "typename": "double",
+                    },
+                    "value": Object {
+                      "displayValue": "some display value 2.2",
+                      "value": "some value 2.2",
+                      "valueFormat": 0,
+                    },
+                  },
+                },
+                "valueFormat": 2,
+              },
+            },
+          ],
+          "valueFormat": 1,
+        },
+      },
+    },
+    "valueFormat": 2,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with primitive value 1`] = `
+PropertyRecord {
+  "description": "some display value",
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "portals Bond Markets Units European Composite Unit (EURCO) action-items",
+    "name": "Refined Rubber Chicken",
+    "typename": "point",
+  },
+  "value": Object {
+    "displayValue": "some display value",
+    "value": "some value",
+    "valueFormat": 0,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with single nested content value 1`] = `
+PropertyRecord {
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "Branding Cambridgeshire",
+    "name": "Handcrafted Cotton Car",
+    "typename": "mediumint",
+  },
+  "value": Object {
+    "members": Object {
+      "functionalities": PropertyRecord {
+        "description": "some display value",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "parse Kansas Ergonomic Granite Tuna",
+          "name": "functionalities",
+          "typename": "tinyint",
+        },
+        "value": Object {
+          "displayValue": "some display value",
+          "value": "some value",
+          "valueFormat": 0,
+        },
+      },
+    },
+    "valueFormat": 2,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with struct value 1`] = `
+PropertyRecord {
+  "description": undefined,
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "wireless Fantastic Wooden Chips killer",
+    "name": "District",
+    "typename": "Metal",
+  },
+  "value": Object {
+    "members": Object {
+      "multi-state": PropertyRecord {
+        "description": "some display value",
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Vermont payment",
+          "name": "multi-state",
+          "typename": "bigint",
+        },
+        "value": Object {
+          "displayValue": "some display value",
+          "value": "some value",
+          "valueFormat": 0,
+        },
+      },
+    },
+    "valueFormat": 2,
+  },
+}
+`;

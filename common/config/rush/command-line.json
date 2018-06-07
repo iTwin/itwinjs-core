@@ -40,7 +40,7 @@
       "name": "test+cover",
       "summary": "Runs tests and generates test and coverage reports",
       "documentation": "",
-      "parallelized": true,
+      "parallelized": false,
       "ignoreMissingScript": true
     },
     {

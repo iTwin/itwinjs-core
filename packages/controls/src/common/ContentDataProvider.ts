@@ -3,61 +3,132 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-import { IModelToken } from "@bentley/imodeljs-common";
-import { KeySet, PageOptions } from "@bentley/ecpresentation-common";
+import * as _ from "lodash";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { KeySet, PageOptions, SelectionInfo } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
-import * as content from "@bentley/ecpresentation-common/lib/content";
+import * as content from "@bentley/ecpresentation-common";
 
+/**
+ * Properties for invalidating content cache.
+ */
 export interface CacheInvalidationProps {
+  /**
+   * Invalidate content descriptor. Should be set when invalidating
+   * after changing anything that affects how the descriptor is built:
+   * `keys`, `selectionInfo`, `connection`, `rulesetId`.
+   */
   descriptor?: boolean;
+
+  /**
+   * Invalidate configured content descriptor. Should be set when
+   * invalidating something that affects how descriptor is configured
+   * in the `configureContentDescriptor` callback, e.g. hidden fields,
+   * sorting, filtering, etc.
+   */
+  descriptorConfiguration?: boolean;
+
+  /**
+   * Invalidate cached content size. Should be set after changing anything
+   * that may affect content size. Generally, it should always be set when
+   * the `descriptor` flag is set. Additionally, it should also be set after
+   * setting `filterExpression` or similar descriptor properties.
+   */
   size?: boolean;
+
+  /**
+   * Invalidate cached content. Should be set after changing anything that may
+   * affect content. Generally, it should always be set when the `descriptor`
+   * flag is set. Additionally, it should also be set after setting `sortingField`,
+   * `sortDirection`, `filterExpression` and similar fields.
+   */
   content?: boolean;
 }
+namespace CacheInvalidationProps {
+  /**
+   * Create CacheInvalidationProps to fully invalidate all caches.
+   */
+  export const full = (): CacheInvalidationProps => ({ descriptor: true, descriptorConfiguration: true, size: true, content: true });
+}
 
-/** Base class for all ecpresentation-driven data providers. */
+/**
+ * Base class for all ecpresentation-driven content providers.
+ */
 export default abstract class ContentDataProvider {
+  private _connection: IModelConnection;
   private _rulesetId: string;
   private _displayType: string;
-  private _requestedDescriptor!: boolean;
-  private _descriptor: Readonly<content.Descriptor> | undefined;
-  private _contentSetSize: number | undefined;
-  private _content: Readonly<content.Content> | undefined;
-  private _imodelToken: Readonly<IModelToken>;
+  private _keys: Readonly<KeySet>;
+  private _selectionInfo?: Readonly<SelectionInfo>;
 
-  /** Constructor.
+  /**
+   * Constructor.
+   * @param connection IModel to pull data from.
+   * @param rulesetId Id of the ruleset to use when requesting content.
    * @param displayType The content display type which this provider is going to
    * load data for.
-   * @param imodelToken Token of the imodel to pull data from.
    */
-  constructor(imodelToken: IModelToken, rulesetId: string, displayType: string) {
+  constructor(connection: IModelConnection, rulesetId: string, displayType: string) {
     this._rulesetId = rulesetId;
     this._displayType = displayType;
-    this._imodelToken = imodelToken;
-    this.invalidateCache({ descriptor: true, size: true, content: true });
+    this._connection = connection;
+    this._keys = new KeySet();
+    this.invalidateCache(CacheInvalidationProps.full());
   }
 
-  public get imodelToken(): IModelToken { return this._imodelToken; }
+  /** Display type used to format content */
+  public get displayType(): string { return this._displayType; }
 
-  public set imodelToken(token: IModelToken) {
-    this._imodelToken = token;
-    this.invalidateCache({ descriptor: true, size: true, content: true });
+  /** IModel to pull data from */
+  public get connection(): IModelConnection { return this._connection; }
+  public set connection(connection: IModelConnection) {
+    if (this._connection === connection)
+      return;
+    this._connection = connection;
+    this.invalidateCache(CacheInvalidationProps.full());
   }
 
-  /** Fully invalidates cached content including the descriptor. Called after events like
-   * selection changes.
+  /** Id of the ruleset to use when requesting content */
+  public get rulesetId(): string { return this._rulesetId; }
+  public set rulesetId(value: string) {
+    if (this._rulesetId === value)
+      return;
+    this._rulesetId = value;
+    this.invalidateCache(CacheInvalidationProps.full());
+  }
+
+  /** Keys defining what to request content for */
+  public get keys() { return this._keys; }
+  public set keys(keys: Readonly<KeySet>) {
+    this._keys = keys;
+    this.invalidateCache(CacheInvalidationProps.full());
+  }
+
+  /** Information about selection event that results in content change */
+  public get selectionInfo() { return this._selectionInfo; }
+  public set selectionInfo(info: Readonly<SelectionInfo> | undefined) {
+    if (this._selectionInfo === info)
+      return;
+    this._selectionInfo = info;
+    this.invalidateCache(CacheInvalidationProps.full());
+  }
+
+  /**
+   * Invalidates cached content.
    */
   protected invalidateCache(props: CacheInvalidationProps): void {
-    if (props.descriptor) {
-      this._requestedDescriptor = false;
-      this._descriptor = undefined;
-    }
-    if (props.size)
-      this._contentSetSize = undefined;
-    if (props.content)
-      this._content = undefined;
+    if (props.descriptor && this.getDefaultContentDescriptor)
+      this.getDefaultContentDescriptor.cache.clear();
+    if (props.descriptorConfiguration && this.getContentDescriptor)
+      this.getContentDescriptor.cache.clear();
+    if (props.size && this.getContentSetSize)
+      this.getContentSetSize.cache.clear();
+    if (props.content && this.getContent)
+      this.getContent.cache.clear();
   }
 
-  /** Called to create extended options for content requests. The actual options depend on the
+  /**
+   * Called to create extended options for content requests. The actual options depend on the
    * presentation manager implementation.
    */
   private createRequestOptions(): object {
@@ -66,22 +137,8 @@ export default abstract class ContentDataProvider {
     };
   }
 
-  /** Get the content descriptor.
-   * @param keys Keys of ECInstances to get content for.
-   * @param selectionInfo Info about selection in case the content is requested due to selection change.
-   */
-  protected async getContentDescriptor(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<Readonly<content.Descriptor> | undefined> {
-    if (!this._requestedDescriptor) {
-      this._descriptor = await ECPresentation.presentation.getContentDescriptor(this.imodelToken, this._displayType, keys,
-        selectionInfo, this.createRequestOptions());
-      this._requestedDescriptor = true;
-    }
-    if (this._descriptor)
-      return this.configureContentDescriptor(this._descriptor);
-    return undefined;
-  }
-
-  /** Called to configure the content descriptor. This is the place where concrete
+  /**
+   * Called to configure the content descriptor. This is the place where concrete
    * provider implementations can control things like sorting, filtering, hiding fields, etc.
    *
    * The default method implementation takes care of hiding properties. Subclasses
@@ -107,35 +164,48 @@ export default abstract class ContentDataProvider {
   /** Called to check whether the field should be hidden. */
   protected isFieldHidden(_field: content.Field): boolean { return false; }
 
-  /** Get the content.
-   * @param keys Keys of ECInstances to get content for.
-   * @param selectionInfo Info about selection in case the content is requested due to selection change.
+  // tslint:disable-next-line:naming-convention
+  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
+    return await ECPresentation.presentation.getContentDescriptor(this._connection,
+      this._displayType, this.keys, this.selectionInfo, this.createRequestOptions());
+  });
+
+  /**
+   * Get the content descriptor.
+   */
+  protected getContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
+    const descriptor = await this.getDefaultContentDescriptor();
+    if (!descriptor)
+      return undefined;
+    return this.configureContentDescriptor(descriptor);
+  });
+
+  /**
+   * Get the number of content records.
+   */
+  protected getContentSetSize = _.memoize(async (): Promise<number> => {
+    const descriptor = await this.getContentDescriptor();
+    if (!descriptor)
+      return 0;
+    return await ECPresentation.presentation.getContentSetSize(this._connection,
+      descriptor, this.keys, this.createRequestOptions());
+  });
+
+  /**
+   * Get the content.
    * @param pageOptions Paging options.
    */
-  protected async getContent(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo, pageOptions?: PageOptions): Promise<Readonly<content.Content> | undefined> {
-    if (!this._content) {
-      const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      if (!descriptor)
-        return undefined;
-      this._content = await ECPresentation.presentation.getContent(this.imodelToken, descriptor, keys,
-        pageOptions, this.createRequestOptions());
-    }
-    return this._content;
-  }
-
-  /** Get the number of content records.
-   * @param keys Keys of ECInstances to get content for.
-   * @param selectionInfo Info about selection in case the content is requested due to selection change.
-   * @returns The total number of records (without paging).
-   */
-  protected async getContentSetSize(keys: Readonly<KeySet>, selectionInfo?: content.SelectionInfo): Promise<number> {
-    if (undefined === this._contentSetSize) {
-      const descriptor = await this.getContentDescriptor(keys, selectionInfo);
-      if (!descriptor)
-        return 0;
-      this._contentSetSize = await ECPresentation.presentation.getContentSetSize(this.imodelToken, descriptor,
-        keys, this.createRequestOptions());
-    }
-    return this._contentSetSize;
-  }
+  protected getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<content.Content> | undefined> => {
+    const descriptor = await this.getContentDescriptor();
+    if (!descriptor)
+      return undefined;
+    return await ECPresentation.presentation.getContent(this._connection,
+      descriptor, this.keys, pageOptions, this.createRequestOptions());
+  }, createKeyForPageOptions);
 }
+
+const createKeyForPageOptions = (pageOptions?: PageOptions) => {
+  if (!pageOptions)
+    return "0/0";
+  return `${(pageOptions.pageStart) ? pageOptions.pageStart : 0}/${(pageOptions.pageSize) ? pageOptions.pageSize : 0}`;
+};

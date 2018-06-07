@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import ECPresentationManager, { Props as ECPresentationManagerProps } from "./ECPresentationManager";
@@ -10,6 +11,7 @@ import SelectionManager from "./selection/SelectionManager";
 
 let presentationManager: ECPresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
+let i18n: I18N | undefined;
 
 /**
  * Static class used to statically set up ECPresentation library for the frontend.
@@ -34,21 +36,28 @@ export default class ECPresentation {
    * to [IModelApp.startup]($imodeljs-frontend)
    *
    * @param props Optional properties to use when creating [[ECPresentationManager]]. If not provided
-   * or provided with `activeLocale` unset, `IModelApp.i18n.languageList()[0]` is used as active locale.
+   * or provided with `activeLocale` not set, `ECPresentation.i18n.languageList()[0]` is used as active locale.
    */
   public static initialize(props?: ECPresentationManagerProps): void {
     if (!IModelApp.initialized) {
       throw new ECPresentationError(ECPresentationStatus.NotInitialized,
         "IModelApp.startup must be called before calling ECPresentation.initialize");
     }
-    if (!props)
-      props = {};
-    if (!props.activeLocale) {
-      const languages = IModelApp.i18n.languageList();
-      props.activeLocale = (languages.length ? languages[0] : undefined);
+    if (!i18n) {
+      i18n = IModelApp.i18n;
     }
-    presentationManager = ECPresentationManager.create(props);
-    selectionManager = new SelectionManager();
+    if (!presentationManager) {
+      if (!props)
+        props = {};
+      if (!props.activeLocale) {
+        const languages = ECPresentation.i18n.languageList();
+        props.activeLocale = (languages.length ? languages[0] : undefined);
+      }
+      presentationManager = ECPresentationManager.create(props);
+    }
+    if (!selectionManager) {
+      selectionManager = new SelectionManager();
+    }
   }
 
   /**
@@ -58,6 +67,7 @@ export default class ECPresentation {
   public static terminate(): void {
     presentationManager = undefined;
     selectionManager = undefined;
+    i18n = undefined;
   }
 
   /**
@@ -86,5 +96,20 @@ export default class ECPresentation {
   /** @hidden */
   public static set selection(value: SelectionManager) {
     selectionManager = value;
+  }
+
+  /**
+   * Get localization manager used by ECPresentation frontend.
+   * Returns the result of `IModelApp.i18n`.
+   */
+  public static get i18n(): I18N {
+    if (!i18n)
+      throw new Error("ECPresentation must be first initialized by calling ECPresentation.initialize");
+    return i18n;
+  }
+
+  /** @hidden */
+  public static set i18n(value: I18N) {
+    i18n = value;
   }
 }

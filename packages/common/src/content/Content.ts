@@ -20,12 +20,15 @@ export interface ContentJSON {
  */
 export default class Content {
   /** Descriptor used to create the content */
-  public readonly descriptor!: Readonly<Descriptor>;
+  public descriptor: Readonly<Descriptor>;
   /** Content items */
-  public readonly contentSet!: Array<Readonly<Item>>;
+  public contentSet: Array<Readonly<Item>>;
 
   /* istanbul ignore next */
-  private constructor() {}
+  private constructor(descriptor: Readonly<Descriptor>, items: Array<Readonly<Item>>) {
+    this.descriptor = descriptor;
+    this.contentSet = items;
+  }
 
   /*public toJSON(): ContentJSON {
     return {

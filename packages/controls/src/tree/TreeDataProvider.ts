@@ -3,73 +3,64 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Hierarchies */
 
-import { memoize, MemoizedFunction } from "lodash";
-import { IModelToken } from "@bentley/imodeljs-common";
+import * as _ from "lodash";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node, NodeKey, PageOptions } from "@bentley/ecpresentation-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { CheckBoxState } from "@bentley/ui-core";
+import { TreeNodeItem } from "@bentley/ui-components";
 import StyleHelper from "../common/StyleHelper";
 
-// wip: workaround for TS4029 and TS6133
-export type MemoizedFunction = MemoizedFunction;
-
-/** State of a checkbox */
-export enum CheckBoxState {
-  Off,
-  On,
-  Partial,
+class MemoizationHelpers {
+  public static createKeyForPageOptions(pageOptions?: PageOptions) {
+    if (!pageOptions)
+      return "0/0";
+    return `${(pageOptions.pageStart) ? pageOptions.pageStart : 0}/${(pageOptions.pageSize) ? pageOptions.pageSize : 0}`;
+  }
+  public static createKeyForTreeNodeItem(item: TreeNodeItem) { return item.id; }
+  public static getRootNodesKeyResolver(pageOptions?: PageOptions) { return MemoizationHelpers.createKeyForPageOptions(pageOptions); }
+  public static getChildNodesKeyResolver(parent: TreeNodeItem, pageOptions?: PageOptions) {
+    return `${MemoizationHelpers.createKeyForTreeNodeItem(parent)}/${MemoizationHelpers.createKeyForPageOptions(pageOptions)}`;
+  }
+  public static getChildNodesCountKeyResolver(item: TreeNodeItem) { return MemoizationHelpers.createKeyForTreeNodeItem(item); }
 }
 
-/** A node item which can be displayed in a tree */
-export interface TreeNodeItem {
-  id: string;
-  parentId?: string;
-  label: string;
-  description?: string;
-  hasChildren: boolean;
-  labelForeColor?: number;
-  labelBackColor?: number;
-  labelBold: boolean;
-  labelItalic: boolean;
-  iconPath?: string;
-  displayCheckBox: boolean;
-  checkBoxState: CheckBoxState;
-  isCheckBoxEnabled: boolean;
-  extendedData: any;
-}
-
-const createKeyForPageOptions = (pageOptions?: PageOptions) => {
-  if (!pageOptions)
-    return "0/0";
-  return `${(pageOptions.pageStart) ? pageOptions.pageStart : 0}/${(pageOptions.pageSize) ? pageOptions.pageSize : 0}`;
-};
-const createKeyForTreeNodeItem = (item: TreeNodeItem) => item.id;
-const getRootNodesKeyResolver = createKeyForPageOptions;
-const getChildNodesKeyResolver = (parent: TreeNodeItem, pageOptions?: PageOptions) => {
-  return `${createKeyForTreeNodeItem(parent)}/${createKeyForPageOptions(pageOptions)}`;
-};
-const getChildNodesCountKeyResolver = createKeyForTreeNodeItem;
-
-/** Tree data provider which uses ECPresentation to query nodes. */
+/**
+ * Presentation Rules-driven tree data provider.
+ */
 export default class TreeDataProvider {
   private _rulesetId: string;
-  private _imodelToken: IModelToken;
+  private _imodelConnection: IModelConnection;
 
-  /** Constructor.
-   * @param manager Presentation manager used to get the nodes.
+  /**
+   * Constructor.
    * @param imodelToken Token of the imodel to pull data from.
+   * @param rulesetId Id of the ruleset used by this data provider.
    */
-  public constructor(imodelToken: IModelToken, rulesetId: string) {
+  public constructor(connection: IModelConnection, rulesetId: string) {
     this._rulesetId = rulesetId;
-    this._imodelToken = imodelToken;
+    this._imodelConnection = connection;
   }
 
-  /** Get id of the ruleset used by this data provider */
+  /** Id of the ruleset used by this data provider */
   public get rulesetId(): string { return this._rulesetId; }
+  public set rulesetId(value: string) {
+    if (this._rulesetId === value)
+      return;
+    this._rulesetId = value;
+    this.clearCaches();
+  }
 
-  public get imodelToken(): IModelToken { return this._imodelToken; }
+  /** [[IModelConnection]] used by this data provider */
+  public get connection(): IModelConnection { return this._imodelConnection; }
+  public set connection(value: IModelConnection) {
+    if (this._imodelConnection === value)
+      return;
+    this._imodelConnection = value;
+    this.clearCaches();
+  }
 
-  public set imodelToken(value: IModelToken) {
-    this._imodelToken = value;
+  private clearCaches(): void {
     this.getRootNodesCount.cache.clear();
     this.getRootNodes.cache.clear();
     this.getChildNodesCount.cache.clear();
@@ -83,67 +74,72 @@ export default class TreeDataProvider {
     };
   }
 
-  private static getNodeKeyFromTreeNodeItem(item: TreeNodeItem): NodeKey {
-    return item.extendedData.key as NodeKey;
-  }
-
-  /** Returns the root nodes.
+  /**
+   * Returns the root nodes.
    * @param pageOptions Information about the requested page of data.
    */
-  public getRootNodes = memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const nodes = await ECPresentation.presentation.getRootNodes(this.imodelToken, pageOptions, this.createRequestOptions());
-    return this.createTreeNodeItems(nodes);
-  }, getRootNodesKeyResolver);
+  public getRootNodes = _.memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
+    const nodes = await ECPresentation.presentation.getRootNodes(this.connection, pageOptions, this.createRequestOptions());
+    return createTreeNodeItems(nodes);
+  }, MemoizationHelpers.getRootNodesKeyResolver);
 
-  /** Returns the total number of root nodes. */
-  public getRootNodesCount = memoize(async (): Promise<number> => {
-    return await ECPresentation.presentation.getRootNodesCount(this.imodelToken, this.createRequestOptions());
+  /**
+   * Returns the total number of root nodes.
+   */
+  public getRootNodesCount = _.memoize(async (): Promise<number> => {
+    return await ECPresentation.presentation.getRootNodesCount(this.connection, this.createRequestOptions());
   });
 
-  /** Returns child nodes.
+  /**
+   * Returns child nodes.
    * @param parentNode The parent node to return children for.
    * @param pageOptions Information about the requested page of data.
    */
-  public getChildNodes = memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
-    const nodes = await ECPresentation.presentation.getChildren(this.imodelToken, parentKey, pageOptions, this.createRequestOptions());
-    const items = this.createTreeNodeItems(nodes);
+  public getChildNodes = _.memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
+    const parentKey = getNodeKeyFromTreeNodeItem(parentNode);
+    const nodes = await ECPresentation.presentation.getChildren(this.connection, parentKey, pageOptions, this.createRequestOptions());
+    const items = createTreeNodeItems(nodes);
     items.forEach((item: TreeNodeItem) => {
       item.parentId = parentNode.id;
     });
     return items;
-  }, getChildNodesKeyResolver);
+  }, MemoizationHelpers.getChildNodesKeyResolver);
 
-  /** Returns the total number of child nodes.
+  /**
+   * Returns the total number of child nodes.
    * @param parentNode The parent node to return children count for.
    */
-  public getChildNodesCount = memoize(async (parentNode: TreeNodeItem): Promise<number> => {
-    const parentKey = TreeDataProvider.getNodeKeyFromTreeNodeItem(parentNode);
-    return await ECPresentation.presentation.getChildrenCount(this.imodelToken, parentKey, this.createRequestOptions());
-  }, getChildNodesCountKeyResolver);
-
-  private createTreeNodeItem(node: Readonly<Node>): TreeNodeItem {
-    const item: TreeNodeItem = {
-      id: [...node.key.pathFromRoot].reverse().join("/"),
-      label: node.label,
-      description: node.description || "",
-      hasChildren: node.hasChildren || false,
-      labelForeColor: StyleHelper.getForeColor(node),
-      labelBackColor: StyleHelper.getBackColor(node),
-      labelBold: StyleHelper.isBold(node),
-      labelItalic: StyleHelper.isItalic(node),
-      displayCheckBox: node.isCheckboxVisible || false,
-      checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
-      isCheckBoxEnabled: node.isCheckboxEnabled || false,
-      extendedData: {key: node.key},
-    };
-    return item;
-  }
-
-  private createTreeNodeItems(nodes: ReadonlyArray<Readonly<Node>>): TreeNodeItem[] {
-    const list = new Array<TreeNodeItem>();
-    for (const node of nodes)
-      list.push(this.createTreeNodeItem(node));
-    return list;
-  }
+  public getChildNodesCount = _.memoize(async (parentNode: TreeNodeItem): Promise<number> => {
+    const parentKey = getNodeKeyFromTreeNodeItem(parentNode);
+    return await ECPresentation.presentation.getChildrenCount(this.connection, parentKey, this.createRequestOptions());
+  }, MemoizationHelpers.getChildNodesCountKeyResolver);
 }
+
+const getNodeKeyFromTreeNodeItem = (item: TreeNodeItem): NodeKey => {
+  return item.extendedData.key as NodeKey;
+};
+
+const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>): TreeNodeItem[] => {
+  const list = new Array<TreeNodeItem>();
+  for (const node of nodes)
+    list.push(createTreeNodeItem(node));
+  return list;
+};
+
+const createTreeNodeItem = (node: Readonly<Node>): TreeNodeItem => {
+  const item: TreeNodeItem = {
+    id: [...node.key.pathFromRoot].reverse().join("/"),
+    label: node.label,
+    description: node.description || "",
+    hasChildren: node.hasChildren || false,
+    labelForeColor: StyleHelper.getForeColor(node),
+    labelBackColor: StyleHelper.getBackColor(node),
+    labelBold: StyleHelper.isBold(node),
+    labelItalic: StyleHelper.isItalic(node),
+    displayCheckBox: node.isCheckboxVisible || false,
+    checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
+    isCheckBoxEnabled: node.isCheckboxEnabled || false,
+    extendedData: { key: node.key },
+  };
+  return item;
+};

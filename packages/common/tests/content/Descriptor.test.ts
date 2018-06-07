@@ -34,6 +34,28 @@ describe("Descriptor", () => {
 
   });
 
+  describe("getFieldByName", () => {
+
+    it("returns undefined when there are no fields", () => {
+      const descriptor = createRandomDescriptor();
+      descriptor.fields = [];
+      expect(descriptor.getFieldByName("test")).to.be.undefined;
+    });
+
+    it("returns undefined when field is not found", () => {
+      const descriptor = createRandomDescriptor();
+      const name = descriptor.fields.map((f) => f.name).join();
+      expect(descriptor.getFieldByName(name)).to.be.undefined;
+    });
+
+    it("returns a field", () => {
+      const descriptor = createRandomDescriptor();
+      const field = descriptor.fields[0];
+      expect(descriptor.getFieldByName(field.name)).to.eq(field);
+    });
+
+  });
+
   describe("createDescriptorOverrides", () => {
 
     it("creates a valid object with default parameters", () => {
@@ -83,7 +105,7 @@ describe("Descriptor", () => {
       expect(descriptor.fields.length).to.be.above(0);
       expect(descriptor.selectClasses.length).to.be.above(0);
 
-      // create a stripped descriptor and verify it's a different object 
+      // create a stripped descriptor and verify it's a different object
       // and doesn't contain stripped data
       const stripped = descriptor.createStrippedDescriptor();
       expect(stripped).to.not.eq(descriptor);

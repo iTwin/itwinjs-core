@@ -13,4 +13,7 @@
     "**/*.build.error.log": true,
     "**/package-deps.json": true,
   },
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true
 }

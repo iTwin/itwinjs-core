@@ -5,7 +5,6 @@
 
 import * as path from "path";
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { IModelToken } from "@bentley/imodeljs-common";
 import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { ECPresentationManager as ECPresentationManagerDefinition, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
@@ -43,7 +42,7 @@ export interface Props {
  * Backend ECPresentation manager which pulls the presentation data from
  * an iModel.
  */
-export default class ECPresentationManager implements ECPresentationManagerDefinition, IDisposable {
+export default class ECPresentationManager implements ECPresentationManagerDefinition<IModelDb>, IDisposable {
 
   private _addon?: NodeAddonDefinition;
   private _settings: UserSettingsManager;
@@ -141,69 +140,69 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
     return this.getNativePlatform().clearRuleSets();
   }
 
-  public async getRootNodes(token: Readonly<IModelToken>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getRootNodes(imodel: IModelDb, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodes, {
       pageOptions,
       options,
     });
-    return this.request<Node[]>(token, params);
+    return this.request<Node[]>(imodel, params);
   }
 
-  public async getRootNodesCount(token: Readonly<IModelToken>, options: object): Promise<number> {
+  public async getRootNodesCount(imodel: IModelDb, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetRootNodesCount, {
       options,
     });
-    return this.request<number>(token, params);
+    return this.request<number>(imodel, params);
   }
 
-  public async getChildren(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getChildren(imodel: IModelDb, parentKey: Readonly<NodeKey>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<ReadonlyArray<Readonly<Node>>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildren, {
       nodeKey: parentKey,
       pageOptions,
       options,
     });
-    return this.request<Node[]>(token, params);
+    return this.request<Node[]>(imodel, params);
   }
 
-  public async getChildrenCount(token: Readonly<IModelToken>, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
+  public async getChildrenCount(imodel: IModelDb, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetChildrenCount, {
       nodeKey: parentKey,
       options,
     });
-    return this.request<number>(token, params);
+    return this.request<number>(imodel, params);
   }
 
-  public async getContentDescriptor(token: Readonly<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
+  public async getContentDescriptor(imodel: IModelDb, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined, options: object): Promise<Readonly<Descriptor> | undefined> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentDescriptor, {
       displayType,
       keys,
       selection,
       options,
     });
-    return this.request<Descriptor | undefined>(token, params, Descriptor.reviver);
+    return this.request<Descriptor | undefined>(imodel, params, Descriptor.reviver);
   }
 
-  public async getContentSetSize(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
+  public async getContentSetSize(imodel: IModelDb, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, options: object): Promise<number> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContentSetSize, {
       keys,
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       options,
     });
-    return this.request<number>(token, params);
+    return this.request<number>(imodel, params);
   }
 
-  public async getContent(token: Readonly<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
+  public async getContent(imodel: IModelDb, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, pageOptions: Readonly<PageOptions> | undefined, options: object): Promise<Readonly<Content>> {
     const params = this.createRequestParams(NodeAddonRequestTypes.GetContent, {
       keys,
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       pageOptions,
       options,
     });
-    return this.request<Content>(token, params, Content.reviver);
+    return this.request<Content>(imodel, params, Content.reviver);
   }
 
-  private async request<T>(token: Readonly<IModelToken>, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
-    const imodelAddon = this.getNativePlatform().getImodelAddon(token);
+  private async request<T>(imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
+    const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const serializedResponse = await this.getNativePlatform().handleRequest(imodelAddon, params);
     if (!serializedResponse)
       throw new ECPresentationError(ECPresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
@@ -225,7 +224,7 @@ export interface NodeAddonDefinition extends IDisposable {
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
   setActiveLocale(locale: string): void;
-  getImodelAddon(token: IModelToken): any;
+  getImodelAddon(imodel: IModelDb): any;
   addRuleSet(ruleSetJson: string): void;
   removeRuleSet(ruleSetId: string): void;
   clearRuleSets(): void;
@@ -291,10 +290,9 @@ const createAddonImpl = () => {
     public clearRuleSets(): void {
       this.handleVoidResult(this._nativeAddon.clearRuleSets());
     }
-    public getImodelAddon(token: IModelToken): any {
-      const imodel = IModelDb.find(token);
-      if (!imodel || !imodel.nativeDb)
-        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "token");
+    public getImodelAddon(imodel: IModelDb): any {
+      if (!imodel.nativeDb)
+        throw new ECPresentationError(ECPresentationStatus.InvalidArgument, "imodel");
       return imodel.nativeDb;
     }
     public getUserSetting(ruleSetId: string, settingId: string, settingType: string): any {

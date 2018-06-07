@@ -1,0 +1,117 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TreeDataProvider getChildNodes returns presentation manager result 1`] = `
+Array [
+  Object {
+    "checkBoxState": 0,
+    "description": "",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Specialist",
+          "id": "0xdece000000df9b",
+        },
+        "pathFromRoot": Array [
+          "1174cf69-1c86-4639-b762-a6c7177b413a",
+          "a82a1d6b-7662-44db-84a0-2f30eb96766a",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "a82a1d6b-7662-44db-84a0-2f30eb96766a/1174cf69-1c86-4639-b762-a6c7177b413a",
+    "isCheckBoxEnabled": false,
+    "label": "orange",
+    "labelBackColor": -1598776577,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": "5784aabc-4961-4ecf-a0d7-979d0b9c0ad3",
+  },
+  Object {
+    "checkBoxState": 1,
+    "description": "",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Manager",
+          "id": "0x1196a00000172ed",
+        },
+        "pathFromRoot": Array [
+          "5f4366dd-35f1-4bda-8dfc-430d1563a0ed",
+          "148dd535-3dae-4e7e-b5a5-4a091ca80d9d",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": false,
+    "id": "148dd535-3dae-4e7e-b5a5-4a091ca80d9d/5f4366dd-35f1-4bda-8dfc-430d1563a0ed",
+    "isCheckBoxEnabled": false,
+    "label": "Kroon",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": "5784aabc-4961-4ecf-a0d7-979d0b9c0ad3",
+  },
+]
+`;
+
+exports[`TreeDataProvider getRootNodes returns presentation manager result 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "invoice",
+          "id": "0x7b87000000da88",
+        },
+        "pathFromRoot": Array [
+          "024a20b7-2bb8-4494-a62e-693a6a8b8195",
+          "c178f4ea-9c38-4231-81ba-f354563fe450",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": false,
+    "id": "c178f4ea-9c38-4231-81ba-f354563fe450/024a20b7-2bb8-4494-a62e-693a6a8b8195",
+    "isCheckBoxEnabled": false,
+    "label": "payment Personal Loan Account",
+    "labelBackColor": 258423039,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+  },
+  Object {
+    "checkBoxState": 0,
+    "description": "Sunt accusantium soluta nisi sunt ut.",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Frozen",
+          "id": "0xb6170000007d71",
+        },
+        "pathFromRoot": Array [
+          "ba59b9ca-c108-4e77-9c7a-76eb4fe14056",
+          "4ac5919d-9414-4ede-8b7a-ce31c14ff29b",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "4ac5919d-9414-4ede-8b7a-ce31c14ff29b/ba59b9ca-c108-4e77-9c7a-76eb4fe14056",
+    "isCheckBoxEnabled": true,
+    "label": "Car invoice Incredible",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": 1309790719,
+    "labelItalic": false,
+  },
+]
+`;
