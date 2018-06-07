@@ -2,7 +2,7 @@
 
 This schema contains class definitions for grids.
 
-These are used to build structural,spaceplanning and other grids. A `Grid` is a collection of GridSurfaces. Every `GridSurface` has a `GridAxis`, which is currently primarily used for grouping surfaces into subgroups. intersection of GridSurfaces may create a `GridCurve` (driven by `GridSurfaceCreatesGridCurve` relationship).
+These are used to build structural,spaceplanning and other grids. A `Grid` is a collection of GridSurfaces. Every `GridSurface` has a `GridAxis`, which is currently primarily used for grouping surfaces into subgroups. intersection of GridSurfaces may create a `GridCurve` (driven by `GridCurveBundle` element).
 
 <u>Schema:</u>
 
@@ -1090,4 +1090,4 @@ a relationship to map grid to its axes
 
 ## User Control of DrawingCategories
 
-## iModel Bridges using BuildingSpatial
+## iModel Bridges using Grids
