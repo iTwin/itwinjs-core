@@ -287,15 +287,14 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
+    return this.getReferenceSync<T>(refSchemaName);
+  }
+
+  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
     if (this.references.length === 0)
       return undefined;
 
     return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
-  }
-
-  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
-    if (refSchemaName) { }
-    throw new Error("Not implemented");
   }
 
   /**
