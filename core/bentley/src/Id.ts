@@ -144,6 +144,9 @@ export class Id64 {
     return new Id64([localId, briefcaseId]);
   }
 
+  /** Extract an unsigned 32-bit integer from the low 4 bytes of an Id64's value.
+   * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
+   */
   public getLowUint32(): number {
     if (!this.isValid())
       return 0;
@@ -156,6 +159,9 @@ export class Id64 {
     return Id64.toHex(this.value.slice(start));
   }
 
+  /** Extract an unsigned 32-bit integer from the high 4 bytes of an Id64's value.
+   * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
+   */
   public getHighUint32(): number {
     if (!this.isValid())
       return 0;

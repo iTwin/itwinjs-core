@@ -273,6 +273,7 @@ export class PolylineGeometry extends LUTGeometry {
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this.polyline.features; }
 
   protected _getLineWeight(params: ShaderProgramParams): number {
     return this.isEdge ? params.target.getEdgeWeight(params, this.polyline.lineWeight) : this.polyline.lineWeight;

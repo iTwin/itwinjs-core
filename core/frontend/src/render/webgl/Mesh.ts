@@ -166,7 +166,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
   public get edgeLineCode() { return this.mesh.edgeLineCode; }
-  public get features() { return this.mesh.features; }
+  public get featuresInfo(): FeaturesInfo | undefined { return this.mesh.features; }
   public get surfaceType() { return this.mesh.type; }
   public get fillFlags() { return this.mesh.fillFlags; }
   public get isPlanar() { return this.mesh.isPlanar; }

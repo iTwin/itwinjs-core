@@ -13,20 +13,28 @@ export const enum LUTDimension {
   NonUniform, // 1- or 2-dimensional lookup table
 }
 
+export interface WidthAndHeight {
+  readonly width: number;
+  readonly height: number;
+}
+
 /** Describes the dimensions of a texture used as a look-up table */
-export class LUTDimensions {
+export class LUTDimensions implements WidthAndHeight {
   public readonly width: number;
   public readonly height: number;
 
   public constructor(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1) {
+    const dims = LUTDimensions.computeWidthAndHeight(nEntries, nRgbaPerEntry, nExtraRgba, nTables);
+    this.width = dims.width;
+    this.height = dims.height;
+  }
+
+  public static computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): WidthAndHeight {
     const maxSize = System.instance.capabilities.maxTextureSize;
     const nRgba = nEntries * nRgbaPerEntry * nTables + nExtraRgba;
 
-    if (nRgba < maxSize) {
-      this.width = nRgba;
-      this.height = 1;
-      return;
-    }
+    if (nRgba < maxSize)
+      return { width: nRgba, height: 1 };
 
     // Make roughly square to reduce unused space in last row
     let width = Math.ceil(Math.sqrt(nRgba));
@@ -49,8 +57,7 @@ export class LUTDimensions {
     // Row padding should never be necessary...
     assert(0 === width % nRgbaPerEntry);
 
-    this.width = width;
-    this.height = height;
+    return { width, height };
   }
 }
 

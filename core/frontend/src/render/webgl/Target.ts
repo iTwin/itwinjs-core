@@ -176,8 +176,8 @@ export abstract class Target extends RenderTarget {
   public readonly imageSolar: ImageLight.Solar | undefined = undefined; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
-  private _currentOverrides?: FeatureOverrides;
-  private _currentPickTable?: PickTable;
+  public currentOverrides?: FeatureOverrides;
+  public currentPickTable?: PickTable;
 
   protected constructor() {
     super();
@@ -200,9 +200,7 @@ export abstract class Target extends RenderTarget {
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
-  public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
   public get areDecorationOverridesActive(): boolean { return false; } // ###TODO
-  public get currentPickTable(): PickTable | undefined { return this._currentPickTable; }
 
   public get fStop(): number { return this._fStop; }
   public get ambientLight(): Float32Array { return this._ambientLight; }

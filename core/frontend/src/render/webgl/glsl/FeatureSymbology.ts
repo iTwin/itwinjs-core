@@ -133,7 +133,7 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
       } else {
         const pickTable = params.target.currentPickTable;
         if (undefined !== pickTable)
-          dims = computeFeatureDimension(pickTable.dimension, featureIndexType);
+          dims = computeFeatureDimension(undefined !== pickTable.nonUniform ? LUTDimension.NonUniform : LUTDimension.Uniform, featureIndexType);
       }
 
       value[0] = dims;
@@ -526,30 +526,30 @@ export function addElementId(builder: ProgramBuilder) {
     prog.addGraphicUniform("u_elementIdLUT", (uniform, params) => {
       assert(undefined !== params.target.currentPickTable);
       const table = params.target.currentPickTable!;
-      if (table.isNonUniform)
-        table.texture!.bindSampler(uniform, TextureUnit.ElementId);
+      if (undefined !== table.nonUniform)
+        table.nonUniform.bindSampler(uniform, TextureUnit.ElementId);
     });
   });
   vert.addUniform("u_elementIdParams", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_elementIdParams", (uniform, params) => {
       const table = params.target.currentPickTable!;
-      if (table.isNonUniform)
-        uniform.setUniform2fv([table.texture!.width, table.texture!.height]);
+      if (undefined !== table.nonUniform)
+        uniform.setUniform2fv([table.nonUniform.width, table.nonUniform.height]);
     });
   });
 
   vert.addUniform("u_element_id0", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_element_id0", (uniform, params) => {
       const table = params.target.currentPickTable!;
-      if (table.isUniform)
-        uniform.setUniform4fv(table.uniform1!);
+      if (undefined !== table.uniform)
+        uniform.setUniform4fv(table.uniform.elemId0);
     });
   });
   vert.addUniform("u_element_id1", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_element_id1", (uniform, params) => {
       const table = params.target.currentPickTable!;
-      if (table.isUniform)
-        uniform.setUniform4fv(table.uniform2!);
+      if (undefined !== table.uniform)
+        uniform.setUniform4fv(table.uniform.elemId1);
     });
   });
 }

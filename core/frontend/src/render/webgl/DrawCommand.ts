@@ -148,18 +148,21 @@ class PrimitiveCommand extends DrawCommand {
 
 /** Draw a batch primitive, possibly with symbology overridden per-feature */
 class BatchPrimitiveCommand extends PrimitiveCommand {
-  private readonly _batch: Batch;
+  private readonly batch: Batch;
 
   public constructor(primitive: Primitive, batch: Batch) {
     super(primitive);
-    this._batch = batch;
+    this.batch = batch;
   }
 
-  public preExecute(_exec: ShaderProgramExecutor): void {
-    assert(undefined !== this._batch); // ###TODO
+  public preExecute(exec: ShaderProgramExecutor): void {
+    // ###TODO exec.target.currentOverrides = this.batch.getOverrides(exec.target);
+    assert(undefined === exec.target.currentPickTable);
+    exec.target.currentPickTable = this.batch.pickTable;
   }
-  public postExecute(_exec: ShaderProgramExecutor): void {
-    // ###TODO
+  public postExecute(exec: ShaderProgramExecutor): void {
+    // ###TODO exec.target.currentOverrides = undefined;
+    exec.target.currentPickTable = undefined;
   }
 }
 
@@ -462,7 +465,7 @@ export class RenderCommands {
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
 
-    // If all features are overridden to be invisible, draw no graphics in this batch
+    // ###TODO If all features are overridden to be invisible, draw no graphics in this batch
     // const overrides = batch.getOverrides(this.target);
     // if (overrides.allHidden)
     //   return;

@@ -97,7 +97,7 @@ export class PolylineArgs {
     this.pointParams = mesh.points.params;
     this.points = mesh.points;
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
-    // mesh.toFeatureIndex(this.features);
+    mesh.toFeatureIndex(this.features);
   }
 }
 
@@ -164,7 +164,7 @@ export class MeshArgs {
       this.textureUv = mesh.uvParams;
 
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
-    // mesh.toFeatureIndex(this.features);
+    mesh.toFeatureIndex(this.features);
 
     this.material = mesh.displayParams.material;
     this.texture = undefined;
@@ -241,7 +241,10 @@ export class Mesh {
   public get triangles(): TriangleList | undefined { return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
   public get polylines(): MeshPolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined; }
 
-  // public toFeatureIndex(index: FeatureIndex): void { this.features.toFeatureIndex(index); }
+  public toFeatureIndex(index: FeatureIndex): void {
+    if (undefined !== this.features)
+      this.features.toFeatureIndex(index);
+  }
 
   public getGraphics(args: MeshGraphicArgs, system: RenderSystem, iModel: IModelConnection): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {

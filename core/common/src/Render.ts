@@ -1523,6 +1523,9 @@ export class FeatureTable extends IndexMap<Feature> {
     const entry = new IndexedValue<Feature>(feature, index);
     this.array.splice(bound.index, 0, entry);
   }
+
+  /** @hidden */
+  public getArray(): Array<IndexedValue<Feature>> { return this.array; }
 }
 
 export class TextureMapping {
