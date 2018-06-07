@@ -53,4 +53,11 @@ describe("PropertyDataProvider", async () => {
     expect(properties).to.matchSnapshot();
   });
 
+  it("favorites properties", async () => {
+    (provider as any).isFieldFavorite = () => true;
+    provider.keys = new KeySet([instances.functionalModel]);
+    const properties = await provider.getData();
+    expect(properties).to.matchSnapshot();
+  });
+
 });
