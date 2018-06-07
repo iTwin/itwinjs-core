@@ -27,6 +27,7 @@ import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
+import { Pixel } from "../System";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -571,6 +572,10 @@ export abstract class Target extends RenderTarget {
 
     assert(this._dcAssigned);
     return this._dcAssigned;
+  }
+
+  public readPixels(_rect: ViewRect, _selector: Pixel.Selector): Pixel.Buffer | undefined {
+    return undefined; // ###TODO
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //

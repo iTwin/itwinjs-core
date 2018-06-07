@@ -18,7 +18,7 @@ import { TileRequests } from "./tile/TileTree";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement3dProps, Placement2dProps, Placement2d, Placement3d, AntiAliasPref } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { Decorations, DecorationList, RenderTarget, RenderPlan } from "./render/System";
+import { Decorations, DecorationList, RenderTarget, RenderPlan, Pixel } from "./render/System";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -78,6 +78,11 @@ export class ViewRect {
     } else {
       return new ViewRect(this.left, this.bottom, this.right, this.top);
     }
+  }
+
+  /** Determine if this ViewRect is contained entirely within the bounds of another ViewRect. */
+  public isContained(other: ViewRect): boolean {
+    return this.left >= other.left && this.right <= other.right && this.bottom >= other.bottom && this.top <= other.top;
   }
 }
 
@@ -1473,4 +1478,21 @@ export class Viewport {
   }
 
   public requestScene(_plan: UpdatePlan): void { }
+
+  /**
+   * Read selected data about each pixel within a rectangular region of the viewport.
+   * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
+   * @param selector Specifies which aspect(s) of data to read.
+   * @returns a Pixel.Buffer object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
+   */
+  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    if (!this.isActive)
+      return undefined;
+
+    const viewRect = this.viewRect;
+    if (!rect.isContained(viewRect))
+      return undefined;
+
+    return this.target.readPixels(rect, selector);
+  }
 }

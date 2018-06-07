@@ -126,10 +126,58 @@ export class GraphicBranch {
   public get isEmpty(): boolean { return 0 === this.entries.length; }
 }
 
+/** Describes aspects of a pixel as read from a RenderTarget. */
+export namespace Pixel {
+  export class Data {
+    public constructor(public readonly elementId?: Id64,
+                       public readonly distanceFraction: number = -1.0,
+                       public readonly type: GeometryType = GeometryType.Unknown,
+                       public readonly planarity: Planarity = Planarity.Unknown) { }
+  }
+
+  /** Describes the foremost type of geometry which produced the pixel. */
+  export const enum GeometryType {
+    Unknown, // Geometry was not selected, or type could not be determined
+    None, // No geometry was rendered to this pixel
+    Surface, // A surface
+    Linear, // A polyline
+    Edge, // The edge of a surface
+    Silhouette, // A silhouette of a surface
+  }
+
+  /** Describes the planarity of the foremost geometry which produced the pixel. */
+  export const enum Planarity {
+    Unknown, // Geometry was not selected, or planarity could not be determined
+    None, // No geometry was rendered to this pixel
+    Planar, // Planar geometry
+    NonPlanar, // Non-planar geometry
+  }
+
+  /**
+   * Bit-mask by which callers of DgnViewport::ReadPixels() specify which aspects are of interest.
+   * Aspects not specified will be omitted from the returned data.
+   */
+  export const enum Selector {
+    None = 0,
+    ElementId = 1 << 0, // Select element IDs
+    Distance = 1 << 1, // Select distances from near plane
+    Geometry = 1 << 2, // Select geometry type and planarity
+
+    GeometryAndDistance = Geometry | Distance, // Select geometry type/planarity and distance from near plane
+    All = GeometryAndDistance | ElementId, // Select all aspects
+  }
+
+  /** A rectangular array of pixels as read from a RenderTarget's frame buffer. */
+  export interface Buffer {
+    /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
+    getPixel(x: number, y: number): Data;
+  }
+}
+
 /**
  * A RenderTarget holds the current scene, the current set of dynamic RenderGraphics, and the current decorators.
  * When frames are composed, all of those RenderGraphics are rendered, as appropriate.
- * A RenderTarget holds a reference to a Render::Device, and a Render::System
+ * A RenderTarget holds a reference to a Render::Device, and a RenderSystem
  * Every DgnViewport holds a reference to a RenderTarget.
  */
 export abstract class RenderTarget {
@@ -156,10 +204,10 @@ export abstract class RenderTarget {
   public abstract queueReset(): void;
   public abstract onResized(): void;
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
 
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
   // ###TODO public abstract setMinimumFrameRate(minimumFrameRate: number): number;
-  // ###TODO public abstract readPixels(rect: ViewRect, selector: PixelDataSelector): PixelDataBuffer;
 }
 
 /**
