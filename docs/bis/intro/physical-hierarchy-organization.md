@@ -27,7 +27,7 @@ Some more practical goals of *the* organization of the `PhysicalModel` hierarchy
  - Define clear rules for the data that is created and used by products and services related to multiple disciplines, which are frequently developed by teams that are not under the same management.
  - Define similar data organization for all "facilities".
  - Define similar data organization for all "systems".
-  - Define the standard usage of (what should be contained in) the top `Model` of the `PhysicalModel` hierarchy.
+ - Define the standard usage of (what should be contained in) the top `Model` of the `PhysicalModel` hierarchy.
 
 
 ### Predictability vs Flexibility / Strong vs Weak Type Safety
@@ -46,11 +46,7 @@ This page provides an overview of the basis of those validation rules and the me
 
 As described in [Model Hierarchy](model-hierarchy.md), every `Model` breaks-down an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
 
-In the `PhysicalModel` hierarchy, the `Element` that represents the Entity is of a `PhysicalElement` subclass that corresponds to the type of real-world Entity (e.g. `Building` class corresponds to real world building), but the `PhysicalModel` that corresponds to the real-world Entity is just a `PhysicalModel` (e.g. `PhysicalModel` class corresponds to real-world building). To determine the type of real world Entity that a `PhysicalModel` represents, the class of `Element` that the `PhysicalModel` breaks down must be determined.
-
-*TODO: Allan makes one last request (not demand): Do we really want to write paragraphs like the one above? Wouldn't it be easier to have Model subclasses that corresponded to the subclass of the Element being broken down? At least for Sites, Facilities and Systems?*
-
- ***PhysicalModel should not be subclassed.*** The few `PhysicalModel` subclasses that exist are deprecated and should not be used. When terms such as "Site Model" are used, they indicate "a `Model` that breaks down a `Site`", but do not indicate a strongly-typed `SiteModel`.
+Breakdown `Model`s are weakly-typed in BIS. To understand the real-world Entity that a `Model` is modeling, it is necessary to look at the `Element` which the `Model` is breaking down. ***PhysicalModel should not be subclassed.*** The few `PhysicalModel` subclasses that exist are deprecated and should not be used. When terms such as "Site Model" are used, they indicate "a `Model` that breaks down a `Site`", but do not indicate a strongly-typed `SiteModel`.
 
 ![Element and Model Modeling Building](./media/physical-hierarchy-organization-building-model.png)
 
@@ -62,12 +58,12 @@ The `ModelAffinity` custom attribute can be applied to any `PhysicalElement` sub
  - The strength of that affinity.
  - The rationale for the affinity.
 
- There are three levels of affinity strength:
+There are three levels of affinity strength:
   - *Required* - not residing in an appropriate `Model` should trigger a validation error.
   - *Recommended* - not residing in an appropriate `Model` should trigger a validation warning.
   - *Suggested* - not residing in an appropriate `Model` should trigger a validation note.
 
-  In the future, `ModelAffinity` information may be used to provided improved UI tools.
+In the future, `ModelAffinity` information may be used to provided improved UI tools.
 
 ### Example Usage
 
@@ -100,7 +96,7 @@ For example, if:
 
 Then the validation for `SewerPipe` would confirm:
  - `SewerPipe` instances reside in `ISystem` `Model`s.
-  - `SewerPipe` instances reside in `SewerSystem` `Model`s.
+ - `SewerPipe` instances reside in `SewerSystem` `Model`s.
 
 A `SewerPipe` placed in a `Site` `Model` would generate two warnings (or errors) during validation; one for not being in an `ISystem` `Model` and one for not being in a `SewerSystem` `Model`.
 
@@ -142,7 +138,7 @@ While `ModelAffinity` provides a mechanism to declare and enforce a PhysicalMode
  - *System Component* - A component for a particular system.
  - *General-Use Component* - A component that does not have any `ModelAffinity`.
 
- The overall `PhysicalModel` hierarchy strategy is defined in the following table:
+The overall `PhysicalModel` hierarchy strategy is defined in the following table:
 
 
 
@@ -164,7 +160,7 @@ These types and their behaviors are explained below, along with the behaviors of
 
 **TODO: Should Site be sealed?**
 
-`Site` `Models` are `Model`s that break down `Site` Elements. By convention, the top-most `Model` in a `PhysicalModel` hierarchy is considered a Site `Model`, even though it breaks down `PhysicalPartition`.
+In conversation (and writing) the `Model`s that break down `Site` `Element`s are referred to as `Site` `Model`s, even thought there is not a strongly-typed `SiteModel` class. By convention, the top-most `Model` in a `PhysicalModel` hierarchy is considered a Site `Model`, even though it breaks down `PhysicalPartition`. The top `Model` is considered as a `Site` `Model` as nearly all infrastructure that is modeled with BIS can benefit from having a site context.
 
 `Site` `Model`s typically contain `Site`, `IFacility`, `ISystem` and General-Use `PhysicalElement`s.
 
@@ -172,10 +168,9 @@ These types and their behaviors are explained below, along with the behaviors of
 
 ### IFacility
 
-`IFacility` is a mixin class that represents a significant multi-disciplinary infrastructure Entity that corresponds well to user concepts. Buildings, bridges, tunnels, wharves, and towers are all examples of multi-discipline Entities that are modeled with a `PhysicalElement` that includes the `IFacility` mixin.
+`IFacility` is a mixin class that represents a significant multi-disciplinary infrastructure Entity that corresponds well to user concepts. Buildings, bridges, tunnels, wharves, and towers are all examples of multi-discipline Entities that are modeled with a `PhysicalElement` subclass that includes the `IFacility` mixin.
 
-
-`IFacility` `Models` are `Model`s that break down `IFacility` Elements. These `Model`s are usually referred to by their more-specific `Element` types (e.g. `Building` `Model`s are `Model`s that break down `Building` `Elements`.).
+In conversation (and writing) the `Model`s that break down `IFacility` `Element`s are referred to as `Facility` `Model`s, even thought there is not a strongly-typed `IFacilityModel` class. These `Model`s are usually referred to by their more-specific `Element` types (e.g. `Building` `Model`s are `Model`s that break down `Building` `Element`s.)
 
 `IFacility` `Model`s typically contain `IFacility`, `ISystem` and `General-Use` `PhysicalElement`s.
 
@@ -185,11 +180,13 @@ These types and their behaviors are explained below, along with the behaviors of
 
 ### ISystem
 
-`ISystem` is a mixin class that represents a significant discipline-specific arrangement of Entities intended to fulfill one or more functions. Sewers, roadways, HVAC and fire-suppression systems are all examples of real-world Entities that are modeled with `ISystem` subclasses. `ISystem` subclasses tend to be suffixed with 'System'.
+**TODO: Should ISystem be IDiscipline?**
+
+`ISystem` is a mixin class that represents a significant discipline-specific arrangement of Entities intended to fulfill one or more functions. Sewers, roadways, HVAC and fire-suppression systems are all examples of real-world Entities that are modeled with `ISystem` subclasses. `ISystem` subclasses tend to be suffixed with 'System' (e.g. StructuralSystem, SewerSystem); 'Network' is another commonly used suffix for these classes (e.g. RoadNetwork).
 
 Architecture is also considered an `ISystem`, as it is discipline-specific and has the same general behaviors at the other `ISystem`s.
 
-`ISystem` `Models` are `Model`s that break down `ISystem` Elements. These `Model`s are usually referred to by their more-specific `Element` types (e.g. `SewerSystem` `Model`s are `Model`s that break down `SewerSystem` `PhysicalElements`.)
+In conversation (and writing) the `Model`s that break down `ISystem` `Element`s are referred to as `System` `Model`s, even thought there is not a strongly-typed `ISystemModel` class. These `Model`s are usually referred to by their more-specific `Element` types (e.g. `SewerSystem` `Model`s are `Model`s that break down `SewerSystem` `PhysicalElements`.)
 
 `ISystem` `Model`s may contain `IFacility`, `ISystem` and General-Use `PhysicalElement`s, as well as components specific to the particular `ISystem` (e.g. `SewerPipe` in `SewerSystem`)
 
@@ -199,9 +196,11 @@ Architecture is also considered an `ISystem`, as it is discipline-specific and h
 
 ### System Components
 
+**TODO: If ISystem becomes IDiscipline, then System Component should become Discipline Component**
+
 System Component represents an Entity that is part of a specific `ISystem` and generally does not makes sense outside of the specific system (e.g. sewer pipe outside of sewer system). System Component is not a BIS class, nor mixin.
 
-System Components are identified by their `ModelAffinity` with a specific `System` subclass.
+System Components are identified by their `ModelAffinity` with a specific `ISystem` subclass.
 
 System Components rarely have breakdown `Model`s.
 
