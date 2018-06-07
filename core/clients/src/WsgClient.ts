@@ -4,35 +4,13 @@
 import * as deepAssign from "deep-assign";
 
 import { AccessToken, AuthorizationToken } from "./Token";
-import { request, RequestOptions, RequestQueryOptions, Response, ResponseError, HttpResponseType } from "./Request";
+import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, HttpStatus, WSStatus } from "@bentley/bentleyjs-core";
 import { DefaultRequestOptionsProvider, AuthenticationError, Client, DeploymentEnv } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 
 const loggingCategory = "imodeljs-clients.Clients";
-
-export enum WSError {
-  Unknown,
-
-  // Server returned error ids
-  LoginFailed,
-  SslRequired,
-  NotEnoughRights,
-  RepositoryNotFound,
-  SchemaNotFound,
-  ClassNotFound,
-  PropertyNotFound,
-  InstanceNotFound,
-  FileNotFound,
-  NotSupported,
-  NoServerLicense,
-  NoClientLicense,
-  TooManyBadLoginAttempts,
-
-  ServerError,
-  BadRequest,
-}
 
 /**
  * Error that was returned by a WSG based service.
@@ -48,7 +26,7 @@ export class WsgError extends ResponseError {
    */
   public static parse(response: any): ResponseError {
     const responseError = ResponseError.parse(response);
-    const wsgError = new WsgError();
+    const wsgError = new WsgError(WSStatus.Unknown);
     deepAssign(wsgError, responseError);
 
     if (wsgError._data) {
@@ -57,11 +35,12 @@ export class WsgError extends ResponseError {
           wsgError.message = wsgError._data.errorMessage || wsgError.message;
           wsgError.name = wsgError._data.errorId || wsgError.name;
           wsgError.description = wsgError._data.errorDescription || wsgError.description;
+          wsgError.errorNumber = WsgError.getWSStatusId(wsgError.name ? wsgError.name : "");
           return wsgError;
         }
       } else {
         if (wsgError.status === 302 && wsgError._data.indexOf("ims.bentley.com") >= 0) {
-          const authenticationError = new AuthenticationError();
+          const authenticationError = new AuthenticationError(WSStatus.LoginRequired);
           deepAssign(authenticationError, responseError);
           authenticationError.name = "Authentication Error";
           authenticationError.message = "Authentication Error - Check if the accessToken is valid";
@@ -82,7 +61,7 @@ export class WsgError extends ResponseError {
       return super.shouldRetry(error, response);
     }
 
-    if (response.statusType === HttpResponseType.Ok) {
+    if (super.parseHttpStatus(response.statusType) === HttpStatus.Success) {
       return false;
     }
 
@@ -91,24 +70,24 @@ export class WsgError extends ResponseError {
       return super.shouldRetry(error, response);
     }
 
-    const errorCodesToRetry: number[] = [WSError.LoginFailed,
-    WSError.SslRequired,
-    WSError.NotEnoughRights,
-    WSError.RepositoryNotFound,
-    WSError.SchemaNotFound,
-    WSError.ClassNotFound,
-    WSError.PropertyNotFound,
-    WSError.InstanceNotFound,
-    WSError.FileNotFound,
-    WSError.NotSupported,
-    WSError.NoServerLicense,
-    WSError.NoClientLicense,
-    WSError.TooManyBadLoginAttempts,
-    WSError.ServerError,
-    WSError.BadRequest,
-    WSError.Unknown];
+    const errorCodesToRetry: number[] = [WSStatus.LoginFailed,
+    WSStatus.SslRequired,
+    WSStatus.NotEnoughRights,
+    WSStatus.RepositoryNotFound,
+    WSStatus.SchemaNotFound,
+    WSStatus.ClassNotFound,
+    WSStatus.PropertyNotFound,
+    WSStatus.InstanceNotFound,
+    WSStatus.FileNotFound,
+    WSStatus.NotSupported,
+    WSStatus.NoServerLicense,
+    WSStatus.NoClientLicense,
+    WSStatus.TooManyBadLoginAttempts,
+    HttpStatus.ServerError,
+    HttpStatus.ClientError,
+    WSStatus.Unknown];
     const errorStatus = WsgError.getErrorStatus(parsedError.name !== undefined ?
-      WsgError.getWSErrorId(parsedError.name) : WSError.Unknown, response.statusType);
+      WsgError.getWSStatusId(parsedError.name) : WSStatus.Unknown, response.statusType);
     return errorCodesToRetry.includes(errorStatus);
   }
 
@@ -118,58 +97,58 @@ export class WsgError extends ResponseError {
    * @param response Response returned by request
    */
   public static getErrorStatus(errorId: number, httpStatusType: number): number {
-    if (WSError.Unknown !== errorId) {
+    if (WSStatus.Unknown !== errorId) {
       return errorId;
     }
-    if (httpStatusType === HttpResponseType.ServerError) {
-      return WSError.ServerError;
+    if (super.parseHttpStatus(httpStatusType) === HttpStatus.ServerError) {
+      return HttpStatus.ServerError;
     }
-    if (httpStatusType === HttpResponseType.ClientError) {
-      return WSError.BadRequest;
+    if (super.parseHttpStatus(httpStatusType) === HttpStatus.ClientError) {
+      return HttpStatus.ClientError;
     }
-    return WSError.Unknown;
+    return WSStatus.Unknown;
   }
 
   /**
    * Get WSError from error string
    * @param error error to be returned in WSError enum
    */
-  public static getWSErrorId(error: string): number {
+  public static getWSStatusId(error: string): number {
     switch (error) {
       case "LoginFailed":
-        return WSError.LoginFailed;
+        return WSStatus.LoginFailed;
       case "SslRequired":
-        return WSError.SslRequired;
+        return WSStatus.SslRequired;
       case "NotEnoughRights":
-        return WSError.NotEnoughRights;
+        return WSStatus.NotEnoughRights;
       case "DatasourceNotFound":
-        return WSError.RepositoryNotFound;
+        return WSStatus.RepositoryNotFound;
       case "RepositoryNotFound":
-        return WSError.RepositoryNotFound;
+        return WSStatus.RepositoryNotFound;
       case "SchemaNotFound":
-        return WSError.SchemaNotFound;
+        return WSStatus.SchemaNotFound;
       case "ClassNotFound":
-        return WSError.ClassNotFound;
+        return WSStatus.ClassNotFound;
       case "PropertyNotFound":
-        return WSError.PropertyNotFound;
+        return WSStatus.PropertyNotFound;
       case "LinkTypeNotFound":
-        return WSError.ClassNotFound;
+        return WSStatus.ClassNotFound;
       case "ObjectNotFound":
-        return WSError.InstanceNotFound;
+        return WSStatus.InstanceNotFound;
       case "InstanceNotFound":
-        return WSError.InstanceNotFound;
+        return WSStatus.InstanceNotFound;
       case "FileNotFound":
-        return WSError.FileNotFound;
+        return WSStatus.FileNotFound;
       case "NotSupported":
-        return WSError.NotSupported;
+        return WSStatus.NotSupported;
       case "NoServerLicense":
-        return WSError.NoServerLicense;
+        return WSStatus.NoServerLicense;
       case "NoClientLicense":
-        return WSError.NoClientLicense;
+        return WSStatus.NoClientLicense;
       case "TooManyBadLoginAttempts":
-        return WSError.TooManyBadLoginAttempts;
+        return WSStatus.TooManyBadLoginAttempts;
       default:
-        return WSError.Unknown;
+        return WSStatus.Unknown;
     }
   }
 

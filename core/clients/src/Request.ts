@@ -5,20 +5,11 @@
 import * as sarequest from "superagent";
 import * as deepAssign from "deep-assign";
 import { stringify, IStringifyOptions } from "qs";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, BentleyError, HttpStatus } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
 
 import * as https from "https";
 const loggingCategory = "imodeljs-clients.Request";
-
-// HTTP response type (status / 100)
-export enum HttpResponseType {
-  Info = 1,
-  Ok,
-  ClientError,
-  ServerError,
-  Error,
-}
 
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
@@ -103,7 +94,7 @@ export interface ProgressInfo {
 /** Error object that's thrown/rejected if the Request fails due to a network error, or
  * if the status is *not* in the range of 200-299 (inclusive)
  */
-export class ResponseError extends Error {
+export class ResponseError extends BentleyError {
   protected _data?: any;
   public status?: number;
   public description?: string;
@@ -114,7 +105,7 @@ export class ResponseError extends Error {
    * @returns Parsed error.
    */
   public static parse(response: any): ResponseError {
-    const error = new ResponseError();
+    const error = new ResponseError(ResponseError.parseHttpStatus(response.status / 100));
     if (!response) {
       error.message = "Couldn't get response object.";
       return error;
@@ -153,11 +144,28 @@ export class ResponseError extends Error {
         return true;
       }
     }
-    return (response !== undefined && response.statusType === HttpResponseType.ServerError);
+    return (response !== undefined && response.statusType === HttpStatus.ServerError);
   }
 
   protected logMessage(): string {
     return `${this.status} ${this.name}: ${this.message}`;
+  }
+
+  public static parseHttpStatus(status: number): HttpStatus {
+    switch (status) {
+      case 1:
+        return HttpStatus.Info;
+      case 2:
+        return HttpStatus.Success;
+      case 3:
+        return HttpStatus.Redirection;
+      case 4:
+        return HttpStatus.ClientError;
+      case 5:
+        return HttpStatus.ServerError;
+      default:
+        return HttpStatus.Success;
+    }
   }
 
   /**

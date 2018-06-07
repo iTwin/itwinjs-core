@@ -5,10 +5,10 @@
 
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet, IModel as HubIModel,
-  ContainsSchemaChanges, Briefcase, Code, IModelHubResponseError, IModelHubResponseErrorId,
+  ContainsSchemaChanges, Briefcase, Code, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, AzureFileHandler, ConflictingCodesError,
 } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeDgnDb, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
@@ -1280,7 +1280,7 @@ export class BriefcaseManager {
       postedChangeSet = await BriefcaseManager.hubClient.ChangeSets().create(accessToken, briefcase.iModelId, changeSet, changeSetToken.pathname);
     } catch (error) {
       // If ChangeSet already exists, updating codes and locks might have timed out.
-      if (!(error instanceof IModelHubResponseError) || error.id !== IModelHubResponseErrorId.ChangeSetAlreadyExists) {
+      if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
         Promise.reject(error);
       }
     }
@@ -1302,12 +1302,12 @@ export class BriefcaseManager {
 
   /** Return true if should attempt pushing again. */
   private static shouldRetryPush(error: any): boolean {
-    if (error instanceof IModelHubResponseError && error.id) {
-      switch (error.id!) {
-        case IModelHubResponseErrorId.AnotherUserPushing:
-        case IModelHubResponseErrorId.PullIsRequired:
-        case IModelHubResponseErrorId.DatabaseTemporarilyLocked:
-        case IModelHubResponseErrorId.iModelHubOperationFailed:
+    if (error instanceof IModelHubError && error.errorNumber) {
+      switch (error.errorNumber!) {
+        case IModelHubStatus.AnotherUserPushing:
+        case IModelHubStatus.PullIsRequired:
+        case IModelHubStatus.DatabaseTemporarilyLocked:
+        case IModelHubStatus.iModelHubOperationFailed:
           return true;
       }
     }

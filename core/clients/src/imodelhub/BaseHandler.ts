@@ -5,7 +5,7 @@ import { UrlDescriptor, DeploymentEnv } from "../Client";
 import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
 import { RequestOptions, RequestQueryOptions } from "../Request";
 import { WsgInstance } from "../ECJsonTypeMap";
-import { IModelHubResponseError } from "./Errors";
+import { IModelHubError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import * as https from "https";
@@ -17,8 +17,8 @@ import { Config } from "..";
 class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this.defaultOptions.errorCallback = IModelHubResponseError.parse;
-    this.defaultOptions.retryCallback = IModelHubResponseError.shouldRetry;
+    this.defaultOptions.errorCallback = IModelHubError.parse;
+    this.defaultOptions.retryCallback = IModelHubError.shouldRetry;
     this.defaultOptions.agent = agent;
   }
 }
