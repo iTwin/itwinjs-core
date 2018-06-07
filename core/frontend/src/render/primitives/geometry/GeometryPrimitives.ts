@@ -10,7 +10,6 @@ import {
   Loop,
   Path,
   CurveChain,
-  GrowableXYZArray,
   Point3d,
   StrokeOptions,
   Angle,
@@ -124,12 +123,10 @@ export class PrimitivePathGeometry extends Geometry {
 
   private static collectCurveStrokes(strksPts: StrokesPrimitivePointLists, loopOrPath: CurveChain, facetOptions: StrokeOptions, trans: Transform) {
     const strokes = loopOrPath.getPackedStrokes(facetOptions);
-    if (strokes) {
-      if (strokes instanceof GrowableXYZArray) {
-        const pts = strokes.getPoint3dArray();
-        trans.multiplyPoint3dArrayInPlace(pts);
-        strksPts.push(new StrokesPrimitivePointList(0, pts));
-      }
+    if (undefined !== strokes) {
+      const pts = strokes.getPoint3dArray();
+      trans.multiplyPoint3dArrayInPlace(pts);
+      strksPts.push(new StrokesPrimitivePointList(0, pts));
     }
   }
 }
