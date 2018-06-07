@@ -473,7 +473,9 @@ export abstract class Target extends RenderTarget {
   }
 
   public onDestroy(): void { } // ###TODO
-  public queueReset(): void { } // ###TODO
+  public queueReset(): void {
+    this.reset();
+  }
   public reset(): void {
     this._scene.length = 0;
     this._decorations.reset();

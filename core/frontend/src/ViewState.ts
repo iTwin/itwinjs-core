@@ -188,6 +188,25 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
 
+  /** Set the ViewFlags and mark them as dirty if they have changed. */
+  public set viewFlags(newFlags: ViewFlags) {
+    if (!this.viewFlags.isEqualTo(newFlags))
+      this.setFeatureOverridesDirty();
+
+    this.viewFlags.acsTriad = newFlags.acsTriad;
+    this.viewFlags.fill = newFlags.fill;
+    this.viewFlags.grid = newFlags.grid;
+    this.viewFlags.textures = newFlags.textures;
+    this.viewFlags.visibleEdges = newFlags.visibleEdges;
+    this.viewFlags.materials = newFlags.materials;
+    this.viewFlags.shadows = newFlags.shadows;
+    this.viewFlags.sourceLights = newFlags.sourceLights;
+    this.viewFlags.solarLight = newFlags.solarLight;
+    this.viewFlags.cameraLights = newFlags.cameraLights;
+    this.viewFlags.monochrome = newFlags.monochrome;
+    this.viewFlags.constructions = newFlags.constructions;
+  }
+
   /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
@@ -1264,8 +1283,8 @@ export abstract class ViewState3d extends ViewState {
 
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
-    // if (style3d.getEnvironment().sky.display)
-    //  return;   // SkyBox is enabled
+    if (!style3d.getEnvironment().sky.display)
+      return;
 
     const vp = context.viewport;
     style3d.loadSkyBoxMaterial(vp.target.renderSystem);
@@ -1348,13 +1367,18 @@ export abstract class ViewState3d extends ViewState {
     if (extents.isNull()) {
       return;
     }
+
+    const ground = this.getDisplayStyle3d().getEnvironment().ground;
+    if (!ground.display)
+      return;
+
     const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
     points[1].x = extents.high.x;
     points[3].x = extents.low.x;
 
     const aboveGround = this.isEyePointAbove(extents.low.z);
     const colors: ColorDef[] = [];
-    const gradient = this.getDisplayStyle3d().getEnvironment().ground.getGroundPlaneTextureSymb(aboveGround, colors);
+    const gradient = ground.getGroundPlaneTextureSymb(aboveGround, colors);
     const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
     if (!texture)
       return;
