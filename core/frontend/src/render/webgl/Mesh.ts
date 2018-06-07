@@ -28,6 +28,7 @@ import {
   RenderMode,
   RenderMaterial,
 } from "@bentley/imodeljs-common";
+import { Material } from "./Material";
 
 export class MeshInfo {
   public readonly edgeWidth: number;
@@ -51,7 +52,7 @@ export class MeshInfo {
 
 export class MeshData extends MeshInfo {
   public readonly lut: VertexLUT.Data;
-  public readonly material?: MaterialData | RenderMaterial; // ###TODO implement MaterialData, remove RenderMaterial as option
+  public readonly material?: MaterialData;
   public readonly animation: any; // should be a AnimationLookupTexture;
 
   public static create(params: MeshParams): MeshData | undefined {
@@ -62,7 +63,7 @@ export class MeshData extends MeshInfo {
   private constructor(lut: VertexLUT.Data, params: MeshParams) {
     super(params.type, params.edgeWidth, params.edgeLineCode, params.fillFlags, params.isPlanar, params.features, params.texture);
     this.lut = lut;
-    this.material = params.material;
+    this.material = params.material ? new MaterialData(params.material as Material) : undefined;  // If we have a RenderMaterial, we should be able to cast it to Material
     this.animation = undefined;
   }
 }
