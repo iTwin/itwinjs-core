@@ -77,8 +77,7 @@ export default class Phenomenon extends SchemaItem {
 
       if (jsonObj.$schema.toLowerCase() !== this.ec32Url) // $schema value must be equal to the EC3.2 url
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} does not have the required schema URL.`);
-    } else // $schema value must be equal to the EC3.2 url and not undefined
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} does not have the required schema URL.`);
+    }
   }
 
   public async accept(visitor: SchemaItemVisitor) {

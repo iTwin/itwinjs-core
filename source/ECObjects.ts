@@ -31,6 +31,7 @@ export const enum SchemaItemType {
   Constant,
   Phenomenon,
   UnitSystem,
+  Format,
 }
 
 /**
@@ -157,6 +158,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
     case "constant": return SchemaItemType.Constant;
     case "phenomenon": return SchemaItemType.Phenomenon;
     case "unitsystem": return SchemaItemType.UnitSystem;
+    case "format": return SchemaItemType.Format;
   }
   return undefined;
 }

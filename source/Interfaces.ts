@@ -20,6 +20,7 @@ import InvertedUnit from "./Metadata/InvertedUnit";
 import Constant from "./Metadata/Constant";
 import Phenomenon from "./Metadata/Phenomenon";
 import UnitSystem from "./Metadata/UnitSystem";
+import Format from "./Metadata/Format";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
 export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<Property>;
@@ -40,6 +41,7 @@ export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass 
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
 
 export interface SchemaItemVisitor {
+  /* async */ visitFormat?: (format: Format) => Promise<void>;
   /* async */ visitUnitSystem?: (unitSystem: UnitSystem) => Promise<void>;
   /* async */ visitPhenomenon?: (phenomenon: Phenomenon) => Promise<void>;
   /* async */ visitConstant?: (constant: Constant) => Promise<void>;
