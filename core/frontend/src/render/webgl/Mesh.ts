@@ -19,6 +19,9 @@ import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Target } from "./Target";
 import { SurfacePrimitive } from "./Surface";
+/* ###TODO EdgePrimitive
+import { EdgePrimitive } from "./Edge";
+*/
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
@@ -147,7 +150,13 @@ export class MeshGraphic extends Graphic {
       // const simpleEdges = new SimplePolylineEdgeArgs(args.edges.polylines, args.edges.edges);
       // this._primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
     } else {
-      // if (args.edges.edges.isValid) { this._primitives[MeshGraphicType.kEdge] = new EdgePrimitive(args.edges.edges, this); }
+      /* ###TODO EdgePrimitive
+      if (args.edges.edges.isValid) {
+        const edgePrim = EdgePrimitive.create(args.edges.edges, this);
+        if (undefined !== edgePrim)
+          this._primitives[MeshGraphicType.kEdge] = edgePrim;
+      }
+      */
       // if (args.edges.polylines.isValid) { this._primitives[MeshGraphicType.kPolyline] = new PolylineEdgePrimitive.create(args, this); }
     }
   }
