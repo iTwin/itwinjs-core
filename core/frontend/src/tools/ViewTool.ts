@@ -1327,7 +1327,7 @@ class ViewWalk extends ViewNavigate {
   }
 }
 
-/** tool that performs a fit view */
+/** The tool that performs a fit view */
 export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
   public viewport: Viewport;
@@ -1361,7 +1361,7 @@ export class FitViewTool extends ViewTool {
   }
 }
 
-/** tool that performs a Pan view operation */
+/** The tool that performs a Pan view operation */
 export class PanTool extends ViewManip {
   public static toolId = "View.Pan";
   constructor(vp: Viewport) { super(vp, ViewHandleType.ViewPan, false, false, false); }

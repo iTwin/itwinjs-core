@@ -359,7 +359,7 @@ class WheelEventProcessor {
   }
 }
 
-/** controls the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
+/** Controls the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
 export class ToolAdmin {
   private readonly _toolEvents = new BeEventList();
   public currentInputState = new CurrentInputState();
@@ -379,7 +379,7 @@ export class ToolAdmin {
   private modifierKeyWentDown = false;
   private modifierKey = BeModifierKey.None;
   private touchBridgeMode = false; // Flag indicating that touch events are being converted into mouse events for this tool
-  /** Apply operation such as transform, copy or delete to all members of an assembly. */
+  /** Apply operations such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
   /** If Grid Lock is on, project data points to grid. */
   public gridLock = false;

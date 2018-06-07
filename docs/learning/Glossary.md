@@ -11,7 +11,7 @@ tableRowAnchors: true
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS is relevant outside of iModels, but all information stored in an iModel conforms to BIS.
 |**BisCore**|The *base* BIS Domain for iModels. All ECClasses stored in an iModel must derive from a BisCore class.
 |**Briefcase**|A file holding a *copy of* an iModel. See [IModelDb](./backend/IModelDb.md).
-|**Cartographic Coordinates**| A [geographic coordinate system](https://en.wikipedia.org/wiki/Geographic_coordinate_system) based on lat/long/height. If an iModel is geo-located via an EefLocation, Spatial Coordinates may be converted to Cartographic coordinates.
+|**Cartographic Coordinates**<a name="cartographic-coordinates">| A [geographic coordinate system](https://en.wikipedia.org/wiki/Geographic_coordinate_system) based on lat/long/height. If an iModel is geo-located via an EefLocation, Spatial Coordinates may be converted to Cartographic coordinates.
 |**Category**|A property of a GeometricElement that "categorizes" its geometry. That is, every GeometricElement is "in" one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. Note that Categories are not relevant for Elements that are not GeometricElements. Category is a subclass of DefinitionElement.
 |**CategorySelector**|A named group of Categories displayed in a View. Many ViewDefinitions may refer to the same CategorySelector.
 |**ChangeSet**|A group of changes to an iModel. Changesets are created whenever an Briefcase is modified and reflect the union of all Additions, Deletions, and Modifications over a period of time. ChangeSet are assigned an identifier when they are uploaded to iModelHub and every ChangeSet stores the identifier of its parent ChangeSet. In this way the chain of ChangeSets for an iModel in iModelHub forms its "timeline of changes".
@@ -64,6 +64,7 @@ tableRowAnchors: true
 |**Npm**|[Node Package Manager](https://www.npmjs.com/). A tool for distributing JavaScript packages.
 |**ParentModel**|A derived property of Model that is equal to the Model of its ModeledElement.
 |**PhysicalModel**|A subclass of SpatialModel that holds PhysicalElements.
+|**Project Extents**<a name="project-extents">|The *volume of interest* for an iModel's Spatial Coordinate System. All spatial elements in an iModel must be completely inside its Project Extents.
 |**Props**|iModelJs uses the convention that the members and types of a *JSON wire format* are expressed in TypeScript by an [interface](https://www.typescriptlang.org/docs/handbook/interfaces.html) or [type alias](http://www.typescriptlang.org/docs/handbook/advanced-types.html) with the suffix **Props** (for *prop*erties). E.g. `ElementProps`, `ViewDefinitionProps`, etc.
 |**RootSubject**|An Element in the iModel that describes (in text) the asset modeled by an iModel. There is always one and only one RootSubject. All information in an iModel will have some relationship to the RootSubject, making it the root of a *table of contents*.
 |**RPC**|Remote procedure call. Allows a client to invoke an operation in a service. Web apps use HTTP to implement RPC calls, while desktop apps use pipes.
@@ -71,7 +72,7 @@ tableRowAnchors: true
 |**Rush**|A tool for [managing multiple NPM packages](http://rushjs.io/) within a single git repository.
 |**Schema**|See ECSchema
 |**SheetModel**|A digital representation of a *sheet of paper*. Sheet Models are 2d models in bounded paper coordinates. SheetModels may contain annotation Elements as well as references to [DrawingViewDefinition]($backend)s. or [SpatialViewDefinition]($backend)s.
-|**Spatial Coordinate System**|The 3d coordinate system of an iModel. The units are always meters (see ACS). The origin (0,0,0) of the Spatial Coordinate System may be oriented on the earth via an EcefLocation.
+|**Spatial Coordinate System**<a name="spatial-coordinate-system">|The 3d coordinate system of an iModel. The units are always meters (see ACS). The origin (0,0,0) of the Spatial Coordinate System may be oriented on the earth via an EcefLocation.
 |**SpatialModel**|A subclass of GeometricModel that holds 3d Elements in the iModel's Spatial Coordinate System.
 |**SpatialViewDefinition**|A subclass of ViewDefinition that displays one or more SpatialModels.
 |**SubCategory**|A subdivision of a Category. SubCategories allow GeometricElements to have multiple pieces of Geometry that can be made independently visible and styled. It is important to understand that a SubCategory is **not** a Category (i.e. Categories do *not* nest) and that a SubCategory always subdivides a single Category.
