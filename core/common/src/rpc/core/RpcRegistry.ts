@@ -4,7 +4,9 @@
 /** @module RpcInterface */
 
 import { RpcInterface, RpcInterfaceImplementation, RpcInterfaceDefinition } from "../../RpcInterface";
+import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
+import { RpcControlChannel } from "./RpcControl";
 import { IModelError, ServerError } from "../../IModelError";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
@@ -48,10 +50,27 @@ export class RpcRegistry {
   }
 
   public lookupInterfaceDefinition(name: string): RpcInterfaceDefinition {
-    if (!RpcRegistry.instance.definitionClasses.has(name))
+    if (!this.definitionClasses.has(name))
       throw new IModelError(BentleyStatus.ERROR, `RPC interface "${name}" is not initialized.`);
 
     return this.definitionClasses.get(name) as RpcInterfaceDefinition;
+  }
+
+  public describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+    const requests: Array<Promise<RpcInterfaceEndpoints[]>> = [];
+    for (const channel of RpcControlChannel.channels) {
+      requests.push(channel.describeEndpoints());
+    }
+
+    return Promise.all(requests).then((responses) => {
+      const endpoints = responses.reduce((a, b) => a.concat(b), []);
+      for (const endpoint of endpoints) {
+        const definition = this.definitionClasses.get(endpoint.interfaceName);
+        endpoint.compatible = (definition && definition.version === endpoint.interfaceVersion) ? true : false;
+      }
+
+      return endpoints;
+    });
   }
 
   public getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {

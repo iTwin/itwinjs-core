@@ -64,6 +64,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   private _points: GrowableXYZArray;
   /** return the points array (cloned). */
   public get points(): Point3d[] { return this._points.getPoint3dArray(); }
+  /** Return (reference to) point data in packed GrowableXYZArray. */
+  public get packedPoints(): GrowableXYZArray { return this._points; }
   private constructor() {
     super();
     this._points = new GrowableXYZArray();

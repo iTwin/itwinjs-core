@@ -5,6 +5,7 @@ import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
+import { remote } from "electron";
 
 // tslint:disable:no-console
 
@@ -27,7 +28,7 @@ class SimpleViewState {
   constructor() { }
 }
 
-const activeViewState: SimpleViewState = new SimpleViewState();
+let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState>();
 let theViewport: Viewport | undefined;
 
@@ -58,11 +59,6 @@ function retrieveConfigurationOverrides(configuration: any) {
 // Apply environment overrides to configuration.
 // This allows us to switch data sets without constantly editing configuration.json (and having to rebuild afterward).
 function applyConfigurationOverrides(config: any): void {
-  const electron = (window as any).require("electron");
-  const remote = electron.remote;
-  if (undefined === remote)
-    return;
-
   const filename = remote.process.env.SVT_STANDALONE_FILENAME;
   if (undefined !== filename) {
     config.iModelName = filename;
@@ -100,7 +96,8 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
 }
 
 // selects the configured view.
-async function buildViewList(state: SimpleViewState, config: { viewName?: string }) {
+async function buildViewList(state: SimpleViewState, configurations?: { viewName?: string }) {
+  const config = undefined !== configurations ? configurations : {};
   const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
   const viewProps: ViewDefinitionProps[] = await state.iModelConnection!.views.queryProps(viewQueryParams);
@@ -161,19 +158,15 @@ export class LocateTool extends ViewTool {
   }
 }
 
-export class StandardViewRotationTool extends ViewTool {
-  public static toolId = "View.StandardRotation";
-  private rotations = [StandardViewId.Top, StandardViewId.Iso, StandardViewId.Front];
-  private rotationNames = ["Top", "Iso", "Front"];
-  private rotationIndex = 0;
+function showStandardViewMenu(_event: any) {
+  const menu = document.getElementById("standardRotationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
 
-  public onDataButtonDown(ev: BeButtonEvent) {
-    if (ev.viewport) {
-      showStatus(this.rotationNames[this.rotationIndex], "view");
-      ev.viewport.setStandardRotation(this.rotations[this.rotationIndex]);
-      this.rotationIndex = (this.rotationIndex + 1) % 3;
-    }
-  }
+function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
+  theViewport!.setStandardRotation(rotationId);
+  IModelApp.tools.run("View.Fit", theViewport!, false, false);
+  showStatus(label, "view");
 }
 
 // opens the view and connects it to the HTML canvas element.
@@ -220,25 +213,73 @@ function startRotateView(_event: any) {
 }
 
 // start rotate view.
-function switchStandardRotation(_event: any) {
-  IModelApp.tools.run("View.StandardRotation", theViewport!);
-}
-
-// start rotate view.
 function changeView(event: any) {
   const viewName = event.target.selectedOptions["0"].label;
   _changeView(viewMap.get(viewName)!);
 }
 
+async function clearViews() {
+  await activeViewState.iModelConnection!.closeStandalone();
+  activeViewState = new SimpleViewState();
+  viewMap.clear();
+  document.getElementById("viewList")!.innerHTML = "";
+}
+
+async function resetStandaloneIModel(filename: string) {
+  const spinner = document.getElementById("spinner") as HTMLDivElement;
+  spinner.style.display = "block";
+  IModelApp.viewManager.dropViewport(theViewport!);
+  IModelApp.renderSystem.onShutDown();
+  await clearViews();
+  await openStandaloneIModel(activeViewState, filename);
+  await buildViewList(activeViewState);
+  await openView(activeViewState);
+  spinner.style.display = "none";
+}
+
+function selectIModel(): void {
+  const options: Electron.OpenDialogOptions = {
+    properties: ["openFile"],
+    filters: [{ name: "IModels", extensions: ["ibim", "bim"] }],
+  };
+  remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
+    if (undefined !== filePaths)
+      await resetStandaloneIModel(filePaths[0]);
+  });
+}
+
+// undo prev view manipulation
+function doUndo(_event: any) {
+  IModelApp.tools.run("View.Undo", theViewport!);
+}
+
+// redo view manipulation
+function doRedo(_event: any) {
+  IModelApp.tools.run("View.Redo", theViewport!);
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
+  document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
   document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
   document.getElementById("startZoom")!.addEventListener("click", startSelect);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
-  document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);
+  document.getElementById("switchStandardRotation")!.addEventListener("click", showStandardViewMenu);
+  document.getElementById("doUndo")!.addEventListener("click", doUndo);
+  document.getElementById("doRedo")!.addEventListener("click", doRedo);
+
+  // standard view rotation handlers
+  document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
+  document.getElementById("bottom")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Bottom, "Bottom"));
+  document.getElementById("left")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Left, "Left"));
+  document.getElementById("right")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Right, "Right"));
+  document.getElementById("front")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Front, "Front"));
+  document.getElementById("back")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Back, "Back"));
+  document.getElementById("iso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Iso, "Iso"));
+  document.getElementById("rightIso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
 }
 
 // ----------------------------------------------------------
@@ -272,7 +313,6 @@ async function main() {
     await IModelApi.init();
 
     IModelApp.tools.register(LocateTool);
-    IModelApp.tools.register(StandardViewRotationTool);
 
     if (!configuration.standalone) {
       // log in.

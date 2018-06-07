@@ -63,7 +63,7 @@ export class RpcOperation {
   public readonly operationName: string;
 
   /** The version of this operation. */
-  public interfaceVersion: string = "0.0.0";
+  public get interfaceVersion(): string { return this.interfaceDefinition.version; }
 
   /** The policy for this operation. */
   public policy: RpcOperationPolicy;

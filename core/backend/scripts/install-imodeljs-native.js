@@ -4,26 +4,23 @@
 var exec = require('child_process').exec;
 var path = require('path');
 
-let version = require("../node_modules/@bentley/imodeljs-nodeaddon/package.json").version;
+let version = require(path.join("..", "node_modules", "@bentley", "imodeljs-native-platform-api", "package.json")).version;
 
+if (typeof (process) === "undefined" || process.version === "")
+    throw new Error("NodeAddonLoader could not determine process type");
 
-// *** NEEDS WORK: Move this into imodeljs_addon/NodeAddonLoader.js
-function computeAddonPackageName() {
-    if (typeof (process) === "undefined" || process.version === "")
-        throw new Error("NodeAddonLoader could not determine process type");
-    let versionCode;
-    const electronVersion = process.versions.electron;
-    if (typeof electronVersion !== "undefined") {
-        const electronVersionParts = electronVersion.split(".");
-        versionCode = "e_" + electronVersionParts[0]; // use only major version number
-    }
-    else {
-        const nodeVersion = process.version.substring(1).split("."); // strip off the character 'v' from the start of the string
-        versionCode = "n_" + nodeVersion[0]; // use only major version number
-    }
-    return path.join("@bentley", "imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch);
+function installNativePlatformPackage(version_prefix) {
+    let addon = `"@bentley/imodeljs-${version_prefix}-${process.platform}-${process.arch}`;
+    let cmdLine = 'npm install --no-save ' + addon + "@" + version;
+    console.log(`Installing ${addon}@${version}...`);
+    exec(cmdLine, (err, stdout, stderr) => {
+        if (err) {
+            throw err;
+        }
+        console.log(stdout);
+    });
 }
+console.log('argv=' + process.argv[2]);
 
-let cmdLine = 'npm install --no-save ' + computeAddonPackageName() + "@" + version;
-
-console.log(cmdLine);
+installNativePlatformPackage('n_8');
+installNativePlatformPackage('e_2');

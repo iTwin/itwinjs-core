@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module LocationAndSnapping */
+/** @module LocatingElements */
 
 import { Point3d, Point2d } from "@bentley/geometry-core";
 import { BentleyStatus } from "@bentley/bentleyjs-core";

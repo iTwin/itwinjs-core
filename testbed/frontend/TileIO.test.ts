@@ -40,6 +40,7 @@ describe("TileIO", () => {
   const triangles = TileData.triangles.buffer;
   const lineString = TileData.lineString.buffer;
   const lineStrings = TileData.lineStrings.buffer;
+  const cylinder = TileData.cylinder.buffer;
 
   before(async () => {   // Create a ViewState to load into a Viewport
     imodel = await IModelConnection.openStandalone(iModelLocation);
@@ -717,6 +718,130 @@ describe("TileIO", () => {
         expect(plGeom.lut.numVertices).to.equal(12);
         expect(plGeom.polyline.lineCode).to.equal(2);
         expect(plGeom.polyline.lineWeight).to.equal(9);
+      }
+    }
+  });
+
+  it("should read an iModel tile containing edges and silhouettes", () => {
+    if (WebGLTestContext.isInitialized) {
+      const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
+      const stream = new TileIO.StreamBuffer(cylinder);
+      const reader = IModelTileIO.Reader.create(stream, model, System.instance);
+      expect(reader).not.to.be.undefined;
+
+      if (undefined !== reader) {
+        const result = reader.read();
+        expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+        expect(result.isLeaf).to.be.true;
+        expect(result.contentRange).not.to.be.undefined;
+        expect(result.geometry).not.to.be.undefined;
+
+        // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
+        const low = result.contentRange!.low;
+        expect(delta(low.x, -2.0)).to.be.lessThan(0.0005);
+        expect(delta(low.y, -2.0)).to.be.lessThan(0.0005);
+        expect(delta(low.z, -3.0)).to.be.lessThan(0.0005);
+
+        const high = result.contentRange!.high;
+        expect(delta(high.x, 2.0)).to.be.lessThan(0.0005);
+        expect(delta(high.y, 2.0)).to.be.lessThan(0.0005);
+        expect(delta(high.z, 3.0)).to.be.lessThan(0.0005);
+
+        // Confirm GeometryCollection
+        const geom = result.geometry!;
+        expect(geom.isEmpty).to.be.false;
+        expect(geom.isComplete).to.be.true;
+        expect(geom.isCurved).to.be.true;
+
+        const meshes = geom.meshes;
+        expect(meshes.length).to.equal(1);
+
+        // Validate feature table (uniform - one element)
+        const features = meshes.features!;
+        expect(meshes.features).not.to.be.undefined;
+        expect(features.length).to.equal(1);
+        expect(features.isUniform).to.be.true;
+        const feature = features.findFeature(0);
+        expect(feature).not.to.be.undefined;
+        expect(feature!.geometryClass).to.equal(GeometryClass.Primary);
+        expect(feature!.elementId.value).to.equal("0x4e");
+        expect(feature!.subCategoryId.value).to.equal("0x18");
+
+        // Validate mesh data
+        const mesh = meshes[0];
+        expect(mesh.type).to.equal(Mesh.PrimitiveType.Mesh);
+        expect(mesh.points.length).to.equal(146);
+        expect(mesh.isPlanar).to.be.false;
+        expect(mesh.is2d).to.be.false;
+        expect(mesh.normals.length).to.equal(146);
+        expect(mesh.uvParams.length).to.equal(0);
+        expect(mesh.features).not.to.be.undefined;
+        expect(mesh.features!._indices.length).to.equal(0);
+
+        // Validate mesh triangles
+        expect(mesh.triangles).not.to.be.undefined;
+        expect(mesh.triangles!.length).to.equal(144);
+        const indices = mesh.triangles!.indices;
+        const expectedfirstIndices = [0, 1, 2, 2, 1, 3, 3, 1, 4, 4, 1, 5, 5, 1, 6, 6, 1, 7, 7, 1, 8, 8, 1, 9];
+        expect(indices.length).to.equal(432);
+        for (let i = 0; i < expectedfirstIndices.length; i++)
+          expect(indices[i]).to.equal(expectedfirstIndices[i]);
+        const expectedlastIndices = [141, 140, 142, 141, 142, 143, 143, 142, 144, 143, 144, 145, 145, 144, 75, 145, 75, 74];
+        expect(indices.length).to.equal(432);
+        const offset = indices.length - expectedlastIndices.length;
+        for (let i = expectedlastIndices.length; i >= 0; i--)
+          expect(indices[offset + i]).to.equal(expectedlastIndices[i]);
+
+        // Validate mesh edges
+        expect(mesh.edges).not.to.be.undefined;
+        const edges = mesh.edges!;
+        expect(edges.polylines).not.to.be.undefined;
+        expect(edges.polylines.length).to.equal(2);
+        expect(edges.polylines[0].indices.length).to.equal(37);
+        expect(edges.polylines[1].indices.length).to.equal(37);
+        expect(edges.visible).not.to.be.undefined;
+        expect(edges.visible.length).to.equal(72);
+        expect(edges.silhouette).not.to.be.undefined;
+        expect(edges.silhouetteNormals).not.to.be.undefined;
+        expect(edges.silhouette.length).to.equal(edges.silhouetteNormals.length);
+
+        // Validate color table (uniform - green)
+        expect(mesh.colorMap.length).to.equal(1);
+        expect(mesh.colorMap.isUniform).to.be.true;
+        expect(mesh.colorMap.indexOf(0x0000ff00)).to.equal(0); // green is first and only color in color table
+        expect(mesh.colors.length).to.equal(0);
+
+        // Validate display params
+        const displayParams = mesh.displayParams;
+        expect(displayParams.type).to.equal(DisplayParams.Type.Mesh);
+        expect(displayParams.material).to.be.undefined;
+        expect(displayParams.lineColor.tbgr).to.equal(0x0000ff00);
+        expect(displayParams.fillColor.tbgr).to.equal(0x0000ff00);
+        expect(displayParams.width).to.equal(1);
+        expect(displayParams.linePixels).to.equal(LinePixels.Solid);
+        expect(displayParams.ignoreLighting).to.be.false;
+        expect(displayParams.hasFillTransparency).to.be.false;
+        expect(displayParams.hasLineTransparency).to.be.false;
+
+        // Validate RenderGraphic
+        const graphic = result.renderGraphic!;
+        expect(graphic).not.to.be.undefined;
+        expect(graphic).to.be.instanceOf(Batch);
+        const batch = graphic as Batch;
+        expect(batch.featureTable.isUniform).to.be.true;
+        expect(batch.graphic).not.to.be.undefined;
+        expect(batch.graphic).to.be.instanceOf(MeshGraphic);
+        const mg = batch.graphic as MeshGraphic;
+        expect(mg.surfaceType).to.equal(SurfaceType.Lit);
+        expect(mg.meshData).not.to.be.undefined;
+        expect(mg.meshData.edgeLineCode).to.equal(0);
+        expect(mg.meshData.edgeWidth).to.equal(1);
+        expect(mg.meshData.isPlanar).to.be.false;
+        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
+        expect(mg.meshData.lut.numVertices).to.equal(146);
+        expect(mg.meshData.lut.colorInfo.isUniform).to.be.true;
+        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.false;
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
       }
     }
   });

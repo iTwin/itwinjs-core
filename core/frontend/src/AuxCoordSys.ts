@@ -27,14 +27,7 @@ export const enum ACSDisplayOptions {
   Dynamics = (1 << 4),
 }
 
-// export class ACSGrid {
-//   public readonly repetitions: Point2d = new Point2d();
-//   public readonly originOffset: Point2d = new Point2d();
-//   public readonly spacing: Point2d = new Point2d();
-//   public gridPerRef: number = 10;
-//   public unused: number = 0;
-// }
-
+/** The state of an AuxCoordSystem element in the frontend */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
   public type: number;
   public description?: string;
@@ -51,10 +44,10 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 
   /**
-   * Create a new AuxCoordSystem.
+   * Create a new AuxCoordSystemState.
    * @param acsName the name for the new AuxCoordSystem
    * @param iModel the iModel for which the ACS applies.
-   * <em>note:</em> call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
+   * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
    */
   public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
     const myCode = new Code({ spec: BisCodeSpec.auxCoordSystemSpatial, scope: IModel.dictionaryId.toString(), value: acsName });
@@ -93,6 +86,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 }
 
+/** The state of an AuxCoordSystem2d element in the frontend */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
   public readonly origin: Point2d;
   public angle: number; // in degrees
@@ -121,6 +115,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
   }
 }
 
+/** The state of an AuxCoordSystem3d element in the frontend */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
   public readonly origin: Point3d;
   public yaw: number;
@@ -159,5 +154,6 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   }
 }
 
+/** The state of an AuxCoordSystemSpatial element in the frontend */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
 }

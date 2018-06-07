@@ -653,6 +653,26 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
 
+  /** Sum the signed areas of the projection to xy plane */
+  public areaXY(): number {
+    let area = 0.0;
+    const n = this.data.length - 6;   // at least two points needed !!!!
+    if (n > 2) {
+      const x0 = this.data[0];
+      const y0 = this.data[1];
+      let dx1 = this.data[3] - x0;
+      let dy1 = this.data[4] - y0;
+      let dx2 = 0;
+      let dy2 = 0;
+      for (let i = 6; i < n; i += 3, dx1 = dx2, dy1 = dy2) {
+        dx2 = this.data[i] - x0;
+        dy2 = this.data[i + 1] - y0;
+        area += Geometry.crossProductXYXY(dx1, dy1, dx2, dy2);
+      }
+    }
+    return 0.5 * area;
+  }
+
   /** Compute a vector from index target i to indexed target j  */
   public vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined {
     const n = this.inUse;

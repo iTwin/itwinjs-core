@@ -10,9 +10,9 @@ This website is organized into sections by tabs at the top of each page.
 
 * You are currently looking at the Overview page. Start here.
 * Please read the [Getting Started](../getting-started/index.md) page to install prerequisites for developers and for suggestions for background reading.
-* The [BIS](../bis/index.md) tab explains the Base Infrastructure Schemas. Understand BIS is essential to making sense of the iModelJs apis. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iModelJs.
-* The [Learning](../learning/index) section introduces the building blocks of iModelJs and provides step-by-step instructions for creating applications.
-* The [API Reference](../reference/index) section explains the API in more detail with package/class/function level documentation.
+* The [BIS](../bis/index.md) tab explains the Base Infrastructure Schemas. Understanding BIS is essential to making sense of the iModelJs apis. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iModelJs.
+* The [Learning](../learning/index) tab introduces the building blocks of iModelJs and provides step-by-step instructions for creating applications.
+* The [API Reference](../reference/index) tab explains the API in more detail with package/class/function level documentation.
 
 ## Using iModelJs
 
@@ -42,7 +42,7 @@ iModelJs applications can be:
 
 ## JavaScript vs. TypeScript
 
-iModelJs is written in [TypeScript](https://www.typescriptlang.org/). Even though it *can* be consumed in a JavaScript application, it is *highly recommended* that iModelJs application developers use TypeScript too when possible. Throughout the iModelJs library, the arguments to functions are decorated with their expected types in TypeScript. The expectation is that the TypeScript compiler will verify the types of callers. Runtime checks to enforce correct types are not encouraged inside iModelJs, given they add overhead and are not necessary for TypeScript callers.
+iModelJs is written in [TypeScript](https://www.typescriptlang.org/). Even though it *can* be consumed in a JavaScript application, it is *highly recommended* that iModelJs application developers use TypeScript too when possible. Throughout the iModelJs library, the arguments and return values of functions are decorated with their expected types in TypeScript. The TypeScript compiler will verify the types of callers. Runtime checks to enforce correct types are not encouraged inside iModelJs, given they add overhead and are not necessary for TypeScript callers. Therefore, pure JavaScript consumers of iModelJs must be careful to not pass incorrect types.
 
 ## JavaScript Version Requirements
 

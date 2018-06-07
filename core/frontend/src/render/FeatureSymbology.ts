@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Render */
+/** @module Rendering */
 
 import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass } from "@bentley/imodeljs-common";
 import { Id64Set, Id64 } from "@bentley/bentleyjs-core";

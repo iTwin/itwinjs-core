@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module Render */
+/** @module Rendering */
 
 import { Transform, Range3d, Loop, Path, IndexedPolyface, Point3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../../../IModelConnection";

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-/** @module LocationAndSnapping */
+/** @module LocatingElements */
 import { Viewport } from "./Viewport";
 import { Range3d, ClipVector } from "@bentley/geometry-core";
 

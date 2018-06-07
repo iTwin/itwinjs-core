@@ -7,8 +7,9 @@ import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3 } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
-import { RpcConfiguration } from "@bentley/imodeljs-common";
+import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+const compatibleVersion = IModelReadRpcInterface.version;
 
 let pendingsSent = 0;
 let pendingResponseQuota = 0;
@@ -32,6 +33,12 @@ ipcMain.on("testbed", (event: any, arg: any) => {
     event.returnValue = true;
   } else if (msg.name === CONSTANTS.UNREGISTER_TEST_RPCIMPL2_CLASS_MESSAGE) {
     TestRpcImpl2.unregister();
+    event.returnValue = true;
+  } else if (msg.name === CONSTANTS.SET_INCOMPATIBLE_INTERFACE_VERSION) {
+    IModelReadRpcInterface.version = "0.0.0";
+    event.returnValue = true;
+  } else if (msg.name === CONSTANTS.RESTORE_COMPATIBLE_INTERFACE_VERSION) {
+    IModelReadRpcInterface.version = compatibleVersion;
     event.returnValue = true;
   } else if (msg.name === CONSTANTS.RESTART_BACKEND) {
     IModelHost.shutdown();

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface } from "@bentley/imodeljs-common";
+import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface, RpcInterfaceDefinition, RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
@@ -264,9 +264,35 @@ describe("RpcInterface", () => {
   });
 
   it("should describe available RPC endpoints from the frontend", async () => {
+    const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
+    const controlInterface = (controlChannel as any).channelInterface as RpcInterfaceDefinition;
+    const originalName = controlInterface.name;
+
+    const simulateIncompatible = () => {
+      const interfaces: string[] = [];
+      ((controlChannel as any).configuration as RpcConfiguration).interfaces().forEach((definition) => {
+        interfaces.push(definition.name === "IModelReadRpcInterface" ? `${definition.name}@0.0.0` : `${definition.name}@${definition.version}`);
+      });
+
+      return btoa(interfaces.sort().join(","));
+    };
+
     const endpoints = await RpcManager.describeAvailableEndpoints();
     assert.equal(endpoints[0].interfaceName, "IModelReadRpcInterface");
     assert.equal(endpoints[0].operationNames[0], "openForRead");
     assert(typeof (endpoints[0].interfaceVersion) === "string");
+    assert.isTrue(endpoints[0].compatible);
+
+    RpcOperation.lookup(controlInterface, "describeEndpoints").policy.requestCallback = () => Object.defineProperty(controlInterface, "name", { value: simulateIncompatible() });
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.SET_INCOMPATIBLE_INTERFACE_VERSION, value: undefined }));
+
+    const endpointsMismatch = await RpcManager.describeAvailableEndpoints();
+    assert.isFalse(endpointsMismatch[0].compatible);
+
+    Object.defineProperty(controlInterface, "name", { value: originalName });
+    assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.RESTORE_COMPATIBLE_INTERFACE_VERSION, value: undefined }));
+
+    const endpointsRestored = await RpcManager.describeAvailableEndpoints();
+    assert.isTrue(endpointsRestored[0].compatible);
   });
 });

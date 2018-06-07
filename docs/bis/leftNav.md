@@ -19,7 +19,7 @@
 - [Schema Customization](./intro/schema-customization.md)
 - [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time.md)
 - [Schema Versioning](./intro/schema-versioning-and-generations.md)
-- [Glossary](./intro/glossary.md)
+- [BIS Glossary](./intro/glossary.md)
 
 <!-- TODO: The following are not linked in...?
 ./domains/*
@@ -37,7 +37,7 @@
 ./intro/units.md
 -->
 
----
+&nbsp;
 
 ### BIS Naming Guidelines
 
