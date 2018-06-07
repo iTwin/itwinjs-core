@@ -152,7 +152,9 @@ GridCurve representing other geometry (typically 3d splines). `GeneralGridCurve`
 
 ---
 
-A collection of GridSurfaces.
+A collection of `GridSurface` instances.
+
+Grids known in other products like IAI IfcGrid or Grid in `AECOsim Building Designer` contain curves, rather than surfaces. However, those curves are later referenced over different elevations, which makes those elements conceptually surfaces intersecting those elevations. in BIS - `Grid` is a collection of surfaces rather than curves. curves are a result of surfaces intersecting, known as `GridCurve`. While this approach ensures compatibility with legacy grids it also is more flexible. i.e. by manipulating the .EndElevation properties of individual instances of `IPlanGridSurface` in a `PlanGrid` intersecting `ElevationGrid`, individual `GridCurve` instances could be made not to appear on higher elevations. curves could be made not to appear on certain elevations by using the `GridSurfaceCreatesGridCurve` relationship (i.e. appear on story-1 and story-3, but skip story-2). number of axes is also unlimited in `SketchGrid`, `ElevationGrid` and `FreeGrid`.
 
 <u>Naming:</u>
 
@@ -332,7 +334,7 @@ A collection of `PlanCartesianGridSurface`. has 2 axes - 1 `OrthogonalAxisX` and
 
 ---
 
-A collection of `PlanRadialGridSurface` and `PlanCircumferentialGridSurface` elements. Has 2 axes - 1 `CircularAxis` and 1 `RadialAxis`. All `PlanRadialGridSurface` are in the `CircularAxis`, all `PlanCircumferentialGridSurface` in the `RadialAxis`.
+A collection of `PlanRadialGridSurface` and `PlanCircumferentialGridSurface` elements. Has 2 axes - 1 `CircularAxis` and 1 `RadialAxis`. All `PlanCircumferentialGridSurface` are in the `CircularAxis`, all `PlanRadialGridSurface` in the `RadialAxis`.
 `
 <u>Naming:</u>
 
@@ -389,6 +391,111 @@ a subcollection of GridSurfaces in a Grid. Typically used to group parallel surf
     </ECEntityClass>
 ```
 
+### GeneralGridAxis
+
+---
+
+a subcollection of `GridSurface` instances in a Grid. Used solely for grouping elements.
+
+<u>Naming:</u>
+
+1.  matches with Grid Axis in `AECOsim Building Designer`
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GeneralGridAxis" description="an element which groups GridSurfaces together in other grids">
+      <BaseClass>GridAxis</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### OrthogonalAxisX
+
+---
+
+a subcollection of `PlanCartesianGridSurface` in an `OrthogonalGrid` X direction
+
+<u>Naming:</u>
+
+1.  named so because it is an X axis in OrthogonalGrid.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="OrthogonalAxisX" description="an element which groups all PlanCartesianGridSurface in the X direction">
+      <BaseClass>GridAxis</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### OrthogonalAxisY
+
+---
+
+a subcollection of `PlanCartesianGridSurface` in an `OrthogonalGrid` Y direction
+
+<u>Naming:</u>
+
+1.  named so because it is an Y axis in OrthogonalGrid.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="OrthogonalAxisY" description="an element which groups all PlanCartesianGridSurface in the Y direction">
+      <BaseClass>GridAxis</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### CircularAxis
+
+---
+
+a subcollection of `PlanCircumferentialGridSurface` in a `RadialGrid`
+
+<u>Naming:</u>
+
+1.  matches with Circular Axis in `AECOsim Building Designer`
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="CircularAxis" description="an element which groups all PlanCircumferentialGridSurface in a RadialGrid together">
+      <BaseClass>GridAxis</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### RadialAxis
+
+---
+
+a subcollection of `PlanRadialGridSurface` in a `RadialGrid`
+
+<u>Naming:</u>
+
+1.  named so because it is an Y axis in OrthogonalGrid.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="RadialAxis" description="an element which groups all PlanRadialGridSurface in a RadialGrid together">
+      <BaseClass>GridAxis</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+    </ECEntityClass>
+```
+
 ### GridCurvesPortion
 
 ---
@@ -399,6 +506,11 @@ A space represents a volume bounded physically or only logically. Spaces provide
 
 1.  a `Portion` that contains `GridCurves` in the submodel
 
+<u>Geometry Use:</u>
+
+1.  no geometry
+2.  Local Coordinates : none
+
 <u>Schema:</u>
 
 ```xml
@@ -407,6 +519,416 @@ A space represents a volume bounded physically or only logically. Spaces provide
       <ECCustomAttributes>
         <ClassHasHandler xmlns="BisCore.01.00.00" />
       </ECCustomAttributes>
+    </ECEntityClass>
+```
+
+### GridSurface
+
+---
+
+An 3dimensional surface contained in a `Grid`.
+
+<u>Naming:</u>
+
+1.  name GridSurface signifies that it is a surface grid element
+
+<u>Properties:</u>
+
+1.  .Axis - a `GridAxis` this surface belongs to.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridSurface" modifier="Abstract" description="A grid surface element.">
+      <BaseClass>bis:SpatialLocationElement</BaseClass>
+      <ECNavigationProperty propertyName="Axis" relationshipName="GridAxisContainsGridSurfaces" direction="Backward" description="Axis this gridSurface belong to" />
+    </ECEntityClass>
+```
+
+### IPlanGridSurface
+
+---
+
+a mix-in for `GridSurface` classes contained in a `PlanGrid`
+
+<u>Naming:</u>
+
+1.  named by combining `PlanGrid` and `GridSurface`
+
+<u>Properties:</u>
+
+1.  .StartElevation - start elevation for the extrusion surface
+1.  .EndElevation - end elevation for the extrusion surface
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="IPlanGridSurface" modifier="Abstract" displayLabel="PlanGrid Surface" description="An interface that indicates that this Surface is suitable to be placed in a PlanGrid" >
+      <ECCustomAttributes>
+        <IsMixin xmlns="CoreCustomAttributes.01.00.00">
+          <!-- Only subclasses of grids:GridSurface can implement the IPlanGridSurface interface -->
+          <AppliesToEntityClass>GridSurface</AppliesToEntityClass>
+        </IsMixin>
+      </ECCustomAttributes>
+      <ECProperty propertyName="StartElevation" displayLabel="StartElevation" typeName="double" kindOfQuantity="AECU:LENGTH"/>
+      <ECProperty propertyName="EndElevation" displayLabel="EndElevation" typeName="double" kindOfQuantity="AECU:LENGTH"/>
+    </ECEntityClass>
+```
+
+### GridPlanarSurface
+
+---
+
+A class for planar `GridSurface` elements.
+
+<u>Naming:</u>
+
+1.  named to note that this is a planar `GridSurface`
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridPlanarSurface" modifier="Abstract" description="A planar grid surface element.">
+      <BaseClass>GridSurface</BaseClass>
+    </ECEntityClass>
+```
+
+### ElevationGridSurface
+
+---
+
+a planar `GridSurface` used in `ElevationGrid`. this is the only type of `GridSurface` allowed in an ElevationGrid.
+
+<u>Naming:</u>
+
+1.  named by combining `ElevationGrid` and `GridSurface`
+
+<u>Geometry Use:</u>
+
+1.  a `CurveVector`
+2.  Local Coordinates : grid coordinates + .Elevation property in Z axis
+
+<u>Properties:</u>
+
+1.  .Elevation - elevation this surface is located at, relative to `Grid` coordinate system.
+1.  .Surface2d - a property for the 2d surface geometry.
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="ElevationGridSurface" description="A PlanarGridSurface that is parallel with its Grid’s x-y plane (always contained in an ElevationGrid).">
+      <BaseClass>GridPlanarSurface</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+      <ECProperty propertyName="Elevation" displayLabel="Elevation" typeName="double" kindOfQuantity="AECU:LENGTH"/>
+      <ECProperty propertyName="Surface2d" displayLabel="Surface2d" typeName="Bentley.Geometry.Common.IGeometry"/>
+    </ECEntityClass>
+```
+
+### PlanGridPlanarSurface
+
+---
+
+A class for `GridPlanarSurface` elements used in `PlanGrid`.
+
+<u>Naming:</u>
+
+1.  named by combining `PlanGrid` and `GridPlanarSurface`
+
+<u>Geometry Use:</u>
+
+1.  a `SolidPrimitive` DgnExtrusion containing single line for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : defined by subclasses
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="PlanGridPlanarSurface" modifier="Abstract" description="A planar plangrid surface element.">
+      <BaseClass>GridPlanarSurface</BaseClass>
+      <BaseClass>IPlanGridSurface</BaseClass>
+    </ECEntityClass>
+```
+
+### PlanCartesianGridSurface
+
+---
+
+A class for `GridSurface` contained in `OrthogonalGrid`
+
+<u>Naming:</u>
+
+1.  named so because it is a `GridSurface` defined by cartesian coordinates
+
+<u>Geometry Use:</u>
+
+1.  "inherit from parent" a `SolidPrimitive` DgnExtrusion containing single line for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : `Grid` coordinates + .Coordinate in X or Y direction depending on the type of axis
+
+<u>Properties:</u>
+
+1.  .Coordinate - offset from coordinate system origin. direction defined by the axis
+2.  .StartExtent - start extent of the surface
+3.  .EndExtent - end extent of the surface
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="PlanCartesianGridSurface" description="A planar plan grid surface that is perpendicular to the grid’s x-axis or y-axis.">
+      <BaseClass>PlanGridPlanarSurface</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+      <ECProperty propertyName="Coordinate" displayLabel="Coordinate" typeName="double" kindOfQuantity="AECU:LENGTH" description="Origin of the surface"/>
+      <ECProperty propertyName="StartExtent" displayLabel="StartExtent" typeName="double" kindOfQuantity="AECU:LENGTH"/>
+      <ECProperty propertyName="EndExtent" displayLabel="EndExtent" typeName="double" kindOfQuantity="AECU:LENGTH"/>
+    </ECEntityClass>
+```
+
+### PlanRadialGridSurface
+
+---
+
+A class for `GridSurface` instances of angular increments contained in `RadialGrid`
+
+<u>Naming:</u>
+
+1.  named so because it is a `GridSurface` defined by radial parameters
+
+<u>Geometry Use:</u>
+
+1.  "inherit from parent" a `SolidPrimitive` DgnExtrusion containing single line for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : `Grid` coordinates rotated by the .Angle property from Y direction, clockwise
+
+<u>Properties:</u>
+
+1.  .Angle - angle in the clockwise direction from the Y axis of the `RadialGrid` defining the direction of surface base line.
+2.  .StartRadius - start radius of the surface
+3.  .EndRadius - end radius of the surface
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="PlanRadialGridSurface" description="A PlanGridPlanarSurface whose infinite plane contains the PlanGrid’s origin.">
+      <BaseClass>PlanGridPlanarSurface</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+      <ECProperty propertyName="Angle" displayLabel="Angle" typeName="double" kindOfQuantity="AECU:LENGTH" description="Origin of the surface"/>
+      <ECProperty propertyName="StartRadius" displayLabel="StartRadius" typeName="double" kindOfQuantity="AECU:LENGTH"/>
+      <ECProperty propertyName="EndRadius" displayLabel="EndRadius" typeName="double" kindOfQuantity="AECU:LENGTH"/>
+    </ECEntityClass>
+```
+
+### SketchLineGridSurface
+
+---
+
+A class for `GridSurface` instances of sketched line surfaces in `SketchGrid`
+
+<u>Naming:</u>
+
+1.  named so because it is an extruded line surface in a `SketchGrid`
+
+<u>Geometry Use:</u>
+
+1.  "inherit from parent" a `SolidPrimitive` DgnExtrusion containing single line for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : `Grid` coordinates
+
+<u>Properties:</u>
+
+1.  .Line2d - line geometry used to extrude the surface - a `CurveVector` containing a single line
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="SketchLineGridSurface" description="An extruded line gridsurface element.">
+      <BaseClass>PlanGridPlanarSurface</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+      <ECProperty propertyName="Line2d" displayLabel="Line2d" typeName="Bentley.Geometry.Common.IGeometry"/>
+    </ECEntityClass>
+```
+
+### GridArcSurface
+
+---
+
+A `GridSurface` that is parallel to extruded arc.
+
+<u>Naming:</u>
+
+1.  named to note that this is an arc `GridSurface`
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridArcSurface" modifier="Abstract" description="A grid surface that is parallel to extruded arc.">
+      <BaseClass>GridSurface</BaseClass>
+    </ECEntityClass>
+```
+
+### PlanGridArcSurface
+
+---
+
+A class for `GridArcSurface` elements used in `PlanGrid`.
+
+<u>Naming:</u>
+
+1.  named by combining `PlanGrid` and `GridArcSurface`
+
+<u>Geometry Use:</u>
+
+1.  a `SolidPrimitive` DgnExtrusion containing single arc for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : defined by subclasses
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="PlanGridArcSurface" modifier="Abstract" description="An arc plangrid surface element.">
+      <BaseClass>GridArcSurface</BaseClass>
+      <BaseClass>IPlanGridSurface</BaseClass>
+    </ECEntityClass>
+```
+
+### PlanCircumferentialGridSurface
+
+---
+
+A class for `GridSurface` instances of circular radius increments contained in `RadialGrid`
+
+<u>Naming:</u>
+
+1.  named so because it is a `GridSurface` defined by circumferential parameters
+
+<u>Geometry Use:</u>
+
+1.  "inherit from parent" a `SolidPrimitive` DgnExtrusion containing single arc for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : `Grid` coordinates
+
+<u>Properties:</u>
+
+1.  .Radius - radius from the `Grid` origin at which the arc surface is swept.
+2.  .StartAngle - start angle of the arc surface
+3.  .EndAngle - end angle of the arc surface
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="PlanCircumferentialGridSurface" description="An PlanGridArcSurface that is centered on the Grid’s origin.">
+      <BaseClass>PlanGridArcSurface</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+      <ECProperty propertyName="Radius" displayLabel="Radius" typeName="double" kindOfQuantity="AECU:LENGTH" description="Origin of the surface"/>
+      <ECProperty propertyName="StartAngle" displayLabel="StartAngle" typeName="double" kindOfQuantity="AECU:ANGLE"/>
+      <ECProperty propertyName="EndAngle" displayLabel="EndAngle" typeName="double" kindOfQuantity="AECU:ANGLE"/>
+    </ECEntityClass>
+```
+
+### SketchArcGridSurface
+
+---
+
+A class for `GridSurface` instances of sketched arc surfaces in `SketchGrid`
+
+<u>Naming:</u>
+
+1.  named so because it is an extruded arc surface in a `SketchGrid`
+
+<u>Geometry Use:</u>
+
+1.  "inherit from parent" a `SolidPrimitive` DgnExtrusion containing single arc for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : `Grid` coordinates
+
+<u>Properties:</u>
+
+1.  .Arc2d - arc geometry used to extrude the surface - a `CurveVector` containing a single arc
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="SketchArcGridSurface" description="An extruded arc gridsurface element.">
+      <BaseClass>PlanGridArcSurface</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+      <ECProperty propertyName="Arc2d" displayLabel="Arc2d" typeName="Bentley.Geometry.Common.IGeometry"/>
+    </ECEntityClass>
+```
+
+### GridSplineSurface
+
+---
+
+A `GridSurface` that is parallel to an extruded spline.
+
+<u>Naming:</u>
+
+1.  named to note that this is a spline `GridSurface`
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="GridSplineSurface" modifier="Abstract" description="A grid surface that is an extruded spline.">
+      <BaseClass>GridSurface</BaseClass>
+    </ECEntityClass>
+```
+
+### PlanGridSplineSurface
+
+---
+
+A class for `GridSplineSurface` elements used in `PlanGrid`.
+
+<u>Naming:</u>
+
+1.  named by combining `PlanGrid` and `GridSplineSurface`
+
+<u>Geometry Use:</u>
+
+1.  a `SolidPrimitive` DgnExtrusion containing single spline for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : defined by subclasses
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="PlanGridSplineSurface" modifier="Abstract" description="An arc plangrid surface element.">
+      <BaseClass>GridSplineSurface</BaseClass>
+      <BaseClass>IPlanGridSurface</BaseClass>
+    </ECEntityClass>
+```
+
+### SketchSplineGridSurface
+
+---
+
+A class for `GridSurface` instances of sketched spline surfaces in `SketchGrid`
+
+<u>Naming:</u>
+
+1.  named so because it is an extruded spline surface in a `SketchGrid`
+
+<u>Geometry Use:</u>
+
+1.  "inherit from parent" a `SolidPrimitive` DgnExtrusion containing single spline for base, swept from .StartElevation to .EndElevation
+2.  Local Coordinates : `Grid` coordinates
+
+<u>Properties:</u>
+
+1.  .Spline2d - spline geometry used to extrude the surface - a `CurveVector` containing a single spline
+
+<u>Schema:</u>
+
+```xml
+    <ECEntityClass typeName="SketchSplineGridSurface" description="An extruded spline gridsurface element.">
+      <BaseClass>PlanGridSplineSurface</BaseClass>
+      <ECCustomAttributes>
+        <ClassHasHandler xmlns="BisCore.01.00.00" />
+      </ECCustomAttributes>
+      <ECProperty propertyName="Spline2d" displayLabel="Spline2d" typeName="Bentley.Geometry.Common.IGeometry"/>
     </ECEntityClass>
 ```
 
