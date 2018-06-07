@@ -158,19 +158,15 @@ export class LocateTool extends ViewTool {
   }
 }
 
-export class StandardViewRotationTool extends ViewTool {
-  public static toolId = "View.StandardRotation";
-  private rotations = [StandardViewId.Top, StandardViewId.Iso, StandardViewId.Front];
-  private rotationNames = ["Top", "Iso", "Front"];
-  private rotationIndex = 0;
+function showStandardViewMenu(_event: any) {
+  const menu = document.getElementById("standardRotationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
 
-  public onDataButtonDown(ev: BeButtonEvent) {
-    if (ev.viewport) {
-      showStatus(this.rotationNames[this.rotationIndex], "view");
-      ev.viewport.setStandardRotation(this.rotations[this.rotationIndex]);
-      this.rotationIndex = (this.rotationIndex + 1) % 3;
-    }
-  }
+function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
+  theViewport!.setStandardRotation(rotationId);
+  IModelApp.tools.run("View.Fit", theViewport!, false, false);
+  showStatus(label, "view");
 }
 
 // opens the view and connects it to the HTML canvas element.
@@ -214,11 +210,6 @@ function startWalk(_event: any) {
 // start rotate view.
 function startRotateView(_event: any) {
   IModelApp.tools.run("View.Rotate", theViewport!);
-}
-
-// start rotate view.
-function switchStandardRotation(_event: any) {
-  IModelApp.tools.run("View.StandardRotation", theViewport!);
 }
 
 // start rotate view.
@@ -276,9 +267,19 @@ function wireIconsToFunctions() {
   document.getElementById("startZoom")!.addEventListener("click", startSelect);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
-  document.getElementById("switchStandardRotation")!.addEventListener("click", switchStandardRotation);
+  document.getElementById("switchStandardRotation")!.addEventListener("click", showStandardViewMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
+
+  // standard view rotation handlers
+  document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
+  document.getElementById("bottom")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Bottom, "Bottom"));
+  document.getElementById("left")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Left, "Left"));
+  document.getElementById("right")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Right, "Right"));
+  document.getElementById("front")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Front, "Front"));
+  document.getElementById("back")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Back, "Back"));
+  document.getElementById("iso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Iso, "Iso"));
+  document.getElementById("rightIso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
 }
 
 // ----------------------------------------------------------
@@ -312,7 +313,6 @@ async function main() {
     await IModelApi.init();
 
     IModelApp.tools.register(LocateTool);
-    IModelApp.tools.register(StandardViewRotationTool);
 
     if (!configuration.standalone) {
       // log in.
