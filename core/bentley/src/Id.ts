@@ -202,6 +202,18 @@ export class Id64 {
   public static invalidId: Id64 = new Id64();
 }
 
+/**
+ * Generates unique Id64 values in sequence, which are guaranteed not to conflict with Id64s associated with persistent elements or models.
+ * This is useful for associating stable, non-persistent identifiers with things like view decorations.
+ * A TransientIdSequence can generate a maximum of (2^40)-2 unique IDs.
+ */
+export class TransientIdSequence {
+  private _localId: number = 0;
+
+  /** Generate and return the next transient Id64 in the sequence. */
+  public get next(): Id64 { return new Id64([++this._localId, 0xffffffff]); }
+}
+
 /** A string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid.
  * @note Guid is an immutable class. Its value cannot be changed.
  */
