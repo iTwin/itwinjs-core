@@ -813,14 +813,23 @@ class ViewRotate extends ViewingToolHandle {
       return false;
 
     const tool = this.viewTool;
-    const vp = tool.viewport!;
+    const vp = ev.viewport!;
 
-    let pickPt = ev.rawPoint; // Use raw point when AccuDraw is not active, don't want tentative location...
+    if (/*###TODO tool.isTargetCenterLocked && */ vp.view.allow3dManipulations()) {
+      const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
+      if (undefined !== visiblePoint)
+        tool.setTargetCenterWorld(visiblePoint, false);
+    }
+
+    let pickPt: Point3d;
+    let pickPtOrig: Point3d;
+
     const accudraw = IModelApp.accuDraw;
     if (accudraw.isActive()) {
       const aDrawOrigin = accudraw.origin;
       const aDrawMatrix = accudraw.getRotation();
-      pickPt = ev.point; // Use adjusted point when AccuDraw is active...
+      pickPt = ev.point.clone(); // Use adjusted point when AccuDraw is active...
+      pickPtOrig = pickPt.clone();
 
       // Lock to the construction plane
       const distWorld = pickPt.clone();
@@ -830,7 +839,7 @@ class ViewRotate extends ViewingToolHandle {
 
       let flags = AccuDrawFlags.AlwaysSetOrigin | AccuDrawFlags.SetModePolar | AccuDrawFlags.FixedOrigin;
       const activeOrg = this.viewTool.targetCenterWorld;
-      const aDrawX = activeOrg.vectorTo(pickPt);
+      const aDrawX = activeOrg.vectorTo(distWorld);
 
       if (aDrawX.normalizeWithLength(aDrawX).mag > 0.00001) {
         const aDrawZ = aDrawMatrix.getRow(2);
@@ -841,12 +850,15 @@ class ViewRotate extends ViewingToolHandle {
       }
 
       accudraw.setContext(flags, activeOrg, aDrawMatrix);
+    } else {
+      pickPt = ev.rawPoint.clone(); // Use raw point when AccuDraw is not active, don't want tentative location...
+      pickPtOrig = pickPt.clone();
     }
 
     const viewPt = vp.worldToView(pickPt);
     tool.viewPtToSpherePt(viewPt, true, this.ballVector0);
 
-    vp.worldToNpc(pickPt, this.firstPtNpc);
+    vp.worldToNpc(pickPtOrig, this.firstPtNpc);
     this.lastPtNpc.setFrom(this.firstPtNpc);
 
     vp.getWorldFrustum(this.activeFrustum);

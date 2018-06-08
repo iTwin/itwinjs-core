@@ -84,6 +84,34 @@ export class ViewRect {
   public isContained(other: ViewRect): boolean {
     return this.left >= other.left && this.right <= other.right && this.bottom <= other.bottom && this.top >= other.top;
   }
+
+  public containsPoint(point: XAndY): boolean {
+    return point.x >= this.left && point.x < this.right && point.y >= this.top && point.y < this.bottom;
+  }
+
+  public overlaps(other: ViewRect, overlap?: ViewRect): boolean {
+    const maxOrgX = Math.max(this.left, other.left);
+    const maxOrgY = Math.max(this.top, other.top);
+    const minCrnX = Math.min(this.right, other.right);
+    const minCrnY = Math.min(this.bottom, other.bottom);
+
+    if (maxOrgX > minCrnX || maxOrgY > minCrnY)
+      return false;
+
+    if (undefined !== overlap) {
+      overlap.left = maxOrgX;
+      overlap.right = minCrnX;
+      overlap.top = maxOrgY;
+      overlap.bottom = minCrnY;
+    }
+
+    return true;
+  }
+
+  public computeOverlap(other: ViewRect, out?: ViewRect): ViewRect | undefined {
+    const result = undefined !== out ? out : new ViewRect();
+    return this.overlaps(other, result) ? result : undefined;
+  }
 }
 
 /**
@@ -1501,5 +1529,66 @@ export class Viewport {
       return undefined;
 
     return this.target.readPixels(rect, selector);
+  }
+
+  /**
+   * Attempt to determine the nearest visible geometry point within radius of supplied pick point.
+   * @param pickPoint Center point in world coordinates
+   * @param radius Integer radius of the circular area to include, in pixels
+   * @param out Optional Point3d preallocated to hold the result
+   * @returns the coordinates of the point within the circular area which is closest to the camera.
+   */
+  public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
+    radius = Math.floor(radius + 0.5);
+    const inView = this.worldToView(pickPoint);
+    const viewCenter = new Point2d(Math.floor(inView.x + 0.5), Math.floor(inView.y + 0.5));
+    const viewRect = this.viewRect;
+    const pickRect = new ViewRect(viewCenter.x - radius, viewCenter.y - radius, viewCenter.x + radius + 1, viewCenter.y + radius + 1);
+
+    const overlapRect = pickRect.computeOverlap(viewRect);
+    if (undefined === overlapRect)
+      return undefined;
+
+    const pixels = this.readPixels(overlapRect, Pixel.Selector.Distance);
+    if (undefined === pixels)
+      return undefined;
+
+    const testPoint = new Point2d();
+    const result = undefined !== out ? out : new Point3d();
+    for (let testRadius = 0; testRadius < radius; testRadius++) {
+      for (testPoint.x = viewCenter.x - testRadius; testPoint.x <= viewCenter.x + testRadius; testPoint.x++) {
+        for (testPoint.y = viewCenter.y - testRadius; testPoint.y <= viewCenter.y + testRadius; testPoint.y++) {
+          if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
+            return result;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  private getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+    const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
+    if (undefined !== npc)
+      this.npcToWorld(npc, npc);
+
+    return npc;
+  }
+
+  private getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+    const z = pixels.getPixel(x, y).distanceFraction;
+    if (z <= 0.0)
+      return undefined;
+
+    const result = undefined !== out ? out : new Point3d();
+    const viewRect = this.viewRect;
+    result.x = (x + 0.5 - viewRect.left) / viewRect.width;
+    result.y = 1.0 - (y + 0.5 - viewRect.top) / viewRect.height;
+    if (this.frustFraction < 1.0)
+      result.z = z * this.frustFraction / (1.0 + z * (this.frustFraction - 1.0)); // correct to npc if camera on.
+    else
+      result.z = z;
+
+    return result;
   }
 }
