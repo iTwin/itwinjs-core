@@ -476,18 +476,12 @@ export class Viewport {
   private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
   private static readonly scratchDefaultRotatePointHigh = new Point3d(.5, .5, .5);
   public determineDefaultRotatePoint(out?: Point3d): Point3d {
-    const depth = this.isActive ? this.determineVisibleDepthNpc() : undefined;
-    const scratch = Viewport.scratchDefaultRotatePointLow;
-    scratch.x = scratch.y = 0.5;
-    if (undefined !== depth) {
-      scratch.z = (depth.minimum + depth.maximum) / 2.0;
-      return this.npcToWorld(scratch, out);
-    } else if (this.isCameraOn()) {
+    if (this.isCameraOn())
       return this.view.getTargetPoint(out);
-    } else {
-      scratch.z = 0.5;
-      return this.npcToWorld(scratch, out);
-    }
+
+    const scratch = Viewport.scratchDefaultRotatePointLow;
+    scratch.x = scratch.y = scratch.z = 0.5;
+    return this.npcToWorld(scratch, out);
   }
 
   public getFocusPlaneNpc(): number {

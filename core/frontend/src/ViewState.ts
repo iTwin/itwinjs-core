@@ -923,7 +923,7 @@ export abstract class ViewState3d extends ViewState {
       return super.getTargetPoint(result);
 
     const viewZ = this.getRotation().getRow(2);
-    return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance());
+    return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance(), result);
   }
 
   /**
