@@ -6,8 +6,6 @@
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Platform } from "./Platform";
-import * as path from "path";
-import { IModelJsFs } from "./IModelJsFs";
 
 let realrequire: any;
 try {
@@ -68,11 +66,7 @@ export class NativePlatformRegistry {
     if (typeof (process) === "undefined" || process.version === "")
       throw new Error("could not determine process type");
 
-    const addonPackageName = NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName();
-
-    const addonFileName = path.join(dir || "", addonPackageName, "addon", "imodeljs.node");
-
-    return realrequire(addonFileName);
+    return realrequire("@bentley/imodeljs-native-platform-api/loadNativePlatform.js").loadNativePlatform(dir);
   }
 
   /** @hidden */
@@ -91,46 +85,5 @@ export class NativePlatformRegistry {
 
     // We are running in node or electron.
     NativePlatformRegistry.register(this.loadStandardAddon(dir));
-  }
-
-  /** @hidden */
-  public static loadAndRegisterStandardNativePlatformFromTools() {
-    let nativePlatformDir: string | undefined;
-    if (!Platform.isMobile()) {
-      let toolsDir = __dirname;
-      while (!IModelJsFs.existsSync(path.join(toolsDir, "tools")))
-        toolsDir = path.join(toolsDir, "..");
-      nativePlatformDir = path.join(toolsDir, "tools", "native-platform-installer", "node_modules");
-    }
-    NativePlatformRegistry.loadAndRegisterStandardNativePlatform(nativePlatformDir);
-  }
-}
-
-/** @hidden */
-class NodeAddonPackageName {
-
-  /** @hidden */
-  public static computeDefaultImodelNodeAddonPackageName(): string {
-
-    // *** KEEP THIS CONSISTENT WITH iModelJsNodeAddon/MakePackages.py IN MERCURIAL ***
-
-    if (typeof (process) === "undefined" || process.version === "")
-      throw new IModelError(IModelStatus.BadRequest, "Could not determine process type");
-
-    let versionCode;
-    const electronVersion = (process.versions as any).electron;
-    if (typeof electronVersion !== "undefined") {
-      const electronVersionParts = electronVersion.split(".");
-      versionCode = "e_" + electronVersionParts[0]; // use only major version number
-    } else {
-      const nodeVersion = process.version.substring(1).split("."); // strip off the character 'v' from the start of the string
-      versionCode = "n_" + nodeVersion[0]; // use only major version number
-    }
-    return path.join("@bentley", "imodeljs-" + versionCode + "-" + process.platform + "-" + process.arch);
-  }
-
-  /** @hidden */
-  public static computeDefaultImodelNodeAddonName(): string {
-    return path.join(NodeAddonPackageName.computeDefaultImodelNodeAddonPackageName(), "addon", "imodeljs.node");
   }
 }

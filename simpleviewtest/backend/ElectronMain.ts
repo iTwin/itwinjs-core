@@ -6,7 +6,7 @@ import * as url from "url";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelHost, NativePlatformRegistry } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@bentley/imodeljs-backend";
 
 // we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
 // (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
@@ -17,7 +17,6 @@ const electron = require("electron");
 // --------------------------------------------------------------------------------------
 // -------------- This part copied from ProtogistBackend.ts ---------------------------
 // Start the backend
-NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
 IModelHost.startup();
 
 Logger.initializeToConsole(); // configure logging for imodeljs-core

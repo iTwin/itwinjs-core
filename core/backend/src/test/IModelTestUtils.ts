@@ -14,7 +14,6 @@ import { TestIModelInfo } from "./MockAssetUtil";
 import { HubTestUtils } from "./integration/HubTestUtils";
 import { TestConfig } from "./TestConfig";
 import * as path from "path";
-import { NativePlatformRegistry } from "../NativePlatformRegistry";
 
 /** Class for simple test timing */
 export class Timer {
@@ -43,8 +42,6 @@ if (IModelJsFs.existsSync(loggingConfigFile)) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
 }
-
-NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
 
 // Initialize the RPC interface classes used by tests
 RpcManager.initializeInterface(IModelReadRpcInterface);

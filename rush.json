@@ -71,7 +71,7 @@
   ],
   "eventHooks": {
     "postRushInstall": [
-      "npm run clean & cd tools/native-platform-installer & npm install & cd ../..",
+      "npm run clean",
       "rush clean"
     ]
   }

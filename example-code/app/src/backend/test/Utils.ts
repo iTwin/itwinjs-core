@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import { ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
-import { Element, IModelDb, InformationPartitionElement, NativePlatformRegistry } from "@bentley/imodeljs-backend";
+import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 
@@ -136,5 +136,3 @@ export class IModelTestUtils {
   }
 
 }
-
-NativePlatformRegistry.loadAndRegisterStandardNativePlatformFromTools();
