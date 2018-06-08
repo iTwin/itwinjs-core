@@ -57,32 +57,32 @@ export class SyncFlags {
   public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.firstDrawComplete = other.firstDrawComplete; this.redrawPending = other.redrawPending; }
 }
 
-/** A rectangle in view coordinates. */
+/** A rectangle in view coordinates with (0,0) corresponding to the top-left corner of the view. */
 export class ViewRect {
-  public constructor(public left = 0, public bottom = 0, public right = 0, public top = 0) { }
-  public isNull(): boolean { return this.right < this.left || this.top < this.bottom; }
+  public constructor(public left = 0, public top = 0, public right = 0, public bottom = 0) { }
+  public isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
   public get width() { return this.right - this.left; }
-  public get height() { return this.top - this.bottom; }
+  public get height() { return this.bottom - this.top; }
   public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
   public get area() { return this.isNull() ? 0 : this.width * this.height; }
-  public init(left = 0, bottom = 0, right = 1, top = 1) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
+  public init(left: number, top: number, right: number, bottom: number) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 
   public equals(rhs: ViewRect): boolean { return this.left === rhs.left && this.right === rhs.right && this.bottom === rhs.bottom && this.top === rhs.top; }
-  public copyFrom(other: ViewRect): void { this.init(other.left, other.bottom, other.right, other.top); }
+  public copyFrom(other: ViewRect): void { this.init(other.left, other.top, other.right, other.bottom); }
   public clone(out?: ViewRect): ViewRect {
     if (undefined !== out) {
       out.copyFrom(this);
       return out;
     } else {
-      return new ViewRect(this.left, this.bottom, this.right, this.top);
+      return new ViewRect(this.left, this.top, this.right, this.bottom);
     }
   }
 
   /** Determine if this ViewRect is contained entirely within the bounds of another ViewRect. */
   public isContained(other: ViewRect): boolean {
-    return this.left >= other.left && this.right <= other.right && this.bottom >= other.bottom && this.top <= other.top;
+    return this.left >= other.left && this.right <= other.right && this.bottom <= other.bottom && this.top >= other.top;
   }
 }
 
@@ -517,7 +517,7 @@ export class Viewport {
     const corners = this.viewCorners;
     const viewRect = this.viewRect;
     corners.high.x = viewRect.right;
-    corners.low.y = viewRect.top;    // y's are swapped on the screen!
+    corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
     corners.low.x = 0;
     corners.high.y = 0;
     corners.low.z = -32767;

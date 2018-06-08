@@ -141,27 +141,6 @@ export class Clips {
   public get isValid(): boolean { return this.length > 0; }
 }
 
-// All the 'rects' used in DgnClientFx were defined as BSIRect in screen coords i.e. top < bottom, origin at top-left.
-// Keith replaced them with ViewRect which has origin at bottom-left.
-// In DgnDisplay we had our own ViewRect to convert a BSIRect from screen to view coords.
-// Now we need the inverse in TypeScript...
-class BSIRect {
-  public readonly viewRect: ViewRect;
-  public readonly fullViewHeight: number;
-
-  public constructor(viewRect: ViewRect, fullViewHeight: number) {
-    this.viewRect = viewRect;
-    this.fullViewHeight = fullViewHeight;
-  }
-
-  public get left() { return this.viewRect.left; }
-  public get right() { return this.viewRect.right; }
-  public get width() { return this.viewRect.width; }
-  public get top() { return this.fullViewHeight - this.viewRect.top; }
-  public get bottom() { return this.fullViewHeight - this.viewRect.bottom; }
-  public get height() { return this.viewRect.height; }
-}
-
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
@@ -621,7 +600,7 @@ export abstract class Target extends RenderTarget {
   private readonly _scratchTmpFrustum = new Frustum();
   private readonly _scratchRectFrustum = new Frustum();
   private readonly _scratchViewFlags = new ViewFlags();
-  private readPixelsFromFbo(inRect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     // Temporarily turn off textures and lighting. We don't need them and it will speed things up not to use them.
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
     vf.setShowTransparency(false);
@@ -641,8 +620,7 @@ export abstract class Target extends RenderTarget {
 
     // Create a culling frustum based on the input rect.
     // NB: C++ BSIRect => TypeScript ViewRect...
-    const viewRect = new BSIRect(this.viewRect, this.viewRect.height);
-    const rect = new BSIRect(inRect, this.viewRect.height);
+    const viewRect = this.viewRect;
     const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
     const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
     const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
@@ -686,7 +664,7 @@ export abstract class Target extends RenderTarget {
     // Restore the state
     this._stack.pop();
 
-    return this.compositor.readPixels(inRect, selector);
+    return this.compositor.readPixels(rect, selector);
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //

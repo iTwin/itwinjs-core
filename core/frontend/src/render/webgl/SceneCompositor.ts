@@ -182,11 +182,11 @@ class PixelBuffer implements Pixel.Buffer {
   private get numPixels(): number { return this._rect.width * this._rect.height; }
 
   private getPixelIndex(x: number, y: number): number {
-    if (x < this._rect.left || y < this._rect.bottom)
+    if (x < this._rect.left || y < this._rect.top)
       return this.numPixels;
 
     x -= this._rect.left;
-    y -= this._rect.bottom;
+    y -= this._rect.top;
     if (x >= this._rect.width || y >= this._rect.height)
       return this.numPixels;
 

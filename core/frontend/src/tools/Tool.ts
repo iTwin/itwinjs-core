@@ -252,7 +252,7 @@ export class GestureInfo {
 
   public getViewPoint(vp: Viewport) {
     const screenRect = vp.viewRect;
-    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.bottom, 0.0);
+    return new Point3d(this.ptsLocation.x - screenRect.left, this.ptsLocation.y - screenRect.top, 0.0);
   }
 
   public init(gestureId: GestureId, centerX: number, centerY: number, distance: number, touchPoints: XAndY[], isEnding: boolean, isFromMouse: boolean, prevNumTouches: number) {

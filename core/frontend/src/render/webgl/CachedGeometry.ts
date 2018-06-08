@@ -77,7 +77,7 @@ export abstract class CachedGeometry {
       return 1.0;
     }
 
-    const minWeight = 2; // ###TODO: reset back to 1 once 1-px-wide lines are rendering correctly
+    const minWeight = 1; // ###TODO: reset back to 1 once 1-px-wide lines are rendering correctly
     let weight = this._getLineWeight(params);
     weight = Math.max(weight, minWeight);
     weight = Math.min(weight, 31.0);
