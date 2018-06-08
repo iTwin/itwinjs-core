@@ -38,7 +38,9 @@
   "dependencies": {
     "@bentley/ecpresentation-common": "^0.3.1",
     "@bentley/ecpresentation-frontend": "^0.3.1",
-    "lodash": "^4.14.0"
+    "lodash": "^4.14.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
   },
   "peerDependencies": {
     "@bentley/imodeljs-i18n": "^0.0.1",
@@ -53,6 +55,8 @@
     "@bentley/ui-core": "^0.0.0",
     "@bentley/ui-components": "^0.1.3",
     "@types/lodash": "^4.14.0",
+    "@types/react": "^16.0.31",
+    "@types/react-dom": "^16.0.3",
     "cpx": "^1.5",
     "cross-env": "^5.1.0",
     "nyc": "^11.6.0",
