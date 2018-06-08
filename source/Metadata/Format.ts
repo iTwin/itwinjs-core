@@ -98,7 +98,7 @@ export default class Format extends SchemaItem {
      * @param label A localized display label that is used instead of the name in a GUI.
      */
   public createUnit(name: string, label?: string) {
-    if ((typeof(name) !== "string") || (label !== undefined && typeof(label) !== "string")) // throws if name isnt a string or if label is defined and isnt a string
+    if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     this._composite!.units!.forEach((unit: Unit) => { // Name must be unique within the Composite
       if (unit.name.name.toLowerCase() === name.toLowerCase())
@@ -268,20 +268,20 @@ export default class Format extends SchemaItem {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'spacer' attribute.`);
         this._composite!.spacer = jsonObj.composite.spacer; // if spacer is defined and it is a one character string, we can assign it to this composite
       }
-      if (jsonObj.composite.units !== undefined && jsonObj.composite.units instanceof Array) { // Composite requires at least one unit, which must be an array of unit objects
+      if (jsonObj.composite.units !== undefined && jsonObj.composite.units instanceof Array && jsonObj.composite.units.length !== 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units, which must be an array of unit objects
         jsonObj.composite.units.forEach((unit: any) => { // for each unit
           this.createUnit(unit.name, unit.label); // create the unit
         });
       } else
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'units' attribute. It should be of type 'string[]'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'units' attribute.`);
     }
 
     if (undefined !== jsonObj.$schema) {
       if (typeof(jsonObj.$schema) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${jsonObj.name} has an invalid 'schema' attribute. It should be of type 'string'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'schema' attribute. It should be of type 'string'.`);
 
       if (jsonObj.$schema.toLowerCase() !== this.ec32Url) // $schema value must be equal to the EC3.2 url
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${jsonObj.name} does not have the required schema URL.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} does not have the required schema URL.`);
     }
 
   }

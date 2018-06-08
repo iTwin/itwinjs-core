@@ -773,7 +773,7 @@ describe("Format tests", () => {
       });
     });
   });
-  describe.only("Tests with Composite", () => {
+  describe("Tests with Composite", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       testFormat = new Format(schema, "AmerMYFI4");
@@ -811,6 +811,276 @@ describe("Format tests", () => {
       assert(testFormat.composite!.units!.length === 4);
       assert(testFormat.composite!.includeZero === false);
       assert(testFormat.composite!.spacer === "-");
+    });
+    it("Throw for Composite with missing units attribute", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
+    });
+    it("Throw for Composite with empty units array", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
+    });
+    it("includeZero must be boolean", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: "false",
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+    });
+    it("spacer must be a one character string", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "space",
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
+    });
+    it("spacer must be a string", async () => {
+      const json = {
+        includeZero: false,
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: 1,
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
+    });
+    it("Unit name is required", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              label: "mile(s)",
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
+    });
+    it("Unit label is optional", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+            },
+          ],
+        },
+      };
+      await testFormat.fromJson(json);
+      assert(testFormat.composite!.units!.length === 1);
+      assert(testFormat.composite!.includeZero === false);
+      assert(testFormat.composite!.spacer === "-");
+    });
+    it("Unit name must be a string", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: 1234,
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
+    });
+    it("Label must be a string", async () => {
+      const json = {
+        includeZero: false,
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+              label: 1,
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
+    });
+    it("Unit names must be unique", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+            {
+              name: "MILE",
+              label: "yrd(s)",
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The unit MILE has a duplicate name.`);
+    });
+    it("Unit labels do not have to be unique", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+            {
+              name: "YARD",
+              label: "yrd(s)",
+            },
+          ],
+        },
+      };
+      await testFormat.fromJson(json);
+      assert(testFormat.composite!.units!.length === 2);
+      assert(testFormat.composite!.includeZero === false);
+      assert(testFormat.composite!.spacer === "-");
+    });
+    it("Unit name is not a valid ECName", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "8MILE",
+              label: "mile(s)",
+            },
+            {
+              name: "YARD",
+              label: "yrd(s)",
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
+    });
+    it("Cannot have more than 4 units", async () => {
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+            {
+              name: "YRD",
+              label: "yrd(s)",
+            },
+            {
+              name: "FT",
+              label: "'",
+            },
+            {
+              name: "IN",
+              label: "\"",
+            },
+            {
+              name: "METER",
+              label: "meter(s)",
+            },
+          ],
+        },
+      };
+      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
     });
   });
 });
