@@ -450,6 +450,7 @@ if (u_featureInfo.x <= kFeatureDimension_SingleUniform) {
 } else {
   vec2 texc = computeElementIdTextureCoords();
   v_element_id0 = TEXTURE(u_elementIdLUT, texc);
+  texc.x += g_elementId_stepX;
   v_element_id1 = TEXTURE(u_elementIdLUT, texc);
 }`;
 
