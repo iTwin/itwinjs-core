@@ -378,7 +378,6 @@ async function resetStandaloneIModel(filename: string) {
   await clearViews();
   await openStandaloneIModel(activeViewState, filename);
   await buildViewList(activeViewState);
-  // await buildModelMenu(activeViewState);
   await openView(activeViewState);
   spinner.style.display = "none";
 }
@@ -506,10 +505,6 @@ async function main() {
 
     // now connect the view to the canvas
     await openView(activeViewState);
-
-    // load toggled models
-    // showStatus("opening model list");
-    // await buildModelMenu(activeViewState);
 
     showStatus("View Ready");
   } catch (reason) {
