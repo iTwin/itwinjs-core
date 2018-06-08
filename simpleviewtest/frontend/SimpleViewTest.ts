@@ -1,7 +1,7 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef, ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
@@ -33,6 +33,9 @@ let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState>();
 let theViewport: Viewport | undefined;
 const renderModeOptions = new Map<string, boolean>();
+let curModelProps: ModelProps[] = [];
+let curModelPropIndices: number[] = [];
+let curNumModels = 0;
 
 // Entry point - run the main function
 main();
@@ -119,6 +122,75 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
       }
     }
   }
+}
+
+// open up the model toggle menu
+function startToggleModel(_event: any) {
+  const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
+// build list of  models; enables them all
+async function buildModelMenu(state: SimpleViewState) {
+  const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+  const modelQueryParams: ModelQueryParams = { wantPrivate: false };
+  curModelProps = await state.iModelConnection!.models.queryProps(modelQueryParams);
+  curModelPropIndices = [];
+  modelMenu.innerHTML = "";
+  let i = 0, p = 0;
+  for (const modelProp of curModelProps) {
+    if (modelProp.name && modelProp.id && modelProp.classFullName === "BisCore:PhysicalModel") {
+      modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
+      curModelPropIndices.push(p);
+      i++;
+    }
+    p++;
+  }
+
+  curNumModels = i;
+  for (let c = 0; c < curNumModels; c++) {
+    const cbxName = "cbxModel" + c;
+    updateModelToggleState(cbxName, true);
+    addModelToggleHandler(cbxName);
+  }
+
+  applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
+}
+
+// set model checkbox state to checked or unchecked
+function updateModelToggleState(id: string, enabled: boolean) {
+  (document.getElementById(id)! as HTMLInputElement).checked = enabled;
+}
+
+// query model checkbox state (checked or unchecked)
+function getModelToggleState(id: string): boolean {
+  return (document.getElementById(id)! as HTMLInputElement).checked;
+}
+
+// apply a model checkbox state being changed (actually change list of viewed models)
+function applyModelToggleChange(_cbxModel: string) {
+  if (!(theViewport!.view instanceof SpatialViewState))
+    return;
+  const view = theViewport!.view as SpatialViewState;
+
+  view.clearViewedModels();
+
+  for (let c = 0; c < curNumModels; c++) {
+    const cbxName = "cbxModel" + c;
+    const isChecked = getModelToggleState(cbxName);
+    if (isChecked)
+      view.addViewedModel(curModelProps[curModelPropIndices[c]].id!);
+  }
+
+  theViewport!.sync.invalidateScene();
+
+  const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
+  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
+}
+
+// add a click handler to model checkbox
+function addModelToggleHandler(id: string) {
+  document.getElementById(id)!.addEventListener("click", () => applyModelToggleChange(id));
 }
 
 export class LocateTool extends ViewTool {
@@ -251,6 +323,7 @@ async function openView(state: SimpleViewState) {
 
 async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
+  buildModelMenu(activeViewState);
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -305,6 +378,7 @@ async function resetStandaloneIModel(filename: string) {
   await clearViews();
   await openStandaloneIModel(activeViewState, filename);
   await buildViewList(activeViewState);
+  // await buildModelMenu(activeViewState);
   await openView(activeViewState);
   spinner.style.display = "none";
 }
@@ -338,6 +412,7 @@ function addRenderModeHandler(id: string) {
 function wireIconsToFunctions() {
   document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
   document.getElementById("viewList")!.addEventListener("change", changeView);
+  document.getElementById("startToggleModel")!.addEventListener("click", startToggleModel);
   document.getElementById("startToggleCamera")!.addEventListener("click", startToggleCamera);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
@@ -431,6 +506,10 @@ async function main() {
 
     // now connect the view to the canvas
     await openView(activeViewState);
+
+    // load toggled models
+    // showStatus("opening model list");
+    // await buildModelMenu(activeViewState);
 
     showStatus("View Ready");
   } catch (reason) {

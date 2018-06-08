@@ -229,6 +229,9 @@
 .bim-icon-redo:before {
       content: "\e983"
 }
+.bim-icon-model:before {
+      content: "\e90b"
+}
 
 .toolMenu {
   position:absolute;

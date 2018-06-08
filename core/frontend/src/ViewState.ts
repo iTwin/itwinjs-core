@@ -2,7 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { Id64, JsonUtils, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64, JsonUtils, Id64Set, Id64Props } from "@bentley/bentleyjs-core";
 import {
   Vector3d, Vector2d, Point3d, Point2d, YawPitchRollAngles, XYAndZ, XAndY, Range3d, RotMatrix, Transform,
   AxisOrder, Angle, Geometry, Constant, ClipVector, Range2d, PolyfaceBuilder, StrokeOptions,
@@ -1425,8 +1425,11 @@ export abstract class ViewState3d extends ViewState {
  * The list of viewed models is stored by the ModelSelector.
  */
 export class SpatialViewState extends ViewState3d {
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, public modelSelector: ModelSelectorState) {
+  public modelSelector: ModelSelectorState;
+
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
+    this.modelSelector = modelSelector;
     if (arg3 instanceof SpatialViewState) { // from clone
       this.modelSelector = arg3.modelSelector.clone();
     }
@@ -1454,6 +1457,14 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
   public viewsModel(modelId: Id64): boolean { return this.modelSelector.containsModel(modelId); }
+
+  public clearViewedModels() {
+    this.modelSelector.models.clear();
+  }
+
+  public addViewedModel(id: Id64Props) {
+    this.modelSelector.addModels(id);
+  }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
