@@ -7,14 +7,14 @@ The software architecture of iModelJs was driven by the following goals:
 - Re-use business logic across web, desktop, and mobile apps
 - Re-use HTML GUI across web, desktop, and mobile apps
 
-[Backend](../learning/Glossary.md#backend) Architecture Layers:
+[Backend](../learning/backend) Architecture Layers:
 
 - Application Backend (TypeScript)
 - iModelJs Backend Framework (TypeScript)
 - JavaScript Runtime with C++ Interoperability
 - iModelJs Native Libraries (C++)
 
-[Frontend](../learning/Glossary.md#frontend) Architecture Layers:
+[Frontend](../learning/frontend) Architecture Layers:
 
 - Application Frontend (TypeScript)
 - iModelJs Frontend Framework (TypeScript)
@@ -36,11 +36,11 @@ The [frontend --> backend communication](./RpcInterface.md) is over HTTPS for in
 
 ![SoftwareArchitecture-Web](./SoftwareArchitecture-Web.png)
 
-![>](./right_chevron.png)[Write an interactive Web app](../learning/WriteAnInteractiveWebApp.md)
+![>](./next.png) [Write an interactive Web app](../learning/WriteAnInteractiveWebApp.md)
 
-![>](./right_chevron.png)[Write a Web service](../learning/WriteAWebService.md)
+![>](./next.png) [Write a Web service](../learning/WriteAWebService.md)
 
-![>](./right_chevron.png)[Write a Web agent](../learning/WriteAWebAgent.md)
+![>](./next.png) [Write a Web agent](../learning/WriteAWebAgent.md)
 
 ## Desktop
 
@@ -52,7 +52,7 @@ The [frontend --> backend communication](./RpcInterface.md) is over *Inter Proce
 
 ![SoftwareArchitecture-Desktop](./SoftwareArchitecture-Desktop.png)
 
-![>](./right_chevron.png)[Write a desktop app](../learning/WriteAnInteractiveDesktopApp.md)
+![>](./next.png) [Write a desktop app](../learning/WriteAnInteractiveDesktopApp.md)
 
 ## Mobile
 
@@ -62,7 +62,7 @@ The [frontend --> backend communication](./RpcInterface.md) is over function cal
 
 ![SoftwareArchitecture-Mobile](./SoftwareArchitecture-Mobile.png)
 
-![>](./right_chevron.png)[Write a mobile app](../learning/WriteAnInteractiveMobileApp.md)
+![>](./next.png) [Write a mobile app](../learning/WriteAnInteractiveMobileApp.md)
 
 ## Comparison
 

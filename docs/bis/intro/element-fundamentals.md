@@ -117,15 +117,15 @@ The `GeometricElement` hierarchy defined in the `BisCore` schema is broken down 
 
 Brief descriptions for the classes in the 2d branch are:
 
-- `GeometricElement2d` – An Element that is inherently 2D in nature.
-- `GraphicalElement2d` – A 2D Element that holds graphical information rather than geometry that has business meaning.
-- `DrawingGraphic` – A 2D graphical Element that is intended to be placed on a Drawing.
+- `GeometricElement2d` – An Element that is inherently 2d in nature.
+- `GraphicalElement2d` – A 2d Element that holds graphical information rather than geometry that has business meaning.
+- `DrawingGraphic` – A 2d graphical Element that is intended to be placed on a Drawing.
 
-Brief descriptions for the classes in the 3D branch are:
+Brief descriptions for the classes in the 3d branch are:
 
-- `GeometricElement3d` – An Element that is inherently 3D in nature.
-- `GraphicalElement3d` – A 3D Element that holds graphical information rather than geometry that has business meaning. Examples include text annotations or 3D bar charts. Instances of `GraphicalElement3d` are typically positioned for *whitespace* reasons since they are not tied to real-world 3D space.
-- `SpatialElement` – An Element representing an entity that exists in and is relevant to real-world 3D space.
+- `GeometricElement3d` – An Element that is inherently 3d in nature.
+- `GraphicalElement3d` – A 3d Element that holds graphical information rather than geometry that has business meaning. Examples include text annotations or 3d bar charts. Instances of `GraphicalElement3d` are typically positioned for *whitespace* reasons since they are not tied to real-world 3d space.
+- `SpatialElement` – An Element representing an entity that exists in and is relevant to real-world 3d space.
 - `PhysicalElement` – A SpatialElement representing a real physical entity, i.e. one that has mass.
 - `SpatialLocationElement` – A SpatialElement representing some defined point, curve, surface, or volume in the real world. Spatial locations are not physical, and have no mass. Examples include a property line, a zoning envelope, an alignment, or a gridline.
 
@@ -163,7 +163,7 @@ Roles are linked to each other through the PhysicalElement.
 
 Each role may include some redundant information, but should generally share the physical form and properties of the `PhysicalElement`.
 
-In our virtual world, roles can get “out of sync” with the PhysicalElements, and can even exist without the corresponding PhysicalElement existing. These out of sync cases often represent incomplete work (the P&ID has changed, but the 3D model has not yet been updated to reflect the changes), but sometimes reflect a long-term condition (the vehicle role is modeled in the asset management system, but there is no need to create the physical model of the truck).
+In our virtual world, roles can get “out of sync” with the PhysicalElements, and can even exist without the corresponding PhysicalElement existing. These out of sync cases often represent incomplete work (the P&ID has changed, but the 3d model has not yet been updated to reflect the changes), but sometimes reflect a long-term condition (the vehicle role is modeled in the asset management system, but there is no need to create the physical model of the truck).
 
 ### Example of Element Type Usage
 

@@ -1,6 +1,4 @@
-# What is an iModel?
-
-## iModel Overview
+# iModel Overview
 
 An iModel is a distributed relational database, based on [SQLite](https://www.sqlite.org/index.html), with a schema defined by [BIS](../bis/index). An iModel holds information about a single infrastructure asset. iModels may contain physical and functional models, drawings, specifications, analytical models, etc.
 
@@ -40,4 +38,4 @@ The purpose of the iModelJs library is to make iModels accessible to everyone, e
 
 ## ECSQL is the query language of iModels
 
-An iModel is an SQLite database. SQLite has extensive support for SQL, including indexing and comprehensive query planning. However, due to the mapping of BIS classes to database tables, direct use of SQL with iModels is not straightforward. Therefore, iModelJs includes [ECSQL](../learning/ecsql) to form qeuries of iModels in terms of classes and property names, rather than table and column names. Internally ECSQL is converted to SQL and passed to SQLite.
+An iModel is an SQLite database. SQLite has extensive support for SQL, including indexing and comprehensive query planning. However, due to the mapping of BIS classes to database tables, direct use of SQL with iModels is not straightforward. Therefore, iModelJs includes [ECSQL](../learning/ecsql) to form qeuries of iModels in terms of classes and property names, rather than table and column names. Internally ECSQL is converted to SQL and passed to SQLite to achieve outstanding performance.

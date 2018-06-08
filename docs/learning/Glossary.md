@@ -15,7 +15,7 @@ tableRowAnchors: true
 |**Category**|A property of a GeometricElement that "categorizes" its geometry. That is, every GeometricElement is "in" one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. Note that Categories are not relevant for Elements that are not GeometricElements. Category is a subclass of DefinitionElement.
 |**CategorySelector**|A named group of Categories displayed in a View. Many ViewDefinitions may refer to the same CategorySelector.
 |**ChangeSet**|A group of changes to an iModel. Changesets are created whenever an Briefcase is modified and reflect the union of all Additions, Deletions, and Modifications over a period of time. ChangeSet are assigned an identifier when they are uploaded to iModelHub and every ChangeSet stores the identifier of its parent ChangeSet. In this way the chain of ChangeSets for an iModel in iModelHub forms its "timeline of changes".
-|**ChangeSummary**|A summary of the changes in a ChangeSet in the form of ECClasses and ECProperties. See [Change Summary Overview](./ChangeSummaries) for details.
+|**ChangeSummary**|A [summary of the changes](./ChangeSummaries) in a ChangeSet in the form of ECClasses and ECProperties.
 |**Class Registry**|A registry of known JavaScript classes that handle ECClasses. The JavaScript class **must** have the same name as the ECClass. When an Entity is loaded from an iModel, a JavaScript instance of the registered class will be created. If no JavaScript class is registered for the ECClass, one is created dynamically.
 |**Code**|An optional [three part *human readable* identifier]($docs/bis/intro/codes.md) for an Element. A code consists of a CodeSpec, CodeScope, and CodeValue. The combination of all three parts must be unique within an iModel.
 |**CodeScope**|A Code Scope determines a *scope for uniqueness* for the code value. For example, a scope may specify the whole iModel, only within a certain Model, within an assembly, etc. For a given CodeSpec and CodeScope, all CodeValues must be unique.
@@ -32,14 +32,14 @@ tableRowAnchors: true
 |**ECProperty**|A named member of an ECClass.
 |**ECRelationship**|A named type of relationship and cardinality between instances of ECClasses.
 |**ECSchema**|A named group of ECClasses and ECRelationships.
-|**ECSQL**|A superset of SQL that uses ECClass and ECProperties names in place of table and column names (see [ECSQL](./ECSQL)).
+|**ECSQL**|A [superset of SQL](./ECSQL) that uses ECClass and ECProperties names in place of table and column names.
 |**Electron**|A tool for building [desktop apps in JavaScript and HTML](https://electronjs.org).
-|**Element**|The base class in Bis for an *Entity with a Code*. Elements also have an ElementId, a FederationGuid, and an ElementUserLabel. There is also a backend TypeScript class called [Element]($backend).
+|**Element**|The base class in Bis for an *Entity with a Code*. [Elements](../bis/intro/element-fundamentals.md) also have an ElementId, a FederationGuid, and an ElementUserLabel. There is also a backend TypeScript class called [Element]($backend).
 |**ElementAspect**|An ECClass that holds information related to (and owned by) a single Element. Semantically, an ElementAspect can be considered part of the Element, but defined independently. Thus, ElementAspects are deleted when their owning Element is deleted.
 |**ElementState**|A TypeScript class that holds the properties of an Element in the frontend. See [ElementState]($frontend).
 |**Entity Metadata**|The names and types of the ECProperties and ECRelationships of an Entity ECClass.
 |**Entity**|A physical or non-physical object in the real world, defined by an ECClass.
-|**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. FeatureGates are created in JSON and may be tested at runtime to *gate off* access to a feature. See [learning about FeatureGates](./common/FeatureGates.md).
+|**FeatureGate**|A technique for controlling the behavior of an iModelJs program at runtime. [FeatureGates](./common/FeatureGates.md) are created in JSON and may be tested at runtime to *gate off* access to a feature.
 |**FederationGuid**|An optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) for an Element. Generally it is intended that FederationGuid are assigned by external systems and are held in iModels to *federate* Elements to their external meaning.
 |**FileProperty**|A named string or blob that holds *metadata* about an iModel. FileProperties are meant to be accessible directly from SQLite and are the only data in an iModel not defined by an ECClass. For example, thumbnails are stored as FileProperties.
 |**Frontend**|The part of an interactive app that is concerned with displaying data and user interaction. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [App frontends](../overview/App.md#app-frontend)
@@ -89,4 +89,4 @@ tableRowAnchors: true
 |**ViewState**|A TypeScript class in the frontend that holds a copy of the *state* of a [ViewDefinition]($backend). A [ViewState]($frontend) is modified by viewing operations (e.g. pan, zoom, rotate, etc.). There are a parallel set of subclasses of ViewState for the subclasses of ViewDefinition.
 |**WebGL**|A [JavaScript API](https://www.khronos.org/webgl/) for rendering into an HTML document via OpenGL.
 |**Webpack**|A tool for [bundling JavaScript applications](https://webpack.js.org/)
-|**Wire format**|The JSON representation of objects that must be used when transferring data to/from an iModelJs app. See Props.
+|**Wire format**|The JSON representation of objects that must be used when transferring data in iModelJs. See Props.
