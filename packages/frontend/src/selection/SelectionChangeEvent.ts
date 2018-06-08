@@ -4,7 +4,7 @@
 /** @module UnifiedSelection */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import ISelectionProvider from "./ISelectionProvider";
 
@@ -43,8 +43,8 @@ export interface SelectionChangeEventArgs {
   /** Set of keys affected by this selection change event. */
   keys: Readonly<KeySet>;
 
-  /** Token of the imodel connection with which the selection is associated. */
-  imodelToken: Readonly<IModelToken>;
+  /** iModel connection with which the selection is associated with. */
+  imodel: IModelConnection;
 
   /** Ruleset Id. */
   rulesetId?: string;

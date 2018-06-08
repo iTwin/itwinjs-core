@@ -4,7 +4,7 @@
 /** @module UnifiedSelection */
 
 import { IDisposable, DisposableList } from "@bentley/bentleyjs-core";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Keys } from "@bentley/ecpresentation-common";
 import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
 import SelectionManager from "./SelectionManager";
@@ -20,7 +20,7 @@ export default class SelectionHandler implements IDisposable {
   private _disposables: DisposableList;
   public name: string;
   public rulesetId: string;
-  public imodelToken: Readonly<IModelToken>;
+  public imodel: IModelConnection;
   public onSelect?: SelectionChangesListener;
 
   /**
@@ -28,16 +28,16 @@ export default class SelectionHandler implements IDisposable {
    * @param manager SelectionManager used to store overall selection.
    * @param name The name of the selection handler.
    * @param rulesetId Id of a ruleset selection changes will be associated.
-   * @param imodelToken Token of the imodel connection with which the selection changes will be associated.
+   * @param imodel iModel connection with which the selection changes will be associated with.
    * @param onSelect Callback function called when selection changes.
    */
-  constructor(manager: SelectionManager, name: string, imodelToken: IModelToken, rulesetId: string, onSelect?: SelectionChangesListener) {
+  constructor(manager: SelectionManager, name: string, imodel: IModelConnection, rulesetId: string, onSelect?: SelectionChangesListener) {
     this._inSelect = false;
     this._manager = manager;
     this._disposables = new DisposableList();
     this.name = name;
     this.rulesetId = rulesetId;
-    this.imodelToken = imodelToken;
+    this.imodel = imodel;
     this.onSelect = onSelect;
     this._disposables.add(this._manager.selectionChange.addListener(this.onSelectionChanged, this));
   }
@@ -79,7 +79,7 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.addToSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
+    return this._manager.addToSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -91,7 +91,7 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.removeFromSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
+    return this._manager.removeFromSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -103,7 +103,7 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.replaceSelection(this.name, this.imodelToken, keys, level, this.rulesetId);
+    return this._manager.replaceSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -114,6 +114,6 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.clearSelection(this.name, this.imodelToken, level, this.rulesetId);
+    return this._manager.clearSelection(this.name, this.imodel, level, this.rulesetId);
   }
 }

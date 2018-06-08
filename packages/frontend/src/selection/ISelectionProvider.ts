@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
 import SelectionChangeEvent from "./SelectionChangeEvent";
 
@@ -15,8 +15,8 @@ export default interface ISelectionProvider {
   selectionChange: SelectionChangeEvent;
 
   /** Get the selection stored in the provider.
-   * @param imodelToken Token of the imodel connection which the selection is associated with.
+   * @param imodel iModel connection which the selection is associated with.
    * @param level Level of the selection (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    */
-  getSelection(imodelToken: Readonly<IModelToken>, level: number): Readonly<KeySet>;
+  getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
 }
