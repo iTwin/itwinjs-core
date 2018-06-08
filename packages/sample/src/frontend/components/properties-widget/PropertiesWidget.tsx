@@ -57,14 +57,14 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
     this.state = initialState;
     this._hasSelection = false;
     this._dataProvider = new PropertyDataProvider(props.imodel, props.rulesetId);
-    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Properties", props.imodel.iModelToken, props.rulesetId, this.onSelectionChanged);
+    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Properties", props.imodel, props.rulesetId, this.onSelectionChanged);
   }
 
   // tslint:disable-next-line:naming-convention
   private onSelectionChanged = (_evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
     this._hasSelection = false;
     for (let i = _evt.level; i >= 0; i--) {
-      const selection = selectionProvider.getSelection(this.props.imodel.iModelToken, i);
+      const selection = selectionProvider.getSelection(this.props.imodel, i);
       this._hasSelection = !selection.isEmpty;
       if (this._hasSelection) {
         this.fetchProperties(selection);
@@ -84,7 +84,7 @@ class PropertyPane extends React.Component<PropertyPaneProps, PropertyPaneState>
       this._dataProvider.rulesetId = newProps.rulesetId;
     }
     if (newProps.imodel !== this.props.imodel) {
-      this._selectionHandler.imodelToken = newProps.imodel.iModelToken;
+      this._selectionHandler.imodel = newProps.imodel;
       this._dataProvider.connection = newProps.imodel;
     }
   }

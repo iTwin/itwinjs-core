@@ -244,6 +244,11 @@
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/get-user-color/-/get-user-color-1.2.0.tgz",
       "integrity": "sha1-hsbj685lCNyOrgyldUAOEQ5Rrbk="
     },
+    "@bentley/icons-webfont": {
+      "version": "6.5.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/icons-webfont/-/icons-webfont-6.5.0.tgz",
+      "integrity": "sha1-TXBQ9kz0zScu6bKIuDB8cWjLCvQ="
+    },
     "@bentley/imodeljs-backend": {
       "version": "0.92.10",
       "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-backend/-/imodeljs-backend-0.92.10.tgz",

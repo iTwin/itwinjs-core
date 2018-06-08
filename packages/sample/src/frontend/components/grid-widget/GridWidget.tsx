@@ -61,14 +61,14 @@ class Grid extends React.Component<GridProps, GridState> {
     this.state = initialState;
     this._hasSelection = false;
     this._dataProvider = new TableDataProvider(props.imodel, props.rulesetId);
-    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Grid", props.imodel.iModelToken, props.rulesetId, this.onSelectionChanged);
+    this._selectionHandler = new SelectionHandler(ECPresentation.selection, "Grid", props.imodel, props.rulesetId, this.onSelectionChanged);
   }
 
   // tslint:disable-next-line:naming-convention
   private onSelectionChanged = (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider): void => {
     if (evt.level !== 0)
       return;
-    const selectedItems = selectionProvider.getSelection(this.props.imodel.iModelToken, 0);
+    const selectedItems = selectionProvider.getSelection(this.props.imodel, 0);
     this._hasSelection = !selectedItems.isEmpty;
     this.fetchData(selectedItems);
   }
@@ -79,7 +79,7 @@ class Grid extends React.Component<GridProps, GridState> {
       this._dataProvider.rulesetId = newProps.rulesetId;
     }
     if (newProps.imodel !== this.props.imodel) {
-      this._selectionHandler.imodelToken = newProps.imodel.iModelToken;
+      this._selectionHandler.imodel = newProps.imodel;
       this._dataProvider.connection = newProps.imodel;
     }
   }

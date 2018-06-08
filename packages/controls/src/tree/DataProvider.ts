@@ -75,6 +75,14 @@ export default class TreeDataProvider {
   }
 
   /**
+   * Returns a [[NodeKey]] from given [[TreeNodeItem]].
+   * **Warning:** the `node` must be created by this data provider.
+   */
+  public getNodeKey(node: TreeNodeItem): NodeKey {
+    return node.extendedData.key as NodeKey;
+  }
+
+  /**
    * Returns the root nodes.
    * @param pageOptions Information about the requested page of data.
    */
@@ -96,7 +104,7 @@ export default class TreeDataProvider {
    * @param pageOptions Information about the requested page of data.
    */
   public getChildNodes = _.memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const parentKey = getNodeKeyFromTreeNodeItem(parentNode);
+    const parentKey = this.getNodeKey(parentNode);
     const nodes = await ECPresentation.presentation.getChildren(this.connection, parentKey, pageOptions, this.createRequestOptions());
     const items = createTreeNodeItems(nodes);
     items.forEach((item: TreeNodeItem) => {
@@ -110,14 +118,10 @@ export default class TreeDataProvider {
    * @param parentNode The parent node to return children count for.
    */
   public getChildNodesCount = _.memoize(async (parentNode: TreeNodeItem): Promise<number> => {
-    const parentKey = getNodeKeyFromTreeNodeItem(parentNode);
+    const parentKey = this.getNodeKey(parentNode);
     return await ECPresentation.presentation.getChildrenCount(this.connection, parentKey, this.createRequestOptions());
   }, MemoizationHelpers.getChildNodesCountKeyResolver);
 }
-
-const getNodeKeyFromTreeNodeItem = (item: TreeNodeItem): NodeKey => {
-  return item.extendedData.key as NodeKey;
-};
 
 const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>): TreeNodeItem[] => {
   const list = new Array<TreeNodeItem>();
