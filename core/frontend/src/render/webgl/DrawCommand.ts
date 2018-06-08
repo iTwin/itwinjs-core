@@ -200,6 +200,14 @@ export class RenderCommands {
   private _addTranslucentAsOpaque: boolean = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
   public readonly target: Target;
 
+  public get isEmpty(): boolean {
+    for (const commands of this._commands)
+      if (0 < commands.length)
+        return false;
+
+    return true;
+  }
+
   public get hasDecorationOverrides(): boolean { return undefined !== this._curOvrParams; }
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get compositeFlags(): CompositeFlags {

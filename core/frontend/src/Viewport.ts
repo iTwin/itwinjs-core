@@ -98,9 +98,16 @@ export class DepthRangeNpc {
 
 /** Coordinate system types */
 export const enum CoordSystem {
-  /** Coordinates are relative to the origin of the view */
+  /**
+   * Coordinates are relative to the origin of the viewing rectangle.
+   * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
+   */
   View,
-  /** Coordinates are in NPC [normalized plane coordinates]($docs/learning/glossary.md#npc). */
+  /**
+   * Coordinates are in NPC [normalized plane coordinates]($docs/learning/glossary.md#npc)
+   * NPC is a coordinate system for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
+   * [0,0,0] corresponds to the left-bottom-rear and [1,1,1] to the right-top-front of the frustum.
+   */
   Npc,
   /** Coordinates are relative to the world coordinate system for the physical elements in the iModel */
   World,

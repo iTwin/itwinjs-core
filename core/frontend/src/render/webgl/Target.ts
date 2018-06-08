@@ -676,6 +676,10 @@ export abstract class Target extends RenderTarget {
     this._renderCommands.init(this._scene, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
 
+    // Don't bother rendering + reading if we know there's nothing to draw.
+    if (this._renderCommands.isEmpty)
+      return undefined;
+
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands);
 
