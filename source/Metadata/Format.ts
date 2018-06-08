@@ -6,9 +6,10 @@ import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItem } from "..";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 export interface Unit {
-  name: ECName;
+  name: string;
   label?: string;
 }
 
@@ -16,11 +17,13 @@ export interface Unit {
 export interface Composite {
   spacer?: string;
   includeZero?: boolean;
-  units?: Unit[];
+  unitNames?: any;
+  unitLabels?: any;
 }
 
 export default class Format extends SchemaItem {
   public readonly schema: Schema;
+  public static readonly rgx: RegExp = RegExp(/(([\w,:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\|\]]+)?\])?(\[([^\|\]]+)([\|])?([^\|\]]+)?\])?(\[([^\|\]]+)([\|])?([^\|\]]+)?\])?(\[([^\|\]]+)([\|])?([^\|\]]+)?\])?)/);
   protected _name: ECName; // required
   protected _label?: string; // optional
   protected _description?: string; // description
@@ -100,13 +103,45 @@ export default class Format extends SchemaItem {
   public createUnit(name: string, label?: string) {
     if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    this._composite!.units!.forEach((unit: Unit) => { // Name must be unique within the Composite
-      if (unit.name.name.toLowerCase() === name.toLowerCase())
+    this._composite!.unitLabels!.forEach((str: string) => { // Name must be unique within the Composite
+      if (str.toLowerCase() === name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${name} has a duplicate name.`);
     });
-    const enumName = new ECName(name);
-    this._composite!.units!.push({name: enumName, label});
+    this._composite!.unitNames!.push(name);
+    if (label !== undefined)
+      this._composite!.unitLabels!.push(label);
   }
+
+    public parseFormatString(formatName: string, formatString: string): object | BentleyStatus {
+      let precision: any = null;
+      let unitNames: any = new Array<any>();
+      let unitLabels: any = new Array<any>();
+      let unit: any = null;
+      let index = 5;
+      if (!Format.rgx.test(formatString))
+        return BentleyStatus.ERROR;
+      const match = formatString.split(Format.rgx);
+      if (match[2] !== formatName) // handle format first to fail fast
+        return BentleyStatus.ERROR;
+      if (match[3] !== undefined && match[4] !== undefined) { // if formatString contains optional override of the precision defined in Format
+        precision = +match[4].split(",")[0]; // override the precision value
+      } else {
+        precision = null; // precision is not present in the format string
+      }
+      while ( index < match.length - 1 ) { // index 0 and 21 are empty strings when there are 4 units
+        if ( match[index] !== undefined) {
+          unit = match[index].split(/\[(u\s*\:\s*)?([\w]+)\s*(\|)?\s*([\w]*(\([\w]+\))?)?\s*\]/);
+          unitNames.push(unit[2]);
+          if ( unit[4] !== undefined )
+            unitLabels.push(unit[4]);
+        } else
+          break;
+        index += 4;
+      }
+      if ( unitNames.length === 0 ) unitNames = null;
+      if ( unitLabels.length === 0 ) unitLabels = null;
+      return {FormatName: formatName, Precision: precision, UnitList: unitNames, UnitLabels: unitLabels};
+    }
 
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
@@ -257,7 +292,7 @@ export default class Format extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} does not have the required 'stationOffsetSize' attribute.`);
 
     if (undefined !== jsonObj.composite) { // optional
-      this._composite = {includeZero: true, spacer: " ", units: new Array<Unit>()};
+      this._composite = {includeZero: true, spacer: " ", unitNames: new Array<string>(), unitLabels: new Array<string>()};
       if (jsonObj.composite.includeZero !== undefined) {
         if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
