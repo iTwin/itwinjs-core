@@ -183,9 +183,9 @@ function toggleStandardViewMenu(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function toggleRenderModeMenu(_event: any) {
+function showRenderModeMenu(_event: any) {
   const menu = document.getElementById("changeRenderModeMenu") as HTMLDivElement;
-  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+  menu.style.display = "block";
 }
 
 function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
@@ -195,9 +195,10 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
 }
 
 function applyRenderModeChange(mode: string) {
+  const menuDialog = document.getElementById("changeRenderModeMenu");
   const newValue = (document.getElementById(mode)! as HTMLInputElement).checked;
   renderModeOptions.set(mode, newValue);
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions);
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions, menuDialog);
 }
 
 function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
@@ -209,7 +210,7 @@ function updateRenderModeOption(id: string, enabled: boolean, options: Map<strin
 function updateRenderModeOptionsMap() {
   let skybox = false;
   let groundplane = false;
-  if (theViewport!.view.is3d) {
+  if (theViewport!.view.is3d()) {
     const view = theViewport!.view as ViewState3d;
     const env = view.getDisplayStyle3d().getEnvironment();
     skybox = env.sky.display;
@@ -344,7 +345,7 @@ function wireIconsToFunctions() {
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", toggleStandardViewMenu);
-  document.getElementById("changeRenderMode")!.addEventListener("click", toggleRenderModeMenu);
+  document.getElementById("changeRenderMode")!.addEventListener("click", showRenderModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
 

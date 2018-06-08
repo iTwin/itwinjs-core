@@ -1954,7 +1954,7 @@ export class ViewToggleCameraTool extends ViewTool {
   public onPostInstall() {
     // If we are in a 3d view, check if the camera is on or off, and then toggle it
     if (this.viewport) {
-      if (this.viewport.view.is3d) {
+      if (this.viewport.view.is3d()) {
         if (this.isCameraOn) {
           (this.viewport.view as ViewState3d).turnCameraOff();
           // ### TODO: Make sure still works with caching undo
@@ -1973,13 +1973,22 @@ export class ViewToggleCameraTool extends ViewTool {
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
 }
 
+// ###TODO: This tool is redundant and is currently only used for debug purposes in SVT. This should eventually be deleted, as
+// users of imodeljs-core have the ability to set these flags from their app without the use of a tool.
 export class ViewChangeRenderModeTool extends ViewTool {
   public static toolId = "View.ChangeRenderMode";
   private viewport: Viewport;
   // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundplane, etc.)
   private renderOptions: Map<string, boolean>;
+  // REFERENCE to app's menu for changing render modes
+  private renderMenu: HTMLElement;
 
-  constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>) { super(); this.viewport = viewport; this.renderOptions = renderOptionsMap; }
+  constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>, renderMenuDialog: HTMLElement) {
+    super();
+    this.viewport = viewport;
+    this.renderOptions = renderOptionsMap;
+    this.renderMenu = renderMenuDialog;
+  }
 
   // We want changes to happen immediately when checking or unchecking an option
   public onPostInstall() {
@@ -2004,7 +2013,7 @@ export class ViewChangeRenderModeTool extends ViewTool {
     viewflags.setShowCameraLights(lights);
 
     // Now handle environment
-    if (this.viewport.view.is3d) {
+    if (this.viewport.view.is3d()) {
       const view = this.viewport.view as ViewState3d;
       const displayStyle = view.getDisplayStyle3d();
       const env = displayStyle.getEnvironment();
@@ -2015,10 +2024,11 @@ export class ViewChangeRenderModeTool extends ViewTool {
 
     this.viewport.view.viewFlags = viewflags;
     this.viewport.sync.invalidateController();
-    this.exitTool();
   }
 
   public onDataButtonDown(_ev: BeButtonEvent): boolean {
-    return false;
+    this.renderMenu.style.display = "none";
+    this.exitTool();
+    return true;
   }
 }
