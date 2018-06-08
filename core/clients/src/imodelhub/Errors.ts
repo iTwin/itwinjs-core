@@ -183,7 +183,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @returns Created error.
    */
   public static invalidArgument(argumentName: string): IModelHubRequestError {
-    return this.fromId(IModelHubStatus.UndefinedArguementError, `Argument ${argumentName} has an invalid value.`);
+    return this.fromId(IModelHubStatus.InvalidArgumentError, `Argument ${argumentName} has an invalid value.`);
   }
 
   /**
