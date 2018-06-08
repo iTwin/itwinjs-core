@@ -6,7 +6,7 @@ import * as deepAssign from "deep-assign";
 import { AccessToken, AuthorizationToken } from "./Token";
 import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { Logger, HttpStatus, WSStatus } from "@bentley/bentleyjs-core";
+import { Logger, HttpStatus, WSStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 import { DefaultRequestOptionsProvider, AuthenticationError, Client, DeploymentEnv } from "./Client";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 
@@ -16,6 +16,10 @@ const loggingCategory = "imodeljs-clients.Clients";
  * Error that was returned by a WSG based service.
  */
 export class WsgError extends ResponseError {
+  public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+  }
+
   /**
    * Attempt to parse the error from the response.
    * Attempts to parse error data in a format that is returned by WSG services.
@@ -24,8 +28,8 @@ export class WsgError extends ResponseError {
    * @param response Response from the server.
    * @returns Parsed error.
    */
-  public static parse(response: any): ResponseError {
-    const responseError = ResponseError.parse(response);
+  public static parse(response: any, log = true): ResponseError {
+    const responseError = ResponseError.parse(response, false);
     const wsgError = new WsgError(WSStatus.Unknown);
     deepAssign(wsgError, responseError);
 
@@ -36,6 +40,8 @@ export class WsgError extends ResponseError {
           wsgError.name = wsgError._data.errorId || wsgError.name;
           wsgError.description = wsgError._data.errorDescription || wsgError.description;
           wsgError.errorNumber = WsgError.getWSStatusId(wsgError.name ? wsgError.name : "");
+          if (log)
+            wsgError.log();
           return wsgError;
         }
       } else {
@@ -48,6 +54,8 @@ export class WsgError extends ResponseError {
         }
       }
     }
+    if (log)
+      responseError.log();
     return responseError;
   }
 
@@ -65,7 +73,7 @@ export class WsgError extends ResponseError {
       return false;
     }
 
-    const parsedError = WsgError.parse({ response });
+    const parsedError = WsgError.parse({ response }, false);
     if (!(parsedError instanceof WsgError)) {
       return super.shouldRetry(error, response);
     }
@@ -156,7 +164,7 @@ export class WsgError extends ResponseError {
    * Logs this error
    */
   public log(): void {
-    Logger.logError(loggingCategory, this.logMessage());
+    Logger.logError(loggingCategory, this.logMessage(), this.getMetaData());
   }
 }
 

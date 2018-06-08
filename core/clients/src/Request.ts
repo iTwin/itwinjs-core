@@ -5,7 +5,7 @@
 import * as sarequest from "superagent";
 import * as deepAssign from "deep-assign";
 import { stringify, IStringifyOptions } from "qs";
-import { Logger, BentleyError, HttpStatus } from "@bentley/bentleyjs-core";
+import { Logger, BentleyError, HttpStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
 
 import * as https from "https";
@@ -98,13 +98,16 @@ export class ResponseError extends BentleyError {
   protected _data?: any;
   public status?: number;
   public description?: string;
+  public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, undefined, undefined, getMetaData);
+  }
 
   /**
    * Parses error from server's response
    * @param response Http response from the server.
    * @returns Parsed error.
    */
-  public static parse(response: any): ResponseError {
+  public static parse(response: any, log = true): ResponseError {
     const error = new ResponseError(ResponseError.parseHttpStatus(response.status / 100));
     if (!response) {
       error.message = "Couldn't get response object.";
@@ -130,6 +133,10 @@ export class ResponseError extends BentleyError {
     error.status = response.status || response.statusCode;
     error.name = response.code || response.name || error.name;
     error.message = error.message || response.message || response.statusMessage;
+
+    if (log)
+      error.log();
+
     return error;
   }
 
@@ -145,10 +152,6 @@ export class ResponseError extends BentleyError {
       }
     }
     return (response !== undefined && response.statusType === HttpStatus.ServerError);
-  }
-
-  protected logMessage(): string {
-    return `${this.status} ${this.name}: ${this.message}`;
   }
 
   public static parseHttpStatus(status: number): HttpStatus {
@@ -168,11 +171,15 @@ export class ResponseError extends BentleyError {
     }
   }
 
+  public logMessage(): string {
+    return `${this.status} ${this.name}: ${this.message}`;
+  }
+
   /**
    * Logs this error
    */
   public log(): void {
-    Logger.logError(loggingCategory, this.logMessage());
+    Logger.logError(loggingCategory, this.logMessage(), this.getMetaData());
   }
 }
 
@@ -268,7 +275,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
         .pipe(sareq)
         .on("error", (error: any) => {
           const parsedError = errorCallback(error);
-          parsedError.log();
           reject(parsedError);
         })
         .on("end", () => {
@@ -292,7 +298,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
         .on("response", (res: any) => {
           if (res.statusCode !== 200) {
             const parsedError = errorCallback(res);
-            parsedError.log();
             reject(parsedError);
             return;
           }
@@ -300,7 +305,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
         .pipe(options.stream)
         .on("error", (error: any) => {
           const parsedError = errorCallback(error);
-          parsedError.log();
           reject(parsedError);
         })
         .on("finish", () => {
@@ -334,7 +338,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     })
     .catch((error: any) => {
       const parsedError = errorCallback(error);
-      parsedError.log();
       return Promise.reject(parsedError);
     });
 }

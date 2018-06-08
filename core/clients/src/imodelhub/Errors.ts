@@ -4,7 +4,7 @@
 import * as deepAssign from "deep-assign";
 import { ResponseError } from "./../Request";
 import { WsgError } from "./../WsgClient";
-import { Logger, LogFunction, HttpStatus, WSStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Logger, LogFunction, HttpStatus, WSStatus, IModelHubStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -15,6 +15,9 @@ export class IModelHubError extends WsgError {
   // public id?: IModelHubStatus;
   public data: any;
   private static _idPrefix: string = "iModelHub.";
+  public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+  }
 
   /**
    * Gets IModelHubStatus from the string value returned by the service.
@@ -73,8 +76,8 @@ export class IModelHubError extends WsgError {
    * @param response Response from the server.
    * @returns Parsed error.
    */
-  public static parse(response: any): ResponseError {
-    const wsgError = super.parse(response);
+  public static parse(response: any, log = true): ResponseError {
+    const wsgError = super.parse(response, false);
     if (wsgError instanceof WsgError && wsgError.name && wsgError.name.startsWith(IModelHubError._idPrefix)) {
       const errorId = IModelHubError.getErrorId(wsgError.name);
       const error = new IModelHubError(errorId);
@@ -85,9 +88,12 @@ export class IModelHubError extends WsgError {
       if (IModelHubError.requiresExtendedData(error.errorNumber!)) {
         error.copyExtendedData();
       }
-
+      if (log)
+        error.log();
       return error;
     }
+    if (log)
+      wsgError.log();
     return wsgError;
   }
 
@@ -104,7 +110,7 @@ export class IModelHubError extends WsgError {
     if (super.parseHttpStatus(response.statusType) === HttpStatus.Success) {
       return false;
     }
-    const parsedError = IModelHubError.parse({ response });
+    const parsedError = IModelHubError.parse({ response }, false);
 
     if (!(parsedError instanceof WsgError)) {
       return super.shouldRetry(error, response);
@@ -142,7 +148,7 @@ export class IModelHubError extends WsgError {
    * Logs this error
    */
   public log(): void {
-    Logger.logError(loggingCategory, this.logMessage());
+    (this.getLogLevel())(loggingCategory, this.logMessage(), this.getMetaData());
   }
 }
 
@@ -151,20 +157,24 @@ export class IModelHubError extends WsgError {
  */
 export class IModelHubRequestError extends IModelHubError {
   /**
+   * Creates IModelHubRequestError from id.
+   * @param id Id of the error.
+   * @param message Message for the error.
+   * @returns Created error.
+   */
+  public static fromId(id: IModelHubStatus, message: string): IModelHubRequestError {
+    const error = new IModelHubRequestError(id, message);
+    error.log();
+    return error;
+  }
+
+  /**
    * Create error for undefined arguments being passed.
    * @param argumentName Undefined argument name
-   * @param downloadUrlMissing Set to true if argument is correct, but it is missing download Url.
    * @returns Created error.
    */
   public static undefinedArgument(argumentName: string): IModelHubRequestError {
-    const error = new IModelHubRequestError(IModelHubStatus.UndefinedArguementError);
-
-    error.name = "Argument Error";
-    error.message = `Argument ${argumentName} is null or undefined.`;
-
-    error.log();
-
-    return error;
+    return this.fromId(IModelHubStatus.UndefinedArguementError, `Argument ${argumentName} is null or undefined`);
   }
 
   /**
@@ -173,14 +183,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @returns Created error.
    */
   public static invalidArgument(argumentName: string): IModelHubRequestError {
-    const error = new IModelHubRequestError(IModelHubStatus.InvalidArgumentError);
-
-    error.name = "Argument Error";
-    error.message = `Argument ${argumentName} has an invalid value.`;
-
-    error.log();
-
-    return error;
+    return this.fromId(IModelHubStatus.UndefinedArguementError, `Argument ${argumentName} has an invalid value.`);
   }
 
   /**
@@ -189,14 +192,8 @@ export class IModelHubRequestError extends IModelHubError {
    * @returns Created error.
    */
   public static missingDownloadUrl(argumentName: string): IModelHubRequestError {
-    const error = new IModelHubRequestError(IModelHubStatus.MissingDownloadUrlError);
-
-    error.name = "Argument Error";
-    error.message = `Supplied ${argumentName} must include download URL. Use selectDownloadUrl() when getting ${argumentName}.`;
-
-    error.log();
-
-    return error;
+    return this.fromId(IModelHubStatus.MissingDownloadUrlError,
+      `Supplied ${argumentName} must include download URL. Use selectDownloadUrl() when getting ${argumentName}.`);
   }
 
   /**
@@ -204,14 +201,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @returns Created error.
    */
   public static browser(): IModelHubRequestError {
-    const error = new IModelHubRequestError(IModelHubStatus.NotSupportedInBrowser);
-
-    error.name = "Not Supported";
-    error.message = "Operation is not supported in browser.";
-
-    error.log();
-
-    return error;
+    return this.fromId(IModelHubStatus.NotSupportedInBrowser, "Operation is not supported in browser.");
   }
 
   /**
@@ -219,14 +209,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @returns Created error.
    */
   public static fileHandler(): IModelHubRequestError {
-    const error = new IModelHubRequestError(IModelHubStatus.FileHandlerNotSet);
-
-    error.name = "File Handler Not Set";
-    error.message = "File handler is required to be set for file download / upload.";
-
-    error.log();
-
-    return error;
+    return this.fromId(IModelHubStatus.FileHandlerNotSet, "File handler is required to be set for file download / upload.");
   }
 
   /**
@@ -234,14 +217,7 @@ export class IModelHubRequestError extends IModelHubError {
    * @returns Created error.
    */
   public static fileNotFound(): IModelHubRequestError {
-    const error = new IModelHubRequestError(IModelHubStatus.FileNotFound);
-
-    error.name = "File Not Found";
-    error.message = "Could not find the file to upload.";
-
-    error.log();
-
-    return error;
+    return this.fromId(IModelHubStatus.FileNotFound, "Could not find the file to upload.");
   }
 }
 
