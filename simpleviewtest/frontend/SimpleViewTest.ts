@@ -183,9 +183,9 @@ function toggleStandardViewMenu(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function showRenderModeMenu(_event: any) {
+function toggleRenderModeMenu(_event: any) {
   const menu = document.getElementById("changeRenderModeMenu") as HTMLDivElement;
-  menu.style.display = "block";
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
 function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
@@ -345,7 +345,7 @@ function wireIconsToFunctions() {
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
   document.getElementById("switchStandardRotation")!.addEventListener("click", toggleStandardViewMenu);
-  document.getElementById("changeRenderMode")!.addEventListener("click", showRenderModeMenu);
+  document.getElementById("renderModeToggle")!.addEventListener("click", toggleRenderModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
 
