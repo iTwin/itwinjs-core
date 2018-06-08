@@ -64,7 +64,7 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
     else
       texc.x = textureCoordinateBase + imagesPerPixel * (projPos.y + adjust * windowDir.y);
 
-    const float numLineCodes = 10.0;
+    const float numLineCodes = 16.0; // NB: Actually only 10, but texture is 16px tall because it needs to be a power of 2.
     const float rowsPerCode = 1.0;
     const float numRows = numLineCodes*rowsPerCode;
     const float centerY = 0.5/numRows;
