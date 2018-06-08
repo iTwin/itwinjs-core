@@ -1991,12 +1991,17 @@ export class ViewChangeRenderModeTool extends ViewTool {
     viewflags.setShowTextures(this.renderOptions.get("textures")!);
     viewflags.setShowVisibleEdges(this.renderOptions.get("visibleEdges")!);
     viewflags.setShowMaterials(this.renderOptions.get("materials")!);
-    viewflags.setShowShadows(this.renderOptions.get("shadows")!);
-    viewflags.setShowSourceLights(this.renderOptions.get("sourceLights")!);
-    viewflags.setShowSolarLight(this.renderOptions.get("solarLight")!);
-    viewflags.setShowCameraLights(this.renderOptions.get("cameraLight")!);
     viewflags.setMonochrome(this.renderOptions.get("monochrome")!);
     viewflags.setShowConstructions(this.renderOptions.get("constructions")!);
+    viewflags.setShowTransparency(this.renderOptions.get("transparency")!);
+    viewflags.setShowHiddenEdges(this.renderOptions.get("hiddenEdges")!);
+    viewflags.setShowWeights(this.renderOptions.get("weights")!);
+    viewflags.setShowStyles(this.renderOptions.get("styles")!);
+
+    const lights = this.renderOptions.get("lights")!;
+    viewflags.setShowSourceLights(lights);
+    viewflags.setShowSolarLight(lights);
+    viewflags.setShowCameraLights(lights);
 
     // Now handle environment
     if (this.viewport.view.is3d) {

@@ -19,7 +19,8 @@ export abstract class DisplayStyleState extends ElementState {
     super(props, iModel);
     this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
-    const monoJson = this.getStyles()["monochromeColor"];
+    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
+    const monoJson = this.getStyles()[monoName];
     this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
   }
 

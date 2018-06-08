@@ -181,6 +181,11 @@ function applyRenderModeChange(mode: string) {
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions);
 }
 
+function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
+  (document.getElementById(id)! as HTMLInputElement).checked = enabled;
+  options.set(id, enabled);
+}
+
 // updates the checkboxes and the map for turning off and on rendering options to match what the current view is showing
 function updateRenderModeOptionsMap() {
   let skybox = false;
@@ -191,39 +196,24 @@ function updateRenderModeOptionsMap() {
     skybox = env.sky.display;
     groundplane = env.ground.display;
   }
+
   const viewflags = theViewport!.view.viewFlags;
+  const lights = viewflags.showSourceLights() || viewflags.showSolarLight() || viewflags.showCameraLights();
 
-  // update checkbox items
-  (document.getElementById("skybox")! as HTMLInputElement).checked = skybox;
-  (document.getElementById("groundplane")! as HTMLInputElement).checked = groundplane;
-  (document.getElementById("ACSTriad")! as HTMLInputElement).checked = viewflags.showAcsTriad();
-  (document.getElementById("fill")! as HTMLInputElement).checked = viewflags.showFill();
-  (document.getElementById("grid")! as HTMLInputElement).checked = viewflags.showGrid();
-  (document.getElementById("textures")! as HTMLInputElement).checked = viewflags.showTextures();
-  (document.getElementById("visibleEdges")! as HTMLInputElement).checked = viewflags.showVisibleEdges();
-  (document.getElementById("materials")! as HTMLInputElement).checked = viewflags.showMaterials();
-  (document.getElementById("shadows")! as HTMLInputElement).checked = viewflags.showShadows();
-  (document.getElementById("sourceLights")! as HTMLInputElement).checked = viewflags.showSourceLights();
-  (document.getElementById("solarLight")! as HTMLInputElement).checked = viewflags.showSolarLight();
-  (document.getElementById("cameraLight")! as HTMLInputElement).checked = viewflags.showCameraLights();
-  (document.getElementById("monochrome")! as HTMLInputElement).checked = viewflags.isMonochrome();
-  (document.getElementById("constructions")! as HTMLInputElement).checked = viewflags.showConstructions();
-
-  // update the map to starting values (the map gets passed to the ChangeRenderMode tool)
-  renderModeOptions.set("skybox", skybox);
-  renderModeOptions.set("groundplane", groundplane);
-  renderModeOptions.set("ACSTriad", viewflags.showAcsTriad());
-  renderModeOptions.set("fill", viewflags.showFill());
-  renderModeOptions.set("grid", viewflags.showGrid());
-  renderModeOptions.set("textures", viewflags.showTextures());
-  renderModeOptions.set("visibleEdges", viewflags.showVisibleEdges());
-  renderModeOptions.set("materials", viewflags.showMaterials());
-  renderModeOptions.set("shadows", viewflags.showShadows());
-  renderModeOptions.set("sourceLights", viewflags.showSourceLights());
-  renderModeOptions.set("solarLight", viewflags.showSolarLight());
-  renderModeOptions.set("cameraLight", viewflags.showCameraLights());
-  renderModeOptions.set("monochrome", viewflags.isMonochrome());
-  renderModeOptions.set("constructions", viewflags.showConstructions());
+  updateRenderModeOption("skybox", skybox, renderModeOptions);
+  updateRenderModeOption("groundplane", groundplane, renderModeOptions);
+  updateRenderModeOption("ACSTriad", viewflags.showAcsTriad(), renderModeOptions);
+  updateRenderModeOption("fill", viewflags.showFill(), renderModeOptions);
+  updateRenderModeOption("grid", viewflags.showGrid(), renderModeOptions);
+  updateRenderModeOption("textures", viewflags.showTextures(), renderModeOptions);
+  updateRenderModeOption("visibleEdges", viewflags.showVisibleEdges(), renderModeOptions);
+  updateRenderModeOption("hiddenEdges", viewflags.showHiddenEdges(), renderModeOptions);
+  updateRenderModeOption("materials", viewflags.showMaterials(), renderModeOptions);
+  updateRenderModeOption("lights", lights, renderModeOptions);
+  updateRenderModeOption("monochrome", viewflags.isMonochrome(), renderModeOptions);
+  updateRenderModeOption("constructions", viewflags.showConstructions(), renderModeOptions);
+  updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions);
+  updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions);
 }
 
 // opens the view and connects it to the HTML canvas element.
@@ -320,6 +310,10 @@ function doRedo(_event: any) {
   IModelApp.tools.run("View.Redo", theViewport!);
 }
 
+function addRenderModeHandler(id: string) {
+  document.getElementById(id)!.addEventListener("click", () => applyRenderModeChange(id));
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
@@ -346,20 +340,20 @@ function wireIconsToFunctions() {
   document.getElementById("rightIso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
 
   // render mode handlers
-  document.getElementById("skybox")!.addEventListener("click", () => applyRenderModeChange("skybox"));
-  document.getElementById("groundplane")!.addEventListener("click", () => applyRenderModeChange("groundplane"));
-  document.getElementById("ACSTriad")!.addEventListener("click", () => applyRenderModeChange("ACSTriad"));
-  document.getElementById("fill")!.addEventListener("click", () => applyRenderModeChange("fill"));
-  document.getElementById("grid")!.addEventListener("click", () => applyRenderModeChange("grid"));
-  document.getElementById("textures")!.addEventListener("click", () => applyRenderModeChange("textures"));
-  document.getElementById("visibleEdges")!.addEventListener("click", () => applyRenderModeChange("visibleEdges"));
-  document.getElementById("materials")!.addEventListener("click", () => applyRenderModeChange("materials"));
-  document.getElementById("shadows")!.addEventListener("click", () => applyRenderModeChange("shadows"));
-  document.getElementById("sourceLights")!.addEventListener("click", () => applyRenderModeChange("sourceLights"));
-  document.getElementById("solarLight")!.addEventListener("click", () => applyRenderModeChange("solarLight"));
-  document.getElementById("cameraLight")!.addEventListener("click", () => applyRenderModeChange("cameraLight"));
-  document.getElementById("monochrome")!.addEventListener("click", () => applyRenderModeChange("monochrome"));
-  document.getElementById("constructions")!.addEventListener("click", () => applyRenderModeChange("constructions"));
+  addRenderModeHandler("skybox");
+  addRenderModeHandler("groundplane");
+  addRenderModeHandler("ACSTriad");
+  addRenderModeHandler("fill");
+  addRenderModeHandler("grid");
+  addRenderModeHandler("textures");
+  addRenderModeHandler("visibleEdges");
+  addRenderModeHandler("hiddenEdges");
+  addRenderModeHandler("materials");
+  addRenderModeHandler("lights");
+  addRenderModeHandler("monochrome");
+  addRenderModeHandler("constructions");
+  addRenderModeHandler("weights");
+  addRenderModeHandler("styles");
 }
 
 // ----------------------------------------------------------
