@@ -1466,6 +1466,10 @@ export class SpatialViewState extends ViewState3d {
     this.modelSelector.addModels(id);
   }
 
+  public removeViewedModel(id: Id64Props) {
+    this.modelSelector.dropModels(id);
+  }
+
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
       const model = this.iModel.models.getLoaded(modelId);
