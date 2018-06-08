@@ -977,7 +977,7 @@ describe("Format tests", () => {
       };
       await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     });
-    it.only("Unit names must be unique", async () => {
+    it("Unit names must be unique", async () => {
       const json = {
         schemaItemType: "Format",
         name: "AmerMYFI4",
@@ -1086,13 +1086,42 @@ describe("Format tests", () => {
       await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
     });
   });
-  describe("formatString tests", () => {
+  describe.only("formatString tests", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
-      testFormat = new Format(schema, "TestFormat");
+      testFormat = new Format(schema, "AmerMYFI4");
     });
     it("Basic test", async () => {
-      assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal(4)[u:MILE|mile(s)][u:YRD|yard(s)][u:FT|feet][u:IN|inch(es)]"), {FormatName: "DefaultReal", Precision: 4, UnitList: ["MILE", "YRD", "FT", "IN"], UnitLabels: ["mile(s)", "yard(s)", "feet", "inch(es)"]});
+      const json = {
+        schemaItemType: "Format",
+        name: "AmerMYFI4",
+        type: "fractional",
+        precision: 4,
+        composite: {
+          includeZero: false,
+          spacer: "-",
+          units: [
+            {
+              name: "MILE",
+              label: "mile(s)",
+            },
+            {
+              name: "YRD",
+              label: "yrd(s)",
+            },
+            {
+              name: "FT",
+              label: "'",
+            },
+            {
+              name: "IN",
+              label: "\"",
+            },
+          ],
+        },
+      };
+      await testFormat.fromJson(json);
+      assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal(4)[u:MILE|mile(s)][u:YRD|yard(s)][u:FT|\'][u:IN|\"]"), {FormatName: "DefaultReal", Precision: 4, UnitList: ["MILE", "YRD", "FT", "IN"], UnitLabels: ["mile(s)", "yard(s)", "'", "\""]});
       assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal(4)[u:M|meters]"), {FormatName: "DefaultReal", Precision: 4, UnitList: ["M"], UnitLabels: ["meters"]});
     });
     it("Units are optional", async () => {
@@ -1100,6 +1129,9 @@ describe("Format tests", () => {
     });
     it("Precision is optional", async () => {
       assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal[u:M|meters]"), {FormatName: "DefaultReal", Precision: null, UnitList: ["M"], UnitLabels: ["meters"]});
+    });
+    it("Precision is not an integer", async () => {
+      assert(testFormat.parseFormatString("DefaultReal", "DefaultReal(4.5)[u:M|meters]") === BentleyStatus.ERROR);
     });
     it("No units or precision", async () => {
       assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal"), {FormatName: "DefaultReal", Precision: null, UnitList: null, UnitLabels: null});

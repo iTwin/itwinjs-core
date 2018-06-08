@@ -103,7 +103,7 @@ export default class Format extends SchemaItem {
   public createUnit(name: string, label?: string) {
     if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    this._composite!.unitLabels!.forEach((str: string) => { // Name must be unique within the Composite
+    this._composite!.unitNames!.forEach((str: string) => { // Name must be unique within the Composite
       if (str.toLowerCase() === name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${name} has a duplicate name.`);
     });
@@ -125,12 +125,21 @@ export default class Format extends SchemaItem {
         return BentleyStatus.ERROR;
       if (match[3] !== undefined && match[4] !== undefined) { // if formatString contains optional override of the precision defined in Format
         precision = +match[4].split(",")[0]; // override the precision value
+        if (!Number.isInteger(precision))
+          return BentleyStatus.ERROR;
       } else {
         precision = null; // precision is not present in the format string
       }
       while ( index < match.length - 1 ) { // index 0 and 21 are empty strings when there are 4 units
-        if ( match[index] !== undefined) {
+        if ( match[index] !== undefined) { // TODO: unit name cannot be duplicate within Format
           unit = match[index].split(/\[(u\s*\:\s*)?([\w]+)\s*(\|)?\s*([\w]*(\([\w]+\))?)?\s*\]/);
+          let foundUnitName: boolean = false;
+          this!._composite!.unitNames!.forEach((str: string) => {
+            if ( str.toLowerCase() === unit[2].toLowerCase() )
+              foundUnitName = true;
+          });
+          if ( foundUnitName === false )
+            return BentleyStatus.ERROR;
           unitNames.push(unit[2]);
           if ( unit[4] !== undefined )
             unitLabels.push(unit[4]);
@@ -305,7 +314,7 @@ export default class Format extends SchemaItem {
       }
       if (jsonObj.composite.units !== undefined && jsonObj.composite.units instanceof Array && jsonObj.composite.units.length !== 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units, which must be an array of unit objects
         jsonObj.composite.units.forEach((unit: any) => { // for each unit
-          this.createUnit(unit.name, unit.label); // create the unit
+           this.createUnit(unit.name, unit.label); // create the unit
         });
       } else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'units' attribute.`);
