@@ -13,11 +13,14 @@ import { RenderSystem } from "./rendering";
 export abstract class DisplayStyleState extends ElementState {
   private _viewFlags: ViewFlags;
   private _background: ColorDef;
+  private _monochrome: ColorDef;
 
   constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
     this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
     this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
+    const monoJson = this.getStyles()["monochromeColor"];
+    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
   }
 
   public equalState(other: DisplayStyleState): boolean {
@@ -48,8 +51,8 @@ export abstract class DisplayStyleState extends ElementState {
   public get backgroundColor(): ColorDef { return this._background; }
   public set backgroundColor(val: ColorDef) { this._background = val; this.setStyle("backgroundColor", val); }
 
-  public getMonochromeColor(): ColorDef { return ColorDef.fromJSON(this.getStyle("monochromeColor")); }
-  public setMonochromeColor(val: ColorDef): void { this.setStyle("monochromeColor", val); }
+  public getMonochromeColor(): ColorDef { return this._monochrome; }
+  public setMonochromeColor(val: ColorDef): void { this._monochrome = val; this.setStyle("monochromeColor", val); }
 
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
 }
