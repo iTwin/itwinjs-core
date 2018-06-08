@@ -2,6 +2,6 @@
   "userName": "bistroDEV_pmadm1@mailinator.com",
   "password": "pmadm1",
   "projectName": "plant-sta",
-  "iModelName": "D:/bim0200dev/bims/Alphabet_Clash.i.ibim",
-  "standalone": true
+  "iModelName": "atp_10K.bim",
+  "viewName": "Physical-Tag"
 }
