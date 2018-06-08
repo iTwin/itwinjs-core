@@ -190,6 +190,8 @@ class PixelBuffer implements Pixel.Buffer {
     if (x >= this._rect.width || y >= this._rect.height)
       return this.numPixels;
 
+    // NB: View coords have origin at top-left; GL at bottom-left. So our rows are upside-down.
+    y = this._rect.height - 1 - y;
     return y * this._rect.width + x;
   }
   private getPixel32(data: Uint32Array, pixelIndex: number): number | undefined {
@@ -399,6 +401,7 @@ export class SceneCompositor {
     this._target.popActiveVolume();
   }
 
+  public get fullHeight(): number { return this._target.viewRect.height; }
   public drawForReadPixels(commands: RenderCommands) {
     if (!this.update()) {
       assert(false);
@@ -431,12 +434,14 @@ export class SceneCompositor {
     if (undefined === fbo || !fbo.isValid)
       return undefined;
 
+    // NB: ViewRect origin at top-left; GL origin at bottom-left
+    const bottom = this.fullHeight - rect.bottom;
     const gl = System.instance.context;
     const bytes = new Uint8Array(rect.width * rect.height * 4);
     let result: Uint8Array | undefined = bytes;
     System.instance.frameBufferStack.execute(fbo, true, () => {
       try {
-        gl.readPixels(rect.left, rect.bottom, rect.width, rect.height, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+        gl.readPixels(rect.left, bottom, rect.width, rect.height, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
       } catch (e) {
         result = undefined;
       }
