@@ -7,14 +7,17 @@ import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry } from "./CachedGeometry";
+import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { dispose } from "./Disposable";
 import { System, RenderType } from "./System";
-import { assert } from "@bentley/bentleyjs-core";
+import { Pixel } from "../System";
+import { ViewRect } from "../../Viewport";
+import { assert, Id64 } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, DrawParams } from "./DrawCommand";
 import { RenderState } from "./RenderState";
-import { CompositeFlags, RenderPass } from "./RenderFlags";
+import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 
 class Textures {
   public accumulation?: TextureHandle;
@@ -169,6 +172,157 @@ class Geometry {
   }
 }
 
+class PixelBuffer implements Pixel.Buffer {
+  private readonly _rect: ViewRect;
+  private readonly _selector: Pixel.Selector;
+  private readonly _elemIdLow?: Uint32Array;
+  private readonly _elemIdHi?: Uint32Array;
+  private readonly _depthAndOrder?: Uint32Array;
+
+  private get numPixels(): number { return this._rect.width * this._rect.height; }
+
+  private getPixelIndex(x: number, y: number): number {
+    if (x < this._rect.left || y < this._rect.bottom)
+      return this.numPixels;
+
+    x -= this._rect.left;
+    y -= this._rect.top;
+    if (x >= this._rect.width || y >= this._rect.height)
+      return this.numPixels;
+
+    return y * this._rect.width + x;
+  }
+  private getPixel32(data: Uint32Array, pixelIndex: number): number | undefined {
+    return pixelIndex < data.length ? data[pixelIndex] : undefined;
+  }
+
+  private getElementId(pixelIndex: number): Id64 | undefined {
+    if (undefined === this._elemIdLow || undefined === this._elemIdHi)
+      return undefined;
+
+    const lo = this.getPixel32(this._elemIdLow, pixelIndex);
+    const hi = this.getPixel32(this._elemIdHi, pixelIndex);
+    return undefined !== lo && undefined !== hi ? Id64.fromUint32Pair(lo, hi) : undefined;
+  }
+
+  private readonly _scratchUint32Array = new Uint32Array(1);
+  private readonly _scratchUint8Array = new Uint8Array(this._scratchUint32Array.buffer);
+  private readonly _scratchVector3d = new Vector3d();
+  private readonly _mult = new Vector3d(1.0, 1.0 / 255.0, 1.0 / 65025.0);
+  private decodeDepthRgba(depthAndOrder: number): number {
+    this._scratchUint32Array[0] = depthAndOrder;
+    const bytes = this._scratchUint8Array;
+    const fpt = Vector3d.create(bytes[1] / 255.0, bytes[2] / 255.0, bytes[3] / 255.0, this._scratchVector3d);
+    let depth = fpt.dotProduct(this._mult);
+
+    assert(0.0 <= depth);
+    assert(1.01 >= depth); // rounding error...
+
+    depth = Math.min(1.0, depth);
+    depth = Math.max(0.0, depth);
+
+    return depth;
+  }
+
+  private decodeRenderOrderRgba(depthAndOrder: number): RenderOrder {
+    this._scratchUint32Array[0] = depthAndOrder;
+    const encByte = this._scratchUint8Array[0];
+    const enc = encByte / 255.0;
+    const dec = Math.floor(16.0 * enc + 0.5);
+    return dec;
+  }
+
+  private readonly _invalidPixelData = new Pixel.Data();
+  public getPixel(x: number, y: number): Pixel.Data {
+    const px = this._invalidPixelData;
+    const index = this.getPixelIndex(x, y);
+    if (index >= this.numPixels)
+      return px;
+
+    // Initialize to the defaults...
+    let distanceFraction = px.distanceFraction;
+    let geometryType = px.type;
+    let planarity = px.planarity;
+
+    const elemId = Pixel.Selector.None !== (this._selector & Pixel.Selector.ElementId) ? this.getElementId(index) : undefined;
+
+    if (undefined !== this._depthAndOrder) {
+      const wantDistance = Pixel.Selector.None !== (this._selector & Pixel.Selector.Distance);
+      const wantGeometry = Pixel.Selector.None !== (this._selector & Pixel.Selector.Geometry);
+
+      const depthAndOrder = wantDistance || wantGeometry ? this.getPixel32(this._depthAndOrder, index) : undefined;
+      if (undefined !== depthAndOrder) {
+        if (wantDistance)
+          distanceFraction = this.decodeDepthRgba(depthAndOrder);
+
+        if (wantGeometry) {
+          const orderWithPlanarBit = this.decodeRenderOrderRgba(depthAndOrder);
+          const order = orderWithPlanarBit & ~RenderOrder.PlanarBit;
+          planarity = (orderWithPlanarBit === order) ? Pixel.Planarity.NonPlanar : Pixel.Planarity.Planar;
+          switch (order) {
+            case RenderOrder.None:
+              geometryType = Pixel.GeometryType.None;
+              planarity = Pixel.Planarity.None;
+              break;
+            case RenderOrder.BlankingRegion:
+            case RenderOrder.Surface:
+              geometryType = Pixel.GeometryType.Surface;
+              break;
+            case RenderOrder.Linear:
+              geometryType = Pixel.GeometryType.Linear;
+              break;
+            case RenderOrder.Edge:
+              geometryType = Pixel.GeometryType.Edge;
+              break;
+            case RenderOrder.Silhouette:
+              geometryType = Pixel.GeometryType.Silhouette;
+              break;
+            default:
+              // ###TODO: may run into issues with point clouds - they are not written correctly in C++.
+              assert(false, "Invalid render order");
+              geometryType = Pixel.GeometryType.None;
+              planarity = Pixel.Planarity.None;
+              break;
+          }
+        }
+      }
+    }
+
+    return new Pixel.Data(elemId, distanceFraction, geometryType, planarity);
+  }
+
+  private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
+    this._rect = rect.clone();
+    this._selector = selector;
+
+    if (Pixel.Selector.None !== (selector & Pixel.Selector.GeometryAndDistance)) {
+      const depthAndOrderBytes = compositor.readDepthAndOrder(rect);
+      if (undefined !== depthAndOrderBytes)
+        this._depthAndOrder = new Uint32Array(depthAndOrderBytes.buffer);
+      else
+        this._selector &= ~Pixel.Selector.GeometryAndDistance;
+    }
+
+    if (Pixel.Selector.None !== (selector & Pixel.Selector.ElementId)) {
+      const loBytes = compositor.readElementIds(false, rect);
+      const hiBytes = undefined !== loBytes ? compositor.readElementIds(true, rect) : undefined;
+      if (undefined !== loBytes && undefined !== hiBytes) {
+        this._elemIdLow = new Uint32Array(loBytes.buffer);
+        this._elemIdHi = new Uint32Array(hiBytes.buffer);
+      } else {
+        this._selector &= ~Pixel.Selector.ElementId;
+      }
+    }
+  }
+
+  public get isEmpty(): boolean { return Pixel.Selector.None === this._selector; }
+
+  public static create(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor): Pixel.Buffer | undefined {
+    const pdb = new PixelBuffer(rect, selector, compositor);
+    return pdb.isEmpty ? undefined : pdb;
+  }
+}
+
 export class SceneCompositor {
   private _target: Target;
   private _width: number = -1;
@@ -255,6 +409,40 @@ export class SceneCompositor {
     this._target.pushActiveVolume();
     this.renderOpaque(commands, false, true);
     this._target.popActiveVolume();
+  }
+  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    return PixelBuffer.create(rect, selector, this);
+  }
+  public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._fbos.depthAndOrder); }
+  public readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined {
+    const tex = high ? this._textures.idHigh : this._textures.idLow;
+    if (undefined === tex)
+      return undefined;
+
+    const fbo = FrameBuffer.create([tex]);
+    const result = this.readFrameBuffer(rect, fbo);
+
+    if (undefined !== fbo)
+      fbo.dispose();
+
+    return result;
+  }
+  private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
+    if (undefined === fbo || !fbo.isValid)
+      return undefined;
+
+    const gl = System.instance.context;
+    const bytes = new Uint8Array(rect.width * rect.height * 4);
+    let result: Uint8Array | undefined = bytes;
+    System.instance.frameBufferStack.execute(fbo, true, () => {
+      try {
+        gl.readPixels(rect.left, rect.bottom, rect.width, rect.height, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+      } catch (e) {
+        result = undefined;
+      }
+    });
+
+    return result;
   }
 
   public get elementId0(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }

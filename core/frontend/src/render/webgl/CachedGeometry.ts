@@ -297,7 +297,6 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
   }
 }
 
-export abstract class EdgeGeometry { /* ###TODO */ }
 export abstract class SilhouetteGeometry { /* ###TODO */ }
 export class MaterialData {
   public rgb: FloatRgb;

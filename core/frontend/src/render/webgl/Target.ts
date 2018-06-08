@@ -27,6 +27,7 @@ import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
+import { Pixel } from "../System";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -140,6 +141,27 @@ export class Clips {
   public get isValid(): boolean { return this.length > 0; }
 }
 
+// All the 'rects' used in DgnClientFx were defined as BSIRect in screen coords i.e. top < bottom, origin at top-left.
+// Keith replaced them with ViewRect which has origin at bottom-left.
+// In DgnDisplay we had our own ViewRect to convert a BSIRect from screen to view coords.
+// Now we need the inverse in TypeScript...
+class BSIRect {
+  public readonly viewRect: ViewRect;
+  public readonly fullViewHeight: number;
+
+  public constructor(viewRect: ViewRect, fullViewHeight: number) {
+    this.viewRect = viewRect;
+    this.fullViewHeight = fullViewHeight;
+  }
+
+  public get left() { return this.viewRect.left; }
+  public get right() { return this.viewRect.right; }
+  public get width() { return this.viewRect.width; }
+  public get top() { return this.fullViewHeight - this.viewRect.top; }
+  public get bottom() { return this.fullViewHeight - this.viewRect.bottom; }
+  public get height() { return this.viewRect.height; }
+}
+
 export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _scene: GraphicList = [];
@@ -159,7 +181,7 @@ export abstract class Target extends RenderTarget {
   private _clipMask?: TextureHandle;
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
-  private _shaderLights: ShaderLights | undefined;
+  private _shaderLights?: ShaderLights;
   protected _dcAssigned: boolean = false;
   public readonly clips = new Clips();
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -171,9 +193,9 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  public readonly environmentMap: TextureHandle | undefined = undefined; // ###TODO: for IBL
-  public readonly diffuseMap: TextureHandle | undefined = undefined; // ###TODO: for IBL
-  public readonly imageSolar: ImageLight.Solar | undefined = undefined; // ###TODO: for IBL
+  public readonly environmentMap?: TextureHandle; // ###TODO: for IBL
+  public readonly diffuseMap?: TextureHandle; // ###TODO: for IBL
+  public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   public currentOverrides?: FeatureOverrides;
@@ -473,7 +495,9 @@ export abstract class Target extends RenderTarget {
   }
 
   public onDestroy(): void { } // ###TODO
-  public queueReset(): void { } // ###TODO
+  public queueReset(): void {
+    this.reset();
+  }
   public reset(): void {
     this._scene.length = 0;
     this._decorations.reset();
@@ -569,6 +593,96 @@ export abstract class Target extends RenderTarget {
 
     assert(this._dcAssigned);
     return this._dcAssigned;
+  }
+
+  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
+    // to the pick buffers and others we don't want - such as non-pickable decorations - do.
+    // Render to an offscreen buffer so that we don't destroy the current color buffer.
+    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (undefined === texture)
+      return undefined;
+
+    let result: Pixel.Buffer | undefined;
+    const fbo = FrameBuffer.create([texture]);
+    if (undefined !== fbo) {
+      System.instance.frameBufferStack.execute(fbo, true, () => {
+        result = this.readPixelsFromFbo(rect, selector);
+      });
+
+      fbo.dispose();
+    }
+
+    texture.dispose();
+
+    return result;
+  }
+
+  private readonly _scratchTmpFrustum = new Frustum();
+  private readonly _scratchRectFrustum = new Frustum();
+  private readonly _scratchViewFlags = new ViewFlags();
+  private readPixelsFromFbo(inRect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    // Temporarily turn off textures and lighting. We don't need them and it will speed things up not to use them.
+    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
+    vf.setShowTransparency(false);
+    vf.setShowTextures(false);
+    vf.setShowSourceLights(false);
+    vf.setShowCameraLights(false);
+    vf.setShowSolarLight(false);
+    vf.setShowShadows(false);
+    vf.setIgnoreGeometryMap(true);
+    vf.setShowAcsTriad(false);
+    vf.setShowGrid(false);
+    vf.setMonochrome(false);
+    vf.setShowMaterials(false);
+
+    const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
+    this.pushState(state);
+
+    // Create a culling frustum based on the input rect.
+    // NB: C++ BSIRect => TypeScript ViewRect...
+    const viewRect = new BSIRect(this.viewRect, this.viewRect.height);
+    const rect = new BSIRect(inRect, this.viewRect.height);
+    const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
+    const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
+    const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
+    const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
+
+    const tmpFrust = this._scratchTmpFrustum;
+    const planFrust = this.planFrustum;
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale,  Npc._110);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale,  Npc._101);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale,  Npc._111);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
+
+    const rectFrust = this._scratchRectFrustum;
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale,    Npc._000);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale,    Npc._100);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale,    Npc._001);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale,    Npc._101);
+
+    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
+    // ###TODO: Handle pickable decorations.
+    this._renderCommands.clear();
+    this._renderCommands.setCheckRange(rectFrust);
+    this._renderCommands.init(this._scene, this._decorations, this._dynamics, true);
+    this._renderCommands.clearCheckRange();
+
+    // Draw the scene
+    this.compositor.drawForReadPixels(this._renderCommands);
+
+    // Restore the state
+    this._stack.pop();
+
+    return this.compositor.readPixels(inRect, selector);
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //
@@ -778,4 +892,26 @@ function frustum(left: number, right: number, bottom: number, top: number, near:
     0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
     0.0, 0.0, -1.0, 0.0,
     result);
+}
+
+function interpolatePoint(p0: Point3d, fraction: number, p1: Point3d, out: Point3d): Point3d {
+  let x: number;
+  let y: number;
+  let z: number;
+  if (fraction <= 0.5) {
+    x = p0.x + fraction * (p1.x - p0.x);
+    y = p0.y + fraction * (p1.y - p0.y);
+    z = p0.z + fraction * (p1.z - p0.z);
+  } else {
+    const t = fraction - 1.0;
+    x = p1.x + t * (p1.y - p0.x);
+    y = p1.y + t * (p1.y - p0.y);
+    z = p1.z + t * (p1.z - p0.z);
+  }
+
+  return Point3d.create(x, y, z, out);
+}
+
+function interpolateFrustumPoint(destFrust: Frustum, srcFrust: Frustum, destPoint: Npc, scale: number, srcPoint: Npc): void {
+  interpolatePoint(srcFrust.getCorner(destPoint), scale, srcFrust.getCorner(srcPoint), destFrust.points[destPoint]);
 }

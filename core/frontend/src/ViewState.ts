@@ -188,8 +188,47 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** get the ViewFlags from the displayStyle of this ViewState. */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
 
+  /** Set the ViewFlags and mark them as dirty if they have changed. */
+  public set viewFlags(newFlags: ViewFlags) {
+    if (!this.viewFlags.isEqualTo(newFlags))
+      this.setFeatureOverridesDirty();
+
+    this.viewFlags.acsTriad = newFlags.acsTriad;
+    this.viewFlags.fill = newFlags.fill;
+    this.viewFlags.grid = newFlags.grid;
+    this.viewFlags.textures = newFlags.textures;
+    this.viewFlags.visibleEdges = newFlags.visibleEdges;
+    this.viewFlags.materials = newFlags.materials;
+    this.viewFlags.shadows = newFlags.shadows;
+    this.viewFlags.sourceLights = newFlags.sourceLights;
+    this.viewFlags.solarLight = newFlags.solarLight;
+    this.viewFlags.cameraLights = newFlags.cameraLights;
+    this.viewFlags.monochrome = newFlags.monochrome;
+    this.viewFlags.constructions = newFlags.constructions;
+  }
+
   /** determine whether this ViewState exactly matches another */
   public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
+
+  /** determine whether this ViewState matches another for the purpose of visually matching another view state (not exact equality) */
+  public equalState(other: ViewState): boolean {
+    if (this.isPrivate !== other.isPrivate)
+      return false;
+
+    if (!this.categorySelector.id.equals(other.categorySelector.id))
+      return false;
+
+    if (!this.displayStyle.id.equals(other.displayStyle.id))
+      return false;
+
+    if (!this.categorySelector.equalState(other.categorySelector))
+      return false;
+
+    if (!this.displayStyle.equalState(other.displayStyle))
+      return false;
+
+    return JSON.stringify(this.getDetails()) === (JSON.stringify(other.getDetails()));
+  }
 
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
@@ -781,6 +820,19 @@ export abstract class ViewState3d extends ViewState {
     return val;
   }
 
+  public equalState(other: ViewState3d): boolean {
+    if (!this.origin.isAlmostEqual(other.origin) || !this.extents.isAlmostEqual(other.extents) || !this.rotation.isAlmostEqual(other.rotation))
+      return false;
+
+    if (this.isCameraOn() !== other.isCameraOn())
+      return false;
+
+    if (this.isCameraOn() && this.camera.equals(other.camera)) // ###TODO: should this be less precise equality?
+      return false;
+
+    return super.equalState(other);
+  }
+
   public isCameraOn(): boolean { return this.cameraOn; }
   public setupFromFrustum(frustum: Frustum): ViewStatus {
     const stat = super.setupFromFrustum(frustum);
@@ -1231,8 +1283,8 @@ export abstract class ViewState3d extends ViewState {
 
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
-    // if (style3d.getEnvironment().sky.display)
-    //  return;   // SkyBox is enabled
+    if (!style3d.getEnvironment().sky.display)
+      return;
 
     const vp = context.viewport;
     style3d.loadSkyBoxMaterial(vp.target.renderSystem);
@@ -1315,13 +1367,18 @@ export abstract class ViewState3d extends ViewState {
     if (extents.isNull()) {
       return;
     }
+
+    const ground = this.getDisplayStyle3d().getEnvironment().ground;
+    if (!ground.display)
+      return;
+
     const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
     points[1].x = extents.high.x;
     points[3].x = extents.low.x;
 
     const aboveGround = this.isEyePointAbove(extents.low.z);
     const colors: ColorDef[] = [];
-    const gradient = this.getDisplayStyle3d().getEnvironment().ground.getGroundPlaneTextureSymb(aboveGround, colors);
+    const gradient = ground.getGroundPlaneTextureSymb(aboveGround, colors);
     const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
     if (!texture)
       return;
@@ -1376,6 +1433,16 @@ export class SpatialViewState extends ViewState3d {
   }
   public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
+  public equalState(other: SpatialViewState): boolean {
+    if (!super.equalState(other))
+      return false;
+
+    if (!this.modelSelector.id.equals(other.modelSelector.id))
+      return false;
+
+    return this.modelSelector.equalState(other.modelSelector);
+  }
+
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
@@ -1427,6 +1494,22 @@ export class ViewState2d extends ViewState {
     val.angle = this.angle;
     val.baseModelId = this.baseModelId;
     return val;
+  }
+
+  public equalState(other: ViewState2d): boolean {
+    if (!this.baseModelId.equals(other.baseModelId))
+      return false;
+
+    if (!this.origin.isAlmostEqual(other.origin))
+      return false;
+
+    if (!this.delta.isAlmostEqual(other.delta))
+      return false;
+
+    if (!this.angle.isAlmostEqualNoPeriodShift(other.angle))
+      return false;
+
+    return super.equalState(other);
   }
 
   public onRenderFrame(): void { }

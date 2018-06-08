@@ -8,7 +8,7 @@ import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc, ColorDef } from "@bentley/imodeljs-common";
+import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
@@ -1944,25 +1944,76 @@ export class ViewRedoTool extends ViewTool {
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
 }
 
-export class ViewToggleCameraTool extends ViewManip {
+export class ViewToggleCameraTool extends ViewTool {
   public static toolId = "View.ToggleCamera";
+  private isCameraOn: boolean;
+  private viewport: Viewport;
 
-  constructor(viewport: Viewport) { super(viewport, ViewHandleType.ViewPan, false, false, false); this.viewport = viewport; }
+  constructor(viewport: Viewport) { super(); this.viewport = viewport; this.isCameraOn = viewport.isCameraOn(); }
 
   public onPostInstall() {
     // If we are in a 3d view, check if the camera is on or off, and then toggle it
     if (this.viewport) {
       if (this.viewport.view.is3d) {
-        if (this.viewport.isCameraOn()) {
+        if (this.isCameraOn) {
           (this.viewport.view as ViewState3d).turnCameraOff();
+          // ### TODO: Make sure still works with caching undo
           this.viewport.synchWithView(false);
+          this.isCameraOn = false;
         } else {
           this.viewport.turnCameraOn();
+          // ## TODO: Make sure still works with caching undo
           this.viewport.synchWithView(false);
+          this.isCameraOn = true;
         }
       }
     }
   }
 
   public onDataButtonDown(_ev: BeButtonEvent) { return false; }
+}
+
+export class ViewChangeRenderModeTool extends ViewTool {
+  public static toolId = "View.ChangeRenderMode";
+  private viewport: Viewport;
+  // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundplane, etc.)
+  private renderOptions: Map<string, boolean>;
+
+  constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>) { super(); this.viewport = viewport; this.renderOptions = renderOptionsMap; }
+
+  // We want changes to happen immediately when checking or unchecking an option
+  public onPostInstall() {
+    const viewflags = ViewFlags.createFrom(this.viewport.viewFlags);
+    // viewflags.setRenderMode(this.renderMode);
+    viewflags.setShowAcsTriad(this.renderOptions.get("ACSTriad")!);
+    viewflags.setShowFill(this.renderOptions.get("fill")!);
+    viewflags.setShowGrid(this.renderOptions.get("grid")!);
+    viewflags.setShowTextures(this.renderOptions.get("textures")!);
+    viewflags.setShowVisibleEdges(this.renderOptions.get("visibleEdges")!);
+    viewflags.setShowMaterials(this.renderOptions.get("materials")!);
+    viewflags.setShowShadows(this.renderOptions.get("shadows")!);
+    viewflags.setShowSourceLights(this.renderOptions.get("sourceLights")!);
+    viewflags.setShowSolarLight(this.renderOptions.get("solarLight")!);
+    viewflags.setShowCameraLights(this.renderOptions.get("cameraLight")!);
+    viewflags.setMonochrome(this.renderOptions.get("monochrome")!);
+    viewflags.setShowConstructions(this.renderOptions.get("constructions")!);
+
+    // Now handle environment
+    if (this.viewport.view.is3d) {
+      const view = this.viewport.view as ViewState3d;
+      const displayStyle = view.getDisplayStyle3d();
+      const env = displayStyle.getEnvironment();
+      env.ground.display = this.renderOptions.get("groundplane")!; // Changes directly within displaystyle
+      env.sky.display = this.renderOptions.get("skybox")!;  // Changes directly within displaystyle
+      displayStyle.setEnvironment(env);
+    }
+
+    this.viewport.view.viewFlags = viewflags;
+    this.viewport.sync.invalidateController();
+    this.exitTool();
+  }
+
+  public onDataButtonDown(_ev: BeButtonEvent): boolean {
+    return false;
+  }
 }

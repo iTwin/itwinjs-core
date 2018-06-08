@@ -514,6 +514,35 @@ export class ViewFlags {
 
     return val;
   }
+
+  public isEqualTo(other: ViewFlags): boolean {
+    if (this.acsTriad !== other.acsTriad)
+      return false;
+    if (this.fill !== other.fill)
+      return false;
+    if (this.grid !== other.grid)
+      return false;
+    if (this.textures !== other.textures)
+      return false;
+    if (this.visibleEdges !== other.visibleEdges)
+      return false;
+    if (this.materials !== other.materials)
+      return false;
+    if (this.shadows !== other.shadows)
+      return false;
+    if (this.sourceLights !== other.sourceLights)
+      return false;
+    if (this.solarLight !== other.solarLight)
+      return false;
+    if (this.cameraLights !== other.cameraLights)
+      return false;
+    if (this.monochrome !== other.monochrome)
+      return false;
+    if (this.constructions !== other.constructions)
+      return false;
+    return true;
+  }
+
   public showDimensions() { return this.dimensions; }
   public ignoreGeometryMap() { return this.noGeometryMap; }
   public isMonochrome() { return this.monochrome; }

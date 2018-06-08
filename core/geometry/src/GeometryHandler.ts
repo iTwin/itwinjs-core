@@ -54,7 +54,17 @@ export abstract class GeometryHandler {
   public abstract handleRuledSweep(g: RuledSweep): any;
   public abstract handlePointString3d(g: PointString3d): any;
 }
-
+/**
+ * `NullGeometryHandler` is a base class for dispatching various geometry types to
+ * appliation specific implementation of some service.
+ *
+ * To use:
+ * * Derive a class from `NullGeometryHandler`
+ * * Reimplement any or all of the specific `handleXXXX` methods
+ * * Create a handler instance `myHandler`
+ * * To send a `GeometryQuery` object `candidateGeometry` through the (fast) dispatch, invoke   `candidateGeometry.dispatchToHandler (myHandler)
+ * * The appropriate method or methods will get called with a strongly typed `_g ` value.
+ */
 export class NullGeometryHandler extends GeometryHandler {
   public handleLineSegment3d(_g: LineSegment3d): any { return undefined; }
   public handleLineString3d(_g: LineString3d): any { return undefined; }

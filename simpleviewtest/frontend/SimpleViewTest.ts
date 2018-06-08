@@ -1,4 +1,4 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
@@ -31,6 +31,7 @@ class SimpleViewState {
 let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState>();
 let theViewport: Viewport | undefined;
+const renderModeOptions = new Map<string, boolean>();
 
 // Entry point - run the main function
 main();
@@ -158,8 +159,13 @@ export class LocateTool extends ViewTool {
   }
 }
 
-function showStandardViewMenu(_event: any) {
+function toggleStandardViewMenu(_event: any) {
   const menu = document.getElementById("standardRotationMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
+function toggleRenderModeMenu(_event: any) {
+  const menu = document.getElementById("changeRenderModeMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
@@ -167,6 +173,57 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   theViewport!.setStandardRotation(rotationId);
   IModelApp.tools.run("View.Fit", theViewport!, false, false);
   showStatus(label, "view");
+}
+
+function applyRenderModeChange(mode: string) {
+  const newValue = (document.getElementById(mode)! as HTMLInputElement).checked;
+  renderModeOptions.set(mode, newValue);
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions);
+}
+
+// updates the checkboxes and the map for turning off and on rendering options to match what the current view is showing
+function updateRenderModeOptionsMap() {
+  let skybox = false;
+  let groundplane = false;
+  if (theViewport!.view.is3d) {
+    const view = theViewport!.view as ViewState3d;
+    const env = view.getDisplayStyle3d().getEnvironment();
+    skybox = env.sky.display;
+    groundplane = env.ground.display;
+  }
+  const viewflags = theViewport!.view.viewFlags;
+
+  // update checkbox items
+  (document.getElementById("skybox")! as HTMLInputElement).checked = skybox;
+  (document.getElementById("groundplane")! as HTMLInputElement).checked = groundplane;
+  (document.getElementById("ACSTriad")! as HTMLInputElement).checked = viewflags.showAcsTriad();
+  (document.getElementById("fill")! as HTMLInputElement).checked = viewflags.showFill();
+  (document.getElementById("grid")! as HTMLInputElement).checked = viewflags.showGrid();
+  (document.getElementById("textures")! as HTMLInputElement).checked = viewflags.showTextures();
+  (document.getElementById("visibleEdges")! as HTMLInputElement).checked = viewflags.showVisibleEdges();
+  (document.getElementById("materials")! as HTMLInputElement).checked = viewflags.showMaterials();
+  (document.getElementById("shadows")! as HTMLInputElement).checked = viewflags.showShadows();
+  (document.getElementById("sourceLights")! as HTMLInputElement).checked = viewflags.showSourceLights();
+  (document.getElementById("solarLight")! as HTMLInputElement).checked = viewflags.showSolarLight();
+  (document.getElementById("cameraLight")! as HTMLInputElement).checked = viewflags.showCameraLights();
+  (document.getElementById("monochrome")! as HTMLInputElement).checked = viewflags.isMonochrome();
+  (document.getElementById("constructions")! as HTMLInputElement).checked = viewflags.showConstructions();
+
+  // update the map to starting values (the map gets passed to the ChangeRenderMode tool)
+  renderModeOptions.set("skybox", skybox);
+  renderModeOptions.set("groundplane", groundplane);
+  renderModeOptions.set("ACSTriad", viewflags.showAcsTriad());
+  renderModeOptions.set("fill", viewflags.showFill());
+  renderModeOptions.set("grid", viewflags.showGrid());
+  renderModeOptions.set("textures", viewflags.showTextures());
+  renderModeOptions.set("visibleEdges", viewflags.showVisibleEdges());
+  renderModeOptions.set("materials", viewflags.showMaterials());
+  renderModeOptions.set("shadows", viewflags.showShadows());
+  renderModeOptions.set("sourceLights", viewflags.showSourceLights());
+  renderModeOptions.set("solarLight", viewflags.showSolarLight());
+  renderModeOptions.set("cameraLight", viewflags.showCameraLights());
+  renderModeOptions.set("monochrome", viewflags.isMonochrome());
+  renderModeOptions.set("constructions", viewflags.showConstructions());
 }
 
 // opens the view and connects it to the HTML canvas element.
@@ -178,6 +235,7 @@ async function openView(state: SimpleViewState) {
     theViewport = new Viewport(htmlCanvas, state.viewState!, target);
     await _changeView(state.viewState!);
     IModelApp.viewManager.addViewport(theViewport);
+    updateRenderModeOptionsMap();
   }
 }
 
@@ -272,7 +330,8 @@ function wireIconsToFunctions() {
   document.getElementById("startZoom")!.addEventListener("click", startSelect);
   document.getElementById("startWalk")!.addEventListener("click", startWalk);
   document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
-  document.getElementById("switchStandardRotation")!.addEventListener("click", showStandardViewMenu);
+  document.getElementById("switchStandardRotation")!.addEventListener("click", toggleStandardViewMenu);
+  document.getElementById("changeRenderMode")!.addEventListener("click", toggleRenderModeMenu);
   document.getElementById("doUndo")!.addEventListener("click", doUndo);
   document.getElementById("doRedo")!.addEventListener("click", doRedo);
 
@@ -285,6 +344,22 @@ function wireIconsToFunctions() {
   document.getElementById("back")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Back, "Back"));
   document.getElementById("iso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Iso, "Iso"));
   document.getElementById("rightIso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
+
+  // render mode handlers
+  document.getElementById("skybox")!.addEventListener("click", () => applyRenderModeChange("skybox"));
+  document.getElementById("groundplane")!.addEventListener("click", () => applyRenderModeChange("groundplane"));
+  document.getElementById("ACSTriad")!.addEventListener("click", () => applyRenderModeChange("ACSTriad"));
+  document.getElementById("fill")!.addEventListener("click", () => applyRenderModeChange("fill"));
+  document.getElementById("grid")!.addEventListener("click", () => applyRenderModeChange("grid"));
+  document.getElementById("textures")!.addEventListener("click", () => applyRenderModeChange("textures"));
+  document.getElementById("visibleEdges")!.addEventListener("click", () => applyRenderModeChange("visibleEdges"));
+  document.getElementById("materials")!.addEventListener("click", () => applyRenderModeChange("materials"));
+  document.getElementById("shadows")!.addEventListener("click", () => applyRenderModeChange("shadows"));
+  document.getElementById("sourceLights")!.addEventListener("click", () => applyRenderModeChange("sourceLights"));
+  document.getElementById("solarLight")!.addEventListener("click", () => applyRenderModeChange("solarLight"));
+  document.getElementById("cameraLight")!.addEventListener("click", () => applyRenderModeChange("cameraLight"));
+  document.getElementById("monochrome")!.addEventListener("click", () => applyRenderModeChange("monochrome"));
+  document.getElementById("constructions")!.addEventListener("click", () => applyRenderModeChange("constructions"));
 }
 
 // ----------------------------------------------------------
