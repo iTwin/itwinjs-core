@@ -8,11 +8,12 @@ import { AccessToken } from "../../";
 
 import {
   IModelHubClient, CodeState, Code, AggregateResponseError, ConflictingCodesError, CodeQuery,
-  IModelHubRequestError, IModelHubRequestErrorId,
+  IModelHubRequestError,
 } from "../../imodelhub";
 
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
+import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -290,7 +291,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should not create a query by codes with invalid codes", () => {
@@ -302,7 +303,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail deleting all codes with invalid briefcase id", async () => {
@@ -314,6 +315,6 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

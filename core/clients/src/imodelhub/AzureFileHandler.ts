@@ -135,7 +135,6 @@ export class AzureFileHandler implements FileHandler {
           .pipe(outputStream)
           .on("error", (error: any) => {
             const parsedError = ResponseError.parse(error);
-            parsedError.log();
             reject(parsedError);
           })
           .on("finish", () => {

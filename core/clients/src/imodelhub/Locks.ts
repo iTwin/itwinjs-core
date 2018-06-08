@@ -8,9 +8,9 @@ import { IModelHubBaseHandler } from "./BaseHandler";
 
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { isBriefcaseIdValid, AggregateResponseError, Query } from "./index";
-import { IModelHubRequestError, IModelHubResponseError, IModelHubResponseErrorId } from "./Errors";
+import { IModelHubRequestError, IModelHubError } from "./Errors";
 import { WsgRequestOptions } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -84,30 +84,30 @@ export class DefaultLockUpdateOptionsProvider {
 }
 
 /** Error for conflicting locks */
-export class ConflictingLocksError extends IModelHubResponseError {
+export class ConflictingLocksError extends IModelHubError {
   public conflictingLocks?: Lock[];
 
   /**
-   * Create ConflictingLocksError from IModelHubResponseError instance.
-   * @param error IModelHubResponseError to get error data from.
+   * Create ConflictingLocksError from IModelHubError instance.
+   * @param error IModelHubError to get error data from.
    * @returns Undefined if the error is not for a lock conflict, otherwise newly created error instance.
    */
-  public static fromError(error: IModelHubResponseError): ConflictingLocksError | undefined {
-    if (error.id !== IModelHubResponseErrorId.LockOwnedByAnotherBriefcase
-      && error.id !== IModelHubResponseErrorId.ConflictsAggregate) {
+  public static fromError(error: IModelHubError): ConflictingLocksError | undefined {
+    if (error.errorNumber !== IModelHubStatus.LockOwnedByAnotherBriefcase
+      && error.errorNumber !== IModelHubStatus.ConflictsAggregate) {
       return undefined;
     }
-    const result = new ConflictingLocksError();
+    const result = new ConflictingLocksError(error.errorNumber);
     deepAssign(result, error);
     result.addLocks(error);
     return result;
   }
 
   /**
-   * Amends this error instance with conflicting locks from another IModelHubResponseError.
+   * Amends this error instance with conflicting locks from another IModelHubError.
    * @param error Error to get additional conflicting locks from.
    */
-  public addLocks(error: IModelHubResponseError) {
+  public addLocks(error: IModelHubError) {
     if (!error.data || !error.data.ConflictingLocks) {
       return;
     }
@@ -421,8 +421,8 @@ export class LockHandler {
         result.push(...await this.updateInternal(token, imodelId, chunk, updateOptions));
       } catch (error) {
         if (error instanceof ResponseError) {
-          if (updateOptions && updateOptions.deniedLocks && error instanceof IModelHubResponseError
-            && (error.id === IModelHubResponseErrorId.LockOwnedByAnotherBriefcase || error.id === IModelHubResponseErrorId.ConflictsAggregate)) {
+          if (updateOptions && updateOptions.deniedLocks && error instanceof IModelHubError
+            && (error.errorNumber === IModelHubStatus.LockOwnedByAnotherBriefcase || error.errorNumber === IModelHubStatus.ConflictsAggregate)) {
             if (conflictError) {
               conflictError.addLocks(error);
             } else {

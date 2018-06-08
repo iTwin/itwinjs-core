@@ -3,11 +3,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelHubBaseHandler } from "./BaseHandler";
-import { IModelHubRequestError, IModelHubResponseError, IModelHubResponseErrorId } from "./Errors";
+import { IModelHubRequestError, IModelHubError } from "./Errors";
 import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { FileHandler } from "./FileHandler";
 import { ProgressInfo } from "../Request";
 
@@ -282,7 +282,7 @@ export class IModelHandler {
       imodel = await this._handler.postInstance<IModel>(IModel, token, this.getRelativeUrl(projectId), iModel);
       Logger.logTrace(loggingCategory, `Created iModel instance with name ${iModelName} in project ${projectId}`);
     } catch (err) {
-      if (!(err instanceof IModelHubResponseError) || IModelHubResponseErrorId.iModelAlreadyExists !== err.id) {
+      if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
         Logger.logWarning(loggingCategory, `Can not create iModel: ${err.message}`);
 
         return Promise.reject(err);
@@ -361,7 +361,8 @@ export class IModelHandler {
 
         if (initState !== SeedFileInitState.NotStarted && initState !== SeedFileInitState.Scheduled) {
           Logger.logWarning(loggingCategory, errorMessage);
-          return Promise.reject(new IModelHubResponseError(`Seed file initialization failed with status ${SeedFileInitState[initState]}`));
+          return Promise.reject(new IModelHubError(IModelHubStatus.SeedFileInitializationFailed,
+            `Seed file initialization failed with status ${SeedFileInitState[initState]}`));
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -395,7 +396,7 @@ export class IModelHandler {
     const seedFiles: SeedFile[] = await this._seedFileHandler.get(accessToken, imodelId, new SeedFileQuery().selectDownloadUrl().latest());
 
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
-      return Promise.reject(IModelHubResponseError.fromId(IModelHubResponseErrorId.FileDoesNotExist, "Failed to get seed file."));
+      return Promise.reject(IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file."));
 
     await this._fileHandler.downloadFile(seedFiles[0].downloadUrl!, downloadToPathname, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
 

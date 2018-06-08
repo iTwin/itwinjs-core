@@ -5,12 +5,12 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 
 import { AccessToken, WsgError } from "../../";
 import {
-  IModelHubClient, IModel, SeedFile, IModelHubResponseError, IModelHubResponseErrorId,
-  IModelQuery, IModelHubRequestError, IModelHubRequestErrorId,
+  IModelHubClient, IModel, SeedFile, IModelHubError,
+  IModelQuery, IModelHubRequestError,
 } from "../../imodelhub";
 
 import { TestConfig } from "../TestConfig";
@@ -228,16 +228,16 @@ describe("iModelHub iModelHandler", () => {
         1, undefined, undefined, 400);
     }
 
-    let error: IModelHubResponseError | undefined;
+    let error: IModelHubError | undefined;
     try {
       await imodelHubClient.IModels().get(accessToken, "", new IModelQuery().byId(iModelId));
     } catch (err) {
-      if (err instanceof IModelHubResponseError)
+      if (err instanceof IModelHubError)
         error = err;
     }
 
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubResponseErrorId.ProjectIdIsNotSpecified);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.ProjectIdIsNotSpecified);
   });
 
   it("should fail creating existing and initialized iModel", async function (this: Mocha.ITestCallbackContext) {
@@ -248,16 +248,16 @@ describe("iModelHub iModelHandler", () => {
       ResponseBuilder.mockResponse(utils.defaultUrl, RequestType.Post, requestPath, requestResponse, 1, undefined, undefined, 409);
     }
 
-    let error: IModelHubResponseError | undefined;
+    let error: IModelHubError | undefined;
     try {
       await imodelHubClient.IModels().create(accessToken, projectId, imodelName,
         utils.getMockSeedFilePath());
     } catch (err) {
-      if (err instanceof IModelHubResponseError)
+      if (err instanceof IModelHubError)
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubResponseErrorId.iModelAlreadyExists);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
   it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
@@ -324,7 +324,7 @@ describe("iModelHub iModelHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail creating an iModel with no file handler", async () => {
@@ -337,7 +337,7 @@ describe("iModelHub iModelHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileHandlerNotSet);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail creating an iModel with no file", async () => {
@@ -349,7 +349,7 @@ describe("iModelHub iModelHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
   it("should fail creating an iModel with directory path", async () => {
@@ -361,6 +361,6 @@ describe("iModelHub iModelHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id).to.be.equal(IModelHubRequestErrorId.FileNotFound);
+    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 });

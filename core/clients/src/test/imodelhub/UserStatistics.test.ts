@@ -11,7 +11,8 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { UserStatisticsQuery, UserStatistics } from "../../imodelhub/UserStatistics";
 import { TestUsers } from "../TestConfig";
-import { IModelHubRequestError, IModelHubRequestErrorId } from "../..";
+import { IModelHubRequestError } from "../..";
+import { IModelHubStatus } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -244,6 +245,6 @@ describe("iModelHubClient UserStatisticsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.id!).to.be.equal(IModelHubRequestErrorId.InvalidArgumentError);
+    chai.expect(error!.errorNumber!).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });
