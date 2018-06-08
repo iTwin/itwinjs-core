@@ -7,7 +7,7 @@ import { Viewport } from "./Viewport";
 import { Sprite } from "./Sprites";
 import { Point3d, Vector3d, Point2d, RotMatrix, Transform, Vector2d, Range3d, LineSegment3d, CurveLocationDetail, XAndY, ClipVector } from "@bentley/geometry-core";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { HitDetail, SnapMode, SnapDetail } from "./HitDetail";
+import { HitDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
@@ -44,72 +44,6 @@ export class NullContext extends ViewContext {
 export class DynamicsContext extends ViewContext {
 }
 
-export class SnapContext extends ViewContext {
-  public snapDetail?: SnapDetail; // result of the snap
-  public snapAperture = 10;
-  public snapMode = SnapMode.Invalid;
-  public snapDivisor = 2;
-
-  public constructor(viewport: Viewport) { super(viewport); }
-
-  public async snapToPath(_thisPath: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
-    //   if (!Application.locateManager.isSnappableModel(thisPath.getModel())   {
-    //       return undefined nullptr;
-    //     return SnapStatus.ModelNotSnappable;
-    //   }
-
-    //   // test for un-snappable hits...ex. pattern, linestyle...
-    //   GeomDetail const& detail = thisPath -> GetGeomDetail();
-
-    //   if (!detail.IsSnappable())
-    //     return SnapStatus:: NotSnappable;
-
-    //   SnapStatus  status = SnapStatus:: NotSnappable;
-
-    //   // attach the context
-    //   Attach(& thisPath -> GetViewport(), DrawPurpose:: Pick);
-
-    //   snapMode = snapMode;
-    //   snapDivisor = snapDivisor ? snapDivisor : 2;
-    //   snapPath = new SnapDetail(thisPath);
-    //   snapAperture = hotAperture;
-
-    //   snapPath -> AddRef();
-
-    //   // Save divisor used for this snap
-    //   snapPath -> SetSnapDivisor(snapDivisor);
-
-    //   DgnElementCPtr   element = snapPath -> GetElement();
-    //   GeometrySourceCP geom = (element.IsValid() ? element -> ToGeometrySource() : nullptr);
-
-    //   if (nullptr == geom) {
-    //     IElemTopologyCP elemTopo = snapPath -> GetElemTopology();
-
-    //     geom = (nullptr != elemTopo ? elemTopo -> _ToGeometrySource() : nullptr);
-    //   }
-
-    //   if (nullptr != geom)
-    //     status = geom -> OnSnap(* this);
-    //   else
-    //     status = DoDefaultDisplayableSnap(); // Default snap for transients using HitDetail...
-
-    //   if (SnapStatus:: Success == status)
-    //   ElementLocateManager:: GetManager()._AdjustSnapDetail(* this);
-
-    //   if (SnapStatus:: Success != status)
-    //   {
-    //     delete snapPath;
-    //     snapPath = nullptr;
-    //   }
-
-    //   * snappedPath = snapPath;
-    //   snapPath = nullptr;
-
-    //   return status;
-    return undefined;
-  }
-}
-
 export class RenderContext extends ViewContext {
   constructor(vp: Viewport) { super(vp); }
 
@@ -129,11 +63,12 @@ export class DecorateContext extends RenderContext {
     super(vp);
     this.decorations = decorations;
   }
-  public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
-  public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.elementId, 0.25); } // NEEDSWORK
+  //  public drawSheetHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.sourceId, 0.25); } // NEEDSWORK
+  public drawNormalHit(hit: HitDetail): void { hit.viewport.setFlashed(hit.sourceId, 0.25); } // NEEDSWORK
   public drawHit(hit: HitDetail): void {
-    const sheetVp = hit.sheetViewport;
-    return (sheetVp && hit.viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
+    //    const sheetVp = hit.sheetViewport;
+    //    return (sheetVp && hit.viewport === this.viewport) ? this.drawSheetHit(hit) : this.drawNormalHit(hit);
+    return this.drawNormalHit(hit);
   }
 
   /** wrapped nRepetitions and min in object to preserve changes */

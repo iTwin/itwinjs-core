@@ -1190,12 +1190,11 @@ class RotateElementTool extends AccuDrawTool {
     const accudraw = IModelApp.accuDraw;
     if (accudraw.isActive() && LockedStates.NONE_LOCKED !== accudraw.locked) {
       // Make sure adjusted point is used instead of close point on element...
-      tmpSnapDetail.heat = SnapHeat.InRange;
-      tmpSnapDetail.setHitPoint(ev.point);
-      tmpSnapDetail.setTestPoint(ev.point);
+      tmpSnapDetail.setSnapPoint(ev.point, SnapHeat.InRange);
+      tmpSnapDetail.testPoint.setFrom(ev.point);
     } else {
       // Test point needs to reflect cursor position when tentative is active...
-      tmpSnapDetail.setTestPoint(ev.rawPoint);
+      tmpSnapDetail.testPoint.setFrom(ev.rawPoint);
     }
 
     // if (!rotateElmHelper.GetOrientation(tmpSnapDetail, origin, rMatrix))

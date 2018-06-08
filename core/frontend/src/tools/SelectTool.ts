@@ -13,7 +13,7 @@ import { SelectEventType } from "../SelectionSet";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { BeButtonEvent, BeButton, BeGestureEvent, GestureId } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
-import { SubSelectionMode, HitDetail } from "../HitDetail";
+import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { FenceParams } from "../FenceParams";
@@ -83,7 +83,7 @@ export class SelectionTool extends PrimitiveTool {
     /// IModelApp.toolAdmin.setCursor(ViewManager:: GetManager().GetCursor(Display:: Cursor:: Id:: Arrow));
     IModelApp.toolAdmin.setLocateCircleOn(true);
     IModelApp.locateManager.initToolLocate(); // For drag move/copy...
-    IModelApp.locateManager.options.allowTransients = true; // Support edit manipulator for transient geometry...
+    IModelApp.locateManager.options.allowDecorations = true; // Support edit manipulator for transient geometry...
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
     IModelApp.accuSnap.enableLocate(true);
     IModelApp.accuSnap.enableSnap(false);
@@ -169,9 +169,9 @@ export class SelectionTool extends PrimitiveTool {
 
     // If current hit is for an element, is it the one and only selected element?
     let currHit = IModelApp.locateManager.currHit;
-    if (currHit && currHit.elementId) {
+    if (currHit && currHit.isElementHit()) {
       const selSet = this.iModel.selectionSet;
-      if (1 !== selSet.size || selSet.has(currHit.elementId))
+      if (1 !== selSet.size || selSet.has(currHit.sourceId))
         currHit = undefined;
     }
 
@@ -423,8 +423,8 @@ export class SelectionTool extends PrimitiveTool {
     if (0 === this.iModel.selectionSet.size)
       return false;
 
-    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, SubSelectionMode.None, false); // Don't want add/remove mode filtering...
-    if (!hit || !this.iModel.selectionSet.has(hit.elementId))
+    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, false); // Don't want add/remove mode filtering...
+    if (!hit || !this.iModel.selectionSet.has(hit.sourceId))
       return false;
 
     if (this.iModel.isReadonly()) // NOTE: Don't need to check GetFilteredElementIds, this should be sufficient to know we have at least 1 element...
@@ -778,7 +778,7 @@ export class SelectionTool extends PrimitiveTool {
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.getSelectionMode() ? undefined : IModelApp.locateManager.currHit;
-    if (lastHit && this.iModel.selectionSet.has(lastHit.elementId)) {
+    if (lastHit && this.iModel.selectionSet.has(lastHit.sourceId)) {
       const autoHit = IModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit...
@@ -809,7 +809,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMode.Replace === mode)
       return true;
 
-    const elementId = hit.elementId;
+    const elementId = (hit.isElementHit() ? hit.sourceId : undefined);
     if (!elementId)
       return true; // Don't reject transients...
 

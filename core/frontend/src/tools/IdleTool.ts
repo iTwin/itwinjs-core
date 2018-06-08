@@ -6,7 +6,7 @@
 import { BeButton, BeButtonEvent, BeGestureEvent, BeWheelEvent, InteractiveTool } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, RotatePanZoomGestureTool, ViewTool } from "./ViewTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { GeomDetail, HitDetail, HitSource, SnapDetail } from "../HitDetail";
+import { HitDetail, HitSource, SnapDetail, HitGeomClass } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 
 /**
@@ -88,12 +88,8 @@ export class IdleTool extends InteractiveTool {
         const vp = ev.viewport!;
         if (vp.isSnapAdjustmentRequired()) {
           IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-
-          const geomDetail = new GeomDetail();
-          geomDetail.closePoint.setFrom(point);
-          const hit = new HitDetail(vp, undefined, undefined, point, HitSource.TentativeSnap, geomDetail);
+          const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitGeomClass.None, 0, 0);
           const snap = new SnapDetail(hit);
-
           tp.setCurrSnap(snap);
           IModelApp.toolAdmin.adjustSnapPoint();
           tp.point.setFrom(tp.point);

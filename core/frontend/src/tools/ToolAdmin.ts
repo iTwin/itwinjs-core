@@ -187,7 +187,7 @@ export class CurrentInputState {
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (snap) {
         from = snap.isHot() ? CoordSource.ElemSnap : CoordSource.User;
-        uorPt = snap.getAdjustedPoint(); // NOTE: Updated by AdjustSnapPoint even when not hot...
+        uorPt = snap.adjustedPoint; // NOTE: Updated by AdjustSnapPoint even when not hot...
         vp = snap.viewport;
       } else if (IModelApp.tentativePoint.isActive) {
         from = CoordSource.TentativePoint;
@@ -605,7 +605,7 @@ export class ToolAdmin {
     const vp = snap.viewport;
     const isHot = snap.isHot();
     const savePt = snap.snapPoint.clone();
-    const point = (isHot ? savePt : snap.getHitPoint());
+    const point = (isHot ? savePt : snap.getPoint());
 
     if (!isHot) // Want point adjusted to grid for a hit that isn't hot...
       this.adjustPointToGrid(point, vp);
@@ -616,7 +616,7 @@ export class ToolAdmin {
     }
 
     if (!point.isExactEqual(savePt))
-      snap.adjustedPt.setFrom(point);
+      snap.adjustedPoint.setFrom(point);
   }
 
   public sendDataPoint(ev: BeButtonEvent): void {

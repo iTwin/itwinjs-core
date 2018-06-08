@@ -1347,7 +1347,7 @@ export class Viewport {
     if (!(hit instanceof SnapDetail))
       return; // Don't display unless snapped...
 
-    if (!hit.geomDetail.isValidSurfaceHit())
+    if (!hit.normal)
       return; // AccuSnap will flash edge/segment geometry...
 
     if (SnapMode.Nearest !== hit.snapMode && hit.isHot)
@@ -1355,9 +1355,9 @@ export class Viewport {
 
     const color = new ColorDef(~vp.hilite.color.getRgb); // Invert hilite color for good contrast...
     const colorFill = color.clone();
-    const pt = hit.getHitPoint();
+    const pt = hit.getPoint();
     const radius = (2.5 * aperture) * vp.getPixelSizeAtPoint(pt);
-    const normal = hit.geomDetail.normal;
+    const normal = hit.normal;
     const rMatrix = RotMatrix.createRigidHeadsUp(normal);
     color.setTransparency(100);
     colorFill.setTransparency(200);
