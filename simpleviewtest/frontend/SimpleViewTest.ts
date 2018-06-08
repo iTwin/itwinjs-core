@@ -1,4 +1,5 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d } from "@bentley/imodeljs-frontend";
+import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
@@ -126,6 +127,7 @@ export class LocateTool extends ViewTool {
   private _curPoint = new Point3d();
   private _worldPoint = new Point3d();
   private _haveWorldPoint = false;
+  private _pixelColor: ColorDef = ColorDef.black.clone();
 
   public constructor() { super(); }
 
@@ -140,16 +142,30 @@ export class LocateTool extends ViewTool {
   public onDataButtonDown(ev: BeButtonEvent) {
     this._worldPoint.setFrom(ev.point);
     this._haveWorldPoint = true;
-    if (ev.viewport)
+    if (ev.viewport) {
       ev.viewport.invalidateDecorations();
+
+      const rect = new ViewRect(ev.viewPoint.x, ev.viewPoint.y, ev.viewPoint.x + 1, ev.viewPoint.y + 1);
+      const pixels = ev.viewport.readPixels(rect, Pixel.Selector.All);
+      if (undefined === pixels) {
+        this._pixelColor = ColorDef.black.clone();
+        showStatus("No pixel data");
+      } else {
+        const pixel = pixels.getPixel(ev.viewPoint.x, ev.viewPoint.y);
+        const red = pixel.type * (255.0 / 6.0);
+        const green = pixel.planarity * (255.0 / 4.0);
+        const blue = Math.max(pixel.distanceFraction, 0.0) * 255.0;
+        this._pixelColor = ColorDef.from(red, green, blue);
+        showStatus("Pixel: " + LocateTool._planarity[pixel.planarity], LocateTool._type[pixel.type] + " " + pixel.elementId + " " + pixel.distanceFraction);
+      }
+    }
   }
 
   public decorate(context: DecorateContext) {
     context.viewport.drawLocateCursor(context, this._curPoint, context.viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), true);
     if (this._haveWorldPoint) {
       const gf = context.createWorldOverlay();
-      const color = ColorDef.red.clone();
-      gf.setSymbology(color, color, 10);
+      gf.setSymbology(this._pixelColor, this._pixelColor, 10);
       // gf.addPointString([this._worldPoint]);
       // context.addWorldOverlay(gf.finish()!);
       const pt = context.viewport.worldToView(this._worldPoint);
@@ -157,6 +173,9 @@ export class LocateTool extends ViewTool {
       context.addViewOverlay(gf.finish()!);
     }
   }
+
+  private static _planarity = ["unknown", "none", "planar", "non-planar"];
+  private static _type = ["unknown", "none", "surface", "linear", "edge", "silhouette"];
 }
 
 function toggleStandardViewMenu(_event: any) {
