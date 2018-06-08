@@ -10,7 +10,7 @@ longer, more detailed description here
     <ECSchemaReference name="ref2" version="01.00.00" alias="ref2" />
 ```
 
-![Grids](path_to_cmap_here)
+![Class](path_to_cmap_here)
 
 ## Classes
 

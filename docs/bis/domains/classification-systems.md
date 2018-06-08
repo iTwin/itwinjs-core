@@ -22,7 +22,7 @@ These are used to classify elements as conforming to certain classifications lik
 - Strong or weak typing. SEALED. (Wouter)
 - instance diagram is wrong (Wouter)
 - how to prevent multiple classifications from the same system on same type. Solve in software.(Wouter)
-- IClassiedType mixin (Wouter)
+- IClassifiedType mixin (Wouter)
 - Wrong airport-toilet classification in library (Wouter)
 
 ## Classes
