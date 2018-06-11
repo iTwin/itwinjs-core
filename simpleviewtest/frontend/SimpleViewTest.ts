@@ -354,13 +354,13 @@ async function openView(state: SimpleViewState) {
     theViewport = new Viewport(htmlCanvas, state.viewState!, target);
     await _changeView(state.viewState!);
     IModelApp.viewManager.addViewport(theViewport);
-    updateRenderModeOptionsMap();
   }
 }
 
 async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
   buildModelMenu(activeViewState);
+  updateRenderModeOptionsMap();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -394,7 +394,7 @@ function startRotateView(_event: any) {
   IModelApp.tools.run("View.Rotate", theViewport!);
 }
 
-// start rotate view.
+// change active view.
 function changeView(event: any) {
   const viewName = event.target.selectedOptions["0"].label;
   _changeView(viewMap.get(viewName)!);
