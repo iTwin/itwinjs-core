@@ -106,6 +106,8 @@ export class Texture extends RenderTexture {
   public dispose() {
     this.texture.dispose();
   }
+
+  public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
 }
 
 /** Parameters used internally to define how to create a texture for use with WebGL. */

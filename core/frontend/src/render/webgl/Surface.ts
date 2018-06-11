@@ -7,6 +7,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { MaterialData } from "./CachedGeometry";
+import { Texture } from "./Texture";
 import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { MeshData, MeshGeometry, MeshPrimitive, MeshGraphic } from "./Mesh";
 import { VertexLUT } from "./VertexLUT";
@@ -76,7 +77,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getRenderPass(target: Target): RenderPass {
     const mat = this.isLit ? this.mesh.material : undefined;
-    // ###TODO const tex = this.texture;
+    const tex = this.texture as Texture;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
     const fillFlags = this.fillFlags;
 
@@ -94,16 +95,13 @@ export class SurfaceGeometry extends MeshGeometry {
       }
     }
 
-    // ###TODO if (undefined !== tex && this.wantTextures(target)) {
-    // ###TODO if (tex.hasTranslucency) {
-    // ###TODO   return RenderPass.Translucent;
-    // ###TODO }
+    if (undefined !== tex && this.wantTextures(target))
+      if (tex.hasTranslucency)
+        return RenderPass.Translucent;
 
     // material may have texture weight < 1 - if so must account for material or element alpha below
-    // ###TODO if (undefined === mat || mat.textureWeight >= 1) {
-    // ###TODO   return opaquePass;
-    // ###TODO }
-    // ###TODO }
+    if (undefined === mat || mat.textureWeight >= 1)
+      return opaquePass;
 
     let hasAlpha = false;
     if (undefined !== mat && wantMaterials(vf) /* && ###TODO material stuff */)
@@ -113,6 +111,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
     return hasAlpha ? RenderPass.Translucent : opaquePass;
   }
+
   public _wantWoWReversal(target: Target): boolean {
     const fillFlags = this.fillFlags;
     if (FillFlags.None !== (fillFlags & FillFlags.Background))
