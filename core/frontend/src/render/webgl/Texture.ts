@@ -135,7 +135,7 @@ class TextureCreateParams {
 
   public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
     return new TextureCreateParams(width, height, format, dataType, GL.Texture.WrapMode.ClampToEdge,
-      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, true);
+      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, undefined);
   }
 
   public static createForImageSource(source: ImageSource, width: number, height: number, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
