@@ -3,6 +3,7 @@
   flex-direction: column;
   border-left: 1px solid black;
   padding: 5px;
+  width: 100%;
 }
 
 .GridWidget h3 {
@@ -11,31 +12,5 @@
 
 .GridWidget .ContentContainer {
   overflow-y: auto;
-}
-
-.GridWidget .ContentContainer table {
-  width: 100%;
-  table-layout: fixed;
-  border-spacing: 0;
-  border-collapse: collapse;
-}
-
-.GridWidget .ContentContainer table th {
-  border: 1px solid grey;
-}
-
-.GridWidget .ContentContainer table td {
-  border: 1px solid grey;
-  font-size: 90%;
-}
-
-.GridWidget .ContentContainer table tr[data-selected=true] {
-  background-color: #FFFDD0;
-}
-.GridWidget .Error {
-  color: red;
-}
-
-.GridWidget .NoData {
-  text-align: center;
+  height: 100%;
 }
