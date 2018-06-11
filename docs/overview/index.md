@@ -30,7 +30,7 @@ From the same JavaScript codebase, it is possible to create:
 
 ## iModelJs vs. iModelHub
 
-It is important to understand that iModelJs applications do not *run on iModelHub*. Instead, they can run *anywhere else*. iModelJs applications always work on a *copy* of an iModel and process it locally, making them *infinitely scalable*.
+It is important to understand that iModelJs applications do not *run on iModelHub*. Instead, they can run *anywhere else*. iModelJs applications always work on a copy of an iModel in a *briefcase*, obtained from iModelHub, and process it locally, making them *infinitely scalable*.
 
 iModelJs applications can be:
 
