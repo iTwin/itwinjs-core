@@ -10,10 +10,10 @@ import * as faker from "faker";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { PropertyRecord } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECPresentationError, ValuesDictionary } from "@bentley/ecpresentation-common";
+import { ValuesDictionary } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
-import PropertyDataProvider from "@src/propertypane/PropertyDataProvider";
+import PropertyDataProvider from "@src/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription } from "@helpers/random/Content";
 import { createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath } from "@helpers/random/EC";
@@ -78,6 +78,12 @@ describe("PropertyDataProvider", () => {
     it("resets memoized data", () => {
       provider.invalidateCache({});
       expect(memoizedCacheSpies.getData).to.be.called();
+    });
+
+    it("raises onDataChanged event", () => {
+      const spy = spies.spy.on(provider.onDataChanged, provider.onDataChanged.raiseEvent.name);
+      provider.invalidateCache({});
+      expect(spy).to.be.called();
     });
 
   });
@@ -228,18 +234,26 @@ describe("PropertyDataProvider", () => {
         faker.random.number(), [property]);
     };
 
-    it("throws when receives undefined content", async () => {
+    it("returns empty data object when receives undefined content", async () => {
       (provider as any).getContent = async () => undefined;
-      await expect(provider.getData()).to.eventually.be.rejectedWith(ECPresentationError);
+      expect(await provider.getData()).to.deep.eq({
+        label: "",
+        categories: [],
+        records: {},
+      });
     });
 
-    it("throws when receives content with no values", async () => {
+    it("returns empty data object when receives content with no values", async () => {
       const c: content.Content = {
         descriptor: createRandomDescriptor(),
         contentSet: [],
       };
       (provider as any).getContent = async () => c;
-      await expect(provider.getData()).to.eventually.be.rejectedWith(ECPresentationError);
+      expect(await provider.getData()).to.deep.eq({
+        label: "",
+        categories: [],
+        records: {},
+      });
     });
 
     it("handles records with no values", async () => {
