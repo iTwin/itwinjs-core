@@ -57,15 +57,35 @@ export class SyncFlags {
   public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.firstDrawComplete = other.firstDrawComplete; this.redrawPending = other.redrawPending; }
 }
 
-/** A rectangle in view coordinates with (0,0) corresponding to the top-left corner of the view. */
+/** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view. */
 export class ViewRect {
-  public constructor(public left = 0, public top = 0, public right = 0, public bottom = 0) { }
-  public isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
+  private _left!: number;
+  private _top!: number;
+  private _right!: number;
+  private _bottom!: number;
+
+  public constructor(left = 0, top = 0, right = 0, bottom = 0) { this.init(left, top, right, bottom); }
+
+  public get left(): number { return this._left; }
+  public set left(val: number) { this._left = Math.floor(val); }
+  public get top(): number { return this._top; }
+  public set top(val: number) { this._top = Math.floor(val); }
+  public get right(): number { return this._right; }
+  public set right(val: number) { this._right = Math.floor(val); }
+  public get bottom(): number { return this._bottom; }
+  public set bottom(val: number) { this._bottom = Math.floor(val); }
+
+  public get isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
+  public get isValid(): boolean { return !this.isNull; }
+
   public get width() { return this.right - this.left; }
+  public set width(width: number) { this.right = this.left + width; }
   public get height() { return this.bottom - this.top; }
-  public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
-  public get area() { return this.isNull() ? 0 : this.width * this.height; }
-  public init(left: number, top: number, right: number, bottom: number) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
+  public set height(height: number) { this.bottom = this.top + height; }
+  public get aspect() { return this.isNull ? 1.0 : this.width / this.height; }
+  public get area() { return this.isNull ? 0 : this.width * this.height; }
+
+  public init(left: number, top: number, right: number, bottom: number) { this.left = left; this.bottom = bottom, this.right = right; this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 
