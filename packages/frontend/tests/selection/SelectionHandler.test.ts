@@ -37,6 +37,18 @@ describe("SelectionHandler", () => {
 
   });
 
+  describe("getSelection", () => {
+
+    it("gets selection from manager", () => {
+      const keys = new KeySet();
+      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 999)).returns(() => keys).verifiable();
+      const selection = selectionHandler.getSelection(999);
+      expect(selection).to.eq(keys);
+      selectionManagerMock.verifyAll();
+    });
+
+  });
+
   describe("clearSelection", () => {
 
     it("calls manager's clearSelection", () => {

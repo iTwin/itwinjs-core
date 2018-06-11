@@ -5,7 +5,7 @@
 
 import { IDisposable, DisposableList } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Keys } from "@bentley/ecpresentation-common";
+import { Keys, KeySet } from "@bentley/ecpresentation-common";
 import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
 import SelectionManager from "./SelectionManager";
 import ISelectionProvider from "./ISelectionProvider";
@@ -68,6 +68,14 @@ export default class SelectionHandler implements IDisposable {
     if (this.name === evt.source)
       return false;
     return true;
+  }
+
+  /**
+   * Get selection for the imodel manager by this handler.
+   * @param level Level of the selection to get. Defaults to 0.
+   */
+  public getSelection(level?: number): Readonly<KeySet> {
+    return this._manager.getSelection(this.imodel, level);
   }
 
   /**
