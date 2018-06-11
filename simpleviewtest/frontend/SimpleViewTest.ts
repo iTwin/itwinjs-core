@@ -1,7 +1,7 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef, ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
@@ -29,10 +29,19 @@ class SimpleViewState {
   constructor() { }
 }
 
+interface RenderModeOptions {
+  flags: Map<string, boolean>;
+  mode: RenderMode;
+}
+
+const renderModeOptions: RenderModeOptions = {
+  flags: new Map<string, boolean>(),
+  mode: RenderMode.SmoothShade,
+};
+
 let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState>();
 let theViewport: Viewport | undefined;
-const renderModeOptions = new Map<string, boolean>();
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
@@ -269,8 +278,32 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
 function applyRenderModeChange(mode: string) {
   const menuDialog = document.getElementById("changeRenderModeMenu");
   const newValue = (document.getElementById(mode)! as HTMLInputElement).checked;
-  renderModeOptions.set(mode, newValue);
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions, menuDialog);
+  renderModeOptions.flags.set(mode, newValue);
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, menuDialog, renderModeOptions.mode);
+}
+
+function stringToRenderMode(name: string): RenderMode {
+  switch (name) {
+    case "Smooth Shade":  return RenderMode.SmoothShade;
+    case "Solid Fill": return RenderMode.SolidFill;
+    case "Hidden Line": return RenderMode.HiddenLine;
+    default: return RenderMode.Wireframe;
+  }
+}
+
+function renderModeToString(mode: RenderMode): string {
+  switch (mode) {
+    case RenderMode.SmoothShade: return "Smooth Shade";
+    case RenderMode.SolidFill: return "Solid Fill";
+    case RenderMode.HiddenLine: return "Hidden Line";
+    default: return "Wireframe";
+  }
+}
+
+function changeRenderMode(): void {
+  const select = (document.getElementById("renderModeList") as HTMLSelectElement)!;
+  renderModeOptions.mode = stringToRenderMode(select.value);
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
 function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
@@ -292,20 +325,24 @@ function updateRenderModeOptionsMap() {
   const viewflags = theViewport!.view.viewFlags;
   const lights = viewflags.showSourceLights() || viewflags.showSolarLight() || viewflags.showCameraLights();
 
-  updateRenderModeOption("skybox", skybox, renderModeOptions);
-  updateRenderModeOption("groundplane", groundplane, renderModeOptions);
-  updateRenderModeOption("ACSTriad", viewflags.showAcsTriad(), renderModeOptions);
-  updateRenderModeOption("fill", viewflags.showFill(), renderModeOptions);
-  updateRenderModeOption("grid", viewflags.showGrid(), renderModeOptions);
-  updateRenderModeOption("textures", viewflags.showTextures(), renderModeOptions);
-  updateRenderModeOption("visibleEdges", viewflags.showVisibleEdges(), renderModeOptions);
-  updateRenderModeOption("hiddenEdges", viewflags.showHiddenEdges(), renderModeOptions);
-  updateRenderModeOption("materials", viewflags.showMaterials(), renderModeOptions);
-  updateRenderModeOption("lights", lights, renderModeOptions);
-  updateRenderModeOption("monochrome", viewflags.isMonochrome(), renderModeOptions);
-  updateRenderModeOption("constructions", viewflags.showConstructions(), renderModeOptions);
-  updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions);
-  updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions);
+  updateRenderModeOption("skybox", skybox, renderModeOptions.flags);
+  updateRenderModeOption("groundplane", groundplane, renderModeOptions.flags);
+  updateRenderModeOption("ACSTriad", viewflags.showAcsTriad(), renderModeOptions.flags);
+  updateRenderModeOption("fill", viewflags.showFill(), renderModeOptions.flags);
+  updateRenderModeOption("grid", viewflags.showGrid(), renderModeOptions.flags);
+  updateRenderModeOption("textures", viewflags.showTextures(), renderModeOptions.flags);
+  updateRenderModeOption("visibleEdges", viewflags.showVisibleEdges(), renderModeOptions.flags);
+  updateRenderModeOption("hiddenEdges", viewflags.showHiddenEdges(), renderModeOptions.flags);
+  updateRenderModeOption("materials", viewflags.showMaterials(), renderModeOptions.flags);
+  updateRenderModeOption("lights", lights, renderModeOptions.flags);
+  updateRenderModeOption("monochrome", viewflags.isMonochrome(), renderModeOptions.flags);
+  updateRenderModeOption("constructions", viewflags.showConstructions(), renderModeOptions.flags);
+  updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions.flags);
+  updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions.flags);
+  updateRenderModeOption("transparency", viewflags.showTransparency(), renderModeOptions.flags);
+
+  renderModeOptions.mode = viewflags.getRenderMode();
+  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.getRenderMode());
 }
 
 // opens the view and connects it to the HTML canvas element.
@@ -448,6 +485,9 @@ function wireIconsToFunctions() {
   addRenderModeHandler("constructions");
   addRenderModeHandler("weights");
   addRenderModeHandler("styles");
+  addRenderModeHandler("transparency");
+
+  document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 }
 
 // ----------------------------------------------------------

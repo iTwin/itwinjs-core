@@ -8,7 +8,7 @@ import { Viewport, CoordSystem, ViewRect } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags } from "@bentley/imodeljs-common";
+import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
@@ -1994,18 +1994,20 @@ export class ViewChangeRenderModeTool extends ViewTool {
   private renderOptions: Map<string, boolean>;
   // REFERENCE to app's menu for changing render modes
   private renderMenu: HTMLElement;
+  private renderMode: RenderMode;
 
-  constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>, renderMenuDialog: HTMLElement) {
+  constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>, renderMenuDialog: HTMLElement, mode: RenderMode) {
     super();
     this.viewport = viewport;
     this.renderOptions = renderOptionsMap;
     this.renderMenu = renderMenuDialog;
+    this.renderMode = mode;
   }
 
   // We want changes to happen immediately when checking or unchecking an option
   public onPostInstall() {
     const viewflags = ViewFlags.createFrom(this.viewport.viewFlags);
-    // viewflags.setRenderMode(this.renderMode);
+    viewflags.setRenderMode(this.renderMode);
     viewflags.setShowAcsTriad(this.renderOptions.get("ACSTriad")!);
     viewflags.setShowFill(this.renderOptions.get("fill")!);
     viewflags.setShowGrid(this.renderOptions.get("grid")!);
