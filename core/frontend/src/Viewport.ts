@@ -1569,13 +1569,11 @@ export class Viewport {
 
     const testPoint = new Point2d();
     const result = undefined !== out ? out : new Point3d();
-    for (let testRadius = 0; testRadius < radius; testRadius++) {
-      for (testPoint.x = viewCenter.x - testRadius; testPoint.x <= viewCenter.x + testRadius; testPoint.x++) {
-        for (testPoint.y = viewCenter.y - testRadius; testPoint.y <= viewCenter.y + testRadius; testPoint.y++) {
-          if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
-            return result;
+    for (testPoint.x = viewCenter.x - radius; testPoint.x <= viewCenter.x + radius; testPoint.x++) {
+      for (testPoint.y = viewCenter.y - radius; testPoint.y <= viewCenter.y + radius; testPoint.y++) {
+        if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
+          return result;
         }
-      }
     }
 
     return undefined;

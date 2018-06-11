@@ -95,13 +95,14 @@ export class SurfaceGeometry extends MeshGeometry {
       }
     }
 
-    if (undefined !== tex && this.wantTextures(target))
+    if (undefined !== tex && this.wantTextures(target)) {
       if (tex.hasTranslucency)
         return RenderPass.Translucent;
 
-    // material may have texture weight < 1 - if so must account for material or element alpha below
-    if (undefined === mat || mat.textureWeight >= 1)
-      return opaquePass;
+      // material may have texture weight < 1 - if so must account for material or element alpha below
+      if (undefined === mat || mat.textureWeight >= 1)
+        return opaquePass;
+    }
 
     let hasAlpha = false;
     if (undefined !== mat && wantMaterials(vf) /* && ###TODO material stuff */)
