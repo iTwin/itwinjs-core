@@ -46,6 +46,9 @@ export interface SelectionChangeEventArgs {
   /** iModel connection with which the selection is associated with. */
   imodel: IModelConnection;
 
+  /** The timestamp of when the selection change happened */
+  timestamp: Date;
+
   /** Ruleset Id. */
   rulesetId?: string;
 }

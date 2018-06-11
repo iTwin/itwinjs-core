@@ -88,6 +88,7 @@ describe("SelectionHandler", () => {
         keys: keyset,
         source: "different source",
         level: 0,
+        timestamp: new Date(),
       } as SelectionChangeEventArgs, selectionManagerMock.object);
       selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), imodelMock.object, keyset), moq.Times.never());
     });
@@ -111,6 +112,7 @@ describe("SelectionHandler", () => {
         keys: keyset,
         source: "different source",
         level: 0,
+        timestamp: new Date(),
       } as SelectionChangeEventArgs, selectionManagerMock.object);
       selectionManagerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), imodelMock.object, keyset), moq.Times.never());
     });
@@ -134,6 +136,7 @@ describe("SelectionHandler", () => {
         keys: keyset,
         source: "different source",
         level: 0,
+        timestamp: new Date(),
       } as SelectionChangeEventArgs, selectionManagerMock.object);
       selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, keyset), moq.Times.never());
     });
@@ -156,6 +159,7 @@ describe("SelectionHandler", () => {
         changeType: SelectionChangeType.Clear,
         level: 0,
         keys: new KeySet(),
+        timestamp: new Date(),
       };
       selectionManagerMock.object.selectionChange.raiseEvent(args, selectionManagerMock.object);
       callbackMock.verify((x) => x(args, selectionManagerMock.object), moq.Times.once());
@@ -168,6 +172,7 @@ describe("SelectionHandler", () => {
         changeType: SelectionChangeType.Clear,
         level: 0,
         keys: new KeySet(),
+        timestamp: new Date(),
       };
       selectionManagerMock.object.selectionChange.raiseEvent(args, selectionManagerMock.object);
       callbackMock.verify((x) => x(args, selectionManagerMock.object), moq.Times.never());

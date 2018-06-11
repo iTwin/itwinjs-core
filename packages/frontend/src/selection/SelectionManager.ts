@@ -83,6 +83,7 @@ export default class SelectionManager implements ISelectionProvider {
       imodel,
       changeType: SelectionChangeType.Add,
       keys: new KeySet(keys),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);
@@ -103,6 +104,7 @@ export default class SelectionManager implements ISelectionProvider {
       imodel,
       changeType: SelectionChangeType.Remove,
       keys: new KeySet(keys),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);
@@ -123,6 +125,7 @@ export default class SelectionManager implements ISelectionProvider {
       imodel,
       changeType: SelectionChangeType.Replace,
       keys: new KeySet(keys),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);
@@ -142,6 +145,7 @@ export default class SelectionManager implements ISelectionProvider {
       imodel,
       changeType: SelectionChangeType.Clear,
       keys: new KeySet(),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);
