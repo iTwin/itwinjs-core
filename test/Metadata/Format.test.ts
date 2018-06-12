@@ -5,10 +5,10 @@
 import { assert, expect } from "chai";
 
 import Schema from "../../source/Metadata/Schema";
-import Format from "../../source/Metadata/Format";
+import Format, { ShowSignOption } from "../../source/Metadata/Format";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
+// import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 describe("Format tests", () => {
   let testFormat: Format;
@@ -66,22 +66,6 @@ describe("Format tests", () => {
         assert(testFormat.thousandSeparator, ",");
         assert(testFormat.uomSeparator, " ");
         assert(testFormat.stationSeparator, "+");
-      });
-      it("Name is required", async () => {
-        const json = {
-          schemaItemType: "Format",
-          label: "myfi4",
-          description: "",
-          roundFactor: 0.0,
-          type: "fractional",
-          showSignOption: "onlyNegative",
-          formatTraits: "keepSingleZero|trailZeroes",
-          precision: 4,
-          decimalSeparator: ".",
-          thousandSeparator: ",",
-          uomSeparator: " ",
-        };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 does not have the required 'name' attribute.`);
       });
       it("Name must be a valid ECName", async () => {
         const json = {
@@ -415,7 +399,7 @@ describe("Format tests", () => {
           uomSeparator: " ",
         };
         await testFormat.fromJson(json);
-        assert(testFormat.showSignOption === "noSign");
+        assert(testFormat.showSignOption === ShowSignOption.NoSign);
       });
       it("showSignOption is invalid", async () => {
         const json = {
@@ -660,7 +644,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'formatTraits' option.`);
+        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
       it("String with invalid option", async () => {
         const json = {
@@ -677,7 +661,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'formatTraits' option.`);
+        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
       it("Empty string should make formatTraits undefined", async () => {
         const json = {
@@ -770,7 +754,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'formatTraits' option.`);
+        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
     });
   });
@@ -1027,29 +1011,6 @@ describe("Format tests", () => {
       assert(testFormat.composite!.includeZero === false);
       assert(testFormat.composite!.spacer === "-");
     });
-    it("Unit name is not a valid ECName", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "8MILE",
-              label: "mile(s)",
-            },
-            {
-              name: "YARD",
-              label: "yrd(s)",
-            },
-          ],
-        },
-      };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
-    });
     it("Cannot have more than 4 units", async () => {
       const json = {
         schemaItemType: "Format",
@@ -1084,63 +1045,6 @@ describe("Format tests", () => {
         },
       };
       await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'units' attribute.`);
-    });
-  });
-  describe.only("formatString tests", () => {
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testFormat = new Format(schema, "AmerMYFI4");
-    });
-    it("Basic test", async () => {
-      const json = {
-        schemaItemType: "Format",
-        name: "AmerMYFI4",
-        type: "fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "MILE",
-              label: "mile(s)",
-            },
-            {
-              name: "YRD",
-              label: "yrd(s)",
-            },
-            {
-              name: "FT",
-              label: "'",
-            },
-            {
-              name: "IN",
-              label: "\"",
-            },
-          ],
-        },
-      };
-      await testFormat.fromJson(json);
-      assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal(4)[u:MILE|mile(s)][u:YRD|yard(s)][u:FT|\'][u:IN|\"]"), {FormatName: "DefaultReal", Precision: 4, UnitList: ["MILE", "YRD", "FT", "IN"], UnitLabels: ["mile(s)", "yard(s)", "'", "\""]});
-      assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal(4)[u:M|meters]"), {FormatName: "DefaultReal", Precision: 4, UnitList: ["M"], UnitLabels: ["meters"]});
-    });
-    it("Units are optional", async () => {
-      assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal(4)"), {FormatName: "DefaultReal", Precision: 4, UnitList: null, UnitLabels: null});
-    });
-    it("Precision is optional", async () => {
-      assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal[u:M|meters]"), {FormatName: "DefaultReal", Precision: null, UnitList: ["M"], UnitLabels: ["meters"]});
-    });
-    it("Precision is not an integer", async () => {
-      assert(testFormat.parseFormatString("DefaultReal", "DefaultReal(4.5)[u:M|meters]") === BentleyStatus.ERROR);
-    });
-    it("No units or precision", async () => {
-      assert.deepEqual(testFormat.parseFormatString("DefaultReal", "DefaultReal"), {FormatName: "DefaultReal", Precision: null, UnitList: null, UnitLabels: null});
-    });
-    it("FormatName does not match", async () => {
-      assert(testFormat.parseFormatString("DefaultReal", "Default(4)[u:M|meters]") === BentleyStatus.ERROR);
-    });
-    it("formatString incorrectly formatted", async () => {
-      assert(testFormat.parseFormatString("DefaultReal", "Default[(4)[u:M|meters]") === BentleyStatus.ERROR);
     });
   });
 });

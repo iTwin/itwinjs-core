@@ -84,22 +84,6 @@ describe("Unit tests", () => {
       };
       await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
     });
-    it("$schema URL doesnt match EC3.2 URL", async () => {
-      const json = {
-        $schema: "https://www.bentley.com",
-        schemaItemType: "Unit",
-        name: "MM",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-        numerator: 1.0,
-        denominator: 1.0,
-        offset: 0.0,
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Unit MM does not have the required schema URL.`);
-    });
     it("Phenomenon can't be undefined", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
@@ -193,18 +177,6 @@ describe("Unit tests", () => {
         definition: "[MILLI]*Units.M",
       };
       await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
-    });
-    it("Name is required", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Unit",
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "Units.Length",
-        unitSystem: "Units.Metric",
-        definition: "[MILLI]*Units.M",
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Unit MM does not have the required 'name' attribute.`);
     });
     it("Unit System is required", async () => {
       const json = {

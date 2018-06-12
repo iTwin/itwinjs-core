@@ -41,7 +41,6 @@ export default class Enumeration extends SchemaItem {
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name, SchemaItemType.Enumeration);
-
     this._primitiveType = primitiveType;
     this._isStrict = true;
     this._enumerators = [];
@@ -69,9 +68,21 @@ export default class Enumeration extends SchemaItem {
     return this.enumerators.find((item) => item.value === value);
   }
 
+   /**
+    * Checks whether there already exists an enumerator with this name or this value
+    * @param name The name of the enumerator we are trying to create
+    * @param value The value of the enumerator we are trying to create
+    */
+  private findDuplicateEnumerators(name: string, value: string | number) {
+    this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
+      if (element.name.name.toLowerCase() === name.toLowerCase() || element.value === value)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The enumerator ${name} has a duplicate name or value.`);
+    });
+  }
+
   /**
    * Creates an Enumerator with the provided value and label and adds it to the this Enumeration.
-   * @param enumName The name of the enumerator
+   * @param name The name of the enumerator
    * @param value The value of the enumerator. The type of this value is dependent on the backing type of the this Enumeration.
    * @param label A localized display label that is used instead of the name in a GUI.
    * @param description A localized description for the enumerator.
@@ -79,10 +90,7 @@ export default class Enumeration extends SchemaItem {
   public createEnumerator(name: string, value: string | number, label?: string, description?: string) {
     if ((this.isInt() && typeof(value) === "string") || (!this.isInt() && typeof(value) === "number")) // throws if backing type is int and value is string OR if backing type is string and value is number
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${name} has an enumerator with an invalid 'value' attribute.`);
-    this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations
-      if (element.name.name.toLowerCase() === name.toLowerCase() || element.value === value)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The enumerator ${name} has a duplicate name or value.`);
-    });
+    this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
     const enumName = new ECName(name);
     this.enumerators.push({name: enumName, value, label, description});
   }
@@ -130,12 +138,10 @@ export default class Enumeration extends SchemaItem {
         if (typeof(enumerator) !== "object")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
 
-        if (undefined !== enumerator.name) {
-          if (typeof (enumerator.name) !== "string")
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
-        } else { // name is required
+        if (undefined === enumerator.name)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'name'.`);
-        }
+        if (typeof (enumerator.name) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
 
         if (undefined === enumerator.value)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);

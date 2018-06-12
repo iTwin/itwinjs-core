@@ -48,17 +48,6 @@ describe("Inverted Unit tests", () => {
       await testUnit.fromJson(json);
       assert(testUnit.label, "Horizontal/Vertical");
     });
-    it("Name is required", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        label: "Horizontal/Vertical",
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'name' attribute.`);
-    });
     it("Name is not a valid ECName", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
@@ -128,18 +117,6 @@ describe("Inverted Unit tests", () => {
         invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
       };
       await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
-    });
-    it("$schema URL doesnt match EC3.2 URL", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
-      };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required schema URL.`);
     });
   });
 });

@@ -38,6 +38,8 @@ describe("KindOfQuantity", () => {
       };
 
       const ecSchema = await Schema.fromJson(testSchema);
+      // const format  = await testSchema.$schema<schema>.getItem("format");
+      // assert.isDefined(format);
       assert.isDefined(ecSchema);
 
       const testItem = await ecSchema.getItem("testKoQ");

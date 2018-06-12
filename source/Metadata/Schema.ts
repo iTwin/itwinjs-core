@@ -200,7 +200,7 @@ export default class Schema implements CustomAttributeContainerProps {
    * If the name is a full name, it will search in the reference schema matching the name.
    * @param name The name of the schema item to search for.
    */
-  public async getItem<T extends SchemaItem>(name: string, includeReference?: boolean): Promise<T | undefined> {
+  public async  getItem<T extends SchemaItem>(name: string, includeReference?: boolean): Promise<T | undefined> {
     const [schemaName, itemName] = SchemaItem.parseFullName(name);
 
     let foundItem;

@@ -45,16 +45,6 @@ describe("UnitSystem tests", () => {
       assert(testUnitSystem.label, "Imperial");
       assert(testUnitSystem.description === undefined);
     });
-    it("Name is required", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "UnitSystem",
-        label: "Imperial",
-        description: "Units of measure from the british imperial empire",
-      };
-      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The UnitSystem IMPERIAL does not have the required 'name' attribute.`);
-
-    });
     it("Name must be a valid ECName", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
@@ -85,16 +75,6 @@ describe("UnitSystem tests", () => {
         description: 1,
       };
       await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
-    });
-    it("$schema URL doesnt match EC3.2 URL", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/",
-        schemaItemType: "UnitSystem",
-        name: "IMPERIAL",
-        label: "Imperial",
-        description: "Units of measure from the british imperial empire",
-      };
-      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The UnitSystem IMPERIAL does not have the required schema URL.`);
     });
   });
 });

@@ -48,17 +48,6 @@ describe("Constant tests", () => {
       assert(testConstant.label, "Pi");
       assert(testConstant.phenomenon, "Units.LENGTH_RATIO");
     });
-    it("Name is required", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Constant",
-        label: "Pi",
-        definition: "ONE",
-        numerator: 3.1415926535897932384626433832795,
-        phenomenon: "Units.LENGTH_RATIO",
-      };
-      await expect(testConstant.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Constant PI does not have the required 'name' attribute.`);
-    });
     it("Name must be valid ECName", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
