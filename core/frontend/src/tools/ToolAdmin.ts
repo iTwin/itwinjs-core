@@ -511,6 +511,8 @@ export class ToolAdmin {
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
 
+    IModelApp.accuSnap.onMotion(ev);
+
     // ###TODO: use fromButton for below code
 
     // AccuDraw:: GetInstance()._OnMotion(event);

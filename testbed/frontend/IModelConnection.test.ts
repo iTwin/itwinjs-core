@@ -8,7 +8,7 @@ import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTyped
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
-  DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
+  DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -36,9 +36,9 @@ describe("IModelConnection", () => {
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);
-    assert.isTrue(iModel.models instanceof IModelConnectionModels);
+    assert.isTrue(iModel.models instanceof IModelConnection.Models);
     assert.exists(iModel.elements);
-    assert.isTrue(iModel.elements instanceof IModelConnectionElements);
+    assert.isTrue(iModel.elements instanceof IModelConnection.Elements);
 
     const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);

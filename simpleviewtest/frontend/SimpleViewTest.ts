@@ -1,4 +1,4 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d, SpatialViewState, LocateResponse } from "@bentley/imodeljs-frontend";
 import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
 import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
@@ -212,7 +212,7 @@ export class LocateTool extends ViewTool {
 
   public constructor() { super(); }
 
-  public updateDynamics(ev: BeButtonEvent) { this.onModelMotion(ev); }
+  public onPostInstall() { super.onPostInstall(); IModelApp.accuSnap.enableLocate(true); }
   public onModelMotion(ev: BeButtonEvent) {
     this._curPoint.setFrom(ev.point);
 
@@ -225,6 +225,13 @@ export class LocateTool extends ViewTool {
     this._haveWorldPoint = true;
     if (ev.viewport) {
       ev.viewport.invalidateDecorations();
+
+      const response = new LocateResponse();
+      const hit = IModelApp.locateManager.doLocate(response, true, ev.point, ev.viewport);
+
+      if (undefined !== hit) {
+        showStatus("Pick: " + hit.sourceId);
+      }
 
       const rect = new ViewRect(ev.viewPoint.x, ev.viewPoint.y, ev.viewPoint.x + 1, ev.viewPoint.y + 1);
       const pixels = ev.viewport.readPixels(rect, Pixel.Selector.All);
@@ -284,7 +291,7 @@ function applyRenderModeChange(mode: string) {
 
 function stringToRenderMode(name: string): RenderMode {
   switch (name) {
-    case "Smooth Shade":  return RenderMode.SmoothShade;
+    case "Smooth Shade": return RenderMode.SmoothShade;
     case "Solid Fill": return RenderMode.SolidFill;
     case "Hidden Line": return RenderMode.HiddenLine;
     default: return RenderMode.Wireframe;

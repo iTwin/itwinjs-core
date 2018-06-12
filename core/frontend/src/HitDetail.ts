@@ -52,12 +52,14 @@ export const enum HitGeomType {
   Surface = 5,
 }
 
-export const enum HitGeomClass {
-  None = 0,
-  Wire = 1,
-  Edge = 2,
-  Silhouette = 3,
-  Interior = 4,
+export const enum HitPriority {
+  WireEdge = 0,
+  PlanarEdge = 1,
+  NonPlanarEdge = 2,
+  SilhouetteEdge = 3,
+  PlanarSurface = 4,
+  NonPlanarSurface = 5,
+  Unknown = 6,
 }
 
 export const enum HitDetailType {
@@ -77,19 +79,19 @@ export class HitDetail {
    * @param hitSource The procedure that requested the locate operation.
    * @param hitPoint The approximate world coordinate location on the geometry identified by this HitDetail.
    * @param sourceId The source of the geometry, either a persistent element id or pickable decoration id.
-   * @param geomClass The hit geometry classification.
+   * @param priority The hit geometry priority/classification.
    * @param distXY The xy distance to hit in view coordinates.
-   * @param distZ The z distance to hit in view coordinates.
+   * @param distFraction The near plane distance fraction to hit.
    */
   public constructor(public readonly testPoint: Point3d, public readonly viewport: Viewport, public readonly hitSource: HitSource,
-    public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly geomClass: HitGeomClass, public readonly distXY: number, public readonly distZ: number) { }
+    public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number) { }
 
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
   public getPoint(): Point3d { return this.hitPoint; }
   public isSnapDetail(): this is SnapDetail { return false; }
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   public isElementHit(): boolean { return true; } // NEEDSWORK: Check that sourceId is a valid Id64 for an element...
-  public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.geomClass, this.distXY, this.distZ); return val; }
+  public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
   public draw(context: DecorateContext) { context.drawHit(this); }
 }
 
@@ -104,7 +106,7 @@ export class SnapDetail extends HitDetail {
   public normal?: Vector3d;               // surface normal at snapPoint
 
   public constructor(from: HitDetail) {
-    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.geomClass, from.distXY, from.distZ);
+    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
     this.snapMode = SnapMode.Nearest;
     this.snapPoint = this.hitPoint.clone();
     this.adjustedPoint = this.snapPoint.clone();
@@ -158,6 +160,7 @@ export class HitList {
     if (hitNum < 0) hitNum = this.size() - 1;
     return (hitNum >= this.size()) ? undefined : this.hits[hitNum];
   }
+
   public setHit(i: number, p: HitDetail | undefined): void {
     if (i < 0 || i >= this.size())
       return;
@@ -202,24 +205,47 @@ export class HitList {
     return removedOne;
   }
 
+  private getPriorityZOverride(priority: HitPriority): number {
+    switch (priority) {
+      case HitPriority.WireEdge:
+      case HitPriority.PlanarEdge:
+      case HitPriority.NonPlanarEdge:
+        return 0;
+      case HitPriority.SilhouetteEdge:
+        return 1;
+      case HitPriority.PlanarSurface:
+      case HitPriority.NonPlanarSurface:
+        return 2;
+      default:
+        return 3;
+    }
+  }
+
   /**
    * compare two hits for insertion into list. Hits are compared by calling getLocatePriority() and then getLocateDistance() on each.
    */
-  public compare(oHit1: HitDetail | undefined, oHit2: HitDetail | undefined): -1 | 1 | 0 {
-    if (!oHit1 || !oHit2)
+  public compare(hit1: HitDetail | undefined, hit2: HitDetail | undefined): -1 | 1 | 0 {
+    if (!hit1 || !hit2)
       return 0;
 
-    // First check geometry class from pixel data, this is more important than z because we know it's only visible geometry...
-    if (oHit2.geomClass < oHit1.geomClass) return -1;
-    if (oHit2.geomClass > oHit1.geomClass) return 1;
+    const zOverride1 = this.getPriorityZOverride(hit1.priority);
+    const zOverride2 = this.getPriorityZOverride(hit2.priority);
 
-    // Next compare z, prefer hits closer to eye, z values are sorted descending...
-    if (oHit2.distZ < oHit1.distZ) return -1;
-    if (oHit2.distZ > oHit1.distZ) return 1;
+    // Compare edge vs. surface, this is more important than z because we know it's visible in the view...
+    if (zOverride1 < zOverride2) return -1;
+    if (zOverride1 > zOverride2) return 1;
 
-    // Finally compare xy distance from pick point...
-    if (oHit2.distXY < oHit1.distXY) return -1;
-    if (oHit2.distXY > oHit1.distXY) return 1;
+    // Compare distance fraction, prefer hits closer to eye...
+    if (hit1.distFraction < hit2.distFraction) return -1;
+    if (hit1.distFraction > hit2.distFraction) return 1;
+
+    // Compare geometry class, prefer path/region hits at same distance from eye to surface hits...
+    if (hit1.priority < hit2.priority) return -1;
+    if (hit1.priority > hit2.priority) return 1;
+
+    // Compare xy distance from pick point, prefer hits closer to center...
+    if (hit1.distXY < hit2.distXY) return -1;
+    if (hit1.distXY > hit2.distXY) return 1;
 
     return 0;
   }
@@ -233,16 +259,17 @@ export class HitList {
       return 0;
     }
 
-    // NOTE: Starting from the end ensures that all edge hits will get compared against surface hits to properly
-    //       determine their visibility. With a forward iterator, an edge hit could end up being chosen that is obscured
-    //       if it is closer to the eye than an un-obscured edge hit.
-    // NEEDSWORK: Don't need to worry about obscured edge hits using pixel data...
-    let index = this.size() - 1;
-    for (; index >= 0; --index) {
-      const comparison = this.compare(this.hits[index], newHit);
-      if (comparison >= 0)
-        continue;
-      break;
+    let index = 0;
+    for (; index < this.size(); ++index) {
+      let oldHit = this.hits[index];
+      const comparison = this.compare(newHit, oldHit);
+      if (newHit.isSameHit(oldHit)) {
+        if (comparison < 0)
+          oldHit = newHit; // replace with new hit since it's better
+        return this.size(); // ignore new hit...
+      }
+      if (comparison < 0)
+        break;
     }
 
     this.hits.splice(index, 0, newHit);
@@ -250,6 +277,7 @@ export class HitList {
   }
 
   public removeCurrentHit() { this.removeHit(this.currHit); }
+
   public setCurrentHit(hit: HitDetail): void {
     this.resetCurrentHit();
     for (let thisHit; undefined !== (thisHit = this.getNextHit());) {
@@ -257,6 +285,7 @@ export class HitList {
         return;
     }
   }
+
   public insert(i: number, hit: HitDetail): void {
     if (i < 0 || i >= this.size())
       this.hits.push(hit);

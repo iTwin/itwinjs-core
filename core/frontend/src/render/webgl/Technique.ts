@@ -27,6 +27,7 @@ import { GLSLDecode } from "./glsl/Decode";
 import { addFrustum } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
+import { createEdgeBuilder } from "./glsl/Edge";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -227,6 +228,50 @@ class PolylineTechnique extends VariedTechnique {
   }
 }
 
+class EdgeTechnique extends VariedTechnique {
+  private static readonly kOpaque = 0;
+  private static readonly kTranslucent = 1;
+  private static readonly kFeature = 2;
+  private static readonly kClip = numFeatureVariants(EdgeTechnique.kFeature);
+
+  public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
+    super(numFeatureVariants(2) * 2);
+
+    const flags = scratchTechniqueFlags;
+    for (const clip of clips) {
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode, clip);
+        const builder = createEdgeBuilder(isSilhouette, clip);
+        addMonochrome(builder.frag);
+
+        // The translucent shaders do not need the element IDs.
+        const builderTrans = createEdgeBuilder(isSilhouette, clip);
+        addMonochrome(builderTrans.frag);
+        if (FeatureMode.Overrides === featureMode) {
+          addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
+          this.addTranslucentShader(builderTrans, flags, gl);
+        } else {
+          this.addTranslucentShader(builderTrans, flags, gl);
+          addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
+        }
+        this.addElementId(builder, featureMode);
+        flags.reset(featureMode, clip);
+        this.addShader(builder, flags, gl);
+      }
+    }
+  }
+
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    let index = flags.isTranslucent ? EdgeTechnique.kTranslucent : EdgeTechnique.kOpaque;
+    index += EdgeTechnique.kFeature * flags.featureMode;
+    if (flags.hasClipVolume) {
+      index += EdgeTechnique.kClip;
+    }
+    return index;
+  }
+}
+
 class PointStringTechnique extends VariedTechnique {
   private static readonly kOpaque = 0;
   private static readonly kTranslucent = 1;
@@ -414,6 +459,8 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
+    this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
+    this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
 

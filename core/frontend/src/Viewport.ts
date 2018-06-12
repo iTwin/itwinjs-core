@@ -2,6 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
+
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   RotMatrix, Transform, Map4d, Point4d, Constant,
@@ -23,7 +24,7 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
-/** viewport synchronization flags */
+/** Viewport synchronization flags */
 export class SyncFlags {
   public get isValidDecorations(): boolean { return this.decorations; }
   public get isValidScene(): boolean { return this.scene; }
@@ -53,7 +54,6 @@ export class SyncFlags {
   public setValidRenderPlan(): void { this.renderPlan = true; }
   public setValidRotatePoint(): void { this.rotatePoint = true; }
   public setRedrawPending(): void { this.redrawPending = true; }
-  /** enables setting instance as readonly so reference is preserved when resetting */
   public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.firstDrawComplete = other.firstDrawComplete; this.redrawPending = other.redrawPending; }
 }
 
@@ -135,12 +135,18 @@ export class ViewRect {
 }
 
 /**
- * The minimum and maximum values for the "depth" of a rectangle of screen space.
+ * The minimum and maximum values for the z-depth of a rectangle of screen space.
  *
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0
  */
 export class DepthRangeNpc {
+  /**
+   * @param minimum The lowest (closest to back) value
+   * @param maximum The highest (closest to the front) value
+   */
   constructor(public minimum = 0, public maximum = 1.0) { }
+
+  /** The value at the middle (halfway between the minimum and maximum) of this depth */
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 
@@ -151,13 +157,18 @@ export const enum CoordSystem {
    * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
    */
   View,
+
   /**
-   * Coordinates are in NPC [normalized plane coordinates]($docs/learning/glossary.md#npc)
+   * Coordinates are in [normalized plane coordinates]($docs/learning/glossary.md#npc)
    * NPC is a coordinate system for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
    * [0,0,0] corresponds to the left-bottom-rear and [1,1,1] to the right-top-front of the frustum.
    */
   Npc,
-  /** Coordinates are relative to the world coordinate system for the physical elements in the iModel */
+
+  /**
+   * Coordinates are in the coordinate system of the models in the view. For SpatialViews, this is the iModel's spatial coordinate system.
+   * For 2d views, it is the coordinate system of the 2d model that the view shows.
+   */
   World,
 }
 
@@ -1569,19 +1580,17 @@ export class Viewport {
 
     const testPoint = new Point2d();
     const result = undefined !== out ? out : new Point3d();
-    for (let testRadius = 0; testRadius < radius; testRadius++) {
-      for (testPoint.x = viewCenter.x - testRadius; testPoint.x <= viewCenter.x + testRadius; testPoint.x++) {
-        for (testPoint.y = viewCenter.y - testRadius; testPoint.y <= viewCenter.y + testRadius; testPoint.y++) {
-          if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
-            return result;
+    for (testPoint.x = viewCenter.x - radius; testPoint.x <= viewCenter.x + radius; testPoint.x++) {
+      for (testPoint.y = viewCenter.y - radius; testPoint.y <= viewCenter.y + radius; testPoint.y++) {
+        if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
+          return result;
         }
-      }
     }
 
     return undefined;
   }
 
-  private getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc)
       this.npcToWorld(npc, npc);
@@ -1589,7 +1598,7 @@ export class Viewport {
     return npc;
   }
 
-  private getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
     if (z <= 0.0)
       return undefined;

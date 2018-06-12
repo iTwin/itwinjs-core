@@ -338,7 +338,6 @@ export abstract class Target extends RenderTarget {
     const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
     const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
 
-    // plan.viewFlags.renderMode = RenderMode.SmoothShade; // ###TODO: Remove after we implement support for edges.
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
 
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
@@ -656,8 +655,10 @@ export abstract class Target extends RenderTarget {
     this._renderCommands.clearCheckRange();
 
     // Don't bother rendering + reading if we know there's nothing to draw.
-    if (this._renderCommands.isEmpty)
+    if (this._renderCommands.isEmpty) {
+      this._stack.pop(); // ensure state is restored!
       return undefined;
+    }
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands);

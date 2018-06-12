@@ -30,7 +30,7 @@ From the same JavaScript codebase, it is possible to create:
 
 ## iModelJs vs. iModelHub
 
-It is important to understand that iModelJs applications do not *run on iModelHub*. Instead, they can run *anywhere else*. iModelJs applications always work on a *copy* of an iModel and process it locally, making them *infinitely scalable*.
+It is important to understand that iModelJs applications do not *run on iModelHub*. Instead, they can run *anywhere else*. iModelJs applications always work on a copy of an iModel in a *briefcase*, obtained from iModelHub, and process it locally, making them *infinitely scalable*.
 
 iModelJs applications can be:
 
@@ -50,13 +50,13 @@ The iModelJs library requires a JavaScript engine with es2017 support.
 
 ## iModelJs Organization
 
-The iModelJs library is divided into these sub-packages:
+The iModelJs library is divided into these npm packages in the `@bentley` scope:
 
 |Package Name|Description
 |---|---
-|**@bentley/bentleyjs-core**|General utilities that can be run in either the frontend or the backend.
-|**@bentley/geometry-core**|Operations on 2d and 3d geometry.
-|**@bentley/imodeljs-backend**|Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface.
-|**@bentley/imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tool) that modify iModels.
-|**@bentley/imodeljs-common**|Common between the frontend and backend.
-|**@bentley/imodeljs-native**|Performs low-level I/O to an iModel. @bentley/imodeljs-backend depends on this package.
+|**bentleyjs-core**|General utilities that can be run in either the frontend or the backend.
+|**geometry-core**|Operations on 2d and 3d geometry.
+|**imodeljs-backend**|Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface.
+|**imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tool) that modify iModels.
+|**imodeljs-common**|Classes that are shared between the frontend and backend.
+|**imodeljs-native**|Performs low-level I/O to an iModel. `@bentley/imodeljs-backend` depends on this package.

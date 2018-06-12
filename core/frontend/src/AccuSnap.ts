@@ -9,7 +9,7 @@ import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, TestHitStatus, ElementLocateManager } from "./ElementLocateManager";
 import { SpriteLocation, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
-import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, HitGeomClass, SnapHeat } from "./HitDetail";
+import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 
 // tslint:disable:variable-name
@@ -171,11 +171,8 @@ export class AccuSnap {
       this.setFlashHit(newHit);
     }
 
-    // we already have a hit. Release our reference to it (leave element hilited though).
-    this.currHit = undefined;
-
     // if we didn't get a new hit, we're done
-    if (!newHit)
+    if (undefined === (this.currHit = newHit))
       return;
 
     // draw sprites for this hit
@@ -467,22 +464,22 @@ export class AccuSnap {
   }
 
   private getNextAccuSnappable(hitList: HitList): HitDetail | undefined {
-    const thisPath = hitList.getNextHit();
-    if (thisPath)
+    const thisHit = hitList.getNextHit();
+    if (thisHit)
       this.explanation = "";
-    return thisPath;
+    return thisHit;
   }
 
-  public async snapToPath(_thisPath: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
+  public async snapToHit(_thisHit: HitDetail, _snapMode: SnapMode, _snapDivisor: number, _hotAperture: number): Promise<SnapDetail | undefined> {
     // NEEDSWORK: Call SnapContext::DoSnap through backend...
     //
-    //   if (!Application.locateManager.isSnappableModel(thisPath.getModel())   {
+    //   if (!Application.locateManager.isSnappableModel(thisHit.getModel())   {
     //       return undefined nullptr;
     //     return SnapStatus.ModelNotSnappable;
     //   }
 
     //   // test for un-snappable hits...ex. pattern, linestyle...
-    //   GeomDetail const& detail = thisPath -> GetGeomDetail();
+    //   GeomDetail const& detail = thisHit -> GetGeomDetail();
 
     //   if (!detail.IsSnappable())
     //     return SnapStatus:: NotSnappable;
@@ -490,23 +487,23 @@ export class AccuSnap {
     //   SnapStatus  status = SnapStatus:: NotSnappable;
 
     //   // attach the context
-    //   Attach(& thisPath -> GetViewport(), DrawPurpose:: Pick);
+    //   Attach(& thisHit -> GetViewport(), DrawPurpose:: Pick);
 
     //   snapMode = snapMode;
     //   snapDivisor = snapDivisor ? snapDivisor : 2;
-    //   snapPath = new SnapDetail(thisPath);
+    //   snapDetail = new SnapDetail(thisHit);
     //   snapAperture = hotAperture;
 
-    //   snapPath -> AddRef();
+    //   snapDetail -> AddRef();
 
     //   // Save divisor used for this snap
-    //   snapPath -> SetSnapDivisor(snapDivisor);
+    //   snapDetail -> SetSnapDivisor(snapDivisor);
 
-    //   DgnElementCPtr   element = snapPath -> GetElement();
+    //   DgnElementCPtr   element = snapDetail -> GetElement();
     //   GeometrySourceCP geom = (element.IsValid() ? element -> ToGeometrySource() : nullptr);
 
     //   if (nullptr == geom) {
-    //     IElemTopologyCP elemTopo = snapPath -> GetElemTopology();
+    //     IElemTopologyCP elemTopo = snapDetail -> GetElemTopology();
 
     //     geom = (nullptr != elemTopo ? elemTopo -> _ToGeometrySource() : nullptr);
     //   }
@@ -521,21 +518,21 @@ export class AccuSnap {
 
     //   if (SnapStatus:: Success != status)
     //   {
-    //     delete snapPath;
-    //     snapPath = nullptr;
+    //     delete snapDetail;
+    //     snapDetail = nullptr;
     //   }
 
-    //   * snappedPath = snapPath;
-    //   snapPath = nullptr;
+    //   * snapped = snapDetail;
+    //   snapDetail = nullptr;
 
     //   return status;
     return undefined;
   }
 
   private async hitToSnap(hit: HitDetail, _out: LocateResponse): Promise<SnapDetail | undefined> {
-    const snapPath = await this.snapToPath(hit, this.getSnapMode(), IModelApp.locateManager.getKeypointDivisor(), hit.viewport.pixelsFromInches(this.getHotDistanceInches()));
-    this.tempSnap = snapPath; // NEEDSWORK...
-    return snapPath;
+    const snap = await this.snapToHit(hit, this.getSnapMode(), IModelApp.locateManager.getKeypointDivisor(), hit.viewport.pixelsFromInches(this.getHotDistanceInches()));
+    this.tempSnap = snap; // NEEDSWORK...
+    return snap;
   }
 
   private getAccuSnapDetail(hitList: HitList, out: LocateResponse): SnapDetail | undefined {
@@ -593,7 +590,7 @@ export class AccuSnap {
     options.hitSource = this.isSnapEnabled() ? HitSource.AccuSnap : HitSource.MotionLocate;
 
     let keepCurrentHit = false;
-    const canBeSticky = !force && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && HitGeomClass.Interior !== this.currHit.geomClass);
+    const canBeSticky = !force && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && this.currHit.priority < HitPriority.PlanarSurface);
     let aperture = (vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
 
     // see if we should keep the current hit
@@ -647,7 +644,7 @@ export class AccuSnap {
     return (SnapStatus.Success !== out.snapStatus) ? undefined : this.getAccuSnapDetail(this.aSnapHits!, out);
   }
 
-  private findLocatablePath(ev: BeButtonEvent, newSearch: boolean, out: LocateResponse): SnapDetail | undefined {
+  private findLocatableHit(ev: BeButtonEvent, newSearch: boolean, out: LocateResponse): HitDetail | undefined {
     out.snapStatus = SnapStatus.NoElements;
 
     if (newSearch) {
@@ -663,10 +660,10 @@ export class AccuSnap {
     }
 
     const thisList = this.aSnapHits!;
-    let thisHit: SnapDetail | undefined;
+    let thisHit: HitDetail | undefined;
     const ignore = new LocateResponse();
     // keep looking through hits until we find one that is accu-snappable.
-    while (!!(thisHit = thisList.getNextHit() as SnapDetail)) {
+    while (undefined !== (thisHit = thisList.getNextHit())) {
       if (!IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out))
         return thisHit;
 
@@ -681,7 +678,7 @@ export class AccuSnap {
 
   /** When in auto-locate mode, advance to the next hit without searching again. */
   public resetButton(): SnapStatus {
-    let snap: SnapDetail | undefined;
+    let hit: HitDetail | undefined;
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
@@ -693,20 +690,20 @@ export class AccuSnap {
     if (this.doSnapping()) {
       // if we don't have any more candidate hits, get a new list at the current location
       if (!this.aSnapHits || (0 === this.aSnapHits.size())) {
-        snap = this.getNewSnapDetail(out, ev);
+        hit = this.getNewSnapDetail(out, ev);
       } else {
         // drop the current hit from the list and then retest the list (without the dropped hit) to find the new "best" snap
         this.aSnapHits.removeCurrentHit();
-        snap = this.getAccuSnapDetail(this.aSnapHits, out);
+        hit = this.getAccuSnapDetail(this.aSnapHits, out);
       }
     } else if (this.doLocateTesting()) {
       // get next AccuSnap path (or nullptr)
-      snap = this.findLocatablePath(ev, false, out);
+      hit = this.findLocatableHit(ev, false, out);
     }
 
     // set the current hit
-    if (snap || this.currHit)
-      this.setCurrHit(snap);
+    if (hit || this.currHit)
+      this.setCurrHit(hit);
 
     // indicate errors
     this.showSnapError(out.snapStatus, ev);
@@ -756,9 +753,9 @@ export class AccuSnap {
     //   }
     // }
 
-    // * intsctPath = (SnapDetailP) intsctList.GetHit(0);
-    // if (nullptr != * intsctPath) {
-    //   (* intsctPath) -> AddRef();
+    // * intsctSnap = (SnapDetailP) intsctList.GetHit(0);
+    // if (nullptr != * intsctSnap) {
+    //   (* intsctSnap) -> AddRef();
     //   return SnapStatus:: Success;
     // }
 
@@ -844,12 +841,12 @@ export class AccuSnap {
     this.wasAborted = false;
     this.clearInfoBalloon(ev);
 
-    let snap: SnapDetail | undefined;
+    let hit: HitDetail | undefined;
     if (this.isActive()) {
       if (this.doSnapping()) {
-        snap = this.getPreferredPointSnap(ev, out);
+        hit = this.getPreferredPointSnap(ev, out);
       } else if (this.doLocateTesting()) {
-        snap = this.findLocatablePath(ev, true, out);
+        hit = this.findLocatableHit(ev, true, out);
       }
     }
 
@@ -858,13 +855,13 @@ export class AccuSnap {
       return;
 
     // set the current hit and display the sprite (based on snap's KeypointType)
-    if (snap || this.currHit) {
-      this.setCurrHit(snap);
+    if (hit || this.currHit) {
+      this.setCurrHit(hit);
     }
 
     // indicate errors
     this.showSnapError(out.snapStatus, ev);
-    IModelApp.locateManager.onAccuSnapMotion(snap, wasHot, ev);
+    IModelApp.locateManager.onAccuSnapMotion(hit, wasHot, ev);
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { }

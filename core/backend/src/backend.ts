@@ -58,7 +58,7 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description ViewDefinitions
- * Classes for working with elements that define [views]($docs/learning/frontend/views.md).
+ * Classes for working with elements that define what appears in [views]($docs/learning/frontend/views.md).
  */
 /**
  * @docs-group-description Relationships
