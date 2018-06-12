@@ -224,6 +224,34 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   /**
+   * Attempts to find a schema item with a name matching, case-insensitive, the provided name. It will look for the schema item in the context of this schema.
+   * If the name is a full name, it will search in the reference schema matching the name.
+   * @param name The name of the schema item to search for.
+   */
+  public getItemSync<T extends SchemaItem>(name: string, includeReference?: boolean): T | undefined {
+    const [schemaName, itemName] = SchemaItem.parseFullName(name);
+
+    let foundItem;
+    if (!schemaName || schemaName.toLowerCase() === this.name.toLowerCase()) {
+      // Case-insensitive search
+      foundItem = this.getLocalItem(itemName);
+      if (!foundItem && this._context) {
+        // this._context.
+      }
+
+    } else if (includeReference) {
+      const refSchema = this.getReferenceSync(schemaName);
+      if (!refSchema)
+        return undefined;
+
+      // Since we are only passing the itemName to the reference schema it will not check its own referenced schemas.
+      foundItem = refSchema.getItem<T>(itemName, includeReference);
+    }
+
+    return foundItem ? foundItem as T : foundItem;
+  }
+
+  /**
    *
    * @param item
    */
@@ -302,6 +330,14 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
+    this.fromJsonSync(jsonObj);
+  }
+
+  /**
+   *
+   * @param jsonObj
+   */
+  public fromJsonSync(jsonObj: any): void {
     if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
@@ -371,6 +407,18 @@ export default class Schema implements CustomAttributeContainerProps {
       schema = await reader.readSchema(schema, jsonObj);
     } else
       schema = await SchemaReadHelper.to<Schema>(schema, jsonObj);
+
+    return schema;
+  }
+
+  public static fromJsonSync(jsonObj: object | string, context?: SchemaContext): Schema {
+    let schema: Schema = new Schema();
+
+    if (context) {
+      const reader = new SchemaReadHelper(context);
+      schema = reader.readSchemaSync(schema, jsonObj);
+    } else
+      schema = SchemaReadHelper.toSync<Schema>(schema, jsonObj);
 
     return schema;
   }

@@ -83,10 +83,17 @@ export default class Enumeration extends SchemaItem {
   }
 
   /**
+   * Populates this Enumeration with the values from the provided. 💩
+   */
+  public async fromJson(jsonObj: any): Promise<void> {
+    this.fromJsonSync(jsonObj);
+  }
+
+  /**
    * Populates this Enumeration with the values from the provided.
    */
-  public async fromJson(jsonObj: any) {
-    await super.fromJson(jsonObj);
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
 
     if (undefined === this._primitiveType) {
       if (undefined === jsonObj.backingTypeName)

@@ -13,7 +13,8 @@ export class SchemaMap extends Array<Schema> { }
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
  */
 export interface ISchemaLocater {
-  getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined>;
+  getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
+  getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
 
 export interface ISchemaItemLocater {
@@ -160,6 +161,14 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schema The schema to add to this context
    */
   public async addSchema(schema: Schema) {
+    this.addSchemaSync(schema);
+  }
+
+  /**
+   * Adds the schema to this context
+   * @param schema The schema to add to this context
+   */
+  public addSchemaSync(schema: Schema) {
     this.knownSchemas.addSchemaSync(schema);
   }
 
@@ -190,11 +199,33 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return undefined;
   }
 
+  /**
+   *
+   * @param schemaKey
+   */
+  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
+    for (const locater of this._locaters) {
+      const schema = locater.getSchemaSync<T>(schemaKey, matchType);
+      if (schema)
+        return schema;
+    }
+
+    return undefined;
+  }
+
   public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
     const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (!schema)
       return undefined;
 
     return schema.getItem<T>(schemaItemKey.name, false);
+  }
+
+  public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined {
+    const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
+    if (!schema)
+      return undefined;
+
+    return schema.getItemSync<T>(schemaItemKey.name, false);
   }
 }

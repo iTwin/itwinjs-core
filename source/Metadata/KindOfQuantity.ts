@@ -38,7 +38,12 @@ export default class KindOfQuantity extends SchemaItem {
   }
 
   public async fromJson(jsonObj: any) {
-    await super.fromJson(jsonObj);
+    // await super.fromJson(jsonObj); this happens inside the sync method, too.
+    this.fromJsonSync(jsonObj);
+  }
+
+  public fromJsonSync(jsonObj: any) {
+    super.fromJsonSync(jsonObj);
 
     if (undefined !== jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")

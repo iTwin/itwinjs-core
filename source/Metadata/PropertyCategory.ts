@@ -18,8 +18,12 @@ export default class PropertyCategory extends SchemaItem {
     super(schema, name, SchemaItemType.PropertyCategory);
   }
 
-  public async fromJson(jsonObj: any) {
-    await super.fromJson(jsonObj);
+  public async fromJson(jsonObj: any): Promise<void> {
+    this.fromJsonSync(jsonObj);
+  }
+
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
 
     if (undefined !== jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")

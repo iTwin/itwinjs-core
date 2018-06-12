@@ -34,6 +34,10 @@ export default abstract class SchemaItem {
   get description() { return this._description; }
 
   public async fromJson(jsonObj: any): Promise<void> {
+    this.fromJsonSync(jsonObj);
+  }
+
+  public fromJsonSync(jsonObj: any): void {
     if (undefined === jsonObj.schemaItemType)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} is missing the required schemaItemType property.`);
 
