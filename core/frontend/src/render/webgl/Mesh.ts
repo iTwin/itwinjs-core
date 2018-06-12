@@ -4,7 +4,7 @@
 /** @module WebGL */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { SurfaceType, RenderPass } from "./RenderFlags";
+import { SurfaceType, RenderPass, RenderOrder } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { MaterialData, LUTGeometry } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
@@ -19,9 +19,6 @@ import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Target } from "./Target";
 import { SurfacePrimitive } from "./Surface";
-/* ###TODO EdgePrimitive
-import { EdgePrimitive } from "./Edge";
-*/
 import { RenderCommands, DrawCommands } from "./DrawCommand";
 import {
   QParams3d,
@@ -30,8 +27,15 @@ import {
   RenderTexture,
   RenderMode,
   RenderMaterial,
+  SilhouetteEdgeArgs,
+  OctEncodedNormalPair,
 } from "@bentley/imodeljs-common";
 import { Material } from "./Material";
+import { EdgeArgs, MeshEdge, PolylineEdgeArgs, PolylineData } from "@bentley/imodeljs-common";
+import { System } from "./System";
+import { BufferHandle, AttributeHandle } from "./Handle";
+import { GL } from "./GL";
+import { TechniqueId } from "./TechniqueId";
 
 export class MeshInfo {
   public readonly edgeWidth: number;
@@ -143,21 +147,29 @@ export class MeshGraphic extends Graphic {
     if (undefined !== surface)
       this._primitives.push(surface);
 
-    // ###TODO edges
-    // if (args.edges.silhouettes.isValid) { this._primitives[MeshGraphicType.kSilhouette] = new SilhouettePrimitive(args.edges.silhouettes, this); }
+    if (args.edges.silhouettes.isValid) {
+      const silPrim = SilhouetteEdgePrimitive.create(args.edges.silhouettes, this);
+      if (undefined !== silPrim)
+        this._primitives[MeshGraphicType.kSilhouette] = silPrim;
+    }
     const convertPolylineEdges = args.edges.polylines.isValid && !wantJointTriangles(args.edges.width, args.is2d);
     if (convertPolylineEdges) {
-      // const simpleEdges = new SimplePolylineEdgeArgs(args.edges.polylines, args.edges.edges);
-      // this._primitives[MeshGraphicType.kEdge] = new EdgePrimitive(simpleEdges, this);
+      const edgePrim = EdgePrimitive.createSimple(args.edges.polylines, args.edges.edges, this);
+      if (undefined !== edgePrim)
+        this._primitives[MeshGraphicType.kEdge] = edgePrim;
     } else {
-      /* ###TODO EdgePrimitive
       if (args.edges.edges.isValid) {
         const edgePrim = EdgePrimitive.create(args.edges.edges, this);
         if (undefined !== edgePrim)
           this._primitives[MeshGraphicType.kEdge] = edgePrim;
       }
+      /* ###TODO PolylineEdgePrimitive
+      if (args.edges.polylines.isValid) {
+        const pePrim = PolylineEdgePrimitive.create(args, this);
+        if (undefined !== pePrim)
+          this._primitives[MeshGraphicType.kPolyline] = pePrim;
+      }
       */
-      // if (args.edges.polylines.isValid) { this._primitives[MeshGraphicType.kPolyline] = new PolylineEdgePrimitive.create(args, this); }
     }
   }
 
@@ -227,3 +239,230 @@ export abstract class MeshPrimitive extends Primitive {
 
   public assignUniformFeatureIndices(_index: number) { assert(false); } // handled by MeshGraphic...
 }
+
+export class EdgeBytes {
+  public numIndices: number;
+  public indexBytes: Uint8Array;
+  public endPointAndQuadIndexBytes: Uint8Array;
+  constructor(numIndices: number) {
+    this.numIndices = numIndices;
+    // Each primary vertex identified by vec3-encoded index into LUT
+    this.indexBytes = new Uint8Array(numIndices * 3);
+    // Each 'other endpoint' vertex identified by vec3-encoded index into LUT plus a quad index in [0,3]
+    this.endPointAndQuadIndexBytes = new Uint8Array(numIndices * 4);
+  }
+}
+
+export class EdgeGeometry extends MeshGeometry {
+  private readonly _indices: BufferHandle;
+  private readonly _endPointAndQuadIndices: BufferHandle;
+
+  protected static convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]): EdgeBytes | undefined {
+    // Each adjacent pair of polyline indices and each mesh edge becomes 2 triangles with 6 vertices.
+    let numIndices = 0;
+    if (undefined !== edges)
+      numIndices += edges.length;
+    if (undefined !== polylines) {
+      for (const pd of polylines)
+        numIndices += (pd.vertIndices.length - 1);
+    }
+    if (0 === numIndices)
+      return undefined;
+    numIndices *= 6;
+
+    // Allocate bytes for edge data.
+    const data = new EdgeBytes(numIndices);
+
+    let ndx: number = 0;
+    let ndx2: number = 0;
+
+    const addPoint = (p0: number, p1: number, quadIndex: number) => {
+      data.indexBytes[ndx++] = p0 & 0x000000ff;
+      data.indexBytes[ndx++] = (p0 & 0x0000ff00) >> 8;
+      data.indexBytes[ndx++] = (p0 & 0x00ff0000) >> 16;
+      data.endPointAndQuadIndexBytes[ndx2++] = p1 & 0x000000ff;
+      data.endPointAndQuadIndexBytes[ndx2++] = (p1 & 0x0000ff00) >> 8;
+      data.endPointAndQuadIndexBytes[ndx2++] = (p1 & 0x00ff0000) >> 16;
+      data.endPointAndQuadIndexBytes[ndx2++] = quadIndex;
+    };
+
+    if (undefined !== polylines) {
+      for (const pd of polylines) {
+        const num = pd.vertIndices.length - 1;
+        for (let i = 0; i < num; ++i) {
+          let p0 = pd.vertIndices[i];
+          let p1 = pd.vertIndices[i + 1];
+          if (p1 < p0) { // swap so that lower index is first.
+            p0 = p1;
+            p1 = pd.vertIndices[i];
+          }
+          addPoint(p0, p1, 0);
+          addPoint(p1, p0, 2);
+          addPoint(p0, p1, 1);
+          addPoint(p0, p1, 1);
+          addPoint(p1, p0, 2);
+          addPoint(p1, p0, 3);
+        }
+      }
+    }
+
+    if (undefined !== edges) {
+      for (const meshEdge of edges) {
+        const p0 = meshEdge.indices[0];
+        const p1 = meshEdge.indices[1];
+        addPoint(p0, p1, 0);
+        addPoint(p1, p0, 2);
+        addPoint(p0, p1, 1);
+        addPoint(p0, p1, 1);
+        addPoint(p1, p0, 2);
+        addPoint(p1, p0, 3);
+      }
+    }
+
+    return data;
+  }
+
+  public static create(mesh: MeshData, polylines?: PolylineData[], edges?: MeshEdge[]): EdgeGeometry | undefined {
+    const data = this.convertPolylinesAndEdges(polylines, edges);
+    if (undefined !== data) {
+      const indexBuffer = BufferHandle.createArrayBuffer(data.indexBytes);
+      if (undefined !== indexBuffer) {
+        const endPointAndQuadIndexBuffer = BufferHandle.createArrayBuffer(data.endPointAndQuadIndexBytes);
+        if (undefined !== endPointAndQuadIndexBuffer)
+          return new EdgeGeometry(indexBuffer, endPointAndQuadIndexBuffer, data.numIndices, mesh);
+      }
+    }
+    return undefined;
+  }
+
+  public bindVertexArray(attr: AttributeHandle): void {
+    attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+  }
+
+  public draw(): void {
+    const gl = System.instance.context;
+    this._indices.bind(GL.Buffer.Target.ArrayBuffer);
+    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
+  }
+
+  public _wantWoWReversal(_target: Target): boolean { return true; }
+  public getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  public getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Edge; }
+  public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
+  public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
+  public getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
+  public get endPointAndQuadIndices(): BufferHandle { return this._endPointAndQuadIndices; }
+
+  protected constructor(indices: BufferHandle, endPointAndQuadsIndices: BufferHandle, numIndices: number, mesh: MeshData) {
+    super(mesh, numIndices);
+    this._indices = indices;
+    this._endPointAndQuadIndices = endPointAndQuadsIndices;
+  }
+}
+
+export class EdgePrimitive extends MeshPrimitive {
+  public static create(args: EdgeArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
+    if (undefined === args.edges) {
+      assert(false);
+      return undefined;
+    }
+    const geom = EdgeGeometry.create(mesh.meshData, undefined, args.edges);
+    return undefined !== geom ? new EdgePrimitive(geom, mesh) : undefined;
+  }
+
+  public static createSimple(pArgs: PolylineEdgeArgs, eArgs: EdgeArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
+    if (undefined === eArgs.edges && undefined === pArgs.lines) {
+      assert(false);
+      return undefined;
+    }
+    const geom = EdgeGeometry.create(mesh.meshData, pArgs.lines, eArgs.edges);
+    return undefined !== geom ? new EdgePrimitive(geom, mesh) : undefined;
+  }
+
+  private constructor(cachedGeom: EdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
+
+  public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
+  public get isEdge(): boolean { return true; }
+}
+
+export class SilhouetteEdgeGeometry extends EdgeGeometry {
+  private readonly _normalPairs: BufferHandle;
+
+  private static convertNormalPairs(normalPairs: OctEncodedNormalPair[]): Uint8Array {
+    // The indices for the edges get expanded to 6 triangle indices, so we must also expand the normal pairs by 6.
+    // Each pair of oct encoded normals is 4 byts (2 for each normal).
+    const normalPairBytes = new Uint8Array(normalPairs.length * 6 * 4);
+    const normalPair16 = new Uint16Array(normalPairBytes.buffer);
+    let ndx = 0;
+    for (const pair of normalPairs) {
+      for (let i = 0; i < 6; ++i) {
+        pair.first.value;
+        normalPair16[ndx++] = pair.first.value;
+        normalPair16[ndx++] = pair.second.value;
+      }
+    }
+    return normalPairBytes;
+  }
+
+  public static createSilhouettes(mesh: MeshData, edges: MeshEdge[], normalPairs: OctEncodedNormalPair[]): SilhouetteEdgeGeometry | undefined {
+    const data = EdgeGeometry.convertPolylinesAndEdges(undefined, edges);
+    if (undefined !== data) {
+      const normalPairBytes = this.convertNormalPairs(normalPairs);
+      if (undefined !== normalPairBytes) {
+        const indexBuffer = BufferHandle.createArrayBuffer(data.indexBytes);
+        if (undefined !== indexBuffer) {
+          const endPointAndQuadIndexBuffer = BufferHandle.createArrayBuffer(data.endPointAndQuadIndexBytes);
+          if (undefined !== endPointAndQuadIndexBuffer) {
+            const normalPairsBuffer = BufferHandle.createArrayBuffer(normalPairBytes);
+            if (undefined !== normalPairsBuffer) {
+              return new SilhouetteEdgeGeometry(indexBuffer, endPointAndQuadIndexBuffer, normalPairsBuffer, data.numIndices, mesh);
+            }
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
+  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.SilhouetteEdge; }
+  public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
+  public get normalPairs(): BufferHandle { return this._normalPairs; }
+
+  private constructor(indices: BufferHandle, endPointAndQuadsIndices: BufferHandle, normalPairs: BufferHandle, numIndices: number, mesh: MeshData) {
+    super(indices, endPointAndQuadsIndices, numIndices, mesh);
+    this._normalPairs = normalPairs;
+  }
+}
+
+export class SilhouetteEdgePrimitive extends MeshPrimitive {
+  public static create(args: SilhouetteEdgeArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
+    if (undefined === args.edges || undefined === args.normals) {
+      assert(false);
+      return undefined;
+    }
+    const geom = SilhouetteEdgeGeometry.createSilhouettes(mesh.meshData, args.edges, args.normals);
+    return undefined !== geom ? new SilhouetteEdgePrimitive(geom, mesh) : undefined;
+  }
+
+  private constructor(cachedGeom: EdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
+
+  public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
+  public get isEdge(): boolean { return true; }
+}
+
+// export class PolylineEdgePrimitive extends MeshPrimitive {
+//   public static create(args: MeshArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
+//     if (undefined === args.edges) {
+//       assert(false);
+//       return undefined;
+//     }
+//     const geom = PolylineEdgeGeometry.create(mesh.meshData, undefined, args);
+//     return undefined !== geom ? new PolylineEdgePrimitive(geom, mesh) : undefined;
+//   }
+
+//   private constructor(cachedGeom: EdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
+
+//   public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
+//   public get isEdge(): boolean { return true; }
+// }

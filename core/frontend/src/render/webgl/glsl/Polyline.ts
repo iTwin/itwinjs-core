@@ -76,7 +76,7 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
 }
 `;
 
-const adjustWidth = `
+export const adjustWidth = `
 void adjustWidth(inout float width, vec2 d2, vec2 org) {
   // calculate slope based width adjustment for non-AA lines, widths 1 to 4
   vec2 d2A = abs(d2);
