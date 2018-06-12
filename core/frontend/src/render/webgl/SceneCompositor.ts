@@ -513,9 +513,9 @@ export class SceneCompositor {
 
   private renderBackground(commands: RenderCommands, needComposite: boolean) {
     const cmds = commands.getCommands(RenderPass.Background);
-    if (0 === cmds.length) {
-      return;
-    }
+    // if (0 === cmds.length) {
+    //   return;
+    // }
 
     const fbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
     const target = this._target;

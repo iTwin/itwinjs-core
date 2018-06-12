@@ -9,6 +9,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit } from "./RenderFlags";
+import { debugPrint } from "./debugPrint";
 
 /** A callback when a TextureHandle is finished loading.  Only relevant for createForImage creation method. */
 export type TextureLoadCallback = (t: TextureHandle, c: HTMLCanvasElement) => void;
@@ -207,6 +208,8 @@ export class TextureHandle implements IDisposable {
     const gl: WebGLRenderingContext = System.instance.context;
     gl.activeTexture(texUnit);
     gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null);
+    if (this.wantDebugIds)
+      debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
 
   /** Binds this texture to a uniform sampler2D */
@@ -255,6 +258,11 @@ export class TextureHandle implements IDisposable {
     return this.create(TextureCreateParams.createForImageBuffer(image, type));
   }
 
+  // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.
+  // This helps in debugging issues in which e.g. the same texture is bound as an input and output.
+  public static wantDebugIds: boolean = false;
+  private static _debugId: number = 0;
+  private static readonly _maxDebugId = 0xffffff;
   private constructor(glTexture: WebGLTexture, params: TextureCreateParams) {
     this._glTexture = glTexture;
     this.width = params.width;
@@ -262,6 +270,10 @@ export class TextureHandle implements IDisposable {
     this.format = params.format;
     this.dataType = params.dataType;
     this.dataBytes = params.dataBytes;
+    if (TextureHandle.wantDebugIds) {
+      (glTexture as any)._debugId = ++TextureHandle._debugId;
+      TextureHandle._debugId %= TextureHandle._maxDebugId;
+    }
 
     params.loadImageData(this, params);
   }
