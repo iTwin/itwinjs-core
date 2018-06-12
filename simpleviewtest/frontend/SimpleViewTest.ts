@@ -212,7 +212,7 @@ export class LocateTool extends ViewTool {
 
   public constructor() { super(); }
 
-  public updateDynamics(ev: BeButtonEvent) { this.onModelMotion(ev); }
+  public onPostInstall() { super.onPostInstall(); IModelApp.accuSnap.enableLocate(true); }
   public onModelMotion(ev: BeButtonEvent) {
     this._curPoint.setFrom(ev.point);
 
@@ -291,7 +291,7 @@ function applyRenderModeChange(mode: string) {
 
 function stringToRenderMode(name: string): RenderMode {
   switch (name) {
-    case "Smooth Shade":  return RenderMode.SmoothShade;
+    case "Smooth Shade": return RenderMode.SmoothShade;
     case "Solid Fill": return RenderMode.SolidFill;
     case "Hidden Line": return RenderMode.HiddenLine;
     default: return RenderMode.Wireframe;
