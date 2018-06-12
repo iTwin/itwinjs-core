@@ -146,7 +146,7 @@ export class IntersectDetail extends SnapDetail {
  */
 export class HitList {
   public hits: HitDetail[] = [];
-  public currHit = 0;
+  public currHit = -1;
   public size(): number { return this.hits.length; }
   public clear(): void { this.hits.length = 0; }
   public empty(): void { this.clear(); this.resetCurrentHit(); }
