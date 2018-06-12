@@ -215,7 +215,7 @@ export class ElementLocateManager {
   public getKeypointDivisor() { return 2; }
   public synchSnapMode() { }
   public onFlashHit(_detail: SnapDetail) { }
-  public onAccuSnapMotion(_detail: SnapDetail | undefined, _wasHot: boolean, _ev: BeButtonEvent) { }
+  public onAccuSnapMotion(_detail: HitDetail | undefined, _wasHot: boolean, _ev: BeButtonEvent) { }
   public getElementPicker() { return this.picker; }
   public setChosenSnapMode(_snapMode: SnapMode) { }
 
