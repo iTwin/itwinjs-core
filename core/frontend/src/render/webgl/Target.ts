@@ -6,7 +6,7 @@
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -312,7 +312,7 @@ export abstract class Target extends RenderTarget {
     vec3: new Vector3d(),
     point3: new Point3d(),
     visibleEdges: new HiddenLine.Style({}),
-    hiddenEdges: new HiddenLine.Style({}),
+    hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
   };
 
   public changeRenderPlan(plan: RenderPlan): void {

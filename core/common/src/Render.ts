@@ -517,28 +517,28 @@ export class ViewFlags {
 
   public isEqualTo(other: ViewFlags): boolean {
     return this.renderMode === other.renderMode
-        && this.dimensions === other.dimensions
-        && this.patterns === other.patterns
-        && this.weights === other.weights
-        && this.styles === other.styles
-        && this.transparency === other.transparency
-        && this.fill === other.fill
-        && this.textures === other.textures
-        && this.materials === other.materials
-        && this.acsTriad === other.acsTriad
-        && this.grid === other.grid
-        && this.visibleEdges === other.visibleEdges
-        && this.hiddenEdges === other.hiddenEdges
-        && this.sourceLights === other.sourceLights
-        && this.cameraLights === other.cameraLights
-        && this.solarLight === other.solarLight
-        && this.shadows === other.shadows
-        && this.noClipVolume === other.noClipVolume
-        && this.constructions === other.constructions
-        && this.monochrome === other.monochrome
-        && this.noGeometryMap === other.noGeometryMap
-        && this.hLineMaterialColors === other.hLineMaterialColors
-        && this.edgeMask === other.edgeMask;
+      && this.dimensions === other.dimensions
+      && this.patterns === other.patterns
+      && this.weights === other.weights
+      && this.styles === other.styles
+      && this.transparency === other.transparency
+      && this.fill === other.fill
+      && this.textures === other.textures
+      && this.materials === other.materials
+      && this.acsTriad === other.acsTriad
+      && this.grid === other.grid
+      && this.visibleEdges === other.visibleEdges
+      && this.hiddenEdges === other.hiddenEdges
+      && this.sourceLights === other.sourceLights
+      && this.cameraLights === other.cameraLights
+      && this.solarLight === other.solarLight
+      && this.shadows === other.shadows
+      && this.noClipVolume === other.noClipVolume
+      && this.constructions === other.constructions
+      && this.monochrome === other.monochrome
+      && this.noGeometryMap === other.noGeometryMap
+      && this.hLineMaterialColors === other.hLineMaterialColors
+      && this.edgeMask === other.edgeMask;
   }
 
   public showDimensions() { return this.dimensions; }
@@ -864,7 +864,7 @@ export namespace HiddenLine {
     public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
     public constructor(json: any) {
       this.visible = new HiddenLine.Style(undefined !== json ? json.visible : undefined);
-      this.hidden = new HiddenLine.Style(undefined !== json ? json.hidden : undefined);
+      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine });
       this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transparencyThreshold, 1.0) : 1.0;
     }
   }
