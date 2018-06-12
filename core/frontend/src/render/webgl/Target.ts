@@ -234,6 +234,7 @@ export abstract class Target extends RenderTarget {
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
@@ -630,22 +631,22 @@ export abstract class Target extends RenderTarget {
     const planFrust = this.planFrustum;
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale,  Npc._110);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale,  Npc._101);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale,  Npc._111);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
     const rectFrust = this._scratchRectFrustum;
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale,    Npc._000);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale,    Npc._100);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale,    Npc._001);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale,    Npc._101);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     // ###TODO: Handle pickable decorations.

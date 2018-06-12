@@ -216,14 +216,14 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       const ovr = params.target.currentOverrides;
       assert(undefined !== ovr);
       if (ovr!.isNonUniform)
-        ovr!.texture!.bindSampler(uniform, TextureUnit.FeatureSymbology);
+        ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
     });
   });
   vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_featureParams", (uniform, params) => {
       const ovr = params.target.currentOverrides!;
       if (ovr.isNonUniform)
-        uniform.setUniform2fv([ovr.texture!.width, ovr.texture!.height]);
+        uniform.setUniform2fv([ovr.lut!.width, ovr.lut!.height]);
     });
   });
 

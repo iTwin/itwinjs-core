@@ -8,7 +8,7 @@ import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPower
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
-import { TextureUnit } from "./RenderFlags";
+import { TextureUnit, OvrFlags } from "./RenderFlags";
 
 /** A callback when a TextureHandle is finished loading.  Only relevant for createForImage creation method. */
 export type TextureLoadCallback = (t: TextureHandle, c: HTMLCanvasElement) => void;
@@ -222,6 +222,24 @@ export class TextureHandle implements IDisposable {
     uniform.setUniform1i(unit - TextureUnit.Zero);
   }
 
+  public update(data: Uint8Array): boolean {
+    // ###TODO - make conditionally update texture only if nothing changed
+    if (0 === this.width || 0 === this.height || undefined === this.dataBytes || 0 === this.dataBytes.length) {
+      assert(false);
+      return false;
+    }
+
+    if (data.length !== this.dataBytes.length)
+      return false;
+
+    // copy data into this.dataBytes
+    for (const i of this.dataBytes) {
+      this.dataBytes[i] = data[i];
+    }
+
+    return true;
+  }
+
   public dispose() {
     if (undefined !== this._glTexture) {
       System.instance.context.deleteTexture(this._glTexture);
@@ -265,4 +283,28 @@ export class TextureHandle implements IDisposable {
 
     params.loadImageData(this, params);
   }
+}
+
+export class TextureDataUpdater {
+  public data: Uint8Array;
+  public modified: boolean = false;
+
+  public constructor(data: Uint8Array) { this.data = data; }
+
+  public setByteAtIndex(index: number, byte: number) {
+    assert(index < this.data.length);
+    if (byte !== this.data[index]) {
+      this.data[index] = byte;
+      this.modified = true;
+    }
+  }
+  public setOvrFlagsAtIndex(index: number, value: OvrFlags) {
+    assert(index < this.data.length);
+    if (value !== this.data[index]) {
+      this.data[index] = value;
+      this.modified = true;
+    }
+  }
+  public getByteAtIndex(index: number): number { assert(index < this.data.length); return this.data[index]; }
+  public getFlagsAtIndex(index: number): OvrFlags { return this.getByteAtIndex(index); }
 }
