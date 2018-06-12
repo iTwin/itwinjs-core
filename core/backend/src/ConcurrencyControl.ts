@@ -453,7 +453,7 @@ export namespace ConcurrencyControl {
      * [[include:ConcurrencyControl_Codes.reserve]]
      * ```
      * @param codes The Codes to reserve
-     * @throws [[RequestError]]
+     * @throws [[ConcurrencyControl.RequestError]]
      */
     public async reserve(accessToken: AccessToken, codes?: Code[]) {
 
