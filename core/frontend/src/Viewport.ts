@@ -1590,7 +1590,7 @@ export class Viewport {
     return undefined;
   }
 
-  private getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc)
       this.npcToWorld(npc, npc);
@@ -1598,7 +1598,7 @@ export class Viewport {
     return npc;
   }
 
-  private getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
     if (z <= 0.0)
       return undefined;

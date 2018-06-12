@@ -426,9 +426,9 @@ export abstract class InteractiveTool extends Tool {
   /** Invoked when the cursor stops moving while a button is depressed */
   public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
   /** Invoked to allow tools to filter which elements can be located.
-   * return true to reject hit (fill out response with reason, if it is defined)
+   * return false to reject hit (fill out response with reason, if it is defined)
    */
-  public onPostLocate(_hit: HitDetail, _out?: LocateResponse) { return false; }
+  public onPostLocate(_hit: HitDetail, _out?: LocateResponse) { return true; }
   /** Invoked when the mouse wheel moves. */
   public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
   /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */

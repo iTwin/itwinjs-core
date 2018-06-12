@@ -9,7 +9,7 @@ import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, TestHitStatus, ElementLocateManager } from "./ElementLocateManager";
 import { SpriteLocation, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
-import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, HitGeomClass, SnapHeat } from "./HitDetail";
+import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, SnapHeat, HitPriority } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 
 // tslint:disable:variable-name
@@ -593,7 +593,7 @@ export class AccuSnap {
     options.hitSource = this.isSnapEnabled() ? HitSource.AccuSnap : HitSource.MotionLocate;
 
     let keepCurrentHit = false;
-    const canBeSticky = !force && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && HitGeomClass.Interior !== this.currHit.geomClass);
+    const canBeSticky = !force && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && this.currHit.priority < HitPriority.PlanarSurface);
     let aperture = (vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
 
     // see if we should keep the current hit

@@ -2,11 +2,12 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
-import { HitSource, HitDetail, HitList, SnapDetail, SnapMode } from "./HitDetail";
-import { Point3d } from "@bentley/geometry-core";
-import { Viewport } from "./Viewport";
+import { HitSource, HitDetail, HitList, SnapDetail, SnapMode, HitPriority } from "./HitDetail";
+import { Point3d, Point2d } from "@bentley/geometry-core";
+import { Viewport, ViewRect } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { IModelApp } from "./IModelApp";
+import { Pixel } from "./rendering";
 
 // tslint:disable:variable-name
 
@@ -55,15 +56,17 @@ export const enum TestHitStatus {
 export class LocateOptions {
   public disableIModelFilter = false;
   public allowDecorations = false;
+  public maxHits = 20;
   public hitSource = HitSource.DataPoint;
   public clone(): LocateOptions {
     const other = new LocateOptions();
     other.disableIModelFilter = this.disableIModelFilter;
     other.allowDecorations = this.allowDecorations;
+    other.maxHits = this.maxHits;
     other.hitSource = this.hitSource;
     return other;
   }
-  public init() { this.hitSource = HitSource.DataPoint; }
+  public init() { this.disableIModelFilter = false, this.allowDecorations = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
 export class LocateResponse {
@@ -117,7 +120,7 @@ export class ElementPicker {
   }
 
   /** generate a list of elements that are close to a given point. */
-  public doPick(vp: Viewport, pickPointWorld: Point3d, _pickApertureScreen: number, _options: LocateOptions): number {
+  public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
     if (this.hitList && this.hitList.size() > 0 && !this.lastPickAborted && (vp === this.viewport) && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.size();
@@ -127,8 +130,48 @@ export class ElementPicker {
     this.viewport = vp;
     this.pickPointWorld.setFrom(pickPointWorld);
 
-    // NEEDSWORK: Populate this.hitList from pixel data...
+    const pickPointView = vp.worldToView(pickPointWorld);
+    const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
+    const pixelRadius = Math.floor(pickRadiusView + 0.5);
+    const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
+    const pixels = vp.readPixels(rect, Pixel.Selector.All);
 
+    if (undefined === pixels)
+      return 0;
+
+    const testPoint = Point2d.createZero();
+    for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
+      for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
+        const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+        if (undefined === pixel || undefined === pixel.elementId)
+          continue; // no geometry at this location...
+        const distXY = testPointView.distance(testPoint);
+        if (distXY > pixelRadius)
+          continue; // ignore corners. it's a locate circle not square...
+        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y);
+        if (undefined === hitPointWorld)
+          continue;
+        let priority = HitPriority.Unknown;
+        switch (pixel.type) {
+          case Pixel.GeometryType.Surface:
+            priority = Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarSurface : HitPriority.NonPlanarSurface;
+            break;
+          case Pixel.GeometryType.Linear:
+            priority = HitPriority.WireEdge;
+            break;
+          case Pixel.GeometryType.Edge:
+            priority = Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarEdge : HitPriority.NonPlanarEdge;
+            break;
+          case Pixel.GeometryType.Silhouette:
+            priority = HitPriority.SilhouetteEdge;
+            break;
+        }
+        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), priority, distXY, pixel.distanceFraction);
+        this.hitList!.addHit(hit);
+        if (this.hitList!.hits.length > options.maxHits)
+          this.hitList!.hits.length = options.maxHits; // truncate array...
+      }
+    }
     return this.hitList!.size();
   }
 
@@ -136,12 +179,12 @@ export class ElementPicker {
    * test a (previously generated) hit against a new datapoint (presumes same view)
    * @return true if the point is on the element
    */
-  public testHit(hit: HitDetail, hitList: HitList | undefined, vp: Viewport, pickPointWorld: Point3d, pickApertureScreen: number, options: LocateOptions): TestHitStatus {
+  public testHit(hit: HitDetail, hitList: HitList | undefined, vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): TestHitStatus {
     // if they didn't supply a hit list, and we don't have one, create one.
     if (!hitList && !this.hitList)
       this.empty();
 
-    if (!this.doPick(vp, pickPointWorld, pickApertureScreen, options))
+    if (!this.doPick(vp, pickPointWorld, pickRadiusView, options))
       return (this.lastPickAborted ? TestHitStatus.Aborted : TestHitStatus.NotOn);
 
     if (undefined === this.hitList)
