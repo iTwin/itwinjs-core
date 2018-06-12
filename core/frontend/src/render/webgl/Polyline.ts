@@ -71,7 +71,7 @@ export class TesselatedPolyline {
     this.nextIndexAndParam = nextIndexAndParam;
     this.distance = distance;
   }
-  public get numVerts(): number { return this.distance.length; }
+  public get numIndices(): number { return this.distance.length; }
 }
 
 class PolylineTesselatorVertex {

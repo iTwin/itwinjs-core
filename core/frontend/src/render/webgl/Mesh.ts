@@ -6,7 +6,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { SurfaceType, RenderPass, RenderOrder } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
-import { MaterialData, LUTGeometry } from "./CachedGeometry";
+import { MaterialData, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
@@ -36,6 +36,7 @@ import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
+import { PolylineTesselator, TesselatedPolyline } from "./Polyline";
 
 export class MeshInfo {
   public readonly edgeWidth: number;
@@ -163,13 +164,11 @@ export class MeshGraphic extends Graphic {
         if (undefined !== edgePrim)
           this._primitives[MeshGraphicType.kEdge] = edgePrim;
       }
-      /* ###TODO PolylineEdgePrimitive
       if (args.edges.polylines.isValid) {
         const pePrim = PolylineEdgePrimitive.create(args, this);
         if (undefined !== pePrim)
           this._primitives[MeshGraphicType.kPolyline] = pePrim;
       }
-      */
     }
   }
 
@@ -451,18 +450,58 @@ export class SilhouetteEdgePrimitive extends MeshPrimitive {
   public get isEdge(): boolean { return true; }
 }
 
-// export class PolylineEdgePrimitive extends MeshPrimitive {
-//   public static create(args: MeshArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
-//     if (undefined === args.edges) {
-//       assert(false);
-//       return undefined;
-//     }
-//     const geom = PolylineEdgeGeometry.create(mesh.meshData, undefined, args);
-//     return undefined !== geom ? new PolylineEdgePrimitive(geom, mesh) : undefined;
-//   }
+export class PolylineEdgeGeometry extends MeshGeometry {
+  private _buffers: PolylineBuffers;
 
-//   private constructor(cachedGeom: EdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
+  public static create(mesh: MeshData, args: MeshArgs): PolylineEdgeGeometry | undefined {
+    const tess = PolylineTesselator.fromMesh(args);
+    if (undefined !== tess) {
+      const tp: TesselatedPolyline = tess.tesselate();
+      const vBuff = BufferHandle.createArrayBuffer(tp.vertIndex);
+      const pBuff = BufferHandle.createArrayBuffer(tp.prevIndex);
+      const npBuff = BufferHandle.createArrayBuffer(tp.nextIndexAndParam);
+      const dBuff = BufferHandle.createArrayBuffer(tp.distance);
+      if (undefined !== vBuff && undefined !== pBuff && undefined !== npBuff && undefined !== dBuff) {
+        const pb: PolylineBuffers = new PolylineBuffers(vBuff, pBuff, npBuff, dBuff);
+        return new PolylineEdgeGeometry(tp.numIndices, pb, mesh);
+      }
+    }
+    return undefined;
+  }
 
-//   public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
-//   public get isEdge(): boolean { return true; }
-// }
+  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Polyline; }
+  public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
+  public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
+  public get polylineBuffers(): PolylineBuffers { return this._buffers; }
+
+  public bindVertexArray(attr: AttributeHandle): void {
+    attr.enableArray(this._buffers.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
+  }
+
+  public draw(): void {
+    const gl = System.instance.context;
+    this._buffers.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
+  }
+
+  private constructor(numIndices: number, buffers: PolylineBuffers, mesh: MeshData) {
+    super(mesh, numIndices);
+    this._buffers = buffers;
+  }
+}
+
+export class PolylineEdgePrimitive extends MeshPrimitive {
+  public static create(args: MeshArgs, mesh: MeshGraphic): EdgePrimitive | undefined {
+    if (undefined === args.edges) {
+      assert(false);
+      return undefined;
+    }
+    const geom = PolylineEdgeGeometry.create(mesh.meshData, args);
+    return undefined !== geom ? new PolylineEdgePrimitive(geom, mesh) : undefined;
+  }
+
+  private constructor(cachedGeom: PolylineEdgeGeometry, mesh: MeshGraphic) { super(cachedGeom, mesh); }
+
+  public get renderOrder(): RenderOrder { return this.meshData.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
+  public get isEdge(): boolean { return true; }
+}
