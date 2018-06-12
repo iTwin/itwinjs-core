@@ -255,7 +255,7 @@ export class CodeQuery extends Query {
 
   /**
    * Select only top entries from the query.
-   * This is applied after @see skip parameter.
+   * This is applied after @see Query.skip parameter.
    * @param n Number of top entries to select.
    * @returns This query.
    */
