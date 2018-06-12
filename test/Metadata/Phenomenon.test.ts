@@ -46,16 +46,6 @@ describe("Phenomenon tests", () => {
       assert(testPhenomenon.label, "Area");
       assert(testPhenomenon.definition, "Units.LENGTH(2)");
     });
-    it("Name is required", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        label: "Area",
-        definition: "Units.LENGTH(2)",
-      };
-      await expect(testPhenomenon.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Phenomenon AREA does not have the required 'name' attribute.`);
-
-    });
     it("Name must be a valid ECName", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
@@ -105,16 +95,6 @@ describe("Phenomenon tests", () => {
         definition: 2,
       };
       await expect(testPhenomenon.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Phenomenon AREA has an invalid 'definition' attribute. It should be of type 'string'.`);
-    });
-    it("$schema URL doesnt match EC3.2 URL", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-        definition: "Units.LENGTH(2)",
-      };
-      await expect(testPhenomenon.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Phenomenon AREA does not have the required schema URL.`);
     });
   });
 });
