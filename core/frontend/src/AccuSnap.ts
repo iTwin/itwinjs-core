@@ -171,11 +171,8 @@ export class AccuSnap {
       this.setFlashHit(newHit);
     }
 
-    // we already have a hit. Release our reference to it (leave element hilited though).
-    this.currHit = undefined;
-
     // if we didn't get a new hit, we're done
-    if (!newHit)
+    if (undefined === (this.currHit = newHit))
       return;
 
     // draw sprites for this hit
