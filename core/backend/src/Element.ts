@@ -362,9 +362,10 @@ export abstract class InformationRecordElement extends InformationContentElement
 }
 
 /**
- * A Definition Element holds configuration - related information that is meant to be referenced / shared.
+ * A Definition Element holds configuration-related information that is meant to be referenced / shared.
  */
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
+  /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
   public toJSON(): DefinitionElementProps {
@@ -375,7 +376,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with an element.
+ * Defines a set of properties (the *type*) that may be associated with an element.
  */
 export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
   public recipe?: RelatedElement;
@@ -390,7 +391,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with a Physical Element. A Physical
+ * Defines a set of properties (the *type*) that can be associated with a Physical Element. A Physical
  * Type has a strong correlation with something that can be ordered from a catalog since all instances
  * share a common set of properties.
  */
@@ -399,7 +400,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
 }
 
 /**
- * Defines a set of properties (the 'type') that can be associated with a spatial location.
+ * Defines a set of properties (the *type*) that can be associated with a spatial location.
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }

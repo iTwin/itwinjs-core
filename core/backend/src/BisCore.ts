@@ -14,13 +14,13 @@ import * as viewMod from "./ViewDefinition";
 import * as linkMod from "./LinkTableRelationship";
 
 /** The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.
- * <p><em>Example:</em>
+ *
+ * **Example:**
  * ``` ts
  * [[include:BisCore.registerSchemaAndGetClass]]
  * ```
  */
 export class BisCore extends Schema {
-
   /** Call this to register the BisCore schema prior to using it. */
   public static registerSchema() {
     if (!Schemas.getRegisteredSchema(BisCore.name))

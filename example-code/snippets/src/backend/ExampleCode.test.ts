@@ -27,7 +27,7 @@ describe("Example Code", () => {
     assert.exists(s);
   };
 
-  // __PUBLISH_EXTRACT_START__ IModelDbModels.createModel.example-code
+  // __PUBLISH_EXTRACT_START__ IModelDb.Models.createModel.example-code
   function createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64 {
 
     const outputImodel = parentElement.iModel;

@@ -6,5 +6,5 @@ To insert a new [Model]($backend) into an iModelDb,
 
 *Example:*
 ``` ts
-[[include:IModelDbModels.createModel.example-code]]
+[[include:IModelDb.Models.createModel.example-code]]
 ```

@@ -2,6 +2,7 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
+
 import { Viewport } from "./Viewport";
 import { BeCursor } from "./tools/Tool";
 import { BeEvent } from "@bentley/bentleyjs-core";
@@ -13,15 +14,21 @@ import { IModelConnection } from "./IModelConnection";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 
-/** The ViewManager holds the list of opened views, plus the "selected view" */
+/**
+ * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
+ * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
+ *
+ * A single ViewManager is created when [[IModelApp.startup]] is called. It can be accessed via [[IModelApp.viewManager]].
+ *
+ */
 export class ViewManager {
   public inDynamicsMode = false;
   public cursor?: BeCursor;
   private readonly _viewports: Viewport[] = [];
   private _selectedView?: Viewport;
-  private _newTilesReady: boolean = false;
-  private _skipSceneCreation: boolean = false;
-  private _doContinuousRendering: boolean = false;
+  private _newTilesReady = false;
+  private _skipSceneCreation = false;
+  private _doContinuousRendering = false;
 
   public onInitialized(): void { }
 

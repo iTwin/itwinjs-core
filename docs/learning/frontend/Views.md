@@ -1,6 +1,6 @@
 # Using Views in iModelJs
 
-A *View* shows geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModelJs applications can embed and interact with Views anywhere on a web page via `HTMLCanvas` elements.
+A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModelJs applications can embed and interact with Views anywhere on a web page via an `HTMLCanvas` element.
 
 Multiple Views may be simultaneously visible on the same web page, and are coordinated via the [ViewManager]($frontend) class.
 
@@ -15,11 +15,11 @@ The `ViewDefinition` classes (in fact all [Element]($backend) classes) exist onl
 On the frontend, access to the elements needed to display views is provided by the [ElementState]($frontend) classes. The ElementState classes only hold the *state* of elements, not
 the methods to read and write elements from the database.
 
- Views are opened by loading a ViewDefinition into memory via the [ViewState]($frontend) class. They begin showing the content as it was saved in the iModel, but users may
- modify what they're seeing using [Viewing tools](#viewing-tools). These changes are only temporary (in-memory) unless they are saved back to the iModel via [IModelDbElements.updateElement]($backend).
+Views are opened by loading a ViewDefinition into memory via the [ViewState]($frontend) class. They begin showing the content as it was saved in the iModel, but users may
+modify what they're seeing using [Viewing tools](#viewing-tools). These changes are only temporary (in-memory) unless they are saved back to the iModel via [IModelDb.Elements.updateElement]($backend).
 
-An instance of a `ViewState` in memory holds references to several other objects, including a [CategorySelectorState]($frontend), a [DisplayStyle3dState]($frontend), and a [ModelSelectorState]($frontend) (for `SpatialViews`). Since each of these objects must be loaded in the frontend asynchronously, there is an async method called [IModelConnectionViews.load]($frontend) that returns a promise when the `ViewState` and all other `State` objects required to display a View are ready. The `Viewport` class expects loaded `ViewState` objects.
-
+An instance of a `ViewState` in memory holds references to several other objects, including a [CategorySelectorState]($frontend), a [DisplayStyle3dState]($frontend), and a [ModelSelectorState]($frontend) (for `SpatialViews`). Since each of these objects must be loaded in the frontend asynchronously, there is an async method called [IModelConnection.Views.load]($frontend) that returns a promise when the `ViewState` and all other `State` objects required to display a View are ready. The [Viewport]($frontend) class expects loaded `ViewState` objects.
+v
 ## Types of ViewDefinitions
 
 There are subclasses of `ViewDefinition` to show different types of `Models` in various ways.
@@ -31,13 +31,11 @@ Here are several significant subclasses:
   * `DrawingViewDefinition` - shows a view of a single 2d `DrawingModel`
   * `SheetViewDefinition` - shows a view of a single 2d `SheetModel`
 
-For each subclass of `ViewDefinition`, there is a corresponding `xxxViewState` class
-
-## The [IModelConnectionViews]($frontend) member of [IModelConnection]($frontend)
+For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 
 ## Getting a list of Views from an iModel
 
-[IModelConnectionViews.queryProps]($frontend)
+[IModelConnection.Views.queryProps]($frontend)
 
 ## Using Viewports
 
@@ -48,6 +46,7 @@ For each subclass of `ViewDefinition`, there is a corresponding `xxxViewState` c
 The iModelJs library supplies controls for allowing users to modify their
 
 ## ViewManager
+
 
 ## DisplayStyles
 

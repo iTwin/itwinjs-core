@@ -109,12 +109,12 @@ export class IModelDb extends IModel {
   private static _accessTokens?: Map<string, AccessToken>;
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
-  public models: IModelDbModels = new IModelDbModels(this);
-  public elements: IModelDbElements = new IModelDbElements(this);
-  public views: IModelDbViews = new IModelDbViews(this);
-  public tiles: IModelDbTiles = new IModelDbTiles(this);
+  public models = new IModelDb.Models(this);
+  public elements = new IModelDb.Elements(this);
+  public views = new IModelDb.Views(this);
+  public tiles = new IModelDb.Tiles(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
-  private readonly statementCache: ECSqlStatementCache = new ECSqlStatementCache();
+  private readonly statementCache = new ECSqlStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
@@ -215,9 +215,9 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Create a standalone local Db
+   * Create a standalone local Db.
    * @param fileName The name for the iModel
-   * @param args The parameters of the iModel
+   * @param args The parameters that define the new iModel
    */
   public static createStandalone(fileName: string, args: CreateIModelProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
@@ -225,14 +225,14 @@ export class IModelDb extends IModel {
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
   }
 
-  /** Create an iModel on the Hub */
+  /** Create an iModel on iModelHub */
   public static async create(accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
     IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
     const iModelId: string = await BriefcaseManager.create(accessToken, contextId, fileName, args);
     return IModelDb.open(accessToken, contextId, iModelId);
   }
 
-  /** Open the iModel from a local file
+  /** Open an iModel from a local file.
    * @param pathname The pathname of the iModel
    * @param openMode Open mode for database
    * @param enableTransactions Enable tracking of transactions in this standalone iModel
@@ -244,7 +244,7 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Open an iModel from the iModelHub. IModelDb files are cached locally. If the requested version is already in the cache, then open will open it from there.
+   * Open an iModel from iModelHub. IModelDb files are cached locally. If the requested version is already in the cache, then open will open it from there.
    * Otherwise, open will download the requested version from iModelHub and cache it.
    * <p><em>Example:</em>
    * ``` ts
@@ -757,350 +757,353 @@ export class IModelDb extends IModel {
   public executeTest(testName: string, params: any): any { return JSON.parse(this.briefcase.nativeDb.executeTest(testName, JSON.stringify(params))); }
 }
 
-/** The collection of models in an [[IModelDb]]. */
-export class IModelDbModels {
-  /** @hidden */
-  public constructor(private _iModel: IModelDb) {
-  }
+export namespace IModelDb {
 
-  /** Get the Model with the specified identifier.
-   * @param modelId The Model identifier.
-   * @throws [[IModelError]]
-   */
-  public getModel(modelId: Id64Props): Model {
-    const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
-    const props = JSON.parse(json!) as ModelProps;
-    return this._iModel.constructEntity(props) as Model;
-  }
-
-  /**
-   * Read the properties for a Model as a json string.
-   * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
-   * @return a json string with the properties of the model.
-   */
-  public getModelJson(modelIdArg: string): string {
-    if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-    const { error, result } = this._iModel.briefcase.nativeDb.getModel(modelIdArg);
-    if (error) throw new IModelError(error.status, "Model=" + modelIdArg);
-    return result!;
-  }
-
-  /** Get the sub-model of the specified Element.
-   * See [[IModelDbElements.queryElementIdByCode]] for more on how to find an element by Code.
-   * @param modeledElementId Identifies the modeled element.
-   * @throws [[IModelError]]
-   */
-  public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
-    const modeledElement = this._iModel.elements.getElement(modeledElementId);
-    if (modeledElement.id.equals(IModel.rootSubjectId))
-      throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
-
-    return this.getModel(modeledElement.id);
-  }
-
-  /** Create a new model in memory.
-   * See the example in [[InformationPartitionElement]].
-   * @param modelProps The properties to use when creating the model.
-   * @throws [[IModelError]] if there is a problem creating the model.
-   */
-  public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity(modelProps) as Model; }
-
-  /** Insert a new model.
-   * @param model The data for the new model.
-   * @returns The newly inserted model's Id.
-   * @throws [[IModelError]] if unable to insert the model.
-   */
-  public insertModel(model: Model): Id64 {
-    if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-    const { error, result } = this._iModel.briefcase.nativeDb.insertModel(JSON.stringify(model));
-    if (error) throw new IModelError(error.status, "inserting model", Logger.logWarning, loggingCategory);
-    return model.id = new Id64(JSON.parse(result!).id);
-  }
-
-  /** Update an existing model.
-   * @param model An editable copy of the model, containing the new/proposed data.
-   * @throws [[IModelError]] if unable to update the model.
-   */
-  public updateModel(model: ModelProps): void {
-    if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
-    const error: IModelStatus = this._iModel.briefcase.nativeDb.updateModel(JSON.stringify(model));
-    if (error !== IModelStatus.Success)
-      throw new IModelError(error, "updating model id=" + model.id, Logger.logWarning, loggingCategory);
-  }
-
-  /** Delete an existing model.
-   * @param model The model to be deleted
-   * @throws [[IModelError]]
-   */
-  public deleteModel(model: Model): void {
-    if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
-
-    const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteModel(model.id.value);
-    if (error !== IModelStatus.Success)
-      throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
-  }
-}
-
-/** The collection of elements in an [[IModelDb]]. */
-export class IModelDbElements {
-  /** @hidden */
-  public constructor(private _iModel: IModelDb) {
-  }
-
-  /** Private implementation details of getElementProps */
-  private _getElementProps(opts: ElementLoadProps): ElementProps {
-    const json = this.getElementJson(JSON.stringify(opts));
-    const props = json as ElementProps;
-    return props;
-  }
-
-  /**
-   * Read element data from iModel as a json string
-   * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-   * @return a json string with the properties of the element.
-   */
-  public getElementJson(elementIdArg: string): any {
-    const { error, result } = this._iModel.briefcase.nativeDb.getElement(elementIdArg);
-    if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
-    return result!;
-  }
-
-  /** Private implementation details of getElement */
-  private _doGetElement(opts: ElementLoadProps): Element {
-    const props = this._getElementProps(opts);
-    return this._iModel.constructEntity(props) as Element;
-  }
-
-  /**
-   * Get properties of an Element by Id, FederationGuid, or Code
-   * @throws [[IModelError]] if the element is not found.
-   */
-  public getElementProps(elementId: Id64Props | Guid | Code | ElementLoadProps): ElementProps {
-    if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
-    else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
-    else if (elementId instanceof Code) elementId = { code: elementId };
-    return this._getElementProps(elementId);
-  }
-
-  /**
-   * Get an element by Id, FederationGuid, or Code
-   * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-   * @throws [[IModelError]] if the element is not found.
-   */
-  public getElement(elementId: Id64Props | Guid | Code | ElementLoadProps): Element {
-    if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
-    else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
-    else if (elementId instanceof Code) elementId = { code: elementId };
-    return this._doGetElement(elementId);
-  }
-
-  /**
-   * Query for the DgnElementId of the element that has the specified code.
-   * This method is for the case where you know the element's Code.
-   * If you only know the code *value*, then in the simplest case, you can query on that
-   * and filter the results.
-   * In the simple case, call [[IModelDb.queryEntityIds]], specifying the code value in the where clause of the query params.
-   * Or, you can execute an ECSQL select statement. See
-   * [frequently used ECSQL queries]($docs/learning/backend/ECSQL-queries.md) for an example.
-   * @param code The code to look for
-   * @returns The element that uses the code or undefined if the code is not used.
-   * @throws IModelError if the code is invalid
-   */
-  public queryElementIdByCode(code: Code): Id64 | undefined {
-    if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);
-    if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode);
-
-    return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
-      stmt.bindId(1, code.spec);
-      stmt.bindId(2, new Id64(code.scope));
-      stmt.bindString(3, code.value!);
-      if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        return undefined;
-
-      return new Id64(stmt.getRow().id);
-    });
-  }
-
-  /**
-   * Create a new instance of an element.
-   * @param elProps The properties of the new element.
-   * @throws [[IModelError]] if there is a problem creating the element.
-   */
-  public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity(elProps) as Element; }
-
-  /**
-   * Insert a new element into the iModel.
-   * @param elProps The properties of the new element.
-   * @returns The newly inserted element's Id.
-   * @throws [[IModelError]] if unable to insert the element.
-   */
-  public insertElement(elProps: ElementProps): Id64 {
-    if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
-
-    const { error, result: json } = this._iModel.briefcase.nativeDb.insertElement(JSON.stringify(elProps));
-    if (error)
-      throw new IModelError(error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
-
-    return new Id64(JSON.parse(json!).id);
-  }
-
-  /** Update some properties of an existing element.
-   * @param el the properties of the element to update.
-   * @throws [[IModelError]] if unable to update the element.
-   */
-  public updateElement(props: ElementProps): void {
-    if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
-
-    const error: IModelStatus = this._iModel.briefcase.nativeDb.updateElement(JSON.stringify(props));
-    if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
-  }
-
-  /**
-   * Delete an element from this iModel.
-   * @param id The Id of the element to be deleted
-   * @throws [[IModelError]]
-   */
-  public deleteElement(id: Id64): void {
-    if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
-
-    const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteElement(id.value);
-    if (error !== IModelStatus.Success)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
-  }
-
-  /** Query for the child elements of the specified element.
-   * @returns Returns an array of child element identifiers.
-   * @throws [[IModelError]]
-   */
-  public queryChildren(elementId: Id64): Id64[] {
-    const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
-    const childIds: Id64[] = [];
-    for (const row of rows) {
-      childIds.push(new Id64(row.id));
-    }
-    return childIds;
-  }
-
-  /** Get the root subject element. */
-  public getRootSubject(): Subject { return this.getElement(IModel.rootSubjectId); }
-
-  /** Query for aspects rows (by aspect class name) associated with this element.
-   * @throws [[IModelError]]
-   */
-  private _queryAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
-    const name = aspectClassName.split(":");
-    const rows: any[] = this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
-    if (rows.length === 0)
-      throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning, loggingCategory);
-
-    const aspects: ElementAspect[] = [];
-    for (const row of rows) {
-      const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
-      aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
-      aspectProps.iModel = this._iModel; // add in property required by EntityProps
-      aspectProps.element = elementId; // add in property required by ElementAspectProps
-      aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
-
-      const entity = this._iModel.constructEntity(aspectProps);
-      assert(entity instanceof ElementAspect);
-      const aspect = entity as ElementAspect;
-      aspects.push(aspect);
+  /** The collection of models in an [[IModelDb]]. */
+  export class Models {
+    /** @hidden */
+    public constructor(private _iModel: IModelDb) {
     }
 
-    return aspects;
+    /** Get the Model with the specified identifier.
+     * @param modelId The Model identifier.
+     * @throws [[IModelError]]
+     */
+    public getModel(modelId: Id64Props): Model {
+      const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
+      const props = JSON.parse(json!) as ModelProps;
+      return this._iModel.constructEntity(props) as Model;
+    }
+
+    /**
+     * Read the properties for a Model as a json string.
+     * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
+     * @return a json string with the properties of the model.
+     */
+    public getModelJson(modelIdArg: string): string {
+      if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
+      const { error, result } = this._iModel.briefcase.nativeDb.getModel(modelIdArg);
+      if (error) throw new IModelError(error.status, "Model=" + modelIdArg);
+      return result!;
+    }
+
+    /** Get the sub-model of the specified Element.
+     * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
+     * @param modeledElementId Identifies the modeled element.
+     * @throws [[IModelError]]
+     */
+    public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
+      const modeledElement = this._iModel.elements.getElement(modeledElementId);
+      if (modeledElement.id.equals(IModel.rootSubjectId))
+        throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
+
+      return this.getModel(modeledElement.id);
+    }
+
+    /** Create a new model in memory.
+     * See the example in [[InformationPartitionElement]].
+     * @param modelProps The properties to use when creating the model.
+     * @throws [[IModelError]] if there is a problem creating the model.
+     */
+    public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity(modelProps) as Model; }
+
+    /** Insert a new model.
+     * @param model The data for the new model.
+     * @returns The newly inserted model's Id.
+     * @throws [[IModelError]] if unable to insert the model.
+     */
+    public insertModel(model: Model): Id64 {
+      if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
+      const { error, result } = this._iModel.briefcase.nativeDb.insertModel(JSON.stringify(model));
+      if (error) throw new IModelError(error.status, "inserting model", Logger.logWarning, loggingCategory);
+      return model.id = new Id64(JSON.parse(result!).id);
+    }
+
+    /** Update an existing model.
+     * @param model An editable copy of the model, containing the new/proposed data.
+     * @throws [[IModelError]] if unable to update the model.
+     */
+    public updateModel(model: ModelProps): void {
+      if (!this._iModel.briefcase) throw this._iModel._newNotOpenError();
+      const error: IModelStatus = this._iModel.briefcase.nativeDb.updateModel(JSON.stringify(model));
+      if (error !== IModelStatus.Success)
+        throw new IModelError(error, "updating model id=" + model.id, Logger.logWarning, loggingCategory);
+    }
+
+    /** Delete an existing model.
+     * @param model The model to be deleted
+     * @throws [[IModelError]]
+     */
+    public deleteModel(model: Model): void {
+      if (!this._iModel.briefcase)
+        throw this._iModel._newNotOpenError();
+
+      const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteModel(model.id.value);
+      if (error !== IModelStatus.Success)
+        throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
+    }
   }
 
-  /** Get an ElementUniqueAspect instance (by class name) that is related to the specified element.
-   * @throws [[IModelError]]
-   */
-  public getUniqueAspect(elementId: Id64, aspectClassName: string): ElementUniqueAspect {
-    const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
-    assert(aspects[0] instanceof ElementUniqueAspect);
-    return aspects[0];
+  /** The collection of elements in an [[IModelDb]]. */
+  export class Elements {
+    /** @hidden */
+    public constructor(private _iModel: IModelDb) {
+    }
+
+    /** Private implementation details of getElementProps */
+    private _getElementProps(opts: ElementLoadProps): ElementProps {
+      const json = this.getElementJson(JSON.stringify(opts));
+      const props = json as ElementProps;
+      return props;
+    }
+
+    /**
+     * Read element data from iModel as a json string
+     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
+     * @return a json string with the properties of the element.
+     */
+    public getElementJson(elementIdArg: string): any {
+      const { error, result } = this._iModel.briefcase.nativeDb.getElement(elementIdArg);
+      if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
+      return result!;
+    }
+
+    /** Private implementation details of getElement */
+    private _doGetElement(opts: ElementLoadProps): Element {
+      const props = this._getElementProps(opts);
+      return this._iModel.constructEntity(props) as Element;
+    }
+
+    /**
+     * Get properties of an Element by Id, FederationGuid, or Code
+     * @throws [[IModelError]] if the element is not found.
+     */
+    public getElementProps(elementId: Id64Props | Guid | Code | ElementLoadProps): ElementProps {
+      if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
+      else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
+      else if (elementId instanceof Code) elementId = { code: elementId };
+      return this._getElementProps(elementId);
+    }
+
+    /**
+     * Get an element by Id, FederationGuid, or Code
+     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
+     * @throws [[IModelError]] if the element is not found.
+     */
+    public getElement(elementId: Id64Props | Guid | Code | ElementLoadProps): Element {
+      if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
+      else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
+      else if (elementId instanceof Code) elementId = { code: elementId };
+      return this._doGetElement(elementId);
+    }
+
+    /**
+     * Query for the DgnElementId of the element that has the specified code.
+     * This method is for the case where you know the element's Code.
+     * If you only know the code *value*, then in the simplest case, you can query on that
+     * and filter the results.
+     * In the simple case, call [[IModelDb.queryEntityIds]], specifying the code value in the where clause of the query params.
+     * Or, you can execute an ECSQL select statement. See
+     * [frequently used ECSQL queries]($docs/learning/backend/ECSQL-queries.md) for an example.
+     * @param code The code to look for
+     * @returns The element that uses the code or undefined if the code is not used.
+     * @throws IModelError if the code is invalid
+     */
+    public queryElementIdByCode(code: Code): Id64 | undefined {
+      if (!code.spec.isValid()) throw new IModelError(IModelStatus.InvalidCodeSpec);
+      if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode);
+
+      return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
+        stmt.bindId(1, code.spec);
+        stmt.bindId(2, new Id64(code.scope));
+        stmt.bindString(3, code.value!);
+        if (DbResult.BE_SQLITE_ROW !== stmt.step())
+          return undefined;
+
+        return new Id64(stmt.getRow().id);
+      });
+    }
+
+    /**
+     * Create a new instance of an element.
+     * @param elProps The properties of the new element.
+     * @throws [[IModelError]] if there is a problem creating the element.
+     */
+    public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity(elProps) as Element; }
+
+    /**
+     * Insert a new element into the iModel.
+     * @param elProps The properties of the new element.
+     * @returns The newly inserted element's Id.
+     * @throws [[IModelError]] if unable to insert the element.
+     */
+    public insertElement(elProps: ElementProps): Id64 {
+      if (!this._iModel.briefcase)
+        throw this._iModel._newNotOpenError();
+
+      const { error, result: json } = this._iModel.briefcase.nativeDb.insertElement(JSON.stringify(elProps));
+      if (error)
+        throw new IModelError(error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
+
+      return new Id64(JSON.parse(json!).id);
+    }
+
+    /** Update some properties of an existing element.
+     * @param el the properties of the element to update.
+     * @throws [[IModelError]] if unable to update the element.
+     */
+    public updateElement(props: ElementProps): void {
+      if (!this._iModel.briefcase)
+        throw this._iModel._newNotOpenError();
+
+      const error: IModelStatus = this._iModel.briefcase.nativeDb.updateElement(JSON.stringify(props));
+      if (error !== IModelStatus.Success)
+        throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+    }
+
+    /**
+     * Delete an element from this iModel.
+     * @param id The Id of the element to be deleted
+     * @throws [[IModelError]]
+     */
+    public deleteElement(id: Id64): void {
+      if (!this._iModel.briefcase)
+        throw this._iModel._newNotOpenError();
+
+      const error: IModelStatus = this._iModel.briefcase.nativeDb.deleteElement(id.value);
+      if (error !== IModelStatus.Success)
+        throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+    }
+
+    /** Query for the child elements of the specified element.
+     * @returns Returns an array of child element identifiers.
+     * @throws [[IModelError]]
+     */
+    public queryChildren(elementId: Id64): Id64[] {
+      const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
+      const childIds: Id64[] = [];
+      for (const row of rows) {
+        childIds.push(new Id64(row.id));
+      }
+      return childIds;
+    }
+
+    /** Get the root subject element. */
+    public getRootSubject(): Subject { return this.getElement(IModel.rootSubjectId); }
+
+    /** Query for aspects rows (by aspect class name) associated with this element.
+     * @throws [[IModelError]]
+     */
+    private _queryAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
+      const name = aspectClassName.split(":");
+      const rows: any[] = this._iModel.executeQuery("SELECT * FROM [" + name[0] + "].[" + name[1] + "] WHERE Element.Id=?", [elementId]);
+      if (rows.length === 0)
+        throw new IModelError(IModelStatus.NotFound, undefined, Logger.logWarning, loggingCategory);
+
+      const aspects: ElementAspect[] = [];
+      for (const row of rows) {
+        const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
+        aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
+        aspectProps.iModel = this._iModel; // add in property required by EntityProps
+        aspectProps.element = elementId; // add in property required by ElementAspectProps
+        aspectProps.classId = undefined; // clear property from SELECT * that we don't want in the final instance
+
+        const entity = this._iModel.constructEntity(aspectProps);
+        assert(entity instanceof ElementAspect);
+        const aspect = entity as ElementAspect;
+        aspects.push(aspect);
+      }
+
+      return aspects;
+    }
+
+    /** Get an ElementUniqueAspect instance (by class name) that is related to the specified element.
+     * @throws [[IModelError]]
+     */
+    public getUniqueAspect(elementId: Id64, aspectClassName: string): ElementUniqueAspect {
+      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
+      assert(aspects[0] instanceof ElementUniqueAspect);
+      return aspects[0];
+    }
+
+    /** Get the ElementMultiAspect instances (by class name) that are related to the specified element.
+     * @throws [[IModelError]]
+     */
+    public getMultiAspects(elementId: Id64, aspectClassName: string): ElementMultiAspect[] {
+      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
+      return aspects;
+    }
   }
 
-  /** Get the ElementMultiAspect instances (by class name) that are related to the specified element.
-   * @throws [[IModelError]]
-   */
-  public getMultiAspects(elementId: Id64, aspectClassName: string): ElementMultiAspect[] {
-    const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
-    return aspects;
-  }
-}
+  /** The collection of views in an [[IModelDb]]. */
+  export class Views {
+    /** @hidden */
+    public constructor(private _iModel: IModelDb) { }
 
-/** The collection of views in an [[IModelDb]]. */
-export class IModelDbViews {
+    /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
+     * @param className Query for view definitions of this class.
+     * @param wantPrivate If true, include private view definitions.
+     */
+    public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
+      const where: string = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
+      const ids = this._iModel.queryEntityIds({ from: className, limit, offset, where });
+
+      const props: ViewDefinitionProps[] = [];
+      const imodel = this._iModel;
+      ids.forEach((id) => {
+        try {
+          props.push(imodel.elements.getElementProps(id) as ViewDefinitionProps);
+        } catch (err) { }
+      });
+
+      return props;
+    }
+
+    public getViewStateData(viewDefinitionId: string): any {
+      const viewStateData: any = {};
+      const elements = this._iModel.elements;
+      viewStateData.viewDefinitionProps = elements.getElementProps(viewDefinitionId) as ViewDefinitionProps;
+      viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId);
+      viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
+      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
+        viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
+      return viewStateData;
+    }
+  }
+
   /** @hidden */
-  public constructor(private _iModel: IModelDb) { }
+  // NB: Very WIP.
+  export class Tiles {
+    /** @hidden */
+    public constructor(private _iModel: IModelDb) { }
 
-  /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
-   * @param className Query for view definitions of this class.
-   * @param wantPrivate If true, include private view definitions.
-   */
-  public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
-    const where: string = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
-    const ids = this._iModel.queryEntityIds({ from: className, limit, offset, where });
+    /** @hidden */
+    public getTileTreeJson(id: string): any {
+      if (!this._iModel.briefcase)
+        throw this._iModel._newNotOpenError();
 
-    const props: ViewDefinitionProps[] = [];
-    const imodel = this._iModel;
-    ids.forEach((id) => {
-      try {
-        props.push(imodel.elements.getElementProps(id) as ViewDefinitionProps);
-      } catch (err) { }
-    });
+      const { error, result } = this._iModel.briefcase.nativeDb.getTileTree(id);
+      if (error)
+        throw new IModelError(error.status, "TreeId=" + id);
 
-    return props;
-  }
+      return result!;
+    }
 
-  public getViewStateData(viewDefinitionId: string): any {
-    const viewStateData: any = {};
-    const elements = this._iModel.elements;
-    viewStateData.viewDefinitionProps = elements.getElementProps(viewDefinitionId) as ViewDefinitionProps;
-    viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId);
-    viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
-    if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
-      viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
-    return viewStateData;
-  }
-}
+    /** @hidden */
+    public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
 
-/** @hidden */
-// NB: Very WIP.
-export class IModelDbTiles {
-  /** @hidden */
-  public constructor(private _iModel: IModelDb) { }
+    /** @hidden */
+    public getTilesProps(treeId: string, tileIds: string[]): TileProps[] {
+      if (!this._iModel.briefcase)
+        throw this._iModel._newNotOpenError();
 
-  /** @hidden */
-  public getTileTreeJson(id: string): any {
-    if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
+      const { error, result } = this._iModel.briefcase.nativeDb.getTiles(treeId, tileIds);
+      if (error)
+        throw new IModelError(error.status, "TreeId=" + treeId);
 
-    const { error, result } = this._iModel.briefcase.nativeDb.getTileTree(id);
-    if (error)
-      throw new IModelError(error.status, "TreeId=" + id);
-
-    return result!;
-  }
-
-  /** @hidden */
-  public getTileTreeProps(id: string): TileTreeProps { return this.getTileTreeJson(id) as TileTreeProps; }
-
-  /** @hidden */
-  public getTilesProps(treeId: string, tileIds: string[]): TileProps[] {
-    if (!this._iModel.briefcase)
-      throw this._iModel._newNotOpenError();
-
-    const { error, result } = this._iModel.briefcase.nativeDb.getTiles(treeId, tileIds);
-    if (error)
-      throw new IModelError(error.status, "TreeId=" + treeId);
-
-    assert(Array.isArray(result));
-    return result! as TileProps[];
+      assert(Array.isArray(result));
+      return result! as TileProps[];
+    }
   }
 }
 

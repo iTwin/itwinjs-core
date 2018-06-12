@@ -24,7 +24,7 @@ const loggingCategory = "imodeljs-frontend.IModelConnection";
 
 /** A connection to an iModel database hosted on the backend. */
 export class IModelConnection extends IModel {
-  /** The [[Model]] entities in this IModel */
+  /** The [[Model]]s in this IModel */
   public readonly models: IModelConnection.Models;
   public readonly elements: IModelConnection.Elements;
   public readonly codeSpecs: IModelConnection.CodeSpecs;
@@ -284,24 +284,24 @@ export class IModelConnection extends IModel {
 
 export namespace IModelConnection {
 
-  /** The collection of models for an [[IModelConnection]]. */
+  /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models {
     public loaded = new Map<string, ModelState>();
 
     /** @hidden */
     constructor(private _iModel: IModelConnection) { }
 
-    /** The Id of the repository model. */
+    /** The Id of the [RepositoryModel]($backend). */
     public get repositoryModelId(): Id64 { return new Id64("0x1"); }
 
-    /** Get a batch of [[ModelProps]] given a list of model ids. */
+    /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
       return await IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     }
 
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
-    /** load a set of models by ModelId. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
+    /** load a set of models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
       Id64.toIdSet(modelIds).forEach((id) => {
@@ -360,7 +360,7 @@ export namespace IModelConnection {
     }
   }
 
-  /** The collection of elements for an [[IModelConnection]]. */
+  /** The collection of Elements for an [[IModelConnection]]. */
   export class Elements {
     /** @hidden */
     public constructor(private _iModel: IModelConnection) { }
