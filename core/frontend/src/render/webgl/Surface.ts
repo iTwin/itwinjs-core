@@ -6,7 +6,6 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { FillFlags, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { MaterialData } from "./CachedGeometry";
 import { Texture } from "./Texture";
 import { SurfaceType, SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { MeshData, MeshGeometry, MeshPrimitive, MeshGraphic } from "./Mesh";
@@ -19,6 +18,7 @@ import { Target } from "./Target";
 import { ColorInfo } from "./ColorInfo";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams } from "./DrawCommand";
+import { Material } from "./Material";
 
 function wantMaterials(vf: ViewFlags) { return vf.showMaterials() && RenderMode.SmoothShade === vf.renderMode; }
 function wantLighting(vf: ViewFlags) {
@@ -100,7 +100,7 @@ export class SurfaceGeometry extends MeshGeometry {
         return RenderPass.Translucent;
 
       // material may have texture weight < 1 - if so must account for material or element alpha below
-      if (undefined === mat || mat.textureWeight >= 1)
+      if (undefined === mat || (mat.textureMapping !== undefined && mat.textureMapping.params.weight >= 1))
         return opaquePass;
     }
 
@@ -131,7 +131,7 @@ export class SurfaceGeometry extends MeshGeometry {
     // Don't invert white pixels of textures...
     return !this.isTextured || !this.wantTextures(target);
   }
-  public get material(): MaterialData | undefined { return this.materialData; }
+  public get material(): Material | undefined { return this.materialData as Material; }
 
   public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
     const target = params.target;

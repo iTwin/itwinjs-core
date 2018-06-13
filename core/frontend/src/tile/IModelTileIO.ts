@@ -212,7 +212,7 @@ export namespace IModelTileIO {
     }
 
     protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
-      return undefined !== json ? ColorDef.from(json[0] * 255, json[1] * 255, json[2] * 255) : undefined;
+      return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
     }
 
     protected materialFromJson(key: string): RenderMaterial | undefined {

@@ -6,7 +6,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { SurfaceType, RenderPass, RenderOrder } from "./RenderFlags";
 import { Point2d, Range2d } from "@bentley/geometry-core";
-import { MaterialData, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
+import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../../IModelConnection";
 import { LineCode } from "./EdgeOverrides";
@@ -30,7 +30,6 @@ import {
   SilhouetteEdgeArgs,
   OctEncodedNormalPair,
 } from "@bentley/imodeljs-common";
-import { Material } from "./Material";
 import { EdgeArgs, MeshEdge, PolylineEdgeArgs, PolylineData } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
@@ -60,7 +59,7 @@ export class MeshInfo {
 
 export class MeshData extends MeshInfo {
   public readonly lut: VertexLUT.Data;
-  public readonly material?: MaterialData;
+  public readonly material?: RenderMaterial;
   public readonly animation: any; // should be a AnimationLookupTexture;
 
   public static create(params: MeshParams): MeshData | undefined {
@@ -71,7 +70,7 @@ export class MeshData extends MeshInfo {
   private constructor(lut: VertexLUT.Data, params: MeshParams) {
     super(params.type, params.edgeWidth, params.edgeLineCode, params.fillFlags, params.isPlanar, params.features, params.texture);
     this.lut = lut;
-    this.material = params.material ? new MaterialData(params.material as Material) : undefined;  // If we have a RenderMaterial, we should be able to cast it to Material
+    this.material = params.material;
     this.animation = undefined;
   }
 }
