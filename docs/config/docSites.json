@@ -52,6 +52,7 @@
       "frontend": "imodeljs-frontend",
       "backend": "imodeljs-backend",
       "clients": "imodeljs-clients",
+      "i18n": "imodeljs-i18n",
       "geometry": "geometry-core",
       "bentley": "bentleyjs-core"
     }

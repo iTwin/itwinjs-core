@@ -7,7 +7,7 @@ Multiple Views may be simultaneously visible on the same web page, and are coord
 
 ## ViewDefinition Elements
 
-A *View* is saved in an iModel as an element of the [ViewDefinition]($backend) class. `ViewDefinition`s hold all the information necessary to show the same content across sessions.
+A *View* is saved in an iModel as an element of the [ViewDefinition]($backend) class. ViewDefinitions hold all the information necessary to show the same content across sessions.
 This includes the camera position, the model(s) displayed, the CategorySelector, the DisplayStyle to use, plus any additional view-specific settings.
 
 ## The ViewState Class
@@ -40,7 +40,7 @@ For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState
 
 ## Loading Views from an iModel
 
-There is a method called [IModelConnection.Views.getViewList]($frontend) that returns an array of [ViewSpec]($frontend)s in a convenient
+There is a method called [IModelConnection.Views.getViewList]($frontend) that returns an array of [IModelConnection.ViewSpec]($frontend)s in a convenient
 format for User Interfaces. This can be used to present a list of possible views by name in a List.
 
 For example:
@@ -55,36 +55,82 @@ Once a view is selected from the list, it may be loaded with:
 [[include:IModelConnection.Views.load]]
 ```
 
-> Note that in the examples above, `getSpatialViews` and `loadOneView` are `async`, and you must use `await` when you call them.
+> Note that in the examples above, `getSpatialViews` and `loadOneView` are `async`, and you must `await` them.
 
 ## Using Viewports
 
 `ViewState` objects hold the state of a `ViewDefinition` (*what* is shown in a View) in the frontend.
 
-To connect a ViewState to a rectangular region on a web page, you create instances of the [Viewport]($frontend) class. The constructor of `Viewport` takes an `HTMLCanvas` and a
+To connect a ViewState to a rectangular region on a web page, you create instances of the [Viewport]($frontend) class. The constructor of Viewport takes an `HTMLCanvasElement` and a
 (fully loaded) ViewState. In this manner, Viewports form the connection between a rectangular region on your web page and a set of
-Element and Models in the iModel, a display [Frustum]($frontend), a DisplayStyle, and the iModelJs rendering system.
+Element and Models in the iModel, a display [Frustum]($common), a DisplayStyle, and the iModelJs rendering system.
 
-> Note: before creating a `Viewport`, be sure to call [IModelApp.startup]($frontend).
+> Note: before creating a Viewport, be sure to call [IModelApp.startup]($frontend).
 
 ## ViewManager
 
-The `Viewport` class is responsible for displaying Views, as defined by its `ViewState`. However, typically the purpose of showing a View is to allow the user
-to modify the View itself, or to interact with its contents. To facilitate that, we need to connect the event system of the browser with `Viewport`s
-via the [ViewManager]($frontend) class.
+The Viewport class is responsible for displaying Views, as defined by its ViewState. However, typically the purpose of showing a View is to allow users
+to modify the View itself, or to interact with its contents.
+
+To facilitate that, we need to connect the event system of the browser with Viewports via [IModelApp.viewManager]($frontend).
+
+``` ts
+[[include:ViewManager.addViewport]]
+```
+
+After the viewport is added to the [ViewManager]($frontend), all HTML events for its canvas are directed to the active `Tool` class by the [ToolAdmin]($frontend).
+
+If there is more than one Viewport visible, the ViewManager keeps track of the *Selected Viewport* and treats it specially.
 
 ## Viewing Tools
 
-The iModelJs library supplies controls for allowing users to modify their
+The iModelJs library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
+supplied classes (e.g. [WindowAreaTool]($frontend), [FitViewTool]($frontend), [ViewWalkTool]($frontend), [RotateTool]($frontend), etc.) or create your own subclasses for
+special viewing operations.
 
 ## DisplayStyles
 
+DisplayStyles describe the *styling* that should be applied to the contents of a View.
+
+This includes the :
+  * [ViewFlags]($common)
+  * SubCategory [Appearance]($common) visibility and overrides
+  * Background color
+  * [RenderMode]($common)
+  * [Environment]($frontend)
+  * [Light]($common)s
+  * Other view-specific parameters
+
+DisplayStyles can be named and shared among many ViewDefinitions.
+
 ## ModelSelectors
+
+ModelSelectors apply only to SpatialViews. They determine the set of [SpatialModel]($backend)s that are displayed. The Geometry for elements in SpatialModels are always
+stored in the iModel's Spatial Coordinate System.
+
+Since each 2d Model has its own coordinate system, 2d Views always only show a single Model.
+
+ModelSelectors can be named and shared among many ViewDefinitions.
 
 ## CategorySelectors
 
+A [CategorySelectorState]($frontend) determines the set of [Category]($backend) that are displayed in a View.
+
+CategorySelectors can be named and shared among many ViewDefinitions.
+
 ## Auxiliary Coordinate Systems
+
+Views may reference an [AuxCoordSystemState]($frontend) to display coordinate data and distances in different units and orientations.
+
+Auxiliary Coordinate Systems can be named and shared among many ViewDefinitions.
 
 ## Reality Data
 
+Reality Data (e.g. [ContextCapture](https://www.bentley.com/en/products/brands/contextcapture) models, Point Cloud models, Maps, etc.) are stored external to iModels, and are accessed via Reality Data Servers. However, in an iModel
+you can create `RealityDataModel`s that hold the URL of the Reality Data.
+
+These models are subclasses of [SpatialModel]($backend), and can therefore be included in a `ModelSelector` and can easily be made visible in any SpatialView.
+
 ## View Thumbnails
+
+Every view may have a thumbnail that shows an approximation of what it contains. This can be helpful for user interfaces that offer a choice of Views.

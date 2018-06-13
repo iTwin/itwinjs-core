@@ -1,35 +1,39 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
+
+export class NullRenderSystem extends RenderSystem {
+  public createTarget() { return undefined as any; }
+  public createOffscreenTarget() { return undefined as any; }
+  public createGraphic() { return undefined as any; }
+  public createGraphicList() { return undefined as any; }
+  public createBranch() { return undefined as any; }
+  public createBatch() { return undefined as any; }
+  public constructor() { super(undefined as any); }
+}
+
+export class MaybeRenderApp extends IModelApp {
+  protected static supplyRenderSystem(): RenderSystem {
+    try {
+      return super.supplyRenderSystem();
+    } catch (e) {
+      return new NullRenderSystem();
+    }
+  }
+}
 
 export namespace WebGLTestContext {
-  // When executing on the continuous integration server, we fail to obtain a WebGLRenderingContext.
-  // Need to determine why, and how to fix.
-  function isEnabled(): boolean {
-    const electron = (window as any).require("electron");
-    const remote = electron.remote;
-    return undefined === remote.process.env.TF_BUILD;
-  }
-
   export let isInitialized = false;
 
   export function startup() {
-    if (!isEnabled()) {
-      return;
-    }
-
-    IModelApp.startup();
-    isInitialized = IModelApp.hasRenderSystem;
-    assert(isInitialized);
+    MaybeRenderApp.startup();
+    isInitialized = true;
   }
 
   export function shutdown() {
-    isInitialized = false;
-    if (IModelApp.initialized) {
-      IModelApp.shutdown();
-    }
+    MaybeRenderApp.shutdown();
   }
 
   const canvasId = "WebGLTestCanvas";
