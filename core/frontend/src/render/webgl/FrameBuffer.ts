@@ -8,6 +8,7 @@ import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
+import { debugPrint } from "./debugPrint";
 
 export type DepthBuffer = RenderBuffer | TextureHandle;
 
@@ -81,6 +82,14 @@ export class FrameBuffer implements IDisposable {
     }
   }
 
+  private getDebugAttachmentsString(): string {
+    let str = "[";
+    for (const tx of this.colorTextures)
+      str += " " + (tx.getHandle()! as any)._debugId;
+
+    return str + " ]";
+  }
+
   public bind(bindAttachments: boolean = false): boolean {
     assert(undefined !== this._fbo);
     assert(!this.isBound);
@@ -98,13 +107,23 @@ export class FrameBuffer implements IDisposable {
         dbExt.drawBuffersWEBGL(this.colorAttachments);
       }
       this._bindState = FrameBufferBindState.BoundWithAttachments;
+
+      if (TextureHandle.wantDebugIds)
+        debugPrint("Bound attachments " + this.getDebugAttachmentsString());
     } else {
       this._bindState = FrameBufferBindState.Bound;
     }
     return true;
   }
 
-  public unbind() { assert(this.isBound); System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null); this._bindState = FrameBufferBindState.Unbound; }
+  public unbind() {
+    assert(this.isBound);
+    System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
+    this._bindState = FrameBufferBindState.Unbound;
+    if (TextureHandle.wantDebugIds)
+      debugPrint("Unbound attachments " + this.getDebugAttachmentsString());
+  }
+
   public suspend() { assert(this.isBound); this._bindState = FrameBufferBindState.Suspended; }
   public checkStatus(): GLenum {
     const status: GLenum = System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET);

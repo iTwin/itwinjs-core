@@ -6,7 +6,7 @@
 import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
 import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -234,6 +234,7 @@ export abstract class Target extends RenderTarget {
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.isMonochrome() ? ShaderFlags.Monochrome : ShaderFlags.None; }
+  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
   public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
@@ -311,7 +312,7 @@ export abstract class Target extends RenderTarget {
     vec3: new Vector3d(),
     point3: new Point3d(),
     visibleEdges: new HiddenLine.Style({}),
-    hiddenEdges: new HiddenLine.Style({}),
+    hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
   };
 
   public changeRenderPlan(plan: RenderPlan): void {
@@ -337,7 +338,6 @@ export abstract class Target extends RenderTarget {
     const visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible.clone(scratch.visibleEdges) : undefined;
     const hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden.clone(scratch.hiddenEdges) : undefined;
 
-    plan.viewFlags.renderMode = RenderMode.SmoothShade; // ###TODO: Remove after we implement support for edges.
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
 
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
@@ -630,22 +630,22 @@ export abstract class Target extends RenderTarget {
     const planFrust = this.planFrustum;
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale,  Npc._110);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale,  Npc._101);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale,  Npc._111);
+    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
     interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
     const rectFrust = this._scratchRectFrustum;
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale,    Npc._000);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale,    Npc._100);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale,    Npc._001);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale,    Npc._101);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
+    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     // ###TODO: Handle pickable decorations.
@@ -655,8 +655,10 @@ export abstract class Target extends RenderTarget {
     this._renderCommands.clearCheckRange();
 
     // Don't bother rendering + reading if we know there's nothing to draw.
-    if (this._renderCommands.isEmpty)
+    if (this._renderCommands.isEmpty) {
+      this._stack.pop(); // ensure state is restored!
       return undefined;
+    }
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands);

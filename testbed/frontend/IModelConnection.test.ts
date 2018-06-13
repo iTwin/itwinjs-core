@@ -4,11 +4,11 @@
 import { assert, expect } from "chai";
 import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, ViewDefinitionProps, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
-  DrawingViewState, OrthographicViewState, ViewState, IModelConnection, IModelConnectionElements, IModelConnectionModels,
+  DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -32,13 +32,13 @@ describe("IModelConnection", () => {
     IModelApp.shutdown();
   });
 
-  it("should be able to get elements and models from an IModelConnection (#integration)", async () => {
+  it("should be able to get elements and models from an IModelConnection", async () => {
     assert.exists(iModel);
     assert.isTrue(iModel instanceof IModelConnection);
     assert.exists(iModel.models);
-    assert.isTrue(iModel.models instanceof IModelConnectionModels);
+    assert.isTrue(iModel.models instanceof IModelConnection.Models);
     assert.exists(iModel.elements);
-    assert.isTrue(iModel.elements instanceof IModelConnectionElements);
+    assert.isTrue(iModel.elements instanceof IModelConnection.Elements);
 
     const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
@@ -69,9 +69,9 @@ describe("IModelConnection", () => {
     const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getById(new Id64(codeSpecByName.id));
     assert.exists(codeSpecByNewId);
 
-    let viewDefinitionProps: ViewDefinitionProps[] = await iModel.views.queryProps({ from: "BisCore.OrthographicViewDefinition" });
-    assert.isAtLeast(viewDefinitionProps.length, 1);
-    let viewState: ViewState = await iModel.views.load(viewDefinitionProps[0].id!);
+    let viewDefinitions = await iModel.views.getViewList({ from: "BisCore.OrthographicViewDefinition" });
+    assert.isAtLeast(viewDefinitions.length, 1);
+    let viewState: ViewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
@@ -81,11 +81,12 @@ describe("IModelConnection", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
     assert.instanceOf((viewState as OrthographicViewState).modelSelector, ModelSelectorState);
 
-    viewDefinitionProps = await iModel.views.queryProps({ from: "BisCore.DrawingViewDefinition" });
-    assert.isAtLeast(viewDefinitionProps.length, 1);
-    viewState = await iModel.views.load(viewDefinitionProps[0].id!);
+    viewDefinitions = await iModel.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
+    assert.isAtLeast(viewDefinitions.length, 1);
+    viewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
-    assert.equal(viewState.classFullName, DrawingViewState.getClassFullName());
+    assert.equal(viewState.code.getValue(), viewDefinitions[0].name);
+    assert.equal(viewState.classFullName, viewDefinitions[0].class);
     assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
     assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.getClassFullName());
     assert.instanceOf(viewState, DrawingViewState);
@@ -95,7 +96,7 @@ describe("IModelConnection", () => {
 
   });
 
-  it("should be able to re-establish IModelConnection if the backend is shut down (#integration)", async () => {
+  it("should be able to re-establish IModelConnection if the backend is shut down", async () => {
     const roIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ReadOnlyTest");
     const roIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, roIModelId);
 
@@ -161,7 +162,7 @@ describe("IModelConnection", () => {
     expect(rootTile.childIds.length).to.equal(0); // this is a leaf tile.
   });
 
-  it("Parameterized ECSQL (#integration)", async () => {
+  it("Parameterized ECSQL", async () => {
     assert.exists(iModel);
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
@@ -206,7 +207,7 @@ describe("IModelConnection", () => {
     assert.equal(actualRows.length, 1);
   }).timeout(99999);
 
-  it("Change cache file generation when attaching change cache (#integration)", async () => {
+  it("Change cache file generation when attaching change cache", async () => {
     assert.exists(iModel);
     await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken);
     await iModel.attachChangeCache();
@@ -218,7 +219,7 @@ describe("IModelConnection", () => {
     assert.equal(changeSetRows[0].cnt, 0);
   }).timeout(99999);
 
-  it("Change cache file generation during change summary extraction (#integration)", async () => {
+  it("Change cache file generation during change summary extraction", async () => {
     assert.exists(iModel);
     // for now, imodel must be open readwrite for changesummary extraction
     await iModel.close(TestData.accessToken);

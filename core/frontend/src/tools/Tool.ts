@@ -192,6 +192,7 @@ export class BeButtonEvent {
   public inputSource = InputSource.Unknown;
   public actualInputSource = InputSource.Unknown;
 
+  public get isValid(): boolean { return this.viewport !== undefined; }
   public get point() { return this._point; }
   public set point(pt: Point3d) { this._point.setFrom(pt); }
   public get rawPoint() { return this._rawPoint; }
@@ -199,6 +200,7 @@ export class BeButtonEvent {
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
+  public invalidate(): void { this.viewport = undefined; }
   public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKey, button = BeButton.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
@@ -396,21 +398,52 @@ export class Tool {
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
  */
 export abstract class InteractiveTool extends Tool {
-  /** Override to execute additional logic after tool becomes active */
-  public onPostInstall(): void { }
-  /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
-  public onInstall(): boolean { return true; }
-  public abstract exitTool(): void;
-  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
-  public onCleanup() { }
+
   /** Implement to handle data-button-down events */
   public abstract onDataButtonDown(ev: BeButtonEvent): void;
-  /** Invoked when the data-button-up events. */
-  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
+
+  /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
+  public onInstall(): boolean { return true; }
+
+  /** Override to execute additional logic after tool becomes active */
+  public onPostInstall(): void { }
+
+  public abstract exitTool(): void;
+
+  /** Override Call to reset tool to initial state */
+  public onReinitialize(): void { }
+
+  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
+  public onCleanup() { }
+
+  /**
+   * Called to allow an active tool to display non-element decorations in overlay mode.
+   * This method is NOT called while the tool is suspended by a viewing tool or input collector.
+   */
+  public decorate(_context: DecorateContext) { }
+
+  /**
+   * Called to allow a suspended tool to display non-element decorations in overlay mode.
+   * This method is ONLY called when the tool is suspended by a viewing tool or input collector.
+   * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
+   */
+  public decorateSuspended(_context: DecorateContext) { }
+
+  /**
+   * Called to allow for a snappable/locatable decoration.
+   * @see ViewManager::AddViewDecoration
+   */
+  // public pick(_context: PickContext): void { }
+
   /** Invoked when the reset-button-down events. */
   public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }
+
   /** Invoked when the reset button is released. */
   public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }
+
+  /** Invoked when the data-button-up events. */
+  public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
+
   /** Invoked when the middle mouse button is pressed. */
   public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; }
   /** Invoked when the middle mouse button is released. */
@@ -465,18 +498,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
 
-  /**
-   * Called to allow an active tool to display non-element decorations in overlay mode.
-   * This method is NOT called while the tool is suspended by a viewing tool or input collector.
-   */
-  public decorate(_context: DecorateContext) { }
 
-  /**
-   * Called to allow a suspended tool to display non-element decorations in overlay mode.
-   * This method is ONLY called when the tool is suspended by a viewing tool or input collector.
-   * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
-   */
-  public decorateSuspended(_context: DecorateContext) { }
 
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
@@ -488,6 +510,13 @@ export abstract class InteractiveTool extends Tool {
    */
   //  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; } // NEEDSWORK
   public getInfoString(_hit: HitDetail, _delimiter: string): string { return ""; }
+
+  /**
+   * FINISHED ( was DgnTool::GetCurrentDgnButtonEvent )
+   */
+  public getCurrentButtonEvent(ev: BeButtonEvent): void {
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+  }
 }
 
 /**

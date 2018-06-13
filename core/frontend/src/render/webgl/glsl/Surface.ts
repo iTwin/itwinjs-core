@@ -157,7 +157,7 @@ if (feature_ignore_material) {
 return flags;
 `;
 
-const octDecodeNormal = `
+export const octDecodeNormal = `
 vec3 octDecodeNormal(vec2 e) {
   e = e / 255.0 * 2.0 - 1.0;
   vec3 n = vec3(e.x, e.y, 1.0 - abs(e.x) - abs(e.y));

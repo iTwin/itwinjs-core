@@ -2,12 +2,13 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
+
 import {
   Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64 } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -23,7 +24,7 @@ import { UpdatePlan } from "./render/UpdatePlan";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
-/** viewport synchronization flags */
+/** Viewport synchronization flags */
 export class SyncFlags {
   public get isValidDecorations(): boolean { return this.decorations; }
   public get isValidScene(): boolean { return this.scene; }
@@ -53,19 +54,38 @@ export class SyncFlags {
   public setValidRenderPlan(): void { this.renderPlan = true; }
   public setValidRotatePoint(): void { this.rotatePoint = true; }
   public setRedrawPending(): void { this.redrawPending = true; }
-  /** enables setting instance as readonly so reference is preserved when resetting */
   public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.firstDrawComplete = other.firstDrawComplete; this.redrawPending = other.redrawPending; }
 }
 
-/** A rectangle in view coordinates with (0,0) corresponding to the top-left corner of the view. */
+/** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view. */
 export class ViewRect {
-  public constructor(public left = 0, public top = 0, public right = 0, public bottom = 0) { }
-  public isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
+  private _left!: number;
+  private _top!: number;
+  private _right!: number;
+  private _bottom!: number;
+
+  public constructor(left = 0, top = 0, right = 0, bottom = 0) { this.init(left, top, right, bottom); }
+
+  public get left(): number { return this._left; }
+  public set left(val: number) { this._left = Math.floor(val); }
+  public get top(): number { return this._top; }
+  public set top(val: number) { this._top = Math.floor(val); }
+  public get right(): number { return this._right; }
+  public set right(val: number) { this._right = Math.floor(val); }
+  public get bottom(): number { return this._bottom; }
+  public set bottom(val: number) { this._bottom = Math.floor(val); }
+
+  public get isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
+  public get isValid(): boolean { return !this.isNull; }
+
   public get width() { return this.right - this.left; }
+  public set width(width: number) { this.right = this.left + width; }
   public get height() { return this.bottom - this.top; }
-  public get aspect() { return this.isNull() ? 1.0 : this.width / this.height; }
-  public get area() { return this.isNull() ? 0 : this.width * this.height; }
-  public init(left: number, top: number, right: number, bottom: number) { this.left = left, this.bottom = bottom, this.right = right, this.top = top; }
+  public set height(height: number) { this.bottom = this.top + height; }
+  public get aspect() { return this.isNull ? 1.0 : this.width / this.height; }
+  public get area() { return this.isNull ? 0 : this.width * this.height; }
+
+  public init(left: number, top: number, right: number, bottom: number) { this.left = left; this.bottom = bottom, this.right = right; this.top = top; }
   public initFromPoint(low: XAndY, high: XAndY): void { this.init(low.x, low.y, high.x, high.y); }
   public initFromRange(input: LowAndHighXY): void { this.initFromPoint(input.low, input.high); }
 
@@ -115,12 +135,18 @@ export class ViewRect {
 }
 
 /**
- * The minimum and maximum values for the "depth" of a rectangle of screen space.
+ * The minimum and maximum values for the z-depth of a rectangle of screen space.
  *
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0
  */
 export class DepthRangeNpc {
+  /**
+   * @param minimum The lowest (closest to back) value
+   * @param maximum The highest (closest to the front) value
+   */
   constructor(public minimum = 0, public maximum = 1.0) { }
+
+  /** The value at the middle (halfway between the minimum and maximum) of this depth */
   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
 }
 
@@ -131,13 +157,18 @@ export const enum CoordSystem {
    * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
    */
   View,
+
   /**
-   * Coordinates are in NPC [normalized plane coordinates]($docs/learning/glossary.md#npc)
+   * Coordinates are in [normalized plane coordinates]($docs/learning/glossary.md#npc)
    * NPC is a coordinate system for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.
    * [0,0,0] corresponds to the left-bottom-rear and [1,1,1] to the right-top-front of the frustum.
    */
   Npc,
-  /** Coordinates are relative to the world coordinate system for the physical elements in the iModel */
+
+  /**
+   * Coordinates are in the coordinate system of the models in the view. For SpatialViews, this is the iModel's spatial coordinate system.
+   * For 2d views, it is the coordinate system of the 2d model that the view shows.
+   */
   World,
 }
 
@@ -280,6 +311,7 @@ export class Viewport {
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
   private _evController?: EventController;
   private _view!: ViewState;
+  public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   public readonly sync: SyncFlags = new SyncFlags();
   /** view origin, potentially expanded */
@@ -299,18 +331,11 @@ export class Viewport {
   public readonly hilite = new Hilite.Settings();
 
   /**
-   * Determine whether this Viewport is currently active. Viewports become "active" after they have
-   * been initialized and connected to an RenderTarget.
-   */
-  public get isActive(): boolean { return !!this._view && !!this._target; }
-
-  /**
    * Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
-  public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
@@ -325,7 +350,12 @@ export class Viewport {
    * @param canvas The HTML canvas
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
-  constructor(public canvas: HTMLCanvasElement, viewState: ViewState, private _target?: RenderTarget) { this.changeView(viewState); this.setCursor(); this.saveViewUndo(); }
+  constructor(public canvas: HTMLCanvasElement, viewState: ViewState) {
+    this.target = IModelApp.renderSystem.createTarget(canvas);
+    this.changeView(viewState);
+    this.setCursor();
+    this.saveViewUndo();
+  }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
@@ -342,14 +372,19 @@ export class Viewport {
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
 
   public changeDynamics(dynamics: DecorationList | undefined): void {
-    if (this.isActive) {
-      this.target.changeDynamics(dynamics);
-      this.invalidateDecorations();
-    }
+    this.target.changeDynamics(dynamics);
+    this.invalidateDecorations();
   }
 
   /** Change the cursor for this Viewport */
-  public setCursor(cursor: BeCursor = BeCursor.Default) { this.canvas.style.cursor = cursor; }
+  public setCursor(cursor: BeCursor = BeCursor.Default) {
+    if (cursor === BeCursor.OpenHand)
+      this.canvas.style.cursor = "-webkit-grab";
+    else if (cursor === BeCursor.ClosedHand)
+      this.canvas.style.cursor = "-webkit-grabbing";
+    else
+      this.canvas.style.cursor = cursor;
+  }
 
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this.flashedElem) {
@@ -447,8 +482,7 @@ export class Viewport {
 
     this.invalidateScene();
     this.sync.invalidateController();
-    if (undefined !== this._target)
-      this._target.queueReset();
+    this.target.queueReset();
   }
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
@@ -1417,10 +1451,27 @@ export class Viewport {
     return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
   }
 
-  public renderFrame(plan: UpdatePlan): boolean {
-    if (!this.isActive)
-      return true;
+  private processFlash(): boolean {
+    let needsFlashUpdate = false;
 
+    if (this.flashedElem !== this.lastFlashedElem) {
+      this.flashIntensity = 0.0;
+      this.flashUpdateTime = BeTimePoint.now();
+      this.lastFlashedElem = this.flashedElem; // flashing has begun; this is now the previous flash
+      needsFlashUpdate = this.flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+    }
+
+    if (this.flashedElem !== undefined && this.flashIntensity < 1.0) {
+      const flashDuration = BeDuration.fromSeconds(this.flashDuration);
+      const flashElapsed = BeTimePoint.now().milliseconds - this.flashUpdateTime!.milliseconds;
+      this.flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
+      needsFlashUpdate = true;
+    }
+
+    return needsFlashUpdate;
+  }
+
+  public renderFrame(plan: UpdatePlan): boolean {
     const sync = this.sync;
     const view = this.view;
     const target = this.target;
@@ -1477,12 +1528,10 @@ export class Viewport {
       isRedrawNeeded = true;
     }
 
-    // ###TODO: Flash...
-    // if (this.processFlash()) {
-    //   const task = new SetFlashTask(priority, target);
-    //   renderQueue.addTask(task);
-    //   isRedrawNeeded = true;
-    // }
+    if (this.processFlash()) {
+      target.setFlashed(new Id64(this.flashedElem!), this.flashIntensity);
+      isRedrawNeeded = true;
+    }
 
     if (isRedrawNeeded)
       target.drawFrame();
@@ -1515,9 +1564,6 @@ export class Viewport {
    * @returns a Pixel.Buffer object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    if (!this.isActive)
-      return undefined;
-
     const viewRect = this.viewRect;
     if (!rect.isContained(viewRect))
       return undefined;
@@ -1529,7 +1575,7 @@ export class Viewport {
    * Attempt to determine the nearest visible geometry point within radius of supplied pick point.
    * @param pickPoint Center point in world coordinates
    * @param radius Integer radius of the circular area to include, in pixels
-   * @param out Optional Point3d preallocated to hold the result
+   * @param out Optional Point3d pre-allocated to hold the result
    * @returns the coordinates of the point within the circular area which is closest to the camera.
    */
   public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
@@ -1549,19 +1595,17 @@ export class Viewport {
 
     const testPoint = new Point2d();
     const result = undefined !== out ? out : new Point3d();
-    for (let testRadius = 0; testRadius < radius; testRadius++) {
-      for (testPoint.x = viewCenter.x - testRadius; testPoint.x <= viewCenter.x + testRadius; testPoint.x++) {
-        for (testPoint.y = viewCenter.y - testRadius; testPoint.y <= viewCenter.y + testRadius; testPoint.y++) {
-          if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
-            return result;
-        }
+    for (testPoint.x = viewCenter.x - radius; testPoint.x <= viewCenter.x + radius; testPoint.x++) {
+      for (testPoint.y = viewCenter.y - radius; testPoint.y <= viewCenter.y + radius; testPoint.y++) {
+        if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
+          return result;
       }
     }
 
     return undefined;
   }
 
-  private getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc)
       this.npcToWorld(npc, npc);
@@ -1569,7 +1613,7 @@ export class Viewport {
     return npc;
   }
 
-  private getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
     if (z <= 0.0)
       return undefined;

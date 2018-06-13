@@ -164,6 +164,7 @@ export class EventController {
     this.registerListener("mousedown", element, this.handleMouseDown as EventListener);
     this.registerListener("mouseup", element, this.handleMouseUp as EventListener);
     this.registerListener("mousemove", element, this.handleMouseMove as EventListener);
+    this.registerListener("mouseleave", element, this.handleMouseLeave as EventListener);
     this.registerListener("wheel", element, this.handleMouseWheel as EventListener);
     this.registerListener("touchstart", element, this.handleTouchStart as EventListener);
     this.registerListener("touchend", element, this.handleTouchEnd as EventListener);
@@ -226,6 +227,11 @@ export class EventController {
     this.recordKeyboardModifiers(ev);
     const pos = this.getPosition(ev, EventController.scratchMousePos);
     IModelApp.toolAdmin.onMouseMotion(this.vp, pos, InputSource.Mouse);
+    ev.preventDefault();
+  }
+
+  private handleMouseLeave(ev: MouseEvent) {
+    IModelApp.toolAdmin.onMouseLeave(this.vp);
     ev.preventDefault();
   }
 

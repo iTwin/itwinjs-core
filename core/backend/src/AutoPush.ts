@@ -63,7 +63,7 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * create an AutoPush object, specifying the IModelDb that should be monitored.
  * The instance registers itself to react to events and timers. Often, backend will start
  * auto-pushing when an IModelDb is opened for read-write.
- * <p><em>Example:</em>
+ * Example:
  * ``` ts
  * [[include:IModelDb.onOpened]]
  * ```

@@ -72,7 +72,7 @@ export class BriefcaseEntry {
   /** Briefcase Id  */
   public briefcaseId!: number;
 
-  /** Flag indicating if the briefcase is a standalone iModel that only exists locally on disk, or is from the iModelHub */
+  /** Flag indicating if the briefcase is a standalone iModel that only exists locally on disk, or is from iModelHub */
   public isStandalone!: boolean;
 
   /** Flag to indicate if the briefcase is currently open */
@@ -726,7 +726,7 @@ export class BriefcaseManager {
     BriefcaseManager.cache.deleteBriefcase(briefcase);
   }
 
-  /** Deletes a briefcase, and releases its references in the iModelHub if necessary */
+  /** Deletes a briefcase, and releases its references in iModelHub if necessary */
   private static async deleteBriefcase(accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
     await BriefcaseManager.deleteBriefcaseFromHub(accessToken, briefcase);
@@ -1339,7 +1339,7 @@ export class BriefcaseManager {
     }
   }
 
-  /** Create an iModel on the iModelHub */
+  /** Create an iModel on iModelHub */
   public static async create(accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<string> {
     await BriefcaseManager.memoizedInitCache(accessToken);
     assert(!!BriefcaseManager.hubClient);

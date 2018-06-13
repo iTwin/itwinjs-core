@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { FeatureGates, RelatedElement, RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { RelatedElement, RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, Element, ECSqlStatement, InformationRecordElement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { EnvMacroSubst, DbResult, Id64Props } from "@bentley/bentleyjs-core";
 import { } from "@bentley/imodeljs-common";
@@ -31,7 +31,6 @@ const defaultsCfg = {
 export class RobotWorldEngine {
 
   // __PUBLISH_EXTRACT_START__ FeatureGates.defineFeatureGates
-  public static readonly features = new FeatureGates();
 
   private static readFeatureGates(): void {
 
@@ -40,11 +39,8 @@ export class RobotWorldEngine {
     const config = require(path.join(IModelHost.appAssetsDir!, "RobotWorldEngine.config.json"));
     EnvMacroSubst.replaceInProperties(config, true, defaultsCfg);
 
-    // Define the feature gates that were passed in the config parameters.
-    if ("features" in config) {
-      this.features.setGate("imodel", config.features.imodel);
-      this.features.setGate("experimental", config.features.experimental);
-    }
+    // Define the feature gates that were passed in the config parameters on IModelHost, using "robot" as the key.
+    IModelHost.features.setGate("robot", config.features);
   }
   // __PUBLISH_EXTRACT_END__
 
@@ -113,7 +109,7 @@ export class RobotWorldEngine {
   // __PUBLISH_EXTRACT_START__ FeatureGates.checkFeatureGates
   // An experimental method. It is in the release build, but only turned on in some deployments.
   public static fuseRobots(iModelDb: IModelDb, r1Id: Id64Props, r2Id: Id64Props) {
-    if (!this.features.check("experimental.methods"))
+    if (!IModelHost.features.check("robot.experimental.methods"))
       return;
 
     // The gate is open. Go ahead and perform the function.
@@ -171,7 +167,7 @@ export class RobotWorldEngine {
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();
     const interfaces = this.chooseInterfacesToExpose();
-    if (this.features.check("imodel.readwrite"))  // choose add'l interfaces that we don't want in the doc example
+    if (IModelHost.features.check("robot.imodel.readwrite"))  // choose add'l interfaces that we don't want in the doc example
       interfaces.push(IModelWriteRpcInterface);
     TestRpcManager.initialize(interfaces);
 
@@ -198,7 +194,7 @@ export class RobotWorldEngine {
   private static chooseInterfacesToExpose(): RpcInterfaceDefinition[] {
     const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface];
 
-    if (this.features.check("imodel.readwrite")) {
+    if (IModelHost.features.check("robot.imodel.readwrite")) {
       interfaces.push(RobotWorldWriteRpcInterface);
     }
 

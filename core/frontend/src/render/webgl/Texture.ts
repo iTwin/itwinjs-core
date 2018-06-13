@@ -8,7 +8,8 @@ import { ImageSourceFormat, ImageSource, ImageBuffer, ImageBufferFormat, isPower
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
-import { TextureUnit } from "./RenderFlags";
+import { TextureUnit, OvrFlags } from "./RenderFlags";
+import { debugPrint } from "./debugPrint";
 
 /** A callback when a TextureHandle is finished loading.  Only relevant for createForImage creation method. */
 export type TextureLoadCallback = (t: TextureHandle, c: HTMLCanvasElement) => void;
@@ -106,6 +107,8 @@ export class Texture extends RenderTexture {
   public dispose() {
     this.texture.dispose();
   }
+
+  public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
 }
 
 /** Parameters used internally to define how to create a texture for use with WebGL. */
@@ -135,7 +138,7 @@ class TextureCreateParams {
 
   public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
     return new TextureCreateParams(width, height, format, dataType, GL.Texture.WrapMode.ClampToEdge,
-      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, true);
+      (tex: TextureHandle, params: TextureCreateParams) => loadTextureFromBytes(tex, params), undefined, undefined);
   }
 
   public static createForImageSource(source: ImageSource, width: number, height: number, type: ImageTextureType = ImageTextureType.Normal, loadCallback?: TextureLoadCallback) {
@@ -205,6 +208,8 @@ export class TextureHandle implements IDisposable {
     const gl: WebGLRenderingContext = System.instance.context;
     gl.activeTexture(texUnit);
     gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null);
+    if (this.wantDebugIds)
+      debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
 
   /** Binds this texture to a uniform sampler2D */
@@ -218,6 +223,24 @@ export class TextureHandle implements IDisposable {
     assert(!(tex instanceof TextureHandle));
     this.bindTexture(unit, tex);
     uniform.setUniform1i(unit - TextureUnit.Zero);
+  }
+
+  public update(data: Uint8Array): boolean {
+    // ###TODO - make conditionally update texture only if nothing changed
+    if (0 === this.width || 0 === this.height || undefined === this.dataBytes || 0 === this.dataBytes.length) {
+      assert(false);
+      return false;
+    }
+
+    if (data.length !== this.dataBytes.length)
+      return false;
+
+    // copy data into this.dataBytes
+    for (const i of this.dataBytes) {
+      this.dataBytes[i] = data[i];
+    }
+
+    return true;
   }
 
   public dispose() {
@@ -253,6 +276,11 @@ export class TextureHandle implements IDisposable {
     return this.create(TextureCreateParams.createForImageBuffer(image, type));
   }
 
+  // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.
+  // This helps in debugging issues in which e.g. the same texture is bound as an input and output.
+  public static wantDebugIds: boolean = false;
+  private static _debugId: number = 0;
+  private static readonly _maxDebugId = 0xffffff;
   private constructor(glTexture: WebGLTexture, params: TextureCreateParams) {
     this._glTexture = glTexture;
     this.width = params.width;
@@ -260,7 +288,35 @@ export class TextureHandle implements IDisposable {
     this.format = params.format;
     this.dataType = params.dataType;
     this.dataBytes = params.dataBytes;
+    if (TextureHandle.wantDebugIds) {
+      (glTexture as any)._debugId = ++TextureHandle._debugId;
+      TextureHandle._debugId %= TextureHandle._maxDebugId;
+    }
 
     params.loadImageData(this, params);
   }
+}
+
+export class TextureDataUpdater {
+  public data: Uint8Array;
+  public modified: boolean = false;
+
+  public constructor(data: Uint8Array) { this.data = data; }
+
+  public setByteAtIndex(index: number, byte: number) {
+    assert(index < this.data.length);
+    if (byte !== this.data[index]) {
+      this.data[index] = byte;
+      this.modified = true;
+    }
+  }
+  public setOvrFlagsAtIndex(index: number, value: OvrFlags) {
+    assert(index < this.data.length);
+    if (value !== this.data[index]) {
+      this.data[index] = value;
+      this.modified = true;
+    }
+  }
+  public getByteAtIndex(index: number): number { assert(index < this.data.length); return this.data[index]; }
+  public getFlagsAtIndex(index: number): OvrFlags { return this.getByteAtIndex(index); }
 }

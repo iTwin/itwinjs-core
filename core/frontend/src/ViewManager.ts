@@ -13,15 +13,21 @@ import { IModelConnection } from "./IModelConnection";
 import { UpdatePlan } from "./render/UpdatePlan";
 import { DecorateContext } from "./ViewContext";
 
-/** The ViewManager holds the list of opened views, plus the "selected view" */
+/**
+ * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
+ * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
+ *
+ * A single ViewManager is created when [[IModelApp.startup]] is called. It can be accessed via [[IModelApp.viewManager]].
+ *
+ */
 export class ViewManager {
   public inDynamicsMode = false;
   public cursor?: BeCursor;
   private readonly _viewports: Viewport[] = [];
   private _selectedView?: Viewport;
-  private _newTilesReady: boolean = false;
-  private _skipSceneCreation: boolean = false;
-  private _doContinuousRendering: boolean = false;
+  private _newTilesReady = false;
+  private _skipSceneCreation = false;
+  private _doContinuousRendering = false;
 
   public onInitialized(): void { }
 
@@ -29,7 +35,7 @@ export class ViewManager {
    * @param old Previously selected viewport.
    * @param current Currently selected viewport.
    */
-  public readonly onSelectedViewportChanged = new BeEvent<(old: Viewport | undefined, current: Viewport | undefined) => void>();
+  public readonly onSelectedViewportChanged = new BeEvent<(previous: Viewport | undefined, current: Viewport | undefined) => void>();
 
   /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a closed view. */
   public readonly onViewOpen = new BeEvent<(vp: Viewport) => void>();
@@ -71,19 +77,41 @@ export class ViewManager {
     //     this.getInfoWindow().show(viewPt, vp, msg);
   }
 
-  /** The "selected view" is the default for certain operations.  */
-  public get selectedView() { return this._selectedView; }
-  public set selectedView(vp: Viewport | undefined) {
-    if (!vp)
+  public clearSelectedView(): void {
+    const previousVp = this.selectedView;
+    this._selectedView = undefined;
+    this.notifySelectedViewportChanged(previousVp, undefined);
+  }
+
+  public setSelectedView(vp: Viewport | undefined): BentleyStatus {
+    if (undefined === vp)
       vp = this.getFirstOpenView();
 
-    if (vp === this._selectedView) // already the selected view
-      return;
+    if (vp === this.selectedView) // already the selected view
+      return BentleyStatus.SUCCESS;
 
-    const oldVp = this._selectedView;
+    if (undefined === vp || !vp.isActive) {
+      this.clearSelectedView();
+      return BentleyStatus.ERROR;
+    }
+
+    const previousVp = this.selectedView;
     this._selectedView = vp;
-    this.onSelectedViewportChanged.raiseEvent(oldVp, vp);
+
+    this.notifySelectedViewportChanged(previousVp, vp);
+
+    IModelApp.toolAdmin.startDefaultTool(); // ###TODO not in native, where should defaultTool be called?
+
+    return BentleyStatus.SUCCESS;
   }
+
+  public notifySelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
+    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
+    this.onSelectedViewportChanged.raiseEvent(previous, current);
+  }
+
+  /** The "selected view" is the default for certain operations.  */
+  public get selectedView(): Viewport | undefined { return this._selectedView; }
 
   /** Get the first opened view. */
   public getFirstOpenView(): Viewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
@@ -100,7 +128,7 @@ export class ViewManager {
     this._viewports.push(newVp);
 
     // See DgnClientFxViewport::Initialize()
-    this.selectedView = newVp;
+    this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
     if (1 === this._viewports.length) requestAnimationFrame(() => { this.renderLoop(); });
@@ -132,7 +160,7 @@ export class ViewManager {
       return BentleyStatus.ERROR;
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
-      this.selectedView = undefined;
+      this.setSelectedView(undefined);
 
     return BentleyStatus.SUCCESS;
   }
@@ -190,5 +218,16 @@ export class ViewManager {
     IModelApp.toolAdmin.decorate(context);
     context.viewport.callDecorators(context);
     // ###TODO: decorators.callAllHandlers(new DecoratorCaller(context));
+  }
+
+  public setViewCursor(cursor: BeCursor | undefined): void {
+    if (cursor === this.cursor)
+      return;
+
+    this.cursor = cursor;
+    if (undefined !== this.selectedView) {
+      this.selectedView.setCursor(cursor);
+    }
+
   }
 }

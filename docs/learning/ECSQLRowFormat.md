@@ -12,8 +12,8 @@ If the ECSQL select clause item
 
   System property | JavaScript Type
   --- | ---
-  [ECInstanceId](./ECSQL#ecinstanceid) | id
-  [ECClassId](./ECSQL#ecclassid) | className
+  [ECInstanceId](./ECSQL#ECInstanceId-and-ECClassId) | id
+  [ECClassId](./ECSQL#ECInstanceId-and-ECClassId) | className
   [SourceECInstanceId](./ECSQL#ecrelationshipclasses) | sourceId
   [SourceECClassId](./ECSQL#ecrelationshipclasses) | sourceClassName
   [TargetECInstanceId](./ECSQL#ecrelationshipclasses) | targetId

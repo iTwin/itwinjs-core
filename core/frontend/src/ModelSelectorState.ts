@@ -2,12 +2,13 @@
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Views */
+
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorProps } from "@bentley/imodeljs-common";
 
-/** A set of ids of GeometricModels for a SpatialViewDefinition. */
+/** The state of a [ModelSelector]($backend). It holds a set of ids of GeometricModels for a SpatialViewDefinition. */
 export class ModelSelectorState extends ElementState {
   /** the set of ModelIds of this ModelSelectorState */
   public readonly models = new Set<string>();

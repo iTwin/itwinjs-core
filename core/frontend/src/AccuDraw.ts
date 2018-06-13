@@ -2824,24 +2824,30 @@ export class AccuDraw {
     return false;
   }
 
-  public onSelectedViewportChanged(previous: Viewport, current: Viewport): void {
+  public onSelectedViewportChanged(previous: Viewport | undefined, current: Viewport | undefined): void {
     // In case previous is closing, always update AccuDraw to current view...
-    if (this.currentView && this.currentView === previous)
+    if (undefined !== this.currentView && this.currentView === previous)
       this.currentView = current;
 
     // Reset AccuDraw when iModel or view type changes...
-    if (current && previous && (current.view.classFullName === previous.view.classFullName) && (current.view.iModel === previous.view.iModel))
+    if (undefined !== current && undefined !== previous &&
+      (current.view.classFullName === previous.view.classFullName) &&
+      (current.view.iModel === previous.view.iModel))
       return;
 
     this.currentView = undefined;
     this.flags.redrawCompass = false;
+
     this.flags.baseRotation = RotationMode.View;
     this.flags.auxRotationPlane = RotationMode.Top;
     this.flags.rotationNeedsUpdate = true;
+
     this.flags.haveValidOrigin = false;
     this.flags.indexLocked = false;
     this.flags.bearingFixToPlane2D = false;
+
     this.savedState.init();
+
     this.setRotationMode(RotationMode.View);
     this.updateRotation();
   }

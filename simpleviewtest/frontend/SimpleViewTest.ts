@@ -1,7 +1,7 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d, SpatialViewState, LocateResponse } from "@bentley/imodeljs-frontend";
 import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef, ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
 import { Point3d } from "@bentley/geometry-core";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
@@ -29,21 +29,40 @@ class SimpleViewState {
   constructor() { }
 }
 
+interface RenderModeOptions {
+  flags: Map<string, boolean>;
+  mode: RenderMode;
+}
+
+const renderModeOptions: RenderModeOptions = {
+  flags: new Map<string, boolean>(),
+  mode: RenderMode.SmoothShade,
+};
+
 let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState>();
 let theViewport: Viewport | undefined;
-const renderModeOptions = new Map<string, boolean>();
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
+let configuration = {} as SVTConfiguration;
 
+interface SVTConfiguration {
+  filename: string;
+  userName: string;
+  password: string;
+  projectName: string;
+  iModelName: string;
+  standalone: boolean;
+  viewName?: string;
+}
 // Entry point - run the main function
-main();
+setTimeout(() => main(), 1000);
 
 // retrieves configuration.json from the Public folder, and override configuration values from that.
 // see configuration.json in simpleviewtest/public.
 // alternatively, can open a standalone iModel from disk by setting iModelName to filename and standalone to true.
-function retrieveConfigurationOverrides(configuration: any) {
+function retrieveConfigurationOverrides(config: any) {
   const request: XMLHttpRequest = new XMLHttpRequest();
   request.open("GET", "configuration.json", false);
   request.setRequestHeader("Cache-Control", "no-cache");
@@ -51,7 +70,7 @@ function retrieveConfigurationOverrides(configuration: any) {
     if (request.readyState === XMLHttpRequest.DONE) {
       if (request.status === 200) {
         const newConfigurationInfo: any = JSON.parse(request.responseText);
-        Object.assign(configuration, newConfigurationInfo);
+        Object.assign(config, newConfigurationInfo);
       }
       // Everything is good, the response was received.
     } else {
@@ -97,7 +116,9 @@ async function openIModel(state: SimpleViewState, iModelName: string) {
 
 // opens the configured iModel from disk
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
+  configuration.standalone = true;
   state.iModelConnection = await IModelConnection.openStandalone(filename);
+  configuration.iModelName = state.iModelConnection.name;
 }
 
 // selects the configured view.
@@ -203,7 +224,7 @@ export class LocateTool extends ViewTool {
 
   public constructor() { super(); }
 
-  public updateDynamics(ev: BeButtonEvent) { this.onModelMotion(ev); }
+  public onPostInstall() { super.onPostInstall(); IModelApp.accuSnap.enableLocate(true); }
   public onModelMotion(ev: BeButtonEvent) {
     this._curPoint.setFrom(ev.point);
 
@@ -216,6 +237,13 @@ export class LocateTool extends ViewTool {
     this._haveWorldPoint = true;
     if (ev.viewport) {
       ev.viewport.invalidateDecorations();
+
+      const response = new LocateResponse();
+      const hit = IModelApp.locateManager.doLocate(response, true, ev.point, ev.viewport);
+
+      if (undefined !== hit) {
+        showStatus("Pick: " + hit.sourceId);
+      }
 
       const rect = new ViewRect(ev.viewPoint.x, ev.viewPoint.y, ev.viewPoint.x + 1, ev.viewPoint.y + 1);
       const pixels = ev.viewport.readPixels(rect, Pixel.Selector.All);
@@ -269,8 +297,32 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
 function applyRenderModeChange(mode: string) {
   const menuDialog = document.getElementById("changeRenderModeMenu");
   const newValue = (document.getElementById(mode)! as HTMLInputElement).checked;
-  renderModeOptions.set(mode, newValue);
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions, menuDialog);
+  renderModeOptions.flags.set(mode, newValue);
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, menuDialog, renderModeOptions.mode);
+}
+
+function stringToRenderMode(name: string): RenderMode {
+  switch (name) {
+    case "Smooth Shade": return RenderMode.SmoothShade;
+    case "Solid Fill": return RenderMode.SolidFill;
+    case "Hidden Line": return RenderMode.HiddenLine;
+    default: return RenderMode.Wireframe;
+  }
+}
+
+function renderModeToString(mode: RenderMode): string {
+  switch (mode) {
+    case RenderMode.SmoothShade: return "Smooth Shade";
+    case RenderMode.SolidFill: return "Solid Fill";
+    case RenderMode.HiddenLine: return "Hidden Line";
+    default: return "Wireframe";
+  }
+}
+
+function changeRenderMode(): void {
+  const select = (document.getElementById("renderModeList") as HTMLSelectElement)!;
+  renderModeOptions.mode = stringToRenderMode(select.value);
+  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
 function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
@@ -292,20 +344,24 @@ function updateRenderModeOptionsMap() {
   const viewflags = theViewport!.view.viewFlags;
   const lights = viewflags.showSourceLights() || viewflags.showSolarLight() || viewflags.showCameraLights();
 
-  updateRenderModeOption("skybox", skybox, renderModeOptions);
-  updateRenderModeOption("groundplane", groundplane, renderModeOptions);
-  updateRenderModeOption("ACSTriad", viewflags.showAcsTriad(), renderModeOptions);
-  updateRenderModeOption("fill", viewflags.showFill(), renderModeOptions);
-  updateRenderModeOption("grid", viewflags.showGrid(), renderModeOptions);
-  updateRenderModeOption("textures", viewflags.showTextures(), renderModeOptions);
-  updateRenderModeOption("visibleEdges", viewflags.showVisibleEdges(), renderModeOptions);
-  updateRenderModeOption("hiddenEdges", viewflags.showHiddenEdges(), renderModeOptions);
-  updateRenderModeOption("materials", viewflags.showMaterials(), renderModeOptions);
-  updateRenderModeOption("lights", lights, renderModeOptions);
-  updateRenderModeOption("monochrome", viewflags.isMonochrome(), renderModeOptions);
-  updateRenderModeOption("constructions", viewflags.showConstructions(), renderModeOptions);
-  updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions);
-  updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions);
+  updateRenderModeOption("skybox", skybox, renderModeOptions.flags);
+  updateRenderModeOption("groundplane", groundplane, renderModeOptions.flags);
+  updateRenderModeOption("ACSTriad", viewflags.showAcsTriad(), renderModeOptions.flags);
+  updateRenderModeOption("fill", viewflags.showFill(), renderModeOptions.flags);
+  updateRenderModeOption("grid", viewflags.showGrid(), renderModeOptions.flags);
+  updateRenderModeOption("textures", viewflags.showTextures(), renderModeOptions.flags);
+  updateRenderModeOption("visibleEdges", viewflags.showVisibleEdges(), renderModeOptions.flags);
+  updateRenderModeOption("hiddenEdges", viewflags.showHiddenEdges(), renderModeOptions.flags);
+  updateRenderModeOption("materials", viewflags.showMaterials(), renderModeOptions.flags);
+  updateRenderModeOption("lights", lights, renderModeOptions.flags);
+  updateRenderModeOption("monochrome", viewflags.isMonochrome(), renderModeOptions.flags);
+  updateRenderModeOption("constructions", viewflags.showConstructions(), renderModeOptions.flags);
+  updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions.flags);
+  updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions.flags);
+  updateRenderModeOption("transparency", viewflags.showTransparency(), renderModeOptions.flags);
+
+  renderModeOptions.mode = viewflags.getRenderMode();
+  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.getRenderMode());
 }
 
 // opens the view and connects it to the HTML canvas element.
@@ -313,17 +369,16 @@ async function openView(state: SimpleViewState) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
   if (htmlCanvas) {
-    const target = IModelApp.renderSystem.createTarget(htmlCanvas);
-    theViewport = new Viewport(htmlCanvas, state.viewState!, target);
+    theViewport = new Viewport(htmlCanvas, state.viewState!);
     await _changeView(state.viewState!);
     IModelApp.viewManager.addViewport(theViewport);
-    updateRenderModeOptionsMap();
   }
 }
 
 async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
   buildModelMenu(activeViewState);
+  updateRenderModeOptionsMap();
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -342,7 +397,6 @@ function startWindowArea(_event: any) {
 
 // starts element selection tool
 function startSelect(_event: any) {
-  // ###TODO: SelectTool is busted in various ways...use LocateTool for demo.
   // IModelApp.tools.run("Select");
   IModelApp.tools.run("View.Locate", theViewport!);
 }
@@ -357,14 +411,17 @@ function startRotateView(_event: any) {
   IModelApp.tools.run("View.Rotate", theViewport!);
 }
 
-// start rotate view.
+// change active view.
 function changeView(event: any) {
   const viewName = event.target.selectedOptions["0"].label;
   _changeView(viewMap.get(viewName)!);
 }
 
 async function clearViews() {
-  await activeViewState.iModelConnection!.closeStandalone();
+  if (configuration.standalone)
+    await activeViewState.iModelConnection!.closeStandalone();
+  else
+    await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
   activeViewState = new SimpleViewState();
   viewMap.clear();
   document.getElementById("viewList")!.innerHTML = "";
@@ -372,6 +429,7 @@ async function clearViews() {
 
 async function resetStandaloneIModel(filename: string) {
   const spinner = document.getElementById("spinner") as HTMLDivElement;
+
   spinner.style.display = "block";
   IModelApp.viewManager.dropViewport(theViewport!);
   IModelApp.renderSystem.onShutDown();
@@ -448,26 +506,29 @@ function wireIconsToFunctions() {
   addRenderModeHandler("constructions");
   addRenderModeHandler("weights");
   addRenderModeHandler("styles");
+  addRenderModeHandler("transparency");
+
+  document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 }
 
-// ----------------------------------------------------------
 // main entry point.
 async function main() {
   // this is the default configuration
-  const configuration: any = {
+  configuration = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
     projectName: "plant-sta",
     iModelName: "NabeelQATestiModel",
-  };
+  } as SVTConfiguration;
 
   // override anything that's in the configuration
   retrieveConfigurationOverrides(configuration);
   applyConfigurationOverrides(configuration);
+
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
-  IModelApp.startup("QA", true);
+  IModelApp.startup();
 
   if (ElectronRpcConfiguration.isElectron)
     ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);

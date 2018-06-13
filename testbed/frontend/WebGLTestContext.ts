@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
-
 import { assert } from "chai";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
@@ -21,7 +20,7 @@ export namespace WebGLTestContext {
       return;
     }
 
-    IModelApp.startup("QA", true);
+    IModelApp.startup();
     isInitialized = IModelApp.hasRenderSystem;
     assert(isInitialized);
   }

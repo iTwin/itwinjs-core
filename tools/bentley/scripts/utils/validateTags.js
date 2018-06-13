@@ -6,7 +6,7 @@ const FS = require('fs-extra');
 const Path = require('path');
 const objTraverse = require('obj-traverse');
 
-const validTags = ["see", "note", "throws", "param", "deprecated"];
+const validTags = ["see", "note", "throws", "param", "deprecated", "module"];
 
 function validateTags(path) {
     let tags = parseFile(path);

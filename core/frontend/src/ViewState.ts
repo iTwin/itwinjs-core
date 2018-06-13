@@ -190,21 +190,10 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   /** Set the ViewFlags and mark them as dirty if they have changed. */
   public set viewFlags(newFlags: ViewFlags) {
-    if (!this.viewFlags.isEqualTo(newFlags))
+    if (!this.viewFlags.isEqualTo(newFlags)) {
       this.setFeatureOverridesDirty();
-
-    this.viewFlags.acsTriad = newFlags.acsTriad;
-    this.viewFlags.fill = newFlags.fill;
-    this.viewFlags.grid = newFlags.grid;
-    this.viewFlags.textures = newFlags.textures;
-    this.viewFlags.visibleEdges = newFlags.visibleEdges;
-    this.viewFlags.materials = newFlags.materials;
-    this.viewFlags.shadows = newFlags.shadows;
-    this.viewFlags.sourceLights = newFlags.sourceLights;
-    this.viewFlags.solarLight = newFlags.solarLight;
-    this.viewFlags.cameraLights = newFlags.cameraLights;
-    this.viewFlags.monochrome = newFlags.monochrome;
-    this.viewFlags.constructions = newFlags.constructions;
+      this.displayStyle.viewFlags = newFlags;
+    }
   }
 
   /** determine whether this ViewState exactly matches another */
