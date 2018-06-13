@@ -25,7 +25,7 @@ class TestViewport extends Viewport {
 //   assert.isTrue(val, str);
 // };
 
-describe.skip("Viewport", () => {
+describe("Viewport", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 

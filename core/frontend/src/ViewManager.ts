@@ -90,7 +90,7 @@ export class ViewManager {
     if (vp === this.selectedView) // already the selected view
       return BentleyStatus.SUCCESS;
 
-    if (undefined === vp || !vp.isActive) {
+    if (undefined === vp) {
       this.clearSelectedView();
       return BentleyStatus.ERROR;
     }
