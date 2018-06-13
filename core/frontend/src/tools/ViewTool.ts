@@ -147,7 +147,7 @@ export class ViewHandleArray {
     let minDistance = 0.0;
     let minDistValid = false;
     let highestPriority = ViewManipPriority.Low;
-    let nearestHitHandle: ViewingToolHandle | undefined = undefined;
+    let nearestHitHandle: ViewingToolHandle | undefined;
 
     for (let i = 0; i < this.count; i++) {
       data.priority = ViewManipPriority.Normal;

@@ -1072,7 +1072,6 @@ export class ToolAdmin {
       this._suspended = undefined; // Restore state of suspended tool...
     }
 
-
     IModelApp.viewManager.invalidateDecorationsAllViews();
     this.setViewTool(undefined);
 
