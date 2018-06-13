@@ -203,12 +203,12 @@ export namespace IModelTileIO {
       if (undefined === texture) {
         // First time encountering this texture name - create it.
         // ###TODO: We are currently not writing the width and height to json!
-        const width = JsonUtils.asInt(json.width);
-        const height = JsonUtils.asInt(json.height);
-        if (0 <= width || 0 <= height)
+        const width = JsonUtils.asInt(namedTex.width);
+        const height = JsonUtils.asInt(namedTex.height);
+        if (0 >= width || 0 >= height)
           return undefined;
 
-        const bufferViewId = JsonUtils.asString(json.bufferView);
+        const bufferViewId = JsonUtils.asString(namedTex.bufferView);
         const bufferViewJson = 0 !== bufferViewId.length ? this.bufferViews[bufferViewId] : undefined;
         if (undefined === bufferViewJson)
           return undefined;
@@ -219,10 +219,10 @@ export namespace IModelTileIO {
           return undefined;
 
         const bytes = this.binaryData.subarray(byteOffset, byteOffset + byteLength);
-        const format = json.format;
+        const format = namedTex.format;
         const imageSource = new ImageSource(bytes, format);
 
-        const params = new RenderTexture.Params(name, JsonUtils.asBool(json.isTileSection), JsonUtils.asBool(json.isGlyph), false);
+        const params = new RenderTexture.Params(name, JsonUtils.asBool(namedTex.isTileSection), JsonUtils.asBool(namedTex.isGlyph), false);
         texture = this.system.createTextureFromImageSrc(imageSource, width, height, imodel, params);
 
         if (undefined === texture)
