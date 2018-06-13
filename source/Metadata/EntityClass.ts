@@ -71,6 +71,16 @@ export default class EntityClass extends ECClass {
 
   /**
    *
+   * @param name
+   * @param relationship
+   * @param direction
+   */
+  protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
+    return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
+  }
+
+  /**
+   *
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
@@ -100,6 +110,7 @@ export default class EntityClass extends ECClass {
 export abstract class MutableEntityClass extends EntityClass {
   public abstract addMixin(mixin: Mixin): any;
   public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
 }
 
 /** @hidden */
@@ -110,6 +121,31 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof(relationship) === "string")
     resolvedRelationship = await ecClass.schema.getItem<RelationshipClass>(relationship, true);
+  else
+    resolvedRelationship = relationship;
+
+  if (!resolvedRelationship)
+    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
+
+  if (typeof(direction) === "string") {
+    const tmpDirection = parseStrengthDirection(direction);
+    if (undefined === tmpDirection)
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+    direction = tmpDirection;
+  }
+
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
+  return new NavigationProperty(ecClass, name, lazyRelationship, direction);
+}
+
+/** @hidden */
+export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
+  if (ecClass.getPropertySync(name))
+    throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
+
+  let resolvedRelationship: RelationshipClass | undefined;
+  if (typeof(relationship) === "string")
+    resolvedRelationship = ecClass.schema.getItemSync<RelationshipClass>(relationship, true);
   else
     resolvedRelationship = relationship;
 

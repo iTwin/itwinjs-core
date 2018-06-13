@@ -709,6 +709,79 @@ export default class SchemaReadHelper {
     }
   }
 
+  /**
+   * Creates the property defined in the JSON in the given class.
+   * @param classObj
+   * @param propertyJson
+   */
+  private loadPropertyTypesSync(classObj: AnyClass, propertyJson: any): void {
+    if (undefined === propertyJson.name)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${classObj.key.schemaName}.${classObj.name} is missing the required 'name' property.`);
+    if (typeof(propertyJson.name) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${classObj.key.schemaName}.${classObj.name} has an invalid 'name' property. It should be of type 'string'.`);
+
+    const propName = propertyJson.name;
+
+    if (undefined === propertyJson.propertyType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'propertyType' property.`);
+    if (typeof(propertyJson.propertyType) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'propertyType' property. It should be of type 'string'.`);
+
+    const loadTypeName = () => {
+      if (undefined === propertyJson.typeName)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} is missing the required 'typeName' property.`);
+
+      if (typeof(propertyJson.typeName) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${classObj.key.schemaName}.${classObj.name}.${propName} has an invalid 'typeName' property. It should be of type 'string'.`);
+
+      if (undefined === parsePrimitiveType(propertyJson.typeName))
+        this.findSchemaItemSync(propertyJson.typeName);
+    };
+
+    switch (propertyJson.propertyType) {
+      case "PrimitiveProperty":
+        loadTypeName();
+        const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, propertyJson.typeName);
+        return this.loadPropertySync(primProp, propertyJson);
+
+      case "StructProperty":
+        loadTypeName();
+        const structProp = (classObj as MutableClass).createStructPropertySync(propName, propertyJson.typeName);
+        return this.loadPropertySync(structProp, propertyJson);
+
+      case "PrimitiveArrayProperty":
+        loadTypeName();
+        const primArrProp = (classObj as MutableClass).createPrimitiveArrayPropertySync(propName, propertyJson.typeName);
+        return this.loadPropertySync(primArrProp, propertyJson);
+
+      case "StructArrayProperty":
+        loadTypeName();
+        const structArrProp = (classObj as MutableClass).createStructArrayPropertySync(propName, propertyJson.typeName);
+        return this.loadPropertySync(structArrProp, propertyJson);
+
+      case "NavigationProperty":
+        if (classObj.type !== SchemaItemType.EntityClass && classObj.type !== SchemaItemType.RelationshipClass && classObj.type !== SchemaItemType.Mixin)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+
+        if (undefined === propertyJson.relationshipName)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is missing the required 'relationshipName' property.`);
+
+        if (typeof(propertyJson.relationshipName) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} has an invalid 'relationshipName' property. It should be of type 'string'.`);
+
+        this.findSchemaItemSync(propertyJson.relationshipName);
+
+        if (undefined === propertyJson.direction)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is missing the required 'direction' property.`);
+
+        if (typeof(propertyJson.direction) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} has an invalid 'direction' property. It should be of type 'string'.`);
+
+        const navProp = (classObj as MutableEntityClass).createNavigationPropertySync(propName, propertyJson.relationshipName, propertyJson.direction);
+        return this.loadPropertySync(navProp, propertyJson);
+    }
+  }
+
   private async loadProperty<T extends Property>(prop: T, propertyJson: any): Promise<void> {
     if (undefined !== propertyJson.category) {
       if (typeof(propertyJson.category) !== "string")
@@ -727,5 +800,25 @@ export default class SchemaReadHelper {
     // TODO Load CustomAttributeClasses
 
     await prop.fromJson(propertyJson);
+  }
+
+  private loadPropertySync<T extends Property>(prop: T, propertyJson: any): void {
+    if (undefined !== propertyJson.category) {
+      if (typeof(propertyJson.category) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'category' property. It should be of type 'string'.`);
+
+      this.findSchemaItemSync(propertyJson.category);
+    }
+
+    if (undefined !== propertyJson.kindOfQuantity) {
+      if (typeof(propertyJson.kindOfQuantity) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${prop.class.name}.${prop.name} has an invalid 'kindOfQuantity' property. It should be of type 'string'.`);
+
+      this.findSchemaItemSync(propertyJson.kindOfQuantity);
+    }
+
+    // TODO Load CustomAttributeClasses
+
+    prop.fromJsonSync(propertyJson);
   }
 }
