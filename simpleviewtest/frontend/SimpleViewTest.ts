@@ -45,14 +45,24 @@ let theViewport: Viewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
+let configuration = {} as SVTConfiguration;
 
+interface SVTConfiguration {
+  filename: string;
+  userName: string;
+  password: string;
+  projectName: string;
+  iModelName: string;
+  standalone: boolean;
+  viewName?: string;
+}
 // Entry point - run the main function
-main();
+setTimeout(() => main(), 1000);
 
 // retrieves configuration.json from the Public folder, and override configuration values from that.
 // see configuration.json in simpleviewtest/public.
 // alternatively, can open a standalone iModel from disk by setting iModelName to filename and standalone to true.
-function retrieveConfigurationOverrides(configuration: any) {
+function retrieveConfigurationOverrides(config: any) {
   const request: XMLHttpRequest = new XMLHttpRequest();
   request.open("GET", "configuration.json", false);
   request.setRequestHeader("Cache-Control", "no-cache");
@@ -60,7 +70,7 @@ function retrieveConfigurationOverrides(configuration: any) {
     if (request.readyState === XMLHttpRequest.DONE) {
       if (request.status === 200) {
         const newConfigurationInfo: any = JSON.parse(request.responseText);
-        Object.assign(configuration, newConfigurationInfo);
+        Object.assign(config, newConfigurationInfo);
       }
       // Everything is good, the response was received.
     } else {
@@ -106,7 +116,9 @@ async function openIModel(state: SimpleViewState, iModelName: string) {
 
 // opens the configured iModel from disk
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
+  configuration.standalone = true;
   state.iModelConnection = await IModelConnection.openStandalone(filename);
+  configuration.iModelName = state.iModelConnection.name;
 }
 
 // selects the configured view.
@@ -386,7 +398,6 @@ function startWindowArea(_event: any) {
 
 // starts element selection tool
 function startSelect(_event: any) {
-  // ###TODO: SelectTool is busted in various ways...use LocateTool for demo.
   // IModelApp.tools.run("Select");
   IModelApp.tools.run("View.Locate", theViewport!);
 }
@@ -408,7 +419,10 @@ function changeView(event: any) {
 }
 
 async function clearViews() {
-  await activeViewState.iModelConnection!.closeStandalone();
+  if (configuration.standalone)
+    await activeViewState.iModelConnection!.closeStandalone();
+  else
+    await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
   activeViewState = new SimpleViewState();
   viewMap.clear();
   document.getElementById("viewList")!.innerHTML = "";
@@ -416,6 +430,7 @@ async function clearViews() {
 
 async function resetStandaloneIModel(filename: string) {
   const spinner = document.getElementById("spinner") as HTMLDivElement;
+
   spinner.style.display = "block";
   IModelApp.viewManager.dropViewport(theViewport!);
   IModelApp.renderSystem.onShutDown();
@@ -501,16 +516,17 @@ function wireIconsToFunctions() {
 // main entry point.
 async function main() {
   // this is the default configuration
-  const configuration: any = {
+  configuration = {
     userName: "bistroDEV_pmadm1@mailinator.com",
     password: "pmadm1",
     projectName: "plant-sta",
     iModelName: "NabeelQATestiModel",
-  };
+  } as SVTConfiguration;
 
   // override anything that's in the configuration
   retrieveConfigurationOverrides(configuration);
   applyConfigurationOverrides(configuration);
+
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
