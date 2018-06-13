@@ -29,7 +29,7 @@ export namespace WebGLTestContext {
 
   export function startup() {
     MaybeRenderApp.startup();
-    isInitialized = true;
+    isInitialized = MaybeRenderApp.hasRenderSystem;
   }
 
   export function shutdown() {
