@@ -133,13 +133,15 @@ describe("Viewport", () => {
       plan = undefined;
     }
 
-    expect(plan).not.to.be.undefined;
-    expect(plan!.is3d).to.be.true;
-    expect(plan!.activeVolume).to.be.undefined;
-    expect(plan!.hline).not.to.be.undefined;
-    expect(plan!.hline!.visible.ovrColor).to.be.false;
-    expect(plan!.hline!.hidden.width).to.equal(0);
-    expect(plan!.lights).to.be.undefined;
+    assert.isDefined(plan);
+    if (plan) {
+      assert.isTrue(plan.is3d);
+      assert.isUndefined(plan.activeVolume);
+      assert.isDefined(plan.hline);
+      assert.isFalse(plan.hline!.visible.ovrColor);
+      assert.equal(plan.hline!.hidden.width, 1);
+      assert.isUndefined(plan.lights);
+    }
   });
 });
 

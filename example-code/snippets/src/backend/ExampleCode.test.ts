@@ -19,7 +19,7 @@ describe("Example Code", () => {
   });
 
   after(() => {
-    iModel.close(accessToken);
+    iModel.closeStandalone();
   });
 
   /** Gives example code something to call. */

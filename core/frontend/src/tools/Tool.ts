@@ -498,8 +498,6 @@ export abstract class InteractiveTool extends Tool {
    */
   public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
 
-
-
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
    * @param hit The HitDetail whose info is needed.
