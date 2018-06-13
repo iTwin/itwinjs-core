@@ -11,13 +11,14 @@ import { EditManipulator, ManipulatorSelectionMode } from "./EditManipulator";
 import { IModelConnection } from "../IModelConnection";
 import { SelectEventType } from "../SelectionSet";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeGestureEvent, GestureId } from "./Tool";
+import { BeButtonEvent, BeButton, BeGestureEvent, GestureId, BeCursor } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { LinePixels, ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { FenceParams } from "../FenceParams";
 import { AccuDrawHintBuilder } from "../AccuDraw";
+import { Id64Arg } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 
 /** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
@@ -37,6 +38,13 @@ export const enum SelectionMode {
   Add,
   /** Identified elements are removed from the current selection set */
   Remove,
+}
+
+export const enum SelectionProcessing {
+  AddElementToSelection,
+  RemoveElementFromSelection,
+  InvertElementInSelection, // (if element is in selection remove it else add it.)
+  ReplaceSelectionWithElement,
 }
 
 export const enum ManipulatorPreference { Disabled, Placement, Geometry }
@@ -83,13 +91,31 @@ export class SelectionTool extends PrimitiveTool {
   protected initSelectTool() {
     this.isDragSelect = this.isDragControl = this.isDragElement = this.targetIsLocked = false;
     this.points.length = 0;
-    /// IModelApp.toolAdmin.setCursor(ViewManager:: GetManager().GetCursor(Display:: Cursor:: Id:: Arrow));
+    const enableLocate = SelectionMethod.Pick === this.getSelectionMethod();
+    IModelApp.toolAdmin.setCursor(enableLocate ? BeCursor.Arrow : BeCursor.CrossHair);
     IModelApp.toolAdmin.setLocateCircleOn(true);
     IModelApp.locateManager.initToolLocate(); // For drag move/copy...
     IModelApp.locateManager.options.allowDecorations = true; // Support edit manipulator for transient geometry...
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
-    IModelApp.accuSnap.enableLocate(true);
+    IModelApp.accuSnap.enableLocate(enableLocate);
     IModelApp.accuSnap.enableSnap(false);
+  }
+
+  public processSingleSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
+    // NEEDSWORK...SelectionScope
+    switch (process) {
+      case SelectionProcessing.AddElementToSelection:
+        return this.iModel.selectionSet.add(elementId);
+      case SelectionProcessing.RemoveElementFromSelection:
+        return this.iModel.selectionSet.remove(elementId);
+      case SelectionProcessing.InvertElementInSelection: // (if element is in selection remove it else add it.)
+        return this.iModel.selectionSet.invert(elementId);
+      case SelectionProcessing.ReplaceSelectionWithElement:
+        this.iModel.selectionSet.replace(elementId);
+        return true;
+      default:
+        return false;
+    }
   }
 
   public onSingleTap(ev: BeGestureEvent): boolean {
@@ -690,52 +716,45 @@ export class SelectionTool extends PrimitiveTool {
 
     const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport);
     if (hit) {
-      // DgnElementCPtr element = hit -> GetElement();
+      switch (this.getSelectionMode()) {
+        case SelectionMode.Replace: {
+          if (ev.isControlKey) {
+            if (hit.isElementHit())
+              this.processSingleSelection(hit.sourceId, SelectionProcessing.InvertElementInSelection);
+            else
+              this.synchManipulators(true); // Replace transient manipulator...
+          } else {
+            if (hit.isElementHit()) {
+              if (!this.processSingleSelection(hit.sourceId, SelectionProcessing.ReplaceSelectionWithElement)) {
+                // Selection un-changed...give manipulator a chance to use new HitDetail...
+                if (this.manipulator && this.manipulator.onNewHit(hit))
+                  this.synchManipulators(true); // Clear manipulator...
+              }
+            } else {
+              // If we don't have a current manipulator, or if the current manipulator doesn't like the new HitDetail, synch...
+              if (!this.manipulator || this.manipulator.onNewHit(hit))
+                this.synchManipulators(true); // Clear manipulator...
+            }
+          }
+          break;
+        }
 
-      // switch (GetSelectionMode()) {
-      //   case SelectionMode:: Replace:
-      //     {
-      //       if (ev.IsControlKey()) {
-      //         if (element.IsValid())
-      //           loadSelection(* element, InvertElementInSelection);
-      //         else
-      //           SynchManipulators(true); // Replace transient manipulator...
-      //       }
-      //       else {
-      //         if (element.IsValid()) {
-      //           if (!loadSelection(* element, ReplaceSelectionWithElement)) {
-      //             // Selection un-changed...give manipulator a chance to use new HitDetail...
-      //             if (this.m_manipulator.IsValid() && this.m_manipulator -> _OnNewHit(* hit))
-      //               SynchManipulators(true); // Clear manipulator...
-      //           }
-      //         }
-      //         else {
-      //           // If we don't have a current manipulator, or if the current manipulator doesn't like the new HitDetail, synch...
-      //           if (!this.m_manipulator.IsValid() || this.m_manipulator -> _OnNewHit(* hit))
-      //             SynchManipulators(true); // Clear manipulator...
-      //         }
-      //       }
-      //       break;
-      //     }
+        case SelectionMode.Add: {
+          if (hit.isElementHit())
+            this.processSingleSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
+          else
+            this.synchManipulators(true); // Clear manipulator...
+          break;
+        }
 
-      //   case SelectionMode:: Add:
-      //     {
-      //       if (element.IsValid())
-      //         loadSelection(* element, AddElementToSelection);
-      //       else
-      //         SynchManipulators(true); // Clear manipulator...
-      //       break;
-      //     }
-
-      //   case SelectionMode:: Remove:
-      //     {
-      //       if (element.IsValid())
-      //         loadSelection(* element, RemoveElementFromSelection);
-      //       else
-      //         SynchManipulators(true); // Clear manipulator...
-      //       break;
-      //     }
-      // }
+        case SelectionMode.Remove: {
+          if (hit.isElementHit())
+            this.processSingleSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+          else
+            this.synchManipulators(true); // Clear manipulator...
+          break;
+        }
+      }
       return false;
     }
 
@@ -785,24 +804,21 @@ export class SelectionTool extends PrimitiveTool {
       const autoHit = IModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit...
-      if (!autoHit || autoHit.isSameHit(lastHit)) {
-        //   DgnElementCPtr element = lastHit -> GetElement();
+      if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
+        const response = new LocateResponse();
+        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport);
 
-        //   if (element.IsValid()) {
-        //     HitDetailCP nextHit = ElementLocateManager:: GetManager().DoLocate(NULL, NULL, false, * ev.GetPoint(), ev.GetViewport());
-        //     DgnElementCPtr nextElement = (nullptr != nextHit ? nextHit -> GetElement() : nullptr);
+        // remove element(s) previously selected if in replace mode, or if we have a next element in add mode...
+        if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
+          this.processSingleSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
 
-        //     // remove element(s) previously selected if in replace mode, or if we have a next element in add mode...
-        //     if (SelectionMode:: Replace == GetSelectionMode() || nextElement.IsValid())
-        //     loadSelection(* element, RemoveElementFromSelection);
-
-        //     // add element(s) located via reset button
-        //     if (nextElement.IsValid())
-        //       loadSelection(* nextElement, AddElementToSelection);
-        //   return false;
-        // }
+        // add element(s) located via reset button
+        if (undefined !== nextHit)
+          this.processSingleSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+        return false;
       }
     }
+
     IModelApp.accuSnap.resetButton();
     return false;
   }

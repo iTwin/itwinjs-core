@@ -154,13 +154,14 @@ export class HitList {
 
   /**
    * get a hit from a particular index into a HitList
-   * return       the requested hit from the HitList or undefined
+   * return the requested hit from the HitList or undefined
    */
   public getHit(hitNum: number): HitDetail | undefined {
     if (hitNum < 0) hitNum = this.size() - 1;
     return (hitNum >= this.size()) ? undefined : this.hits[hitNum];
   }
 
+  /** When setting one or more indices to undefined you must call dropNulls afterwards */
   public setHit(i: number, p: HitDetail | undefined): void {
     if (i < 0 || i >= this.size())
       return;
@@ -198,9 +199,10 @@ export class HitList {
     // walk backwards through list so we don't have to worry about what happens on remove
     for (let i = this.size() - 1; i >= 0; i--) {
       const thisHit = this.hits[i];
-      if (thisHit && sourceId === thisHit.sourceId)
+      if (thisHit && sourceId === thisHit.sourceId) {
         removedOne = true;
-      this.removeHit(i);
+        this.removeHit(i);
+      }
     }
     return removedOne;
   }

@@ -1,8 +1,6 @@
-import { IModelApp, IModelConnection, ViewState, Viewport, ViewRect, ViewTool, BeButtonEvent, DecorateContext, StandardViewId, ViewState3d, SpatialViewState, LocateResponse } from "@bentley/imodeljs-frontend";
-import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
+import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ColorDef, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
-import { Point3d } from "@bentley/geometry-core";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
@@ -214,70 +212,6 @@ function addModelToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyModelToggleChange(id));
 }
 
-export class LocateTool extends ViewTool {
-  public static toolId = "View.Locate";
-
-  private _curPoint = new Point3d();
-  private _worldPoint = new Point3d();
-  private _haveWorldPoint = false;
-  private _pixelColor: ColorDef = ColorDef.black.clone();
-
-  public constructor() { super(); }
-
-  public onPostInstall() { super.onPostInstall(); IModelApp.accuSnap.enableLocate(true); }
-  public onModelMotion(ev: BeButtonEvent) {
-    this._curPoint.setFrom(ev.point);
-
-    if (ev.viewport)
-      ev.viewport.invalidateDecorations();
-  }
-
-  public onDataButtonDown(ev: BeButtonEvent) {
-    this._worldPoint.setFrom(ev.point);
-    this._haveWorldPoint = true;
-    if (ev.viewport) {
-      ev.viewport.invalidateDecorations();
-
-      const response = new LocateResponse();
-      const hit = IModelApp.locateManager.doLocate(response, true, ev.point, ev.viewport);
-
-      if (undefined !== hit) {
-        showStatus("Pick: " + hit.sourceId);
-      }
-
-      const rect = new ViewRect(ev.viewPoint.x, ev.viewPoint.y, ev.viewPoint.x + 1, ev.viewPoint.y + 1);
-      const pixels = ev.viewport.readPixels(rect, Pixel.Selector.All);
-      if (undefined === pixels) {
-        this._pixelColor = ColorDef.black.clone();
-        showStatus("No pixel data");
-      } else {
-        const pixel = pixels.getPixel(ev.viewPoint.x, ev.viewPoint.y);
-        const red = pixel.type * (255.0 / 6.0);
-        const green = pixel.planarity * (255.0 / 4.0);
-        const blue = Math.max(pixel.distanceFraction, 0.0) * 255.0;
-        this._pixelColor = ColorDef.from(red, green, blue);
-        showStatus("Pixel: " + LocateTool._planarity[pixel.planarity], LocateTool._type[pixel.type] + " " + pixel.elementId + " " + pixel.distanceFraction);
-      }
-    }
-  }
-
-  public decorate(context: DecorateContext) {
-    context.viewport.drawLocateCursor(context, this._curPoint, context.viewport.pixelsFromInches(IModelApp.locateManager.getApertureInches()), true);
-    if (this._haveWorldPoint) {
-      const gf = context.createWorldOverlay();
-      gf.setSymbology(this._pixelColor, this._pixelColor, 10);
-      // gf.addPointString([this._worldPoint]);
-      // context.addWorldOverlay(gf.finish()!);
-      const pt = context.viewport.worldToView(this._worldPoint);
-      gf.addPointString([pt]);
-      context.addViewOverlay(gf.finish()!);
-    }
-  }
-
-  private static _planarity = ["unknown", "none", "planar", "non-planar"];
-  private static _type = ["unknown", "none", "surface", "linear", "edge", "silhouette"];
-}
-
 function toggleStandardViewMenu(_event: any) {
   const menu = document.getElementById("standardRotationMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
@@ -397,8 +331,7 @@ function startWindowArea(_event: any) {
 
 // starts element selection tool
 function startSelect(_event: any) {
-  // IModelApp.tools.run("Select");
-  IModelApp.tools.run("View.Locate", theViewport!);
+  IModelApp.tools.run("Select");
 }
 
 // starts walk command
@@ -540,8 +473,6 @@ async function main() {
     // initialize the Project and IModel Api
     await ProjectApi.init();
     await IModelApi.init();
-
-    IModelApp.tools.register(LocateTool);
 
     if (!configuration.standalone) {
       // log in.

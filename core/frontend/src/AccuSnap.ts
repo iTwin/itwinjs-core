@@ -61,7 +61,6 @@ export class AccuSnap {
   public explanation?: string;                           // localized message explaining why last error was generated.
   private candidateSnapMode = SnapMode.Nearest;          // during snap creation: the snap to try
   private suppressed = 0;                                // number of times "suppress" has been called -- unlike suspend this is not automatically cleared by tools
-  private wasAborted = false;                            // was the search for elements from last motion event aborted?
   private noMotionCount = 0;                             // number of times "noMotion" has been called since last motion
   private readonly infoPt = new Point3d();               // anchor point for infoWindow. window is cleared when cursor moves away from this point.
   private readonly lastCursorPos = new Point2d();        // Location of cursor when we last checked for motion
@@ -589,33 +588,17 @@ export class AccuSnap {
     // NOTE: Since TestHit will use the same HitSource as the input hit we only need to sets this for DoPick...
     options.hitSource = this.isSnapEnabled() ? HitSource.AccuSnap : HitSource.MotionLocate;
 
-    let keepCurrentHit = false;
-    const canBeSticky = !force && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && this.currHit.priority < HitPriority.PlanarSurface);
-    let aperture = (vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
-
     // see if we should keep the current hit
-    if (canBeSticky) {
-      const status = picker.testHit(this.currHit!, this.retestList, vp, testPoint, this.getStickyFactor() * aperture, options);
-
-      if (status === TestHitStatus.Aborted) {
-        this.wasAborted = true;
-        return SnapStatus.Aborted;
-      }
-
-      if (status === TestHitStatus.IsOn)
-        keepCurrentHit = true;
-    }
+    let aperture = (vp.pixelsFromInches(IModelApp.locateManager.getApertureInches()) / 2.0) + 1.5;
+    const canBeSticky = !force && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && this.currHit.priority < HitPriority.PlanarSurface);
+    const keepCurrentHit = (canBeSticky && TestHitStatus.IsOn === picker.testHit(this.currHit!, this.retestList, vp, testPoint, this.getStickyFactor() * aperture, options));
 
     this.initializeForCheckMotion();
-
     aperture *= this.getSearchDistance();
 
     if (0 === picker.doPick(vp, testPoint, aperture, options)) {
-      this.wasAborted = picker.lastPickAborted;
-      if (!this.wasAborted)
-        this.aSnapHits = undefined; // Clear any previous hit list so reset won't cycle through hits cursor is no longer over, etc.
-
-      return this.wasAborted ? SnapStatus.Aborted : SnapStatus.NoElements;
+      this.aSnapHits = undefined; // Clear any previous hit list so reset won't cycle through hits cursor is no longer over, etc.
+      return SnapStatus.NoElements;
     }
 
     this.aSnapHits = picker.getHitList(true); // take ownership of the pickElem hit list.
@@ -838,7 +821,6 @@ export class AccuSnap {
     out.snapStatus = SnapStatus.Disabled;
     const wasHot = this.isHot();
 
-    this.wasAborted = false;
     this.clearInfoBalloon(ev);
 
     let hit: HitDetail | undefined;
@@ -849,10 +831,6 @@ export class AccuSnap {
         hit = this.findLocatableHit(ev, true, out);
       }
     }
-
-    // Don't change current hit based on incomplete hit list...
-    if (this.wasAborted)
-      return;
 
     // set the current hit and display the sprite (based on snap's KeypointType)
     if (hit || this.currHit) {
@@ -866,14 +844,9 @@ export class AccuSnap {
 
   public onMotionStopped(_ev: BeButtonEvent): void { }
   public onNoMotion(ev: BeButtonEvent): void {
-    if (this.wasAborted)
-      this.onMotion(ev);
-
     this.noMotionCount++;
-
     // if (1 === this.noMotionCount)
     //   this.flashInOtherViews();
-
     this.displayInfoBalloon(ev.viewPoint, ev.viewport!, ev.rawPoint);
   }
 
