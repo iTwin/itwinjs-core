@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 "use strict";
 
@@ -24,7 +24,7 @@ if (argv.recursively !== undefined && argv.recursively === "true")
 
 console.log("Grabbing files...");
 
-// Property names are the 
+// Property names are the
 let inputFileNames = [];
 let rootDir = "";
 let rootDirAbsolute = "";
@@ -69,7 +69,7 @@ const stream = fs.createWriteStream(modLocation);
 
 stream.once("open", (fd) => {
   stream.write("/*---------------------------------------------------------------------------------------------\n");
-  stream.write("|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $\n");
+  stream.write("|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $\n");
   stream.write("*--------------------------------------------------------------------------------------------*/\n");
   stream.write("// This is a generated file from an npm script. Please do not modify.\n\n");
 

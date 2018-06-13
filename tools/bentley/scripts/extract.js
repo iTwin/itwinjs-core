@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 "use strict";
 
@@ -21,7 +21,7 @@ const ignoreFunction = (file, stats) => {
   if (stats.isDirectory())
     return !recursive; // don't ignore subdirectories in recursive mode
 
-  return !file.endsWith(fileExt); // don't ignore files with the desired extension 
+  return !file.endsWith(fileExt); // don't ignore files with the desired extension
 };
 
 readDirectory(extractDir, [ignoreFunction], (error, inputFileNames) => {
