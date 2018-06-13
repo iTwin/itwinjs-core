@@ -51,7 +51,6 @@ describe("ToolRegistry", () => {
     assert.isDefined(command, "Found Select Elements Command");
     if (command) {
       assert.isTrue(command.prototype instanceof Tool);
-      assert.isTrue(IModelApp.tools.run(command.toolId));
     }
   });
 

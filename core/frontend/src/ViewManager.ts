@@ -17,8 +17,7 @@ import { DecorateContext } from "./ViewContext";
  * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
  * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
  *
- * A single ViewManager is created when [[IModelApp.startup]] is called. It can be accessed via [[IModelApp.viewManager]].
- *
+ * A single ViewManager is created when [[IModelApp.startup]] is called. It can be accessed via the static member [[IModelApp.viewManager]].
  */
 export class ViewManager {
   public inDynamicsMode = false;
@@ -90,7 +89,7 @@ export class ViewManager {
     if (vp === this.selectedView) // already the selected view
       return BentleyStatus.SUCCESS;
 
-    if (undefined === vp || !vp.isActive) {
+    if (undefined === vp) {
       this.clearSelectedView();
       return BentleyStatus.ERROR;
     }

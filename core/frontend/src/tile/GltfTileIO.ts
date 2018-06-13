@@ -216,7 +216,8 @@ export namespace GltfTileIO {
     protected readonly batchData: any;
     protected readonly materialValues: any;
     protected readonly textures: any;
-    protected readonly namedTextures: any;
+    protected readonly renderMaterials: any;  // Materials that may be deserialized and created directly
+    protected readonly namedTextures: any;    // Textures that may be deserialized and created directly
     protected readonly images: any;
     protected readonly binaryData: Uint8Array;
     protected readonly model: GeometricModelState;
@@ -273,6 +274,8 @@ export namespace GltfTileIO {
 
       this.textures = props.scene.textures;
       this.images = props.scene.images;
+
+      this.renderMaterials = props.scene.renderMaterials;
       this.namedTextures = props.scene.namedTextures;
 
       this.model = model;

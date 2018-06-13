@@ -187,7 +187,7 @@
       "port": 9223,
       "webRoot": "${workspaceRoot}",
       "sourceMaps": true
-    }
+    },
     {
       "type": "node",
       "request": "launch",

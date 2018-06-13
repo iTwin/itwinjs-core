@@ -167,10 +167,9 @@ export class MeshArgs {
     mesh.toFeatureIndex(this.features);
 
     this.material = mesh.displayParams.material;
-    this.texture = undefined;
-    if (this.material) {
-      this.texture = this.material.textureMapping ? this.material.textureMapping.texture : undefined;
-    }
+    if (undefined !== mesh.displayParams.textureMapping)
+      this.texture = mesh.displayParams.textureMapping.texture;
+
     this.fillFlags = mesh.displayParams.fillFlags;
     this.isPlanar = mesh.isPlanar;
     this.is2d = mesh.is2d;

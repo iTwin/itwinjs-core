@@ -111,7 +111,7 @@ export class IModelApp {
   protected static onStartup(): void { }
 
   /**
-   * Implement this method to supply options for the initialization of the [I18N]($imodeljs-i18n) system.
+   * Implement this method to supply options for the initialization of the [I18N]($i18n) system.
    */
   protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
 

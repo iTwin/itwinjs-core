@@ -26,35 +26,31 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 
 /** Viewport synchronization flags */
 export class SyncFlags {
+  private decorations = false;
+  private scene = false;
+  private renderPlan = false;
+  private controller = false;
+  private rotatePoint = false;
+  private redrawPending = false;
   public get isValidDecorations(): boolean { return this.decorations; }
   public get isValidScene(): boolean { return this.scene; }
   public get isValidController(): boolean { return this.controller; }
   public get isValidRenderPlan(): boolean { return this.renderPlan; }
   public get isValidRotatePoint(): boolean { return this.rotatePoint; }
-  public get isFirstDrawComplete(): boolean { return this.firstDrawComplete; }
   public get isRedrawPending(): boolean { return this.redrawPending; }
-  constructor(private decorations: boolean = false,
-    private scene: boolean = false,
-    private renderPlan: boolean = false,
-    private controller: boolean = false,
-    private rotatePoint: boolean = false,
-    private firstDrawComplete: boolean = false,
-    private redrawPending: boolean = false) { }
   public invalidateDecorations(): void { this.decorations = false; }
   public invalidateScene(): void { this.scene = false; this.invalidateDecorations(); }
   public invalidateRenderPlan(): void { this.renderPlan = false; this.invalidateScene(); }
-  public invalidateController(): void { this.controller = false; this.invalidateRenderPlan(); this.invalidateFirstDrawComplete(); }
+  public invalidateController(): void { this.controller = false; this.invalidateRenderPlan(); }
   public invalidateRotatePoint(): void { this.rotatePoint = false; }
-  public invalidateFirstDrawComplete(): void { this.firstDrawComplete = false; }
   public invalidateRedrawPending(): void { this.redrawPending = false; }
   public setValidDecorations(): void { this.decorations = true; }
-  public setFirstDrawComplete(): void { this.firstDrawComplete = true; }
   public setValidScene(): void { this.scene = true; }
   public setValidController(): void { this.controller = true; }
   public setValidRenderPlan(): void { this.renderPlan = true; }
   public setValidRotatePoint(): void { this.rotatePoint = true; }
   public setRedrawPending(): void { this.redrawPending = true; }
-  public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.firstDrawComplete = other.firstDrawComplete; this.redrawPending = other.redrawPending; }
+  public initFrom(other: SyncFlags): void { this.decorations = other.decorations; this.scene = other.scene; this.renderPlan = other.renderPlan; this.controller = other.controller; this.rotatePoint = other.rotatePoint; this.redrawPending = other.redrawPending; }
 }
 
 /** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view. */
@@ -290,18 +286,28 @@ export class DecorationAnimator implements ViewportAnimator {
 }
 
 /**
- * A Viewport maps a set of one or more Models to an output device. It holds a ViewState that defines
- * the viewing parameters.
+ * A `Viewport` renders one or more Models onto an HTMLCanvasElement.
+ *
+ * It refers to a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
+ * modify the ViewState object. Changes to the ViewState are only reflected in a Viewport after the
+ * [[synchWithView]] method is called.
+ *
+ * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
+ * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
  */
 export class Viewport {
   private zClipAdjusted = false;    // were the view z clip planes adjusted due to front/back clipping off?
   private readonly viewCorners: Range3d = new Range3d();
   private animator?: Animator;
-  public flashUpdateTime?: BeTimePoint;  // time the current flash started
-  public flashIntensity = 0;        // current flash intensity from [0..1]
-  public flashDuration = 0;         // the length of time that the flash intensity will increase (in seconds)
+  /** Time the current flash started */
+  public flashUpdateTime?: BeTimePoint;
+  /** Current flash intensity from [0..1] */
+  public flashIntensity = 0;
+  /** The length of time that the flash intensity will increase (in seconds) */
+  public flashDuration = 0;
   private flashedElem?: string;         // id of currently flashed element
-  public lastFlashedElem?: string;      // id of last flashed element
+  /** Id of last flashed element */
+  public lastFlashedElem?: string;
   private _viewCmdTargetCenter?: Point3d;
   public frustFraction: number = 1.0;
   public maxUndoSteps = 20;
@@ -314,13 +320,13 @@ export class Viewport {
   public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   public readonly sync: SyncFlags = new SyncFlags();
-  /** view origin, potentially expanded */
+  /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
-  /** view delta, potentially expanded */
+  /** View delta, potentially expanded */
   public readonly viewDelta = new Vector3d();
-  /** view origin (from ViewState, un-expanded) */
+  /** View origin (from ViewState, un-expanded) */
   public readonly viewOriginUnexpanded = new Point3d();
-  /** view delta (from ViewState, un-expanded) */
+  /** View delta (from ViewState, un-expanded) */
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
   public readonly rotMatrix = new RotMatrix();
@@ -346,7 +352,7 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  /** construct a new ViewPort
+  /** construct a new Viewport
    * @param canvas The HTML canvas
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
@@ -363,7 +369,7 @@ export class Viewport {
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
 
-  /** the current ViewState controlling this Viewport */
+  /** The current ViewState controlling this Viewport */
   public get view(): ViewState { return this._view; }
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
@@ -471,7 +477,7 @@ export class Viewport {
   }
 
   /**
-   * Change the ViewState of this ViewPort
+   * Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
@@ -568,7 +574,7 @@ export class Viewport {
     return view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
   }
 
-  /* get the extents of this view, in ViewCoordinates, as a Range3d */
+  /* Get the extents of this view, in ViewCoordinates, as a Range3d */
   private getViewCorners(): Range3d {
     const corners = this.viewCorners;
     const viewRect = this.viewRect;
@@ -621,7 +627,7 @@ export class Viewport {
   }
 
   private readonly _viewRange: ViewRect = new ViewRect();
-  /** get the rectangle of this Viewport in ViewCoordinates. */
+  /** Get the rectangle of this Viewport in ViewCoordinates. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** True if an undoable viewing operation exists on the stack */
@@ -1122,7 +1128,7 @@ export class Viewport {
     const validSize = this.view.setupFromFrustum(inFrustum);
     if (this.setupFromView() !== ViewStatus.Success)
       return false;
-    this.view.setRotation(this.rotMatrix);
+    this.view.setRotation(this.rotMatrix);  // Is this redundant, occurring in setupFromView?..
     return validSize === ViewStatus.Success;
   }
 

@@ -414,7 +414,7 @@ function startRotateView(_event: any) {
 // change active view.
 function changeView(event: any) {
   const viewName = event.target.selectedOptions["0"].label;
-  _changeView(viewMap.get(viewName)!);
+  _changeView(viewMap.get(viewName)!.clone());
 }
 
 async function clearViews() {

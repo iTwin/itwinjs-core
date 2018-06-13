@@ -283,10 +283,10 @@ export abstract class RenderSystem {
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
   /** Create a new Texture from an ImageBuffer. */
-  public createTexture(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+  public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   /** Create a new Texture from an ImageSource. */
-  public createTextureFromImageSrc(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+  public createTextureFromImageSource(_source: ImageSource, _width: number, _height: number, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   // /** Create a Texture from a graphic. */
   // public abstract createGeometryTexture(graphic: Graphic, range: Range2d, useGeometryColors: boolean, forAreaPattern: boolean): Texture;

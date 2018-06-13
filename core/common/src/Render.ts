@@ -4,7 +4,7 @@
 /** @module Rendering */
 
 import { Id64, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorByName } from "./ColorDef";
+import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor } from "@bentley/geometry-core";
@@ -713,7 +713,7 @@ export const enum LinePixels {
   Code7 = 0xff18ff18,       // 7
   HiddenLine = 0xcccccccc,  // hidden lines
   Invisible = 0x00000001,   // nearly invisible
-  Invalid = 0xffffffff,
+  Invalid = -1,
 }
 
 /** Represents a frustum as 6 planes and provides containment and intersection testing */
@@ -864,8 +864,8 @@ export namespace HiddenLine {
     public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
     public constructor(json: any) {
       this.visible = new HiddenLine.Style(undefined !== json ? json.visible : undefined);
-      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine });
-      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transparencyThreshold, 1.0) : 1.0;
+      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(ColorByName.white), width: 0, pattern: LinePixels.HiddenLine });
+      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transThreshold, 1.0) : 1.0;
     }
   }
 }
@@ -921,7 +921,7 @@ export namespace Gradient {
     /** Fraction from 0.0 to 1.0 to denote position along gradient */
     value: number;
     /** Color value for given fraction */
-    color: ColorDef;
+    color: ColorDefProps;
   }
 
   export class KeyColor implements KeyColorProps {
@@ -929,7 +929,7 @@ export namespace Gradient {
     public color: ColorDef;
     public constructor(json: KeyColorProps) {
       this.value = json.value;
-      this.color = json.color;
+      this.color = new ColorDef(json.color);
     }
   }
 
@@ -970,7 +970,7 @@ export namespace Gradient {
       result.angle = json.angle ? Angle.fromJSON(json.angle) : undefined;
       result.tint = json.tint;
       result.shift = json.shift ? json.shift : 0;
-      json.keys.forEach((key) => result.keys.push(key));
+      json.keys.forEach((key) => result.keys.push(new KeyColor(key)));
       return result;
     }
 
