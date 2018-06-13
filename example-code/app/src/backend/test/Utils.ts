@@ -7,6 +7,8 @@ import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
+import { RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
+import { IModelApp } from "@bentley/imodeljs-frontend/lib/frontend";
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
@@ -44,6 +46,20 @@ export class KnownTestLocations {
     return path.join(__dirname, "output");
   }
 
+}
+
+export class NullRenderSystem extends RenderSystem {
+  public createTarget() { return undefined as any; }
+  public createOffscreenTarget() { return undefined as any; }
+  public createGraphic() { return undefined as any; }
+  public createGraphicList() { return undefined as any; }
+  public createBranch() { return undefined as any; }
+  public createBatch() { return undefined as any; }
+  public constructor() { super(undefined as any); }
+}
+
+export class NoRenderApp extends IModelApp {
+  protected static supplyRenderSystem(): RenderSystem { return new NullRenderSystem(); }
 }
 
 export class IModelTestUtils {

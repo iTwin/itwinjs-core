@@ -311,6 +311,7 @@ export class Viewport {
   private static nearScale24 = 0.0003; // max ratio of frontplane to backplane distance for 24 bit zbuffer
   private _evController?: EventController;
   private _view!: ViewState;
+  public readonly target: RenderTarget;
   private static get2dFrustumDepth() { return Constant.oneMeter; }
   public readonly sync: SyncFlags = new SyncFlags();
   /** view origin, potentially expanded */
@@ -330,18 +331,11 @@ export class Viewport {
   public readonly hilite = new Hilite.Settings();
 
   /**
-   * Determine whether this Viewport is currently active. Viewports become "active" after they have
-   * been initialized and connected to an RenderTarget.
-   */
-  public get isActive(): boolean { return !!this._view && !!this._target; }
-
-  /**
    * Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.showGrid(); }
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
-  public get target(): RenderTarget { return this._target!; }
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
@@ -356,7 +350,12 @@ export class Viewport {
    * @param canvas The HTML canvas
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
-  constructor(public canvas: HTMLCanvasElement, viewState: ViewState, private _target?: RenderTarget) { this.changeView(viewState); this.setCursor(); this.saveViewUndo(); }
+  constructor(public canvas: HTMLCanvasElement, viewState: ViewState) {
+    this.target = IModelApp.renderSystem.createTarget(canvas);
+    this.changeView(viewState);
+    this.setCursor();
+    this.saveViewUndo();
+  }
 
   /** Get the ClientRect of the canvas for this Viewport. */
   public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
@@ -373,10 +372,8 @@ export class Viewport {
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
 
   public changeDynamics(dynamics: DecorationList | undefined): void {
-    if (this.isActive) {
-      this.target.changeDynamics(dynamics);
-      this.invalidateDecorations();
-    }
+    this.target.changeDynamics(dynamics);
+    this.invalidateDecorations();
   }
 
   /** Change the cursor for this Viewport */
@@ -485,8 +482,7 @@ export class Viewport {
 
     this.invalidateScene();
     this.sync.invalidateController();
-    if (undefined !== this._target)
-      this._target.queueReset();
+    this.target.queueReset();
   }
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
@@ -1476,9 +1472,6 @@ export class Viewport {
   }
 
   public renderFrame(plan: UpdatePlan): boolean {
-    if (!this.isActive)
-      return true;
-
     const sync = this.sync;
     const view = this.view;
     const target = this.target;
@@ -1571,9 +1564,6 @@ export class Viewport {
    * @returns a Pixel.Buffer object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    if (!this.isActive)
-      return undefined;
-
     const viewRect = this.viewRect;
     if (!rect.isContained(viewRect))
       return undefined;
@@ -1585,7 +1575,7 @@ export class Viewport {
    * Attempt to determine the nearest visible geometry point within radius of supplied pick point.
    * @param pickPoint Center point in world coordinates
    * @param radius Integer radius of the circular area to include, in pixels
-   * @param out Optional Point3d preallocated to hold the result
+   * @param out Optional Point3d pre-allocated to hold the result
    * @returns the coordinates of the point within the circular area which is closest to the camera.
    */
   public determineNearestVisibleGeometryPoint(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {

@@ -40,7 +40,7 @@ export class IModelConnection extends IModel {
 
   /**
    * Event called immediately before an IModelConnection is closed.
-   * <em>note:</em> Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
+   * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
@@ -284,6 +284,16 @@ export class IModelConnection extends IModel {
 
 export namespace IModelConnection {
 
+  /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
+  export interface ViewSpec {
+    /** The element id of the ViewDefinition. This string may be passed to [[IModelConnection.Views.load]]. */
+    id: string;
+    /** The name of the view. This string may be used to create a list with the possible view names. */
+    name: string;
+    /** The fullClassName of the ViewDefinition. Useful for sorting the list of views. */
+    class: string;
+  }
+
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models {
     public loaded = new Map<string, ModelState>();
@@ -458,6 +468,24 @@ export namespace IModelConnection {
       const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
       assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
       return viewProps as ViewDefinitionProps[];
+    }
+
+    /**
+     * Get an array of the ViewSpecs for all views in this IModel that satisfy a ViewQueryParams.
+     *
+     * This is typically used to create a list for UI.
+     *
+     * For example:
+     * ```ts
+     * [[include:IModelConnection.Views.getViewList]]
+     * ```
+     * @param queryParams The parameters for the views to find.
+     */
+    public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
+      const views: ViewSpec[] = [];
+      const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
+      viewProps.forEach((viewProp) => { views.push({ id: viewProp.id as string, name: viewProp.code!.value!, class: viewProp.classFullName }); });
+      return views;
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */

@@ -369,8 +369,7 @@ async function openView(state: SimpleViewState) {
   // find the canvas.
   const htmlCanvas: HTMLCanvasElement = document.getElementById("imodelview") as HTMLCanvasElement;
   if (htmlCanvas) {
-    const target = IModelApp.renderSystem.createTarget(htmlCanvas);
-    theViewport = new Viewport(htmlCanvas, state.viewState!, target);
+    theViewport = new Viewport(htmlCanvas, state.viewState!);
     await _changeView(state.viewState!);
     IModelApp.viewManager.addViewport(theViewport);
   }
@@ -512,7 +511,6 @@ function wireIconsToFunctions() {
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 }
 
-// ----------------------------------------------------------
 // main entry point.
 async function main() {
   // this is the default configuration
@@ -530,7 +528,7 @@ async function main() {
   console.log("Configuration", JSON.stringify(configuration));
 
   // start the app.
-  IModelApp.startup("QA", true);
+  IModelApp.startup();
 
   if (ElectronRpcConfiguration.isElectron)
     ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);

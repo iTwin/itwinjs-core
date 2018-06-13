@@ -327,7 +327,6 @@ export class IdMap {
 export class System extends RenderSystem {
   private readonly _currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
-  public readonly canvas: HTMLCanvasElement;
   public readonly frameBufferStack = new FrameBufferStack();
 
   public readonly techniques: Techniques;
@@ -344,11 +343,10 @@ export class System extends RenderSystem {
 
   public static identityTransform = Transform.createIdentity();
 
-  public static create(): System | undefined {
+  public static create(): System {
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
-    if (null === canvas) {
-      return undefined;
-    }
+    if (null === canvas)
+      throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
     let context = canvas.getContext("webgl");
     if (null === context) {
@@ -472,7 +470,7 @@ export class System extends RenderSystem {
   }
 
   /**
-   * Creates a material and adds it to the imodel's render map. If the material already exists in the map, simply return it.
+   * Creates a material and adds it to the iModel's render map. If the material already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
   public createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
@@ -484,7 +482,7 @@ export class System extends RenderSystem {
     return idMap.getMaterial(params);
   }
 
-  /** Searches through the imodel's render map for a material, given its key. Returns undefined if none found. */
+  /** Searches through the iModel's render map for a material, given its key. Returns undefined if none found. */
   public findMaterial(key: string, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.renderCache.get(imodel);
     if (!idMap)
@@ -493,7 +491,7 @@ export class System extends RenderSystem {
   }
 
   /**
-   * Creates a texture using an ImageBuffer and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * Creates a texture using an ImageBuffer and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
   public createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
@@ -506,7 +504,7 @@ export class System extends RenderSystem {
   }
 
   /**
-   * Creates a texture using an ImageSource and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
   public createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
@@ -519,7 +517,7 @@ export class System extends RenderSystem {
   }
 
   /**
-   * Creates a texture using gradient symbology and adds it to the imodel's render map. If the texture already exists in the map, simply return it.
+   * Creates a texture using gradient symbology and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
   public getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
@@ -531,7 +529,7 @@ export class System extends RenderSystem {
     return idMap.getGradient(symb);
   }
 
-  /** Searches through the imodel's render map for a texture, given its key. Returns undefined if none found. */
+  /** Searches through the iModel's render map for a texture, given its key. Returns undefined if none found. */
   public findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.renderCache.get(imodel);
     if (!idMap)
@@ -540,8 +538,7 @@ export class System extends RenderSystem {
   }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, techniques: Techniques, capabilities: Capabilities) {
-    super();
-    this.canvas = canvas;
+    super(canvas);
     this.context = context;
     this.techniques = techniques;
     this.capabilities = capabilities;
@@ -550,10 +547,9 @@ export class System extends RenderSystem {
       if (lhs.iModelToken.iModelId !== rhs.iModelToken.iModelId) {
         if (lhs.iModelToken.iModelId === undefined || rhs.iModelToken.iModelId === undefined)
           return -1;
-        else if (lhs.iModelToken.iModelId < rhs.iModelToken.iModelId!)
+        if (lhs.iModelToken.iModelId < rhs.iModelToken.iModelId!)
           return -1;
-        else
-          return 1;
+        return 1;
       }
       return 0;
     });

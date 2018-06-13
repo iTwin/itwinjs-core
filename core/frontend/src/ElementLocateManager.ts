@@ -119,7 +119,7 @@ export class ElementPicker {
     if (list) list.resetCurrentHit();
   }
 
-  /** generate a list of elements that are close to a given point. */
+  /** Generate a list of elements that are close to a given point. */
   public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
     if (this.hitList && this.hitList.size() > 0 && !this.lastPickAborted && (vp === this.viewport) && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
