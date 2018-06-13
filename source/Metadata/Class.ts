@@ -338,6 +338,35 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     }
   }
 
+  /**
+   *
+   * @param jsonObj
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+
+    if (undefined !== jsonObj.modifier) {
+      if (typeof(jsonObj.modifier) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
+
+      const modifier = parseClassModifier(jsonObj.modifier);
+      if (undefined === modifier)
+        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${jsonObj.modifier}' is not a valid ECClassModifier.`);
+      this._modifier = modifier;
+    }
+
+    if (undefined !== jsonObj.baseClass) {
+      if (typeof(jsonObj.baseClass) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+
+      const baseClass = this.schema.getItemSync<ECClass>(jsonObj.baseClass, true);
+      if (!baseClass)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+      this._baseClass = createLazyLoadedItem(baseClass);
+    }
+  }
+
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitClass)
       await visitor.visitClass(this as AnyClass);
