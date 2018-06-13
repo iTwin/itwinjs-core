@@ -46,7 +46,7 @@ describe("EdgeOverrides", () => {
     expect(override.overridesLineCode).to.equal(true);
     expect(override.lineCode!).to.equal(LineCode.valueFromLinePixels(style.pattern));
 
-    style = new HiddenLine.Style({ ovrColor: false, color: 0xf00c, width: 5, pattern: 0xffffffff });
+    style = new HiddenLine.Style({ ovrColor: false, color: 0xf00c, width: 5, pattern: LinePixels.Invalid });
     color = FloatPreMulRgba.fromColorDef(style.color);
     override.init(false, style);
     expect(override.overridesColor).to.equal(false);

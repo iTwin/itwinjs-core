@@ -713,7 +713,7 @@ export const enum LinePixels {
   Code7 = 0xff18ff18,       // 7
   HiddenLine = 0xcccccccc,  // hidden lines
   Invisible = 0x00000001,   // nearly invisible
-  Invalid = 0xffffffff,
+  Invalid = -1,
 }
 
 /** Represents a frustum as 6 planes and provides containment and intersection testing */
@@ -864,7 +864,7 @@ export namespace HiddenLine {
     public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
     public constructor(json: any) {
       this.visible = new HiddenLine.Style(undefined !== json ? json.visible : undefined);
-      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine });
+      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(ColorByName.white), width: 0, pattern: LinePixels.HiddenLine });
       this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transThreshold, 1.0) : 1.0;
     }
   }
