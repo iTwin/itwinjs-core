@@ -8,7 +8,7 @@ import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels, TextureMapping, ImageSource, RenderTexture, RenderMaterial } from "@bentley/imodeljs-common";
+import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels, TextureMapping, ImageSource, RenderTexture, RenderMaterial, Gradient } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../render/System";
 import { RenderSystem } from "../render/System";
@@ -176,7 +176,6 @@ export namespace IModelTileIO {
     }
 
     protected createDisplayParams(json: any): DisplayParams | undefined {
-      // NB: We don't need to deserialize the gradient if present - will have a ready-to-use TextureMapping.
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
       const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
       const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));
@@ -194,6 +193,19 @@ export namespace IModelTileIO {
       if (!material) {
         const textureJson = json.texture;
         textureMapping = undefined !== textureJson ? this.textureMappingFromJson(textureJson) : undefined;
+
+        if (undefined === textureMapping) {
+          // Look for a gradient. If defined, create a texture mapping. No reason to pass the Gradient.Symb to the DisplayParams once we have the texture.
+          const gradientProps = json.gradient as Gradient.SymbProps;
+          const gradient = undefined !== gradientProps ? Gradient.Symb.fromJSON(gradientProps) : undefined;
+          if (undefined !== gradient) {
+            const texture = this.system.getGradientTexture(gradient, this.model.iModel);
+            if (undefined !== texture) {
+              // ###TODO: would be better if DisplayParams created the TextureMapping - but that requires an IModelConnection and a RenderSystem...
+              textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
+            }
+          }
+        }
       }
 
       return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping);
