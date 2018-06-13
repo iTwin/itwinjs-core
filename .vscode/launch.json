@@ -205,6 +205,14 @@
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug bank-demo",
+      "program": "${workspaceFolder}/bank-demo/lib/cli.js",
+      "cwd": "${workspaceFolder}/bank-demo/lib",
+      "args": []
+    }
   ],
   "compounds": [
     {

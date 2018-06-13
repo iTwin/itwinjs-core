@@ -67,6 +67,11 @@
       "packageName": "@bentley/imodeljs-i18n",
       "projectFolder": "core/i18n",
       "shouldPublish": true
+    },
+    {
+      "packageName": "bank-demo",
+      "projectFolder": "bank-demo",
+      "shouldPublish": true
     }
   ],
   "eventHooks": {
