@@ -46,7 +46,7 @@ export class IdleTool extends InteractiveTool {
     } else if (ev.isControlKey) {
       viewTool = IModelApp.tools.create("View." + vp.view.is3d() ? "Look" : "Scroll", vp) as ViewTool | undefined;
     } else if (ev.isShiftKey) {
-      viewTool = IModelApp.tools.create("View.Rotate", vp) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Rotate", vp, true, false, true) as ViewTool | undefined;
     } else if (false) {
       /* ###TODO: Other view tools if needed... */
     } else {
@@ -58,7 +58,7 @@ export class IdleTool extends InteractiveTool {
         return true;
       }
 
-      viewTool = IModelApp.tools.create("View.Pan", vp) as ViewTool | undefined;
+      viewTool = IModelApp.tools.create("View.Pan", vp, true, false, true) as ViewTool | undefined;
     }
 
     return !!viewTool && viewTool.run();

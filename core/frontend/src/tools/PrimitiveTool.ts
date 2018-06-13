@@ -12,6 +12,8 @@ import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { DynamicsContext } from "../ViewContext";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
+import { LocateResponse } from "../ElementLocateManager";
+import { HitDetail } from "../HitDetail";
 
 export const enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
@@ -38,78 +40,28 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
   public toolStateId: string = "";  // Tool State Id can be used to determine prompts and control UI control state.
 
-  /**  Returns the prompt based on the tool's current state. */
-  public getPrompt(): string { return ""; }
-
-  /** Notifies the tool that a view tool is starting. */
-  public onStartViewTool(_tool: Tool) { }
-
-  /** Notifies the tool that a view tool is exiting. Return true if handled. */
-  public onExitViewTool(): void { }
-
-  /** Notifies the tool that an input collector is starting. */
-  public onStartInputCollector(_tool: Tool) { }
-
-  /** Notifies the tool that an input collector is exiting. */
-  public onExitInputCollector() { }
-
-  /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
-  public requireWriteableTarget(): boolean { return true; }
-
-  /**
-   * Called when active view changes. Tool may choose to restart or exit based on current view type.
-   * @param current The new active view.
-   * @param previous The previously active view.
-   */
-  public onSelectedViewportChanged(current: Viewport, _previous: Viewport) {
-    if (this.isCompatibleViewport(current, true))
-      return;
-    this.onRestartTool();
-  }
-
   /** Get the iModel the tool is operating against. */
   public get iModel(): IModelConnection { return this.targetView!.view!.iModel as IModelConnection; }
 
   /**
-   * Called when an external event may invalidate the current tool's state.
-   * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
-   * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
-   *  @note You *MUST* check the status of installTool and call exitTool if it fails!
-   * ``` ts
-   * MyTool.oOnRestartTool() {
-   * const newTool = new MyTool();
-   * if (BentleyStatus.SUCCESS !== newTool.installTool())
-   *   this.exitTool(); // Tool exits to default tool if new tool instance could not be installed.
-   * }
-   * MyTool.onRestartTool() {
-   * _this.exitTool(); // Tool always exits to default tool.
-   * }
-   * ```
-   */
-  public abstract onRestartTool(): void;
-
-  /**
-   * Called to reset tool to initial state. This method is provided here for convenience; the only
-   * external caller is ElementSetTool. PrimitiveTool implements this method to call _OnRestartTool.
-   */
-  public onReinitialize(): void { this.onRestartTool(); }
-
-  /** Called on data button down event to lock the tool to its current target model. */
-  public autoLockTarget(): void { if (!this.targetView) return; this.targetIsLocked = true; }
-  public getCursor(): BeCursor { return BeCursor.Arrow; }
-
-  /** Establish this tool as the active PrimitiveTool.
-   *  @return SUCCESS if this tool is now the active PrimitiveTool.
-   *  @see InteractiveTool.onInstall
-   *  @see InteractiveTool.onPostInstall
+   * ( was DgnPrimitiveTool::_InstallToolImplementation )
+   * can be directly called ( instead of the code that would execute when installTool is called )
+   * Establish this tool as the active PrimitiveTool.
+   * @return SUCCESS if this tool is now the active PrimitiveTool.
+   * @see InteractiveTool.onInstall
+   * @see InteractiveTool.onPostInstall
    */
   public run(): boolean {
-    const toolAdmin = IModelApp.toolAdmin;
-    if (this.isCompatibleViewport(IModelApp.viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
+    const { toolAdmin, viewManager } = IModelApp;
+    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
       return false;
 
     toolAdmin.startPrimitiveTool(this);
     toolAdmin.setPrimitiveTool(this);
+
+    // The tool may exit in _OnPostInstall causing "this" to be
+    // deleted so _InstallToolImplementation must not call any
+    // methods on "this" after _OnPostInstall returns.
     toolAdmin.onPostInstallTool(this);
     return true;
   }
@@ -119,24 +71,28 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @param vp the Viewport to check
    */
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
-    if (!vp)
-      return false;
+    if (undefined === vp)
+      return false; // No views are open...
+
     const view = vp.view;
     const iModel = view.iModel;
     if (this.requireWriteableTarget()) {
-      if (iModel.isReadonly())
+      if (iModel.isReadonly()) {
+        // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.i18n.translate("DgnViewL10N::MSG_UnableToStartTool_FileIsReadOnly"))); ###TODO find correct i18n message code
         return false; // Tool can't be used when iModel is read only.
+      }
 
+      // ###TODO lock specific code
       // IBriefcaseManager:: Request req;
       // req.Locks().Insert(db, LockLevel:: Shared);
       // if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
       //   return false;   // another briefcase has locked the db for editing
     }
 
-    if (!this.targetView)
-      this.targetView = vp;
+    if (undefined === this.targetView)
+      this.targetView = vp; // Update target to newly selected view.
     else if (iModel !== this.iModel)
-      return false; // Once a viewport has been established, only accept viewport showing the same iModel.
+      return false; // Once a ViewState has been established, only accept viewport showing the same iModel.
 
     if (!this.targetIsLocked) {
       if (isSelectedViewChange)
@@ -149,6 +105,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return false; // Only allow view where target is being viewed.
 
     if (this.requireWriteableTarget()) {
+      // ###TODO lock specific code
       //   IBriefcaseManager:: Request req;
       //   req.Locks().Insert(* targetModel, LockLevel:: Shared);
       //   if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
@@ -166,7 +123,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean) {
     const vp = ev.viewport;
-    if (!vp)
+
+    if (undefined === vp)
       return false;
 
     const view = vp.view;
@@ -193,7 +151,69 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return false;
   }
 
-  public exitTool(): void { IModelApp.toolAdmin.startDefaultTool(); }
+  /** Called on data button down event to lock the tool to its current target model. */
+  public autoLockTarget(): void { if (undefined !== this.targetView) return; this.targetIsLocked = true; }
+
+  /**  Returns the prompt based on the tool's current state. */
+  public getPrompt(): string { return ""; }
+
+  /** Notifies the tool that a view tool is starting. */
+  public onStartViewTool(_tool: Tool) { }
+
+  /** Notifies the tool that a view tool is exiting. Return true if handled. */
+  public onExitViewTool(): void { }
+
+  /** Notifies the tool that an input collector is starting. */
+  public onStartInputCollector(_tool: Tool) { }
+
+  /** Notifies the tool that an input collector is exiting. */
+  public onExitInputCollector() { }
+
+  /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
+  public requireWriteableTarget(): boolean { return false; } // ###TODO set to false for now
+
+  /**
+   * Called when active view changes. Tool may choose to restart or exit based on current view type.
+   * @param previous The previously active view.
+   * @param current The new active view.
+   */
+  public onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
+    if (this.isCompatibleViewport(current, true))
+      return;
+    this.onRestartTool();
+  }
+
+  /**
+   * Called when an external event may invalidate the current tool's state.
+   * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
+   * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
+   *  @note You *MUST* check the status of installTool and call exitTool if it fails!
+   * ``` ts
+   * MyTool.oOnRestartTool() {
+   * const newTool = new MyTool();
+   * if (BentleyStatus.SUCCESS !== newTool.installTool())
+   *   this.exitTool(); // Tool exits to default tool if new tool instance could not be installed.
+   * }
+   * MyTool.onRestartTool() {
+   * _this.exitTool(); // Tool always exits to default tool.
+   * }
+   * ```
+   */
+  public abstract onRestartTool(): void;
+
+  /**
+   * Called to reset tool to initial state. This method is provided here for convenience; the only
+   * external caller is ElementSetTool. PrimitiveTool implements this method to call _OnRestartTool.
+   */
+  public onReinitialize(): void { this.onRestartTool(); }
+
+  public getCursor(): BeCursor { return BeCursor.Arrow; }
+
+  public exitTool(): void {
+    const { toolAdmin } = IModelApp;
+    toolAdmin.activeToolChanged.raiseEvent(this);
+    toolAdmin.startDefaultTool();
+  }
 
   /**
    * Called to revert to a previous tool state (ex. undo last data button).
@@ -227,15 +247,28 @@ export abstract class PrimitiveTool extends InteractiveTool {
   // //! If your tool operates on more than one element it should batch all such requests rather than calling this convenience function repeatedly.
   //  RepositoryStatus LockElementForOperation(DgnElementCR element, BeSQLite:: DbOpcode operation);
 
-  /** Call to find out of complex dynamics are currently active. */
+  /**
+   * ( was called GetDynamicsStarted )
+   * Call to find out of complex dynamics are currently active.
+   */
   public isDynamicsStarted() { return IModelApp.viewManager.inDynamicsMode; }
+
   /** Call to initialize dynamics mode. */
   public beginDynamics() { IModelApp.toolAdmin.beginDynamics(); }
-  /** Call to terminate dynamics mode. */
+
+  /**  Call to terminate dynamics mode. */
   public endDynamics() { IModelApp.toolAdmin.endDynamics(); }
-  /** Called to display dynamic elements. */
+
+  /**
+   * ###TODO does this correspond to CreateGeometryTool::_OnDynamicFrame?
+   * Called to display dynamic elements.
+   */
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext) { }
+
   public callOnRestartTool(): void { this.onRestartTool(); }
+
+  public callOnPostLocate(hit: HitDetail, response: LocateResponse): boolean { return this.onPostLocate(hit, response); }
+
   public undoPreviousStep(): boolean {
     if (!this.onUndoPreviousStep())
       return false;
@@ -243,16 +276,17 @@ export abstract class PrimitiveTool extends InteractiveTool {
     AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
 
     const ev = new BeButtonEvent();
-    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    this.getCurrentButtonEvent(ev);
     this.updateDynamics(ev);
+
     return true;
   }
 
   public updateDynamics(ev: BeButtonEvent): void {
-    if (!ev.viewport || !IModelApp.viewManager.inDynamicsMode)
+    if (undefined === ev.viewport || !IModelApp.viewManager.inDynamicsMode)
       return;
 
-    const context = new DynamicsContext(ev.viewport);
+    const context = new DynamicsContext(ev.viewport); // used to pass Render::Task::Priority::Highest
     this.onDynamicFrame(ev, context);
   }
 }

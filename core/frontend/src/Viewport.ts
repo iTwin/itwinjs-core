@@ -380,7 +380,14 @@ export class Viewport {
   }
 
   /** Change the cursor for this Viewport */
-  public setCursor(cursor: BeCursor = BeCursor.Default) { this.canvas.style.cursor = cursor; }
+  public setCursor(cursor: BeCursor = BeCursor.Default) {
+    if (cursor === BeCursor.OpenHand)
+      this.canvas.style.cursor = "-webkit-grab";
+    else if (cursor === BeCursor.ClosedHand)
+      this.canvas.style.cursor = "-webkit-grabbing";
+    else
+      this.canvas.style.cursor = cursor;
+  }
 
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this.flashedElem) {
@@ -1584,7 +1591,7 @@ export class Viewport {
       for (testPoint.y = viewCenter.y - radius; testPoint.y <= viewCenter.y + radius; testPoint.y++) {
         if (overlapRect.containsPoint(testPoint) && this.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y, result))
           return result;
-        }
+      }
     }
 
     return undefined;
