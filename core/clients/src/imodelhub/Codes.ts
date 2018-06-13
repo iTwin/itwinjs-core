@@ -120,7 +120,7 @@ export class DefaultCodeUpdateOptionsProvider {
    */
   constructor() {
     this.defaultOptions = {
-      codesPerRequest: 10000,
+      codesPerRequest: 2000,
     };
   }
 

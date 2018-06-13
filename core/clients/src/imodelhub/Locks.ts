@@ -66,7 +66,7 @@ export class DefaultLockUpdateOptionsProvider {
    */
   constructor() {
     this.defaultOptions = {
-      locksPerRequest: 10000,
+      locksPerRequest: 2000,
     };
   }
 
