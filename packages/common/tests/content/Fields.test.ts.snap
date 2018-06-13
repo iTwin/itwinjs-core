@@ -56,9 +56,9 @@ NestedContentField {
     "priority": 76388,
   },
   "contentClassInfo": Object {
-    "id": "0x45770000010cef",
-    "label": "Consultant clicks-and-mortar",
-    "name": "Granite",
+    "id": "0x5dab0000006e6d",
+    "label": "e-business",
+    "name": "Manager",
   },
   "editor": Object {
     "name": "frictionless",
@@ -110,41 +110,41 @@ NestedContentField {
   ],
   "pathToPrimaryClass": Array [
     Object {
-      "isForwardRelationship": true,
-      "isPolymorphicRelationship": false,
+      "isForwardRelationship": false,
+      "isPolymorphicRelationship": true,
       "relationshipInfo": Object {
-        "id": "0x588c0000018461",
-        "label": "withdrawal Front-line Tuna",
-        "name": "Cotton",
+        "id": "0x1cd5000000cbb6",
+        "label": "Leone Chicken Cambridgeshire",
+        "name": "Cambridgeshire",
       },
       "sourceClassInfo": Object {
-        "id": "0x68b20000002026",
-        "label": "salmon benchmark payment",
-        "name": "withdrawal",
+        "id": "0xc04300000101c3",
+        "label": "invoice",
+        "name": "Front-line",
       },
       "targetClassInfo": Object {
-        "id": "0x68500000004e86",
-        "label": "multi-byte alarm content-based",
-        "name": "withdrawal",
+        "id": "0x134710000007529",
+        "label": "Brunei Dollar",
+        "name": "Principal",
       },
     },
     Object {
       "isForwardRelationship": true,
-      "isPolymorphicRelationship": true,
+      "isPolymorphicRelationship": false,
       "relationshipInfo": Object {
-        "id": "0x173a0000003faf",
-        "label": "SSL",
-        "name": "protocol",
+        "id": "0xf4700000072af",
+        "label": "Credit Card Account Ohio",
+        "name": "feed",
       },
       "sourceClassInfo": Object {
-        "id": "0x1641f0000013471",
-        "label": "Sleek Sleek Frozen Sausages Leone",
-        "name": "Executive",
+        "id": "0x102a60000013d60",
+        "label": "protocol",
+        "name": "clear-thinking",
       },
       "targetClassInfo": Object {
-        "id": "0x11401000000467b",
-        "label": "invoice withdrawal",
-        "name": "Cambridgeshire",
+        "id": "0x151da0000005548",
+        "label": "Kentucky Lempira Savings Account",
+        "name": "Re-engineered",
       },
     },
   ],
@@ -155,7 +155,7 @@ NestedContentField {
         "label": "label 1",
         "name": "name1",
         "type": Object {
-          "typeName": "set",
+          "typeName": "serial",
           "valueFormat": "Primitive",
         },
       },
@@ -163,12 +163,12 @@ NestedContentField {
         "label": "label 2",
         "name": "name2",
         "type": Object {
-          "typeName": "binary",
+          "typeName": "bit",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "typeName": "multimedia",
+    "typeName": "multi-byte",
     "valueFormat": "Struct",
   },
 }
@@ -201,7 +201,27 @@ PropertiesField {
         "name": "Granite",
         "type": "double",
       },
-      "relatedClassPath": Array [],
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x5ff700000118ae",
+            "label": "Refined Steel Shoes auxiliary",
+            "name": "Savings Account",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x1ce40000016d0d",
+            "label": "panel",
+            "name": "virtual",
+          },
+          "targetClassInfo": Object {
+            "id": "0x46ca000000de1e",
+            "label": "5th generation",
+            "name": "Consultant",
+          },
+        },
+      ],
     },
   ],
   "type": Object {
@@ -221,9 +241,9 @@ NestedContentField {
     "priority": 42869,
   },
   "contentClassInfo": Object {
-    "id": "0x74d10000002ea0",
-    "label": "Ameliorated",
-    "name": "deposit",
+    "id": "0xa600000001e9",
+    "label": "Brazilian Real sexy",
+    "name": "Borders",
   },
   "editor": Object {
     "name": "deposit",
@@ -275,25 +295,6 @@ NestedContentField {
   ],
   "pathToPrimaryClass": Array [
     Object {
-      "isForwardRelationship": true,
-      "isPolymorphicRelationship": true,
-      "relationshipInfo": Object {
-        "id": "0x3b2d000000f009",
-        "label": "Health",
-        "name": "Pants",
-      },
-      "sourceClassInfo": Object {
-        "id": "0xea05000000f85c",
-        "label": "communities Salad",
-        "name": "Computer",
-      },
-      "targetClassInfo": Object {
-        "id": "0x106ff000000e4f5",
-        "label": "withdrawal",
-        "name": "Executive",
-      },
-    },
-    Object {
       "isForwardRelationship": false,
       "isPolymorphicRelationship": true,
       "relationshipInfo": Object {
@@ -302,14 +303,33 @@ NestedContentField {
         "name": "Awesome Metal Towels",
       },
       "sourceClassInfo": Object {
-        "id": "0x2d6d0000010dc1",
-        "label": "JBOD payment",
-        "name": "sexy",
+        "id": "0x150230000008bcb",
+        "label": "Swedish Krona index",
+        "name": "Technician",
       },
       "targetClassInfo": Object {
-        "id": "0x1161b000001051f",
-        "label": "budgetary management protocol Malagasy Ariary",
-        "name": "index",
+        "id": "0x7949000001451d",
+        "label": "Malagasy Ariary",
+        "name": "Metal",
+      },
+    },
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
+      "relationshipInfo": Object {
+        "id": "0x9f41000000fc93",
+        "label": "Checking Account",
+        "name": "portals",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x36570000010fdf",
+        "label": "Ball SCSI",
+        "name": "Bacon",
+      },
+      "targetClassInfo": Object {
+        "id": "0x1514c0000001a14",
+        "label": "Administrator Central Delaware",
+        "name": "Cambridgeshire",
       },
     },
   ],
@@ -320,7 +340,7 @@ NestedContentField {
         "label": "label 1",
         "name": "name1",
         "type": Object {
-          "typeName": "double",
+          "typeName": "date",
           "valueFormat": "Primitive",
         },
       },
@@ -328,12 +348,12 @@ NestedContentField {
         "label": "label 2",
         "name": "name2",
         "type": Object {
-          "typeName": "serial",
+          "typeName": "smallint",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "typeName": "overriding",
+    "typeName": "Savings Account",
     "valueFormat": "Struct",
   },
 }
@@ -349,9 +369,9 @@ NestedContentField {
     "priority": 17759,
   },
   "contentClassInfo": Object {
-    "id": "0xf0150000003504",
-    "label": "neural GB",
-    "name": "Handcrafted",
+    "id": "0x11ce50000013c9a",
+    "label": "District deposit",
+    "name": "Illinois",
   },
   "editor": Object {
     "name": "yellow",
@@ -404,40 +424,40 @@ NestedContentField {
   "pathToPrimaryClass": Array [
     Object {
       "isForwardRelationship": true,
-      "isPolymorphicRelationship": false,
+      "isPolymorphicRelationship": true,
       "relationshipInfo": Object {
-        "id": "0x5e5e000000d9cb",
-        "label": "deposit Inlet",
-        "name": "invoice",
+        "id": "0x152b600000092bf",
+        "label": "Up-sized Total",
+        "name": "overriding",
       },
       "sourceClassInfo": Object {
-        "id": "0x27fe0000001ce9",
-        "label": "Tasty Plastic Table Bedfordshire back-end",
-        "name": "International",
+        "id": "0x8847000000b225",
+        "label": "neutral SAS",
+        "name": "Dynamic",
       },
       "targetClassInfo": Object {
-        "id": "0x37c50000006a45",
-        "label": "primary 1080p",
-        "name": "Diverse",
+        "id": "0x13dd000000f084",
+        "label": "Money Market Account hacking",
+        "name": "Ways",
       },
     },
     Object {
-      "isForwardRelationship": false,
-      "isPolymorphicRelationship": true,
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
       "relationshipInfo": Object {
-        "id": "0xd7830000015e1a",
-        "label": "Chips Kentucky protocol",
-        "name": "transmitter",
+        "id": "0x1cf5000000f4ff",
+        "label": "Incredible red Customer",
+        "name": "ROI",
       },
       "sourceClassInfo": Object {
-        "id": "0x6b9e000000d674",
-        "label": "Checking Account Ways maximize",
-        "name": "Tala",
+        "id": "0x158c100000142c9",
+        "label": "orchestration Ergonomic Metal Bacon",
+        "name": "Chips",
       },
       "targetClassInfo": Object {
-        "id": "0x1441d0000008701",
-        "label": "overriding deposit Future",
-        "name": "Cotton",
+        "id": "0x7e1a0000000076",
+        "label": "paradigms repurpose Soft",
+        "name": "Berkshire",
       },
     },
   ],
@@ -456,12 +476,12 @@ NestedContentField {
         "label": "label 2",
         "name": "name2",
         "type": Object {
-          "typeName": "bigint",
+          "typeName": "varchar",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "typeName": "mint green",
+    "typeName": "turquoise",
     "valueFormat": "Struct",
   },
 }
@@ -494,7 +514,27 @@ PropertiesField {
         "name": "exuding",
         "type": "double",
       },
-      "relatedClassPath": Array [],
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x1201000000145cf",
+            "label": "Centralized Program",
+            "name": "Creek",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xe16e0000017efb",
+            "label": "Berkshire bypass Refined Metal Pants",
+            "name": "demand-driven",
+          },
+          "targetClassInfo": Object {
+            "id": "0xdd110000010bd1",
+            "label": "Awesome SCSI",
+            "name": "Tasty",
+          },
+        },
+      ],
     },
   ],
   "type": Object {
@@ -531,7 +571,27 @@ PropertiesField {
         "name": "Technician",
         "type": "text",
       },
-      "relatedClassPath": Array [],
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0xb6b800000129c8",
+            "label": "Checking Account Pants",
+            "name": "Islands",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x132810000005c53",
+            "label": "Hat haptic",
+            "name": "Cambridgeshire",
+          },
+          "targetClassInfo": Object {
+            "id": "0x160b40000001c89",
+            "label": "Health yellow",
+            "name": "Junctions",
+          },
+        },
+      ],
     },
   ],
   "type": Object {

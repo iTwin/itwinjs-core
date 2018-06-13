@@ -117,8 +117,8 @@ Descriptor {
       "category": Object {
         "description": "Odio a dolorem quibusdam alias repudiandae quo.",
         "expand": true,
-        "label": "Hong Kong Dollar withdrawal",
-        "name": "Outdoors",
+        "label": "withdrawal",
+        "name": "Ohio",
         "priority": 61251,
       },
       "editor": Object {
@@ -239,22 +239,22 @@ Descriptor {
         "label": "Adaptive Cotton indexing",
         "name": "intranet",
       },
-      "isReadonly": false,
+      "isReadonly": true,
       "label": "vertical Savings Account",
       "name": "Nested content field",
       "nestedFields": Array [
         Field {
           "category": Object {
-            "description": "Sit neque beatae quos dolor repellendus omnis nulla consequuntur nemo.",
+            "description": "Beatae quos dolor repellendus.",
             "expand": true,
-            "label": "pixel Handmade",
-            "name": "bypass",
-            "priority": 69370,
+            "label": "Handmade Directives",
+            "name": "cross-media",
+            "priority": 55394,
           },
           "isReadonly": true,
-          "label": "Pakistan demand-driven Sleek",
+          "label": "open system",
           "name": "Simple property field",
-          "priority": 37505,
+          "priority": 76141,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -263,8 +263,8 @@ Descriptor {
       ],
       "pathToPrimaryClass": Array [
         Object {
-          "isForwardRelationship": false,
-          "isPolymorphicRelationship": true,
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
           "relationshipInfo": Object {
             "id": "0x6779000000e2f7",
             "label": "Falls",
@@ -282,7 +282,7 @@ Descriptor {
           },
         },
       ],
-      "priority": 80148,
+      "priority": 67388,
       "type": Object {
         "members": Array [
           Object {
@@ -306,7 +306,7 @@ Descriptor {
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": false,
-          "isPolymorphicRelationship": true,
+          "isPolymorphicRelationship": false,
           "relationshipInfo": Object {
             "id": "0xf0c50000002e40",
             "label": "website port Intelligent Plastic Chicken",
@@ -327,22 +327,22 @@ Descriptor {
       "relatedPropertyPaths": Array [
         Array [
           Object {
-            "isForwardRelationship": true,
-            "isPolymorphicRelationship": false,
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": true,
             "relationshipInfo": Object {
-              "id": "0x1c870000014fac",
-              "label": "Granite",
-              "name": "invoice",
+              "id": "0x5453000000d715",
+              "label": "Specialist Granite",
+              "name": "SDD",
             },
             "sourceClassInfo": Object {
-              "id": "0x1170000000a60c",
-              "label": "Intelligent",
-              "name": "Nevada",
+              "id": "0xd390000000dd80",
+              "label": "heuristic",
+              "name": "artificial intelligence",
             },
             "targetClassInfo": Object {
-              "id": "0xaea500000069ea",
-              "label": "monetize interfaces Croatia",
-              "name": "open-source",
+              "id": "0x104810000008663",
+              "label": "interfaces",
+              "name": "index",
             },
           },
         ],

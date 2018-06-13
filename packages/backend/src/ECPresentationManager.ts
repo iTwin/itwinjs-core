@@ -7,10 +7,14 @@ import * as path from "path";
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-native-platform-api";
 import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
-import { ECPresentationManager as ECPresentationManagerDefinition, ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
-import { NodeKey, Node } from "@bentley/ecpresentation-common";
-import { SelectionInfo, Content, Descriptor } from "@bentley/ecpresentation-common";
-import { PageOptions, KeySet, PresentationRuleSet } from "@bentley/ecpresentation-common";
+import {
+  ECPresentationManager as ECPresentationManagerDefinition,
+  ECPresentationError, ECPresentationStatus,
+  NodeKey, Node,
+  SelectionInfo, Content, Descriptor,
+  PageOptions, KeySet, PresentationRuleSet,
+} from "@bentley/ecpresentation-common";
+import { listReviver as nodesListReviver } from "@bentley/ecpresentation-common/lib/hierarchy/Node";
 import UserSettingsManager from "./UserSettingsManager";
 
 /**
@@ -145,7 +149,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       pageOptions,
       options,
     });
-    return this.request<Node[]>(imodel, params);
+    return this.request<Node[]>(imodel, params, nodesListReviver);
   }
 
   public async getRootNodesCount(imodel: IModelDb, options: object): Promise<number> {
@@ -161,7 +165,7 @@ export default class ECPresentationManager implements ECPresentationManagerDefin
       pageOptions,
       options,
     });
-    return this.request<Node[]>(imodel, params);
+    return this.request<Node[]>(imodel, params, nodesListReviver);
   }
 
   public async getChildrenCount(imodel: IModelDb, parentKey: Readonly<NodeKey>, options: object): Promise<number> {
