@@ -8,7 +8,7 @@ import {
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64 } from "@bentley/bentleyjs-core";
 import { BeButtonEvent, BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -1455,6 +1455,26 @@ export class Viewport {
     return invert ? ColorDef.black : ColorDef.white; // should we use black or white?
   }
 
+  private processFlash(): boolean {
+    let needsFlashUpdate = false;
+
+    if (this.flashedElem !== this.lastFlashedElem) {
+      this.flashIntensity = 0.0;
+      this.flashUpdateTime = BeTimePoint.now();
+      this.lastFlashedElem = this.flashedElem; // flashing has begun; this is now the previous flash
+      needsFlashUpdate = this.flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+    }
+
+    if (this.flashedElem !== undefined && this.flashIntensity < 1.0) {
+      const flashDuration = BeDuration.fromSeconds(this.flashDuration);
+      const flashElapsed = BeTimePoint.now().milliseconds - this.flashUpdateTime!.milliseconds;
+      this.flashIntensity = Math.min(flashElapsed, flashDuration.milliseconds) / flashDuration.milliseconds; // how intense do we want the flash effect to be from [0..1]?
+      needsFlashUpdate = true;
+    }
+
+    return needsFlashUpdate;
+  }
+
   public renderFrame(plan: UpdatePlan): boolean {
     if (!this.isActive)
       return true;
@@ -1515,12 +1535,10 @@ export class Viewport {
       isRedrawNeeded = true;
     }
 
-    // ###TODO: Flash...
-    // if (this.processFlash()) {
-    //   const task = new SetFlashTask(priority, target);
-    //   renderQueue.addTask(task);
-    //   isRedrawNeeded = true;
-    // }
+    if (this.processFlash()) {
+      target.setFlashed(new Id64(this.flashedElem!), this.flashIntensity);
+      isRedrawNeeded = true;
+    }
 
     if (isRedrawNeeded)
       target.drawFrame();
