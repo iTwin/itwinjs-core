@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial } from "@bentley/imodeljs-common";
+import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
 import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
 
 /** This class is used to determine if things can be batched together for display. */
@@ -11,9 +11,7 @@ export class DisplayParams {
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
   public readonly material?: RenderMaterial; // meshes only
   public readonly gradient?: Gradient.Symb;
-  // ###TODO
-  // textureMapping should be a getter that uses material's textureMapping if defined otherwise uses gradient to create textureMapping
-  // for now just filling in a default map
+  private readonly _textureMapping?: TextureMapping; // only if material is undefined - e.g. glyphs, gradients
   public readonly lineColor: ColorDef; // all types of geometry (edge color for meshes)
   public readonly fillColor: ColorDef; // meshes only
   public readonly width: number; // linear and mesh (edges)
@@ -83,7 +81,8 @@ export class DisplayParams {
   public get hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
   public get hasFillTransparency(): boolean { return 255 !== this.fillColor.getAlpha(); }
   public get hasLineTransparency(): boolean { return 255 !== this.lineColor.getAlpha(); }
-  public get isTextured(): boolean { return this.material !== undefined && this.material.hasTexture; }
+  public get textureMapping(): TextureMapping | undefined { return undefined !== this.material ? this.material.textureMapping : this._textureMapping; }
+  public get isTextured(): boolean { return undefined !== this.textureMapping; }
 
   /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
   public equals(rhs: DisplayParams, purpose: DisplayParams.ComparePurpose = DisplayParams.ComparePurpose.Strict): boolean {

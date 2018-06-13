@@ -865,7 +865,7 @@ export namespace HiddenLine {
     public constructor(json: any) {
       this.visible = new HiddenLine.Style(undefined !== json ? json.visible : undefined);
       this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine });
-      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transparencyThreshold, 1.0) : 1.0;
+      this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transThreshold, 1.0) : 1.0;
     }
   }
 }
