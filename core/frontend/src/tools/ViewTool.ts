@@ -305,6 +305,7 @@ export abstract class ViewManip extends ViewTool {
     }
 
     if (this.nPts > 1) {
+      this.inDynamicUpdate = false;
       if (this.processPoint(ev, false) && this.isOneShot)
         this.exitTool();
       else
@@ -408,20 +409,19 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public onCleanup(): void {
-    // let restorePrevious = false; ###TODO
+    let restorePrevious = false;
 
     if (this.inDynamicUpdate) {
       this.endDynamicUpdate();
-      // restorePrevious = !this.alwaysLeaveLastView; ###TODO
+      restorePrevious = !this.alwaysLeaveLastView;
     }
 
     const vp = this.viewport;
     if (undefined !== vp) {
       vp.synchWithView(true);
 
-      // ###TODO breaks idle view tool behavior by snapping it back to drag start
-      // if (restorePrevious)
-      //   vp.doUndo(BeDuration.fromSeconds(0));
+      if (restorePrevious)
+        vp.doUndo(BeDuration.fromSeconds(0));
 
       vp.invalidateDecorations();
     }
