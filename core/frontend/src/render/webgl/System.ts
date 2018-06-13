@@ -246,7 +246,7 @@ export class IdMap {
    * Attempt to create a new texture from an ImageBuffer and insert it into this cache.
    * If the texture already exists inside the cache, or an error occurs, returns undefined.
    */
-  private createTextureFromImgBuff(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+  private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
 
@@ -263,7 +263,7 @@ export class IdMap {
    * Attempt to create a new texture from an ImageSource and insert it into this cache.
    * If the texture already exists inside the cache, or an error occurs, returns undefined.
    */
-  private createTextureFromImgSrc(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
+  private createTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
 
@@ -280,7 +280,7 @@ export class IdMap {
    * Find a texture using its key. If not found, create one using an ImageSource and return it.
    * This will also add it to the map if the key was valid.
    */
-  public getTextureFromImgSrc(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
+  public getTextureFromImageSource(imgSrc: ImageSource, width: number, height: number, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key) {
       const existingTexture = this.textureMap.get(params.key);
       if (existingTexture)
@@ -288,7 +288,7 @@ export class IdMap {
     }
 
     // const image = this.extractImage(imgSrc);
-    return this.createTextureFromImgSrc(imgSrc, width, height, params);
+    return this.createTextureFromImageSource(imgSrc, width, height, params);
   }
 
   /**
@@ -302,7 +302,7 @@ export class IdMap {
         return existingTexture;
     }
 
-    return this.createTextureFromImgBuff(img, params);
+    return this.createTextureFromImageBuffer(img, params);
   }
 
   /**
@@ -495,7 +495,7 @@ export class System extends RenderSystem {
    * Creates a texture using an ImageBuffer and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
-  public createTextureFromImageBuff(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+  public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();
@@ -508,13 +508,13 @@ export class System extends RenderSystem {
    * Creates a texture using an ImageSource and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
-  public createTextureFromImageSrc(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+  public createTextureFromImageSource(source: ImageSource, width: number, height: number, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();
       this.renderCache.insert(imodel, idMap);
     }
-    return idMap.getTextureFromImgSrc(source, width, height, params);
+    return idMap.getTextureFromImageSource(source, width, height, params);
   }
 
   /**
