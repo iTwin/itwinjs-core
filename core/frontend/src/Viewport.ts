@@ -1122,7 +1122,7 @@ export class Viewport {
     const validSize = this.view.setupFromFrustum(inFrustum);
     if (this.setupFromView() !== ViewStatus.Success)
       return false;
-    this.view.setRotation(this.rotMatrix);
+    this.view.setRotation(this.rotMatrix);  // Is this redundant, occurring in setupFromView?..
     return validSize === ViewStatus.Success;
   }
 

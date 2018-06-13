@@ -246,7 +246,7 @@ export class IdMap {
    * Attempt to create a new texture from an ImageBuffer and insert it into this cache.
    * If the texture already exists inside the cache, or an error occurs, returns undefined.
    */
-  private createTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
+  private createTextureFromImgBuff(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
     if (params.key && this.textureMap.get(params.key) !== undefined)
       return undefined;
 
@@ -287,6 +287,7 @@ export class IdMap {
         return existingTexture;
     }
 
+    // const image = this.extractImage(imgSrc);
     return this.createTextureFromImgSrc(imgSrc, width, height, params);
   }
 
@@ -301,7 +302,7 @@ export class IdMap {
         return existingTexture;
     }
 
-    return this.createTexture(img, params);
+    return this.createTextureFromImgBuff(img, params);
   }
 
   /**
@@ -494,7 +495,7 @@ export class System extends RenderSystem {
    * Creates a texture using an ImageBuffer and adds it to the iModel's render map. If the texture already exists in the map, simply return it.
    * If no render map exists for the imodel, returns undefined.
    */
-  public createTexture(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+  public createTextureFromImageBuff(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     let idMap = this.renderCache.get(imodel);
     if (!idMap) {
       idMap = new IdMap();

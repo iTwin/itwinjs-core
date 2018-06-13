@@ -276,7 +276,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
       const image = ImageBuffer.create(buffer, ImageBufferFormat.Rgba, 1);
       if (!image)
         return false;
-      texture = system.createTexture(image, this.iModel, RenderTexture.Params.defaults);
+      texture = system.createTextureFromImageBuff(image, this.iModel, RenderTexture.Params.defaults);
       if (!texture)
         return false;
     }
