@@ -4,7 +4,14 @@
 /** @module Rendering */
 
 import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping } from "@bentley/imodeljs-common";
-import { compareNumbers, compareBooleans } from "@bentley/bentleyjs-core";
+import { compareNumbers, compareBooleans, compareStringsOrUndefined, comparePossiblyUndefined, assert } from "@bentley/bentleyjs-core";
+
+function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
+  return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);
+}
+function compareTextureMappings(lhs?: TextureMapping, rhs?: TextureMapping): number {
+  return comparePossiblyUndefined((lhTex: TextureMapping, rhTex: TextureMapping) => lhTex === rhTex ? 0 : compareStringsOrUndefined(lhTex.texture.key, rhTex.texture.key), lhs, rhs);
+}
 
 /** This class is used to determine if things can be batched together for display. */
 export class DisplayParams {
@@ -20,7 +27,7 @@ export class DisplayParams {
   public readonly ignoreLighting: boolean; // always true for text and linear geometry; true for meshes only if normals not desired
 
   public constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width: number = 0, linePixels: LinePixels = LinePixels.Solid,
-    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false) {
+    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false, textureMapping?: TextureMapping) {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
@@ -30,6 +37,9 @@ export class DisplayParams {
     this.linePixels = linePixels;
     this.fillFlags = fillFlags;
     this.ignoreLighting = ignoreLighting;
+    this._textureMapping = textureMapping;
+
+    assert(undefined === material || undefined === textureMapping);
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
@@ -94,11 +104,11 @@ export class DisplayParams {
     if (this.type !== rhs.type) return false;
     if (this.ignoreLighting !== rhs.ignoreLighting) return false;
     if (this.width !== rhs.width) return false;
-    if (this.material !== rhs.material) return false;
     if (this.linePixels !== rhs.linePixels) return false;
     if (this.fillFlags !== rhs.fillFlags) return false;
-    // ###TODO: if (this.textureMapping.texture !== rhs.textureMapping.texture) return false;
     if (this.wantRegionOutline !== rhs.wantRegionOutline) return false;
+    if (this.material !== rhs.material) return false;
+    if (this.textureMapping !== rhs.textureMapping) return false;
 
     if (!this.fillColor.equals(rhs.fillColor)) return false;
     if (!this.lineColor.equals(rhs.lineColor)) return false;
@@ -115,11 +125,6 @@ export class DisplayParams {
       if (0 === diff) {
         diff = compareNumbers(this.width, rhs.width);
         if (0 === diff) {
-          // ###TODO texture mapping
-          // ###TODO: Define ordering between materials...
-          if (this.material !== rhs.material)
-            return -1;
-
           diff = compareNumbers(this.linePixels, rhs.linePixels);
           if (0 === diff) {
             diff = compareNumbers(this.fillFlags, rhs.fillFlags);
@@ -129,6 +134,12 @@ export class DisplayParams {
                 diff = compareBooleans(this.hasFillTransparency, rhs.hasFillTransparency);
                 if (0 === diff) {
                   diff = compareBooleans(this.hasLineTransparency, rhs.hasLineTransparency);
+                  if (0 === diff) {
+                    diff = compareMaterials(this.material, rhs.material);
+                    if (0 === diff && undefined === this.material && this.isTextured) {
+                      diff = compareTextureMappings(this.textureMapping, rhs.textureMapping);
+                    }
+                  }
                 }
               }
             }
