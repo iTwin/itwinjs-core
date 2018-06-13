@@ -8,7 +8,7 @@ import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { Feature, FeatureTable, ElementAlignedBox3d, GeometryClass, FillFlags, ColorDef, LinePixels, TextureMapping, ImageSource, RenderTexture } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../render/System";
 import { RenderSystem } from "../render/System";
@@ -175,7 +175,8 @@ export namespace IModelTileIO {
     }
 
     protected createDisplayParams(json: any): DisplayParams | undefined {
-      // ###TODO: gradient, material from material ID, texture mapping
+      // ###TODO: material from material ID
+      // NB: We don't need to deserialize the gradient if present - will have a ready-to-use TextureMapping.
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
       const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
       const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));
@@ -184,7 +185,60 @@ export namespace IModelTileIO {
       const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);
       const ignoreLighting = JsonUtils.asBool(json.ignoreLighting);
 
-      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, undefined, undefined, ignoreLighting);
+      const textureJson = json.texture;
+      const textureMapping = undefined !== textureJson ? this.textureMappingFromJson(textureJson) : undefined;
+
+      return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, undefined, undefined, ignoreLighting, textureMapping);
+    }
+
+    private textureMappingFromJson(json: any): TextureMapping | undefined {
+      const name = JsonUtils.asString(json.name);
+      const namedTex = 0 !== name.length ? this.namedTextures[name] : undefined;
+      if (undefined === namedTex)
+        return undefined;
+
+      // If we've already seen this texture name before, it will be in the RenderSystem's cache.
+      const imodel = this.model.iModel;
+      let texture = this.system.findTexture(name, imodel);
+      if (undefined === texture) {
+        // First time encountering this texture name - create it.
+        // ###TODO: We are currently not writing the width and height to json!
+        const width = JsonUtils.asInt(json.width);
+        const height = JsonUtils.asInt(json.height);
+        if (0 <= width || 0 <= height)
+          return undefined;
+
+        const bufferViewId = JsonUtils.asString(json.bufferView);
+        const bufferViewJson = 0 !== bufferViewId.length ? this.bufferViews[bufferViewId] : undefined;
+        if (undefined === bufferViewJson)
+          return undefined;
+
+        const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+        const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+        if (0 === byteLength)
+          return undefined;
+
+        const bytes = this.binaryData.subarray(byteOffset, byteOffset + byteLength);
+        const format = json.format;
+        const imageSource = new ImageSource(bytes, format);
+
+        const params = new RenderTexture.Params(name, JsonUtils.asBool(json.isTileSection), JsonUtils.asBool(json.isGlyph), false);
+        texture = this.system.createTextureFromImageSrc(imageSource, width, height, imodel, params);
+
+        if (undefined === texture)
+          return undefined;
+      }
+
+      const paramsJson = json.params;
+      const tf = paramsJson.transform;
+      const paramProps: TextureMapping.ParamProps = {
+        textureMat2x3: new TextureMapping.Trans2x3(tf[0][0], tf[0][1], tf[0][2], tf[1][0], tf[1][1], tf[1][2]),
+        textureWeight: JsonUtils.asDouble(paramsJson.weight, 1.0),
+        mapMode: JsonUtils.asInt(paramsJson.mode),
+        worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
+      };
+
+      return new TextureMapping(texture, new TextureMapping.Params(paramProps));
     }
   }
 }
