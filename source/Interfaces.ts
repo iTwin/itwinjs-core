@@ -17,7 +17,6 @@ import KindOfQuantity from "./Metadata/KindOfQuantity";
 import PropertyCategory from "./Metadata/PropertyCategory";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
-export type LazyLoadedProperty = Readonly<{ name: string }> & DelayedPromise<Property>;
 
 export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T>;
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;

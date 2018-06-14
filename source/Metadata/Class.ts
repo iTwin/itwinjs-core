@@ -10,7 +10,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty, EnumerationProperty, EnumerationArrayProperty, Property } from "./Property";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import Schema from "./Schema";
-import { AnyClass, LazyLoadedECClass, LazyLoadedProperty, SchemaItemVisitor } from "../Interfaces";
+import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "../Interfaces";
 
 function createLazyLoadedItem<T extends SchemaItem>(c: T) {
   return new DelayedPromiseWithProps(c.key, async () => c);
@@ -22,7 +22,7 @@ function createLazyLoadedItem<T extends SchemaItem>(c: T) {
 export default abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
-  protected _properties?: LazyLoadedProperty[];
+  protected _properties?: Property[];
   protected _customAttributes?: CustomAttributeSet;
 
   get modifier() { return this._modifier; }
@@ -31,7 +31,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
 
   set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
 
-  get properties(): LazyLoadedProperty[] | undefined { return this._properties; }
+  get properties(): Property[] | undefined { return this._properties; }
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
@@ -53,8 +53,24 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (!this._properties)
       this._properties = [];
 
-    this._properties.push(new DelayedPromiseWithProps({name: prop.name}, async () => prop));
+    this._properties.push(prop);
     return prop;
+  }
+
+  public getBaseClassSync(): ECClass | undefined {
+    if (!this.baseClass || !this.schema)
+      return undefined;
+
+    const isInThisSchema = (this.schema && this.schema.name.toLowerCase() === this.baseClass.schemaName.toLowerCase());
+
+    if (isInThisSchema)
+      return this.schema.getClassSync(this.baseClass.name);
+
+    const reference = this.schema.getReferenceSync(this.baseClass.schemaName);
+    if (reference)
+      return reference.getClassSync(this.baseClass.name);
+
+    return undefined;
   }
 
   /**
@@ -62,7 +78,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * @param name
    */
   public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
-    let foundProp: LazyLoadedProperty | undefined;
+    let foundProp: Property | undefined;
 
     if (this.properties) {
       foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase());
@@ -81,12 +97,12 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
    * @param name
    */
   public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
-    let foundProp: LazyLoadedProperty | undefined;
+    let foundProp: Property | undefined;
 
     if (this.properties) {
       foundProp = this.properties.find((prop) => prop.name.toLowerCase() === name.toLowerCase());
       if (foundProp)
-        return (await foundProp);
+        return foundProp;
     }
 
     if (includeInherited)
@@ -103,12 +119,17 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     let inheritedProperty;
 
     if (this.baseClass) {
-      inheritedProperty = await (await this.baseClass).getProperty(name);
-      if (!inheritedProperty)
+      const baseClassObj = await this.baseClass;
+      inheritedProperty = await baseClassObj.getProperty(name);
+      if (inheritedProperty)
+        return inheritedProperty;
+
+      inheritedProperty = baseClassObj.getInheritedProperty(name);
+      if (inheritedProperty)
         return inheritedProperty;
     }
 
-    return inheritedProperty;
+    return undefined;
   }
 
   /**
@@ -119,12 +140,20 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     let inheritedProperty;
 
     if (this.baseClass) {
-      inheritedProperty = (await this.baseClass).getPropertySync(name);
-      if (!inheritedProperty)
+      const baseClassObj = this.getBaseClassSync();
+      if (!baseClassObj)
+        return undefined;
+
+      inheritedProperty = baseClassObj.getPropertySync(name);
+      if (inheritedProperty)
+        return inheritedProperty;
+
+      inheritedProperty = baseClassObj.getInheritedPropertySync(name);
+      if (inheritedProperty)
         return inheritedProperty;
     }
 
-    return inheritedProperty;
+    return undefined;
   }
 
   /**

@@ -277,6 +277,12 @@ export default class Schema implements CustomAttributeContainerProps {
   public getClass<T extends ECClass>(name: string): Promise<T | undefined> { return this.getItem<T>(name); }
 
   /**
+   * Searches the current schema for a class with a name matching, case-insensitive, the provided name.
+   * @param name The name of the class to return.
+   */
+  public getClassSync<T extends ECClass>(name: string): T | undefined { return this.getItemSync<T>(name); }
+
+  /**
    *
    */
   public getItems<T extends SchemaItem>(): T[] {
