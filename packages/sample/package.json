@@ -31,7 +31,7 @@
     "@bentley/imodeljs-frontend": "^0.92",
     "@bentley/imodeljs-e_2-win32-x64": "^20",
     "@bentley/imodeljs-n_8-win32-x64": "^20",
-    "@bentley/ui-components": "^0.1.3",
+    "@bentley/ui-components": "^0.2.0",
     "body-parser": "^1.18.1",
     "bunyan": "^1.8.12",
     "electron-devtools-installer": "^2.2.3",
