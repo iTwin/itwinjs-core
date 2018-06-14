@@ -1415,6 +1415,7 @@ export abstract class ViewState3d extends ViewState {
  */
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
+  private _viewedExtents?: AxisAlignedBox3d;
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
@@ -1438,7 +1439,6 @@ export class SpatialViewState extends ViewState3d {
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
 
-  private _viewedExtents?: AxisAlignedBox3d;
   public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
       this._viewedExtents = new AxisAlignedBox3d(this.iModel.projectExtents.low, this.iModel.projectExtents.high);
