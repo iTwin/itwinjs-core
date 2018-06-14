@@ -96,7 +96,7 @@ export class AzureFileHandler implements FileHandler {
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
-   * @throws [[ConcurrencyControl.RequestError]] if the file cannot be downloaded.
+   * @throws [[backend.ConcurrencyControl.RequestError]] if the file cannot be downloaded.
    * @throws [[IModelHubRequestError]] if this method is used incorrectly.
    */
   public async downloadFile(downloadUrl: string, downloadToPathname: string, fileSize?: number,

@@ -89,7 +89,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
 
 /**
  * The definition element for a view. ViewDefinitions specify the area/volume that is viewed, the Ids of a DisplayStyle and a CategorySelector,
- * plus additional view-specific parameters in their [[jsonProperties]].
+ * plus additional view-specific parameters in their [[Element.jsonProperties]].
  *
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  *
