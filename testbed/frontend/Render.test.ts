@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Feature, GeometryClass, PolylineFlags, ColorByName, Gradient } from "@bentley/imodeljs-common";
+import { Feature, GeometryClass, PolylineFlags } from "@bentley/imodeljs-common";
 
 describe("Feature", () => {
   it("constructor works as expected", () => {
@@ -50,25 +50,5 @@ describe("PolylineFlags", () => {
 
     f2 = PolylineFlags.unpack(21);
     expect(f.equals(f2)).to.equal(false);
-  });
-});
-
-describe("Gradient.Symb", () => {
-  it("should produce correct image", () => {
-    const props: Gradient.SymbProps = {
-      mode: Gradient.Mode.Linear,
-      keys: [
-        { value: 0, color: ColorByName.green },
-        { value: 1, color: ColorByName.red },
-      ],
-    };
-
-    const gradient = Gradient.Symb.fromJSON(props);
-    const image = gradient.getImage(0x100, 0x100);
-    const colors = new Uint32Array(image.data.buffer);
-    const first = colors[0];
-    const last = colors[colors.length - 1];
-    expect(first).to.equal(ColorByName.green);
-    expect(last).to.equal(ColorByName.red);
   });
 });
