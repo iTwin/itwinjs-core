@@ -107,6 +107,16 @@ export class FloatRgba extends Rgba {
 
     return new FloatRgba(c.r / 255.0, c.g / 255.0, c.b / 255.0, (255.0 - c.t) / 255.0);
   }
+
+  /** Create a FloatRgba using a ColorDef and an alpha value..
+   * @param def A ColorDef used to create a new FloatRgba. Its transparency value is ignored.
+   * @param alpha Alpha value from 0.0 (transparent) to 1.0 (opaque)
+   * @returns Returns the newly created FloatRgba
+   */
+  public static fromColorDefAndAlpha(def: ColorDef, alpha: number): FloatRgba {
+    const c = def.colors;
+    return new FloatRgba(c.r / 255.0, c.g / 255.0, c.b / 255.0, alpha);
+  }
 }
 
 /** An RGBA color with  with components in the range [0, 1], wherein the red, green, and blue components are pre-multiplied by the alpha component. */

@@ -13,7 +13,6 @@ import { JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../render/System";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
-import { Material } from "../render/webgl/Material";
 
 /** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
@@ -223,7 +222,7 @@ export namespace IModelTileIO {
       if (!material) {
         const materialJson = this.renderMaterials[key];
 
-        const materialParams = new RenderMaterial.Params();
+        const materialParams = new RenderMaterial.Params(key);
         materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
         if (materialJson.diffuse !== undefined)
           materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
@@ -245,8 +244,9 @@ export namespace IModelTileIO {
         if (undefined !== materialJson.textureMapping)
           materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
-        material = new Material(materialParams);
+        material = this.system.createMaterial(materialParams, this.model.iModel);
       }
+
       return material;
     }
 

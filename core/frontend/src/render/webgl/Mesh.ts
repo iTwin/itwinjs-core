@@ -20,13 +20,14 @@ import { ShaderProgramParams } from "./DrawCommand";
 import { Target } from "./Target";
 import { SurfacePrimitive } from "./Surface";
 import { RenderCommands, DrawCommands } from "./DrawCommand";
+import { Material } from "./Material";
+import { Texture } from "./Texture";
 import {
   QParams3d,
   QParams2d,
   FillFlags,
   RenderTexture,
   RenderMode,
-  RenderMaterial,
   SilhouetteEdgeArgs,
   OctEncodedNormalPair,
 } from "@bentley/imodeljs-common";
@@ -40,7 +41,7 @@ import { PolylineTesselator, TesselatedPolyline } from "./Polyline";
 export class MeshInfo {
   public readonly edgeWidth: number;
   public features?: FeaturesInfo;
-  public readonly texture?: RenderTexture; // ###TODO...
+  public readonly texture?: Texture;
   public readonly type: SurfaceType;
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
@@ -49,7 +50,7 @@ export class MeshInfo {
   protected constructor(type: SurfaceType, edgeWidth: number, lineCode: number, fillFlags: FillFlags, isPlanar: boolean, features?: FeaturesInfo, texture?: RenderTexture) {
     this.edgeWidth = edgeWidth;
     this.features = features;
-    this.texture = texture;
+    this.texture = texture as Texture;
     this.type = type;
     this.fillFlags = fillFlags;
     this.edgeLineCode = lineCode;
@@ -59,7 +60,7 @@ export class MeshInfo {
 
 export class MeshData extends MeshInfo {
   public readonly lut: VertexLUT.Data;
-  public readonly material?: RenderMaterial;
+  public readonly material?: Material;
   public readonly animation: any; // should be a AnimationLookupTexture;
 
   public static create(params: MeshParams): MeshData | undefined {
@@ -79,7 +80,7 @@ export class MeshParams extends MeshInfo {
   public readonly vertexParams: QParams3d;
   public readonly uvParams?: QParams2d;
   public readonly lutParams: VertexLUT.Params;
-  public readonly material?: RenderMaterial;
+  public readonly material?: Material;
   public readonly animationLUTParams: any; // TODO: should be a AnimationLUTParams;
 
   public constructor(args: MeshArgs) {
@@ -102,7 +103,7 @@ export class MeshParams extends MeshInfo {
 
     this.uvParams = uvRange.isNull() ? undefined : QParams2d.fromRange(uvRange);
     this.vertexParams = args.points!.params;
-    this.material = args.material;
+    this.material = args.material as Material;
     switch (this.type) {
       case SurfaceType.Lit:
         this.lutParams = new VertexLUT.Params(new VertexLUT.LitMeshBuilder(args), args.colors);
@@ -199,7 +200,6 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get isPlanar() { return this.mesh.isPlanar; }
   public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
   public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
-  public get materialData() { return this.mesh.material; }
   public get texture() { return this.mesh.texture; }
 
   public get lut() { return this.mesh.lut; }

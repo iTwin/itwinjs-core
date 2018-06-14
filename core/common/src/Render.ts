@@ -196,13 +196,12 @@ export class PolylineEdgeArgs {
 export abstract class RenderTexture implements IDisposable {
   public readonly params: RenderTexture.Params;
 
-  protected constructor(params: RenderTexture.Params) {
-    this.params = params;
-  }
+  protected constructor(params: RenderTexture.Params) { this.params = params; }
+  public abstract dispose(): void;
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }
-  public abstract dispose(): void;
+  public get isTileSection(): boolean { return this.params.isTileSection; }
 }
 
 export namespace RenderTexture {
@@ -219,7 +218,7 @@ export namespace RenderTexture {
       this.isRGBE = isRGBE;
     }
 
-    /** Create a RenderMaterial params object with QVision default values. */
+    /** Obtain a RenderTexture params object with default values. */
     public static readonly defaults = new Params();
   }
 }
@@ -254,7 +253,7 @@ export namespace RenderMaterial {
     public ambient: number = .3;
     public shadows = true;
 
-    public constructor() { }
+    public constructor(key?: string) { this.key = key; }
 
     /** Create a RenderMaterial params object with QVision default values. */
     public static readonly defaults = new Params();

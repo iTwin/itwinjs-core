@@ -19,7 +19,7 @@ import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addClipping } from "./Clipping";
-import { FloatRgba, FloatPreMulRgba } from "../FloatRGBA";
+import { FloatPreMulRgba } from "../FloatRGBA";
 import { addHiliter, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceGeometry } from "../Surface";
@@ -63,26 +63,19 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
   frag.addUniform("u_matRgb", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_matRgb", (uniform, params) => {
-      const mat: Material = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material! : Material.default;
-      let matRgb: FloatRgba;
-      if (mat.diffuseColor) {
-        matRgb = FloatRgba.fromColorDef(mat.diffuseColor, 1);
-      } else {
-        matRgb = new FloatRgba(1, 1, 1, 0);
-      }
-      matRgb.bind(uniform);
+      const mat: Material = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material : Material.default;
+      uniform.setUniform4fv(mat.diffuseUniform);
     });
   });
   frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_matAlpha", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material! : Material.default;
-      const matAlpha = [mat.alpha ? mat.alpha : 0, mat.alpha ? 1 : 0];
-      uniform.setUniform2fv(matAlpha);
+      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material : Material.default;
+      uniform.setUniform2fv(mat.alphaUniform);
     });
   });
   frag.addUniform("u_textureWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_textureWeight", (uniform, params) => {
-      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material! : Material.default;
+      const mat = params.target.currentViewFlags.showMaterials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform1f(mat.textureWeight);
     });
   });

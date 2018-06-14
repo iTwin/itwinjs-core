@@ -8,33 +8,49 @@ import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
 export class Material extends RenderMaterial {
   public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
-  public readonly diffuseColor?: ColorDef;
-  public readonly specularColor?: ColorDef;
+  public readonly diffuseUniform = new Float32Array(4); // [red, green, blue, overridden]
   public readonly reflectColor?: ColorDef;
-  public readonly alpha?: number;
-  public readonly specularExponent: number;
-  public readonly textureWeight: number = 0;
-  public readonly weights: Float32Array;  // [diffuse weight, specular weight, reflect]
+  public readonly alphaUniform = new Float32Array(2); // [alpha, overridden]
+  public readonly specular = new Float32Array(4); // [red, green, blue, exponent]
+  public readonly weights = new Float32Array(3);  // [diffuse weight, specular weight, reflect]
+
+  public get textureWeight(): number { return undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0; }
+  public get overridesRgb(): boolean { return 1.0 === this.diffuseUniform[3]; }
+  public get overridesAlpha(): boolean { return 1.0 === this.alphaUniform[1]; }
+  public get hasTranslucency(): boolean { return this.overridesAlpha && this.alphaUniform[0] < 1.0; }
 
   public constructor(materialParams: RenderMaterial.Params) {
     super(materialParams);
-    if (materialParams.diffuseColor) {
-      this.diffuseColor = ColorDef.from(materialParams.diffuseColor.colors.r / 255, materialParams.diffuseColor.colors.g / 255, materialParams.diffuseColor.colors.b / 255);
+
+    this.diffuseUniform[3] = undefined !== materialParams.diffuseColor ? 1.0 : 0.0;
+    if (undefined !== materialParams.diffuseColor) {
+      const diffRgb = materialParams.diffuseColor.colors;
+      this.diffuseUniform[0] = diffRgb.r / 255;
+      this.diffuseUniform[1] = diffRgb.g / 255;
+      this.diffuseUniform[2] = diffRgb.b / 255;
+    } else {
+      this.diffuseUniform[0] = this.diffuseUniform[1] = this.diffuseUniform[2] = 1.0;
     }
+
+    this.specular[3] = materialParams.specularExponent;
     if (materialParams.specularColor) {
-      this.specularColor = ColorDef.from(materialParams.specularColor.colors.r / 255, materialParams.specularColor.colors.g / 255, materialParams.specularColor.colors.b / 255);
+      const specRgb = materialParams.specularColor.colors;
+      this.specular[0] = specRgb.r / 255;
+      this.specular[1] = specRgb.g / 255;
+      this.specular[2] = specRgb.b / 255;
+    } else {
+      this.specular[0] = this.specular[1] = this.specular[2] = 1.0;
     }
-    if (materialParams.reflectColor) {
-      this.specularColor = ColorDef.from(materialParams.reflectColor.colors.r / 255, materialParams.reflectColor.colors.g / 255, materialParams.reflectColor.colors.b / 255);
-    }
-    if (materialParams.textureMapping) {
-      this.textureWeight = materialParams.textureMapping.params.weight;
-    }
-    this.weights = new Float32Array([materialParams.diffuse, materialParams.specular, materialParams.reflect]);
-    this.specularExponent = materialParams.specularExponent;
-    if (materialParams.transparency > 0) {
-      this.alpha = 1 - materialParams.transparency;
-    }
+
+    if (materialParams.reflectColor)
+      this.reflectColor = materialParams.reflectColor.clone();
+
+    this.weights[0] = materialParams.diffuse;
+    this.weights[1] = materialParams.specular;
+    this.weights[2] = materialParams.reflect;
+
+    this.alphaUniform[0] = undefined !== materialParams.transparency ? 1.0 - materialParams.transparency : 1.0;
+    this.alphaUniform[1] = undefined !== materialParams.transparency ? 1.0 : 0.0;
   }
 }
 
