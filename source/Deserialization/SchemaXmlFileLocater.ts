@@ -47,7 +47,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     */
 
     const schema = new Schema(maxCandidate) as T;
-    await this.addSchemaReferences(schema);
+    await this.addSchemaReferences(schema, context);
     return schema;
   }
 
@@ -59,7 +59,8 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param matchType The SchemaMatchType.
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
-    return undefined; // TODO: this has not been implemented yet. We will change the async method flow first and then create this one
+    return context!.getSchemaSync(schemaKey, matchType);
+    // TODO: this has not been implemented yet. We will change the async method flow first and then create this one
   }
 
   /**

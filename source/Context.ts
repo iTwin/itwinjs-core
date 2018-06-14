@@ -13,7 +13,21 @@ export class SchemaMap extends Array<Schema> { }
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
  */
 export interface ISchemaLocater {
+
+  /**
+   * Attempts to get a schema from the locater. Yields undefined if no matching schema is found.
+   * @param schemaKey key to look up
+   * @param matchType how to match key against candidate schemas
+   * @param context optional context for loading schema references
+   */
   getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
+
+  /**
+   * Attempts to get a schema from the locater. Yields undefined if no matching schema is found.
+   * @param schemaKey key to look up
+   * @param matchType how to match key against candidate schemas
+   * @param context optional context for loading schema references
+   */
   getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
 

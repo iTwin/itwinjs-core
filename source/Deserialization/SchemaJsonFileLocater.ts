@@ -66,6 +66,12 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     return schema as T;
   }
 
+  /**
+   * Attempts to retrieve a Schema with the given SchemaKey by using the configured
+   * search paths to locate the JSON schema file from the file system.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType
+   */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
     // Grab all schema files that match the schema key
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");

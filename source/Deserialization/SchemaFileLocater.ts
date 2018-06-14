@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKey, Schema, SchemaMatchType, ECObjectsError, ECObjectsStatus } from "..";
+import { SchemaKey, Schema, SchemaMatchType } from "..";
 import * as fs from "fs";
 import * as path from "path";
 import * as glob from "glob";
