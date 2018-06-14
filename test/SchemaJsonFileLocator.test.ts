@@ -16,9 +16,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
   let context: SchemaContext;
 
   beforeEach(() => {
-    const srcName = __dirname + "\\assets\\";
-    paths.push(srcName);
     locater = new SchemaJsonFileLocater();
+    locater.addSchemaSearchPath(__dirname + "\\assets\\");
     context = new SchemaContext();
     context.addLocater(locater);
   });

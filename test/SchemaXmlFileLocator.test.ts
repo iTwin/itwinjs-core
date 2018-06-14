@@ -340,32 +340,6 @@ describe("SchemaXmlFileLocater tests:", () => {
     assert.fail(0, 1, "Expected ECObjects exception");
   });
 
-  it("isSchemaJson correctly identifies Json", async () => {
-    // Arrange
-    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
-
-    // Act
-    const stub = await locator.loadSchema(schemaPath);
-
-    // Assert
-    assert.isDefined(stub);
-    const key = stub!.schemaKey as FileSchemaKey;
-    assert.equal(false, key.isSchemaJson());
-  });
-
-  it("isSchemaXml correctly identifies Xml", async () => {
-    // Arrange
-    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
-
-    // Act
-    const stub = await locator.loadSchema(schemaPath);
-
-    // Assert
-    assert.isDefined(stub);
-    const key = stub!.schemaKey as FileSchemaKey;
-    assert.equal(true, key.isSchemaXml());
-  });
-
   it("loadSchema called twice, same Schema object", async () => {
     // Arrange
     const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.xml";
