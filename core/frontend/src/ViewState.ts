@@ -1490,6 +1490,8 @@ export class ViewState2d extends ViewState {
   public readonly delta: Point2d;
   public readonly angle: Angle;
   public readonly baseModelId: Id64;
+  private _viewedExtents?: AxisAlignedBox3d;
+
   public static get className() { return "ViewDefinition2d"; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
@@ -1525,10 +1527,31 @@ export class ViewState2d extends ViewState {
     return super.equalState(other);
   }
 
+  private static readonly _scratchViewedExtents = new AxisAlignedBox3d();
+  public getViewedExtents() {
+    // ###TODO: Would prefer not to have to (asynchronously and possibly needlessly) load the tile tree solely to obtain the model range...
+    // Seems like GeometricModelState ought to be able to report its range independent of a TileTree or ViewState.
+    if (undefined === this._viewedExtents) {
+      const model = this.iModel.models.getLoaded(this.baseModelId.value);
+      if (undefined !== model && model.isGeometricModel) {
+        const tree = (model as GeometricModelState).getOrLoadTileTree();
+        if (undefined !== tree) {
+          this._viewedExtents = new AxisAlignedBox3d(tree.range.low, tree.range.high);
+          tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
+        }
+      }
+    }
+
+    return undefined !== this._viewedExtents ? this._viewedExtents : ViewState2d._scratchViewedExtents;
+  }
+
   public onRenderFrame(): void { }
-  public load(): Promise<void> { return Promise.resolve(); }
+  public async load(): Promise<void> {
+    await super.load();
+    return this.iModel.models.load(this.baseModelId);
+  }
+
   public allow3dManipulations(): boolean { return false; }
-  public getViewedExtents() { return new AxisAlignedBox3d(); } // NEEDS_WORK
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
   public getRotation() { return RotMatrix.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
