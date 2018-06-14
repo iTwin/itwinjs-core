@@ -16,6 +16,8 @@ import { AccuDrawFlags } from "../AccuDraw";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
+import { HitDetail, HitSource } from "../HitDetail";
+import { LocateOptions, LocateResponse } from "../ElementLocateManager";
 
 const scratchFrustum = new Frustum();
 const scratchTransform1 = Transform.createIdentity();
@@ -286,6 +288,22 @@ export abstract class ViewManip extends ViewTool {
     this.frustumValid = false;
 
     this.viewHandles.onReinitialize();
+  }
+
+  public static getTargetHitDetail(viewport: Viewport, worldPoint: Point3d): HitDetail | undefined {
+    // NOTE: Don't change options without restoring the old values or it will affect the suspended primitive...
+    const options: LocateOptions = IModelApp.locateManager.options; // this is a reference
+    const saveDisabled = options.disableIModelFilter;
+    const saveHitSource = options.hitSource;
+
+    options.disableIModelFilter = true;
+    options.hitSource = HitSource.MotionLocate;
+
+    const path = IModelApp.locateManager.doLocate(new LocateResponse(), true, worldPoint, viewport, false);
+
+    options.disableIModelFilter = saveDisabled;
+    options.hitSource = saveHitSource;
+    return path;
   }
 
   public onDataButtonDown(ev: BeButtonEvent): boolean {
@@ -911,7 +929,7 @@ class ViewRotate extends ViewingToolHandle {
     const tool = this.viewTool;
     const vp = ev.viewport!;
 
-    if (/*###TODO tool.isTargetCenterLocked && */ vp.view.allow3dManipulations()) {
+    if (/*###TODO !tool.isTargetCenterLocked && */ vp.view.allow3dManipulations()) {
       const visiblePoint = vp.determineNearestVisibleGeometryPoint(ev.rawPoint, 20.0);
       if (undefined !== visiblePoint)
         tool.setTargetCenterWorld(visiblePoint, false);
@@ -1984,7 +2002,8 @@ export class RotatePanZoomGestureTool extends ViewGestureTool {
     if (!vp.setupFromFrustum(this.frustum))
       return true;
 
-    const zoomCenter = vp.getZoomCenter(ev);
+    const zoomCenter = Point3d.create();
+    ev.getTargetPoint(zoomCenter);
     vp.zoom(zoomCenter, zoomRatio);
     this.saveTouchStopData(info);
     this.doUpdate(true);
@@ -2019,23 +2038,6 @@ export class ViewScrollTool extends ViewManip {
   constructor(vp: Viewport) {
     super(vp, ViewHandleType.ViewScroll, true, false, true);
   }
-}
-
-export abstract class InputCollector extends InteractiveTool {
-  public run(): boolean {
-    const toolAdmin = IModelApp.toolAdmin;
-    // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
-    if (undefined !== toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
-      return false;
-
-    toolAdmin.startInputCollector(this);
-    toolAdmin.setInputCollector(this);
-    toolAdmin.onPostInstallTool(this);
-    return true;
-  }
-
-  public exitTool() { IModelApp.toolAdmin.exitInputCollector(); }
-  public onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return true; }
 }
 
 export class ViewUndoTool extends ViewTool {

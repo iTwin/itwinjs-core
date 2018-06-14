@@ -285,7 +285,7 @@ export class RpcControlChannel {
     }
 
     this.clientActive = true;
-    RpcOperation.forEach(this.channelInterface, (operation) => operation.policy.token = (_request) => new IModelToken("none", "none", "none", "none")); // probably need to get this from the app somehow...
+    RpcOperation.forEach(this.channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken || new IModelToken("none", "none", "none", "none"));
     const client = RpcManager.getClientForInterface(this.channelInterface);
     this._describeEndpoints = () => client.describeEndpoints();
   }

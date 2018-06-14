@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { Transform, Range3d, RotMatrix, Angle, AxisOrder, Point3d, Vector3d } from "../geometry-core";
 import * as bsiChecker from "./Checker";

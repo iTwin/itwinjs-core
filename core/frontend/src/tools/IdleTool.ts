@@ -122,12 +122,12 @@ export class IdleTool extends InteractiveTool {
     return IModelApp.toolAdmin.processWheelEvent(ev, true);
   }
 
-  public run() { return true; }
-  public exitTool(): void { }
-  public onDataButtonDown(_ev: BeButtonEvent) { return false; }
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.run(); return true; }
   public onSingleFingerMove(ev: BeGestureEvent) { return this.onMultiFingerMove(ev); }
   public onSingleTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureSingleTapToButtonDownAndUp(ev); return true; }
   public onDoubleTap(ev: BeGestureEvent) { if (ev.viewport) { const tool = new FitViewTool(ev.viewport, true); tool.run(); } return true; }
   public onTwoFingerTap(ev: BeGestureEvent) { IModelApp.toolAdmin.convertGestureToResetButtonDownAndUp(ev); return true; }
+
+  public exitTool(): void { }
+  public run() { return true; }
 }

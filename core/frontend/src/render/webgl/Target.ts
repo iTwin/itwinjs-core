@@ -177,7 +177,7 @@ export abstract class Target extends RenderTarget {
   public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
-  public currentOverrides?: FeatureOverrides;
+  private _currentOverrides?: FeatureOverrides;
   public currentPickTable?: PickTable;
 
   protected constructor() {
@@ -188,6 +188,13 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
     this.compositor = new SceneCompositor(this);
+  }
+
+  public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
+  // public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides ? undefined : undefined; } // ###TODO remove this - for testing purposes only (forces overrides off)
+  public set currentOverrides(ovr: FeatureOverrides | undefined) {
+    // Don't bother setting up overrides if they don't actually override anything - wastes time doing texture lookups in shaders.
+    this._currentOverrides = (undefined !== ovr && ovr.anyOverridden) ? ovr : undefined;
   }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }

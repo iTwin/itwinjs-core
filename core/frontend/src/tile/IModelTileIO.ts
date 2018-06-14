@@ -13,7 +13,6 @@ import { JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../render/System";
 import { RenderSystem } from "../render/System";
 import { GeometricModelState } from "../ModelState";
-import { Material } from "../render/webgl/Material";
 
 /** Provides facilities for deserializing iModel tiles. iModel tiles contain element geometry. */
 export namespace IModelTileIO {
@@ -211,22 +210,26 @@ export namespace IModelTileIO {
       return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping);
     }
 
+    protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
+      return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
+    }
+
     protected materialFromJson(key: string): RenderMaterial | undefined {
-      if (this.renderMaterials.key === undefined)
+      if (this.renderMaterials[key] === undefined)
         return undefined;
 
       let material = this.system.findMaterial(key, this.model.iModel);
       if (!material) {
-        const materialJson = this.renderMaterials.key;
+        const materialJson = this.renderMaterials[key];
 
-        const materialParams = new RenderMaterial.Params();
-        materialParams.diffuseColor = materialJson.diffuseColor !== undefined ? ColorDef.from(materialJson.diffuseColor[0], materialJson.diffuseColor[1], materialJson.diffuseColor[2]) : undefined;
+        const materialParams = new RenderMaterial.Params(key);
+        materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
         if (materialJson.diffuse !== undefined)
           materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
-        materialParams.specularColor = materialJson.specularColor !== undefined ? ColorDef.from(materialJson.specularColor[0], materialJson.specularColor[1], materialJson.specularColor[2]) : undefined;
+        materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
         if (materialJson.specular !== undefined)
           materialParams.specular = JsonUtils.asDouble(materialJson.specular);
-        materialParams.reflectColor = materialJson.reflectColor !== undefined ? ColorDef.from(materialJson.reflectColor[0], materialJson.reflectColor[1], materialJson.reflectColor[2]) : undefined;
+        materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
         if (materialJson.reflect !== undefined)
           materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
 
@@ -238,17 +241,19 @@ export namespace IModelTileIO {
         materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
         materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
 
-        // Check for texture
-        if (materialJson.texture !== undefined && materialJson.texture.name !== undefined) {
-          materialParams.textureMapping = this.textureMappingFromJson(materialJson.texture);
-        }
+        if (undefined !== materialJson.textureMapping)
+          materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
-        material = new Material(materialParams);
+        material = this.system.createMaterial(materialParams, this.model.iModel);
       }
+
       return material;
     }
 
     private textureMappingFromJson(json: any): TextureMapping | undefined {
+      if (undefined === json)
+        return undefined;
+
       const name = JsonUtils.asString(json.name);
       const namedTex = 0 !== name.length ? this.namedTextures[name] : undefined;
       if (undefined === namedTex)

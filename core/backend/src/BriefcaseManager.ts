@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
@@ -214,7 +214,7 @@ export class BriefcaseManager {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
       // If the host has a server handler, then assume that it will supply the FileHandler. If not, then default to Azure as we used to do.
-      const fileHandler = (IModelHost.configuration.iModelServerHandler === undefined) ? new AzureFileHandler() : undefined;
+      const fileHandler = (IModelHost.configuration.iModelServerHandler === undefined) ? new AzureFileHandler(false) : undefined;
       BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, fileHandler, IModelHost.configuration.iModelServerHandler);
     }
     return BriefcaseManager._hubClient;
@@ -880,7 +880,7 @@ export class BriefcaseManager {
     try {
       const files = IModelJsFs.readdirSync(folderPath);
       for (const file of files) {
-        const curPath = folderPath + "/" + file;
+        const curPath = path.join(folderPath, file);
         if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
           BriefcaseManager.deleteFolderRecursive(curPath);
         } else {

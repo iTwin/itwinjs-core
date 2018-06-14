@@ -3,7 +3,10 @@ node_modules
 
 # build output
 .nyc_output
-lib
+/core/**/lib
+/example-code/**/lib
+/simpleviewtest/**/lib
+/testbed/**/lib
 /core/geometry/src/test/output
 /core/backend/src/test/output
 /generated-docs

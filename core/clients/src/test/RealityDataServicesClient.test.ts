@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { IModelHubClient, Version } from "../imodelhub";
@@ -29,7 +29,7 @@ export class RealityDataUrlMock {
   }
 }
 
-describe("RealityDataServicesClient", () => {
+describe.skip("RealityDataServicesClient", () => {
 
   let accessToken: AccessToken;
   const imodelHubClient: IModelHubClient = new IModelHubClient("DEV");

@@ -56,6 +56,13 @@ export abstract class GeometricModelState extends ModelState {
   public get tileTree(): TileTree | undefined { return this._tileTree; }
   public get isGeometricModel(): boolean { return true; }
 
+  public getOrLoadTileTree(): TileTree | undefined {
+    if (undefined === this.tileTree)
+      this.loadTileTree();
+
+    return this.tileTree;
+  }
+
   public loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
       this._loadStatus = TileTree.LoadStatus.Loading;

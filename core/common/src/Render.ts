@@ -196,13 +196,12 @@ export class PolylineEdgeArgs {
 export abstract class RenderTexture implements IDisposable {
   public readonly params: RenderTexture.Params;
 
-  protected constructor(params: RenderTexture.Params) {
-    this.params = params;
-  }
+  protected constructor(params: RenderTexture.Params) { this.params = params; }
+  public abstract dispose(): void;
 
   public get key(): string | undefined { return this.params.key; }
   public get isGlyph(): boolean { return this.params.isGlyph; }
-  public abstract dispose(): void;
+  public get isTileSection(): boolean { return this.params.isTileSection; }
 }
 
 export namespace RenderTexture {
@@ -219,7 +218,7 @@ export namespace RenderTexture {
       this.isRGBE = isRGBE;
     }
 
-    /** Create a RenderMaterial params object with QVision default values. */
+    /** Obtain a RenderTexture params object with default values. */
     public static readonly defaults = new Params();
   }
 }
@@ -254,7 +253,7 @@ export namespace RenderMaterial {
     public ambient: number = .3;
     public shadows = true;
 
-    public constructor() { }
+    public constructor(key?: string) { this.key = key; }
 
     /** Create a RenderMaterial params object with QVision default values. */
     public static readonly defaults = new Params();
@@ -863,8 +862,8 @@ export namespace HiddenLine {
     public transparencyThreshold: number = 1.0;
     public equals(other: Params): boolean { return this.visible === other.visible && this.hidden === other.hidden && this.transparencyThreshold === other.transparencyThreshold; }
     public constructor(json: any) {
-      this.visible = new HiddenLine.Style(undefined !== json ? json.visible : undefined);
-      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(ColorByName.white), width: 0, pattern: LinePixels.HiddenLine });
+      this.visible = new HiddenLine.Style(undefined !== json && undefined !== json.visible ? json.visible : { ovrColor: false, color: new ColorDef(), width: 1, pattern: LinePixels.Solid });
+      this.hidden = new HiddenLine.Style(undefined !== json && undefined !== json.hidden ? json.hidden : { ovrColor: false, color: new ColorDef(), width: 1, pattern: LinePixels.HiddenLine });
       this.transparencyThreshold = undefined !== json ? JsonUtils.asDouble(json.transThreshold, 1.0) : 1.0;
     }
   }
@@ -1079,6 +1078,15 @@ export namespace Gradient {
       return ColorDef.from(this.roundToByte(red), this.roundToByte(green), this.roundToByte(blue), this.roundToByte(transparency));
     }
 
+    public get hasTranslucency(): boolean {
+      for (const key of this.keys) {
+        if (!key.color.isOpaque)
+          return true;
+      }
+
+      return false;
+    }
+
     /** Writes the image in 'reverse'. */
     public getImage(width: number, height: number): ImageBuffer {
       if (this.mode === Mode.Thematic) {
@@ -1086,10 +1094,11 @@ export namespace Gradient {
         height = 8192;    // Thematic image height
       }
 
+      const hasAlpha = this.hasTranslucency;
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
-      const image = new Uint8Array(width * height * 4);
+      const image = new Uint8Array(width * height * (hasAlpha ? 4 : 3));
       let currentIdx = image.length - 1;
       const shift = Math.min(1.0, Math.abs(this.shift));
 
@@ -1128,7 +1137,9 @@ export namespace Gradient {
                   f = Math.sin(Math.PI / 2 * (1.0 - d / dMin));
               }
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1147,7 +1158,9 @@ export namespace Gradient {
               const yr = y * cosA - x * sinA;
               const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1165,7 +1178,9 @@ export namespace Gradient {
               const x = xs + i / width - 0.5;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1182,7 +1197,9 @@ export namespace Gradient {
               const x = i / width - xs;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
               const color = this.mapColor(f);
-              image[currentIdx--] = color.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color.getAlpha();
+
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -1224,7 +1241,9 @@ export namespace Gradient {
               }
             }
             for (let i = 0; i < width; i++) {
-              image[currentIdx--] = color!.getAlpha();
+              if (hasAlpha)
+                image[currentIdx--] = color!.getAlpha();
+
               image[currentIdx--] = color!.colors.b;
               image[currentIdx--] = color!.colors.g;
               image[currentIdx--] = color!.colors.r;
@@ -1234,7 +1253,7 @@ export namespace Gradient {
       }
 
       assert(-1 === currentIdx);
-      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
+      const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, width);
       assert(undefined !== imageBuffer);
       return imageBuffer!;
     }

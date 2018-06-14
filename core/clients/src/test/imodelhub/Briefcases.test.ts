@@ -167,7 +167,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
-    const downloadToPathname: string = path.join(utils.workDir, "1", fileName);
+    const downloadToPathname: string = path.join(utils.workDir, fileName);
 
     utils.mockFileResponse();
 
@@ -183,7 +183,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.downloadUrl);
 
     const fileName: string = briefcase.fileName!;
-    const downloadToPathname: string = path.join(utils.workDir, "2", fileName);
+    const downloadToPathname: string = path.join(utils.workDir, fileName);
 
     utils.mockFileResponse();
 

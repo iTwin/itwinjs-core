@@ -8,6 +8,7 @@ import { Viewport, ViewRect } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
+import { PrimitiveTool } from "./tools/PrimitiveTool";
 
 // tslint:disable:variable-name
 
@@ -50,7 +51,6 @@ export const enum SnapStatus {
 export const enum TestHitStatus {
   NotOn = 0,
   IsOn = 1,
-  Aborted = 2,
 }
 
 export class LocateOptions {
@@ -83,12 +83,10 @@ export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
   public hitList?: HitList;
-  public lastPickAborted = false;
 
   public empty() {
     this.pickPointWorld.setZero();
     this.viewport = undefined;
-    this.lastPickAborted = true;
     if (this.hitList)
       this.hitList.empty();
     else
@@ -121,7 +119,7 @@ export class ElementPicker {
 
   /** Generate a list of elements that are close to a given point. */
   public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
-    if (this.hitList && this.hitList.size() > 0 && !this.lastPickAborted && (vp === this.viewport) && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
+    if (this.hitList && this.hitList.size() > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.size();
     }
@@ -184,10 +182,7 @@ export class ElementPicker {
     if (!hitList && !this.hitList)
       this.empty();
 
-    if (!this.doPick(vp, pickPointWorld, pickRadiusView, options))
-      return (this.lastPickAborted ? TestHitStatus.Aborted : TestHitStatus.NotOn);
-
-    if (undefined === this.hitList)
+    if (!this.doPick(vp, pickPointWorld, pickRadiusView, options) || undefined === this.hitList)
       return TestHitStatus.NotOn;
 
     for (let i = 0; i < this.hitList.size(); i++) {
@@ -266,7 +261,7 @@ export class ElementLocateManager {
     }
 
     const tool = IModelApp.toolAdmin.activeTool;
-    if (!tool)
+    if (!(tool && tool instanceof PrimitiveTool))
       return false;
 
     const retVal = !tool.onPostLocate(hit, out);

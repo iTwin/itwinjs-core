@@ -9,7 +9,7 @@ import {
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { BeEvent, BeDuration, BeTimePoint, Id64 } from "@bentley/bentleyjs-core";
-import { BeButtonEvent, BeCursor } from "./tools/Tool";
+import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
@@ -1016,15 +1016,6 @@ export class Viewport {
     view.setOrigin(newOrg);
 
     return this.setupFromView();
-  }
-
-  /**
-   * Get the anchor point for a Zoom operation, based on a button event.
-   * @return the center point for a zoom operation, in world coordinates
-   */
-  public getZoomCenter(ev: BeButtonEvent, result?: Point3d): Point3d {
-    const vp = ev.viewport!;
-    return vp.viewToWorld(ev.viewPoint, result); // NEEDS_WORK
   }
 
   /**

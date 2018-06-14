@@ -47,7 +47,7 @@ class OvrUniform {
     // NB: To be consistent with the lookup table approach for non-uniform feature tables and share shader code, we pass
     // the override data as two RGBA values - hence all the conversions to floating point range [0.0..1.0]
     const kvp = map.getArray()[0];
-    const isFlashed = flashedElemId.isValid && kvp.value.elementId === flashedElemId;
+    const isFlashed = flashedElemId.isValid && kvp.value.elementId.value === flashedElemId.value;
     const isHilited = hilites.isHilited(kvp.value.elementId);
 
     if (undefined === ovrs) {
@@ -206,7 +206,7 @@ class OvrNonUniform {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (flashedElemId.isValid() && feature.elementId === flashedElemId)
+      if (flashedElemId.isValid() && feature.elementId.value === flashedElemId.value)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);
@@ -234,7 +234,7 @@ class OvrNonUniform {
         continue;
       }
 
-      const isFlashed = feature.elementId === flashedElemId;
+      const isFlashed = feature.elementId.value === flashedElemId.value;
       const isHilited = hilites.isHilited(feature.elementId);
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
@@ -251,8 +251,6 @@ class OvrNonUniform {
 
 export class FeatureOverrides {
   public lut?: TextureHandle;
-  public readonly uniform1 = new Float32Array(4);
-  public readonly uniform2 = new Float32Array(4);
   public readonly target: Target;
   public dimension: LUTDimension = LUTDimension.Uniform;
 
@@ -267,17 +265,33 @@ export class FeatureOverrides {
     this.target = target;
   }
 
-  public createFromTarget(target: Target) {
+  public static createFromTarget(target: Target) {
     return new FeatureOverrides(target);
   }
 
-  public get isNonUniform(): boolean { return LUTDimension.Uniform === this.dimension; }
+  public get isNonUniform(): boolean { return LUTDimension.NonUniform === this.dimension; }
   public get isUniform(): boolean { return !this.isNonUniform; }
   public get anyOverridden(): boolean { return this._uniform ? this._uniform.anyOverridden : this._nonUniform!.anyOverridden; }
   public get allHidden(): boolean { return this._uniform ? this._uniform.allHidden : this._nonUniform!.allHidden; }
   public get anyOpaque(): boolean { return this._uniform ? this._uniform.anyOpaque : this._nonUniform!.anyOpaque; }
   public get anyTranslucent(): boolean { return this._uniform ? this._uniform.anyTranslucent : this._nonUniform!.anyTranslucent; }
   public get anyHilited(): boolean { return this._uniform ? this._uniform.anyHilited : this._nonUniform!.anyHilited; }
+
+  public get uniform1(): Float32Array {
+    if (this.isUniform) {
+      const uniform = this._uniform!;
+      return new Float32Array([uniform.floatFlags, uniform.weight, uniform.lineCode, uniform.unused]);
+    }
+    return new Float32Array(4);
+  }
+
+  public get uniform2(): Float32Array {
+    if (this.isUniform) {
+      const rgba = this._uniform!.rgba;
+      return new Float32Array([rgba.red, rgba.green, rgba.blue, rgba.alpha]);
+    }
+    return new Float32Array(4);
+  }
 
   public initFromMap(map: FeatureTable) {
     const nFeatures = map.length;
@@ -311,8 +325,8 @@ export class FeatureOverrides {
     const ovrs = ovrsUpdated ? this.target.currentFeatureSymbologyOverrides : undefined;
     const hilite = this.target.hilite;
     if (ovrsUpdated || hiliteUpdated || this._lastFlashUpdated.before(flashLastUpdated)) {
-      if (this._uniform)
-        this._uniform.update(features, hilite, this.target.flashedElemId, ovrs);
+      if (this.isUniform)
+        this._uniform!.update(features, hilite, this.target.flashedElemId, ovrs);
       else
         this._nonUniform!.update(features, this.lut!, hilite, this.target.flashedElemId, ovrs);
 
@@ -403,6 +417,7 @@ export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: FeatureTable;
   private _pickTable?: PickTable;
+  private _overrides: FeatureOverrides[] = [];
 
   public constructor(graphic: RenderGraphic, features: FeatureTable) {
     super(graphic.iModel);
@@ -419,11 +434,31 @@ export class Batch extends Graphic {
 
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
 
-  // ###TODO:
-  // public get overrides(): FeatureOverrides[] { return this._overrides; }
-  // public onTargetDestroyed(target: Target): void {
-  //   this._overrides.erase(target);
-  // }
+  public getOverrides(target: Target): FeatureOverrides {
+    let ret: FeatureOverrides | undefined;
+
+    for (const ovr of this._overrides) {
+      if (ovr.target === target) {
+        ret = ovr;
+        break;
+      }
+    }
+
+    if (undefined === ret) {
+      ret = FeatureOverrides.createFromTarget(target);
+      this._overrides.push(ret);
+      // ###TODO target.addBatch(*this);
+      ret.initFromMap(this.featureTable);
+    }
+
+    ret.update(this.featureTable);
+    return ret;
+  }
+
+  public onTargetDestroyed(_target: Target) {
+    // ###TODO
+    // this._overrides.erase(target);
+  }
 }
 
 export class Branch extends Graphic {

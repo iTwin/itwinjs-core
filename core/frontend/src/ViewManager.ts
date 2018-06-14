@@ -24,7 +24,7 @@ export class ViewManager {
   public cursor?: BeCursor;
   private readonly _viewports: Viewport[] = [];
   private _selectedView?: Viewport;
-  private _newTilesReady = false;
+  private _invalidateScenes = false;
   private _skipSceneCreation = false;
   private _doContinuousRendering = false;
 
@@ -168,6 +168,7 @@ export class ViewManager {
 
   public invalidateDecorationsAllViews(): void { this._viewports.forEach((vp) => vp.invalidateDecorations()); }
   public onSelectionSetChanged(_iModel: IModelConnection) {
+    this._viewports.forEach((vp) => vp.view.setSelectionSetDirty());
     // for (auto & vp : m_viewports)
     // if (& vp -> GetViewController().GetDgnDb() == & db)
     //   vp -> GetViewControllerR().SetSelectionSetDirty();
@@ -177,7 +178,8 @@ export class ViewManager {
 
   public validateViewportScenes(): void { this._viewports.forEach((vp: Viewport) => vp.sync.setValidScene()); }
 
-  public onNewTilesReady(): void { this._newTilesReady = true; }
+  public invalidateScenes(): void { this._invalidateScenes = true; }
+  public onNewTilesReady(): void { this.invalidateScenes(); }
 
   // Invoked by requestAnimationFrame() whenever we have at least one viewport
   private renderLoop(): void {
@@ -185,10 +187,10 @@ export class ViewManager {
 
     if (this._skipSceneCreation)
       this.validateViewportScenes();
-    else if (this._newTilesReady || this._doContinuousRendering)
+    else if (this._invalidateScenes || this._doContinuousRendering)
       this.invalidateViewportScenes();
 
-    this._newTilesReady = false;
+    this._invalidateScenes = false;
 
     const cursorVp = IModelApp.toolAdmin.getCursorView();
     const plan = new UpdatePlan();

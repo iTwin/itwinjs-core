@@ -124,7 +124,7 @@ export class ConcurrencyControl {
    * ```
    * @param accessToken The user's iModelHub access token
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
-   * @throws [[RequestError]] if some or all of the request could not be fulfilled by iModelHub.
+   * @throws [[ConcurrencyControl.RequestError]] if some or all of the request could not be fulfilled by iModelHub.
    * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
    */
   public async request(accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
