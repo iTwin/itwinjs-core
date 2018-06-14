@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Each `Subject` in a BIS Repository can have a `PhysicalPartition` associated with it. This representation of the `Subject`'s existence in the physical world needs to be organized to facilitate the users' understanding of the data and to facilitate the creation (and coordination) of services and applications that operate on the data.
+Each `'`Subject`"` in a BIS Repository can have a `‘`PhysicalPartition`’` child Element, under which the `PhysicalModel`s pertaining to the `‘`Subject`’` will be organized using mechanisms described in [Model Hierarchy](model-hierarchy.md). The Model Hierarchy is constrained by [Modeling Perspective](modeling-perspective.md), but within the Physical Perspective, it is desirable to further organize Models according to Sites, Facilities, Systems, and Components in order to make the hierarchy of Models understandable by software and users. This section describes “Model Affinity” (a way of specifying “constraints” on the `ModelContainsElements` relationship) and the best-practice for using them to organize the Physical Model Hierarchy.
 
 ![Top of the PhysicalModel Hierarchy](./media/physical-hierarchy-organization-top-of-the-world.png)
 
@@ -15,6 +15,17 @@ As discussed in [Model Hierarchy](model-hierarchy.md), every `Model` contains `E
 ## Organization Strategy
 
 ### Motivations
+
+***Start of alternate complete content for this section***
+
+BIS defines a data model that shared by a growing set of applications and services. Many of these applications and service read and/or write `PhysicalModel` data. There are two choices to ensure that these applications and services will be coordinated:
+ - Require every application and service to work with any data organization.
+ - Specify a data organization which applications and services should read and write.
+
+ The second option has been chosen for BIS as it is the more practical solution.
+
+***End of alternate complete content for this section***
+
 
 The high-level goals - sometimes conflicting - of *an* organization for the `PhysicalModel` hierarchy are to:
 - Allow the users to organize their data in a way that is helpful to them.
@@ -179,8 +190,6 @@ In conversation (and writing) the `Model`s that break down `IFacility` `Element`
 *To implement this behavior every class that includes the `IFacility` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `Site`, `IFacility` and `ISystem`.*
 
 ### ISystem
-
-**TODO: Should ISystem be IDiscipline?**
 
 `ISystem` is a mixin class that represents a significant discipline-specific arrangement of Entities intended to fulfill one or more functions. Sewers, roadways, HVAC and fire-suppression systems are all examples of real-world Entities that are modeled with `ISystem` subclasses. `ISystem` subclasses tend to be suffixed with 'System' (e.g. StructuralSystem, SewerSystem); 'Network' is another commonly used suffix for these classes (e.g. RoadNetwork).
 
