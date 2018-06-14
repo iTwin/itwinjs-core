@@ -4,6 +4,7 @@
 
 import { SchemaJsonFileLocater } from "../source/Deserialization/SchemaJsonFileLocater";
 import { FileSchemaKey } from "../source/Deserialization/SchemaFileLocater";
+import { SchemaContext } from "../source/Context";
 import { assert } from "chai";
 import { ECObjectsError, ECObjectsStatus, SchemaKey, SchemaMatchType, ECVersion } from "../source";
 import * as fs from "fs";
@@ -12,75 +13,53 @@ import * as sinon from "sinon";
 describe("SchemaJsonFileLocater tests: ", () => {
   const paths: string[] = [];
   let locater: SchemaJsonFileLocater;
+  let context: SchemaContext;
 
   beforeEach(() => {
     const srcName = __dirname + "\\assets\\";
     paths.push(srcName);
     locater = new SchemaJsonFileLocater();
+    context = new SchemaContext();
+    context.addLocater(locater);
   });
 
   it("loadSchema from file succeeds", async () => {
     // Arrange
-    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.json";
+    const schemaKey = new SchemaKey("SchemaA");
 
     // Act
-    const stub = await locater.loadSchema(schemaPath);
+    const schema = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
 
     // Assert
-    assert.isDefined(stub);
-    const key = stub!.schemaKey as FileSchemaKey;
-    assert.equal(key.name, "SchemaA");
-    assert.equal(key.version.toString(), "1.1.1");
-    assert.equal(key.fileName, schemaPath);
-  });
-
-  it("isSchemaJson correctly identifies Json", async () => {
-    // Arrange
-    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.json";
-
-    // Act
-    const stub = await locater.loadSchema(schemaPath);
-
-    // Assert
-    assert.isDefined(stub);
-    const key = stub!.schemaKey as FileSchemaKey;
-    assert.equal(true, key.isSchemaJson());
-  });
-
-  it("isSchemaXml correctly identifies Xml", async () => {
-    // Arrange
-    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.json";
-
-    // Act
-    const stub = await locater.loadSchema(schemaPath);
-
-    // Assert
-    assert.isDefined(stub);
-    const key = stub!.schemaKey as FileSchemaKey;
-    assert.equal(false, key.isSchemaXml());
+    assert.isDefined(schema);
+    assert.equal(schema!.schemaKey.name, "SchemaA");
+    assert.equal(schema!.schemaKey.version.toString(), "1.1.1");
   });
 
   it("loadSchema called twice, same Schema object", async () => {
     // Arrange
-    const schemaPath = __dirname + "\\assets\\SchemaA.ecschema.json";
+    const schemaKey = new SchemaKey("SchemaA");
 
     // Act
-    const stub1 = await locater.loadSchema(schemaPath);
-    const stub2 = await locater.loadSchema(schemaPath);
+    const locater1 = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
+    const locater2 = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
+    const context1 = await context.getSchema(schemaKey, SchemaMatchType.Latest);
+    const context2 = await context.getSchema(schemaKey, SchemaMatchType.Latest);
 
     // Assert
-    // Should be the same object (not constructed again), meaning
-    // it was retrieved from cache.
-    assert.equal(stub1, stub2);
+    // locater should not cache, but context should cache
+    assert.notEqual(locater1, locater2);
+    assert.notEqual(locater1, context1);
+    assert.equal(context1, context2);
   });
 
   it("loadSchema from file, not found, throws", async () => {
     // Arrange
-    const schemaPath = __dirname + "\\assets\\DoesNotExist.ecschema.json";
+    const schemaKey = new SchemaKey("DoesNotExist");
 
     // Act / Assert
     try {
-      await locater.loadSchema(schemaPath);
+      await locater.getSchema(schemaKey, SchemaMatchType.Latest);
     } catch (e) {
       const error = e as ECObjectsError;
       assert.equal(error.errorNumber, ECObjectsStatus.UnableToLocateSchema);
@@ -92,11 +71,11 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("loadSchema from file, bad schema name, throws", async () => {
     // Arrange
-    const schemaPath = __dirname + "\\assets\\BadSchemaName.ecschema.json";
+    const schemaKey = new SchemaKey("BadSchemaName");
 
     // Act / Assert
     try {
-      await locater.loadSchema(schemaPath);
+      await locater.getSchema(schemaKey, SchemaMatchType.Latest);
     } catch (e) {
       const error = e as ECObjectsError;
       assert.equal(error.errorNumber, ECObjectsStatus.InvalidECJson);
@@ -108,11 +87,11 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("loadSchema from file, bad schema version, throws", async () => {
     // Arrange
-    const schemaPath = __dirname + "\\assets\\BadSchemaVersion.ecschema.json";
+    const schemaKey = new SchemaKey("BadSchemaVersion");
 
     // Act / Assert
     try {
-      await locater.loadSchema(schemaPath);
+      await locater.getSchema(schemaKey, SchemaMatchType.Latest);
     } catch (e) {
       const error = e as ECObjectsError;
       assert.equal(error.errorNumber, ECObjectsStatus.InvalidECJson);

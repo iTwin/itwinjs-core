@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaKey, SchemaCache, Schema, SchemaMatchType, ECObjectsError, ECObjectsStatus } from "..";
+import { SchemaKey, Schema, SchemaMatchType, ECObjectsError, ECObjectsStatus } from "..";
 import * as fs from "fs";
 import * as path from "path";
 import * as glob from "glob";
@@ -64,42 +64,35 @@ export class FileSchemaKey extends SchemaKey {
     this.fileName = fileName;
     this.schemaText = schemaJson;
   }
-
-  /**
-   * Checks if the schema text is in XML format
-   */
-  public isSchemaXml(): boolean {
-    if (!this.schemaText) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaString, `No schema text for schema: ${this.name}`);
-    return this.schemaText.startsWith("<");
-  }
-
-  /**
-   * Checks if the schema text is in JSON format
-   */
-  public isSchemaJson(): boolean {
-    // If the text isn't in the object, throw an error
-    if (!this.schemaText) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaString, `No schema text for schema: ${this.name}`);
-    // Try to parse the text as a JSON
-    try {
-      JSON.parse(this.schemaText);
-    } catch (exc) {
-      // Return false if the string can't be parsed as a JSON
-      return false;
-    }
-    return true;
-  }
 }
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
  */
-export abstract class SchemaFileLocator {
+export abstract class SchemaFileLocater {
   public searchPaths: string[];
-  public knownSchemas: SchemaCache;
 
   constructor() {
-    this.knownSchemas = new SchemaCache();
     this.searchPaths = [];
+  }
+
+  public readUtf8FileToString(filePath: string): Promise<string | undefined> {
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, "utf-8", (err, data) => {
+        if (err)
+         reject(err);
+        else
+         resolve(data);
+      });
+    });
+  }
+
+  public fileExists(filePath: string): Promise<boolean | undefined> {
+    return new Promise((resolve) => {
+      fs.exists(filePath, (data) => {
+        resolve(data);
+      });
+    });
   }
 
   /**
