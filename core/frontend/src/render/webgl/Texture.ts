@@ -243,6 +243,15 @@ export class TextureHandle implements IDisposable {
       this.dataBytes[i] = data[i];
     }
 
+    const tex = this.getHandle()!;
+    if (undefined === tex)
+      return false;
+
+    const gl: WebGLRenderingContext = System.instance.context;
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this.format, this.dataType, this.dataBytes);
+
     return true;
   }
 

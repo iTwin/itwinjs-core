@@ -47,7 +47,7 @@ class OvrUniform {
     // NB: To be consistent with the lookup table approach for non-uniform feature tables and share shader code, we pass
     // the override data as two RGBA values - hence all the conversions to floating point range [0.0..1.0]
     const kvp = map.getArray()[0];
-    const isFlashed = flashedElemId.isValid && kvp.value.elementId === flashedElemId;
+    const isFlashed = flashedElemId.isValid && kvp.value.elementId.value === flashedElemId.value;
     const isHilited = hilites.isHilited(kvp.value.elementId);
 
     if (undefined === ovrs) {
@@ -206,7 +206,7 @@ class OvrNonUniform {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (flashedElemId.isValid() && feature.elementId === flashedElemId)
+      if (flashedElemId.isValid() && feature.elementId.value === flashedElemId.value)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);
@@ -234,7 +234,7 @@ class OvrNonUniform {
         continue;
       }
 
-      const isFlashed = feature.elementId === flashedElemId;
+      const isFlashed = feature.elementId.value === flashedElemId.value;
       const isHilited = hilites.isHilited(feature.elementId);
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);

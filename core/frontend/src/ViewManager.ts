@@ -168,6 +168,7 @@ export class ViewManager {
 
   public invalidateDecorationsAllViews(): void { this._viewports.forEach((vp) => vp.invalidateDecorations()); }
   public onSelectionSetChanged(_iModel: IModelConnection) {
+    this._viewports.forEach((vp) => vp.view.setSelectionSetDirty());
     // for (auto & vp : m_viewports)
     // if (& vp -> GetViewController().GetDgnDb() == & db)
     //   vp -> GetViewControllerR().SetSelectionSetDirty();
