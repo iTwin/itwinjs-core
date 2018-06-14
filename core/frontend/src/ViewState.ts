@@ -1437,7 +1437,16 @@ export class SpatialViewState extends ViewState3d {
 
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public getViewedExtents(): AxisAlignedBox3d { return this.iModel.projectExtents; }
+
+  private _viewedExtents?: AxisAlignedBox3d;
+  public getViewedExtents(): AxisAlignedBox3d {
+    if (undefined === this._viewedExtents) {
+      this._viewedExtents = new AxisAlignedBox3d(this.iModel.projectExtents.low, this.iModel.projectExtents.high);
+      this._viewedExtents.scaleAboutCenterInPlace(1.0001); // Ensure geometry lying smack up against the extents is not excluded by frustum...
+    }
+
+    return this._viewedExtents;
+  }
 
   public toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;
