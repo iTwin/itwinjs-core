@@ -52,6 +52,7 @@ class BufferedStream extends Writable {
 
   public _final(callback: (err?: Error) => void) {
     this.flush(callback);
+    this._stream.close();
   }
 
   get bytesWritten(): number {
