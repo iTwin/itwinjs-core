@@ -127,10 +127,10 @@ When an ancestor class has already defined a `ModelAffinity`, it only makes sens
   <ECEnumerator value="Suggested"  description="Element not residing in this breakdown Model should trigger a validation note."/>
 </ECEnumeration>
 
-<ECCustomAttributeClass typeName="ModelAffinity" description="Applied to an Element subclass to indicate that the subclass has an affinity to certain breakdown Models. This affinity can be used for validation and enhanced UI tools. Inherited ModelAffinities are also applied." appliesTo="EntityClass">
-  <ECProperty propertyName="AffinityStrength" typeName="ModelAffinityStrength" description="The strength of the affinity to apply to the BreakdownModels"/>
+<ECCustomAttributeClass typeName="ModelAffinity" description="Applied to an Element subclass to indicate that the subclass has an affinity to certain types of breakdown Models (i.e. Models breaking down a certain class of Element). This affinity is a "loose" constraint can be used for validation and UI enhancements. Inherited ModelAffinities are also applied." appliesTo="EntityClass">
+  <ECProperty propertyName="AffinityStrength" typeName="ModelAffinityStrength" description="The strength of the affinity between the Element and the BreakdownModels in which it may reside."/>
   <ECProperty propertyName="Rationale" typeName="string" description="The reason why the affinity exists."/>
-  <ECArrayProperty propertyName="BreakdownModels" typeName="string" description="List of Element subclasses whose breakdown Model is appropriate for the class this custom attribute is applied to. Use format '[SchemaName]:[ClassName]', e.g. 'Fruit:Banana'" minOccurs="1" maxOccurs="unbounded"/>
+  <ECArrayProperty propertyName="BreakdownModels" typeName="string" description="List of Element subclasses whose breakdown Models are appropriate containers for the class that this custom attribute is applied to. Use format '[SchemaName]:[ClassName]', e.g. 'Fruit:Banana'" minOccurs="1" maxOccurs="unbounded"/>
 </ECCustomAttributeClass>
 ```
 
