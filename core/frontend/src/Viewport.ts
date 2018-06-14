@@ -493,45 +493,42 @@ export class Viewport {
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
 
-  private static readonly fullRangeNpc = new Range3d(0, 0, 0, 1, 1, 1); // full range of view
-  private static readonly depthRect = new ViewRect();
-  public determineVisibleDepthNpcRange(subRectNpc?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
-    subRectNpc = subRectNpc ? subRectNpc : Viewport.fullRangeNpc;
-
-    // Determine the screen rectangle in which to query visible depth min + max
-    const viewRect = Viewport.depthRect;
-    viewRect.initFromRange(subRectNpc);
-    return this.pickRange(viewRect, result);
-  }
-
+  private static readonly fullRangeNpc = new Range3d(0, 0, 0, 1, 1, 1); // full range of view (used in determineVisibleDepthNpcRange to avoid reinitializing)
+  private static readonly depthRect = new ViewRect(); // used in determineVisibleDepthNpcRange to avoid reinitializing
   /**
    * Computes the range of depth values for a region of the screen
-   * @param origin the top-left corner of the region in screen coordinates
-   * @param extents the width (x) and height (y) of the region in screen coordinates
+   * @param subRectView the subrange in view coordinates we wish to view
+   * @param result optional DepthRangeNpc to store the result
    * @returns the minimum and maximum depth values within the region, or undefined.
    */
-  private pickRange(inViewRect: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined {
-    if (result) {
+  public determineVisibleDepthNpcRange(subRectView?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
+    if (result) { // Null result if given
       result.minimum = 1;
       result.maximum = 0;
-    } else {
+    } else {  // Set result to null DepthRangeNpc
       result = new DepthRangeNpc(1, 0);
     }
 
-    const viewRect = this.viewRect;
-    const pixels = this.readPixels(viewRect, Pixel.Selector.Distance);
+    // Default to a (0, 0, 0) to (1, 1, 1) range if no range was provided
+    subRectView = subRectView ? subRectView : Viewport.fullRangeNpc;
 
+    // Determine the screen rectangle in which to query visible depth min + max
+    const newViewRect = Viewport.depthRect;
+    newViewRect.initFromPoint(subRectView.low, subRectView.high);
+
+    const totalViewRect = this.viewRect;
+    const pixels = this.readPixels(totalViewRect, Pixel.Selector.Distance);
     if (!pixels)
       return undefined;
 
-    if (inViewRect !== undefined && !viewRect.overlaps(inViewRect))
+    if (!this.viewRect.overlaps(newViewRect))
       return undefined;
 
     const testPoint = Point2d.create();
-    for (testPoint.x = viewRect.left; testPoint.x <= viewRect.right; testPoint.x++) {
-      for (testPoint.y = viewRect.top; testPoint.y <= viewRect.bottom; testPoint.y++) {
+    for (testPoint.x = this.viewRect.left; testPoint.x <= this.viewRect.right; testPoint.x++) {
+      for (testPoint.y = this.viewRect.top; testPoint.y <= this.viewRect.bottom; testPoint.y++) {
         const npc = Point3d.create();
-        if (viewRect.containsPoint(testPoint) && this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
+        if (this.viewRect.containsPoint(testPoint) && this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
           result.minimum = Math.min(result.minimum, npc.z);
           result.maximum = Math.max(result.maximum, npc.z);
         }
