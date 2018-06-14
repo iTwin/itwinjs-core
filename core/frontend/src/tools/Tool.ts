@@ -1,5 +1,4 @@
 /*---------------------------------------------------------------------------------------------
-/*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -8,7 +7,6 @@ import { Point3d, Point2d, XAndY } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { HitDetail } from "../HitDetail";
-import { LocateResponse } from "../ElementLocateManager";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
 import { IModelError } from "@bentley/imodeljs-common";
@@ -201,7 +199,7 @@ export class BeButtonEvent {
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
-  public invalidate(): void { this.viewport = undefined; }
+  public invalidate() { this.viewport = undefined; }
   public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: Viewport, from: CoordSource, keyModifiers: BeModifierKey, button = BeButton.Data, isDown = true, doubleClick = false, source = InputSource.Unknown) {
     this.point = point;
     this.rawPoint = rawPoint;
@@ -432,20 +430,20 @@ export abstract class InteractiveTool extends Tool {
   public onReinitialize(): void { }
 
   /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
-  public onCleanup() { }
+  public onCleanup(): void { }
 
   /**
    * Called to allow an active tool to display non-element decorations in overlay mode.
    * This method is NOT called while the tool is suspended by a viewing tool or input collector.
    */
-  public decorate(_context: DecorateContext) { }
+  public decorate(_context: DecorateContext): void { }
 
   /**
    * Called to allow a suspended tool to display non-element decorations in overlay mode.
    * This method is ONLY called when the tool is suspended by a viewing tool or input collector.
    * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
-  public decorateSuspended(_context: DecorateContext) { }
+  public decorateSuspended(_context: DecorateContext): void { }
 
   /** Invoked when the reset button is pressed.
    * @return false by default. Sub-classes may ascribe special meaning to this status.
@@ -528,10 +526,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
   /** Invoked when the dimensions of the tool's viewport change */
-  public onViewportResized() { }
-
-  /** Invoked to allow a tool to update any view decorations it may have created */
-  public updateDynamics(_ev: BeButtonEvent) { }
+  public onViewportResized(): void { }
 
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
@@ -544,17 +539,29 @@ export abstract class InteractiveTool extends Tool {
   //  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; } // NEEDSWORK
   public getInfoString(_hit: HitDetail, _delimiter: string): string { return ""; }
 
-  /** Invoked to allow tools to filter which elements can be located.
-   * return true to reject hit (fill out response with reason, if it is defined)
-   */
-  public onPostLocate(_hit: HitDetail, _out?: LocateResponse) { return false; }
-
   /**
    * Call to fill a button event from the current cursor location.
    */
   public getCurrentButtonEvent(ev: BeButtonEvent): void {
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
   }
+}
+
+export abstract class InputCollector extends InteractiveTool {
+  public run(): boolean {
+    const toolAdmin = IModelApp.toolAdmin;
+    // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
+    if (undefined !== toolAdmin.activeViewTool || !toolAdmin.onInstallTool(this))
+      return false;
+
+    toolAdmin.startInputCollector(this);
+    toolAdmin.setInputCollector(this);
+    toolAdmin.onPostInstallTool(this);
+    return true;
+  }
+
+  public exitTool(): void { IModelApp.toolAdmin.exitInputCollector(); }
+  public onResetButtonUp(_ev: BeButtonEvent): boolean { this.exitTool(); return true; }
 }
 
 /**

@@ -8,9 +8,9 @@ import { ViewStatus, ViewState3d } from "../ViewState";
 import { Viewport } from "../Viewport";
 import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
-  BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool,
+  BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool, InputCollector,
 } from "./Tool";
-import { ViewTool, InputCollector, ViewManip } from "./ViewTool";
+import { ViewTool, ViewManip } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -573,7 +573,7 @@ export class ToolAdmin {
       }
     }
 
-    if (tool)
+    if (tool && tool instanceof PrimitiveTool)
       tool.updateDynamics(ev);
 
     ev.reset();

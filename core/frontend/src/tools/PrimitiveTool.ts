@@ -121,7 +121,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * outside the project extents, but it will be sufficient to handle most cases and provide good feedback to the user.
    * @return true if ev is acceptable.
    */
-  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean) {
+  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean {
     const vp = ev.viewport;
 
     if (undefined === vp)
@@ -151,6 +151,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return false;
   }
 
+  public getCursor(): BeCursor { return BeCursor.Arrow; }
+
   /** Called on data button down event to lock the tool to its current target model. */
   public autoLockTarget(): void { if (undefined !== this.targetView) return; this.targetIsLocked = true; }
 
@@ -158,19 +160,24 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public getPrompt(): string { return ""; }
 
   /** Notifies the tool that a view tool is starting. */
-  public onStartViewTool(_tool: Tool) { }
+  public onStartViewTool(_tool: Tool): void { }
 
   /** Notifies the tool that a view tool is exiting. Return true if handled. */
   public onExitViewTool(): void { }
 
   /** Notifies the tool that an input collector is starting. */
-  public onStartInputCollector(_tool: Tool) { }
+  public onStartInputCollector(_tool: Tool): void { }
 
   /** Notifies the tool that an input collector is exiting. */
-  public onExitInputCollector() { }
+  public onExitInputCollector(): void { }
 
   /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
-  public requireWriteableTarget(): boolean { return false; } // ###TODO set to false for now
+  public requireWriteableTarget(): boolean { return true; }
+
+  /** Invoked to allow tools to filter which elements can be located.
+   * return true to reject hit (fill out response with reason, if it is defined)
+   */
+  public onPostLocate(_hit: HitDetail, _out?: LocateResponse): boolean { return false; }
 
   /**
    * Called when active view changes. Tool may choose to restart or exit based on current view type.
@@ -207,8 +214,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public onReinitialize(): void { this.onRestartTool(); }
 
-  public getCursor(): BeCursor { return BeCursor.Arrow; }
-
   public exitTool(): void {
     const { toolAdmin } = IModelApp;
     toolAdmin.activeToolChanged.raiseEvent(this);
@@ -220,6 +225,19 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @return false to instead reverse the most recent transaction.
    */
   public onUndoPreviousStep(): boolean { return false; }
+
+  public undoPreviousStep(): boolean {
+    if (!this.onUndoPreviousStep())
+      return false;
+
+    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+
+    const ev = new BeButtonEvent();
+    this.getCurrentButtonEvent(ev);
+    this.updateDynamics(ev);
+
+    return true;
+  }
 
   /**
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
@@ -251,37 +269,18 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * ( was called GetDynamicsStarted )
    * Call to find out of complex dynamics are currently active.
    */
-  public isDynamicsStarted() { return IModelApp.viewManager.inDynamicsMode; }
+  public isDynamicsStarted(): boolean { return IModelApp.viewManager.inDynamicsMode; }
 
   /** Call to initialize dynamics mode. */
-  public beginDynamics() { IModelApp.toolAdmin.beginDynamics(); }
+  public beginDynamics(): void { IModelApp.toolAdmin.beginDynamics(); }
 
-  /**  Call to terminate dynamics mode. */
-  public endDynamics() { IModelApp.toolAdmin.endDynamics(); }
+  /** Call to terminate dynamics mode. */
+  public endDynamics(): void { IModelApp.toolAdmin.endDynamics(); }
 
-  /**
-   * ###TODO does this correspond to CreateGeometryTool::_OnDynamicFrame?
-   * Called to display dynamic elements.
-   */
-  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext) { }
+  /** Called to display dynamic elements. */
+  public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
 
-  public callOnRestartTool(): void { this.onRestartTool(); }
-
-  public callOnPostLocate(hit: HitDetail, response: LocateResponse): boolean { return this.onPostLocate(hit, response); }
-
-  public undoPreviousStep(): boolean {
-    if (!this.onUndoPreviousStep())
-      return false;
-
-    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
-
-    const ev = new BeButtonEvent();
-    this.getCurrentButtonEvent(ev);
-    this.updateDynamics(ev);
-
-    return true;
-  }
-
+  /** Invoked to allow a tool to update any view decorations it may have created */
   public updateDynamics(ev: BeButtonEvent): void {
     if (undefined === ev.viewport || !IModelApp.viewManager.inDynamicsMode)
       return;

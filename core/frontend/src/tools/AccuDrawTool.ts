@@ -6,9 +6,8 @@
 import { SavedState, AccuDraw, AccuDrawFlags, RotationMode, ContextMode, LockedStates, ThreeAxes, ItemField, KeyinStatus, CompassMode } from "../AccuDraw";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { BeButtonEvent } from "./Tool";
+import { BeButtonEvent, InputCollector } from "./Tool";
 import { DecorateContext } from "../ViewContext";
-import { InputCollector } from "./ViewTool";
 import { LegacyMath } from "@bentley/imodeljs-common/lib/LegacyMath";
 import { Vector3d, Point3d, RotMatrix, Geometry, Angle } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";

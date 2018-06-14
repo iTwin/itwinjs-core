@@ -8,6 +8,7 @@ import { Viewport, ViewRect } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
+import { PrimitiveTool } from "./tools/PrimitiveTool";
 
 // tslint:disable:variable-name
 
@@ -260,7 +261,7 @@ export class ElementLocateManager {
     }
 
     const tool = IModelApp.toolAdmin.activeTool;
-    if (!tool)
+    if (!(tool && tool instanceof PrimitiveTool))
       return false;
 
     const retVal = !tool.onPostLocate(hit, out);

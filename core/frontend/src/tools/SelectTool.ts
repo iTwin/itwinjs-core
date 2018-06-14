@@ -61,9 +61,12 @@ export class SelectionTool extends PrimitiveTool {
   public manipulatorPreference = ManipulatorPreference.Geometry;
   public manipulator?: EditManipulator;
 
+  public requireWriteableTarget(): boolean { return this.isDragControl || this.isDragElement; }
+  public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
+
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
-  protected wantDragOnlyManipulator() { return false; } // Restrict manipulator operation to drag, default behavior is to support click, click or drag...
-  protected wantElementDrag() { return true; } // A sub-class can override to disable drag move/copy of elements.
+  protected wantDragOnlyManipulator(): boolean { return false; } // Restrict manipulator operation to drag, default behavior is to support click, click or drag...
+  protected wantElementDrag(): boolean { return true; } // A sub-class can override to disable drag move/copy of elements.
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; /* NEEDS_WORK: Settings... */ }
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace;    /* NEEDS_WORK: Settings... */ }
   protected wantToolSettings(): boolean {
@@ -78,8 +81,8 @@ export class SelectionTool extends PrimitiveTool {
     }
     return true;
   }
-  public onRestartTool() { this.exitTool(); }
-  public onCleanup() {
+  public onRestartTool(): void { this.exitTool(); }
+  public onCleanup(): void {
     super.onCleanup();
     this.manipulator = undefined;
     if (this.removeListener) {
@@ -88,7 +91,7 @@ export class SelectionTool extends PrimitiveTool {
     }
   }
 
-  protected initSelectTool() {
+  protected initSelectTool(): void {
     this.isDragSelect = this.isDragControl = this.isDragElement = this.targetIsLocked = false;
     this.points.length = 0;
     const enableLocate = SelectionMethod.Pick === this.getSelectionMethod();
@@ -167,7 +170,7 @@ export class SelectionTool extends PrimitiveTool {
     return this.dragSelect(ev);
   }
 
-  protected onSelectionChanged(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string>) {
+  protected onSelectionChanged(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string>): void {
     if (this.iModel !== iModel)
       return;
 
@@ -695,7 +698,7 @@ export class SelectionTool extends PrimitiveTool {
     return false;
   }
 
-  public onModelEndDrag(ev: BeButtonEvent) {
+  public onModelEndDrag(ev: BeButtonEvent): boolean {
     if (this.dragControls(ev))
       return false;
 
@@ -848,7 +851,7 @@ export class SelectionTool extends PrimitiveTool {
     return false;
   }
 
-  public onPostLocate(hit: HitDetail, _out?: LocateResponse) {
+  public onPostLocate(hit: HitDetail, _out?: LocateResponse): boolean {
     const mode = this.getSelectionMode();
     if (SelectionMode.Replace === mode)
       return true;
@@ -861,7 +864,7 @@ export class SelectionTool extends PrimitiveTool {
     return (SelectionMode.Add === mode ? !isSelected : isSelected);
   }
 
-  public onPostInstall() {
+  public onPostInstall(): void {
     super.onPostInstall();
     this.initSelectTool();
     this.synchManipulators(true); // Add manipulators for an existing selection set...
@@ -871,7 +874,7 @@ export class SelectionTool extends PrimitiveTool {
     IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
   }
 
-  public static startTool() {
+  public static startTool(): boolean {
     const tool = new SelectionTool();
     return tool.run();
   }
