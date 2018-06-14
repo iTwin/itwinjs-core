@@ -4,8 +4,8 @@
 
 import * as commander from "commander";
 // import * as chalk from "chalk";
-import { BriefcaseManager, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
-import { AccessToken, IModelQuery, IModel, ChangeSet } from "@bentley/imodeljs-clients";
+import { BriefcaseManager, IModelHost, IModelHostConfiguration, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
+import { AccessToken, IModelQuery, IModel, ChangeSet, IModelBankBaseHandler } from "@bentley/imodeljs-clients";
 import { IModelHubIntegration } from "./IModelHubIntegration";
 import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 
@@ -13,7 +13,7 @@ const projectName = "iModelJsTest";
 let initialized: boolean;
 let accessToken: AccessToken;
 let projectId: string;
-const useIModelHub = true;
+const useIModelHub = false;
 
 Logger.initializeToConsole();
 Logger.setLevel("imodeljs-clients", LogLevel.Trace);
@@ -21,11 +21,16 @@ Logger.setLevel("imodeljs-clients", LogLevel.Trace);
 async function initialize() {
   if (initialized)
     return;
-  IModelHost.startup();
   if (useIModelHub) {
     await IModelHubIntegration.startup(projectName);
     projectId = IModelHubIntegration.testProjectId;
     accessToken = IModelHubIntegration.accessToken;
+  } else {
+    const config = new IModelHostConfiguration();
+    config.iModelServerHandler = new IModelBankBaseHandler("https://localhost:3001");
+    IModelHost.startup(config);
+    projectId = "dummy";
+    accessToken = { toTokenString: () => "" } as AccessToken;
   }
   initialized = true;
 }

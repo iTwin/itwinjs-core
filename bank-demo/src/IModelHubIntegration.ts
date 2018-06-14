@@ -1,5 +1,5 @@
 import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv, Project } from "@bentley/imodeljs-clients";
-import { BriefcaseManager } from "@bentley/imodeljs-backend/lib/backend";
+import { BriefcaseManager, IModelHost } from "@bentley/imodeljs-backend/lib/backend";
 
 /** Credentials for test users */
 export interface UserCredentials {
@@ -54,6 +54,7 @@ export class IModelHubIntegration {
   public static deploymentEnv: DeploymentEnv = "QA";
   public static userCredentials = TestUsers.regular;
   public static async startup(projectName: string) {
+    IModelHost.startup();
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(this.deploymentEnv)).getToken(this.userCredentials.email, this.userCredentials.password);
     this.accessToken = await (new ImsDelegationSecureTokenClient(this.deploymentEnv)).getToken(authToken!);
     const proj = await queryProjectByName(this.accessToken, projectName);

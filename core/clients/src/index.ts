@@ -15,3 +15,4 @@ export * from "./IModelWebNavigatorClient";
 export * from "./RealityDataServicesClient";
 export * from "./TileDataAccessClient";
 export * from "./WsgClient";
+export * from "./IModelBank/IModelBankWsgClient";
