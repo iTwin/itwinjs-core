@@ -71,7 +71,7 @@
     "@bentley/bemetalsmith": "^2.4.9",
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "5",
-    "@bentley/geometry-core": "8",
+    "@bentley/geometry-core": "9",
     "@bentley/imodeljs-clients": "6",
     "@types/body-parser": "^1.16.8",
     "@types/chai": "^4.1.2",

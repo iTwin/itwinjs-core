@@ -24,7 +24,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/geometry-core": "8",
+    "@bentley/geometry-core": "9",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-i18n": "0"
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "8",
     "@bentley/bentleyjs-tools": "5",
-    "@bentley/geometry-core": "8",
+    "@bentley/geometry-core": "9",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
     "@bentley/imodeljs-i18n": "0",

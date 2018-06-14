@@ -19,7 +19,7 @@
   "repository": {},
   "dependencies": {
     "@bentley/bentleyjs-core": "8",
-    "@bentley/geometry-core": "8",
+    "@bentley/geometry-core": "9",
     "@bentley/imodeljs-backend": "0",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
