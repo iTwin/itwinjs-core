@@ -328,8 +328,8 @@ class PointStringTechnique extends VariedTechnique {
   }
 }
 
-// A placeholder for techniques which have not yet been implemented.
-class DummyTechnique extends VariedTechnique {
+// ###TODO: PointCloud shaders...
+class PointCloudTechnique extends VariedTechnique {
   public constructor(gl: WebGLRenderingContext) {
     super(2);
 
@@ -443,13 +443,6 @@ export class Techniques implements IDisposable {
   private constructor() { }
 
   private initializeBuiltIns(gl: WebGLRenderingContext): boolean {
-    // ###TODO: For now, use a dummy placeholder for each unimplemented built-in technique...
-    const tech = new DummyTechnique(gl);
-    for (let i = 0; i < TechniqueId.NumBuiltIn; i++) {
-      this._list.push(tech);
-    }
-
-    // Replace dummy techniques with the real techniques implemented thus far...
     this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
     this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
@@ -463,6 +456,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
+    this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
     return true;

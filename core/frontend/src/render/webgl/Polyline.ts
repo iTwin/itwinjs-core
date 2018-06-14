@@ -248,6 +248,7 @@ export class PolylineGeometry extends LUTGeometry {
     const vf = target.currentViewFlags;
     if (RenderMode.SmoothShade === vf.renderMode && !vf.showVisibleEdges)
       return RenderPass.None;
+
     // Only want to return Translucent for edges if rendering in Wireframe mode TODO: what about overrides?
     const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.showTransparency && colorInfo.hasTranslucency;
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;

@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
-import { Viewport, CoordSystem, ViewRect } from "../Viewport";
+import { Viewport, CoordSystem, DepthRangeNpc } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -1512,8 +1512,8 @@ export class WindowAreaTool extends ViewTool {
   public static toolId = "View.WindowArea";
 
   private haveFirstPoint: boolean = false;
-  private firstPtWorld: Point3d = new Point3d();
-  private secondPtWorld: Point3d = new Point3d();
+  private firstPtWorld: Point3d = Point3d.create();
+  private secondPtWorld: Point3d = Point3d.create();
   private lastPtView = new Point3d();
   private viewport: Viewport;
   private corners = [new Point3d(), new Point3d()];
@@ -1668,78 +1668,66 @@ export class WindowAreaTool extends ViewTool {
     if (!corners)
       return;
 
-    const vp = this.viewport;
-    const view = vp.view;
-    const startFrust = vp.getWorldFrustum(scratchFrustum);
-
-    vp.viewToWorldArray(corners);
     let delta: Vector3d;
-    if (view.is3d() && view.isCameraOn()) {
-      let npcZ: number;
+    const vp = this.viewport;
+    const startFrust = vp.getWorldFrustum(scratchFrustum);
+    vp.viewToWorldArray(corners);
 
-      const windowRange = Range3d.createArray(corners);
-      windowRange.low = vp.worldToView(windowRange.low);
-      windowRange.high = vp.worldToView(windowRange.high);
+    if (vp.view.is3d() && vp.view.isCameraOn()) {
+      const cameraView = vp.view as ViewState3d;
 
-      const windowRangeScale = 0.9;
+      const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
+      vp.worldToViewArray(windowArray);
+
+      const windowRange = Range3d.createArray(windowArray);
+      const windowRangeScale = 0.9;   // Inset 90% avoid geometry at window edges
       windowRange.scaleAboutCenterInPlace(windowRangeScale);
 
-      // Try to get nearest Z within rectangle directly from depth buffer
-      const viewRect = new ViewRect();
-      viewRect.initFromRange(windowRange);
-      const depthRange = vp.pickRange(viewRect);
-      if (depthRange) {
-        npcZ = depthRange.minimum;
-        // } else if (nullptr != (path = ViewManip:: GetTargetHitDetail(* viewport, DPoint3d:: FromInterpolate(corners[0], 0.5, corners[1]))))
-        // {
-        //   // Obtain nearest Z from front most element at center of rectangle
-        //   npcZ = viewport -> WorldToNpc(path -> GetHitPoint()).z;
-        // }
-      } else {
-        // Just use the focus plane
-        npcZ = vp.getFocusPlaneNpc();
-      }
+      let npcZValues = vp.determineVisibleDepthNpcRange(windowRange);
+      if (!npcZValues)
+        npcZValues = new DepthRangeNpc(0, vp.getFocusPlaneNpc());  // Just use the focus plane
 
-      const lensAngle = view.getLensAngle();
+      const lensAngle = cameraView.getLensAngle();
 
       vp.worldToNpcArray(corners);
-      corners[0].z = corners[1].z = npcZ;
+      corners[0].z = corners[1].z = npcZValues.maximum;
 
-      vp.npcToWorldArray(corners); // put the corners back in world at correct depth
-      const viewPts = [corners[0], corners[1]];
-      vp.rotMatrix.multiplyVectorArrayInPlace(viewPts); // rotate to view orientation to get extents
+      vp.npcToWorldArray(corners);  // Put corners back in world at correct depth
+      const viewPts: Point3d[] = [corners[0].clone(), corners[1].clone()];
+      vp.rotMatrix.multiplyVectorArrayInPlace(viewPts);  // rotate to view orientation to get extents
 
       const range = Range3d.createArray(viewPts);
-      delta = range.low.vectorTo(range.high);
+      delta = Vector3d.createStartEnd(range.low, range.high);
 
-      let focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2.0));
-      if (focusDist < view.minimumFrontDistance())
-        focusDist = view.minimumFrontDistance();
+      const focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2));
 
       const newTarget = corners[0].interpolate(.5, corners[1]);
-      const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
+      const newEye = newTarget.plusScaled(cameraView.getZVector(), focusDist);
 
-      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
+      if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle, focusDist) !== ViewStatus.Success)
         return;
     } else {
-      vp.rotMatrix.multiplyVectorInPlace(corners[0]);
-      vp.rotMatrix.multiplyVectorInPlace(corners[1]);
-      const viewRange = Range3d.createArray(corners);
+      vp.rotMatrix.multiplyVectorArrayInPlace(corners);
 
-      delta = viewRange.low.vectorTo(viewRange.high);
-      delta.z = view.getExtents().z; // preserve z depth
+      const range = Range3d.createArray(corners);
+      delta = Vector3d.createStartEnd(range.low, range.high);
+      // get the view extents
+      delta.z = vp.view.getExtents().z;
 
       // make sure its not too big or too small
-      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+      if (vp.view.validateViewDelta(delta, true) !== ViewStatus.Success)
         return;
 
-      view.setExtents(delta);
-      vp.rotMatrix.multiplyTransposeVectorInPlace(viewRange.low);
-      view.setOrigin(viewRange.low);
+      vp.view.setExtents(delta);
+
+      const originVec = vp.rotMatrix.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
+      vp.view.setOrigin(Point3d.createFrom(originVec));
     }
 
     vp.synchWithView(true);
-    vp.animateFrustumChange(startFrust, vp.getFrustum(), ViewToolSettings.animationTime);
+
+    // ###TODO: Should we mark ourselves as doing an animation to disable the decorator temporarily?..
+    vp.animateFrustumChange(startFrust, vp.getFrustum());
   }
 
   public onSingleFingerMove(ev: BeGestureEvent): boolean { IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev); return true; }

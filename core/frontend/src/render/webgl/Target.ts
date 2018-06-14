@@ -292,6 +292,7 @@ export abstract class Target extends RenderTarget {
   }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
+    // See IModelConnection.transientIds
     this._dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

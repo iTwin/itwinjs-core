@@ -69,7 +69,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curve.children.push(gapSegment);
     }
     const displayParams = curve.isAnyRegionType() ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-    if (isLoop) // ###TODO: surely there is a better way to do this
+    if (isLoop)
       this.accum.addLoop(curve, displayParams, this.localToWorldTransform, false);
     else
       this.accum.addPath(curve, displayParams, this.localToWorldTransform, false);

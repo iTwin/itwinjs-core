@@ -92,16 +92,6 @@ export abstract class Primitive extends Graphic {
     return this.cachedGeometry.getRenderPass(target);
   }
 
-  /* ###TODO need to implement LUTGeometry
-  public getColorDimension(target: Target) {
-    const geom = this.cachedGeometry.toLUT();
-    if (undefined === geom)
-      return LUTDimension.Uniform;
-    const color = geom->getColor(target);
-    return color.IsUniform() ? LUTDimension.Uniform : LUTDimension.NonUniform;
-  }
-  */
-
   public get featureIndexType(): FeatureIndexType {
     const feature = this.cachedGeometry.featuresInfo;
     if (feature instanceof FeaturesInfo)
@@ -111,12 +101,7 @@ export abstract class Primitive extends Graphic {
 
   public get usesMaterialColor(): boolean {
     const materialData = this.cachedGeometry.material;
-    if (undefined === materialData)
-      return false;
-    /* ###TODO need to implement MaterialData
-    return materialData.definesColor();
-    */
-    return false; // ###TODO remove after implementing MaterialData
+    return undefined !== materialData && (materialData.overridesRgb || materialData.overridesAlpha);
   }
 
   public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }

@@ -78,11 +78,10 @@ export class PolylineArgs {
     this.flags.isDisjoint = Mesh.PrimitiveType.Point === mesh.type;
     if (DisplayParams.RegionEdgeType.Outline === mesh.displayParams.regionEdgeType) {
       // This polyline is behaving as the edges of a region surface.
-      // TODO: GradientSymb not implemented yet!  Uncomment following lines when it is implemented.
-      // if (mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined())
-      //   this.flags.setIsNormalEdge();
-      // else
-      this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
+      if (undefined === mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined)
+        this.flags.setIsNormalEdge();
+      else
+        this.flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed...
     }
 
     mesh.polylines.forEach((polyline) => {

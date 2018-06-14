@@ -406,8 +406,8 @@ export function wantJointTriangles(lineWeight: number, is2d: boolean): boolean {
 
 export abstract class Graphic extends RenderGraphic {
   constructor(iModel: IModelConnection) { super(iModel); }
-  public /* TODO abstract */ addCommands(_commands: RenderCommands): void { assert(false); } // ###TODO: Implement for Primitive
-  public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); } // ###TODO: Implement for Primitive
+  public abstract addCommands(_commands: RenderCommands): void;
+  public addHiliteCommands(_commands: DrawCommands, _batch: Batch): void { assert(false); }
   public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;
