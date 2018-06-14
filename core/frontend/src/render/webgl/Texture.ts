@@ -10,6 +10,7 @@ import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
 import { debugPrint } from "./debugPrint";
+import { IModelApp } from "../../IModelApp";
 
 /** A callback when a TextureHandle is finished loading.  Only relevant for createForImage creation method. */
 export type TextureLoadCallback = (t: TextureHandle, c: HTMLCanvasElement) => void;
@@ -77,6 +78,8 @@ function loadTextureFromImageSource(handle: TextureHandle, params: TextureCreate
     loadTextureImageData(handle, params, undefined, canvas);
     if (undefined !== source.loadCallback)
       source.loadCallback(handle, canvas);
+
+    IModelApp.viewManager.invalidateScenes();
   };
 
   // Load the image from the URL - will call onload above when finished.
