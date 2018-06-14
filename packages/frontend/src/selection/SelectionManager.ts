@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys } from "@bentley/ecpresentation-common";
 import ISelectionProvider from "./ISelectionProvider";
 import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
@@ -12,7 +12,7 @@ import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } f
  * The selection manager which stores the overall selection
  */
 export default class SelectionManager implements ISelectionProvider {
-  private _selectionContainerMap = new Map<Readonly<IModelToken>, SelectionContainer>();
+  private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
 
   /** An event which gets broadcasted on selection changes */
   public selectionChange: SelectionChangeEvent;
@@ -22,30 +22,32 @@ export default class SelectionManager implements ISelectionProvider {
    */
   constructor() {
     this.selectionChange = new SelectionChangeEvent();
+    IModelConnection.onClose.addListener((imodel: IModelConnection) => {
+      this.onConnectionClose(imodel);
+    });
   }
 
-  private getContainer(imodelToken: Readonly<IModelToken>): SelectionContainer {
-    let selectionContainer = this._selectionContainerMap.get(imodelToken);
+  private onConnectionClose(imodel: IModelConnection): void {
+    this.clearSelection("Connection Close Event", imodel);
+    this._selectionContainerMap.delete(imodel);
+  }
+
+  private getContainer(imodel: IModelConnection): SelectionContainer {
+    let selectionContainer = this._selectionContainerMap.get(imodel);
     if (!selectionContainer) {
       selectionContainer = new SelectionContainer();
-      this._selectionContainerMap.set(imodelToken, selectionContainer);
+      this._selectionContainerMap.set(imodel, selectionContainer);
     }
     return selectionContainer;
   }
 
   /** Get the selection currently stored in this manager */
-  public getSelection(imodelToken: Readonly<IModelToken>, level: number = 0): Readonly<KeySet> {
-    return this.getContainer(imodelToken).getSelection(level);
+  public getSelection(imodel: IModelConnection, level: number = 0): Readonly<KeySet> {
+    return this.getContainer(imodel).getSelection(level);
   }
 
-  // WIP: subscribe to IModelConnection.onIModelClose even when it becomes available
-  // private onConnectionClose(imodelConnection: IModelConnection): void {
-  //   this.clearSelection("Connection Close Event", 0, imodelConnection.iModelToken);
-  //   this._selectionContainerMap.delete(imodelConnection.iModelToken);
-  // }
-
   private handleEvent(evt: SelectionChangeEventArgs): void {
-    const container = this.getContainer(evt.imodelToken);
+    const container = this.getContainer(evt.imodel);
     const selectedItemsSet = container.getSelection(evt.level);
     switch (evt.changeType) {
       case SelectionChangeType.Add:
@@ -69,18 +71,19 @@ export default class SelectionManager implements ISelectionProvider {
   /**
    * Add keys to the selection
    * @param source Name of the selection source
-   * @param imodelToken IModelToken of the iModel associated with the selection
+   * @param imodel iModel associated with the selection
    * @param keys Keys to add
    * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public addToSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
+  public addToSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
-      imodelToken,
+      imodel,
       changeType: SelectionChangeType.Add,
       keys: new KeySet(keys),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);
@@ -89,18 +92,19 @@ export default class SelectionManager implements ISelectionProvider {
   /**
    * Remove keys from current selection
    * @param source Name of the selection source
-   * @param imodelToken IModelToken of the iModel associated with the selection
+   * @param imodel iModel associated with the selection
    * @param keys Keys to remove
    * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public removeFromSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
+  public removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
-      imodelToken,
+      imodel,
       changeType: SelectionChangeType.Remove,
       keys: new KeySet(keys),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);
@@ -109,18 +113,19 @@ export default class SelectionManager implements ISelectionProvider {
   /**
    * Replace current selection
    * @param source Name of the selection source
-   * @param imodelToken IModelToken of the iModel associated with the selection
+   * @param imodel iModel associated with the selection
    * @param keys Keys to add
    * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public replaceSelection(source: string, imodelToken: Readonly<IModelToken>, keys: Keys, level: number = 0, rulesetId?: string): void {
+  public replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
-      imodelToken,
+      imodel,
       changeType: SelectionChangeType.Replace,
       keys: new KeySet(keys),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);
@@ -129,17 +134,18 @@ export default class SelectionManager implements ISelectionProvider {
   /**
    * Clear current selection
    * @param source Name of the selection source
-   * @param imodelToken IModelToken of the iModel associated with the selection
+   * @param imodel iModel associated with the selection
    * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public clearSelection(source: string, imodelToken: Readonly<IModelToken>, level: number = 0, rulesetId?: string): void {
+  public clearSelection(source: string, imodel: IModelConnection, level: number = 0, rulesetId?: string): void {
     const evt: SelectionChangeEventArgs = {
       source,
       level,
-      imodelToken,
+      imodel,
       changeType: SelectionChangeType.Clear,
       keys: new KeySet(),
+      timestamp: new Date(),
       rulesetId,
     };
     this.handleEvent(evt);

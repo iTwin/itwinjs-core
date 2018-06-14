@@ -5,7 +5,6 @@ import "./IModelSelector.css";
 
 export interface Props {
   onIModelSelected: (imodel?: IModelConnection) => void;
-  onBeforeCloseImodel: (imodel: IModelConnection) => void;
 }
 
 export interface State {
@@ -31,7 +30,6 @@ export default class IModelSelector extends React.Component<Props, State> {
   private onImodelSelected = async (e: any) => {
     if (MyAppFrontend.iModel) {
       MyAppFrontend.iModel.closeStandalone();
-      this.props.onBeforeCloseImodel(MyAppFrontend.iModel);
     }
 
     let imodel: IModelConnection | undefined;

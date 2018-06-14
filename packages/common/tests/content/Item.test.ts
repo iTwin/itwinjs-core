@@ -4,7 +4,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import "@helpers/Snapshots";
-import { createRandomECClassInfo } from "@helpers/random/EC";
+import { createRandomECClassInfoJSON } from "@helpers/random/EC";
 import Item, { ItemJSON } from "@src/content/Item";
 
 describe("Item", () => {
@@ -17,7 +17,7 @@ describe("Item", () => {
         primaryKeys: [],
         label: faker.random.words(),
         imageId: faker.random.uuid(),
-        classInfo: createRandomECClassInfo(),
+        classInfo: createRandomECClassInfoJSON(),
         values: {
           key1: faker.random.number(),
           key2: faker.random.words(),
@@ -37,6 +37,11 @@ describe("Item", () => {
 
     it("creates valid Item from valid serialized JSON", () => {
       const item = Item.fromJSON(JSON.stringify(testItemJSON));
+      expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid Item from valid JSON without classInfo", () => {
+      const item = Item.fromJSON({ ...testItemJSON, classInfo: undefined });
       expect(item).to.matchSnapshot();
     });
 

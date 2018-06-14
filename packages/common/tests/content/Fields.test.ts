@@ -4,8 +4,14 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import "@helpers/Snapshots";
-import { createRandomECClassInfo, createRandomRelationshipPath } from "@helpers/random/EC";
-import { createRandomCategory, createRandomPrimitiveTypeDescription, createRandomEditorDescription, createRandomPrimitiveField } from "@helpers/random/Content";
+import {
+  createRandomECClassInfo, createRandomECClassInfoJSON,
+  createRandomRelationshipPath, createRandomRelationshipPathJSON,
+} from "@helpers/random/EC";
+import {
+  createRandomCategory, createRandomPrimitiveTypeDescription,
+  createRandomEditorDescription, createRandomPrimitiveField,
+} from "@helpers/random/Content";
 import { BaseFieldJSON, PropertiesFieldJSON, NestedContentFieldJSON } from "@src/content/Fields";
 import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "@src/content";
 
@@ -24,11 +30,11 @@ const generateTestData = () => {
     ...testData.baseFieldJSON,
     properties: [{
       property: {
-        classInfo: createRandomECClassInfo(),
+        classInfo: createRandomECClassInfoJSON(),
         name: faker.random.word(),
         type: faker.database.type(),
       },
-      relatedClassPath: [],
+      relatedClassPath: createRandomRelationshipPathJSON(1),
     }],
   } as PropertiesFieldJSON;
   testData.nestedContentFieldJSON = {
@@ -46,8 +52,8 @@ const generateTestData = () => {
         label: "label 2",
       }],
     } as StructTypeDescription,
-    contentClassInfo: createRandomECClassInfo(),
-    pathToPrimaryClass: createRandomRelationshipPath(),
+    contentClassInfo: createRandomECClassInfoJSON(),
+    pathToPrimaryClass: createRandomRelationshipPathJSON(),
     nestedFields: [{
       ...testData.baseFieldJSON,
       name: "name1",

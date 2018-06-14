@@ -5,7 +5,7 @@
 
 import * as _ from "lodash";
 import {
-  PropertyDataProvider as IPropertyDataProvider, PropertyData,
+  PropertyDataProvider as IPropertyDataProvider, PropertyData, PropertyDataChangeEvent,
   PropertyCategory, PropertyRecord, PropertyValueFormat, PropertyValue,
 } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -206,6 +206,7 @@ class PropertyDataBuilder {
  */
 export default class PropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
+  public onDataChanged = new PropertyDataChangeEvent();
 
   /** Constructor. */
   constructor(connection: IModelConnection, rulesetId: string) {
@@ -220,9 +221,11 @@ export default class PropertyDataProvider extends ContentDataProvider implements
   }
 
   protected invalidateCache(props: CacheInvalidationProps): void {
+    super.invalidateCache(props);
     if (this.getData)
       this.getData.cache.clear();
-    super.invalidateCache(props);
+    if (this.onDataChanged)
+      this.onDataChanged.raiseEvent();
   }
 
   /** Excludes fields that are hidden and not favorite. */
@@ -269,7 +272,7 @@ export default class PropertyDataProvider extends ContentDataProvider implements
   public getData = _.memoize(async (): Promise<PropertyData> => {
     const content = await this.getContent();
     if (!content || 0 === content.contentSet.length)
-      throw new ECPresentationError(ECPresentationStatus.NoContent);
+      return createDefaultPropertyData();
 
     const contentItem = content.contentSet[0];
     const callbacks: PropertyPaneCallbacks = {
@@ -283,3 +286,9 @@ export default class PropertyDataProvider extends ContentDataProvider implements
     return await builder.buildPropertyData();
   });
 }
+
+const createDefaultPropertyData = (): PropertyData => ({
+  label: "",
+  categories: [],
+  records: {},
+});

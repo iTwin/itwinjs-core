@@ -24,6 +24,26 @@ Item {
 }
 `;
 
+exports[`Item fromJSON creates valid Item from valid JSON without classInfo 1`] = `
+Item {
+  "classInfo": undefined,
+  "displayValues": Object {
+    "key1": "Greenland",
+    "key2": "Barbados Dollar",
+  },
+  "imageId": "4b46a857-e4f2-48a5-8df2-6ce9acb15edc",
+  "label": "Central Practical",
+  "mergedFieldNames": Array [
+    "key1",
+  ],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key1": 49793,
+    "key2": "Plains Accounts",
+  },
+}
+`;
+
 exports[`Item fromJSON creates valid Item from valid serialized JSON 1`] = `
 Item {
   "classInfo": Object {

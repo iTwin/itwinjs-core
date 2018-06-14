@@ -7,16 +7,20 @@
     "ignore-styles"
   ],
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "exclude": [
     "**/*.test.ts",
+    "**/*.test.tsx",
     "**/*.d.ts",
+    "**/*.d.tsx",
     "lib",
     "node_modules"
   ],
   "extension": [
-    ".ts"
+    ".ts",
+    ".tsx"
   ],
   "reporter": [
     "text-summary",

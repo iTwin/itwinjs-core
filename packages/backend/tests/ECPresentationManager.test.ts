@@ -9,19 +9,19 @@ import { using } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-native-platform-api";
-import { PageOptions, SelectionInfo, KeySet, ECPresentationError, SettingValueTypes } from "@common/index";
+import { PageOptions, SelectionInfo, KeySet, ECPresentationError, SettingValueTypes, PropertyInfoJSON } from "@common/index";
 import { Node, NodeKey, ECInstanceNodeKey } from "@common/index";
 import ECPresentationManager, { NodeAddonDefinition, NodeAddonRequestTypes } from "@src/ECPresentationManager";
 import UserSettingsManager from "@src/UserSettingsManager";
 import { createRandomECInstanceNodeKey } from "@helpers/random/Hierarchy";
-import { createRandomECInstanceKey, createRandomECClassInfo } from "@helpers/random/EC";
+import { createRandomECInstanceKey, createRandomECClassInfoJSON, createRandomRelationshipPathJSON, createRandomECInstanceKeyJSON } from "@helpers/random/EC";
 import { createRandomDescriptor, createRandomCategory } from "@helpers/random/Content";
-import { RelatedClassInfo, SelectClassInfo } from "@common/index";
-import { Property, PropertyInfo, KindOfQuantityInfo } from "@common/index";
-import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@common/index";
 import { ContentJSON } from "@common/content/Content";
-import { DescriptorJSON } from "@common/content/Descriptor";
+import { DescriptorJSON, SelectClassInfoJSON } from "@common/content/Descriptor";
+import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@common/index";
 import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@common/content/Fields";
+import { KindOfQuantityInfo } from "@common/index";
+import { PropertyJSON } from "@common/content/Property";
 import { ItemJSON } from "@common/content/Item";
 import "@helpers/Snapshots";
 import "@helpers/Promises";
@@ -459,22 +459,10 @@ describe("ECPresentationManager", () => {
         contentOptions: faker.random.objectElement(),
         displayType: testData.displayType,
         selectClasses: [{
-          selectClassInfo: createRandomECClassInfo(),
+          selectClassInfo: createRandomECClassInfoJSON(),
           isSelectPolymorphic: true,
-          pathToPrimaryClass: [{
-            sourceClassInfo: createRandomECClassInfo(),
-            targetClassInfo: createRandomECClassInfo(),
-            relationshipInfo: createRandomECClassInfo(),
-            isForwardRelationship: false,
-            isPolymorphicRelationship: true,
-          } as RelatedClassInfo],
-          relatedPropertyPaths: [[{
-            sourceClassInfo: createRandomECClassInfo(),
-            targetClassInfo: createRandomECClassInfo(),
-            relationshipInfo: createRandomECClassInfo(),
-            isForwardRelationship: true,
-            isPolymorphicRelationship: false,
-          } as RelatedClassInfo]],
+          pathToPrimaryClass: createRandomRelationshipPathJSON(1),
+          relatedPropertyPaths: [createRandomRelationshipPathJSON(1)],
         }],
         fields: [{
           name: "Primitive property field with editor",
@@ -494,7 +482,7 @@ describe("ECPresentationManager", () => {
           },
           properties: [{
             property: {
-              classInfo: createRandomECClassInfo(),
+              classInfo: createRandomECClassInfoJSON(),
               name: faker.random.word(),
               type: "string",
               enumerationInfo: {
@@ -507,9 +495,9 @@ describe("ECPresentationManager", () => {
                 }],
                 isStrict: faker.random.boolean(),
               },
-            } as PropertyInfo,
+            } as PropertyInfoJSON,
             relatedClassPath: [],
-          } as Property],
+          } as PropertyJSON],
         } as PropertiesFieldJSON, {
           name: "Complex array of structs property field",
           category: createRandomCategory(),
@@ -545,7 +533,7 @@ describe("ECPresentationManager", () => {
           priority: faker.random.number(),
           properties: [{
             property: {
-              classInfo: createRandomECClassInfo(),
+              classInfo: createRandomECClassInfoJSON(),
               name: faker.random.word(),
               type: "double",
               kindOfQuantity: {
@@ -554,9 +542,9 @@ describe("ECPresentationManager", () => {
                 persistenceUnit: faker.random.word(),
                 currentFusId: faker.random.uuid(),
               } as KindOfQuantityInfo,
-            } as PropertyInfo,
+            } as PropertyInfoJSON,
             relatedClassPath: [],
-          } as Property],
+          } as PropertyJSON],
         } as PropertiesFieldJSON, {
           name: "Nested content field",
           category: createRandomCategory(),
@@ -573,14 +561,8 @@ describe("ECPresentationManager", () => {
               },
             }],
           } as StructTypeDescription,
-          contentClassInfo: createRandomECClassInfo(),
-          pathToPrimaryClass: [{
-            sourceClassInfo: createRandomECClassInfo(),
-            targetClassInfo: createRandomECClassInfo(),
-            relationshipInfo: createRandomECClassInfo(),
-            isForwardRelationship: false,
-            isPolymorphicRelationship: true,
-          } as RelatedClassInfo],
+          contentClassInfo: createRandomECClassInfoJSON(),
+          pathToPrimaryClass: createRandomRelationshipPathJSON(1),
           nestedFields: [{
             name: "Simple property field",
             category: createRandomCategory(),
@@ -642,11 +624,11 @@ describe("ECPresentationManager", () => {
         descriptor: {
           displayType: descriptor.displayType,
           selectClasses: [{
-            selectClassInfo: createRandomECClassInfo(),
+            selectClassInfo: createRandomECClassInfoJSON(),
             isSelectPolymorphic: true,
             pathToPrimaryClass: [],
             relatedPropertyPaths: [],
-          } as SelectClassInfo],
+          } as SelectClassInfoJSON],
           fields: [{
             name: fieldName,
             category: createRandomCategory(),
@@ -659,18 +641,18 @@ describe("ECPresentationManager", () => {
             priority: faker.random.number(),
             properties: [{
               property: {
-                classInfo: createRandomECClassInfo(),
+                classInfo: createRandomECClassInfoJSON(),
                 name: faker.random.word(),
                 type: "string",
-              },
+              } as PropertyInfoJSON,
               relatedClassPath: [],
-            } as Property],
+            } as PropertyJSON],
           } as PropertiesFieldJSON],
           contentFlags: 0,
         } as DescriptorJSON,
         contentSet: [{
-          primaryKeys: [createRandomECInstanceKey()],
-          classInfo: createRandomECClassInfo(),
+          primaryKeys: [createRandomECInstanceKeyJSON()],
+          classInfo: createRandomECClassInfoJSON(),
           label: faker.random.words(),
           imageId: faker.random.uuid(),
           values: {

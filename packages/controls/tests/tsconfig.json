@@ -9,9 +9,11 @@
       "@common/*": ["@bentley/ecpresentation-common/lib/*"],
       "@helpers/*": ["../../test-helpers/*"],
       "*": ["../../../node_modules/*", "*"]
-    }
+    },
+    "jsx": "react"
   },
   "include": [
-    "./**/*.ts"
+    "./**/*.ts",
+    "./**/*.tsx"
   ]
 }

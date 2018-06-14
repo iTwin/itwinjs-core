@@ -20,6 +20,16 @@ const testsName = path.basename(path.resolve("./"));
 
 process.env.TS_NODE_PROJECT = path.join(options.testsDir, "tsconfig.json");
 
+const setupReactTesting = () => {
+  // configure enzyme (testing utils for React)
+  const enzyme = require("enzyme");
+  const Adapter = require("enzyme-adapter-react-16");
+  enzyme.configure({ adapter: new Adapter() });
+  const chaiJestSnapshot = require("chai-jest-snapshot");
+  chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
+}
+setupReactTesting();
+
 let extensionsRegistered = false;
 const registerExtensions = () => {
   if (!extensionsRegistered) {

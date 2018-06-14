@@ -26,14 +26,9 @@ export default class App extends React.Component<{}, State> {
   }
 
   // tslint:disable-next-line:naming-convention
-  private onBeforeCloseImodel = (imodel: IModelConnection) => {
-    ECPresentation.selection.clearSelection("onImodelSelected", imodel.iModelToken, 0);
-  }
-
-  // tslint:disable-next-line:naming-convention
   private onRulesetSelected = (rulesetId: string | undefined) => {
     if (this.state.imodel)
-      ECPresentation.selection.clearSelection("onRulesetChanged", this.state.imodel.iModelToken, 0);
+      ECPresentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
     this.setState({ ...this.state, currentRulesetId: rulesetId });
   }
 
@@ -61,7 +56,7 @@ export default class App extends React.Component<{}, State> {
         <div className="Header">
           <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
         </div>
-        <IModelSelector onIModelSelected={this.onIModelSelected} onBeforeCloseImodel={this.onBeforeCloseImodel} />
+        <IModelSelector onIModelSelected={this.onIModelSelected} />
         <RulesetSelector availableRulesets={["Items", "Classes"]} onRulesetSelected={this.onRulesetSelected} />
         {imodelComponents}
       </div>

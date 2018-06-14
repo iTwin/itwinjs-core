@@ -7,7 +7,7 @@ import * as ec from "../EC";
 import { ValuesDictionary } from "../Utils";
 import CategoryDescription from "./Category";
 import EditorDescription from "./Editor";
-import Property from "./Property";
+import Property, { PropertyJSON, propertyFromJSON } from "./Property";
 import { TypeDescription } from "./TypeDescription";
 import { Value, DisplayValue } from "./Value";
 
@@ -28,15 +28,15 @@ export interface BaseFieldJSON {
  * Data structure for a [[PropertiesField]] serialized to JSON.
  */
 export interface PropertiesFieldJSON extends BaseFieldJSON {
-  properties: Property[];
+  properties: PropertyJSON[];
 }
 
 /**
  * Data structure for a [[NestedContentField]] serialized to JSON.
  */
 export interface NestedContentFieldJSON extends BaseFieldJSON {
-  contentClassInfo: ec.ClassInfo;
-  pathToPrimaryClass: ec.RelationshipPathInfo;
+  contentClassInfo: ec.ClassInfoJSON;
+  pathToPrimaryClass: ec.RelationshipPathInfoJSON;
   nestedFields: FieldJSON[];
 }
 
@@ -202,7 +202,9 @@ export class PropertiesField extends Field {
     if (typeof json === "string")
       return JSON.parse(json, Field.reviver);
     const field = Object.create(PropertiesField.prototype);
-    return Object.assign(field, json);
+    return Object.assign(field, json, {
+      properties: json.properties.map((p) => propertyFromJSON(p)),
+    } as Partial<PropertiesField>);
   }
 }
 
@@ -261,7 +263,9 @@ export class NestedContentField extends Field {
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, {
       nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson)),
-    });
+      contentClassInfo: ec.classInfoFromJSON(json.contentClassInfo),
+      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => ec.relatedClassInfoFromJSON(p)),
+    } as Partial<NestedContentField>);
   }
 
   /** @hidden */

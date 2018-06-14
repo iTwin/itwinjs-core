@@ -11,14 +11,31 @@ import { Field, FieldJSON } from "./Fields";
  */
 export interface SelectClassInfo {
   /** Information about the ECClass */
-  selectClassInfo: Readonly<ec.ClassInfo>;
+  selectClassInfo: ec.ClassInfo;
   /** Is the class handled polymorphically */
   isSelectPolymorphic: boolean;
   /** Relationship path to the [Primary class]($docs/learning/content/Terminology#primary-class) */
-  pathToPrimaryClass: Readonly<ec.RelationshipPathInfo>;
+  pathToPrimaryClass: ec.RelationshipPathInfo;
   /** Relationship paths to [Related property]($docs/learning/content/Terminology#related-properties) classes */
-  relatedPropertyPaths: Array<Readonly<ec.RelationshipPathInfo>>;
+  relatedPropertyPaths: ec.RelationshipPathInfo[];
 }
+
+/** Serialized [[SelectClassInfo]] */
+export interface SelectClassInfoJSON {
+  selectClassInfo: ec.ClassInfoJSON;
+  isSelectPolymorphic: boolean;
+  pathToPrimaryClass: ec.RelationshipPathInfoJSON;
+  relatedPropertyPaths: ec.RelationshipPathInfoJSON[];
+}
+
+const selectClassInfoFromJSON = (json: SelectClassInfoJSON): SelectClassInfo => {
+  return {
+    ...json,
+    selectClassInfo: ec.classInfoFromJSON(json.selectClassInfo),
+    pathToPrimaryClass: json.pathToPrimaryClass.map((p) => ec.relatedClassInfoFromJSON(p)),
+    relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => ec.relatedClassInfoFromJSON(p)))),
+  };
+};
 
 /**
  * Flags that control content format.
@@ -69,7 +86,7 @@ export interface DescriptorJSON {
   contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
-  selectClasses: SelectClassInfo[];
+  selectClasses: SelectClassInfoJSON[];
   fields: FieldJSON[];
   sortingFieldName?: string;
   sortDirection?: SortDirection;
@@ -137,7 +154,8 @@ export default class Descriptor {
     const descriptor = Object.create(Descriptor.prototype);
     return Object.assign(descriptor, json, {
       fields: json.fields.map((fieldJson: FieldJSON) => Field.fromJSON(fieldJson)),
-    });
+      selectClasses: json.selectClasses.map((selectClass: SelectClassInfoJSON) => selectClassInfoFromJSON(selectClass)),
+    } as Partial<Descriptor>);
   }
 
   /**

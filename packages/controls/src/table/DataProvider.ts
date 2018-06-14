@@ -5,7 +5,10 @@
 
 import * as _ from "lodash";
 import { SortDirection } from "@bentley/ui-core";
-import { TableDataProvider as ITableDataProvider, ColumnDescription, RowItem, CellItem } from "@bentley/ui-components";
+import {
+  TableDataProvider as ITableDataProvider, TableDataChangeEvent,
+  ColumnDescription, RowItem, CellItem,
+} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECPresentationError, ECPresentationStatus } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
@@ -26,6 +29,8 @@ export default class TableDataProvider extends ContentDataProvider implements IT
   private _sortDirection: SortDirection = SortDirection.NoSort;
   private _filterExpression: string | undefined;
   private _pages: PageContainer<RowItem, PromisedPage<RowItem>>;
+  public onColumnsChanged = new TableDataChangeEvent();
+  public onRowsChanged = new TableDataChangeEvent();
 
   /** Constructor. */
   constructor(connection: IModelConnection, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
@@ -83,20 +88,27 @@ export default class TableDataProvider extends ContentDataProvider implements IT
   }
 
   protected invalidateCache(props: CacheInvalidationProps): void {
+    super.invalidateCache(props);
+
     if (props.descriptor) {
       this._filterExpression = undefined;
       this._sortColumnKey = undefined;
       this._sortDirection = SortDirection.Ascending;
     }
+
     if (props.descriptor || props.descriptorConfiguration) {
       if (this.getColumns)
         this.getColumns.cache.clear();
+      if (this.onColumnsChanged)
+        this.onColumnsChanged.raiseEvent();
     }
 
-    if ((props.size || props.content) && this._pages)
-      this._pages.invalidatePages();
-
-    super.invalidateCache(props);
+    if (props.size || props.content) {
+      if (this._pages)
+        this._pages.invalidatePages();
+      if (this.onRowsChanged)
+        this.onRowsChanged.raiseEvent();
+    }
   }
 
   /** Handles filtering and sorting. */

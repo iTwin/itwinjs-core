@@ -42,7 +42,7 @@
         "overriden",
         "parentship",
         "performant",
-        "propertypane",
+        "propertygrid",
         "pseudolocalize",
         "readonly",
         "recurse",
@@ -54,6 +54,7 @@
         "structs",
         "typemoq",
         "unmount",
+        "unmounts",
         "VSTS",
         "winx",
         "xmlhttprequest"

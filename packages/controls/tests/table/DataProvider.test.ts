@@ -7,11 +7,12 @@ import * as moq from "@helpers/Mocks";
 import * as spies from "@helpers/Spies";
 import * as faker from "faker";
 import { SortDirection } from "@bentley/ui-core";
+import { TableDataChangeEvent } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECPresentationError, ValuesDictionary } from "@bentley/ecpresentation-common";
 import * as content from "@bentley/ecpresentation-common/lib/content";
 import { ECPresentationManager, ECPresentation } from "@bentley/ecpresentation-frontend";
-import TableDataProvider from "@src/table/TableDataProvider";
+import TableDataProvider from "@src/table/DataProvider";
 import { CacheInvalidationProps } from "@src/common/ContentDataProvider";
 import { createRandomDescriptor } from "@helpers/random/Content";
 import { createRandomECInstanceKey } from "@helpers/random/EC";
@@ -86,22 +87,33 @@ describe("TableDataProvider", () => {
 
   describe("invalidateCache", () => {
 
-    it("resets filtering, sorting and memoized columns when 'descriptor' flag is set", () => {
+    it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", () => {
+      const onColumnsChangedSpy = spies.spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
       presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor());
+
       provider.filterExpression = faker.random.words();
       provider.sort(0, SortDirection.Descending);
       resetMemoizedCacheSpies();
+
       provider.invalidateCache({ descriptor: true });
-      expect(memoizedCacheSpies.getColumns).to.be.called();
+
+      expect(memoizedCacheSpies.getColumns).to.be.called.once;
+      expect(onColumnsChangedSpy).to.be.called.once;
     });
 
-    it("resets memoized columns when 'descriptorConfiguration' flag is set", () => {
+    it("resets memoized columns and raises onColumnsChanged event when 'descriptorConfiguration' flag is set", () => {
+      const onColumnsChangedSpy = spies.spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+
       provider.invalidateCache({ descriptorConfiguration: true });
-      expect(memoizedCacheSpies.getColumns).to.be.called();
+
+      expect(memoizedCacheSpies.getColumns).to.be.called.once;
+      expect(onColumnsChangedSpy).to.be.called.once;
     });
 
-    it("resets cached pages when 'size' flag is set", async () => {
+    it("resets cached pages and raises onRowsChanged event when 'size' flag is set", async () => {
+      const onRowsChangedSpy = spies.spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       getContentMock.setup((x) => x(moq.It.isAny())).returns(async () => createSingleRecordContent());
       (provider as any).getContent = getContentMock.object;
@@ -110,10 +122,14 @@ describe("TableDataProvider", () => {
       expect(provider.getLoadedRow(0)).to.not.be.undefined;
 
       provider.invalidateCache({ size: true });
+
       expect(provider.getLoadedRow(0)).to.be.undefined;
+      expect(onRowsChangedSpy).to.be.called.once;
     });
 
-    it("resets cached pages when 'content' flag is set", async () => {
+    it("resets cached pages and raises onRowsChanged event when 'content' flag is set", async () => {
+      const onRowsChangedSpy = spies.spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       getContentMock.setup((x) => x(moq.It.isAny())).returns(async () => createSingleRecordContent());
       getContentMock.object.cache = { clear: () => { } };
@@ -123,7 +139,9 @@ describe("TableDataProvider", () => {
       expect(provider.getLoadedRow(0)).to.not.be.undefined;
 
       provider.invalidateCache({ content: true });
+
       expect(provider.getLoadedRow(0)).to.be.undefined;
+      expect(onRowsChangedSpy).to.be.called.once;
     });
 
   });

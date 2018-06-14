@@ -5,6 +5,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config as ClientConfig } from "@bentley/imodeljs-clients";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, StandaloneIModelRpcInterface, IModelReadRpcInterface, RpcOperation, IModelToken } from "@bentley/imodeljs-common";
 import { ECPresentation } from "@bentley/ecpresentation-frontend";
+import { UiComponents } from "@bentley/ui-components";
 import initLogging from "./api/logging";
 import SampleRpcInterface from "../common/SampleRpcInterface";
 import App from "./components/app/App";
@@ -40,6 +41,8 @@ export class SampleApp extends IModelApp {
       activeLocale: IModelApp.i18n.languageList()[0],
     });
     // __PUBLISH_EXTRACT_END__
+
+    UiComponents.initialize(IModelApp.i18n);
   }
 
   public static get ready(): Promise<void> { return this._localizationNamespace.readFinished; }

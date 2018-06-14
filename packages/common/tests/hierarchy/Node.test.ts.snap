@@ -1,0 +1,167 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Node fromJSON creates valid Node from JSON 1`] = `
+Object {
+  "backColor": "rgb(
+    123,
+    111,
+    168
+  )",
+  "description": undefined,
+  "foreColor": "#5E480E",
+  "hasChildren": true,
+  "isCheckboxEnabled": true,
+  "isCheckboxVisible": false,
+  "isChecked": true,
+  "isEditable": true,
+  "isExpanded": true,
+  "isSelectable": false,
+  "key": Object {
+    "instanceKey": Object {
+      "className": "Functionality",
+      "id": "0x154f7000000a54e",
+    },
+    "pathFromRoot": Array [
+      "4843c512-9f82-4b52-b6d8-74ba3b8ff740",
+      "4881193c-08eb-445a-b7dd-b7a30f33c975",
+    ],
+    "type": "ECInstanceNode",
+  },
+  "label": "Technician Shoes",
+}
+`;
+
+exports[`Node fromJSON creates valid Node from serialized JSON 1`] = `
+Object {
+  "description": "Rerum eius fugiat dolores repellat ut excepturi.",
+  "hasChildren": false,
+  "isCheckboxEnabled": false,
+  "isCheckboxVisible": false,
+  "isChecked": true,
+  "isEditable": false,
+  "isExpanded": false,
+  "isSelectable": false,
+  "key": Object {
+    "instanceKey": Object {
+      "className": "24/7",
+      "id": "0x13072000000c8dc",
+    },
+    "pathFromRoot": Array [
+      "41ce5242-abda-42a7-96dd-f8d9fe71dab8",
+      "e4358d78-e06d-4c62-8f5a-02b9ecb87afe",
+    ],
+    "type": "ECInstanceNode",
+  },
+  "label": "Tennessee THX",
+}
+`;
+
+exports[`Node[] fromJSON creates valid Node[] from JSON 1`] = `
+Array [
+  Object {
+    "backColor": undefined,
+    "description": undefined,
+    "foreColor": "#7645E6",
+    "hasChildren": true,
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectable": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Pizza",
+        "id": "0x147a9000000496b",
+      },
+      "pathFromRoot": Array [
+        "ba3c99a6-80fd-447b-a427-6684f1292101",
+        "320e47fd-2d0a-494a-8e7c-668f8e80df18",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "generate facilitate",
+  },
+  Object {
+    "backColor": "rgb(
+    238,
+    21,
+    103
+  )",
+    "description": undefined,
+    "foreColor": "#3761D6",
+    "hasChildren": false,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": true,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Home Loan Account",
+        "id": "0xd6cb000000e969",
+      },
+      "pathFromRoot": Array [
+        "78878301-e425-470a-854b-4c38f51d18ca",
+        "318edf6d-0eae-461d-830f-666a9d97a840",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "Corporate Cheese Wyoming",
+  },
+]
+`;
+
+exports[`Node[] fromJSON creates valid Node[] from serialized JSON 1`] = `
+Array [
+  Object {
+    "backColor": "rgb(
+    121,
+    204,
+    227
+  )",
+    "foreColor": "#0B734D",
+    "hasChildren": true,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": false,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectable": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "lavender",
+        "id": "0x16d52000000095e",
+      },
+      "pathFromRoot": Array [
+        "12c14d39-3c8e-4ac6-bf8b-c2a0ea5a67f5",
+        "74125f60-e3df-4722-8643-7c9a682a872f",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "exuding",
+  },
+  Object {
+    "hasChildren": true,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": true,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectable": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "frictionless",
+        "id": "0x1537000000027a3",
+      },
+      "pathFromRoot": Array [
+        "0e84ca2b-2f9f-4d9d-ac4b-2663b915980e",
+        "5ebefd53-da59-48ea-aa61-7fd897152559",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "Place",
+  },
+]
+`;

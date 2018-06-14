@@ -3,16 +3,17 @@
  *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as c from "@common/content";
-import { createRandomECClassInfo, createRandomRelationshipPath } from "./EC";
+import { SelectClassInfoJSON } from "@common/content/Descriptor";
+import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON } from "./EC";
 import { nullable } from "./Misc";
 
-const createRandomSelectClassInfo = (): c.SelectClassInfo => {
+const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
   return {
-    selectClassInfo: createRandomECClassInfo(),
+    selectClassInfo: createRandomECClassInfoJSON(),
     isSelectPolymorphic: faker.random.boolean(),
-    pathToPrimaryClass: createRandomRelationshipPath(),
-    relatedPropertyPaths: [createRandomRelationshipPath(1), createRandomRelationshipPath(1)],
-  } as c.SelectClassInfo;
+    pathToPrimaryClass: createRandomRelationshipPathJSON(),
+    relatedPropertyPaths: [createRandomRelationshipPathJSON(1), createRandomRelationshipPathJSON(1)],
+  };
 };
 
 export const createRandomCategory = (): c.CategoryDescription => {
@@ -55,7 +56,7 @@ export const createRandomPrimitiveField = (): c.Field => {
 };
 
 export const createRandomDescriptorJson = (displayType?: string) => {
-  const selectClasses = [createRandomSelectClassInfo(), createRandomSelectClassInfo()];
+  const selectClasses = [createRandomSelectClassInfoJSON(), createRandomSelectClassInfoJSON()];
   const fields = [createRandomPrimitiveFieldJson(), createRandomPrimitiveFieldJson(), createRandomPrimitiveFieldJson()];
   return {
     connectionId: faker.random.uuid(),

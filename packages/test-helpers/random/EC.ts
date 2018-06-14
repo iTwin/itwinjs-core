@@ -17,9 +17,24 @@ export const createRandomECInstanceKey = (): ec.InstanceKey => {
   };
 };
 
+export const createRandomECInstanceKeyJSON = (): ec.InstanceKeyJSON => {
+  return {
+    className: faker.random.word(),
+    id: createRandomECInstanceId().toString(),
+  };
+};
+
 export const createRandomECClassInfo = (): ec.ClassInfo => {
   return {
     id: createRandomECInstanceId(),
+    name: faker.random.word(),
+    label: faker.random.words(),
+  };
+};
+
+export const createRandomECClassInfoJSON = (): ec.ClassInfoJSON => {
+  return {
+    id: createRandomId().toString(),
     name: faker.random.word(),
     label: faker.random.words(),
   };
@@ -32,6 +47,20 @@ export const createRandomRelationshipPath = (length: number = 2): ec.Relationshi
       sourceClassInfo: createRandomECClassInfo(),
       targetClassInfo: createRandomECClassInfo(),
       relationshipInfo: createRandomECClassInfo(),
+      isForwardRelationship: faker.random.boolean(),
+      isPolymorphicRelationship: faker.random.boolean(),
+    });
+  }
+  return path;
+};
+
+export const createRandomRelationshipPathJSON = (length: number = 2): ec.RelationshipPathInfoJSON => {
+  const path = new Array<ec.RelatedClassInfoJSON>();
+  while (length--) {
+    path.push({
+      sourceClassInfo: createRandomECClassInfoJSON(),
+      targetClassInfo: createRandomECClassInfoJSON(),
+      relationshipInfo: createRandomECClassInfoJSON(),
       isForwardRelationship: faker.random.boolean(),
       isPolymorphicRelationship: faker.random.boolean(),
     });

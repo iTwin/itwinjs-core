@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "./IntegrationTests";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/ecpresentation-common";
@@ -124,7 +124,7 @@ describe("TableDataProvider", async () => {
       provider.filterExpression = `DisplayLabel = "Functional Model-0-H"`;
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
-      expect(row!.key.id).to.eq(instances.functionalModel.id);
+      expect(row!.key.id.value).to.eq(new Id64(instances.functionalModel.id).value);
     });
 
   });

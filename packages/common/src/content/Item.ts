@@ -11,10 +11,10 @@ import { Value, DisplayValue } from "./Value";
  * Serialized [[Item]] JSON representation.
  */
 export interface ItemJSON {
-  primaryKeys: ec.InstanceKey[];
+  primaryKeys: ec.InstanceKeyJSON[];
   label: string;
   imageId: string;
-  classInfo?: ec.ClassInfo;
+  classInfo?: ec.ClassInfoJSON;
   values: ValuesDictionary<Value>;
   displayValues: ValuesDictionary<DisplayValue>;
   mergedFieldNames: string[];
@@ -81,8 +81,11 @@ export default class Item {
       return undefined;
     if (typeof json === "string")
       return JSON.parse(json, Item.reviver);
-    const descriptor = Object.create(Item.prototype);
-    return Object.assign(descriptor, json);
+    const item = Object.create(Item.prototype);
+    return Object.assign(item, json, {
+      primaryKeys: json.primaryKeys.map((pk) => ec.instanceKeyFromJSON(pk)),
+      classInfo: json.classInfo ? ec.classInfoFromJSON(json.classInfo) : undefined,
+    } as Partial<Item>);
   }
 
   /**
