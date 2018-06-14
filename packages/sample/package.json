@@ -18,10 +18,10 @@
     "validatePackageJson": "validjson ./package.json"
   },
   "dependencies": {
-    "@bentley/ecpresentation-backend": "^0.3.1",
-    "@bentley/ecpresentation-common": "^0.3.1",
-    "@bentley/ecpresentation-frontend": "^0.3.1",
-    "@bentley/ecpresentation-controls": "^0.2.1",
+    "@bentley/ecpresentation-backend": "^0.4.0",
+    "@bentley/ecpresentation-common": "^0.4.0",
+    "@bentley/ecpresentation-frontend": "^0.4.0",
+    "@bentley/ecpresentation-controls": "^0.3.0",
     "@bentley/bentleyjs-core": "^8",
     "@bentley/geometry-core": "^8",
     "@bentley/imodeljs-i18n": "^0.0.1",

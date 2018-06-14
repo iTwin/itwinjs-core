@@ -2,6 +2,32 @@
   "name": "@bentley/ecpresentation-common",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@bentley/ecpresentation-common_v0.4.0",
+      "date": "Thu, 14 Jun 2018 12:12:59 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Deserialization fixes"
+          },
+          {
+            "comment": "Add LoggingNamespaces enum that lists all logger namespaces used by ECPresentation library"
+          },
+          {
+            "comment": "Type safe ValuesDictionary"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Change ECPresentation manager to work with IModel instead of IModelToken"
+          },
+          {
+            "comment": "Added interfaces for UserSettingsManager."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.1",
       "tag": "@bentley/ecpresentation-common_v0.3.1",
       "date": "Wed, 23 May 2018 10:15:48 GMT",

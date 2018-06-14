@@ -2,6 +2,34 @@
   "name": "@bentley/ecpresentation-backend",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@bentley/ecpresentation-backend_v0.4.0",
+      "date": "Thu, 14 Jun 2018 12:12:59 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "ECPresentationManager now uses asynchronous requests to get content and nodes."
+          },
+          {
+            "comment": "Fix nodes' deserialization"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Change ECPresentation manager to work with IModelDb instead of IModelToken"
+          },
+          {
+            "comment": "ECPresentationManager now has property settings, which can be used to access and set user setting values."
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@bentley/ecpresentation-common\" from `^0.3.1` to `^0.4.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.1",
       "tag": "@bentley/ecpresentation-backend_v0.3.1",
       "date": "Wed, 23 May 2018 10:15:48 GMT",

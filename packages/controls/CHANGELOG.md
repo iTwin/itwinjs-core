@@ -1,6 +1,15 @@
 # Change Log - @bentley/ecpresentation-controls
 
-This log was last generated on Wed, 23 May 2018 10:15:48 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Jun 2018 12:12:59 GMT and should not be manually modified.
+
+## 0.3.0
+Thu, 14 Jun 2018 12:12:59 GMT
+
+### Minor changes
+
+- TFS#901835: TreeView control
+- TFS#901837: PropertyPane control
+- TFS#901836: TableView control
 
 ## 0.2.1
 Wed, 23 May 2018 10:15:48 GMT
@@ -67,4 +76,3 @@ Fri, 20 Apr 2018 13:57:47 GMT
 
 - Created a new package for ecpresentation-driven controls (moved from @bentley/ecpresentation-frontend)
 - Updated package dependencies
-

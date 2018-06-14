@@ -1,6 +1,19 @@
 # Change Log - @bentley/ecpresentation-backend
 
-This log was last generated on Wed, 23 May 2018 10:15:48 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Jun 2018 12:12:59 GMT and should not be manually modified.
+
+## 0.4.0
+Thu, 14 Jun 2018 12:12:59 GMT
+
+### Minor changes
+
+- Change ECPresentation manager to work with IModelDb instead of IModelToken
+- ECPresentationManager now has property settings, which can be used to access and set user setting values.
+
+### Patches
+
+- ECPresentationManager now uses asynchronous requests to get content and nodes.
+- Fix nodes' deserialization
 
 ## 0.3.1
 Wed, 23 May 2018 10:15:48 GMT

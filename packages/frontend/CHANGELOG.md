@@ -1,6 +1,21 @@
 # Change Log - @bentley/ecpresentation-frontend
 
-This log was last generated on Wed, 23 May 2018 10:15:48 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Jun 2018 12:12:59 GMT and should not be manually modified.
+
+## 0.4.0
+Thu, 14 Jun 2018 12:12:59 GMT
+
+### Minor changes
+
+- Selection-related classes now work with IModelConnection instead of IModelToken.
+- Change ECPresentation manager to work with IModelConnection instead of IModelToken.
+- ECPresentationManager now has property settings, which can be used to access and set user setting values.
+
+### Patches
+
+- SelectionManager now clears selection of closed imodels.
+- Add SelectionHandler.getSelection method
+- Add timestamp to SelectionChangeEventArgs
 
 ## 0.3.1
 Wed, 23 May 2018 10:15:48 GMT
@@ -108,4 +123,3 @@ Mon, 08 Jan 2018 14:51:31 GMT
 
 - Some restructuring to make the code more maintainable.
 - Use imodeljs-frontend@0.12.0
-
