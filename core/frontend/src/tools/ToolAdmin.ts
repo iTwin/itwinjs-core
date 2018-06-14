@@ -352,8 +352,6 @@ class WheelEventProcessor {
     let targetRoot = target.clone();
     let status: ViewStatus;
 
-    const path = ViewManip.getTargetHitDetail(vp, target);  // Why do I get 'used before assigned error' if moved into if(!isSnap) block??
-
     if (vp.view.is3d() && vp.isCameraOn()) {
       let lastEventWasValid: boolean = false;
       if (!isSnap) {
@@ -362,6 +360,7 @@ class WheelEventProcessor {
         let defaultTarget: Point3d;
 
         const lastEvent = IModelApp.toolAdmin.lastWheelEvent;
+        const path = ViewManip.getTargetHitDetail(vp, target);
         if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(this.ev!.viewPoint) < .00001) {
           defaultTarget = vp.worldToNpc(lastEvent.point);
           targetRoot.z = defaultTarget.z;
@@ -390,8 +389,8 @@ class WheelEventProcessor {
         targetRoot.addInPlace(offset);
       }
 
-      const target = cameraView.getTargetPoint().clone();
-      target.addInPlace(offset);
+      const viewTarget = cameraView.getTargetPoint().clone();
+      viewTarget.addInPlace(offset);
       newCameraPos.setFrom(oldCameraPos.plus(offset));
 
       if (!lastEventWasValid) {
@@ -400,7 +399,7 @@ class WheelEventProcessor {
         IModelApp.toolAdmin.lastWheelEvent = thisEvent as BeWheelEvent;
       }
 
-      status = cameraView.lookAt(newCameraPos, target, cameraView.getYVector());
+      status = cameraView.lookAt(newCameraPos, viewTarget, cameraView.getYVector());
       vp.synchWithView(false);
     } else {
       const targetNpc = vp.worldToNpc(targetRoot);
