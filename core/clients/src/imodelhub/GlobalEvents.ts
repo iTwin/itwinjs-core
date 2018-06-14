@@ -3,10 +3,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
-import { IModelHubBaseHandler } from "./BaseHandler";
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener } from "./EventsBase";
+import { IModelServerHandler } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -134,13 +134,13 @@ export class GlobalEventSAS extends BaseEventSAS {
  * Handler for all methods related to @see GlobalEventSubscription instances.
  */
 export class GlobalEventSubscriptionHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
 
   /**
    * Constructor for GlobalEventSubscriptionHandler. Should use @see GlobalEventHandler instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelHubBaseHandler) {
+  constructor(handler: IModelServerHandler) {
     this._handler = handler;
   }
 
@@ -214,7 +214,7 @@ export class GlobalEventHandler extends EventBaseHandler {
    * Constructor for GlobalEventHandler. Should use @see IModelHubClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelHubBaseHandler) {
+  constructor(handler: IModelServerHandler) {
     super();
     this._handler = handler;
   }

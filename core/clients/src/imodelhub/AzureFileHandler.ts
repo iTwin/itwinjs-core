@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { request, RequestOptions, ProgressInfo, ResponseError } from "../Request";
 import { Logger } from "@bentley/bentleyjs-core";
-import { FileHandler } from "./FileHandler";
+import { FileHandler } from "../FileHandler";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";

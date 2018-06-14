@@ -14,6 +14,6 @@ export * from "./Locks";
 export * from "./Users";
 export * from "./Versions";
 export * from "./Thumbnails";
-export * from "./FileHandler";
+export * from "../FileHandler";
 export * from "./AzureFileHandler";
 export * from "./UserStatistics";

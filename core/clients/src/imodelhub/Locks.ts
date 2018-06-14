@@ -4,14 +4,13 @@
 import * as deepAssign from "deep-assign";
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubBaseHandler } from "./BaseHandler";
 
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { isBriefcaseIdValid, AggregateResponseError, Query } from "./index";
 import { IModelHubRequestError, IModelHubError } from "./Errors";
-import { WsgRequestOptions } from "../WsgClient";
+import { WsgRequestOptions, IModelServerHandler } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -296,14 +295,14 @@ export class LockQuery extends Query {
  * Handler for all methods related to @see Lock instances.
  */
 export class LockHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
   private static _defaultUpdateOptionsProvider: DefaultLockUpdateOptionsProvider;
 
   /**
    * Constructor for LockHandler. Should use @see IModelHubClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelHubBaseHandler) {
+  constructor(handler: IModelServerHandler) {
     this._handler = handler;
   }
 

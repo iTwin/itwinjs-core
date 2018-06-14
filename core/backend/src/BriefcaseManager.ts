@@ -6,7 +6,7 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet, IModel as HubIModel,
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, AzureFileHandler, ConflictingCodesError,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -213,7 +213,9 @@ export class BriefcaseManager {
     if (!BriefcaseManager._hubClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler());
+      // If the host has a server handler, then assume that it will supply the FileHandler. If not, then default to Azure as we used to do.
+      const fileHandler = (IModelHost.configuration.iModelServerHandler === undefined) ? new AzureFileHandler() : undefined;
+      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, fileHandler, IModelHost.configuration.iModelServerHandler);
     }
     return BriefcaseManager._hubClient;
   }

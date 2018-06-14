@@ -5,8 +5,7 @@ import * as deepAssign from "deep-assign";
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
-import { WsgRequestOptions } from "./../WsgClient";
-import { IModelHubBaseHandler } from "./BaseHandler";
+import { WsgRequestOptions, IModelServerHandler } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
@@ -280,14 +279,14 @@ export class CodeQuery extends Query {
  * Handler for all methods related to @see Code instances.
  */
 export class CodeHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
   private static _defaultUpdateOptionsProvider: DefaultCodeUpdateOptionsProvider;
 
   /**
    * Constructor for CodeHandler. Should use @see IModelHubClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    */
-  constructor(handler: IModelHubBaseHandler) {
+  constructor(handler: IModelServerHandler) {
     this._handler = handler;
   }
 

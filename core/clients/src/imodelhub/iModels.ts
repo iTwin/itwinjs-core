@@ -2,14 +2,14 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubBaseHandler } from "./BaseHandler";
 import { IModelHubRequestError, IModelHubError } from "./Errors";
 import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { FileHandler } from "./FileHandler";
+import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
+import { IModelServerHandler } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -113,7 +113,7 @@ class SeedFileQuery extends InstanceIdQuery {
  * Handler for all methods related to @see SeedFile instances.
  */
 class SeedFileHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
   private _fileHandler?: FileHandler;
 
   /**
@@ -121,7 +121,7 @@ class SeedFileHandler {
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
-  constructor(handler: IModelHubBaseHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelServerHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }
@@ -206,7 +206,7 @@ export class IModelQuery extends InstanceIdQuery {
  * Handler for all methods related to @see IModel instances.
  */
 export class IModelHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
   private _fileHandler?: FileHandler;
   private _seedFileHandler: SeedFileHandler;
 
@@ -215,7 +215,7 @@ export class IModelHandler {
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
-  constructor(handler: IModelHubBaseHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelServerHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
     this._seedFileHandler = new SeedFileHandler(this._handler, this._fileHandler);

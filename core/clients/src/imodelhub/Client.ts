@@ -2,26 +2,27 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { DeploymentEnv } from "../Client";
-import { IModelHubBaseHandler } from "./BaseHandler";
 import { AccessToken, AuthorizationToken } from "../Token";
 import { BriefcaseHandler, IModelHandler, ChangeSetHandler, LockHandler, CodeHandler, UserInfoHandler, VersionHandler, EventHandler, FileHandler } from "./index";
 import { ThumbnailHandler } from "./Thumbnails";
 import { GlobalEventHandler } from "./GlobalEvents";
 import { UserStatisticsHandler } from "./UserStatistics";
+import { IModelServerHandler } from "../WsgClient";
+import { IModelHubBaseHandler } from "./BaseHandler";
 
 /** Class that allows access to different iModel Hub class handlers.
  * Handlers should be accessed through an instance of this class, rather than constructed directly.
  */
 export class IModelHubClient {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
   private _fileHandler?: FileHandler;
   /**
    * Creates an instance of IModelHubClient.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv, fileHandler?: FileHandler) {
-    this._handler = new IModelHubBaseHandler(deploymentEnv);
-    this._fileHandler = fileHandler;
+  public constructor(public deploymentEnv: DeploymentEnv, fileHandler?: FileHandler, baseHandler: IModelServerHandler = new IModelHubBaseHandler(deploymentEnv)) {
+    this._handler = baseHandler;
+    this._fileHandler = fileHandler || this._handler.getFileHandler();
     if (this._fileHandler)
       this._fileHandler.agent = this._handler.getAgent();
   }

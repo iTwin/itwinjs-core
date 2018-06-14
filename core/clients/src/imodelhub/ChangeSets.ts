@@ -2,7 +2,6 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubBaseHandler } from "./BaseHandler";
 import { IModelHubRequestError } from "./Errors";
 
 import { AccessToken } from "../Token";
@@ -11,6 +10,7 @@ import { Config } from "../Config";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "./index";
 import { ProgressInfo } from "../Request";
+import { IModelServerHandler } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -190,7 +190,7 @@ export class ChangeSetQuery extends InstanceIdQuery {
  * Handler for all methods related to ChangeSets.
  */
 export class ChangeSetHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
   private _fileHandler?: FileHandler;
 
   /**
@@ -198,7 +198,7 @@ export class ChangeSetHandler {
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
-  constructor(handler: IModelHubBaseHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelServerHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }

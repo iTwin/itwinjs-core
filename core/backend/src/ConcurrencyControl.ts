@@ -4,15 +4,14 @@
 /** @module iModels */
 
 import { Id64, DbOpcode, RepositoryStatus } from "@bentley/bentleyjs-core";
-import { AccessToken, DeploymentEnv, Code as HubCode, IModelHubClient, CodeState, CodeQuery, AzureFileHandler } from "@bentley/imodeljs-clients";
+import { AccessToken, Code as HubCode, CodeState, CodeQuery } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "@bentley/imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
 import { Model } from "./Model";
-import { BriefcaseEntry } from "./BriefcaseManager";
+import { BriefcaseEntry, BriefcaseManager } from "./BriefcaseManager";
 import { LinkTableRelationship } from "./LinkTableRelationship";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { IModelHost } from "./IModelHost";
 import { IModelDb } from "./IModelDb";
 
 /**
@@ -186,9 +185,6 @@ export class ConcurrencyControl {
     throw new IModelError(IModelStatus.BadRequest, "TBD locks");
   }
 
-  private getDeploymentEnv(): DeploymentEnv { return IModelHost.configuration!.iModelHubDeployConfig; }
-  private getIModelHubClient(): IModelHubClient { return new IModelHubClient(this.getDeploymentEnv(), new AzureFileHandler()); }
-
   /** process the Lock-specific part of the request. */
   private async acquireLocksFromRequest(req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, _accessToken: AccessToken): Promise<void> {
     const bySpecId = this.buildLockRequests(briefcaseEntry, req);
@@ -196,8 +192,6 @@ export class ConcurrencyControl {
       return;
 
     /* TODO locks
-
-    const imodelHubClient = this.getIModelHubClient();
 
     for (const [, thisSpec] of bySpecId) {
       for (const [, thisReq] of thisSpec) {
@@ -211,8 +205,7 @@ export class ConcurrencyControl {
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
   private async reserveCodes2(request: HubCode[], briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
-    const imodelHubClient = this.getIModelHubClient();
-    return await imodelHubClient.Codes().update(accessToken, briefcaseEntry.iModelId, request);
+    return await BriefcaseManager.hubClient.Codes().update(accessToken, briefcaseEntry.iModelId, request);
   }
 
   /** process the Code-specific part of the request. */
@@ -249,8 +242,7 @@ export class ConcurrencyControl {
     }
     */
 
-    const imodelHubClient = this.getIModelHubClient();
-    return imodelHubClient.Codes().get(accessToken, this._iModel.briefcase.iModelId, query);
+    return BriefcaseManager.hubClient.Codes().get(accessToken, this._iModel.briefcase.iModelId, query);
   }
 
   /** Abandon any pending requests for locks or codes. */
@@ -273,7 +265,7 @@ export class ConcurrencyControl {
     if (!hubCodes)
       return true;
 
-    const codesHandler = this.getIModelHubClient().Codes();
+    const codesHandler = BriefcaseManager.hubClient.Codes();
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));

@@ -2,15 +2,15 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubBaseHandler } from "./BaseHandler";
 import { IModelHubRequestError } from "./Errors";
 
 import { AccessToken } from "../Token";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
 import { Query, addSelectFileAccessKey } from "./Query";
-import { FileHandler } from "./FileHandler";
+import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
+import { IModelServerHandler } from "../WsgClient";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -114,7 +114,7 @@ export function isBriefcaseIdValid(briefcaseId: number): boolean {
  * Handler for all methods related to @see Briefcase instances.
  */
 export class BriefcaseHandler {
-  private _handler: IModelHubBaseHandler;
+  private _handler: IModelServerHandler;
   private _fileHandler?: FileHandler;
 
   /**
@@ -122,7 +122,7 @@ export class BriefcaseHandler {
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
    */
-  constructor(handler: IModelHubBaseHandler, fileHandler?: FileHandler) {
+  constructor(handler: IModelServerHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }

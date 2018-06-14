@@ -7,13 +7,16 @@ import * as commander from "commander";
 import { BriefcaseManager, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
 import { AccessToken, IModelQuery, IModel, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelHubIntegration } from "./IModelHubIntegration";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 const projectName = "iModelJsTest";
 let initialized: boolean;
 let accessToken: AccessToken;
 let projectId: string;
 const useIModelHub = true;
+
+Logger.initializeToConsole();
+Logger.setLevel("imodeljs-clients", LogLevel.Trace);
 
 async function initialize() {
   if (initialized)

@@ -62,11 +62,14 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    */
-  public static startup() {
+  public static startup(imodelHubClient?: IModelHubClient) {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     IModelApp._initialized = true;
+
+    if (imodelHubClient !== undefined)
+      this._iModelHubClient = imodelHubClient;
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());

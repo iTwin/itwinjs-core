@@ -4,7 +4,7 @@
 /** @module IModelHost */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { DeploymentEnv } from "@bentley/imodeljs-clients";
+import { DeploymentEnv, IModelServerHandler } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, FeatureGates } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -38,6 +38,9 @@ export class IModelHostConfiguration {
 
   /** The directory where the app's assets are found */
   public appAssetsDir?: string;
+
+  /** The Handler for iModel server operations */
+  public iModelServerHandler?: IModelServerHandler;
 }
 
 /**

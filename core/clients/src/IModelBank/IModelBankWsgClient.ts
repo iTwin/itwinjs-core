@@ -1,55 +1,47 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { UrlDescriptor, DeploymentEnv } from "../Client";
-import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions, IModelServerHandler } from "../WsgClient";
-import { RequestOptions, RequestQueryOptions } from "../Request";
-import { WsgInstance } from "../ECJsonTypeMap";
-import { IModelHubError } from "./Errors";
-import { AuthorizationToken, AccessToken } from "../Token";
-import { ImsDelegationSecureTokenClient } from "../ImsClients";
+import { WsgClient, DefaultWsgRequestOptionsProvider, WsgRequestOptions, IModelServerHandler } from "../WsgClient";
 import * as https from "https";
-import { Config, FileHandler } from "..";
+import { IModelBankError } from "./Errors";
+import { RequestOptions, RequestQueryOptions } from "../Request";
+import { assert } from "@bentley/bentleyjs-core";
+import { AccessToken } from "../Token";
+import { WsgInstance, FileHandler } from "..";
+import { UrlFileHandler } from "../imodelhub/UrlFileHandler";
 
 /**
- * Provides default options for iModel Hub requests.
+ * Provides default options for iModelBank requests.
  */
-class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
+class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
   public constructor(agent: https.Agent) {
     super();
-    this.defaultOptions.errorCallback = IModelHubError.parse;
-    this.defaultOptions.retryCallback = IModelHubError.shouldRetry;
+    this.defaultOptions.errorCallback = IModelBankError.parse;
+    this.defaultOptions.retryCallback = IModelBankError.shouldRetry;
     this.defaultOptions.agent = agent;
   }
 }
 
 /**
- * This class acts as the WsgClient for other iModel Hub Handlers.
+ * This class acts as the WsgClient for other iModelBank Handlers.
  */
-export class IModelHubBaseHandler extends WsgClient implements IModelServerHandler {
-  private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
-  public static readonly searchKey: string = "iModelHubApi";
+export class IModelBankBaseHandler extends WsgClient implements IModelServerHandler {
+  private _url: string;
+  private _defaultIModelHubOptionsProvider: DefaultIModelBankRequestOptionsProvider;
   private _agent: https.Agent;
-  private _fileHandler: FileHandler | undefined;
-
-  private static readonly defaultUrlDescriptor: UrlDescriptor = {
-    DEV: "https://dev-imodelhubapi.bentley.com",
-    QA: "https://qa-imodelhubapi.bentley.com",
-    PROD: "https://imodelhubapi.bentley.com",
-    PERF: "https://perf-imodelhubapi.bentley.com",
-  };
+  private _fileHandler = new UrlFileHandler();
 
   /**
-   * Creates an instance of IModelHubBaseHandler.
+   * Creates an instance of IModelBankBaseHandler.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(public deploymentEnv: DeploymentEnv, keepAliveDuration = 30000, fileHandler?: FileHandler) {
-    super(deploymentEnv, "v2.5", "https://connect-wsg20.bentley.com");
-    this._fileHandler = fileHandler;
-    if (!Config.isBrowser())
-      this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
+  public constructor(url: string, keepAliveDuration = 30000) {
+    super("PROD", "v0.1", "");
+    this._url = url;
+    this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
 
+  public getAgend(): https.Agent { return this._agent; }
   public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
   /**
@@ -60,54 +52,27 @@ export class IModelHubBaseHandler extends WsgClient implements IModelServerHandl
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     if (!this._defaultIModelHubOptionsProvider)
-      this._defaultIModelHubOptionsProvider = new DefaultIModelHubRequestOptionsProvider(this._agent);
+      this._defaultIModelHubOptionsProvider = new DefaultIModelBankRequestOptionsProvider(this._agent);
 
     return this._defaultIModelHubOptionsProvider.assignOptions(options);
   }
 
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return IModelHubBaseHandler.searchKey;
-  }
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out"); return ""; }
+
+  protected getDefaultUrl(): string { return this._url; }
+
+  public getUrl(): Promise<string> { return Promise.resolve(this.getDefaultUrl()); }
 
   /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    return IModelHubBaseHandler.defaultUrlDescriptor[this.deploymentEnv];
-  }
-
-  /**
-   * Gets the agenet used for imodelhub connection pooling.
-   * @returns The agenet used for imodelhub connection pooling.
+   * Gets the agenet used for imodelhub connection pooling.     *** What is this? ***
    */
   public getAgent(): https.Agent {
     return this._agent;
   }
 
-  /**
-   * Gets the URL of the service.
-   * Attempts to discover and cache the URL from the URL Discovery Service. If not
-   * found uses the default URL provided by client implementations. Note that for consistency
-   * sake, the URL is stripped of any trailing "/"
-   * @returns URL for the service
-   */
-  public getUrl(): Promise<string> {
-    return super.getUrl();
-  }
-
-  /**
-   * Gets the (delegation) access token to acess the service
-   * @param authorizationToken Authorization token.
-   * @returns Resolves to the (delegation) access token.
-   */
-  public async getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken> {
-    const imsClient = new ImsDelegationSecureTokenClient(this.deploymentEnv);
-    return imsClient.getToken(authorizationToken, this.relyingPartyUri);
+  public async getAccessToken(_authorizationToken: any): Promise<AccessToken> {
+    assert(false, "Bentley cloud-specific method should be factored out");
+    return AccessToken.fromJson({})!;
   }
 
   /**
