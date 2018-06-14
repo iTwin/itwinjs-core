@@ -49,8 +49,13 @@ export class Material extends RenderMaterial {
     this.weights[1] = materialParams.specular;
     this.weights[2] = materialParams.reflect;
 
-    this.alphaUniform[0] = undefined !== materialParams.transparency ? 1.0 - materialParams.transparency : 1.0;
-    this.alphaUniform[1] = undefined !== materialParams.transparency ? 1.0 : 0.0;
+    if (0.0 !== materialParams.transparency) {
+      this.alphaUniform[0] = 1.0 - materialParams.transparency;
+      this.alphaUniform[1] = 1.0;
+    } else {
+      this.alphaUniform[0] = 1.0;
+      this.alphaUniform[1] = 0.0;
+    }
   }
 }
 
