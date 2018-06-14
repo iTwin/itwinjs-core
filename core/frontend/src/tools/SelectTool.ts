@@ -473,7 +473,7 @@ export class SelectionTool extends PrimitiveTool {
     return true;
   }
 
-  protected dragElements(_ev: BeButtonEvent, context: DynamicsContext): boolean {
+  protected dragElements(_ev: BeButtonEvent, context?: DynamicsContext): boolean {
     if (!this.isDragElement)
       return false;
 
@@ -679,6 +679,33 @@ export class SelectionTool extends PrimitiveTool {
     this.dragElements(ev, context);
   }
 
+  public onModelStartDrag(ev: BeButtonEvent): boolean {
+    if (this.selectControls(ev) && this.haveSelectedControls()) {
+      const tmpEv = ev.clone();
+      if (this.startDragControls(tmpEv))
+        return false;
+    }
+
+    if (!ev.isControlKey) {
+      if (this.startDragElements(ev))
+        return false;
+    }
+
+    this.startDragSelect(ev);
+    return false;
+  }
+
+  public onModelEndDrag(ev: BeButtonEvent) {
+    if (this.dragControls(ev))
+      return false;
+
+    if (this.dragElements(ev))
+      return false;
+
+    this.dragSelect(ev);
+    return false;
+  }
+
   public onDataButtonUp(ev: BeButtonEvent): boolean {
     if (!ev.viewport)
       return false;
@@ -769,8 +796,6 @@ export class SelectionTool extends PrimitiveTool {
 
     return false;
   }
-
-  public onDataButtonDown(_ev: BeButtonEvent): boolean { return false; }
 
   public onResetButtonUp(ev: BeButtonEvent): boolean {
     if (this.isDragSelect) {
