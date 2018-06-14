@@ -29,7 +29,7 @@ export class RealityDataUrlMock {
   }
 }
 
-describe("RealityDataServicesClient", () => {
+describe.skip("RealityDataServicesClient", () => {
 
   let accessToken: AccessToken;
   const imodelHubClient: IModelHubClient = new IModelHubClient("DEV");
