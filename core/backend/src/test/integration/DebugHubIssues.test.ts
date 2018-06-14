@@ -7,7 +7,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
-import { HubTestUtils } from "./HubTestUtils";
+import { HubUtility } from "./HubUtility";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
 
@@ -25,11 +25,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelName = "TestModel";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to delete any iModel on the Hub", async () => {
-    await HubTestUtils.deleteIModel(accessToken, "NodeJsTestProject", "TestModel");
+    await HubUtility.deleteIModel(accessToken, "NodeJsTestProject", "TestModel");
   });
 
   it.skip("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
@@ -37,15 +37,15 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelName = "TestModel";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.uploadIModel(accessToken, projectName, iModelDir);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
   });
 
   it.skip("should be able to open any iModel on the Hub", async () => {
     const projectName = "NodeJsTestProject";
     const iModelName = "TestModel";
 
-    const myProjectId = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
-    const myIModelId = await HubTestUtils.queryIModelIdByName(accessToken, myProjectId, iModelName);
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
@@ -69,8 +69,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectName = "AbdTestProject";
     const iModelName = "ATP_2018050310145994_scenario22";
 
-    const myProjectId = await HubTestUtils.queryProjectIdByName(accessToken, projectName);
-    const myIModelId = await HubTestUtils.queryIModelIdByName(accessToken, myProjectId, iModelName);
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
 
     const iModel: IModelDb = await IModelDb.open(accessToken, myProjectId, myIModelId, OpenParams.fixedVersion());
     assert.exists(iModel);
@@ -92,7 +92,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelName = "1MWCCN01";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubTestUtils.downloadIModelByName(accessToken1, projectName, iModelName, iModelDir);
+    await HubUtility.downloadIModelByName(accessToken1, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in DEV", async () => {
@@ -110,7 +110,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelDir = path.join(iModelRootDir, iModelId);
 
     const startTime = Date.now();
-    await HubTestUtils.downloadIModelById(accessToken1, projectId, iModelId, iModelDir);
+    await HubUtility.downloadIModelById(accessToken1, projectId, iModelId, iModelDir);
     const finishTime = Date.now();
     console.log(`Time taken to download is ${finishTime - startTime} milliseconds`); // tslint:disable-line:no-console
   });

@@ -1,4 +1,5 @@
 /*---------------------------------------------------------------------------------------------
+/*---------------------------------------------------------------------------------------------
 | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -419,9 +420,6 @@ export class Tool {
  */
 export abstract class InteractiveTool extends Tool {
 
-  /** Implement to handle data-button-down events */
-  public abstract onDataButtonDown(ev: BeButtonEvent): void;
-
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
   public onInstall(): boolean { return true; }
 
@@ -449,57 +447,54 @@ export abstract class InteractiveTool extends Tool {
    */
   public decorateSuspended(_context: DecorateContext) { }
 
-  /**
-   * Called to allow for a snappable/locatable decoration.
-   * @see ViewManager::AddViewDecoration
+  /** Invoked when the reset button is pressed.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   * @note To support right-press menus, a tool should put its reset event processing in onResetButtonUp instead of onResetButtonDown.
    */
-  // public pick(_context: PickContext): void { }
-
-  /** Invoked when the reset-button-down events. */
   public onResetButtonDown(_ev: BeButtonEvent): boolean { return false; }
-
-  /** Invoked when the reset button is released. */
+  /** Invoked when the reset button is released.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   */
   public onResetButtonUp(_ev: BeButtonEvent): boolean { return false; }
 
-  /** Invoked when the data-button-up events. */
+  /** Invoked when the data button is pressed.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   */
+  public onDataButtonDown(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the data button is released.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
+   */
   public onDataButtonUp(_ev: BeButtonEvent): boolean { return false; }
 
-  /** Invoked when the middle mouse button is pressed. */
+  /** Invoked when the middle mouse button is pressed.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public onMiddleButtonDown(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the middle mouse button is released. */
+  /** Invoked when the middle mouse button is released.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public onMiddleButtonUp(_ev: BeButtonEvent): boolean { return false; }
+
   /** Invoked when the cursor is moving */
   public onModelMotion(_ev: BeButtonEvent): void { }
   /** Invoked when the cursor is not moving */
   public onModelNoMotion(_ev: BeButtonEvent): void { }
   /** Invoked when the cursor was previously moving, and has stopped moving. */
   public onModelMotionStopped(_ev: BeButtonEvent): void { }
-  /** Invoked when the cursor begins moving while a button is depressed */
-  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }
-  /** Invoked when the cursor stops moving while a button is depressed */
-  public onModelEndDrag(ev: BeButtonEvent) { return this.onDataButtonDown(ev); }
-  /** Invoked to allow tools to filter which elements can be located.
-   * return true to reject hit (fill out response with reason, if it is defined)
+
+  /** Invoked when the cursor begins moving while a button is depressed.
+   * @return false by default. Sub-classes may ascribe special meaning to this status.
    */
-  public onPostLocate(_hit: HitDetail, _out?: LocateResponse) { return false; }
-  /** Invoked when the mouse wheel moves. */
+  public onModelStartDrag(_ev: BeButtonEvent): boolean { return false; }
+  /** Invoked when the button is released after onModelStartDrag.
+   * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
+   */
+  public onModelEndDrag(ev: BeButtonEvent): boolean { if (BeButton.Data !== ev.button) return false; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
+
+  /** Invoked when the mouse wheel moves.
+   * @return true if event completely handled by tool and event should not be passed on to the IdleTool.
+   */
   public onMouseWheel(_ev: BeWheelEvent): boolean { return false; }
-  /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
-  /** Invoked when the dimensions of the tool's viewport change */
-  public onViewportResized() { }
-  /** Invoked to allow a tool to update any view decorations it may have created */
-  public updateDynamics(_ev: BeButtonEvent) { }
-  public onTouchMotionPaused(): boolean { return false; }
-  public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onMultiFingerMove(_ev: BeGestureEvent): boolean { return false; }
-  public onTwoFingerTap(_ev: BeGestureEvent): boolean { return false; }
-  public onPressAndTap(_ev: BeGestureEvent): boolean { return false; }
-  public onSingleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
-  public onLongPress(_ev: BeGestureEvent): boolean { return false; }
-  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
-  public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
 
   /** Called when Control, Shift, or Alt qualifier keys are pressed or released.
    * @param _wentDown up or down key event
@@ -508,7 +503,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public onModifierKeyTransition(_wentDown: boolean, _key: BeModifierKey): boolean { return false; }
 
-  /** Called when  keys are pressed or released.
+  /** Called when keys are pressed or released.
    * @param wentDown up or down key event
    * @param key One of VirtualKey enum values
    * @param shiftIsDown the shift key is down
@@ -517,6 +512,26 @@ export abstract class InteractiveTool extends Tool {
    * @note In case of Shift, Control and Alt key, onModifierKeyTransition is used.
    */
   public onKeyTransition(_wentDown: boolean, _key: BeVirtualKey, _shiftIsDown: boolean, _ctrlIsDown: boolean): boolean { return false; }
+
+  public onEndGesture(_ev: BeGestureEvent): boolean { return false; }
+  public onSingleFingerMove(_ev: BeGestureEvent): boolean { return false; }
+  public onMultiFingerMove(_ev: BeGestureEvent): boolean { return false; }
+  public onTwoFingerTap(_ev: BeGestureEvent): boolean { return false; }
+  public onPressAndTap(_ev: BeGestureEvent): boolean { return false; }
+  public onSingleTap(_ev: BeGestureEvent): boolean { return false; }
+  public onDoubleTap(_ev: BeGestureEvent): boolean { return false; }
+  public onLongPress(_ev: BeGestureEvent): boolean { return false; }
+  public onTouchMotionPaused(): boolean { return false; }
+
+  public isCompatibleViewport(vp: Viewport, _isSelectedViewChange: boolean): boolean { return !!vp; }
+  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+
+  /** Implemented by direct subclasses to handle when the tool becomes no longer active. Generally not overridden by other subclasses */
+  /** Invoked when the dimensions of the tool's viewport change */
+  public onViewportResized() { }
+
+  /** Invoked to allow a tool to update any view decorations it may have created */
+  public updateDynamics(_ev: BeButtonEvent) { }
 
   /**
    * Invoked just before the locate tooltip is displayed to retrieve the info text. Allows the tool to override the default description.
@@ -529,8 +544,13 @@ export abstract class InteractiveTool extends Tool {
   //  public getInfoString(hit: HitDetail, _delimiter: string): string { return hit.hitDescription ? hit.hitDescription : ""; } // NEEDSWORK
   public getInfoString(_hit: HitDetail, _delimiter: string): string { return ""; }
 
+  /** Invoked to allow tools to filter which elements can be located.
+   * return true to reject hit (fill out response with reason, if it is defined)
+   */
+  public onPostLocate(_hit: HitDetail, _out?: LocateResponse) { return false; }
+
   /**
-   * FINISHED ( was DgnTool::GetCurrentDgnButtonEvent )
+   * Call to fill a button event from the current cursor location.
    */
   public getCurrentButtonEvent(ev: BeButtonEvent): void {
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);

@@ -7,7 +7,7 @@ import { OpenMode, ChangeSetApplyOption, ChangeSetStatus } from "@bentley/bentle
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelDb } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { HubTestUtils } from "./HubTestUtils";
+import { HubUtility } from "./HubUtility";
 import { ChangeSetToken } from "../../BriefcaseManager";
 import { KnownLocations } from "../../Platform";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
@@ -21,7 +21,7 @@ describe("ApplyChangeSets (#integration)", () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
 
     // Note: Change to LogLevel.Info for useful debug information
-    Logger.setLevel(HubTestUtils.logCategory, LogLevel.Error);
+    Logger.setLevel(HubUtility.logCategory, LogLevel.Error);
     Logger.setLevel("DgnCore", LogLevel.Error);
     Logger.setLevel("BeSQLite", LogLevel.Error);
   });
@@ -29,36 +29,36 @@ describe("ApplyChangeSets (#integration)", () => {
   const testAllChangeSetOperations = async (projectName: string, iModelName: string) => {
     const iModelDir = path.join(iModelRootDir, iModelName);
 
-    Logger.logInfo(HubTestUtils.logCategory, "Downloading seed file and all available change sets");
-    await HubTestUtils.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+    Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
 
-    const seedPathname = HubTestUtils.getSeedPathname(iModelDir);
+    const seedPathname = HubUtility.getSeedPathname(iModelDir);
     const iModelPathname = path.join(iModelDir, path.basename(seedPathname));
 
-    Logger.logInfo(HubTestUtils.logCategory, "Creating standalone iModel");
-    HubTestUtils.createStandaloneIModel(iModelPathname, iModelDir);
+    Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
+    HubUtility.createStandaloneIModel(iModelPathname, iModelDir);
     const iModel: IModelDb = IModelDb.openStandalone(iModelPathname, OpenMode.ReadWrite);
 
-    const changeSets: ChangeSetToken[] = HubTestUtils.readChangeSets(iModelDir);
+    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
 
     let status: ChangeSetStatus;
 
-    // Logger.logInfo(HubTestUtils.logCategory, "Dumping all available change sets");
-    // HubTestUtils.dumpStandaloneChangeSets(iModel, changeSets);
+    // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
+    // HubUtility.dumpStandaloneChangeSets(iModel, changeSets);
 
-    Logger.logInfo(HubTestUtils.logCategory, "Merging all available change sets");
-    status = HubTestUtils.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Merge);
+    Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
+    status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Merge);
 
     if (status === ChangeSetStatus.Success) {
-      Logger.logInfo(HubTestUtils.logCategory, "Reversing all available change sets");
+      Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
       changeSets.reverse();
-      status = HubTestUtils.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reverse);
+      status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reverse);
     }
 
     if (status === ChangeSetStatus.Success) {
-      Logger.logInfo(HubTestUtils.logCategory, "Reinstating all available change sets");
+      Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
       changeSets.reverse();
-      status = HubTestUtils.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reinstate);
+      status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reinstate);
     }
 
     iModel.closeStandalone();

@@ -35,6 +35,9 @@ export class RpcOperationPolicy {
 
 /** An RPC operation descriptor. */
 export class RpcOperation {
+  /** A fallback token to use for RPC system management requests like RpcManager.describeAvailableEndpoints. */
+  public static fallbackToken: IModelToken | undefined = undefined;
+
   /** Looks up an RPC operation by name. */
   public static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation {
     const definition = typeof (target) === "string" ? RpcRegistry.instance.lookupInterfaceDefinition(target) : target;

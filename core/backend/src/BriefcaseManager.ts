@@ -213,7 +213,7 @@ export class BriefcaseManager {
     if (!BriefcaseManager._hubClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler());
+      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, new AzureFileHandler(false));
     }
     return BriefcaseManager._hubClient;
   }
@@ -878,7 +878,7 @@ export class BriefcaseManager {
     try {
       const files = IModelJsFs.readdirSync(folderPath);
       for (const file of files) {
-        const curPath = folderPath + "/" + file;
+        const curPath = path.join(folderPath, file);
         if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
           BriefcaseManager.deleteFolderRecursive(curPath);
         } else {

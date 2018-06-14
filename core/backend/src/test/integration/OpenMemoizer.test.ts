@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { OpenParams } from "../../backend";
 import { memoizeOpenIModelDb, deleteMemoizedOpenIModelDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { HubTestUtils } from "./HubTestUtils";
+import { HubUtility } from "./HubUtility";
 import { TestConfig } from "../TestConfig";
 
 describe("OpenIModelDbMemoizer (#integration)", () => {
@@ -16,12 +16,12 @@ describe("OpenIModelDbMemoizer (#integration)", () => {
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
   });
 
   it("should be able to memoize and deleteMemoized open IModelDb calls", async () => {
-    const roIModelId = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, "ReadOnlyTest");
-    const rwIModelId = await HubTestUtils.queryIModelIdByName(accessToken, testProjectId, "ReadWriteTest");
+    const roIModelId = await HubUtility.queryIModelIdByName(accessToken, testProjectId, "ReadOnlyTest");
+    const rwIModelId = await HubUtility.queryIModelIdByName(accessToken, testProjectId, "ReadWriteTest");
 
     const qp1 = memoizeOpenIModelDb(accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     const qp2 = memoizeOpenIModelDb(accessToken, testProjectId, roIModelId, OpenParams.fixedVersion(), IModelVersion.latest());

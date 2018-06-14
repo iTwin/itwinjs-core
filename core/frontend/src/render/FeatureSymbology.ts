@@ -164,8 +164,9 @@ export namespace FeatureSymbology {
       }
 
       if (subCategoryId.isValid()) {
-        if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
-          return false;
+        // ###TODO
+        // if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
+        //   return false;
 
         const subCat = this.getSubCategoryOverrides(subCategoryId);
         if (undefined !== subCat) app.setFrom(subCat.extend(app));
