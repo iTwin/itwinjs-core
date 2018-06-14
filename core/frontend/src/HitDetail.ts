@@ -238,8 +238,8 @@ export class HitList {
     if (zOverride1 > zOverride2) return 1;
 
     // Compare distance fraction, prefer hits closer to eye...
-    if (hit1.distFraction < hit2.distFraction) return -1;
-    if (hit1.distFraction > hit2.distFraction) return 1;
+    if (hit1.distFraction > hit2.distFraction) return -1;
+    if (hit1.distFraction < hit2.distFraction) return 1;
 
     // Compare geometry class, prefer path/region hits at same distance from eye to surface hits...
     if (hit1.priority < hit2.priority) return -1;
