@@ -493,24 +493,52 @@ export class Viewport {
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
 
-  private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
+  private static readonly fullRangeNpc = new Range3d(0, 0, 0, 1, 1, 1); // full range of view
   private static readonly depthRect = new ViewRect();
-  public determineVisibleDepthNpc(subRectNpc?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
-    subRectNpc = subRectNpc || Viewport.fullRangeNpc;
+  public determineVisibleDepthNpcRange(subRectNpc?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
+    subRectNpc = subRectNpc ? subRectNpc : Viewport.fullRangeNpc;
 
-    // Determine screen rectangle in which to query visible depth min + max
+    // Determine the screen rectangle in which to query visible depth min + max
     const viewRect = Viewport.depthRect;
-    viewRect.initFromPoint(this.npcToView(subRectNpc.low), this.npcToView(subRectNpc.high));
+    viewRect.initFromRange(subRectNpc);
     return this.pickRange(viewRect, result);
   }
 
-  /** Computes the range of depth values for a region of the screen
+  /**
+   * Computes the range of depth values for a region of the screen
    * @param origin the top-left corner of the region in screen coordinates
    * @param extents the width (x) and height (y) of the region in screen coordinates
    * @returns the minimum and maximum depth values within the region, or undefined.
    */
-  public pickRange(_rect: ViewRect, _result?: DepthRangeNpc): DepthRangeNpc | undefined {
-    return undefined;
+  private pickRange(inViewRect: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined {
+    if (result) {
+      result.minimum = 1;
+      result.maximum = 0;
+    } else {
+      result = new DepthRangeNpc(1, 0);
+    }
+
+    const viewRect = this.viewRect;
+    const pixels = this.readPixels(viewRect, Pixel.Selector.Distance);
+
+    if (!pixels)
+      return undefined;
+
+    if (inViewRect !== undefined && !viewRect.overlaps(inViewRect))
+      return undefined;
+
+    const testPoint = Point2d.create();
+    for (testPoint.x = viewRect.left; testPoint.x <= viewRect.right; testPoint.x++) {
+      for (testPoint.y = viewRect.top; testPoint.y <= viewRect.bottom; testPoint.y++) {
+        const npc = Point3d.create();
+        if (viewRect.containsPoint(testPoint) && this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
+          result.minimum = Math.min(result.minimum, npc.z);
+          result.maximum = Math.max(result.maximum, npc.z);
+        }
+      }
+    }
+
+    return result.maximum > 0 ? result : undefined;
   }
 
   private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
@@ -554,7 +582,7 @@ export class Viewport {
 
     // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
     // We use the depth of the center of the view for that.
-    let depthRange = this.determineVisibleDepthNpc();
+    let depthRange = this.determineVisibleDepthNpcRange();
     if (!depthRange)
       depthRange = new DepthRangeNpc();
     const middle = depthRange.middle();
