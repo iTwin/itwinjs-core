@@ -3,16 +3,15 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, XAndY, Vector3d } from "@bentley/geometry-core";
-import { ViewStatus } from "../ViewState";
+import { Point3d, Point2d, XAndY, Vector3d, Transform, RotMatrix } from "@bentley/geometry-core";
+import { ViewStatus, ViewState3d } from "../ViewState";
 import { Viewport } from "../Viewport";
 import {
   BeModifierKey, BeButtonState, BeButton, BeGestureEvent, Tool, BeButtonEvent, CoordSource, GestureInfo,
   BeCursor, BeWheelEvent, InputSource, BeVirtualKey, InteractiveTool,
 } from "./Tool";
-import { ViewTool, ViewToolSettings, InputCollector } from "./ViewTool";
+import { ViewTool, InputCollector, ViewManip } from "./ViewTool";
 import { IdleTool } from "./IdleTool";
-import { BeDuration } from "@bentley/bentleyjs-core";
 import { BeEvent, BeEventList } from "@bentley/bentleyjs-core";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { DecorateContext } from "../ViewContext";
@@ -322,7 +321,7 @@ class WheelEventProcessor {
     if (!vp)
       return true;
 
-    this.doZoom();
+    this.doZoom(doUpdate);
 
     if (doUpdate) {
       const hasPendingWheelEvent = false; //  Display:: Kernel:: HasPendingMouseWheelEvent(); NEEDS_WORK
@@ -337,26 +336,93 @@ class WheelEventProcessor {
     return true;
   }
 
-  private doZoom(): ViewStatus {
-    const ev = this.ev!;
+  private doZoom(reCenter: boolean): ViewStatus {
+    const vp = this.ev!.viewport;
+    if (!vp)
+      return ViewStatus.InvalidViewport;
 
-    let zoomRatio = Math.max(1.0, WheelSettings.zoomRatio);
+    let zoomRatio = WheelSettings.zoomRatio;
+    if (zoomRatio < 1)
+      zoomRatio = 1;
+    if (this.ev!.wheelDelta > 0)
+      zoomRatio = 1 / zoomRatio;
 
-    const wheelDelta = ev.wheelDelta;
-    if (wheelDelta > 0)
-      zoomRatio = 1.0 / zoomRatio;
+    const target = Point3d.create();
+    const isSnap = this.ev!.getTargetPoint(target);
+    let targetRoot = target.clone();
+    let status: ViewStatus;
 
-    const vp = ev.viewport!;
-    const startFrust = vp.getFrustum();
+    const path = ViewManip.getTargetHitDetail(vp, target);  // Why do I get 'used before assigned error' if moved into if(!isSnap) block??
 
-    const zoomCenter = vp.getZoomCenter(ev);
-    const result = vp.zoom(zoomCenter, zoomRatio);
-    if (ViewStatus.Success === result) {
-      if (ViewToolSettings.animateZoom)
-        vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(100));
+    if (vp.view.is3d() && vp.isCameraOn()) {
+      let lastEventWasValid: boolean = false;
+      if (!isSnap) {
+        vp.worldToNpc(targetRoot, targetRoot);
+
+        let defaultTarget: Point3d;
+
+        const lastEvent = IModelApp.toolAdmin.lastWheelEvent;
+        if (lastEvent && lastEvent.viewport && lastEvent.viewport.view.equals(vp.view) && lastEvent.viewPoint.distanceSquaredXY(this.ev!.viewPoint) < .00001) {
+          defaultTarget = vp.worldToNpc(lastEvent.point);
+          targetRoot.z = defaultTarget.z;
+          lastEventWasValid = true;
+        } else if (path !== undefined) {
+          defaultTarget = path.hitPoint.clone();
+          targetRoot = vp.worldToNpc(defaultTarget);
+        } else {
+          defaultTarget = vp.determineDefaultRotatePoint();
+          vp.worldToNpc(defaultTarget, defaultTarget);
+          targetRoot.z = defaultTarget.z;
+        }
+
+        vp.npcToWorld(targetRoot, targetRoot);
+      }
+
+      const cameraView = vp.view as ViewState3d;
+      const transform = Transform.createFixedPointAndMatrix(targetRoot, RotMatrix.createScale(zoomRatio, zoomRatio, zoomRatio));
+      const oldCameraPos = cameraView.getEyePoint();
+      const newCameraPos = transform.multiplyPoint3d(oldCameraPos);
+      const offset = Vector3d.createStartEnd(oldCameraPos, newCameraPos);
+
+      if (!isSnap && offset.magnitude() < .01) {
+        offset.scaleToLength(1 / 3);
+        lastEventWasValid = false;
+        targetRoot.addInPlace(offset);
+      }
+
+      const target = cameraView.getTargetPoint().clone();
+      target.addInPlace(offset);
+      newCameraPos.setFrom(oldCameraPos.plus(offset));
+
+      if (!lastEventWasValid) {
+        const thisEvent = this.ev!.clone();
+        thisEvent.point.setFrom(targetRoot);
+        IModelApp.toolAdmin.lastWheelEvent = thisEvent as BeWheelEvent;
+      }
+
+      status = cameraView.lookAt(newCameraPos, target, cameraView.getYVector());
+      vp.synchWithView(false);
+    } else {
+      const targetNpc = vp.worldToNpc(targetRoot);
+      const trans = Transform.createFixedPointAndMatrix(targetNpc, RotMatrix.createScale(zoomRatio, zoomRatio, 1));
+      const viewCenter = Point3d.create(.5, .5, .5);
+
+      if (reCenter) {
+        const shift = Vector3d.createStartEnd(viewCenter, targetNpc);
+        shift.z = 0.0;
+
+        const offset = Transform.createTranslation(shift);
+        trans.multiplyTransformTransform(offset, trans);
+      }
+
+      trans.multiplyPoint3d(viewCenter, viewCenter);
+      vp.npcToWorld(viewCenter, viewCenter);
+      status = vp.zoom(viewCenter, zoomRatio);
     }
 
-    return result;
+    // if we scrolled out, we may have invalidated the current accusnap path
+    IModelApp.accuSnap.reEvaluate();
+    return status;
   }
 }
 
