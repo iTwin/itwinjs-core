@@ -233,21 +233,31 @@ export class HitList {
     const zOverride1 = this.getPriorityZOverride(hit1.priority);
     const zOverride2 = this.getPriorityZOverride(hit2.priority);
 
-    // Compare edge vs. surface, this is more important than z because we know it's visible in the view...
+    // Prefer edges over surfaces, this is more important than z because we know the edge isn't obscured...
     if (zOverride1 < zOverride2) return -1;
     if (zOverride1 > zOverride2) return 1;
 
-    // Compare distance fraction, prefer hits closer to eye...
-    if (hit1.distFraction > hit2.distFraction) return -1;
-    if (hit1.distFraction < hit2.distFraction) return 1;
+    if (zOverride1 >= 2) { // Compare 2 surface hits, prefer hit closer to center over a "partial" surface hit (ex. helps with choosing chair leg over floor)...
+      // Compare xy distance from pick point, prefer hits closer to center...
+      if (hit1.distXY < hit2.distXY) return -1;
+      if (hit1.distXY > hit2.distXY) return 1;
 
-    // Compare geometry class, prefer path/region hits at same distance from eye to surface hits...
+      // Compare distance fraction, prefer hits closer to eye...
+      if (hit1.distFraction > hit2.distFraction) return -1;
+      if (hit1.distFraction < hit2.distFraction) return 1;
+    } else { // Compare 2 edge hits, prefer hit closer to eye over hit closer to center...
+      // Compare distance fraction, prefer hits closer to eye...
+      if (hit1.distFraction > hit2.distFraction) return -1;
+      if (hit1.distFraction < hit2.distFraction) return 1;
+
+      // Compare xy distance from pick point, prefer hits closer to center...
+      if (hit1.distXY < hit2.distXY) return -1;
+      if (hit1.distXY > hit2.distXY) return 1;
+    }
+
+    // Compare geometry class, prefer path/region hits over surface hits when all else is equal...
     if (hit1.priority < hit2.priority) return -1;
     if (hit1.priority > hit2.priority) return 1;
-
-    // Compare xy distance from pick point, prefer hits closer to center...
-    if (hit1.distXY < hit2.distXY) return -1;
-    if (hit1.distXY > hit2.distXY) return 1;
 
     return 0;
   }
