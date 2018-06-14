@@ -26,6 +26,7 @@ async function initialize() {
     projectId = IModelHubIntegration.testProjectId;
     accessToken = IModelHubIntegration.accessToken;
   } else {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const config = new IModelHostConfiguration();
     config.iModelServerHandler = new IModelBankBaseHandler("https://localhost:3001");
     IModelHost.startup(config);
