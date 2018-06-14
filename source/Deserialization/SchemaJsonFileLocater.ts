@@ -4,6 +4,7 @@
 
 import { SchemaKey, ECVersion, Schema, SchemaMatchType, ECObjectsError, ECObjectsStatus, ISchemaLocater} from "..";
 import { SchemaFileLocator, FileSchemaKey } from "./SchemaFileLocater";
+import { SchemaContext } from "./../Context";
 import * as path from "path";
 
 /**
@@ -69,15 +70,15 @@ export class SchemaJsonFileLocater extends SchemaFileLocator implements ISchemaL
    * @param key The SchemaKey of the Schema to retrieve.
    * @param matchType The SchemaMatchType
    */
-  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
     // Check for the schema in the known schemata
-    const foundSchema = await this.knownSchemas.getSchema(key, matchType);
+    const foundSchema = await this.knownSchemas.getSchema(schemaKey, matchType);
     // If the schema is a known one return it
     if (foundSchema)
       return foundSchema as T;
 
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "json");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 
@@ -88,5 +89,9 @@ export class SchemaJsonFileLocater extends SchemaFileLocator implements ISchemaL
     const schema: Promise<T | undefined> = this.loadSchema(maxFilePath);
 
     return schema;
+  }
+
+  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+    return undefined;
   }
 }
