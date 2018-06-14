@@ -207,7 +207,6 @@ export abstract class RenderTarget {
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
 
   // ###TODO public abstract readImage(rect: ViewRect, targetSize: Point2d): Image;
-  // ###TODO public abstract setMinimumFrameRate(minimumFrameRate: number): number;
 }
 
 /**
