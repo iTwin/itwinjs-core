@@ -167,8 +167,8 @@ export class SpecialElements implements DrawnElementSets {
  * * @see [Views]($docs/learning/frontend/Views.md)
  */
 export abstract class ViewState extends ElementState implements DrawnElementSets {
-  protected _featureOverridesDirty = false;
-  protected _selectionSetDirty = false;
+  protected _featureOverridesDirty = true;
+  protected _selectionSetDirty = true;
   private _noQuery: boolean = false;
   private _auxCoordSystem?: AuxCoordSystemState;
   public static get className() { return "ViewDefinition"; }

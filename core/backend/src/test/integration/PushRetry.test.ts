@@ -7,24 +7,54 @@ import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { IModelDb } from "../../backend";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { IModel as HubIModel, IModelQuery, AccessToken } from "@bentley/imodeljs-clients";
-import { HubTestUtils } from "./HubTestUtils";
+import { IModel as HubIModel, IModelQuery, AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
+import { HubUtility } from "./HubUtility";
 import * as utils from "./../../../../clients/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients/lib/test/ResponseBuilder";
 import { createNewModelAndCategory } from "./IModelWrite.test";
 import { TestConfig } from "../TestConfig";
+import { TestPushUtility } from "./TestPushUtility";
 
-describe.skip("PushRetry", () => {
+describe("PushRetry", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
+  const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
-    testProjectId = await HubTestUtils.queryProjectIdByName(accessToken, TestConfig.projectName);
+    testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
   });
 
-  it("should retry to push changes (#integration)", async () => {
+  it("should be able to listen to change sets and versions posted to the Hub (#integration)", async () => {
+    await testPushUtility.initialize(TestConfig.projectName, "PushTest");
+    const iModelId = await testPushUtility.pushTestIModel();
+
+    const expectedCount: number = 5;
+    let actualChangeSetCount: number = 0;
+    let actualVersionCount: number = 0;
+
+    // Subscribe to change set and version events
+    const changeSetSubscription = await BriefcaseManager.hubClient.Events().Subscriptions().create(accessToken, iModelId, ["ChangeSetPostPushEvent"]);
+    const deleteChangeSetListener = BriefcaseManager.hubClient.Events().createListener(async () => accessToken, changeSetSubscription.wsgId, iModelId, async (_receivedEvent: ChangeSetPostPushEvent) => {
+      actualChangeSetCount++;
+    });
+    const namedVersionSubscription = await BriefcaseManager.hubClient.Events().Subscriptions().create(accessToken, iModelId, ["VersionEvent"]);
+    const deleteNamedVersionListener = BriefcaseManager.hubClient.Events().createListener(async () => accessToken, namedVersionSubscription.wsgId, iModelId, async (_receivedEvent: NamedVersionCreatedEvent) => {
+      actualVersionCount++;
+    });
+
+    // Start pushing change sets and versions
+    await testPushUtility.pushTestChangeSetsAndVersions(expectedCount);
+
+    assert.equal(actualChangeSetCount, expectedCount);
+    assert.equal(actualVersionCount, expectedCount);
+
+    deleteChangeSetListener();
+    deleteNamedVersionListener();
+  });
+
+  it.skip("should retry to push changes (#integration)", async () => {
     const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);
@@ -65,7 +95,7 @@ describe.skip("PushRetry", () => {
     await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, pushRetryIModelId!);
   });
 
-  it("should fail to push and not retry again (#integration)", async () => {
+  it.skip("should fail to push and not retry again (#integration)", async () => {
     const iModels: HubIModel[] = await BriefcaseManager.hubClient.IModels().get(accessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
       await BriefcaseManager.hubClient.IModels().delete(accessToken, testProjectId, iModelTemp.wsgId);

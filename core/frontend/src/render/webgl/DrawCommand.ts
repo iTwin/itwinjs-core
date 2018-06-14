@@ -156,12 +156,12 @@ class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 
   public preExecute(exec: ShaderProgramExecutor): void {
-    // ###TODO exec.target.currentOverrides = this.batch.getOverrides(exec.target);
+    exec.target.currentOverrides = this.batch.getOverrides(exec.target);
     assert(undefined === exec.target.currentPickTable);
     exec.target.currentPickTable = this.batch.pickTable;
   }
   public postExecute(exec: ShaderProgramExecutor): void {
-    // ###TODO exec.target.currentOverrides = undefined;
+    exec.target.currentOverrides = undefined;
     exec.target.currentPickTable = undefined;
   }
 }
