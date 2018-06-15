@@ -7,7 +7,7 @@ import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export default class UnitSystem extends SchemaItem {
-  public readonly type!: SchemaItemType.UnitSystem; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.UnitSystem; // tslint:disable-line
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaItemType.UnitSystem);

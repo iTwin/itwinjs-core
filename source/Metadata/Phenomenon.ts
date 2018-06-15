@@ -8,7 +8,7 @@ import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export default class Phenomenon extends SchemaItem {
-  public readonly type!: SchemaItemType.Phenomenon; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.Phenomenon; // tslint:disable-line
   protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
 
   constructor(schema: Schema, name: string) {

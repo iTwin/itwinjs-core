@@ -7,17 +7,11 @@ import { SchemaItemType } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
-export interface Unit {
-  name: string;
-  label?: string;
-}
-
 // A Composite defines additional information about a format and whether the magnitude should be split and display using multiple Units.
 export interface Composite {
   spacer?: string;
   includeZero?: boolean;
-  unitNames?: any;
-  unitLabels?: any;
+  units?: Array<[string, string | undefined]>;
 }
 
 export const enum Type {
@@ -40,11 +34,11 @@ export const enum ShowSignOption { // default is no sign
 }
 
 export default class Format extends SchemaItem {
-  public readonly type!: SchemaItemType.Format; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
   protected _roundFactor: number = 0.0;
+  protected _type: Type;
   protected _precision?: number; // required
   protected _minWidth?: number; // optional; positive int
-  protected _formatType: Type; // required
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _showSignOption: ShowSignOption = ShowSignOption.OnlyNegative; // options: noSign, onlyNegative, signAlways, negativeParentheses
   protected _formatTraits?: Map<string, boolean>; // optional in json; Maps (format traits option -> boolean) indicating whether option is present or not
@@ -60,13 +54,13 @@ export default class Format extends SchemaItem {
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaItemType.Format);
-    this._formatType = Type.Decimal; // Need to init this value to something; not sure if this is the best
+    this._type = Type.Decimal; // Need to init this value to something...will change in fromJson
   }
 
   get roundFactor(): number { return this._roundFactor; }
-  // TODO: CHANGE THIS NAME
-  get formattype(): Type { return this._formatType; }
+  get type(): Type { return this._type; }
   get precision(): number | undefined { return this._precision; }
+  set precision(precision: number | undefined) { this._precision = precision; }
   get minWidth(): number | undefined { return this._minWidth; }
   get scientificType(): ScientificType | undefined { return this._scientificType; }
   get showSignOption(): ShowSignOption { return this._showSignOption; }
@@ -108,13 +102,11 @@ export default class Format extends SchemaItem {
   public createUnit(name: string, label?: string) {
     if (name === undefined || typeof(name) !== "string" || (label !== undefined && typeof(label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    this._composite!.unitNames!.forEach((str: string) => { // Name must be unique within the Composite
-      if (str.toLowerCase() === name.toLowerCase())
+    this._composite!.units!.forEach((unit: [string, string | undefined]) => { // Name must be unique within the Composite
+      if (unit[0].toLowerCase() === name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${name} has a duplicate name.`);
     });
-    this._composite!.unitNames!.push(name);
-    if (label !== undefined)
-      this._composite!.unitLabels!.push(label);
+    this._composite!.units!.push([name, label]);
   }
 
   public async fromJson(jsonObj: any): Promise<void> {
@@ -126,16 +118,16 @@ export default class Format extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'type' attribute. It should be of type 'string'.`);
     switch (jsonObj.type.toLowerCase()) {
       case "decimal":
-        this._formatType = Type.Decimal;
+        this._type = Type.Decimal;
         break;
       case "scientific":
-        this._formatType = Type.Scientific;
+        this._type = Type.Scientific;
         break;
       case "station":
-        this._formatType = Type.Station;
+        this._type = Type.Station;
         break;
       case "fractional":
-        this._formatType = Type.Fractional;
+        this._type = Type.Fractional;
         break;
       default:
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'type' attribute.`);
@@ -147,7 +139,7 @@ export default class Format extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
     else if (!Number.isInteger(jsonObj.precision)) // must be an integer
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'precision' attribute. It should be an integer.`);
-    switch (this._formatType) { // type must be decimal, fractional, scientific, or station
+    switch (this._type) { // type must be decimal, fractional, scientific, or station
       case Type.Decimal:
       case Type.Scientific:
       case Type.Station:
@@ -166,9 +158,9 @@ export default class Format extends SchemaItem {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'type' attribute.`);
     }
 
-    if (this.formattype === Type.Scientific && undefined === jsonObj.scientificType) // if format type is scientific and scientific type is undefined, throw
+    if (this.type === Type.Scientific && undefined === jsonObj.scientificType) // if format type is scientific and scientific type is undefined, throw
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} does not have the required 'scientificType' attribute.`);
-    else if (this.formattype === Type.Scientific) { // Type is scientific, scientific type is defined
+    else if (this.type === Type.Scientific) { // Type is scientific, scientific type is defined
       if (typeof(jsonObj.scientificType) !== "string")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'scientificType' attribute. It should be of type 'string'.`);
       switch (jsonObj.scientificType.toLowerCase()) {
@@ -183,9 +175,9 @@ export default class Format extends SchemaItem {
       }
     }
 
-    if (this.formattype === Type.Station && undefined === jsonObj.stationOffsetSize)
+    if (this.type === Type.Station && undefined === jsonObj.stationOffsetSize)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} does not have the required 'stationOffsetSize' attribute.`);
-    else if (this.formattype === Type.Station) { // stationOffsetSize is required if type is station
+    else if (this.type === Type.Station) { // stationOffsetSize is required if type is station
       if (typeof(jsonObj.stationOffsetSize) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
       else if (!Number.isInteger(jsonObj.stationOffsetSize) || jsonObj.stationOffsetSize < 0) // must be a positive int > 0
@@ -273,7 +265,7 @@ export default class Format extends SchemaItem {
     }
 
     if (undefined !== jsonObj.composite) { // optional
-      this._composite = {includeZero: true, spacer: " ", unitNames: new Array<string>(), unitLabels: new Array<string>()};
+      this._composite = {includeZero: true, spacer: " ", units: new Array<[string, string | undefined]>()};
       if (jsonObj.composite.includeZero !== undefined) {
         if (typeof(jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${jsonObj.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);

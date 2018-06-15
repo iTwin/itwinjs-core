@@ -12,6 +12,8 @@ import RelationshipClass, { RelationshipConstraint } from "../Metadata/Relations
 import { AnyClass, SchemaDeserializationVisitor, AnySchemaItem } from "../Interfaces";
 import { Property } from "../Metadata/Property";
 import { MutableClass } from "../Metadata/Class";
+import KindOfQuantity from "../Metadata/KindOfQuantity";
+import Unit from "../Metadata/Unit";
 
 /**
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaItems from the JSON formats.
@@ -149,35 +151,51 @@ export default class SchemaReadHelper {
     let schemaItem: AnySchemaItem | undefined;
 
     switch (parseSchemaItemType(schemaItemJson.schemaItemType)) {
-       case SchemaItemType.EntityClass:
+      case SchemaItemType.EntityClass:
         schemaItem = await (schema as MutableSchema).createEntityClass(itemName);
         await this.loadEntityClass(schemaItem, schemaItemJson);
         break;
-       case SchemaItemType.StructClass:
+      case SchemaItemType.StructClass:
         schemaItem = await (schema as MutableSchema).createStructClass(itemName);
         await this.loadClass(schemaItem, schemaItemJson);
         break;
-       case SchemaItemType.Mixin:
+      case SchemaItemType.Mixin:
         schemaItem = await (schema as MutableSchema).createMixinClass(itemName);
         await this.loadMixin(schemaItem, schemaItemJson);
         break;
-       case SchemaItemType.CustomAttributeClass:
+      case SchemaItemType.CustomAttributeClass:
         schemaItem = await (schema as MutableSchema).createCustomAttributeClass(itemName);
         await this.loadClass(schemaItem, schemaItemJson);
         break;
-       case SchemaItemType.RelationshipClass:
+      case SchemaItemType.RelationshipClass:
         schemaItem = await (schema as MutableSchema).createRelationshipClass(itemName);
         await this.loadRelationshipClass(schemaItem, schemaItemJson);
         break;
-       case SchemaItemType.KindOfQuantity:
+      case SchemaItemType.KindOfQuantity:
         schemaItem = await (schema as MutableSchema).createKindOfQuantity(itemName);
+        await this.loadKindOfQuantity(schemaItem, schemaItemJson);
+        break;
+      case SchemaItemType.Unit:
+        schemaItem = await (schema as MutableSchema).createUnit(itemName);
+        await this.loadUnit(schemaItem, schemaItemJson);
+        break;
+      case SchemaItemType.Phenomenon:
+        schemaItem = await (schema as MutableSchema).createPhenomenon(itemName);
         await schemaItem.fromJson(schemaItemJson);
         break;
-       case SchemaItemType.PropertyCategory:
+      case SchemaItemType.UnitSystem:
+        schemaItem = await (schema as MutableSchema).createUnitSystem(itemName);
+        await schemaItem.fromJson(schemaItemJson);
+        break;
+      case SchemaItemType.Format:
+        schemaItem = await (schema as MutableSchema).createFormat(itemName);
+        await schemaItem.fromJson(schemaItemJson);
+        break;
+      case SchemaItemType.PropertyCategory:
         schemaItem = await (schema as MutableSchema).createPropertyCategory(itemName);
         await schemaItem.fromJson(schemaItemJson);
         break;
-       case SchemaItemType.Enumeration:
+      case SchemaItemType.Enumeration:
         schemaItem = await (schema as MutableSchema).createEnumeration(itemName);
         await schemaItem.fromJson(schemaItemJson);
         break;
@@ -210,6 +228,53 @@ export default class SchemaReadHelper {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
 
     return undefined;
+  }
+
+  /**
+   * @param unitJson The JSON containing the Unit to be added to the container
+   */
+  private async loadUnit(unit: Unit, unitJson: any): Promise<void> {
+    let phenomenon: undefined | SchemaItem;
+    let unitSystem: undefined | SchemaItem;
+    if (undefined !== unitJson.phenomenon) {
+      if (typeof(unitJson.phenomenon) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
+      phenomenon = await this.findSchemaItem(unitJson.phenomenon, true);
+    }
+    if (undefined !== unitJson.unitSystem ) {
+      if (typeof(unitJson.unitSystem ) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${unit.name} has an invalid 'unitSystem ' attribute. It should be of type 'string'.`);
+      unitSystem = await this.findSchemaItem(unitJson.unitSystem , true);
+    }
+
+    // Now deserialize the class itself, *before* any properties
+    await unit.fromJson(unitJson);
+
+    if (phenomenon && this._visitor) {
+      await phenomenon.accept(this._visitor);
+    }
+    if (unitSystem && this._visitor) {
+      await unitSystem.accept(this._visitor);
+    }
+  }
+
+  /**
+   * @param koqJson The JSON containing the KindOfQuantity that are to be added to the container
+   */
+  private async loadKindOfQuantity(koq: KindOfQuantity, koqJson: any): Promise<void> {
+    // Load persistence unit first
+    let persistenceUnit: undefined | SchemaItem;
+    if (undefined !== koqJson.persistenceUnit) {
+      if (typeof(koqJson.persistenceUnit) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Kind Of Quantity ${koq.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
+      persistenceUnit = await this.findSchemaItem(koqJson.persistenceUnit, true); // hacky but we need to provide schema name or there will be a bad request
+    }
+
+    // Now deserialize the class itself, *before* any properties
+    await koq.fromJson(koqJson);
+
+    if (persistenceUnit && this._visitor)
+      await persistenceUnit.accept(this._visitor);
   }
 
   /**
@@ -394,7 +459,7 @@ export default class SchemaReadHelper {
         return this.loadProperty(structArrProp, propertyJson);
 
       case "NavigationProperty":
-        if (classObj.type !== SchemaItemType.EntityClass && classObj.type !== SchemaItemType.RelationshipClass && classObj.type !== SchemaItemType.Mixin)
+        if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
 
         if (undefined === propertyJson.relationshipName)

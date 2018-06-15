@@ -12,7 +12,7 @@ import Schema from "./Schema";
  * An InvertedUnit is a a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
  */
 export default class InvertedUnit extends SchemaItem {
-  public readonly type!: SchemaItemType.InvertedUnit; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.InvertedUnit; // tslint:disable-line
   protected _invertsUnit: string; // required
   protected _unitSystem?: string; // required
 

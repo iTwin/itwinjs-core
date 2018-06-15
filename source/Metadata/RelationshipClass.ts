@@ -20,7 +20,7 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  */
 export default class RelationshipClass extends ECClass {
   public readonly schema!: Schema; // tslint:disable-line
-  public readonly type!: SchemaItemType.RelationshipClass; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.RelationshipClass; // tslint:disable-line
   protected _strength: StrengthType = StrengthType.Referencing;
   protected _strengthDirection: StrengthDirection = StrengthDirection.Forward;
   protected _source: RelationshipConstraint;

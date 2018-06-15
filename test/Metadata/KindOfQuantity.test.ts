@@ -7,57 +7,49 @@ import Schema from "../../source/Metadata/Schema";
 import { ECObjectsError } from "../../source/Exception";
 import KindOfQuantity from "../../source/Metadata/KindOfQuantity";
 import * as sinon from "sinon";
+import Unit from "../../source/Metadata/Unit";
+import Phenomenon from "../../source/Metadata/Phenomenon";
+import UnitSystem from "../../source/Metadata/UnitSystem";
 
 describe("KindOfQuantity", () => {
   describe("deserialization", () => {
-    it("fully defined", async () => {
+    it("No persistenceUnits", async () => {
       const testSchema = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
         name: "TestSchema",
-        version: "1.2.3",
         items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
           testKoQ: {
             schemaItemType: "KindOfQuantity",
             precision: 5,
-            persistenceUnit: {
-              format: "DefaultReal",
-              unit: "MM",
-            },
-            presentationUnits: [
-              {
-                format: "DefaultReal",
-                unit: "CM",
-              },
-              {
-                format: "DefaultReal",
-                unit: "IN",
-              },
-            ],
+            persistenceUnit: "TestSchema.M",
           },
         },
       };
-
       const ecSchema = await Schema.fromJson(testSchema);
-      // const format  = await testSchema.$schema<schema>.getItem("format");
-      // assert.isDefined(format);
       assert.isDefined(ecSchema);
-
       const testItem = await ecSchema.getItem("testKoQ");
       assert.isDefined(testItem);
       assert.isTrue(testItem instanceof KindOfQuantity);
-
       const testKoQ: KindOfQuantity = testItem as KindOfQuantity;
       assert.isDefined(testKoQ);
-
       expect(testKoQ.precision).equal(5);
       assert.isDefined(testKoQ.persistenceUnit);
-
       const persistenceUnit = testKoQ.persistenceUnit;
-      expect(persistenceUnit!.format).equal("DefaultReal");
-
-      expect(testKoQ.presentationUnits.length).equal(2);
-
-      assert.isTrue(testKoQ.presentationUnits[0] === testKoQ.defaultPresentationUnit);
+      expect(persistenceUnit!.name).equal("M");
     });
   });
 
@@ -70,117 +62,75 @@ describe("KindOfQuantity", () => {
       testKoQ = new KindOfQuantity(schema, "TestKindOfQuantity");
     });
 
-    it("should successfully deserialize valid JSON", async () => {
-      const koqJson = {
-        ...baseJson,
-        label: "SomeDisplayLabel",
-        description: "A really long description...",
-        precision: 1.234,
-        persistenceUnit: { unit: "in", format: "DEFAULTREAL" },
-        presentationUnits: [
-          { unit: "cm" },
-          { unit: "in", format: "anotherFormat" },
-        ],
-      };
-      await testKoQ.fromJson(koqJson);
-
-      expect(testKoQ.name).to.eql("TestKindOfQuantity");
-      expect(testKoQ.label).to.eql("SomeDisplayLabel");
-      expect(testKoQ.description).to.eql("A really long description...");
-      expect(testKoQ.precision).to.eql(1.234);
-      expect(testKoQ.presentationUnits).to.exist;
-      expect(testKoQ.presentationUnits.length).to.eql(2);
-      expect(testKoQ.defaultPresentationUnit).to.eql({ unit: "cm" });
-      expect(testKoQ.presentationUnits[0]).to.eql({ unit: "cm" });
-      expect(testKoQ.presentationUnits[1]).to.eql({ unit: "in", format: "anotherFormat" });
-      expect(testKoQ.persistenceUnit).to.eql({ unit: "in", format: "DEFAULTREAL" });
-    });
-
-    it("should successfully deserialize valid JSON (without units)", async () => {
-      const koqJson = {
-        ...baseJson,
-        label: "SomeDisplayLabel",
-        description: "A really long description...",
-        precision: 1.234,
-      };
-      await testKoQ.fromJson(koqJson);
-
-      expect(testKoQ.name).to.eql("TestKindOfQuantity");
-      expect(testKoQ.label).to.eql("SomeDisplayLabel");
-      expect(testKoQ.description).to.eql("A really long description...");
-      expect(testKoQ.precision).to.eql(1.234);
-      expect(testKoQ.presentationUnits).to.exist;
-      expect(testKoQ.presentationUnits.length).to.eql(0);
-      expect(testKoQ.defaultPresentationUnit).to.not.exist;
-      expect(testKoQ.persistenceUnit).to.not.exist;
-    });
     async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       expect(testKoQ).to.exist;
       const json: any = {
         ...baseJson,
+        precision: 5,
         [attributeName]: value,
       };
       await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
     it("should throw for invalid precision", async () => testInvalidAttribute("precision", "number", false));
-    it("should throw for presentationUnits not an array", async () => testInvalidAttribute("presentationUnits", "object[]", 0));
-    it("should throw for presentationUnits not an array of objects", async () => testInvalidAttribute("presentationUnits", "object[]", [0]));
+    it("should throw for persistenceUnit not a string", async () => testInvalidAttribute("persistenceUnit", "string", 0));
 
-    it("should throw for presentationUnit with missing unit", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        ...baseJson,
-        presentationUnits: [{}],
+    it("should throw for presentationUnits not an array or string", async () => {
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          testKoQ: {
+            schemaItemType: "KindOfQuantity",
+            precision: 5,
+            persistenceUnit: "TestSchema.M",
+            presentationUnits: 5,
+          },
+        },
       };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit that is missing the required attribute 'unit'.`);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity testKoQ has an invalid 'presentationUnits' attribute. It should be either type 'string[]' or type 'string'.`);
     });
 
-    it("should throw for presentationUnit with invalid unit", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        ...baseJson,
-        presentationUnits: [{ unit: 0 }],
+    it("should throw for missing persistenceUnit", async () => {
+      const testSchema = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          testKoQ: {
+            schemaItemType: "KindOfQuantity",
+            precision: 5,
+          },
+        },
       };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
-
-    it("should throw for presentationUnit with invalid format", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        ...baseJson,
-        presentationUnits: [{ unit: "valid", format: false }],
-      };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a presentationUnit with an invalid 'format' attribute. It should be of type 'string'.`);
-    });
-
-    it("should throw for persistenceUnit not an object", async () => testInvalidAttribute("persistenceUnit", "object", 0));
-
-    it("should throw for persistenceUnit with missing unit", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        ...baseJson,
-        persistenceUnit: {},
-      };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit that is missing the required attribute 'unit'.`);
-    });
-
-    it("should throw for persistenceUnit with invalid unit", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        ...baseJson,
-        persistenceUnit: { unit: 0 },
-      };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'unit' attribute. It should be of type 'string'.`);
-    });
-
-    it("should throw for persistenceUnit with invalid format", async () => {
-      expect(testKoQ).to.exist;
-      const json: any = {
-        ...baseJson,
-        persistenceUnit: { unit: "valid", format: false },
-      };
-      await expect(testKoQ.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity TestKindOfQuantity has a persistenceUnit with an invalid 'format' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(testSchema)).to.be.rejectedWith(ECObjectsError, `The KindOfQuantity testKoQ is missing the required attribute 'persistenceUnit'.`);
     });
   });
 
@@ -203,6 +153,347 @@ describe("KindOfQuantity", () => {
     it("should safely handle a SchemaItemVisitor without visitKindOfQuantity defined", async () => {
       expect(testKoq).to.exist;
       await testKoq.accept({});
+    });
+  });
+  describe("DelayedPromise Tests", () => {
+    it("should successfully deserialize valid JSON I", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const testPhenomenonItem = await ecSchema.getItem<Phenomenon>("Length");
+      const testUnitSystemItem = await ecSchema.getItem<UnitSystem>("Metric");
+      const testUnitItem = await ecSchema.getItem<Unit>("M");
+      assert.isDefined(testPhenomenonItem);
+      assert.isDefined(testUnitSystemItem);
+      assert.isDefined(testUnitItem);
+      assert.isTrue(testPhenomenonItem instanceof Phenomenon);
+      assert.isTrue(testUnitSystemItem instanceof UnitSystem);
+      assert.isTrue(testUnitItem instanceof Unit);
+      assert(testPhenomenonItem!.definition === "LENGTH(1)");
+      assert(testUnitItem!.phenomenon!.name, testPhenomenonItem!.name);
+      assert(testUnitItem!.unitSystem!.name, testUnitSystemItem!.name);
+    });
+  });
+  describe("FormatString Tests", () => {
+    it("Basic test with one unit override", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)[u:M|meter]");
+      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: 4, Units: [["M", "meter"]]});
+    });
+    it("Basic test with four unit overrides", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+                {
+                  name: "MILE",
+                  label: "mile(s)",
+                },
+                {
+                  name: "YRD",
+                  label: "yard(s)",
+                },
+                {
+                  name: "FT",
+                  label: "feet",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal[u:M|meter][MILE|miles][u:YRD|yards][u:FT|\']");
+      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: null, Units: [["M", "meter"], ["MILE", "miles"], ["YRD", "yards"], ["FT", "'"]]});
+    });
+    it("Fail if unit name doesnt exist", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)[u:METER|meter]")).to.be.rejectedWith(ECObjectsError, `Cannot find unit name METER.`);
+    });
+    it("Unit label override wasnt provided - use empty string", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const parsedStringWithBar = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)[u:M|]");
+      const parsedStringWithoutBar = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)[u:M]");
+      expect(parsedStringWithBar).to.eql({FormatName: "DefaultReal", Precision: 4, Units: [["M", ""]]});
+      expect(parsedStringWithoutBar).to.eql({FormatName: "DefaultReal", Precision: 4, Units: [["M", ""]]});
+    });
+    it("Number of unit overrides must match number of units in format.", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+                {
+                  name: "MILE",
+                  label: "mile(s)",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)[u:M|meter][u:MILE|miles][u:YRD|yards][u:FT|\']")).to.be.rejectedWith(ECObjectsError, `Incorrect number of unit overrides.`);
+    });
+    it("Format string doesn't match format name", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReals(4)[u:M|meter]")).to.be.rejectedWith(ECObjectsError, `Format names do not match.`);
+    });
+    it("Precision is not an integer", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4.8)[u:M|meter]")).to.be.rejectedWith(ECObjectsError, `Precision must be an integer.`);
     });
   });
 });

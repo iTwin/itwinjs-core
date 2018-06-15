@@ -215,7 +215,24 @@ describe("Full Schema Deserialization", () => {
           TestEnum: { schemaItemType: "Enumeration", backingTypeName: "int" },
           TestCategory: { schemaItemType: "PropertyCategory" },
           TestClass: { schemaItemType: "EntityClass" },
-          TestKoQ: { schemaItemType: "KindOfQuantity" },
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          TestKoQ: {
+            schemaItemType: "KindOfQuantity",
+            precision: 5,
+            persistenceUnit: "TestSchema.M",
+          },
         },
       };
       let testSchema = new Schema();
@@ -278,9 +295,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaItemType.EntityClass && c.baseClass)
+          if (c.schemaItemType === SchemaItemType.EntityClass && c.baseClass)
             descriptions.push((await c.baseClass).description!);
-          else if (c.type === SchemaItemType.Mixin && c.appliesTo)
+          else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
         }),
       };
@@ -328,9 +345,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaItemType.EntityClass && c.baseClass)
+          if (c.schemaItemType === SchemaItemType.EntityClass && c.baseClass)
             descriptions.push((await c.baseClass).description!);
-          else if (c.type === SchemaItemType.Mixin && c.appliesTo)
+          else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
         }),
       };
@@ -390,9 +407,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaItemType.RelationshipClass)
+          if (c.schemaItemType === SchemaItemType.RelationshipClass)
             descriptions.push((await c.source.abstractConstraint!).description!);
-          else if (c.type === SchemaItemType.EntityClass) {
+          else if (c.schemaItemType === SchemaItemType.EntityClass) {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
@@ -454,9 +471,9 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.type === SchemaItemType.RelationshipClass)
+          if (c.schemaItemType === SchemaItemType.RelationshipClass)
             descriptions.push((await c.source.abstractConstraint!).description!);
-          else if (c.type === SchemaItemType.EntityClass) {
+          else if (c.schemaItemType === SchemaItemType.EntityClass) {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }

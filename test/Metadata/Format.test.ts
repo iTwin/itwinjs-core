@@ -5,10 +5,9 @@
 import { assert, expect } from "chai";
 
 import Schema from "../../source/Metadata/Schema";
-import Format, { ShowSignOption } from "../../source/Metadata/Format";
+import Format, { ShowSignOption, Type } from "../../source/Metadata/Format";
 import { ECObjectsError } from "../../source/Exception";
 import * as sinon from "sinon";
-// import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 describe("Format tests", () => {
   let testFormat: Format;
@@ -57,8 +56,8 @@ describe("Format tests", () => {
         assert(testFormat.label, "myfi4");
         assert(testFormat.description === "");
         assert(testFormat.roundFactor === 0.0);
-        assert(testFormat.formattype, "fractional");
-        assert(testFormat.showSignOption, "onlyNegative");
+        assert(testFormat.type, Type.Fractional);
+        assert(testFormat.showSignOption, ShowSignOption.OnlyNegative);
         assert(testFormat.formatTraits!.get("keepSingleZero") === true);
         assert(testFormat.formatTraits!.get("trailZeroes") === true);
         assert(testFormat.precision === 4);
@@ -793,8 +792,7 @@ describe("Format tests", () => {
         },
       };
       await testFormat.fromJson(json);
-      assert(testFormat.composite!.unitNames!.length === 4);
-      assert(testFormat.composite!.unitLabels!.length === 4);
+      assert(testFormat.composite!.units!.length === 4);
       assert(testFormat.composite!.includeZero === false);
       assert(testFormat.composite!.spacer === "-");
     });
@@ -919,7 +917,7 @@ describe("Format tests", () => {
         },
       };
       await testFormat.fromJson(json);
-      assert(testFormat.composite!.unitNames!.length === 1);
+      assert(testFormat.composite!.units!.length === 1);
       assert(testFormat.composite!.includeZero === false);
       assert(testFormat.composite!.spacer === "-");
     });
@@ -1000,14 +998,13 @@ describe("Format tests", () => {
             },
             {
               name: "YARD",
-              label: "yrd(s)",
+              label: "miles(s)",
             },
           ],
         },
       };
       await testFormat.fromJson(json);
-      assert(testFormat.composite!.unitNames!.length === 2);
-      assert(testFormat.composite!.unitLabels!.length === 2);
+      assert(testFormat.composite!.units!.length === 2);
       assert(testFormat.composite!.includeZero === false);
       assert(testFormat.composite!.spacer === "-");
     });

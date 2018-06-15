@@ -10,12 +10,16 @@ import RelationshipClass from "./RelationshipClass";
 import SchemaItem from "./SchemaItem";
 import Enumeration from "./Enumeration";
 import KindOfQuantity from "./KindOfQuantity";
+import Unit from "./Unit";
 import PropertyCategory from "./PropertyCategory";
 import SchemaReadHelper from "../Deserialization/Helper";
 import { SchemaKey, ECClassModifier, PrimitiveType, ECVersion } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
 import { SchemaContext } from "../Context";
+import UnitSystem from "./UnitSystem";
+import Phenomenon from "./Phenomenon";
+import Format from "./Format";
 
 const SCHEMAURL3_1 = "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema";
 
@@ -162,6 +166,54 @@ export default class Schema implements CustomAttributeContainerProps {
 
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
     return this.createItem<KindOfQuantity>(KindOfQuantity, name);
+  }
+
+  /**
+   * Creates an Format with the provided name in this schema.
+   * @param name
+   */
+  protected async createFormat(name: string): Promise<Format> {
+    return this.createItem<Format>(Format, name);
+  }
+
+  protected createFormatSync(name: string): Format {
+    return this.createItem<Format>(Format, name);
+  }
+
+  /**
+   * Creates a UnitSystem with the provided name in this schema.
+   * @param name
+   */
+  protected async createUnitSystem(name: string): Promise<UnitSystem> {
+    return this.createItem<UnitSystem>(UnitSystem, name);
+  }
+
+  protected createUnitSystemSync(name: string): UnitSystem {
+    return this.createItem<UnitSystem>(UnitSystem, name);
+  }
+
+  /**
+   * Creates a Phenomenon with the provided name in this schema.
+   * @param name
+   */
+  protected async createPhenomenon(name: string): Promise<Phenomenon> {
+    return this.createItem<Phenomenon>(Phenomenon, name);
+  }
+
+  protected createPhenomenonSync(name: string): Phenomenon {
+    return this.createItem<Phenomenon>(Phenomenon, name);
+  }
+
+  /**
+   * Creates a Unit with the provided name in this schema.
+   * @param name
+   */
+  protected async createUnit(name: string): Promise<Unit> {
+    return this.createItem<Unit>(Unit, name);
+  }
+
+  protected createUnitSync(name: string): Unit {
+    return this.createItem<Unit>(Unit, name);
   }
 
   /**
@@ -397,6 +449,14 @@ export abstract class MutableSchema extends Schema {
   public abstract createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration;
   public abstract async createKindOfQuantity(name: string): Promise<KindOfQuantity>;
   public abstract createKindOfQuantitySync(name: string): KindOfQuantity;
+  public abstract async createUnit(name: string): Promise<Unit>;
+  public abstract createUnitSync(name: string): Unit;
+  public abstract async createPhenomenon(name: string): Promise<Phenomenon>;
+  public abstract createPhenomenonSync(name: string): Phenomenon;
+  public abstract async createFormat(name: string): Promise<Format>;
+  public abstract createFormatSync(name: string): Format;
+  public abstract async createUnitSystem(name: string): Promise<UnitSystem>;
+  public abstract createUnitSystemSync(name: string): UnitSystem;
   public abstract async createPropertyCategory(name: string): Promise<PropertyCategory>;
   public abstract createPropertyCategorySync(name: string): PropertyCategory;
   public abstract async addItem<T extends SchemaItem>(item: T): Promise<void>;

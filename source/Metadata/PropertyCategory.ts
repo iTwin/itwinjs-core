@@ -9,7 +9,7 @@ import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
 
 export default class PropertyCategory extends SchemaItem {
-  public readonly type!: SchemaItemType.PropertyCategory; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.PropertyCategory; // tslint:disable-line
   protected _priority: number = 0;
 
   get priority() { return this._priority; }

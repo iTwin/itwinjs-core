@@ -16,7 +16,7 @@ import { NavigationProperty } from "./Property";
  * A Typescript class representation of a Mixin.
  */
 export default class Mixin extends ECClass {
-  public readonly type!: SchemaItemType.Mixin; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.Mixin; // tslint:disable-line
   protected _appliesTo?: LazyLoadedEntityClass;
 
   get appliesTo(): LazyLoadedEntityClass | undefined {

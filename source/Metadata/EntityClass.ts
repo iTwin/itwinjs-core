@@ -16,7 +16,7 @@ import Schema from "./Schema";
  * A Typescript class representation of an ECEntityClass.
  */
 export default class EntityClass extends ECClass {
-  public readonly type!: SchemaItemType.EntityClass; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
   protected _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {

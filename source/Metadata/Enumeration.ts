@@ -30,7 +30,7 @@ export interface IntEnumeration extends Enumeration {
  * A Typescript class representation of an ECEnumeration.
  */
 export default class Enumeration extends SchemaItem {
-  public readonly type!: SchemaItemType.Enumeration; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.Enumeration; // tslint:disable-line
   protected _primitiveType?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];

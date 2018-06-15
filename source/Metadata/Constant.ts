@@ -11,7 +11,7 @@ import SchemaItem from "./SchemaItem";
  * A Constant is a specific type of Unit that represents a number.
  */
 export default class Constant extends SchemaItem {
-  public readonly type!: SchemaItemType.Constant; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.Constant; // tslint:disable-line
   protected _phenomenon?: string;
   protected _definition: string;
   protected _numerator = 1.0;

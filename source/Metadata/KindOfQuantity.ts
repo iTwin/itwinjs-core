@@ -7,26 +7,36 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItemType } from "../ECObjects";
 import { SchemaItemVisitor } from "../Interfaces";
 import Schema from "./Schema";
-
-export class FormatUnitSet {
-  public unit?: string;
-  public format?: string;
-}
+import Format from "../Metadata/Format";
+import Unit from "../Metadata/Unit";
+import { LazyLoadedUnit } from "../Interfaces";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /**
  * A Typescript class representation of a KindOfQuantity.
  */
 export default class KindOfQuantity extends SchemaItem {
-  public readonly type!: SchemaItemType.KindOfQuantity; // tslint:disable-line
+  public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line
   protected _precision: number = 1.0;
-  protected _presentationUnits: FormatUnitSet[];
-  protected _persistenceUnit?: FormatUnitSet;
+  protected _presentationUnits?: string[];
+  protected _persistenceUnit?: LazyLoadedUnit;
+  protected _formats?: any;
+  protected _units?: any;
 
+  public static readonly formatStringRgx: RegExp = RegExp(/([\w,:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/);
+  public static readonly unitRgx: RegExp = RegExp(/^\[(u\s*\:\s*)?([\w]+)\s*(\|)?\s*(.*)?\s*\]$/);
   get precision() { return this._precision; }
 
-  get presentationUnits() { return this._presentationUnits; }
+  get presentationUnits(): string[] | undefined { return this._presentationUnits; }
 
-  get persistenceUnit() { return this._persistenceUnit; }
+  get persistenceUnit(): LazyLoadedUnit | undefined { return this._persistenceUnit; }
+
+  set persistenceUnit(persistenceUnit: LazyLoadedUnit | undefined) { this._persistenceUnit = persistenceUnit; }
+
+  get formats() { return this._units; }
+
+  get units() { return this._formats; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name, SchemaItemType.KindOfQuantity);
@@ -34,48 +44,98 @@ export default class KindOfQuantity extends SchemaItem {
   }
 
   public get defaultPresentationUnit() {
-    return this.presentationUnits.length === 0 ? undefined : this.presentationUnits[0];
+    return this!.presentationUnits!.length === 0 ? undefined : this!.presentationUnits![0];
+  }
+
+  private processPresentationUnits(presentationUnitsJson: string | string[]) {
+    if (presentationUnitsJson instanceof Array) {
+      presentationUnitsJson.forEach((formatString: string) => {
+        if (!KindOfQuantity.formatStringRgx.test(formatString)) // throw if formatString is invalid
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `KindOfQuantity has an invalid 'presentationUnits' option.`);
+        this!._presentationUnits!.push(formatString); // push otherwise
+      });
+    } else {
+        presentationUnitsJson.split(";").forEach((formatString: string) => {
+          if (!KindOfQuantity.formatStringRgx.test(formatString)) // throw if formatString is invalid
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `KindOfQuantity has an invalid 'presentationUnits' option.`);
+          this!._presentationUnits!.push(formatString); // push otherwise
+        });
+    }
+  }
+
+  public static async parseFormatString(schema: Schema, formatName: string, formatString: string): Promise<object | BentleyStatus> {
+    // given name of format, figure out units
+    let precision: any = null;
+    let numUnits: number | undefined;
+    let unitArray: Array<[string, string | undefined]>;
+    let unit: any = null;
+    let index = 4;
+    if (!KindOfQuantity.formatStringRgx.test(formatString))
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format string has incorrect format.`);
+    const match = formatString.split(KindOfQuantity.formatStringRgx);
+    if (match[1] !== formatName) // handle format first to fail fast
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format names do not match.`);
+    const matchedFormat = await schema.getItem<Format>(match[1], true);
+    if (!matchedFormat)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    numUnits = matchedFormat!.composite!.units!.length; // get how many units this format has
+    if (match[2] !== undefined && match[3] !== undefined) { // if formatString contains optional override of the precision defined in Format
+      precision = +match[3].split(",")[0]; // override the precision value
+      if (!Number.isInteger(precision)) // precision value must be an integer
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Precision must be an integer.`);
+    } else {
+      precision = null; // precision is not present in the format string
+    }
+    matchedFormat.precision = precision;
+    if (formatString.match(/\[/g)!.length !== numUnits) // count number of left brackets in string- same as coutning number of units
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Incorrect number of unit overrides.`);
+    unitArray = new Array<[string, string | undefined]>();
+    while ( index < match.length - 1 ) { // index 0 and 21 are empty strings when there are 4 units
+      if ( match[index] !== undefined) {
+        unit = match[index].split(KindOfQuantity.unitRgx);
+        let foundUnitName: boolean = false;
+        let unitLabelToPush: string;
+        matchedFormat!.composite!.units!.forEach((value: [string, string | undefined]) => {
+          if ( unit[2].toLowerCase() === value[0].toLowerCase() ) { // we found a match for this unitName
+            if (unit[4] === undefined) // if unit override label is undefined, use empty string for label
+              unitLabelToPush = "";
+            else
+              unitLabelToPush = unit[4]; // override label isnt defined... push old label
+            unitArray.push([unit[2], unitLabelToPush]);
+            foundUnitName = true;
+          }
+        });
+        if ( foundUnitName === false )
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find unit name ${unit[2]}.`);
+      } else
+        break;
+      index += 4;
+    }
+    return {FormatName: formatName, Precision: precision, Units: unitArray};
   }
 
   public async fromJson(jsonObj: any) {
     await super.fromJson(jsonObj);
 
-    if (undefined !== jsonObj.precision) {
-      if (typeof(jsonObj.precision) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
-      this._precision = jsonObj.precision;
-    }
+    if (undefined === jsonObj.precision)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'precision'.`);
+    if (typeof(jsonObj.precision) !== "number")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
+    this._precision = jsonObj.precision;
 
-    const validateFUS = (presUnit: any, kind: string) => {
-      if (undefined === presUnit.unit)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} that is missing the required attribute 'unit'.`);
-      if (typeof(presUnit.unit) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} with an invalid 'unit' attribute. It should be of type 'string'.`);
-
-      if (undefined !== presUnit.format) {
-        if (typeof(presUnit.format) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has a ${kind} with an invalid 'format' attribute. It should be of type 'string'.`);
-      }
-    };
+    if (undefined === jsonObj.persistenceUnit)
+    throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} is missing the required attribute 'persistenceUnit'.`);
+    if (typeof(jsonObj.persistenceUnit) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'string'.`);
+    const persistenceUnit = await this.schema.getItem<Unit>(jsonObj.persistenceUnit, true);
+    if (!persistenceUnit)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== jsonObj.presentationUnits) {
-      if (!Array.isArray(jsonObj.presentationUnits))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be of type 'object[]'.`);
-
-      for (const presUnit of jsonObj.presentationUnits) {
-        if (typeof(presUnit) !== "object")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be of type 'object[]'.`);
-        validateFUS(presUnit, "presentationUnit");
-      }
-      this._presentationUnits = jsonObj.presentationUnits as FormatUnitSet[];
-    }
-
-    if (undefined !== jsonObj.persistenceUnit) {
-      if (typeof(jsonObj.persistenceUnit) !== "object")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'persistenceUnit' attribute. It should be of type 'object'.`);
-
-      validateFUS(jsonObj.persistenceUnit, "persistenceUnit");
-      this._persistenceUnit = jsonObj.persistenceUnit as FormatUnitSet;
+      if (!Array.isArray(jsonObj.presentationUnits) && typeof(jsonObj.presentationUnits) !== "string") // must be a string or an array
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'presentationUnits' attribute. It should be either type 'string[]' or type 'string'.`);
+      this.processPresentationUnits(jsonObj.presentationUnits);
     }
   }
 
