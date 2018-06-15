@@ -1524,7 +1524,16 @@ export class Viewport {
     }
 
     if (view.isSelectionSetDirty) {
-      target.setHiliteSet(view.iModel.hilited);
+      if ((0 === view.iModel.hilited.size && 0 === view.iModel.selectionSet.size) || (view.iModel.hilited.size > 0 && 0 === view.iModel.selectionSet.size)) {
+        target.setHiliteSet(view.iModel.hilited.elements); // only hilited has elements to send (or empty)
+      } else if (0 === view.iModel.hilited.size && view.iModel.selectionSet.size > 0) {
+        target.setHiliteSet(view.iModel.selectionSet.elements); // only selectionSet has elements to send
+      } else { // combine both sets (they both have elements to send)
+        const allHilites = new Set<string>();
+        view.iModel.hilited.elements.forEach((val) => allHilites.add(val));
+        view.iModel.selectionSet.elements.forEach((val) => allHilites.add(val));
+        target.setHiliteSet(allHilites);
+      }
       view.setSelectionSetDirty(false);
       isRedrawNeeded = true;
     }
