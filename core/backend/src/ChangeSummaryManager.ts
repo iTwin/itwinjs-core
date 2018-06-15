@@ -157,7 +157,7 @@ export class ChangeSummaryManager {
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
     const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(ctx, startChangeSetId, endChangeSetId);
     perfLogger.dispose();
-    Logger.logTrace(loggingCategory, "Downloaded changesets if not cached already", () => ({ iModel: ctx.iModelId, startChangeset: startChangeSetId, endChangeset: endChangeSetId }));
+    Logger.logTrace(loggingCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModel: ctx.iModelId, startChangeset: startChangeSetId, endChangeset: endChangeSetId, changeSets: changeSetInfos }));
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
@@ -179,10 +179,10 @@ export class ChangeSummaryManager {
       for (let i = endChangeSetIx; i >= 0; i--) {
         const currentChangeSetInfo: ChangeSet = changeSetInfos[i];
         const currentChangeSetId: string = currentChangeSetInfo.wsgId;
-        Logger.logInfo(loggingCategory, "Started Change Summary extraction for changeset...", () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
+        Logger.logInfo(loggingCategory, `Started Change Summary extraction for changeset #${i + 1}...`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
         if (ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId)) {
-          Logger.logInfo(loggingCategory, "Change Summary for changeset already exists. It is not extracted again.", () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
+          Logger.logInfo(loggingCategory, `Change Summary for changeset #${i + 1} already exists. It is not extracted again.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
           continue;
         }
 
@@ -191,7 +191,7 @@ export class ChangeSummaryManager {
           perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
           await iModel.reverseChanges(ctx.accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
           perfLogger.dispose();
-          Logger.logTrace(loggingCategory, "Moved iModel to changeset to extract summary from.", () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
+          Logger.logTrace(loggingCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
         }
 
         const changeSetFilePath: string = path.join(changeSetsFolder, currentChangeSetInfo.fileName!);
@@ -204,7 +204,7 @@ export class ChangeSummaryManager {
         if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
           throw new IModelError(stat.error.status, stat.error.message);
 
-        Logger.logTrace(loggingCategory, "Actual Change summary extraction done.", () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
+        Logger.logTrace(loggingCategory, `Actual Change summary extraction done for changeset #${i + 1}.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
         const changeSummaryId = new Id64(stat.result!);
@@ -224,9 +224,9 @@ export class ChangeSummaryManager {
 
         ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.pushDate, userEmail);
         perfLogger.dispose();
-        Logger.logTrace(loggingCategory, "Added extended infos to Change Summary.", () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
+        Logger.logTrace(loggingCategory, `Added extended infos to Change Summary for changeset #${i + 1}.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
-        Logger.logInfo(loggingCategory, "Finished Change Summary extraction for changeset...", () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
+        Logger.logInfo(loggingCategory, `Finished Change Summary extraction for changeset #${i + 1}.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
       }
 
       changesFile.saveChanges();
