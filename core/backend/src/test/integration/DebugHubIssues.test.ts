@@ -5,9 +5,11 @@ import * as path from "path";
 import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { IModelWriter } from "./IModelWriter";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
 
@@ -18,6 +20,28 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
+  });
+
+  it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
+    const projectName = "NodeJsTestProject";
+    const pathname = "d:\\temp\\IModelDumps\\Office Building4.bim";
+
+    // Push the iModel to the Hub
+    const projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const iModelId: string = await HubUtility.pushIModel(accessToken, projectId, pathname);
+
+    const iModelDb = await IModelDb.open(accessToken, projectId, iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    assert(!!iModelDb);
+
+    // Create and upload a dummy change set to the Hub
+    const modelId = IModelWriter.insertPhysicalModel(iModelDb, "DummyTestModel");
+    assert(!!modelId);
+    iModelDb.saveChanges("Dummy change set");
+    await iModelDb.pushChanges(accessToken!);
+
+    // Create a named version on the just uploaded change set
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(accessToken, iModelId, BriefcaseManager.hubClient);
+    await BriefcaseManager.hubClient.Versions().create(accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
