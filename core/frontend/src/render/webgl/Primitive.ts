@@ -111,7 +111,7 @@ export abstract class Primitive extends Graphic {
   public addHiliteCommands(commands: DrawCommands, batch: Batch): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
-    if (this.isEdge) {
+    if (!this.isEdge) {
       commands.push(DrawCommand.createForPrimitive(this, batch));
     }
   }

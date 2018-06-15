@@ -15,6 +15,7 @@ function compareTextureMappings(lhs?: TextureMapping, rhs?: TextureMapping): num
 
 /** This class is used to determine if things can be batched together for display. */
 export class DisplayParams {
+  public static readonly minTransparency: number = 15;  // Threshold below which we consider a color fully opaque
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
   public readonly material?: RenderMaterial; // meshes only
   public readonly gradient?: Gradient.Symb;
@@ -31,8 +32,8 @@ export class DisplayParams {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
-    this.lineColor = lineColor;
-    this.fillColor = fillColor;
+    this.lineColor = DisplayParams.adjustTransparencyInPlace(lineColor);
+    this.fillColor = DisplayParams.adjustTransparencyInPlace(fillColor);
     this.width = width;
     this.linePixels = linePixels;
     this.fillFlags = fillFlags;
@@ -44,10 +45,10 @@ export class DisplayParams {
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
   public static createForType(type: DisplayParams.Type, gf: GraphicParams): DisplayParams {
-    const lineColor = gf.lineColor.clone();
+    const lineColor = DisplayParams.adjustTransparencyInPlace(gf.lineColor.clone());
     switch (type) {
       case DisplayParams.Type.Mesh:
-        return new DisplayParams(type, lineColor, gf.fillColor.clone(), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, undefined);
+        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparencyInPlace(gf.fillColor.clone()), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, undefined);
       case DisplayParams.Type.Linear:
         return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
       default: // DisplayParams.Type.Text
@@ -149,6 +150,16 @@ export class DisplayParams {
     }
 
     return diff;
+  }
+
+  /**
+   * Given a ColorDef object, check its transparency and if it falls below the minimum, mark the color as fully opaque.
+   * @return The original reference to the color provided, which has possibly been modified.
+   */
+  public static adjustTransparencyInPlace(color: ColorDef): ColorDef {
+    if (color.colors.t < DisplayParams.minTransparency)
+      color.setTransparency(0);
+    return color;
   }
 }
 

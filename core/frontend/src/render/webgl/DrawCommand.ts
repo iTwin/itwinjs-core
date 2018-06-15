@@ -464,7 +464,6 @@ export class RenderCommands {
     });
   }
 
-  // #TODO: implement getOverrides(target) on Batch
   // #TODO: implement property range on Batch
   protected _doFrustumCulling: boolean = false; // ###TODO need to set culling range on each Batch.
   public addBatch(batch: Batch): void {
@@ -474,10 +473,10 @@ export class RenderCommands {
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
 
-    // ###TODO If all features are overridden to be invisible, draw no graphics in this batch
-    // const overrides = batch.getOverrides(this.target);
-    // if (overrides.allHidden)
-    //   return;
+    // If all features are overridden to be invisible, draw no graphics in this batch
+    const overrides = batch.getOverrides(this.target);
+    if (overrides.allHidden)
+      return;
 
     if (undefined !== this._frustumPlanes && this._doFrustumCulling) {
       let frustum = this._scratchFrustum; // ###TODO: Batch.range Frustum.fromRange(batch.range, this._scratchFrustum);
@@ -492,8 +491,8 @@ export class RenderCommands {
     const pushBatch = /*overrides.AnyOverridden()*/ true;
     if (pushBatch) {
       this._curBatch = batch;
-      // this._opaqueOverrides = overrides.anyOpaque;
-      // this._translucentOverrides = overrides.anyTranslucent;
+      this._opaqueOverrides = overrides.anyOpaque;
+      this._translucentOverrides = overrides.anyTranslucent;
     }
 
     (batch.graphic as Graphic).addCommands(this);
@@ -507,7 +506,7 @@ export class RenderCommands {
     this._curBatch = undefined;
 
     // If the batch contains hilited features, need to render them in the hilite pass
-    const anyHilited = false; // ###TODO overrides.anyHilited
+    const anyHilited = overrides.anyHilited;
     if (anyHilited) {
       const hiliteCommands = this.getCommands(RenderPass.Hilite);
       (batch.graphic as Graphic).addHiliteCommands(hiliteCommands, batch);

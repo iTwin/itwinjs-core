@@ -69,7 +69,7 @@ Element and Models in the iModel, a display [Frustum]($common), a DisplayStyle, 
 
 ## ViewManager
 
-The Viewport class is responsible for displaying Views, as defined by its ViewState. However, typically the purpose of showing a View is to allow users
+The Viewport class is responsible for displaying a View, as defined by its ViewState. However, typically the objective of showing a View is to allow users
 to modify the View itself, or to interact with its contents.
 
 To facilitate that, we need to connect the event system of the browser with Viewports via [IModelApp.viewManager]($frontend).
@@ -101,20 +101,22 @@ This includes the :
   * [Light]($common)s
   * Other view-specific parameters
 
+They are loaded in memory in the frontend with the [DisplayStyleState]($frontend) class.
+
 DisplayStyles can be named and shared among many ViewDefinitions.
 
 ## ModelSelectors
 
 ModelSelectors apply only to SpatialViews. They determine the set of [SpatialModel]($backend)s that are displayed. The Geometry for elements in SpatialModels are always
-stored in the iModel's Spatial Coordinate System.
+stored in the iModel's Spatial Coordinate System. They are loaded in memory in the frontend with the [ModelSelectorState]($frontend) class.
 
-Since each 2d Model has its own coordinate system, 2d Views always only show a single Model.
+Since each 2d Model has its own coordinate system, 2d Views always only show a single Model and therefore don't use ModelSelectors.
 
 ModelSelectors can be named and shared among many ViewDefinitions.
 
 ## CategorySelectors
 
-A [CategorySelectorState]($frontend) determines the set of [Category]($backend) that are displayed in a View.
+A [CategorySelectorState]($frontend) determines the set of [Category]($backend) that are displayed in a View. They are loaded in memory in the frontend with the [CategorySelectorState]($frontend) class.
 
 CategorySelectors can be named and shared among many ViewDefinitions.
 
