@@ -209,7 +209,7 @@
       "type": "node",
       "request": "launch",
       "name": "Debug bank-demo",
-      "program": "${workspaceFolder}/bank-demo/lib/cli.js",
+      "program": "${workspaceFolder}/bank-demo/lib/sideLoadChangeSets.js",
       "cwd": "${workspaceFolder}/bank-demo/lib",
       "args": []
     }

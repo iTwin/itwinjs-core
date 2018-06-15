@@ -2,10 +2,11 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, ChangeSet, IModelHubError } from "@bentley/imodeljs-clients";
-import { BriefcaseManager, IModelAccessContext } from "@bentley/imodeljs-backend";
-import { IModelHubStatus } from "@bentley/bentleyjs-core";
+import { BriefcaseManager, IModelAccessContext, IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHubStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as fs from "fs";
 import * as path from "path";
+import { NonBentleyProject } from "./NonBentleyProject";
 
 async function pushChangeSet(iModelId: string, accessToken: AccessToken, changeSet: ChangeSet, csfilename: string): Promise<void> {
 
@@ -42,10 +43,24 @@ async function pushCS(iModelId: string, accessToken: AccessToken, cs: any) {
   return pushChangeSet(iModelId, accessToken, changeSet, csfilepath);
 }
 
-export async function sideLoadChangeSets(context: IModelAccessContext, accessToken: AccessToken) {
+async function sideLoadChangeSets(context: IModelAccessContext, accessToken: AccessToken) {
   BriefcaseManager.setContext(context);
   const timeline = require(getAssetFilePath("changeSets.json"));
   for (const cs of timeline) {
     await pushCS(context.iModelId, accessToken, cs);
   }
 }
+
+Logger.initializeToConsole();
+Logger.setLevel("imodeljs-clients", LogLevel.Trace);
+
+IModelHost.startup();
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+
+// tslint:disable-next-line:no-var-requires
+const iModelInfo = require("../assets/imodel.json");
+const theAccessToken = NonBentleyProject.getAccessToken();
+NonBentleyProject.getIModelAccessContext(iModelInfo.wsgId, "", theAccessToken)
+  .then((context: IModelAccessContext) => sideLoadChangeSets(context, theAccessToken))
+  .then(() => process.exit(0));
