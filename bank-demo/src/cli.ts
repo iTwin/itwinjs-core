@@ -4,12 +4,13 @@
 // tslint:disable-next-line:no-var-keyword
 // tslint:disable-next-line:no-var-requires
 // const prompt = require("prompt");
-import { BriefcaseManager, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
+import { BriefcaseManager, IModelHost, IModelDb, OpenParams, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, IModelBankWsgClient } from "@bentley/imodeljs-clients";
 import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BentleyCloudProject } from "./BentleyCloudProject";
 import { NopProject } from "./NopProject";
 import { sideLoadChangeSets } from "./sideLoadChangeSets";
+import * as path from "path";
 
 const useIModelHub = false;
 
@@ -20,13 +21,15 @@ let accessToken: AccessToken; // This is an opaque piece of data that the iModel
 Logger.initializeToConsole();
 Logger.setLevel("imodeljs-clients", LogLevel.Trace);
 
-IModelHost.startup();
+const hostConfig = new IModelHostConfiguration();
+hostConfig.briefcaseCacheDir = path.join(__dirname, "briefcaseCache", useIModelHub ? "hub" : "bank");
+IModelHost.startup(hostConfig);
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 // Simulate user login in the app's frontend:
 let userLoggedIn: boolean;
-async function simulateUserLogin() {
+async function frontend_userLogin() {
   if (userLoggedIn)
     return;
 
@@ -41,11 +44,13 @@ async function simulateUserLogin() {
   userLoggedIn = true;
 }
 
-async function configureIModelServer(): Promise<void> {
+async function frontend_deployServerForIModel(): Promise<void> {
   if (useIModelHub)
-    return;
-  // iModelBank
+    return; // iModelHub is always there, and it handles any/all iModels
+
+  // iModelBank - make sure that a bank for this iModel is up and running
   const bankUrl = await NopProject.startImodelServer(iModelId);
+  // bankUrl will probably be in IModelConnection, which will transmit
   IModelHost.configuration!.iModelServerHandler = new IModelBankWsgClient(bankUrl, accessToken);
 }
 
@@ -74,14 +79,9 @@ async function downloadCommand() {
   console.log(`Downloaded to ${imodel.briefcase.pathname}`);
 }
 
-async function processCommand(cmd: string) {
-  if (cmd === "log") {
-    logCommand();
-  } else {
-    if (cmd === "download") {
-      downloadCommand();
-    }
-  }
+async function backend_doThings() {
+  await logCommand();
+  await downloadCommand();
 }
 
 if (process.argv.length !== 3) {
@@ -98,14 +98,13 @@ prompt.get([">"], async (err: Error, result: any): Promise<void> => {
   if (err) {
     console.log(err.message);
   } else {
-    await processCommand(result);
+    await backend_doThings(result);
   }
 });
 */
 
-simulateUserLogin()
-  .then(() => configureIModelServer())
+frontend_userLogin()
+  .then(() => frontend_deployServerForIModel())
   .then(() => sideLoadChangeSets(iModelId, accessToken))
-  .then(() => processCommand("log"))
-  .then(() => processCommand("download"))
+  .then(() => backend_doThings())
   .then(() => console.log("end of demo"));
