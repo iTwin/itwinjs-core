@@ -130,7 +130,6 @@ export class ViewManager {
     this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
-    if (1 === this._viewports.length) requestAnimationFrame(() => { this.renderLoop(); });
     this.onViewOpen.raiseEvent(newVp);
   }
 
@@ -181,8 +180,8 @@ export class ViewManager {
   public invalidateScenes(): void { this._invalidateScenes = true; }
   public onNewTilesReady(): void { this.invalidateScenes(); }
 
-  // Invoked by requestAnimationFrame() whenever we have at least one viewport
-  private renderLoop(): void {
+  // Invoked by ToolAdmin event loop.
+  public renderLoop(): void {
     if (0 === this._viewports.length) return;
 
     if (this._skipSceneCreation)
@@ -204,8 +203,6 @@ export class ViewManager {
     // requests.requestMissing(BeDuration.fromSeconds(tileGenerationSeconds));
 
     this.processIdle();
-
-    requestAnimationFrame(() => { this.renderLoop(); });
   }
 
   private processIdle(): void {
