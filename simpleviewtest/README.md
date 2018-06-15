@@ -28,6 +28,13 @@ The application contained within this directory provides a test environment for 
   npm start
   ```
 
+## Using SimpleViewTest
+
+* Upon starting SimpleViewTest, an initial iModel will automatically be loaded from the Hub (unless a local one was specified via an environment variable). From here, there are many tools in the top banner of the application that may be used.
+* Users may open a new iModel by clicking the briefcase icon and navigating to a local file location.
+* Users can switch between stored views via the view dropdown menu.
+* The remaining tools contain ways to rotate the model, select parts of the view, undo and redo actions, and toggle on/off the camera as well as other view state settings.
+
 ## Dependencies
 
 * Installed dependencies for SimpleViewTest may be found in the generated node_modules directory. Since SimpleViewTest is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
@@ -40,6 +47,6 @@ The application contained within this directory provides a test environment for 
 ## Environment Variables
 
 * SVT_STANDALONE_FILENAME
-  * Local path to an imodel, which will be the one opened by default at start-up.
+  * Local path to an iModel, which will be the one opened by default at start-up.
 * SVT_STANDALONE_VIEWNAME
-  * The view to open by default within an imodel. This may only be used in conjunction with SVT_STANDALONE_FILENAME.
+  * The view to open by default within an iModel. This may only be used in conjunction with SVT_STANDALONE_FILENAME.
