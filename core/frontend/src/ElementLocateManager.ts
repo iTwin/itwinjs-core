@@ -102,26 +102,57 @@ export class ElementPicker {
   }
 
   public getNextHit(): HitDetail | undefined {
-    const list = this.hitList;
-    return list ? list.getNextHit() : undefined;
+    return this.hitList ? this.hitList.getNextHit() : undefined;
   }
 
   /** return a particular hit from the list of hits from the last time pickElements was called. */
   public getHit(i: number): HitDetail | undefined {
-    const list = this.hitList;
-    return list ? list.getHit(i) : undefined;
+    return this.hitList ? this.hitList.getHit(i) : undefined;
   }
 
   public resetCurrentHit(): void {
-    const list = this.hitList;
-    if (list) list.resetCurrentHit();
+    if (this.hitList) this.hitList.resetCurrentHit();
+  }
+
+  private getPixelPriority(pixel: Pixel.Data) {
+    switch (pixel.type) {
+      case Pixel.GeometryType.Surface:
+        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarSurface : HitPriority.NonPlanarSurface;
+      case Pixel.GeometryType.Linear:
+        return HitPriority.WireEdge;
+      case Pixel.GeometryType.Edge:
+        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarEdge : HitPriority.NonPlanarEdge;
+      case Pixel.GeometryType.Silhouette:
+        return HitPriority.SilhouetteEdge;
+      default:
+        return HitPriority.Unknown;
+    }
+  }
+
+  private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, point1: Point2d, point2: Point2d, center: Point2d) {
+    const priority1 = this.getPixelPriority(pixel1);
+    const priority2 = this.getPixelPriority(pixel2);
+
+    if (priority1 < priority2) return -1;
+    if (priority1 > priority2) return 1;
+
+    const distXY1 = center.distance(point1);
+    const distXY2 = center.distance(point2);
+
+    if (distXY1 < distXY2) return -1;
+    if (distXY1 > distXY2) return 1;
+
+    if (pixel1.distanceFraction > pixel2.distanceFraction) return -1;
+    if (pixel1.distanceFraction < pixel2.distanceFraction) return 1;
+
+    return 0;
   }
 
   /** Generate a list of elements that are close to a given point. */
   public doPick(vp: Viewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
-    if (this.hitList && this.hitList.size() > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
+    if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
-      return this.hitList.size();
+      return this.hitList.length;
     }
 
     this.empty(); // empty the hit list
@@ -133,44 +164,44 @@ export class ElementPicker {
     const pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
     const pixels = vp.readPixels(rect, Pixel.Selector.All);
-
     if (undefined === pixels)
       return 0;
 
+    const elmHits = new Map<string, Point2d>();
     const testPoint = Point2d.createZero();
     for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
       for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
         const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId)
+        if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid())
           continue; // no geometry at this location...
         const distXY = testPointView.distance(testPoint);
         if (distXY > pixelRadius)
           continue; // ignore corners. it's a locate circle not square...
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y);
-        if (undefined === hitPointWorld)
-          continue;
-        let priority = HitPriority.Unknown;
-        switch (pixel.type) {
-          case Pixel.GeometryType.Surface:
-            priority = Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarSurface : HitPriority.NonPlanarSurface;
-            break;
-          case Pixel.GeometryType.Linear:
-            priority = HitPriority.WireEdge;
-            break;
-          case Pixel.GeometryType.Edge:
-            priority = Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarEdge : HitPriority.NonPlanarEdge;
-            break;
-          case Pixel.GeometryType.Silhouette:
-            priority = HitPriority.SilhouetteEdge;
-            break;
+        const oldPoint = elmHits.get(pixel.elementId.toString());
+        if (undefined !== oldPoint) {
+          if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), testPoint, oldPoint, testPointView) < 0)
+            oldPoint.setFrom(testPoint); // new hit is better, update location...
+        } else {
+          elmHits.set(pixel.elementId.toString(), testPoint.clone());
         }
-        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), priority, distXY, pixel.distanceFraction);
-        this.hitList!.addHit(hit);
-        if (this.hitList!.hits.length > options.maxHits)
-          this.hitList!.hits.length = options.maxHits; // truncate array...
       }
     }
-    return this.hitList!.size();
+    if (0 === elmHits.size)
+      return 0;
+
+    for (const elmPoint of elmHits.values()) {
+      const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
+      if (undefined === pixel || undefined === pixel.elementId)
+        continue;
+      const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
+      if (undefined === hitPointWorld)
+        continue;
+      const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction);
+      this.hitList!.addHit(hit);
+      if (this.hitList!.hits.length > options.maxHits)
+        this.hitList!.hits.length = options.maxHits; // truncate array...
+    }
+    return this.hitList!.length;
   }
 
   /**
@@ -185,7 +216,7 @@ export class ElementPicker {
     if (!this.doPick(vp, pickPointWorld, pickRadiusView, options) || undefined === this.hitList)
       return TestHitStatus.NotOn;
 
-    for (let i = 0; i < this.hitList.size(); i++) {
+    for (let i = 0; i < this.hitList.length; i++) {
       const thisHit = this.hitList.getHit(i);
       if (!hit.isSameHit(thisHit))
         continue;
@@ -218,8 +249,7 @@ export class ElementLocateManager {
   public setHitList(list?: HitList) { this.hitList = list; }
   public setCurrHit(hit?: HitDetail): void { this.currHit = hit; }
   public getNextHit(): HitDetail | undefined {
-    const list = this.hitList;
-    return list ? list.getNextHit() : undefined;
+    return this.hitList ? this.hitList.getNextHit() : undefined;
   }
 
   /** return the current path from either the snapping logic or the pre-locating systems. */
@@ -282,8 +312,8 @@ export class ElementLocateManager {
   private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: Viewport | undefined, filterHits: boolean): HitDetail | undefined {
     if (!vp)
       return;
-    // the "newSearch" flag indicates whether the caller wants us to conduct a new search at the testPoint, or just continue
-    // returning paths from the previous search.
+
+    // the "newSearch" flag indicates whether the caller wants us to conduct a new search at the testPoint, or just continue returning paths from the previous search.
     if (newSearch) {
       const hit = this.getPreLocatedHit();
 
@@ -319,7 +349,7 @@ export class ElementLocateManager {
     const hit = this._doLocate(response, newSearch, testPoint, view, filterHits);
     this.setCurrHit(hit);
 
-    // if we found a hit, remove it from the list of remaining hit near the current search point.
+    // if we found a hit, remove it from the list of remaining hits near the current search point.
     if (hit && this.hitList)
       this.hitList.removeHitsFrom(hit.sourceId);
     return hit;

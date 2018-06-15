@@ -610,7 +610,7 @@ export class AccuSnap {
       const theHit = this.retestList.getHit(0);
       if (theHit && theHit.sourceId) {
         this.aSnapHits.removeHitsFrom(theHit.sourceId);
-        this.aSnapHits.insert(0, theHit);
+        this.aSnapHits.insertHit(0, theHit);
       }
       this.retestList.empty();
     }
@@ -672,7 +672,7 @@ export class AccuSnap {
 
     if (this.doSnapping()) {
       // if we don't have any more candidate hits, get a new list at the current location
-      if (!this.aSnapHits || (0 === this.aSnapHits.size())) {
+      if (!this.aSnapHits || (0 === this.aSnapHits.length)) {
         hit = this.getNewSnapDetail(out, ev);
       } else {
         // drop the current hit from the list and then retest the list (without the dropped hit) to find the new "best" snap

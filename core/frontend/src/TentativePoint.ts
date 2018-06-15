@@ -226,7 +226,7 @@ export class TentativePoint {
 
     // Now search for the NEXT intersection target
     // currHit already points to the item in the list that follows nextHit
-    for (let iSnapDetail = this.snapList.currHit; iSnapDetail < this.snapList.size(); ++iSnapDetail) {
+    for (let iSnapDetail = this.snapList.currHit; iSnapDetail < this.snapList.length; ++iSnapDetail) {
       const snap = this.snapList.hits[iSnapDetail] as SnapDetail;
       if (SnapMode.Intersection === snap.snapMode && HitDetailType.Intersection !== snap.getHitType())
         return snap;
@@ -238,7 +238,7 @@ export class TentativePoint {
   private optimizeHitList(): void {
     // Remove snaps that refer to same point on same element
     // (This makes it less frustrating to the user when stepping through atl. points!)
-    for (let iSnapDetail = 0; iSnapDetail < this.snapList.size(); ++iSnapDetail) {
+    for (let iSnapDetail = 0; iSnapDetail < this.snapList.length; ++iSnapDetail) {
       const snap = this.snapList.getHit(iSnapDetail)! as SnapDetail;
       const sourceId = snap.sourceId;
 
@@ -246,7 +246,7 @@ export class TentativePoint {
         continue;
 
       let foundAny = false;
-      for (let jSnapDetail = iSnapDetail + 1; jSnapDetail < this.snapList.size(); ++jSnapDetail) {
+      for (let jSnapDetail = iSnapDetail + 1; jSnapDetail < this.snapList.length; ++jSnapDetail) {
         const otherSnap = this.snapList.getHit(jSnapDetail)! as SnapDetail;
 
         if (otherSnap.adjustedPoint.isExactEqual(snap.adjustedPoint)) {
@@ -271,7 +271,7 @@ export class TentativePoint {
       const snap = await IModelApp.accuSnap.snapToHit(thisHit, this.getTPSnapMode(), IModelApp.locateManager.getKeypointDivisor(), thisHit.viewport.pixelsFromInches(this.hotDistanceInches));
       if (snap) {
         // Original hit list is already sorted...preserve order...
-        this.snapList.insert(-1, snap);
+        this.snapList.insertHit(-1, snap);
 
         // Annotate the SnapDetail with the snap mode that was used to generate it
         if (SnapMode.Intersection === snapMode)
