@@ -4,39 +4,55 @@
 
 import * as commander from "commander";
 // import * as chalk from "chalk";
-import { BriefcaseManager, IModelHost, IModelHostConfiguration, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
-import { AccessToken, IModelQuery, IModel, ChangeSet, IModelBankBaseHandler } from "@bentley/imodeljs-clients";
-import { IModelHubIntegration } from "./IModelHubIntegration";
+import { BriefcaseManager, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
+import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, IModelBankWsgClient } from "@bentley/imodeljs-clients";
 import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyCloudProject } from "./BentleyCloudProject";
+import { NopProject } from "./NopProject";
 
-const projectName = "iModelJsTest";
-let initialized: boolean;
-let accessToken: AccessToken;
-let projectId: string;
 const useIModelHub = false;
+
+let accessToken: AccessToken; // This is an opaque piece of data that the iModel server passes back to the validator, when it needs to check permissions
+let projectId: string;        // This is used only as a namespace to help the iModel server identify the iModel.
 
 Logger.initializeToConsole();
 Logger.setLevel("imodeljs-clients", LogLevel.Trace);
 
-async function initialize() {
-  if (initialized)
+IModelHost.startup();
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+
+// Simulate user login in the app's frontend:
+let userLoggedIn: boolean;
+async function simulateUserLogin() {
+  if (userLoggedIn)
     return;
+
   if (useIModelHub) {
-    await IModelHubIntegration.startup(projectName);
-    projectId = IModelHubIntegration.testProjectId;
-    accessToken = IModelHubIntegration.accessToken;
+    accessToken = await BentleyCloudProject.getAccessToken(); // Not shown: user supplies credentials and picks an environment
+    projectId = await BentleyCloudProject.queryProjectIdByName(accessToken, "iModelJsTest"); // simulate using picking a Connect project
   } else {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-    const config = new IModelHostConfiguration();
-    config.iModelServerHandler = new IModelBankBaseHandler("https://localhost:3001");
-    IModelHost.startup(config);
-    projectId = "dummy";
-    accessToken = { toTokenString: () => "" } as AccessToken;
+    // iModelBank
+    accessToken = NopProject.getAccessToken();
+    projectId = ""; // projectId is meaningless to iModelBank.
   }
-  initialized = true;
+  userLoggedIn = true;
 }
 
-function displayIModelInfo(iModel: IModel) {
+async function initialize() {
+  await simulateUserLogin();
+}
+
+async function configureIModelServer(iModelId: string): Promise<void> {
+  await initialize();
+  if (useIModelHub)
+    return;
+  // iModelBank
+  const bankUrl = await NopProject.startImodelServer(iModelId);
+  IModelHost.configuration!.iModelServerHandler = new IModelBankWsgClient(bankUrl, accessToken);
+}
+
+function displayIModelInfo(iModel: HubIModel) {
   // tslint:disable-next-line:no-console
   console.log(`\nname: ${iModel.name}\nID: ${iModel.wsgId}`);
   // *** TODO: Log more info
@@ -47,27 +63,22 @@ function displayChangeSet(changeSet: ChangeSet) {
   console.log(`\nID: ${changeSet.wsgId} parentId: ${changeSet.parentId} pushDate: ${changeSet.pushDate} containsSchemaChanges: ${changeSet.containsSchemaChanges} briefcaseId: ${changeSet.briefcaseId} description: ${changeSet.description}`);
 }
 
-async function queryIModelByName(iModelName: string | undefined) {
-  await initialize();
-  const q = iModelName ? new IModelQuery().byName(iModelName) : undefined;
-  const iModels = await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, q);
-  for (const iModel of iModels) {
-    displayIModelInfo(iModel);
-  }
-}
-
-async function logCommand(imodelId: string) {
-  await initialize();
-  const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, imodelId);
+async function logCommand(iModelId: string) {
+  await configureIModelServer(iModelId);
+  const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
+  displayIModelInfo(iModel);
+  // tslint:disable-next-line:no-console
+  console.log("-----------------------------------\n");
+  const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId);
   for (const changeSet of changeSets) {
     displayChangeSet(changeSet);
   }
 }
 
-async function downloadCommand(imodelId: string) {
-  await initialize();
+async function downloadCommand(iModelId: string) {
+  await configureIModelServer(iModelId);
   // TBD: const version = new IModelVersion()
-  const imodel = await IModelDb.open(accessToken, projectId, imodelId, new OpenParams(OpenMode.Readonly));
+  const imodel = await IModelDb.open(accessToken, projectId, iModelId, new OpenParams(OpenMode.Readonly));
   // tslint:disable-next-line:no-console
   console.log(`Downloaded to ${imodel.briefcase.pathname}`);
 }
@@ -76,7 +87,7 @@ const program = new commander.Command("bank-demo");
 
 program.description("bank-demo");
 program.version("0.0.1");
-program.command("findimodel [imodelname]").alias("fi").description("list all iModels or find an iModel by its name").action(async (imodelname) => await queryIModelByName(imodelname));
+program.once("", async () => { await simulateUserLogin(); });
 program.command("log <imodelid>").description("list changeSets for an iModel").action(async (imodelid) => await logCommand(imodelid));
 program.command("download <imodelid>").alias("dl").description("download an iModel").action(async (imodelid) => await downloadCommand(imodelid));
 program.parse(process.argv);

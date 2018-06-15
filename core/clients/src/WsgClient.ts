@@ -478,6 +478,7 @@ export interface IModelServerHandler {
   /** Gets the file upload/download handler. */
   getFileHandler(): FileHandler | undefined;
 
+  /** Get the token that grants this user access to this (e.g., iModelHub) service. */
   getAccessToken(authorizationToken: AuthorizationToken): Promise<AccessToken>;
 
   /**

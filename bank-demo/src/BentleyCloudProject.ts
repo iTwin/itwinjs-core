@@ -1,5 +1,5 @@
-import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv, Project } from "@bentley/imodeljs-clients";
-import { BriefcaseManager, IModelHost } from "@bentley/imodeljs-backend/lib/backend";
+import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv } from "@bentley/imodeljs-clients";
+import { BriefcaseManager } from "@bentley/imodeljs-backend/lib/backend";
 
 /** Credentials for test users */
 export interface UserCredentials {
@@ -8,7 +8,7 @@ export interface UserCredentials {
 }
 
 /** Test users with various permissions */
-export class TestUsers {
+export class BentleyImsTestUsers {
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
   public static readonly regular: UserCredentials = {
     email: "Regular.IModelJsTestUser@mailinator.com",
@@ -40,24 +40,21 @@ export class TestUsers {
   };
 }
 
-async function queryProjectByName(accessToken: AccessToken, projectName: string): Promise<Project | undefined> {
-  const project: Project = await BriefcaseManager.connectClient.getProject(accessToken, {
-    $select: "*",
-    $filter: "Name+eq+'" + projectName + "'",
-  });
-  return project;
-}
+export class BentleyCloudProject {
 
-export class IModelHubIntegration {
-  public static accessToken: AccessToken;
-  public static testProjectId: string;
-  public static deploymentEnv: DeploymentEnv = "QA";
-  public static userCredentials = TestUsers.regular;
-  public static async startup(projectName: string) {
-    IModelHost.startup();
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(this.deploymentEnv)).getToken(this.userCredentials.email, this.userCredentials.password);
-    this.accessToken = await (new ImsDelegationSecureTokenClient(this.deploymentEnv)).getToken(authToken!);
-    const proj = await queryProjectByName(this.accessToken, projectName);
-    this.testProjectId = proj!.wsgId;
+  public static async getAccessToken() {
+    const deploymentEnv: DeploymentEnv = "QA";
+    const userCredentials = BentleyImsTestUsers.regular;    // simulate user supplying credentials
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(deploymentEnv)).getToken(userCredentials.email, userCredentials.password);
+    return await (new ImsDelegationSecureTokenClient(deploymentEnv)).getToken(authToken!);
+  }
+
+  public static startImodelServer(_imodelid: string): string {
+    return "";
+  }
+
+  public static async queryProjectIdByName(accessToken: AccessToken, projectName: string): Promise<string> {
+    const proj = await BriefcaseManager.connectClient.getProject(accessToken, { $select: "*", $filter: "Name+eq+'" + projectName + "'" });
+    return proj!.wsgId;
   }
 }

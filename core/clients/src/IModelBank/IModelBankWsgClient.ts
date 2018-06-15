@@ -25,18 +25,20 @@ class DefaultIModelBankRequestOptionsProvider extends DefaultWsgRequestOptionsPr
 /**
  * This class acts as the WsgClient for other iModelBank Handlers.
  */
-export class IModelBankBaseHandler extends WsgClient implements IModelServerHandler {
+export class IModelBankWsgClient extends WsgClient implements IModelServerHandler {
   private _url: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelBankRequestOptionsProvider;
   private _agent: https.Agent;
   private _fileHandler = new UrlFileHandler();
+  private _accessToken: AccessToken;
 
   /**
-   * Creates an instance of IModelBankBaseHandler.
+   * Creates an instance of IModelBankWsgClient.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(url: string, keepAliveDuration = 30000) {
-    super("PROD", "v0.1", "");
+  public constructor(url: string, accessToken: AccessToken, keepAliveDuration = 30000) {
+    super("PROD", "v2.5", "");    // v2.5 is the version of the REST API syntax.
+    this._accessToken = accessToken;
     this._url = url;
     this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
@@ -61,19 +63,14 @@ export class IModelBankBaseHandler extends WsgClient implements IModelServerHand
 
   protected getDefaultUrl(): string { return this._url; }
 
-  public getUrl(): Promise<string> { return Promise.resolve(this.getDefaultUrl()); }
-
   /**
-   * Gets the agenet used for imodelhub connection pooling.     *** What is this? ***
+   * Gets the agent used for imodelhub connection pooling.     *** What is this? ***
    */
   public getAgent(): https.Agent {
     return this._agent;
   }
 
-  public async getAccessToken(_authorizationToken: any): Promise<AccessToken> {
-    assert(false, "Bentley cloud-specific method should be factored out");
-    return AccessToken.fromJson({})!;
-  }
+  public async getAccessToken(_authorizationToken: any): Promise<AccessToken> { return this._accessToken; }
 
   /**
    * Used by clients to send delete requests without body.
