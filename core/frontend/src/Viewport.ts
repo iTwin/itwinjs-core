@@ -1166,8 +1166,9 @@ export class Viewport {
   }
 
   public computeViewRange(): Range3d {
-    this.setupFromView();
+    this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const viewRange = this.view.computeFitRange();
+
     // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
     // const geomRange = this.geometry.range;
     // const geomMatrix = this.geometry.modelMatrix;
@@ -1191,6 +1192,7 @@ export class Viewport {
     // this.rotMatrix.multiplyArray(rangeBox);
 
     // const viewRange = Range3.fromArray(rangeBox);
+
     return viewRange;
   }
 

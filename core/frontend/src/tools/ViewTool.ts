@@ -667,7 +667,7 @@ export abstract class ViewManip extends ViewTool {
     if (this._useViewAlignedVolume)
       viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     else
-      viewport.view.lookAtVolume(range);
+      viewport.view.lookAtVolume(range, aspect, marginPercent);
 
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
