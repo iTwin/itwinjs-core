@@ -22,7 +22,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
     context.addLocater(locater);
   });
 
-  it.only("loadSchema from file succeeds", async () => {
+  it("loadSchema from file succeeds", async () => {
     // Arrange
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
 

@@ -164,7 +164,7 @@ export default class SchemaReadHelper {
     if (!Array.isArray(referencesJson))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
 
-    const promises = referencesJson.map(async (ref) => {
+    for (const ref of referencesJson) {
       if (typeof(ref) !== "object")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
 
@@ -186,9 +186,7 @@ export default class SchemaReadHelper {
         throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
       await (this._schema as MutableSchema).addReference(refSchema);
-    });
-
-    await Promise.all(promises);
+    }
   }
 
   /**
