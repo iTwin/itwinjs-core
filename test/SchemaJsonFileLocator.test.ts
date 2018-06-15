@@ -27,7 +27,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
 
     // Act
-    const schema = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
+    const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
     // Assert
     assert.isDefined(schema);
@@ -37,13 +37,13 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("loadSchema called twice, same Schema object", async () => {
     // Arrange
-    const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
+    const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
 
     // Act
-    const locater1 = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
-    const locater2 = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
-    const context1 = await context.getSchema(schemaKey, SchemaMatchType.Latest);
-    const context2 = await context.getSchema(schemaKey, SchemaMatchType.Latest);
+    const locater1 = await locater.getSchema(schemaKey, SchemaMatchType.Exact);
+    const locater2 = await locater.getSchema(schemaKey, SchemaMatchType.Exact);
+    const context1 = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+    const context2 = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
     // Assert
     // locater should not cache, but context should cache
@@ -58,7 +58,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
     // Act / Assert
     try {
-      await locater.getSchema(schemaKey, SchemaMatchType.Latest);
+      await locater.getSchema(schemaKey, SchemaMatchType.Exact);
     } catch (e) {
       const error = e as ECObjectsError;
       assert.equal(error.errorNumber, ECObjectsStatus.UnableToLocateSchema);
@@ -74,7 +74,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
     // Act / Assert
     try {
-      await locater.getSchema(schemaKey, SchemaMatchType.Latest);
+      await locater.getSchema(schemaKey, SchemaMatchType.Exact);
     } catch (e) {
       const error = e as ECObjectsError;
       assert.equal(error.errorNumber, ECObjectsStatus.InvalidECJson);
@@ -90,7 +90,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
     // Act / Assert
     try {
-      await locater.getSchema(schemaKey, SchemaMatchType.Latest);
+      await locater.getSchema(schemaKey, SchemaMatchType.Exact);
     } catch (e) {
       const error = e as ECObjectsError;
       assert.equal(error.errorNumber, ECObjectsStatus.InvalidECJson);

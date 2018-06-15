@@ -408,11 +408,8 @@ export default class Schema implements CustomAttributeContainerProps {
   public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
     let schema: Schema = new Schema();
 
-    if (context) {
-      const reader = new SchemaReadHelper(context);
-      schema = await reader.readSchema(schema, jsonObj);
-    } else
-      schema = await SchemaReadHelper.to<Schema>(schema, jsonObj);
+    const reader = new SchemaReadHelper(context);
+    schema = await reader.readSchema(schema, jsonObj);
 
     return schema;
   }
@@ -420,11 +417,8 @@ export default class Schema implements CustomAttributeContainerProps {
   public static fromJsonSync(jsonObj: object | string, context?: SchemaContext): Schema {
     let schema: Schema = new Schema();
 
-    if (context) {
-      const reader = new SchemaReadHelper(context);
-      schema = reader.readSchemaSync(schema, jsonObj);
-    } else
-      schema = SchemaReadHelper.toSync<Schema>(schema, jsonObj);
+    const reader = new SchemaReadHelper(context);
+    schema = reader.readSchemaSync(schema, jsonObj);
 
     return schema;
   }

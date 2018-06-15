@@ -204,14 +204,10 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schemaKey
    */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
-    const existing = await this.knownSchemas.getSchema(schemaKey, matchType);
-    if (existing)
-      return existing as T;
-
+    // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
     for (const locater of this._locaters) {
       const schema = await locater.getSchema<T>(schemaKey, matchType, this);
       if (schema) {
-        await this.knownSchemas.addSchema(schema);
         return schema;
       }
     }
@@ -224,14 +220,10 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * @param schemaKey
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
-    const existing = this.knownSchemas.getSchemaSync(schemaKey, matchType);
-    if (existing)
-      return existing as T;
-
+    // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
     for (const locater of this._locaters) {
       const schema = locater.getSchemaSync<T>(schemaKey, matchType, this);
       if (schema) {
-        this.knownSchemas.addSchemaSync(schema);
         return schema;
       }
     }
