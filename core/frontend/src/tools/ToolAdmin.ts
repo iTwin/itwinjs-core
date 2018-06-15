@@ -458,8 +458,12 @@ export class ToolAdmin {
 
   public onInitialized() {
     this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
-    this._wantEventLoop = true;
-    requestAnimationFrame(() => this.animationFrame());
+  }
+  public startEventLoop(): void {
+    if (!this._wantEventLoop) {
+      this._wantEventLoop = true;
+      requestAnimationFrame(() => this.animationFrame());
+    }
   }
   public onShutDown() {
     this._wantEventLoop = false;

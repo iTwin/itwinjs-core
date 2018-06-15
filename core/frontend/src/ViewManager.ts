@@ -130,6 +130,9 @@ export class ViewManager {
     this.setSelectedView(newVp);
 
     // Start up the render loop if necessary.
+    if (1 === this._viewports.length)
+      IModelApp.toolAdmin.startEventLoop();
+
     this.onViewOpen.raiseEvent(newVp);
   }
 
