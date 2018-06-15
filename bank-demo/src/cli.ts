@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-
-import * as commander from "commander";
-// import * as chalk from "chalk";
+// tslint:disable-next-line:no-var-keyword
+// tslint:disable-next-line:no-var-requires
+// const prompt = require("prompt");
 import { BriefcaseManager, IModelHost, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
 import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, IModelBankWsgClient } from "@bentley/imodeljs-clients";
 import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
@@ -12,8 +12,9 @@ import { NopProject } from "./NopProject";
 
 const useIModelHub = false;
 
-let accessToken: AccessToken; // This is an opaque piece of data that the iModel server passes back to the validator, when it needs to check permissions
+let iModelId: string;
 let projectId: string;        // This is used only as a namespace to help the iModel server identify the iModel.
+let accessToken: AccessToken; // This is an opaque piece of data that the iModel server passes back to the validator, when it needs to check permissions
 
 Logger.initializeToConsole();
 Logger.setLevel("imodeljs-clients", LogLevel.Trace);
@@ -39,12 +40,7 @@ async function simulateUserLogin() {
   userLoggedIn = true;
 }
 
-async function initialize() {
-  await simulateUserLogin();
-}
-
-async function configureIModelServer(iModelId: string): Promise<void> {
-  await initialize();
+async function configureIModelServer(): Promise<void> {
   if (useIModelHub)
     return;
   // iModelBank
@@ -53,7 +49,6 @@ async function configureIModelServer(iModelId: string): Promise<void> {
 }
 
 function displayIModelInfo(iModel: HubIModel) {
-  // tslint:disable-next-line:no-console
   console.log(`\nname: ${iModel.name}\nID: ${iModel.wsgId}`);
   // *** TODO: Log more info
 }
@@ -63,11 +58,9 @@ function displayChangeSet(changeSet: ChangeSet) {
   console.log(`\nID: ${changeSet.wsgId} parentId: ${changeSet.parentId} pushDate: ${changeSet.pushDate} containsSchemaChanges: ${changeSet.containsSchemaChanges} briefcaseId: ${changeSet.briefcaseId} description: ${changeSet.description}`);
 }
 
-async function logCommand(iModelId: string) {
-  await configureIModelServer(iModelId);
+async function logCommand() {
   const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
   displayIModelInfo(iModel);
-  // tslint:disable-next-line:no-console
   console.log("-----------------------------------\n");
   const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId);
   for (const changeSet of changeSets) {
@@ -75,22 +68,42 @@ async function logCommand(iModelId: string) {
   }
 }
 
-async function downloadCommand(iModelId: string) {
-  await configureIModelServer(iModelId);
-  // TBD: const version = new IModelVersion()
+async function downloadCommand() {
   const imodel = await IModelDb.open(accessToken, projectId, iModelId, new OpenParams(OpenMode.Readonly));
-  // tslint:disable-next-line:no-console
   console.log(`Downloaded to ${imodel.briefcase.pathname}`);
 }
 
-const program = new commander.Command("bank-demo");
+async function processCommand(cmd: string) {
+  if (cmd === "log") {
+    logCommand();
+  } else {
+    if (cmd === "download") {
+      downloadCommand();
+    }
+  }
+}
 
-program.description("bank-demo");
-program.version("0.0.1");
-program.once("", async () => { await simulateUserLogin(); });
-program.command("log <imodelid>").description("list changeSets for an iModel").action(async (imodelid) => await logCommand(imodelid));
-program.command("download <imodelid>").alias("dl").description("download an iModel").action(async (imodelid) => await downloadCommand(imodelid));
-program.parse(process.argv);
+if (process.argv.length !== 3) {
+  console.log(`syntax: ${process.argv0} <imodelid> <cmd> [args]`);
+  process.exit(1);
+}
 
-if (process.argv.length === 0)
-  program.help();
+iModelId = process.argv[2];
+
+/*
+prompt.start();
+
+prompt.get([">"], async (err: Error, result: any): Promise<void> => {
+  if (err) {
+    console.log(err.message);
+  } else {
+    await processCommand(result);
+  }
+});
+*/
+
+simulateUserLogin()
+  .then(() => configureIModelServer())
+  .then(() => processCommand("log"))
+  .then(() => processCommand("download"))
+  .then(() => console.log("end of demo"));

@@ -212,7 +212,7 @@
       "program": "${workspaceFolder}/bank-demo/lib/cli.js",
       "cwd": "${workspaceFolder}/bank-demo/lib",
       "args": [
-        "fi"
+        "x"
       ]
     }
   ],

@@ -63,6 +63,18 @@ export class IModelBankWsgClient extends WsgClient implements IModelServerHandle
 
   protected getDefaultUrl(): string { return this._url; }
 
+  public async getUrl(excludeApiVersion?: boolean): Promise<string> {
+    if (this.url) {
+      return Promise.resolve(this.url);
+    }
+
+    this.url = this.getDefaultUrl();
+    if (!excludeApiVersion) {
+      this.url += "/" + this.apiVersion;
+    }
+    return Promise.resolve(this.url!);
+  }
+
   /**
    * Gets the agent used for imodelhub connection pooling.     *** What is this? ***
    */
