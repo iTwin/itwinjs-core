@@ -1,56 +1,25 @@
-import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv } from "@bentley/imodeljs-clients";
-import { BriefcaseManager } from "@bentley/imodeljs-backend/lib/backend";
+import { AccessToken, ImsDelegationSecureTokenClient, AuthorizationToken, ImsActiveSecureTokenClient, DeploymentEnv, IModelServerHandler } from "@bentley/imodeljs-clients";
+import { BriefcaseManager, IModelAccessContext } from "@bentley/imodeljs-backend/lib/backend";
 
-/** Credentials for test users */
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
+export class IModelHubIModelAccessContext extends IModelAccessContext {
 
-/** Test users with various permissions */
-export class BentleyImsTestUsers {
-  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static readonly regular: UserCredentials = {
-    email: "Regular.IModelJsTestUser@mailinator.com",
-    password: "Regular@iMJs",
-  };
+  constructor(id: string, pid: string) {
+    super(id, pid);
+  }
 
-  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
-  public static readonly manager: UserCredentials = {
-    email: "Manager.IModelJsTestUser@mailinator.com",
-    password: "Manager@iMJs",
-  };
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
-  public static readonly super: UserCredentials = {
-    email: "Super.IModelJsTestUser@mailinator.com",
-    password: "Super@iMJs",
-  };
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
-  public static readonly superManager: UserCredentials = {
-    email: "SuperManager.IModelJsTestUser@mailinator.com",
-    password: "SuperManager@iMJs",
-  };
-
-  /** Just another user */
-  public static readonly user1: UserCredentials = {
-    email: "bistroDEV_pmadm1@mailinator.com",
-    password: "pmadm1",
-  };
+  public get serverHandler(): IModelServerHandler | undefined { return undefined; } // use the default iModelHub server handler
 }
 
 export class BentleyCloudProject {
 
-  public static async getAccessToken() {
-    const deploymentEnv: DeploymentEnv = "QA";
-    const userCredentials = BentleyImsTestUsers.regular;    // simulate user supplying credentials
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(deploymentEnv)).getToken(userCredentials.email, userCredentials.password);
+  public static async getAccessToken(userid: string, password: string, deploymentEnv: DeploymentEnv = "QA") {
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient(deploymentEnv)).getToken(userid, password);
     return await (new ImsDelegationSecureTokenClient(deploymentEnv)).getToken(authToken!);
   }
 
-  public static startImodelServer(_imodelid: string): string {
-    return "";
+  public static async getIModelAccessContext(imodelid: string, projectid: string, _accs: AccessToken): Promise<IModelAccessContext> {
+    // TODO: deploy and start up a separate instance of iModelBank for each iModel
+    return new IModelHubIModelAccessContext(imodelid, projectid);
   }
 
   public static async queryProjectIdByName(accessToken: AccessToken, projectName: string): Promise<string> {

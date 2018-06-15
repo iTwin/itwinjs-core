@@ -6,7 +6,7 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet, IModel as HubIModel,
   ContainsSchemaChanges, Briefcase, Code, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, AzureFileHandler, IModelServerHandler,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -202,22 +202,46 @@ class BriefcaseCache {
   public clear() { this.briefcases.clear(); }
 }
 
+export abstract class IModelAccessContext {
+  public iModelId: string;
+  public projectId: string;
+  constructor(id: string, pid: string) { this.iModelId = id; this.projectId = pid; }
+  public abstract get serverHandler(): IModelServerHandler | undefined;
+}
+
 /** Utility to manage briefcases */
 export class BriefcaseManager {
   private static cache: BriefcaseCache = new BriefcaseCache();
   private static isCacheInitialized?: boolean;
   private static _hubClient?: IModelHubClient;
+  private static _handler?: IModelServerHandler;
 
   /** IModelHub Client to be used for all briefcase operations */
   public static get hubClient(): IModelHubClient {
     if (!BriefcaseManager._hubClient) {
       if (!IModelHost.configuration)
         throw new Error("IModelHost.startup() should be called before any backend operations");
-      // If the host has a server handler, then assume that it will supply the FileHandler. If not, then default to Azure as we used to do.
-      const fileHandler = (IModelHost.configuration.iModelServerHandler === undefined) ? new AzureFileHandler(false) : undefined;
-      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, fileHandler, IModelHost.configuration.iModelServerHandler);
+      // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
+      const fileHandler = (this._handler === undefined) ? new AzureFileHandler(false) : this._handler.getFileHandler();
+      BriefcaseManager._hubClient = new IModelHubClient(IModelHost.configuration.iModelHubDeployConfig, fileHandler, this._handler);
     }
     return BriefcaseManager._hubClient;
+  }
+
+  /** Make sure that BriefcaseManager is configured to access iModels in the specified context. */
+  public static setContext(context: IModelAccessContext) {
+    const handler = context.serverHandler;
+    if (handler === this._handler)
+      return;
+
+    if (handler !== undefined) {
+      // This context requires a custom handler. Force a switch to a new IModelHubClient that is based on this handler.
+      this._hubClient = undefined;
+      this._handler = handler;
+    } else {
+      // This context requires the standard iModelHub handler. Force a switch to a new IModelHubClient that is based on iModelHub.
+      this._handler = undefined;
+    }
   }
 
   private static _connectClient?: ConnectClient;

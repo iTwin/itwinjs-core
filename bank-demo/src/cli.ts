@@ -1,110 +1,21 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-// tslint:disable-next-line:no-var-keyword
-// tslint:disable-next-line:no-var-requires
-// const prompt = require("prompt");
-import { BriefcaseManager, IModelHost, IModelDb, OpenParams, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, IModelBankWsgClient } from "@bentley/imodeljs-clients";
-import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BentleyCloudProject } from "./BentleyCloudProject";
-import { NopProject } from "./NopProject";
-import { sideLoadChangeSets } from "./sideLoadChangeSets";
-import * as path from "path";
+import { DemoFrontend } from "./DemoFrontend";
+import { DemoBackend } from "./DemoBackend";
+import { IModelAccessContext } from "@bentley/imodeljs-backend/lib/backend";
 
-const useIModelHub = false;
+const useIModelHub = true;
 
-let iModelId: string;
-let projectId: string;        // This is used only as a namespace to help the iModel server identify the iModel.
-let accessToken: AccessToken; // This is an opaque piece of data that the iModel server passes back to the validator, when it needs to check permissions
+// Pretend that we are spinning up the app's own backend
+const backend = new DemoBackend();
+DemoBackend.initialize(useIModelHub);
 
-Logger.initializeToConsole();
-Logger.setLevel("imodeljs-clients", LogLevel.Trace);
+// Pretend that this is the app's frontend
+const frontend = new DemoFrontend(useIModelHub);
 
-const hostConfig = new IModelHostConfiguration();
-hostConfig.briefcaseCacheDir = path.join(__dirname, "briefcaseCache", useIModelHub ? "hub" : "bank");
-IModelHost.startup(hostConfig);
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-
-// Simulate user login in the app's frontend:
-let userLoggedIn: boolean;
-async function frontend_userLogin() {
-  if (userLoggedIn)
-    return;
-
-  if (useIModelHub) {
-    accessToken = await BentleyCloudProject.getAccessToken(); // Not shown: user supplies credentials and picks an environment
-    projectId = await BentleyCloudProject.queryProjectIdByName(accessToken, "iModelJsTest"); // simulate using picking a Connect project
-  } else {
-    // iModelBank
-    accessToken = NopProject.getAccessToken();
-    projectId = ""; // projectId is meaningless to iModelBank.
-  }
-  userLoggedIn = true;
-}
-
-async function frontend_deployServerForIModel(): Promise<void> {
-  if (useIModelHub)
-    return; // iModelHub is always there, and it handles any/all iModels
-
-  // iModelBank - make sure that a bank for this iModel is up and running
-  const bankUrl = await NopProject.startImodelServer(iModelId);
-  // bankUrl will probably be in IModelConnection, which will transmit
-  IModelHost.configuration!.iModelServerHandler = new IModelBankWsgClient(bankUrl, accessToken);
-}
-
-function displayIModelInfo(iModel: HubIModel) {
-  console.log(`\nname: ${iModel.name}\nID: ${iModel.wsgId}`);
-  // *** TODO: Log more info
-}
-
-function displayChangeSet(changeSet: ChangeSet) {
-  // tslint:disable-next-line:no-console
-  console.log(`\nID: ${changeSet.wsgId} parentId: ${changeSet.parentId} pushDate: ${changeSet.pushDate} containsSchemaChanges: ${changeSet.containsSchemaChanges} briefcaseId: ${changeSet.briefcaseId} description: ${changeSet.description}`);
-}
-
-async function logCommand() {
-  const iModel: HubIModel = (await BriefcaseManager.hubClient.IModels().get(accessToken, projectId, new IModelQuery().byId(iModelId)))[0];
-  displayIModelInfo(iModel);
-  console.log("-----------------------------------\n");
-  const changeSets: ChangeSet[] = await BriefcaseManager.hubClient.ChangeSets().get(accessToken, iModelId);
-  for (const changeSet of changeSets) {
-    displayChangeSet(changeSet);
-  }
-}
-
-async function downloadCommand() {
-  const imodel = await IModelDb.open(accessToken, projectId, iModelId, new OpenParams(OpenMode.Readonly));
-  console.log(`Downloaded to ${imodel.briefcase.pathname}`);
-}
-
-async function backend_doThings() {
-  await logCommand();
-  await downloadCommand();
-}
-
-if (process.argv.length !== 3) {
-  console.log(`syntax: ${process.argv0} <imodelid> <cmd> [args]`);
-  process.exit(1);
-}
-
-iModelId = process.argv[2];
-
-/*
-prompt.start();
-
-prompt.get([">"], async (err: Error, result: any): Promise<void> => {
-  if (err) {
-    console.log(err.message);
-  } else {
-    await backend_doThings(result);
-  }
-});
-*/
-
-frontend_userLogin()
-  .then(() => frontend_deployServerForIModel())
-  .then(() => sideLoadChangeSets(iModelId, accessToken))
-  .then(() => backend_doThings())
-  .then(() => console.log("end of demo"));
+// Simulate an app, where the user in the frontend logs in, picks a project, and then calls IModelConnection.open
+frontend.login()
+  .then(() => frontend.chooseIModel())
+  .then((iModelId: string) => frontend.getIModelAccessContext(iModelId))
+  .then((accessContext: IModelAccessContext) => backend.downloadBriefcase(accessContext, frontend.accessToken));
