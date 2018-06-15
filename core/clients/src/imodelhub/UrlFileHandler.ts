@@ -6,6 +6,7 @@ import { FileHandler } from "../FileHandler";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
+import { URL } from "url";
 
 /**
  * Provides methods to upload and download files from the Internet
@@ -53,7 +54,8 @@ export class UrlFileHandler implements FileHandler {
 
   public async uploadFile(uploadUrlString: string, uploadFromPathname: string, _progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const request = https.request(uploadUrlString, (response) => {
+      const uploadUrl = new URL(uploadUrlString);
+      const request = https.request({ method: "POST", hostname: uploadUrl.hostname, port: uploadUrl.port, path: uploadUrl.pathname }, (response) => {
         if (response.statusCode === 200)
           resolve();
         else
