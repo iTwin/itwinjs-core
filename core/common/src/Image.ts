@@ -3,13 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-/** format of an image buffer */
+/** Format of an image buffer */
 export const enum ImageBufferFormat { Rgba = 0, Rgb = 2, Alpha = 5 }
 
 /** Uncompressed bitmap image data */
 export class ImageBuffer {
+  /** Image data */
   public readonly data: Uint8Array;
+  /** Format of the bytes in the image. */
   public readonly format: ImageBufferFormat;
+  /** Width of image in pixels */
   public readonly width: number;
 
   public get numBytesPerPixel(): number { return ImageBuffer.getNumBytesPerPixel(this.format); }
@@ -22,6 +25,7 @@ export class ImageBuffer {
     }
   }
 
+  /** Get the height of this image in pixels. */
   public get height(): number { return ImageBuffer.computeHeight(this.data, this.format, this.width); }
 
   public static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer | undefined {
@@ -56,15 +60,22 @@ export function nextHighestPowerOfTwo(num: number): number {
   return num + 1;
 }
 
-/** format of an image */
-export const enum ImageSourceFormat { Jpeg = 0, Png = 2 }
+/** The format of an ImageSource. Values must be consistent with data inside an iModel. */
+export const enum ImageSourceFormat {
+  /** Image data is stored with JPEG compression. */
+  Jpeg = 0,
+  /** Image data is stored with PNG compression. Value of 2 is a historical artifact and cannot be changed. */
+  Png = 2,
+}
 
-/** is image is stored bottom-up or top-up? This determines whether the rows should be flipped top-to-bottom */
+/** Is image stored bottom-up or top-up? This determines whether the rows should be flipped top-to-bottom */
 export const enum BottomUp { No = 0, Yes = 1 }
 
-/** Image data encoded as a jpeg or png */
+/** Image data encoded and compressed in either Jpeg or Png format. */
 export class ImageSource {
+  /** The content of the image, compressed */
   public readonly data: Uint8Array;
+  /** The compression type. */
   public readonly format: ImageSourceFormat;
 
   public constructor(data: Uint8Array, format: ImageSourceFormat) {

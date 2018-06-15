@@ -91,9 +91,8 @@ export class ViewRect {
     if (undefined !== out) {
       out.copyFrom(this);
       return out;
-    } else {
-      return new ViewRect(this.left, this.top, this.right, this.bottom);
     }
+    return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
 
   /** Determine if this ViewRect is contained entirely within the bounds of another ViewRect. */
@@ -352,8 +351,8 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  /** construct a new Viewport
-   * @param canvas The HTML canvas
+  /** Construct a new Viewport
+   * @param canvas The HTMLCanvasElement for the new Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
   constructor(public canvas: HTMLCanvasElement, viewState: ViewState) {
