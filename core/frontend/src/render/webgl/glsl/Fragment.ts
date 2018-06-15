@@ -73,7 +73,7 @@ export namespace GLSLFragment {
   export const revertPreMultipliedAlpha = `
     vec4 revertPreMultipliedAlpha(vec4 rgba) {
       if (0.0 < rgba.a)
-        rgba.a /= rgba.a;
+        rgba.rgb /= rgba.a;
 
       return rgba;
     }`;
