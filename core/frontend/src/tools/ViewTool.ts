@@ -1328,34 +1328,63 @@ abstract class ViewNavigate extends ViewingToolHandle {
     if (haveNavigateEvent) {
       const frust = vp.getWorldFrustum(scratchFrustum);
       frust.multiply(motion!.transform);
-      vp.setupFromFrustum(frust);
-      haveNavigateEvent = false;
-      if (OrientationResult.NoEvent === orientationResult)
-        return false;
+      if (!vp.setupFromFrustum(frust)) {
+        haveNavigateEvent = false;
+        if (OrientationResult.NoEvent === orientationResult)
+          return false;
+      }
     }
 
+    let doFull = false;
+    let doDynamic = false;
     if (haveNavigateEvent)
-      return true;
-    if (OrientationResult.Success === orientationResult)
-      return !this.haveStaticOrientation(forward, currentTime);
-    return false;
-    // let doFull = false;
-    // let doDynamic = false;
-    // if (haveNavigateEvent)
-    //   doDynamic = true; // cause dynamic update
-    // else if (OrientationResult.Disabled === orientationResult || OrientationResult.NoEvent === orientationResult)
-    //   doFull = true;
+      doDynamic = true;
+    else {
+      switch (orientationResult) {
+        case OrientationResult.Disabled:
+        case OrientationResult.NoEvent:
+          doFull = true;
+          break;
+        case OrientationResult.RejectedByController:
+          if (!this.haveStaticOrientation(forward, currentTime))
+            return false;
+
+          doFull = true;
+          break;
+        case OrientationResult.Success:
+          if (this.haveStaticOrientation(forward, currentTime))
+              doFull = true;
+          else
+            doDynamic = true;
+          break;
+      }
+    }
+
+    if (doFull) {
+      this.viewTool.endDynamicUpdate();
+      this.viewTool.doUpdate(true);
+      this.viewTool.beginDynamicUpdate();
+      return false;
+    }
+
+    return doDynamic;
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean {
     if (!inDynamics)
       return true;
+    else if (ev.viewport !== this.viewTool.viewport)
+      return false;
 
     this.lastPtView.setFrom(ev.viewPoint);
     return this.doNavigate(ev);
   }
 
   public noMotion(ev: BeButtonEvent): boolean {
+    if (ev.viewport !== this.viewTool.viewport)
+      return false;
+
+    this.viewTool.beginDynamicUpdate();
     this.doNavigate(ev);
     return false;
   }
@@ -1404,6 +1433,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
   public firstPoint(ev: BeButtonEvent): boolean {
     // NB: In desktop apps we want to center the cursor in the view.
     // The browser doesn't support that, and it is more useful to be able to place the anchor point freely anyway.
+    this.viewTool.beginDynamicUpdate();
     this.lastPtView.setFrom(ev.viewPoint);
     this.anchorPtView.setFrom(this.lastPtView);
 
