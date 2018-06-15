@@ -24,7 +24,6 @@ import {
 import { Viewport, ViewRect } from "../Viewport";
 import { GraphicBuilder, GraphicBuilderCreateParams } from "./GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
-import { HilitedSet } from "../SelectionSet";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { PolylineArgs, MeshArgs } from "./primitives/mesh/MeshPrimitives";
 
@@ -198,7 +197,7 @@ export abstract class RenderTarget {
   public abstract changeRenderPlan(plan: RenderPlan): void;
   public abstract drawFrame(): void;
   public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
-  public abstract setHiliteSet(hilited: HilitedSet): void;
+  public abstract setHiliteSet(hilited: Set<string>): void;
   public abstract setFlashed(elementId: Id64, intensity: number): void;
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
   public abstract queueReset(): void;

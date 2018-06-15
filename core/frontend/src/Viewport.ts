@@ -1522,7 +1522,10 @@ export class Viewport {
     }
 
     if (view.isSelectionSetDirty) {
-      target.setHiliteSet(view.iModel.hilited);
+      const allHilites = new Set<string>();
+      view.iModel.hilited.elements.forEach((val) => allHilites.add(val));
+      view.iModel.selectionSet.elements.forEach((val) => allHilites.add(val));
+      target.setHiliteSet(allHilites);
       view.setSelectionSetDirty(false);
       isRedrawNeeded = true;
     }
