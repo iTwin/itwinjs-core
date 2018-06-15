@@ -4,7 +4,17 @@
 import { DemoFrontend } from "./DemoFrontend";
 import { DemoBackend } from "./DemoBackend";
 
-const useIModelHub = (process.argv.length === 3) && (process.argv[2] === "1");
+let arg = (process.argv.length === 3) ? process.argv[2] : "";
+arg = arg.toLocaleLowerCase();
+let useIModelHub = false;
+if (arg === "hub")
+  useIModelHub = true;
+else {
+  if (arg !== "bank") {
+    console.log(`syntax: ${process.argv0} {hub|bank}`);
+    process.exit(1);
+  }
+}
 
 // Pretend that we are spinning up the app's own backend
 const backend = new DemoBackend();
