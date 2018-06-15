@@ -129,15 +129,12 @@ export class ElementPicker {
     }
   }
 
-  private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, point1: Point2d, point2: Point2d, center: Point2d) {
+  private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
     const priority1 = this.getPixelPriority(pixel1);
     const priority2 = this.getPixelPriority(pixel2);
 
     if (priority1 < priority2) return -1;
     if (priority1 > priority2) return 1;
-
-    const distXY1 = center.distance(point1);
-    const distXY2 = center.distance(point2);
 
     if (distXY1 < distXY2) return -1;
     if (distXY1 > distXY2) return 1;
@@ -179,7 +176,7 @@ export class ElementPicker {
           continue; // ignore corners. it's a locate circle not square...
         const oldPoint = elmHits.get(pixel.elementId.toString());
         if (undefined !== oldPoint) {
-          if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), testPoint, oldPoint, testPointView) < 0)
+          if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
             oldPoint.setFrom(testPoint); // new hit is better, update location...
         } else {
           elmHits.set(pixel.elementId.toString(), testPoint.clone());
