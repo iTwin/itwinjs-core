@@ -325,11 +325,18 @@ export namespace IModelConnection {
 
       try {
         (await this.getProps(notLoaded)).forEach((props) => {
-          const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
-          if (names.length < 2)
-            return;
+          let className: string;
+          if (undefined !== props.bisBaseClass) // this should be present to tell us which bis class the model derives from
+            className = props.bisBaseClass;
+          else {
+            const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
+            if (names.length < 2)
+              return;
+            className = names[1];
+          }
           let ctor = ModelState;
-          switch (names[1]) {
+          switch (className) {
+            case "SpatialModel":
             case "PhysicalModel":
             case "SpatialLocationModel":
             case "WebMercatorModel":

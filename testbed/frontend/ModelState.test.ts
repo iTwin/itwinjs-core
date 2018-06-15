@@ -8,12 +8,20 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
+const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/");
 
-describe("ModelState", () => {
+describe.only("ModelState", () => {
   let imodel: IModelConnection;
-  before(async () => { imodel = await IModelConnection.openStandalone(iModelLocation); });
-  after(async () => { if (imodel) imodel.closeStandalone(); });
+  let imodel2: IModelConnection;
+  before(async () => {
+    imodel = await IModelConnection.openStandalone(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel2 = await IModelConnection.openStandalone(iModelLocation + "mirukuru.ibim");
+  });
+
+  after(async () => {
+    if (imodel) imodel.closeStandalone();
+    if (imodel2) imodel2.closeStandalone();
+  });
 
   it("Model Selectors should hold models", () => {
     const props: ModelSelectorProps = {
@@ -57,6 +65,13 @@ describe("ModelState", () => {
 
     const modelProps = await imodel.models.queryProps({ from: SpatialModelState.sqlName });
     assert.isAtLeast(modelProps.length, 2);
+
+    await imodel2.models.load(["0x28", "0x1c"]);
+    assert.equal(imodel2.models.loaded.size, 2);
+    const scalableMesh = imodel2.models.getLoaded("0x28");
+    assert.instanceOf(scalableMesh, SpatialModelState);
+    assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
+
   });
 
 });

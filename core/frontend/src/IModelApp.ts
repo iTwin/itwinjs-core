@@ -101,6 +101,7 @@ export class IModelApp {
   /** Should be called before the application exits to release any held resources. */
   public static shutdown() {
     IModelApp.renderSystem.onShutDown();
+    IModelApp.toolAdmin.onShutDown();
     IModelApp._initialized = false;
   }
 
