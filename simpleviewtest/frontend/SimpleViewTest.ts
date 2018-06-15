@@ -349,7 +349,7 @@ async function changeView(event: any) {
   const viewName = event.target.selectedOptions["0"].label;
   let view = viewMap.get(viewName);
   if (!(view instanceof ViewState)) {
-    view = await activeViewState.iModelConnection!.views.load((view as IModelConnection.ViewSpec).id)
+    view = await activeViewState.iModelConnection!.views.load((view as IModelConnection.ViewSpec).id);
     viewMap.set(viewName, view);
   }
   _changeView(view.clone());
