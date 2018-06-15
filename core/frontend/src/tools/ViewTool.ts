@@ -119,6 +119,7 @@ export abstract class ViewingToolHandle {
   public abstract testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean;
   public abstract get handleType(): ViewHandleType;
   public focusIn(): void { IModelApp.toolAdmin.setCursor(this.getHandleCursor()); }
+  public drawHandle(_context: DecorateContext, _hasFocus: boolean): void { }
 }
 
 export class ViewHandleArray {
@@ -177,6 +178,22 @@ export class ViewHandleArray {
       }
     }
     return undefined !== nearestHitHandle;
+  }
+
+  public drawHandles(context: DecorateContext): void {
+    // all handle objects must draw themselves
+    for (let i = 0; i < this.count; i++) {
+      if (i !== this.hitHandleIndex) {
+        const handle = this.handles[i];
+        handle.drawHandle(context, this.focus === i);
+      }
+    }
+
+    // draw the hit handle last
+    if (-1 !== this.hitHandleIndex) {
+      const handle = this.handles[this.hitHandleIndex];
+      handle.drawHandle(context, this.focus === this.hitHandleIndex);
+    }
   }
 
   public setFocus(index: number): void {
@@ -272,6 +289,10 @@ export abstract class ViewManip extends ViewTool {
     // set up after the constructor. However, when this tool is installed there may be a call to
     // OnCleanup that makes it appear that the viewport is not attached to a view command.
     this.changeViewport(viewport);
+  }
+
+  public decorate(context: DecorateContext): void {
+    this.viewHandles.drawHandles(context);
   }
 
   public onReinitialize(): void {
@@ -1444,6 +1465,25 @@ abstract class ViewNavigate extends ViewingToolHandle {
   public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
   public focusOut() {
     // this.decoration = this.decoration && this.decoration.destroy();
+  }
+
+  public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
+    if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
+      return;
+
+    const point = new Point2d(this.anchorPtView.x, this.anchorPtView.y);
+    const points = [point];
+    const black = ColorDef.black.clone();
+    let graphic = context.createViewOverlay();
+    graphic.setSymbology(black, black, 9);
+    graphic.addPointString2d(points, 0.0);
+    context.addViewOverlay(graphic.finish());
+
+    const white = ColorDef.white.clone();
+    graphic = context.createViewOverlay();
+    graphic.setSymbology(white, black, 5);
+    graphic.addPointString2d(points, 0.0);
+    context.addViewOverlay(graphic.finish());
   }
 }
 
