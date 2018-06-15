@@ -242,7 +242,7 @@ class OvrNonUniform {
       data.setOvrFlagsAtIndex(dataIndex, newFlags);
       if (OvrFlags.None !== newFlags) {
         this.anyOverridden = true;
-        this.anyHilited = isHilited;
+        this.anyHilited = this.anyHilited || isHilited;
       }
     }
   }
