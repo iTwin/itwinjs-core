@@ -505,8 +505,6 @@ export class Viewport {
     if (result) { // Null result if given
       result.minimum = 1;
       result.maximum = 0;
-    } else {  // Set result to null DepthRangeNpc
-      result = new DepthRangeNpc(1, 0);
     }
 
     // Default to a (0, 0, 0) to (1, 1, 1) range if no range was provided
@@ -515,27 +513,39 @@ export class Viewport {
     // Determine the screen rectangle in which to query visible depth min + max
     const newViewRect = Viewport.depthRect;
     newViewRect.initFromPoint(subRectView.low, subRectView.high);
+    const readRect = newViewRect.computeOverlap(this.viewRect);
+    if (undefined === readRect)
+      return undefined;
 
-    const totalViewRect = this.viewRect;
-    const pixels = this.readPixels(totalViewRect, Pixel.Selector.Distance);
+    const pixels = this.readPixels(readRect, Pixel.Selector.Distance);
     if (!pixels)
       return undefined;
 
-    if (!this.viewRect.overlaps(newViewRect))
-      return undefined;
-
+    let maximum = 0;
+    let minimum = 1;
+    const npc = Point3d.create();
     const testPoint = Point2d.create();
-    for (testPoint.x = this.viewRect.left; testPoint.x <= this.viewRect.right; testPoint.x++) {
-      for (testPoint.y = this.viewRect.top; testPoint.y <= this.viewRect.bottom; testPoint.y++) {
-        const npc = Point3d.create();
-        if (this.viewRect.containsPoint(testPoint) && this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
-          result.minimum = Math.min(result.minimum, npc.z);
-          result.maximum = Math.max(result.maximum, npc.z);
+    for (testPoint.x = readRect.left; testPoint.x < readRect.right; testPoint.x++) {
+      for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; testPoint.y++) {
+        if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
+          minimum = Math.min(minimum, npc.z);
+          maximum = Math.max(maximum, npc.z);
         }
       }
     }
 
-    return result.maximum > 0 ? result : undefined;
+    if (maximum > 0) {
+      if (undefined === result) {
+        result = new DepthRangeNpc(minimum, maximum);
+      } else {
+        result.minimum = minimum;
+        result.maximum = maximum;
+      }
+
+      return result;
+    } else {
+      return undefined;
+    }
   }
 
   private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
