@@ -156,7 +156,7 @@ async function buildModelMenu(state: SimpleViewState) {
   modelMenu.innerHTML = "";
   let i = 0, p = 0;
   for (const modelProp of curModelProps) {
-    if (modelProp.name && modelProp.id && modelProp.classFullName === "BisCore:PhysicalModel") {
+    if (modelProp.name && modelProp.id && (modelProp.bisBaseClass === "PhysicalModel" || modelProp.bisBaseClass === "SpatialModel")) {
       modelMenu.innerHTML += '<input id="cbxModel' + i + '" type="checkbox"> ' + modelProp.name + "\n<br>\n";
       curModelPropIndices.push(p);
       i++;
