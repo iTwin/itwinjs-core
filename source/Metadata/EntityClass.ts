@@ -102,6 +102,30 @@ export default class EntityClass extends ECClass {
       }
     }
   }
+
+  /**
+   *
+   * @param jsonObj
+   */
+  public fromJsonSync(jsonObj: any): void {
+    super.fromJsonSync(jsonObj);
+
+    if (undefined !== jsonObj.mixins) {
+      if (!Array.isArray(jsonObj.mixins))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+
+      for (const name of jsonObj.mixins) {
+        if (typeof(name) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+
+        const tempMixin = this.schema.getItemSync<Mixin>(name, true);
+        if (!tempMixin)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+
+        this.addMixin(tempMixin);
+      }
+    }
+  }
 }
 
 /** @hidden

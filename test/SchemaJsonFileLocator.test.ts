@@ -22,9 +22,9 @@ describe("SchemaJsonFileLocater tests: ", () => {
     context.addLocater(locater);
   });
 
-  it("loadSchema from file succeeds", async () => {
+  it.only("loadSchema from file succeeds", async () => {
     // Arrange
-    const schemaKey = new SchemaKey("SchemaA");
+    const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
 
     // Act
     const schema = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
@@ -37,7 +37,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
   it("loadSchema called twice, same Schema object", async () => {
     // Arrange
-    const schemaKey = new SchemaKey("SchemaA");
+    const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
 
     // Act
     const locater1 = await locater.getSchema(schemaKey, SchemaMatchType.Latest);
