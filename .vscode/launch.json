@@ -211,9 +211,7 @@
       "name": "Debug bank-demo",
       "program": "${workspaceFolder}/bank-demo/lib/cli.js",
       "cwd": "${workspaceFolder}/bank-demo/lib",
-      "args": [
-        "x"
-      ]
+      "args": []
     }
   ],
   "compounds": [

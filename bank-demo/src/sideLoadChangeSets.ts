@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { AccessToken, ChangeSet, IModelHubError } from "@bentley/imodeljs-clients";
-import { BriefcaseManager } from "@bentley/imodeljs-backend";
+import { BriefcaseManager, IModelAccessContext } from "@bentley/imodeljs-backend";
 import { IModelHubStatus } from "@bentley/bentleyjs-core";
 import * as fs from "fs";
 import * as path from "path";
@@ -42,9 +42,10 @@ async function pushCS(iModelId: string, accessToken: AccessToken, cs: any) {
   return pushChangeSet(iModelId, accessToken, changeSet, csfilepath);
 }
 
-export async function sideLoadChangeSets(iModelId: string, accessToken: AccessToken) {
+export async function sideLoadChangeSets(context: IModelAccessContext, accessToken: AccessToken) {
+  BriefcaseManager.setContext(context);
   const timeline = require(getAssetFilePath("changeSets.json"));
   for (const cs of timeline) {
-    await pushCS(iModelId, accessToken, cs);
+    await pushCS(context.iModelId, accessToken, cs);
   }
 }

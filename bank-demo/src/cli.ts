@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { DemoFrontend } from "./DemoFrontend";
 import { DemoBackend } from "./DemoBackend";
+import { sideLoadChangeSets } from "./sideLoadChangeSets";
 
 const useIModelHub = (process.argv.length === 3) && (process.argv[2] === "1");
 
@@ -17,8 +18,9 @@ async function runDemo() {
   await frontend.login();
   const iModelId = await frontend.chooseIModel();
   const context = await frontend.getIModelAccessContext(iModelId);
+  await sideLoadChangeSets(context, frontend.accessToken);
   await backend.downloadBriefcase(context, frontend.accessToken);
-  // await backend.logChangeSets(context, frontend.accessToken);
+  await backend.logChangeSets(context, frontend.accessToken);
 }
 
 runDemo().then(() => process.exit(0));

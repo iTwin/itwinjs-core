@@ -40,7 +40,7 @@ export class DemoBackend {
 
   private static displayChangeSet(changeSet: ChangeSet) {
     // tslint:disable-next-line:no-console
-    console.log(`\nChangeSet ID: ${changeSet.wsgId} parentId: ${changeSet.parentId} pushDate: ${changeSet.pushDate} containsSchemaChanges: ${changeSet.containsSchemaChanges} briefcaseId: ${changeSet.briefcaseId} description: ${changeSet.description}`);
+    console.log(`ChangeSet ID: ${changeSet.wsgId} parentId: ${changeSet.parentId} pushDate: ${changeSet.pushDate} containsSchemaChanges: ${changeSet.containsSchemaChanges} briefcaseId: ${changeSet.briefcaseId} description: ${changeSet.description}`);
   }
 
   // Example app backend method
