@@ -1726,8 +1726,7 @@ export class WindowAreaTool extends ViewTool {
 
     vp.synchWithView(true);
 
-    // ###TODO: Should we mark ourselves as doing an animation to disable the decorator temporarily?..
-    vp.animateFrustumChange(startFrust, vp.getFrustum());
+    vp.animateFrustumChange(startFrust, vp.getFrustum(), ViewToolSettings.animationTime);
   }
 
   public onSingleFingerMove(ev: BeGestureEvent): boolean { IModelApp.toolAdmin.convertGestureMoveToButtonDownAndMotion(ev); return true; }
