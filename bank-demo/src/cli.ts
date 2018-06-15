@@ -9,6 +9,7 @@ import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet, IModelBankWsg
 import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BentleyCloudProject } from "./BentleyCloudProject";
 import { NopProject } from "./NopProject";
+import { sideLoadChangeSets } from "./sideLoadChangeSets";
 
 const useIModelHub = false;
 
@@ -104,6 +105,7 @@ prompt.get([">"], async (err: Error, result: any): Promise<void> => {
 
 simulateUserLogin()
   .then(() => configureIModelServer())
+  .then(() => sideLoadChangeSets(iModelId, accessToken))
   .then(() => processCommand("log"))
   .then(() => processCommand("download"))
   .then(() => console.log("end of demo"));
