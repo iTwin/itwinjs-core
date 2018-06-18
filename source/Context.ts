@@ -113,40 +113,6 @@ export class SchemaCache implements ISchemaLocater {
 
     return foundSchema as T;
   }
-
-  /**
-   * Removes the schema which matches the provided SchemaKey.
-   * @param schemaKey The schema key of the schema to remove.
-   */
-  public async removeSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<void> {
-    const findFunc = (schema: Schema) => {
-      return schema.schemaKey.matches(schemaKey, matchType);
-    };
-
-    const indx = this._schema.findIndex(findFunc);
-    if (indx < 0)
-      return Promise.reject("");
-
-    this._schema.splice(indx, 1);
-    return;
-  }
-
-  /**
-   * Removes the schema which matches the provided SchemaKey.
-   * @param schemaKey The schema key of the schema to remove.
-   * @param matchType
-   */
-  public removeSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest) {
-    const findFunc = (schema: Schema) => {
-      return schema.schemaKey.matches(schemaKey, matchType);
-    };
-
-    const indx = this._schema.findIndex(findFunc);
-    if (indx < 0)
-      return;
-
-    this._schema.splice(indx, 1);
-  }
 }
 
 /**
