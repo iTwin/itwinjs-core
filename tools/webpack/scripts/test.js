@@ -33,6 +33,11 @@ exports.builder = (yargs) =>
       type: "string",
       describe: `Limits the test run to tests defined in a given test subdirectory.`
     },
+    "exclude": {
+      alias: "x",
+      type: "string",
+      describe: `Exclude all tests defined in a given test subdirectory.`
+    },
   });
 
 exports.handler = (argv) => {
@@ -68,6 +73,7 @@ exports.handler = (argv) => {
 
   const webpackConfig = require.resolve(`../config/webpack.config.${(isCoverage) ? "coverage" : "test" }.js`);
   const testDir = (argv.subdirectory) ? path.join(paths.appTest, argv.subdirectory) : paths.appTest;
+  const excluded = (argv.exclude) ? `{,!(${argv.exclude})/**/}` : "**/";
 
   // Start the tests
   const args = [
@@ -79,7 +85,7 @@ exports.handler = (argv) => {
     ...includeOptions,
     ...watchOptions,
     ...reporterOptions,
-    path.resolve(testDir, "**/*.@(js|jsx|ts|tsx)"),
+    path.resolve(testDir, excluded + "*.@(js|jsx|ts|tsx)"),
   ];
 
   // If we're running coverage, we need to include the app source dir
