@@ -119,7 +119,7 @@ export class IdleTool extends InteractiveTool {
   }
 
   public onMouseWheel(ev: BeWheelEvent) {
-    return IModelApp.toolAdmin.processWheelEvent(ev, true);
+    return IModelApp.toolAdmin.processWheelEvent(ev, false);
   }
 
   public onMultiFingerMove(ev: BeGestureEvent) { const tool = new RotatePanZoomGestureTool(ev, true); tool.run(); return true; }

@@ -219,18 +219,30 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
 
 /** Defines a view of a DrawingModel. */
 export class DrawingViewDefinition extends ViewDefinition2d {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }
 
 /** Defines a view of a SheetModel. */
 export class SheetViewDefinition extends ViewDefinition2d {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }
 
 /** A ViewDefinition used to display a 2d template model. */
 export class TemplateViewDefinition2d extends ViewDefinition2d {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }
 
 /** A ViewDefinition used to display a 3d template model. */
 export class TemplateViewDefinition3d extends ViewDefinition3d {
+  public constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }
 
 /**

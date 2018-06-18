@@ -35,6 +35,17 @@ The application contained within this directory provides a test environment for 
 * Users can switch between stored views via the view dropdown menu.
 * The remaining tools contain ways to rotate the model, select parts of the view, undo and redo actions, and toggle on/off the camera as well as other view state settings.
 
+## Debugging
+
+Debugging SimpleViewTest can be accomplished using the following procedures, depending on which packages of imodeljs-core you would like to step through:
+
+* frontend
+  * The frontend and common imodeljs-core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
+* backend
+  * Calls to the imodeljs-core backend functionality may be debugged by opening Visual Studio Code to the root imodeljs-core directory, navigating to the debug tab, and running the 'SimpleViewTest (backend)' launch configuration from the dropdown. Any breakpoints set in Visual Studio Code will be hit.
+* iModelJsNodeAddon
+  * To debug the node addon, one must have a local build of the addon from bim0200 source. With a valid 'OutRoot' environment variable set, run installnativeplatform.bat from the root of the imodeljs-core monorepo. This will copy your built node addon packages into the correct node_modules directories. Lastly, start SimpleViewTest using either of the other two methods listed above, and then attach to the Electron process using Visual Studio.
+
 ## Dependencies
 
 * Installed dependencies for SimpleViewTest may be found in the generated node_modules directory. Since SimpleViewTest is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
