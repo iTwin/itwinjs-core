@@ -305,7 +305,7 @@ export function addLighting(builder: ProgramBuilder) {
 
   frag.addUniform("u_material", VariableType.Vec3, (shader) => {
     shader.addGraphicUniform("u_material", (uniform, params) => {
-      const material = params.target.currentViewFlags.showMaterials ? params.geometry.material : undefined;
+      const material = params.target.currentViewFlags.showMaterials() ? params.geometry.material : undefined;
       const weights = undefined !== material ? material.weights : Material.default.weights;
       uniform.setUniform3fv(weights);
     });
@@ -313,7 +313,7 @@ export function addLighting(builder: ProgramBuilder) {
 
   frag.addUniform("u_specular", VariableType.Vec4, (shader) => {
     shader.addGraphicUniform("u_specular", (uniform, params) => {
-      let mat = params.target.currentViewFlags.showMaterials ? params.geometry.material : undefined;
+      let mat = params.target.currentViewFlags.showMaterials() ? params.geometry.material : undefined;
       if (undefined === mat)
         mat = Material.default;
 
@@ -325,7 +325,7 @@ export function addLighting(builder: ProgramBuilder) {
   frag.addUniform("u_reflect", VariableType.Vec4, (shader) => {
     shader.addGraphicUniform("u_reflect", (uniform, params) => {
       const data = new Float32Array(4);
-      if (params.target.currentViewFlags.showMaterials) {
+      if (params.target.currentViewFlags.showMaterials()) {
         // const mat = params.geometry.material;
         // data[0] = mat.reflectColor.red;
         // data[1] = mat.reflectColor.green;
