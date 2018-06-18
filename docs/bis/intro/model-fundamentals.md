@@ -1,7 +1,7 @@
 # Model Fundamentals
 
 A `Model` is a container that owns a collection of Elements.
-Every Element is contained by exactly one Model as defined by the `bis:ModelContainsElements` relationship.
+Every Element is contained by exactly one Model as defined by the `ModelContainsElements` relationship.
 Models help organize the overall contents of the repository as there is a separate container for each collection of Elements.
 The Model contents are driven by:
 
@@ -16,7 +16,7 @@ The Model contents are driven by:
 
 ## Core Model Types
 
-| Model subclass            | Type of Elements that can be contained        |
+| Model subclass            | Type of Elements contained        |
 |---------------------------|-----------------------------------------------|
 | `PhysicalModel`           | PhysicalElements and SpatialLocationElements  |
 | `SpatialLocationModel`    | SpatialLocationElements                       |
@@ -33,7 +33,7 @@ Looking down the information hierarchy, Models are collections of Elements.
 Looking up the information hierarchy, Models are more detail about an Element from a higher level.
 This higher-level Element is known as the *modeled element*. The *modeled element* is what gives a
 Model its identity. The value of the model's Id matches the value of the modeled element's Id.
-The Model is related to its modeled Element via the `bis:ModelModelsElement` relationship.
+The Model is related to its modeled Element via the `ModelModelsElement` relationship.
 Also, a Model does not store a name of its own. Instead, it its name comes from the `CodeValue` of its modeled element.
 
 See [Information Hierarchy](./information-hierarchy.md) for more details.
