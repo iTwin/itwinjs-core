@@ -13,7 +13,6 @@ export { default as Mixin } from "./Metadata/Mixin";
 export { default as RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
 export { default as CustomAttributeClass } from "./Metadata/CustomAttributeClass";
 export { default as Enumeration, Enumerator } from "./Metadata/Enumeration";
-export { default as KindOfQuantity, FormatUnitSet } from "./Metadata/KindOfQuantity";
 export { default as PropertyCategory } from "./Metadata/PropertyCategory";
 export * from "./Metadata/Property";
 export * from "./Deserialization/SchemaXmlFileLocater";
