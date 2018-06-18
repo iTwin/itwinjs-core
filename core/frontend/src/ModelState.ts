@@ -10,13 +10,13 @@ import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, Ti
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree } from "./tile/TileTree";
+import { ScalableMeshTileTree } from "./tile/ScalableMeshTileTree";
 
 /** the state of a Model */
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
   public parentModel: Id64;
-  public readonly jsonProperties: any;
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
@@ -66,15 +66,23 @@ export abstract class GeometricModelState extends ModelState {
   public loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded === this._loadStatus) {
       this._loadStatus = TileTree.LoadStatus.Loading;
-      const ids = Id64.toIdSet(this.id);
-      this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
-        this.setTileTree(result[0]);
-        IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => {
-        this._loadStatus = TileTree.LoadStatus.NotFound;
-      });
+      if (this.classFullName === "ScalableMesh:ScalableMeshModel") {
+        ScalableMeshTileTree.getTileTreeProps(this.modeledElement, this.iModel).then((result: TileTreeProps) => {
+          this.setTileTree(result);
+          IModelApp.viewManager.onNewTilesReady();
+        }).catch((_err) => {
+          this._loadStatus = TileTree.LoadStatus.NotFound;
+        });
+      } else {
+        const ids = Id64.toIdSet(this.id);
+        this.iModel.tiles.getTileTreeProps(ids).then((result: TileTreeProps[]) => {
+          this.setTileTree(result[0]);
+          IModelApp.viewManager.onNewTilesReady();
+        }).catch((_err) => {
+          this._loadStatus = TileTree.LoadStatus.NotFound;
+        });
+      }
     }
-
     return this._loadStatus;
   }
 
