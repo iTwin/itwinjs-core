@@ -470,20 +470,22 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
 
-    const limitWindowSize = (v: number) => {
+    const limitWindowSize = (v: number, ignoreError: boolean) => {
       if (v < limit.min) {
         v = limit.min;
-        error = ViewStatus.MinWindow;
+        if (!ignoreError)
+          error = ViewStatus.MinWindow;
       } else if (v > limit.max) {
         v = limit.max;
-        error = ViewStatus.MaxWindow;
+        if (!ignoreError)
+          error = ViewStatus.MaxWindow;
       }
       return v;
     };
 
-    delta.x = limitWindowSize(delta.x);
-    delta.y = limitWindowSize(delta.y);
-    delta.z = limitWindowSize(delta.z);
+    delta.x = limitWindowSize(delta.x, false);
+    delta.y = limitWindowSize(delta.y, false);
+    delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2D views
 
     if (messageNeeded && error !== ViewStatus.Success) {
       //      Viewport::OutputFrustumErrorMessage(error);

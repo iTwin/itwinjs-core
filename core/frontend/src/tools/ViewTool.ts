@@ -1374,7 +1374,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
           break;
         case OrientationResult.Success:
           if (this.haveStaticOrientation(forward, currentTime))
-              doFull = true;
+            doFull = true;
           else
             doDynamic = true;
           break;
@@ -1513,7 +1513,7 @@ class ViewWalk extends ViewNavigate {
         motion.look(input.x, input.y);
         break;
       case NavigateMode.Travel:
-        motion.travel(-input.x * this.getMaxAngularVelocity(), 0, -input.y * this.getMaxLinearVelocity(), true);
+        motion.travel(-input.x * this.getMaxAngularVelocity(), 0, -input.y * this.getMaxLinearVelocity(), true);  // ###TODO: multiplied input.x by -1 added as temporary fix for unknown bug causing inverse walk directions
         break;
     }
 
