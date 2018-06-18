@@ -16,6 +16,7 @@ export interface ISchemaLocater {
 
   /**
    * Attempts to get a schema from the locater. Yields undefined if no matching schema is found.
+   * For schemas that may have references, construct and call through a SchemaContext instead.
    * @param schemaKey key to look up
    * @param matchType how to match key against candidate schemas
    * @param context optional context for loading schema references
@@ -24,6 +25,7 @@ export interface ISchemaLocater {
 
   /**
    * Attempts to get a schema from the locater. Yields undefined if no matching schema is found.
+   * For schemas that may have references, construct and call through a SchemaContext instead.
    * @param schemaKey key to look up
    * @param matchType how to match key against candidate schemas
    * @param context optional context for loading schema references
