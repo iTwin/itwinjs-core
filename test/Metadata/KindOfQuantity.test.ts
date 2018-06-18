@@ -288,7 +288,7 @@ describe("KindOfQuantity", () => {
       const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal[u:M|meter][MILE|miles][u:YRD|yards][u:FT|\']");
       expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: null, Units: [["M", "meter"], ["MILE", "miles"], ["YRD", "yards"], ["FT", "'"]]});
     });
-    it.only("No units defined in format; units in format string should be used", async () => {
+    it("No units defined in format; units in format string should be used", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         version: "1.0.0",
