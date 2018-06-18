@@ -71,6 +71,7 @@ export default class Format extends SchemaItem {
   get stationSeparator(): string  { return this._stationSeparator; }
   get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
   get composite(): Composite | undefined { return this._composite; }
+  set composite(composite: Composite | undefined) { this._composite = composite; }
 
   private verifyFormatTraitsOptions(formatTraitsFromJson: string | string[]) {
       if (formatTraitsFromJson instanceof Array) {

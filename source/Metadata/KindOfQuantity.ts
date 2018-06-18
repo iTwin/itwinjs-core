@@ -70,47 +70,65 @@ export default class KindOfQuantity extends SchemaItem {
     let unitArray: Array<[string, string | undefined]>;
     let unit: any = null;
     let index = 4;
+    let compositeIsDefined: boolean = false;
+    function processUnitLabel(overrideLabel: string, unitName: string): [string, string] {
+      let unitLabelToPush: string = ""; // if unit override label is undefined, use empty string for label
+      if (overrideLabel !== undefined) // override label is defined... push old label
+        unitLabelToPush = overrideLabel;
+      return [unitName, unitLabelToPush]; // return new unit label entry
+    }
     if (!KindOfQuantity.formatStringRgx.test(formatString))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format string has incorrect format.`);
     const match = formatString.split(KindOfQuantity.formatStringRgx);
     if (match[1] !== formatName) // handle format first to fail fast
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format names do not match.`);
-    const matchedFormat = await schema.getItem<Format>(match[1], true);
+    const matchedFormat = await schema.getItem<Format>(match[1], true); // get format item and units
     if (!matchedFormat)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    numUnits = matchedFormat!.composite!.units!.length; // get how many units this format has
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find Format ${formatName}.`);
+    if (matchedFormat!.composite === undefined) { // composite is undefined
+      compositeIsDefined = false; // unit overrides are to be used
+      if (!(/\[/g).test(formatString)) // if format has 0 units, format string must have at least one unit
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Format string requires unit overrides if the format does not have any.`);
+      numUnits = formatString.match(/\[/g)!.length; // units in format string are used bc there are no units in format
+    } else {
+      compositeIsDefined = true;
+      numUnits = matchedFormat!.composite!.units!.length; // get how many units this format has
+    }
     if (match[2] !== undefined && match[3] !== undefined) { // if formatString contains optional override of the precision defined in Format
-      precision = +match[3].split(",")[0]; // override the precision value
+      precision = +match[3].split(",")[0]; // override the precision value, take the first value if it is a list
       if (!Number.isInteger(precision)) // precision value must be an integer
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Precision must be an integer.`);
     } else {
       precision = null; // precision is not present in the format string
     }
     matchedFormat.precision = precision;
-    if (formatString.match(/\[/g)!.length !== numUnits) // count number of left brackets in string- same as coutning number of units
+    if ((/\[/g).test(formatString) && formatString.match(/\[/g)!.length !== numUnits) // count number of left brackets in string- same as coutning number of units
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Incorrect number of unit overrides.`);
-    unitArray = new Array<[string, string | undefined]>();
-    while ( index < match.length - 1 ) { // index 0 and 21 are empty strings when there are 4 units
+    unitArray = new Array<[string, string | undefined]>(); // array to hold [unitName, unitLabel?] entries
+    while ( index < match.length - 1 ) { // index 0 and 21 are empty strings
       if ( match[index] !== undefined) {
         unit = match[index].split(KindOfQuantity.unitRgx);
-        let foundUnitName: boolean = false;
-        let unitLabelToPush: string;
-        matchedFormat!.composite!.units!.forEach((value: [string, string | undefined]) => {
-          if ( unit[2].toLowerCase() === value[0].toLowerCase() ) { // we found a match for this unitName
-            if (unit[4] === undefined) // if unit override label is undefined, use empty string for label
-              unitLabelToPush = "";
-            else
-              unitLabelToPush = unit[4]; // override label isnt defined... push old label
-            unitArray.push([unit[2], unitLabelToPush]);
-            foundUnitName = true;
-          }
-        });
+        let foundUnitName: boolean = false; // did we find a matching unit name in the format?
+        if (!compositeIsDefined) { // if no units in format, units in format string are used
+          unitArray.push(processUnitLabel(unit[4], unit[2]));
+          foundUnitName = true;
+        } else { // if composite is defined
+          matchedFormat!.composite!.units!.forEach((value: [string, string | undefined]) => { // find match for unitName in format
+            if ( unit[2].toLowerCase() === value[0].toLowerCase() ) { // we found a match for this unitName
+              unitArray.push(processUnitLabel(unit[4], unit[2]));
+              foundUnitName = true;
+            }
+          });
+        }
         if ( foundUnitName === false )
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot find unit name ${unit[2]}.`);
       } else
         break;
       index += 4;
     }
+    if (!compositeIsDefined)
+      matchedFormat!.composite = {includeZero: true, spacer: " ", units: new Array<[string, string | undefined]>()}; // if composite was undefined, init with default values
+    matchedFormat!.composite!.units = unitArray; // assign unit array to composite
     return {FormatName: formatName, Precision: precision, Units: unitArray};
   }
 

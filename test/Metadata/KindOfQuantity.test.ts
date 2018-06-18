@@ -288,6 +288,37 @@ describe("KindOfQuantity", () => {
       const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal[u:M|meter][MILE|miles][u:YRD|yards][u:FT|\']");
       expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: null, Units: [["M", "meter"], ["MILE", "miles"], ["YRD", "yards"], ["FT", "'"]]});
     });
+    it.only("No units defined in format; units in format string should be used", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal[u:M|meter][MILE|miles][u:YRD|yards][u:FT|\']");
+      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: null, Units: [["M", "meter"], ["MILE", "miles"], ["YRD", "yards"], ["FT", "'"]]});
+    });
     it("Fail if unit name doesnt exist", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
@@ -415,6 +446,78 @@ describe("KindOfQuantity", () => {
       assert.isDefined(ecSchema);
       await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)[u:M|meter][u:MILE|miles][u:YRD|yards][u:FT|\']")).to.be.rejectedWith(ECObjectsError, `Incorrect number of unit overrides.`);
     });
+    it("No unit overrides provided", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)");
+      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: 4, Units: []});
+    });
+    it("If Format has 0 units, FormatString must have at least 1 unit.", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)")).to.be.rejectedWith(ECObjectsError, `Format string requires unit overrides if the format does not have any.`);
+
+    });
     it("Format string doesn't match format name", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
@@ -494,6 +597,88 @@ describe("KindOfQuantity", () => {
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
       await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4.8)[u:M|meter]")).to.be.rejectedWith(ECObjectsError, `Precision must be an integer.`);
+    });
+    it("Precision is list of options", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4, FOO, BAR)[u:M|meter]");
+      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: 4, Units: [["M", "meter"]]});
+    });
+    it("Precision is not provided", async () => {
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        version: "1.0.0",
+        name: "TestSchema",
+        items: {
+          Length: {
+            schemaItemType: "Phenomenon",
+            definition: "LENGTH(1)",
+          },
+          Metric: {
+            schemaItemType: "UnitSystem",
+          },
+          M: {
+            schemaItemType: "Unit",
+            phenomenon: "TestSchema.Length",
+            unitSystem: "TestSchema.Metric",
+            definition: "[MILLI]*M",
+          },
+          DefaultReal: {
+            schemaItemType: "Format",
+            type: "fractional",
+            precision: 4,
+            composite: {
+              includeZero: false,
+              spacer: "-",
+              units: [
+                {
+                  name: "M",
+                  label: "meters",
+                },
+              ],
+            },
+          },
+        },
+      };
+      const ecSchema = await Schema.fromJson(json);
+      assert.isDefined(ecSchema);
+      const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal[u:M|meter]");
+      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: null, Units: [["M", "meter"]]});
     });
   });
 });
