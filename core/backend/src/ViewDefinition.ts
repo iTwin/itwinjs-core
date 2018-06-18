@@ -217,14 +217,14 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   }
 }
 
-/** Defines a view of a DrawingModel. */
+/** Defines a view of a [[DrawingModel]]. */
 export class DrawingViewDefinition extends ViewDefinition2d {
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
 
-/** Defines a view of a SheetModel. */
+/** Defines a view of a [[SheetModel]]. */
 export class SheetViewDefinition extends ViewDefinition2d {
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -256,7 +256,7 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
 }
 
 /**
- * A 2d coordinate system.
+ * A 2d auxiliary coordinate system.
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
   public origin?: Point2d;
@@ -265,7 +265,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
 }
 
 /**
- * A 3d coordinate system.
+ * A 3d auxiliary coordinate system.
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
   public origin?: Point3d;
@@ -276,13 +276,13 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
 }
 
 /**
- * A spatial auxililary coordinate system.
+ * A spatial auxiliary coordinate system.
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 }
 
 /**
- * Represents an attachment of a [[ViewDefinition]] to a [[SheetModel]].
+ * Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
  */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
   public view?: Id64;
@@ -290,9 +290,10 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 }
 
 /**
- * The spatial location of a light source
+ * The position in space of a [[Light]]
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
+  /** Whether this light is currently turned on. */
   public enabled!: boolean;
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }
