@@ -22,19 +22,19 @@ via [IModelDb.Elements.updateElement]($backend).
 
 An instance of a `ViewState` in memory holds references to several other objects, including a [CategorySelectorState]($frontend), a [DisplayStyle3dState]($frontend),
 and a [ModelSelectorState]($frontend) (for `SpatialViews`). Since each of these objects must be loaded in the frontend asynchronously, there is an
-async method called [IModelConnection.Views.load]($frontend) that returns a promise when the `ViewState` and all other `State` objects required to display a
-View are ready. The [Viewport]($frontend) class expects loaded `ViewState` objects.
+async method called [IModelConnection.Views.load]($frontend) that returns a promise when the `ViewState` and all other State objects required to display a
+View are ready. The [Viewport]($frontend) class expects loaded ViewState objects.
 
 ## Types of ViewDefinitions
 
-There are subclasses of `ViewDefinition` to show different types of `Models` in various ways.
+There are subclasses of `ViewDefinition` to show different types of Models in various ways.
 
 Here are several significant subclasses:
 
 * `ViewDefinition`
-  * `SpatialViewDefinition` - shows a view of one or more 3d `SpatialModel`s
-  * `DrawingViewDefinition` - shows a view of a single 2d `DrawingModel`
-  * `SheetViewDefinition` - shows a view of a single 2d `SheetModel`
+  * `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
+  * `DrawingViewDefinition` - shows a view of a single 2d DrawingModel
+  * `SheetViewDefinition` - shows a view of a single 2d SheetModel
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 
@@ -69,7 +69,7 @@ Element and Models in the iModel, a display [Frustum]($common), a DisplayStyle, 
 
 ## ViewManager
 
-The Viewport class is responsible for displaying Views, as defined by its ViewState. However, typically the purpose of showing a View is to allow users
+The Viewport class is responsible for displaying a View, as defined by its ViewState. However, typically the objective of showing a View is to allow users
 to modify the View itself, or to interact with its contents.
 
 To facilitate that, we need to connect the event system of the browser with Viewports via [IModelApp.viewManager]($frontend).
@@ -101,20 +101,22 @@ This includes the :
   * [Light]($common)s
   * Other view-specific parameters
 
+They are loaded in memory in the frontend with the [DisplayStyleState]($frontend) class.
+
 DisplayStyles can be named and shared among many ViewDefinitions.
 
 ## ModelSelectors
 
 ModelSelectors apply only to SpatialViews. They determine the set of [SpatialModel]($backend)s that are displayed. The Geometry for elements in SpatialModels are always
-stored in the iModel's Spatial Coordinate System.
+stored in the iModel's Spatial Coordinate System. They are loaded in memory in the frontend with the [ModelSelectorState]($frontend) class.
 
-Since each 2d Model has its own coordinate system, 2d Views always only show a single Model.
+Since each 2d Model has its own coordinate system, 2d Views always only show a single Model and therefore don't use ModelSelectors.
 
 ModelSelectors can be named and shared among many ViewDefinitions.
 
 ## CategorySelectors
 
-A [CategorySelectorState]($frontend) determines the set of [Category]($backend) that are displayed in a View.
+A [CategorySelectorState]($frontend) determines the set of [Category]($backend) that are displayed in a View. They are loaded in memory in the frontend with the [CategorySelectorState]($frontend) class.
 
 CategorySelectors can be named and shared among many ViewDefinitions.
 

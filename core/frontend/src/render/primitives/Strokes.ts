@@ -31,8 +31,6 @@ export class StrokesPrimitive {
     this.isPlanar = isPlanar;
   }
 
-  // ###TODO: public static clipToRange(input: StrokesPointLists, range: any);
-
   public transform(trans: Transform) {
     for (const strk of this.strokes) {
       trans.multiplyPoint3dArrayInPlace(strk.points);

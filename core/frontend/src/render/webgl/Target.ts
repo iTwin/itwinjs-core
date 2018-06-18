@@ -7,7 +7,6 @@ import { Transform, Vector3d, Point3d, ClipPlane, ClipVector, Matrix4d } from "@
 import { BeTimePoint, assert, Id64 } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, DecorationList, Decorations, GraphicList, RenderPlan } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, HiddenLine, ImageLight, LinePixels, ColorByName } from "@bentley/imodeljs-common";
-import { HilitedSet } from "../../SelectionSet";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -148,7 +147,7 @@ export abstract class Target extends RenderTarget {
   private _dynamics?: DecorationList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
-  private _hilite?: HilitedSet;
+  private _hilite?: Set<string>;
   private _hiliteUpdateTime = BeTimePoint.now();
   private _flashedElemId = Id64.invalidId;
   private _flashedUpdateTime = BeTimePoint.now();
@@ -200,7 +199,7 @@ export abstract class Target extends RenderTarget {
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
-  public get hilite(): HilitedSet { return this._hilite!; }
+  public get hilite(): Set<string> { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
   public get flashedElemId(): Id64 { return this._flashedElemId; }
@@ -292,13 +291,14 @@ export abstract class Target extends RenderTarget {
   }
   public changeDynamics(dynamics?: DecorationList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
+    // See IModelConnection.transientIds
     this._dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this._stack.setSymbologyOverrides(ovr);
     this._overridesUpdateTime = BeTimePoint.now();
   }
-  public setHiliteSet(hilite: HilitedSet): void {
+  public setHiliteSet(hilite: Set<string>): void {
     this._hilite = hilite;
     this._hiliteUpdateTime = BeTimePoint.now();
   }

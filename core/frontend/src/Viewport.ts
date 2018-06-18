@@ -91,9 +91,8 @@ export class ViewRect {
     if (undefined !== out) {
       out.copyFrom(this);
       return out;
-    } else {
-      return new ViewRect(this.left, this.top, this.right, this.bottom);
     }
+    return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
 
   /** Determine if this ViewRect is contained entirely within the bounds of another ViewRect. */
@@ -352,8 +351,8 @@ export class Viewport {
   public isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   public isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  /** construct a new Viewport
-   * @param canvas The HTML canvas
+  /** Construct a new Viewport
+   * @param canvas The HTMLCanvasElement for the new Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
    */
   constructor(public canvas: HTMLCanvasElement, viewState: ViewState) {
@@ -493,24 +492,59 @@ export class Viewport {
 
   private invalidateScene(): void { this.sync.invalidateScene(); }
 
-  private static readonly fullRangeNpc = new Range3d(0, 1, 0, 1, 0, 1); // full range of view
-  private static readonly depthRect = new ViewRect();
-  public determineVisibleDepthNpc(subRectNpc?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
-    subRectNpc = subRectNpc || Viewport.fullRangeNpc;
-
-    // Determine screen rectangle in which to query visible depth min + max
-    const viewRect = Viewport.depthRect;
-    viewRect.initFromPoint(this.npcToView(subRectNpc.low), this.npcToView(subRectNpc.high));
-    return this.pickRange(viewRect, result);
-  }
-
-  /** Computes the range of depth values for a region of the screen
-   * @param origin the top-left corner of the region in screen coordinates
-   * @param extents the width (x) and height (y) of the region in screen coordinates
+  private static readonly fullRangeNpc = new Range3d(0, 0, 0, 1, 1, 1); // full range of view (used in determineVisibleDepthNpcRange to avoid reinitializing)
+  private static readonly depthRect = new ViewRect(); // used in determineVisibleDepthNpcRange to avoid reinitializing
+  /**
+   * Computes the range of depth values for a region of the screen
+   * @param subRectView the subrange in view coordinates we wish to view
+   * @param result optional DepthRangeNpc to store the result
    * @returns the minimum and maximum depth values within the region, or undefined.
    */
-  public pickRange(_rect: ViewRect, _result?: DepthRangeNpc): DepthRangeNpc | undefined {
-    return undefined;
+  public determineVisibleDepthNpcRange(subRectView?: Range3d, result?: DepthRangeNpc): DepthRangeNpc | undefined {
+    if (result) { // Null result if given
+      result.minimum = 1;
+      result.maximum = 0;
+    }
+
+    // Default to a (0, 0, 0) to (1, 1, 1) range if no range was provided
+    subRectView = subRectView ? subRectView : Viewport.fullRangeNpc;
+
+    // Determine the screen rectangle in which to query visible depth min + max
+    const newViewRect = Viewport.depthRect;
+    newViewRect.initFromPoint(subRectView.low, subRectView.high);
+    const readRect = newViewRect.computeOverlap(this.viewRect);
+    if (undefined === readRect)
+      return undefined;
+
+    const pixels = this.readPixels(readRect, Pixel.Selector.Distance);
+    if (!pixels)
+      return undefined;
+
+    let maximum = 0;
+    let minimum = 1;
+    const npc = Point3d.create();
+    const testPoint = Point2d.create();
+    for (testPoint.x = readRect.left; testPoint.x < readRect.right; testPoint.x++) {
+      for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; testPoint.y++) {
+        if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
+          minimum = Math.min(minimum, npc.z);
+          maximum = Math.max(maximum, npc.z);
+        }
+      }
+    }
+
+    if (maximum > 0) {
+      if (undefined === result) {
+        result = new DepthRangeNpc(minimum, maximum);
+      } else {
+        result.minimum = minimum;
+        result.maximum = maximum;
+      }
+
+      return result;
+    } else {
+      return undefined;
+    }
   }
 
   private static readonly scratchDefaultRotatePointLow = new Point3d(.5, .5, .5);
@@ -554,7 +588,7 @@ export class Viewport {
 
     // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
     // We use the depth of the center of the view for that.
-    let depthRange = this.determineVisibleDepthNpc();
+    let depthRange = this.determineVisibleDepthNpcRange();
     if (!depthRange)
       depthRange = new DepthRangeNpc();
     const middle = depthRange.middle();
@@ -1131,8 +1165,9 @@ export class Viewport {
   }
 
   public computeViewRange(): Range3d {
-    this.setupFromView();
+    this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     const viewRange = this.view.computeFitRange();
+
     // // NB: This is the range of all models currently in the scene. Doesn't account for toggling display of categories.
     // const geomRange = this.geometry.range;
     // const geomMatrix = this.geometry.modelMatrix;
@@ -1156,6 +1191,7 @@ export class Viewport {
     // this.rotMatrix.multiplyArray(rangeBox);
 
     // const viewRange = Range3.fromArray(rangeBox);
+
     return viewRange;
   }
 
@@ -1487,7 +1523,16 @@ export class Viewport {
     }
 
     if (view.isSelectionSetDirty) {
-      target.setHiliteSet(view.iModel.hilited);
+      if ((0 === view.iModel.hilited.size && 0 === view.iModel.selectionSet.size) || (view.iModel.hilited.size > 0 && 0 === view.iModel.selectionSet.size)) {
+        target.setHiliteSet(view.iModel.hilited.elements); // only hilited has elements to send (or empty)
+      } else if (0 === view.iModel.hilited.size && view.iModel.selectionSet.size > 0) {
+        target.setHiliteSet(view.iModel.selectionSet.elements); // only selectionSet has elements to send
+      } else { // combine both sets (they both have elements to send)
+        const allHilites = new Set<string>();
+        view.iModel.hilited.elements.forEach((val) => allHilites.add(val));
+        view.iModel.selectionSet.elements.forEach((val) => allHilites.add(val));
+        target.setHiliteSet(allHilites);
+      }
       view.setSelectionSetDirty(false);
       isRedrawNeeded = true;
     }

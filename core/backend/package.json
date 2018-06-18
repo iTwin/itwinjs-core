@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.92.11",
+  "version": "0.93.12",
   "description": "iModelJs backend components",
   "main": "lib/backend.js",
   "typings": "lib/backend",
@@ -15,7 +15,7 @@
     "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
-    "cover:integration": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
+    "cover:integration": "nyc mocha --timeout 60000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts --grep #integration",
     "lint": "tslint --project . 1>&2",
     "pretest": "npm run copy:test-assets && rush build -t @bentley/imodeljs-backend && cpx ./src/test/logging.config.json ./lib/test",
     "test": "npm run pretest && node ./node_modules/@bentley/bentleyjs-tools/scripts/test.js --offline=\"mock\" --grep #integration --invert",

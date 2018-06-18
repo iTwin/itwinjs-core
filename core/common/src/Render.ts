@@ -1087,6 +1087,8 @@ export namespace Gradient {
       return false;
     }
 
+    public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
+
     /** Writes the image in 'reverse'. */
     public getImage(width: number, height: number): ImageBuffer {
       if (this.mode === Mode.Thematic) {

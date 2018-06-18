@@ -4,7 +4,7 @@
 /** @module Tools */
 
 import { BeButtonEvent, BeCursor, BeWheelEvent, CoordSource, BeGestureEvent, GestureInfo, InteractiveTool } from "./Tool";
-import { Viewport, CoordSystem, ViewRect } from "../Viewport";
+import { Viewport, CoordSystem, DepthRangeNpc } from "../Viewport";
 import { Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d } from "@bentley/geometry-core";
 import { RotMatrix, Transform } from "@bentley/geometry-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -119,6 +119,7 @@ export abstract class ViewingToolHandle {
   public abstract testHandleForHit(ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean;
   public abstract get handleType(): ViewHandleType;
   public focusIn(): void { IModelApp.toolAdmin.setCursor(this.getHandleCursor()); }
+  public drawHandle(_context: DecorateContext, _hasFocus: boolean): void { }
 }
 
 export class ViewHandleArray {
@@ -177,6 +178,22 @@ export class ViewHandleArray {
       }
     }
     return undefined !== nearestHitHandle;
+  }
+
+  public drawHandles(context: DecorateContext): void {
+    // all handle objects must draw themselves
+    for (let i = 0; i < this.count; i++) {
+      if (i !== this.hitHandleIndex) {
+        const handle = this.handles[i];
+        handle.drawHandle(context, this.focus === i);
+      }
+    }
+
+    // draw the hit handle last
+    if (-1 !== this.hitHandleIndex) {
+      const handle = this.handles[this.hitHandleIndex];
+      handle.drawHandle(context, this.focus === this.hitHandleIndex);
+    }
   }
 
   public setFocus(index: number): void {
@@ -272,6 +289,10 @@ export abstract class ViewManip extends ViewTool {
     // set up after the constructor. However, when this tool is installed there may be a call to
     // OnCleanup that makes it appear that the viewport is not attached to a view command.
     this.changeViewport(viewport);
+  }
+
+  public decorate(context: DecorateContext): void {
+    this.viewHandles.drawHandles(context);
   }
 
   public onReinitialize(): void {
@@ -667,7 +688,7 @@ export abstract class ViewManip extends ViewTool {
     if (this._useViewAlignedVolume)
       viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     else
-      viewport.view.lookAtVolume(range);
+      viewport.view.lookAtVolume(range, aspect, marginPercent);
 
     viewport.synchWithView(false);
     viewport.viewCmdTargetCenter = undefined;
@@ -1328,34 +1349,63 @@ abstract class ViewNavigate extends ViewingToolHandle {
     if (haveNavigateEvent) {
       const frust = vp.getWorldFrustum(scratchFrustum);
       frust.multiply(motion!.transform);
-      vp.setupFromFrustum(frust);
-      haveNavigateEvent = false;
-      if (OrientationResult.NoEvent === orientationResult)
-        return false;
+      if (!vp.setupFromFrustum(frust)) {
+        haveNavigateEvent = false;
+        if (OrientationResult.NoEvent === orientationResult)
+          return false;
+      }
     }
 
+    let doFull = false;
+    let doDynamic = false;
     if (haveNavigateEvent)
-      return true;
-    if (OrientationResult.Success === orientationResult)
-      return !this.haveStaticOrientation(forward, currentTime);
-    return false;
-    // let doFull = false;
-    // let doDynamic = false;
-    // if (haveNavigateEvent)
-    //   doDynamic = true; // cause dynamic update
-    // else if (OrientationResult.Disabled === orientationResult || OrientationResult.NoEvent === orientationResult)
-    //   doFull = true;
+      doDynamic = true;
+    else {
+      switch (orientationResult) {
+        case OrientationResult.Disabled:
+        case OrientationResult.NoEvent:
+          doFull = true;
+          break;
+        case OrientationResult.RejectedByController:
+          if (!this.haveStaticOrientation(forward, currentTime))
+            return false;
+
+          doFull = true;
+          break;
+        case OrientationResult.Success:
+          if (this.haveStaticOrientation(forward, currentTime))
+            doFull = true;
+          else
+            doDynamic = true;
+          break;
+      }
+    }
+
+    if (doFull) {
+      this.viewTool.endDynamicUpdate();
+      this.viewTool.doUpdate(true);
+      this.viewTool.beginDynamicUpdate();
+      return false;
+    }
+
+    return doDynamic;
   }
 
   public doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean {
     if (!inDynamics)
       return true;
+    else if (ev.viewport !== this.viewTool.viewport)
+      return false;
 
     this.lastPtView.setFrom(ev.viewPoint);
     return this.doNavigate(ev);
   }
 
   public noMotion(ev: BeButtonEvent): boolean {
+    if (ev.viewport !== this.viewTool.viewport)
+      return false;
+
+    this.viewTool.beginDynamicUpdate();
     this.doNavigate(ev);
     return false;
   }
@@ -1404,6 +1454,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
   public firstPoint(ev: BeButtonEvent): boolean {
     // NB: In desktop apps we want to center the cursor in the view.
     // The browser doesn't support that, and it is more useful to be able to place the anchor point freely anyway.
+    this.viewTool.beginDynamicUpdate();
     this.lastPtView.setFrom(ev.viewPoint);
     this.anchorPtView.setFrom(this.lastPtView);
 
@@ -1414,6 +1465,25 @@ abstract class ViewNavigate extends ViewingToolHandle {
   public getHandleCursor(): BeCursor { return BeCursor.CrossHair; }
   public focusOut() {
     // this.decoration = this.decoration && this.decoration.destroy();
+  }
+
+  public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
+    if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
+      return;
+
+    const point = new Point2d(this.anchorPtView.x, this.anchorPtView.y);
+    const points = [point];
+    const black = ColorDef.black.clone();
+    let graphic = context.createViewOverlay();
+    graphic.setSymbology(black, black, 9);
+    graphic.addPointString2d(points, 0.0);
+    context.addViewOverlay(graphic.finish());
+
+    const white = ColorDef.white.clone();
+    graphic = context.createViewOverlay();
+    graphic.setSymbology(white, black, 5);
+    graphic.addPointString2d(points, 0.0);
+    context.addViewOverlay(graphic.finish());
   }
 }
 
@@ -1443,7 +1513,7 @@ class ViewWalk extends ViewNavigate {
         motion.look(input.x, input.y);
         break;
       case NavigateMode.Travel:
-        motion.travel(-input.x * this.getMaxAngularVelocity(), 0, -input.y * this.getMaxLinearVelocity(), true);
+        motion.travel(-input.x * this.getMaxAngularVelocity(), 0, -input.y * this.getMaxLinearVelocity(), true);  // ###TODO: multiplied input.x by -1 added as temporary fix for unknown bug causing inverse walk directions
         break;
     }
 
@@ -1512,8 +1582,8 @@ export class WindowAreaTool extends ViewTool {
   public static toolId = "View.WindowArea";
 
   private haveFirstPoint: boolean = false;
-  private firstPtWorld: Point3d = new Point3d();
-  private secondPtWorld: Point3d = new Point3d();
+  private firstPtWorld: Point3d = Point3d.create();
+  private secondPtWorld: Point3d = Point3d.create();
   private lastPtView = new Point3d();
   private viewport: Viewport;
   private corners = [new Point3d(), new Point3d()];
@@ -1668,77 +1738,64 @@ export class WindowAreaTool extends ViewTool {
     if (!corners)
       return;
 
-    const vp = this.viewport;
-    const view = vp.view;
-    const startFrust = vp.getWorldFrustum(scratchFrustum);
-
-    vp.viewToWorldArray(corners);
     let delta: Vector3d;
-    if (view.is3d() && view.isCameraOn()) {
-      let npcZ: number;
+    const vp = this.viewport;
+    const startFrust = vp.getWorldFrustum(scratchFrustum);
+    vp.viewToWorldArray(corners);
 
-      const windowRange = Range3d.createArray(corners);
-      windowRange.low = vp.worldToView(windowRange.low);
-      windowRange.high = vp.worldToView(windowRange.high);
+    if (vp.view.is3d() && vp.view.isCameraOn()) {
+      const cameraView = vp.view as ViewState3d;
 
-      const windowRangeScale = 0.9;
+      const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
+      vp.worldToViewArray(windowArray);
+
+      const windowRange = Range3d.createArray(windowArray);
+      const windowRangeScale = 0.9;   // Inset 90% avoid geometry at window edges
       windowRange.scaleAboutCenterInPlace(windowRangeScale);
 
-      // Try to get nearest Z within rectangle directly from depth buffer
-      const viewRect = new ViewRect();
-      viewRect.initFromRange(windowRange);
-      const depthRange = vp.pickRange(viewRect);
-      if (depthRange) {
-        npcZ = depthRange.minimum;
-        // } else if (nullptr != (path = ViewManip:: GetTargetHitDetail(* viewport, DPoint3d:: FromInterpolate(corners[0], 0.5, corners[1]))))
-        // {
-        //   // Obtain nearest Z from front most element at center of rectangle
-        //   npcZ = viewport -> WorldToNpc(path -> GetHitPoint()).z;
-        // }
-      } else {
-        // Just use the focus plane
-        npcZ = vp.getFocusPlaneNpc();
-      }
+      let npcZValues = vp.determineVisibleDepthNpcRange(windowRange);
+      if (!npcZValues)
+        npcZValues = new DepthRangeNpc(0, vp.getFocusPlaneNpc());  // Just use the focus plane
 
-      const lensAngle = view.getLensAngle();
+      const lensAngle = cameraView.getLensAngle();
 
       vp.worldToNpcArray(corners);
-      corners[0].z = corners[1].z = npcZ;
+      corners[0].z = corners[1].z = npcZValues.maximum;
 
-      vp.npcToWorldArray(corners); // put the corners back in world at correct depth
-      const viewPts = [corners[0], corners[1]];
-      vp.rotMatrix.multiplyVectorArrayInPlace(viewPts); // rotate to view orientation to get extents
+      vp.npcToWorldArray(corners);  // Put corners back in world at correct depth
+      const viewPts: Point3d[] = [corners[0].clone(), corners[1].clone()];
+      vp.rotMatrix.multiplyVectorArrayInPlace(viewPts);  // rotate to view orientation to get extents
 
       const range = Range3d.createArray(viewPts);
-      delta = range.low.vectorTo(range.high);
+      delta = Vector3d.createStartEnd(range.low, range.high);
 
-      let focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2.0));
-      if (focusDist < view.minimumFrontDistance())
-        focusDist = view.minimumFrontDistance();
+      const focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2));
 
       const newTarget = corners[0].interpolate(.5, corners[1]);
-      const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
+      const newEye = newTarget.plusScaled(cameraView.getZVector(), focusDist);
 
-      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
+      if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle, focusDist) !== ViewStatus.Success)
         return;
     } else {
-      vp.rotMatrix.multiplyVectorInPlace(corners[0]);
-      vp.rotMatrix.multiplyVectorInPlace(corners[1]);
-      const viewRange = Range3d.createArray(corners);
+      vp.rotMatrix.multiplyVectorArrayInPlace(corners);
 
-      delta = viewRange.low.vectorTo(viewRange.high);
-      delta.z = view.getExtents().z; // preserve z depth
+      const range = Range3d.createArray(corners);
+      delta = Vector3d.createStartEnd(range.low, range.high);
+      // get the view extents
+      delta.z = vp.view.getExtents().z;
 
       // make sure its not too big or too small
-      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+      if (vp.view.validateViewDelta(delta, true) !== ViewStatus.Success)
         return;
 
-      view.setExtents(delta);
-      vp.rotMatrix.multiplyTransposeVectorInPlace(viewRange.low);
-      view.setOrigin(viewRange.low);
+      vp.view.setExtents(delta);
+
+      const originVec = vp.rotMatrix.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
+      vp.view.setOrigin(Point3d.createFrom(originVec));
     }
 
     vp.synchWithView(true);
+
     vp.animateFrustumChange(startFrust, vp.getFrustum(), ViewToolSettings.animationTime);
   }
 

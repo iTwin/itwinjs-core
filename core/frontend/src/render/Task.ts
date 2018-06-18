@@ -156,7 +156,7 @@ export class SetHiliteTask extends SceneTask {
 
   public getName(): string { return "Set Hilite"; }
 
-  public process(_timer: StopWatch): TaskOutcome { this.target.setHiliteSet(this.hilited); return TaskOutcome.Finished; }
+  public process(_timer: StopWatch): TaskOutcome { this.target.setHiliteSet(this.hilited.elements); return TaskOutcome.Finished; }
 }
 
 export class OverrideFeatureSymbologyTask extends SceneTask {

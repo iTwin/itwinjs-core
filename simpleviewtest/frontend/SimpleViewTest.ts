@@ -38,7 +38,7 @@ const renderModeOptions: RenderModeOptions = {
 };
 
 let activeViewState: SimpleViewState = new SimpleViewState();
-const viewMap = new Map<string, ViewState>();
+const viewMap = new Map<string, ViewState | IModelConnection.ViewSpec>();
 let theViewport: Viewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
@@ -124,21 +124,19 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
   const config = undefined !== configurations ? configurations : {};
   const viewList = document.getElementById("viewList") as HTMLSelectElement;
   const viewQueryParams: ViewQueryParams = { wantPrivate: false };
-  const viewProps: ViewDefinitionProps[] = await state.iModelConnection!.views.queryProps(viewQueryParams);
-  for (const viewProp of viewProps) {
-    // look for view of the expected name.
-    if (viewProp.code && viewProp.id) {
-      const option = document.createElement("option");
-      option.text = viewProp.code.value!;
-      viewList.add(option);
-      const viewState = await state.iModelConnection!.views.load(viewProp.id);
-      viewMap.set(viewProp.code.value!, viewState);
-      if (undefined === config.viewName)
-        config.viewName = viewProp.code.value!;
-      if (viewProp.code.value === config.viewName) {
-        viewList!.value = viewProp.code.value;
-        state.viewState = viewState;
-      }
+  const viewSpecs: IModelConnection.ViewSpec[] = await state.iModelConnection!.views.getViewList(viewQueryParams);
+  for (const viewSpec of viewSpecs) {
+    const option = document.createElement("option");
+    option.text = viewSpec.name;
+    viewList.add(option);
+    viewMap.set(viewSpec.name, viewSpec);
+    if (undefined === config.viewName)
+      config.viewName = viewSpec.name;
+    if (viewSpec.name === config.viewName) {
+      viewList!.value = viewSpec.name;
+      const viewState = await state.iModelConnection!.views.load(viewSpec.id);
+      viewMap.set(viewSpec.name, viewState);
+      state.viewState = viewState;
     }
   }
 }
@@ -345,9 +343,17 @@ function startRotateView(_event: any) {
 }
 
 // change active view.
-function changeView(event: any) {
+async function changeView(event: any) {
+  const spinner = document.getElementById("spinner") as HTMLDivElement;
+  spinner.style.display = "block";
   const viewName = event.target.selectedOptions["0"].label;
-  _changeView(viewMap.get(viewName)!.clone());
+  let view = viewMap.get(viewName);
+  if (!(view instanceof ViewState)) {
+    view = await activeViewState.iModelConnection!.views.load((view as IModelConnection.ViewSpec).id);
+    viewMap.set(viewName, view);
+  }
+  _changeView(view.clone());
+  spinner.style.display = "none";
 }
 
 async function clearViews() {

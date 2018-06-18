@@ -44,7 +44,7 @@ export * from "./IModelApp";
  */
 /**
  * @docs-group-description IModelConnection
- * Classes for working with a connection to an iModel briefcase - see [iModel Overview]($docs/overview/IModels.md)
+ * Classes for working with a connection to an [iModel briefcase]($docs/overview/IModels.md)
  */
 /**
  * @docs-group-description ElementState
@@ -56,11 +56,11 @@ export * from "./IModelApp";
  */
 /**
  * @docs-group-description Tools
- * Classes for working with Tools - see [learning about tools]($docs/learning/frontend/Tools.md)
+ * Classes for [working with Tools]($docs/learning/frontend/Tools.md)
  */
 /**
  * @docs-group-description Views
- * Classes for working with Views - see [learning about views]($docs/learning/frontend/Views.md)
+ * Classes for [working with Views]($docs/learning/frontend/Views.md)
  */
 /**
  * @docs-group-description LocatingElements

@@ -20,6 +20,7 @@ describe("PushRetry", () => {
   let testProjectId: string;
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
+  const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.superManager);
@@ -46,6 +47,7 @@ describe("PushRetry", () => {
 
     // Start pushing change sets and versions
     await testPushUtility.pushTestChangeSetsAndVersions(expectedCount);
+    await pause(10 * 1000); // Pause 10 seconds to ensure all the events have been received
 
     assert.equal(actualChangeSetCount, expectedCount);
     assert.equal(actualVersionCount, expectedCount);

@@ -74,7 +74,7 @@ spawn(path.resolve(process.cwd(), "node_modules/.bin/typedoc"), args).then((code
     if (code === 0) {
         let tagErrors = validateTags(json);
         if (tagErrors.toString()) {
-            console.error(`JSON contains invalid tags: ${tagErrors.toString()}`);
+            console.error(`JSON contains invalid tags: ${JSON.stringify(tagErrors)}`);
             fs.unlink(json);
             console.log(`JSON removed from ${json}`)
             code = 5;

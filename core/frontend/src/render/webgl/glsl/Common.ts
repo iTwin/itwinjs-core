@@ -68,7 +68,7 @@ export function addShaderFlags(builder: ProgramBuilder) {
 export function addFrustum(builder: ProgramBuilder) {
   builder.addUniform("u_frustum", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_frustum", (uniform, params) => {
-      uniform.setUniform3fv(params.target.frustumUniforms.frustum); // ###TODO: proper use of frustumUniforms?
+      uniform.setUniform3fv(params.target.frustumUniforms.frustum);
     });
   });
 

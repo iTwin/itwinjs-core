@@ -325,11 +325,18 @@ export namespace IModelConnection {
 
       try {
         (await this.getProps(notLoaded)).forEach((props) => {
-          const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
-          if (names.length < 2)
-            return;
+          let className: string;
+          if (undefined !== props.bisBaseClass) // this should be present to tell us which bis class the model derives from
+            className = props.bisBaseClass;
+          else {
+            const names = props.classFullName.split(":"); // fullClassName is in format schema:className.
+            if (names.length < 2)
+              return;
+            className = names[1];
+          }
           let ctor = ModelState;
-          switch (names[1]) {
+          switch (className) {
+            case "SpatialModel":
             case "PhysicalModel":
             case "SpatialLocationModel":
             case "WebMercatorModel":
@@ -375,18 +382,18 @@ export namespace IModelConnection {
     /** @hidden */
     public constructor(private _iModel: IModelConnection) { }
 
-    /** The Id of the root subject element. */
+    /** The Id of the [root subject element]($docs/bis/intro/glossary.md#subject-root) for this iModel. */
     public get rootSubjectId(): Id64 { return new Id64("0x1"); }
 
-    /** get a set of element ids that satisfy a query */
+    /** Get a set of element ids that satisfy a query */
     public async queryIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
 
-    /** Get a batch of [[ElementProps]] given one or more element ids. */
+    /** Get an array of [[ElementProps]] given one or more element ids. */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       return await IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
     }
 
-    /** get a bach of [[ElementProps]] that satisfy a query */
+    /** Get an array  of [[ElementProps]] that satisfy a query */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       return await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
     }
