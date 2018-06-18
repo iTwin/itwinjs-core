@@ -47,6 +47,8 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     */
 
     const schema = new Schema(maxCandidate) as T;
+    if (context)
+      await context.addSchema(schema);
     await this.addSchemaReferences(schema, context);
     return schema;
   }
@@ -58,9 +60,19 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param key The SchemaKey of the Schema to retrieve.
    * @param matchType The SchemaMatchType.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
-    return context!.getSchemaSync(schemaKey, matchType);
-    // TODO: this has not been implemented yet. We will change the async method flow first and then create this one
+  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+
+    if (!candidates || candidates.length === 0)
+      return undefined;
+
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const schema = new Schema(maxCandidate) as T;
+    if (context)
+      context.addSchemaSync(schema);
+
+    this.addSchemaReferencesSync(schema, context);
+    return schema;
   }
 
   /**
@@ -68,7 +80,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * the referenced schemas.
    * @param schema The schema for which to add the references.
    */
-  public async addSchemaReferences(schema: Schema, context?: SchemaContext) {
+  public async addSchemaReferences(schema: Schema, context?: SchemaContext): Promise<void> {
     const refKeys = this.getSchemaReferenceKeys(schema.schemaKey as FileSchemaKey);
 
     for (const key of refKeys) {
@@ -82,6 +94,32 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
         */
 
       const refSchema = context ? await context.getSchema(key, SchemaMatchType.LatestReadCompatible) : undefined;
+      if (!refSchema)
+        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate referenced schema: ${key.name}.${key.readVersion}.${key.writeVersion}.${key.minorVersion}`);
+
+      schema.references.push(refSchema);
+    }
+  }
+
+  /**
+   * Adds schemas to the references collection for the given Schema by locating
+   * the referenced schemas.
+   * @param schema The schema for which to add the references.
+   */
+  public addSchemaReferencesSync(schema: Schema, context?: SchemaContext): void {
+    const refKeys = this.getSchemaReferenceKeys(schema.schemaKey as FileSchemaKey);
+
+    for (const key of refKeys) {
+      /* TODO: Re-implement once references collection is an array of Promises.
+      const promise = new Promise<Schema>(async () => {
+        return await this.getSchema(key, SchemaMatchType.LatestReadCompatible);
+      });
+      const refSchema = await promise;
+      if (refSchema)
+        schema.references.push(refSchema);
+        */
+
+      const refSchema = context ? context.getSchemaSync(key, SchemaMatchType.LatestReadCompatible) : undefined;
       if (!refSchema)
         throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate referenced schema: ${key.name}.${key.readVersion}.${key.writeVersion}.${key.minorVersion}`);
 
