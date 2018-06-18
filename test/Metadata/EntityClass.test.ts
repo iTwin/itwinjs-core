@@ -171,6 +171,28 @@ describe("EntityClass", () => {
       assert.isDefined(ecschema);
     });
 
+    it("should succeed with multiple mixins synchronously", () => {
+      const schemaJson = createSchemaJsonWithItems({
+        testMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.testClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          mixins: [
+            "TestSchema.testMixin",
+            "TestSchema.anotherMixin",
+          ],
+        },
+        anotherMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.testClass",
+        },
+      });
+      const ecschema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(ecschema);
+    });
+
     it("should succeed with base class", async () => {
       const schemaJson = createSchemaJsonWithItems({
         baseClass: {
@@ -195,6 +217,33 @@ describe("EntityClass", () => {
       assert.isTrue(typeof(await testEntity!.baseClass) === "object");
 
       assert.isTrue(await testEntity!.baseClass === testBaseEntity);
+    });
+
+    it("should succeed with base class synchronously", () => {
+      const schemaJson = createSchemaJsonWithItems({
+        baseClass: {
+          schemaItemType: "EntityClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.baseClass",
+        },
+      });
+
+      const ecSchema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(ecSchema);
+
+      const testEntity = ecSchema.getClassSync<EntityClass>("testClass");
+      assert.isDefined(testEntity);
+
+      const testBaseEntity = ecSchema.getClassSync<EntityClass>("baseClass");
+      assert.isDefined(testBaseEntity);
+
+      const baseClass = testEntity!.getBaseClassSync();
+      assert.isDefined(baseClass);
+      assert.isTrue(typeof(baseClass) === "object");
+
+      assert.isTrue(baseClass === testBaseEntity);
     });
 
     it("with navigation property", async () => {

@@ -32,6 +32,19 @@ describe("SchemaJsonFileLocater tests: ", () => {
     assert.equal(schema!.schemaKey.version.toString(), "1.1.1");
   });
 
+  it("locate valid schema with multiple references synchronously", () => {
+    // Arrange
+    const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
+
+    // Act
+    const schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
+
+    // Assert
+    assert.isDefined(schema);
+    assert.equal(schema!.schemaKey.name, "SchemaA");
+    assert.equal(schema!.schemaKey.version.toString(), "1.1.1");
+  });
+
   it("getSchema called multiple times for same schema", async () => {
     // Arrange
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
@@ -41,6 +54,23 @@ describe("SchemaJsonFileLocater tests: ", () => {
     const locater2 = await locater.getSchema(schemaKey, SchemaMatchType.Exact);
     const context1 = await context.getSchema(schemaKey, SchemaMatchType.Exact);
     const context2 = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+
+    // Assert
+    // locater should not cache, but context should cache
+    assert.notEqual(locater1, locater2);
+    assert.notEqual(locater1, context1);
+    assert.equal(context1, context2);
+  });
+
+  it("getSchema called multiple times for same schema synchronously", () => {
+    // Arrange
+    const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
+
+    // Act
+    const locater1 = locater.getSchemaSync(schemaKey, SchemaMatchType.Exact);
+    const locater2 = locater.getSchemaSync(schemaKey, SchemaMatchType.Exact);
+    const context1 = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
+    const context2 = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
 
     // Assert
     // locater should not cache, but context should cache

@@ -33,6 +33,24 @@ describe("Full Schema Deserialization", () => {
       expect(ecschema.label).equal("This is a test label");
     });
 
+    it("should successfully deserialize a valid JSON string synchronously", () => {
+      const schemaString = JSON.stringify({
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        description: "This is a test description",
+        label: "This is a test label",
+      });
+
+      const ecschema = Schema.fromJsonSync(schemaString);
+      expect(ecschema.name).equal("TestSchema");
+      expect(ecschema.readVersion).equal(1);
+      expect(ecschema.writeVersion).equal(2);
+      expect(ecschema.minorVersion).equal(3);
+      expect(ecschema.description).equal("This is a test description");
+      expect(ecschema.label).equal("This is a test label");
+    });
+
     it("should successfully deserialize name and version from a valid JSON object", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
