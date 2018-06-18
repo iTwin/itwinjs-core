@@ -186,9 +186,28 @@ export class GrowableFloat64Array {
       sum += w * data[i++];
     return sum;
   }
+  /**
+   * @returns Return the weighted sum `(data[i0+i] - data[i])*weights[i]`.
+   * @param i0 first index of data
+   * @param weights array of weights.
+   * @note The length of the weight array is the number of summed terms.
+   */
+  public weightedDifferenceSum(i0: number, weights: Float64Array) {
+    let i = i0;
+    let sum: number = 0.0;
+    const data = this.data;
+    for (const w of weights) {
+      sum += w * (data[i + 1] - data[i]);
+      i++;
+    }
+    return sum;
+  }
 
 }
-
+/**
+ * Array of contiguous doubles, indexed by block number and index within block.
+ * * This is essentially a rectangular matrix, with each block being a row of the matrix.
+ */
 export class GrowableBlockedArray {
   protected data: Float64Array;
   protected inUse: number;

@@ -3,13 +3,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 // import { Sample } from "../serialization/GeometrySamples";
-import { Bezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier } from "../numerics/Polynomials";
-import { BezierRoots, PascalCoefficients } from "./BezierRoots";
+import { Bezier, BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier } from "../numerics/Polynomials";
+import { BezierRoots } from "./BezierRoots";
+import { PascalCoefficients } from "../numerics/PascalCoefficients";
 import { LineString3d } from "../curve/LineString3d";
 import { Point2d, Point3d } from "../PointVector";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { GeometryCoreTestIO } from "./IModelJson.test";
+import { GrowableFloat64Array } from "../GrowableArray";
+import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 describe("Bezier", () => {
   it("HelloWorld", () => {
@@ -120,7 +123,80 @@ describe("BezierRoots", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("Products", () => {
+    const ck = new Checker();
+    const factors: BezierCoffs[] = [
+      new Order2Bezier(1, 2),
+      new Order2Bezier(-2, -3),
+      new Order3Bezier(0.1, 0.5, -0.3)];
+    for (let i1 = 0; i1 < factors.length; i1++) {
+      let bezier = factors[0].clone();
+      for (let i = 1; i <= i1; i++)
+        bezier = Bezier.createProduct(bezier, factors[i]);
+      const dx = 0.1;
+      for (let x = 0; x <= 1; x += dx) {
+        const a = bezier.evaluate(x);
+        let b = 1.0;
+        for (let i = 0; i <= i1; i++) {
+          const c = factors[i].evaluate(x);
+          b *= c;
+        }
+        ck.testCoordinate(a, b);
+      }
+    }
+  });
+  it("Roots", () => {
+    const ck = new Checker();
+    const a = 0.25;
+    for (const coffs of [
+      [-a, -a, 1.0 - a],
+      [1, -4, 1],
+      [1, 1, -4, -3, 2],
+      [1, -4, 0.01, -2]]) {
+      const solver = BezierRoots.create(coffs, 100, 200);
+      const roots = new GrowableFloat64Array(10);
+      solver.appendTopFrameRoots(roots);
+      console.log("coffs", prettyPrint(coffs));
+      console.log("roots", roots);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PackedRoots", () => {
+    const ck = new Checker();
+    for (const numRoots of [2, 2, 3, 5, 6]) {
+      // baes roots at odd integer multiples of 1/(numRoots+1)
+      const baseRoots = [];
+      for (let i = 0; i < numRoots; i++)
+        baseRoots.push((1 + 2 * i) / (2 * numRoots));
+      // console.log(prettyPrint(baseRoots));
+      for (const scale of [1, 0.5, 0.1]) {
+        const rootsA = [];
+        for (const r of baseRoots) rootsA.push(r * scale);
+        let bezier: BezierCoffs = new Order2Bezier(-rootsA[0], 1 - rootsA[0]);
+        for (let i = 1; i < numRoots; i++) {
+          const a = rootsA[i];
+          bezier = Bezier.createProduct(bezier, new Order2Bezier(-a, 1.0 - a));
+        }
+        const solver = BezierRoots.create(bezier.coffs, 0, 1);
+        const roots = new GrowableFloat64Array(10);
+        solver.appendTopFrameRoots(roots);
+        // console.log("rootA", rootsA);
+        // console.log("coffs", bezier.coffs);
+        for (const u of rootsA)
+          ck.testCoordinate(0, bezier.evaluate(u));
+        ck.testExactNumber(roots.length, rootsA.length);
+        for (const r of rootsA)
+          ck.testContainsCoordinate(roots, r);
+        // console.log("roots", roots);
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
+
 describe("PascalCoefficients", () => {
   it("Triangle", () => {
     const ck = new Checker();

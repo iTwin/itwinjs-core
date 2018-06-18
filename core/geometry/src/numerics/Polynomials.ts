@@ -8,6 +8,7 @@ import { Point2d, Vector2d, Point3d, Vector3d } from "../PointVector";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
 import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../GrowableArray";
+import { PascalCoefficients } from "./PascalCoefficients";
 // import { Arc3d } from "../curve/Arc3d";
 
 /* tslint:disable:variable-name*/
@@ -23,8 +24,21 @@ export abstract class BezierCoffs {
    * * The number of coefficients is the order of the Bezier polynomial.
    */
   public coffs: Float64Array;
-  constructor(data: number) {
-    this.coffs = new Float64Array(data);
+  /**
+   * * If `data` is a number, an array of that size is created with zeros.
+   * * If `data` is a Float64Array, it is cloned (NOT CAPTURED)
+   * * If `data` is a number array, its values are copied.
+   */
+  constructor(data: number | Float64Array | number[]) {
+    if (data instanceof Float64Array) {
+      this.coffs = data.slice();
+    } else if (Array.isArray(data)) {
+      this.coffs = new Float64Array(data.length);
+      let i = 0;
+      for (const a of data) this.coffs[i++] = a;
+    } else {
+      this.coffs = new Float64Array(data);
+    }
   }
   /** evaluate the basis fucntions at specified u.
    * @param u bezier parameter for evaluation.
@@ -140,35 +154,50 @@ export class Bezier extends BezierCoffs {
     result.coffs = other.coffs.slice();
     return result;
   }
+
+  /**
+   * Create a product of 2 bezier polynomials.
+   * @param bezierA
+   * @param bezierB
+   */
+  public static createProduct(bezierA: BezierCoffs, bezierB: BezierCoffs): Bezier {
+    const result = new Bezier(bezierA.order + bezierB.order - 1);
+    const pascalA = PascalCoefficients.getRow(bezierA.order - 1);
+    const pascalB = PascalCoefficients.getRow(bezierB.order - 1);
+    const pascalC = PascalCoefficients.getRow(bezierA.order + bezierB.order - 2);
+    for (let iA = 0; iA < bezierA.order; iA++) {
+      const a = bezierA.coffs[iA] * pascalA[iA];
+      for (let iB = 0; iB < bezierB.order; iB++) {
+        const b = bezierB.coffs[iB] * pascalB[iB];
+        const iC = iA + iB;
+        const c = pascalC[iC];
+        result.coffs[iC] += a * b / c;
+      }
+    }
+    return result;
+  }
+  private _basisValues?: Float64Array;
   /** evaluate the basis fucntions at specified u.
    * @param u bezier parameter for evaluation.
    * @returns Return a (newly allocated) array of basis function values.
    */
-  public basisFunctions(u: number): number[] {
-    const v = 1.0 - u;
-    // ASSUME length > 1
-    const order = this.order;
-    const f = new Float64Array(order);
-    f[0] = v;
-    f[1] = u;
-    for (let i = 2; i < order; i++) {
-      f[i] = u * f[i - 1];
-      for (let j = i - 1; j > 0; j--)
-        f[j] = v * f[j] + u * f[j - 1];
-      f[0] *= v;
-    }
-    return Array.from(f);
+  public basisFunctions(u: number, result?: number[]): number[] {
+    this._basisValues = PascalCoefficients.getBezierBasisValues(this.order, u, this._basisValues);
+    if (!result) result = [];
+    result.length = 0;
+    for (const a of this._basisValues) result.push(a);
+    return result;
   }
   /**
    * Evaluate the bezier function at a parameter value.  (i.e. summ the basis functions times coefficients)
    * @param u parameter for evaluation
    */
   public evaluate(u: number): number {
-    const f = this.basisFunctions(u);
-    let s = 0;
-    const order = this.order;
-    for (let i = 0; i < order; i++) { s += this.coffs[i] * f[i]; }
-    return s;
+    this._basisValues = PascalCoefficients.getBezierBasisValues(this.order, u, this._basisValues);
+    let sum = 0;
+    for (let i = 0; i < this.order; i++)
+      sum += this._basisValues[i] * this.coffs[i];
+    return sum;
   }
 }
 /** Bezier polynomial specialized to order 2 (2 coefficients, straight line function) */
