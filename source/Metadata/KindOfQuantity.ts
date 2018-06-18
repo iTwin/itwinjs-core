@@ -11,7 +11,6 @@ import Format from "../Metadata/Format";
 import Unit from "../Metadata/Unit";
 import { LazyLoadedUnit } from "../Interfaces";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { BentleyStatus } from "@bentley/bentleyjs-core/lib/Bentley";
 
 /**
  * A Typescript class representation of a KindOfQuantity.
@@ -62,8 +61,14 @@ export default class KindOfQuantity extends SchemaItem {
         });
     }
   }
-
-  public static async parseFormatString(schema: Schema, formatName: string, formatString: string): Promise<object | BentleyStatus> {
+  /**
+   * Called to parse a format string and override properties of a Format
+   * @param schema schema in which this format resides
+   * @param formatName An valid fully qualified ECName referring to a Format
+   * @param formatString short string-based representation of a Format, which allows overriding of certain key properties
+   * @returns object representing {formatName, precision, Array of [unitName, unitLabel?] pairs}
+   */
+  public static async parseFormatString(schema: Schema, formatName: string, formatString: string): Promise<object> {
     // given name of format, figure out units
     let precision: any = null;
     let numUnits: number | undefined;
