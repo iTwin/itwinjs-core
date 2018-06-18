@@ -446,7 +446,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(ecSchema);
       await expect(KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)[u:M|meter][u:MILE|miles][u:YRD|yards][u:FT|\']")).to.be.rejectedWith(ECObjectsError, `Incorrect number of unit overrides.`);
     });
-    it("No unit overrides provided", async () => {
+    it("No unit overrides provided; should return original Format units", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
         version: "1.0.0",
@@ -485,7 +485,7 @@ describe("KindOfQuantity", () => {
       const ecSchema = await Schema.fromJson(json);
       assert.isDefined(ecSchema);
       const parsedString = await KindOfQuantity.parseFormatString(ecSchema, "DefaultReal", "DefaultReal(4)");
-      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: 4, Units: []});
+      expect(parsedString).to.eql({FormatName: "DefaultReal", Precision: 4, Units: [["M", "meters"]]});
     });
     it("If Format has 0 units, FormatString must have at least 1 unit.", async () => {
       const json = {

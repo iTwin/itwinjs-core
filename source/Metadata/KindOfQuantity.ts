@@ -110,6 +110,8 @@ export default class KindOfQuantity extends SchemaItem {
     if ((/\[/g).test(formatString) && formatString.match(/\[/g)!.length !== numUnits) // count number of left brackets in string- same as coutning number of units
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Incorrect number of unit overrides.`);
     unitArray = new Array<[string, string | undefined]>(); // array to hold [unitName, unitLabel?] entries
+    if (!(/\[/g).test(formatString) && numUnits > 0) // if there are no unit overrides and the number of format Units is not zero
+      unitArray = matchedFormat!.composite!.units as Array<[string, string | undefined]>;
     while ( index < match.length - 1 ) { // index 0 and 21 are empty strings
       if ( match[index] !== undefined) {
         unit = match[index].split(KindOfQuantity.unitRgx);

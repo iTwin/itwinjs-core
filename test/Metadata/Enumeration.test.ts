@@ -210,44 +210,6 @@ describe("Enumeration", () => {
       const json: any = { ...baseJson, enumerators: [0] };
       await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
     });
-
-    // it.only("should throw for enumerator with missing name", async () => {
-    //   expect(testEnum).to.exist;
-    //   const json: any = { ...baseJson, enumerators: [{}] };
-    //   await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
-    // });
-
-    // it.only("should throw for enumerator with invalid value", async () => {
-    //   expect(testEnum).to.exist;
-    //   const json: any = { ...baseJson, enumerators: [
-    //     { value: false },
-    //   ]};
-    //   await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'number'.`);
-    // });
-
-    // it.only("should throw for enumerator with incompatible value type", async () => {
-    //   expect(testEnum).to.exist;
-    //   const json: any = { ...baseJson, enumerators: [
-    //     { value: "shouldBeNumber" },
-    //   ]};
-    //   await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'number'.`);
-
-    //   // TODO: setting primitiveType is not available anymore
-    //   /* json = { ...baseJson, enumerators: [
-    //     { value: 0 /* should be string * },
-    //   ]};
-    //   testEnum.primitiveType = PrimitiveType.String;
-    //   await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'value' attribute. It should be of type 'string'.`);
-    //   */
-    // });
-
-    // it.only("should throw for enumerator with invalid label", async () => {
-    //   expect(testEnum).to.exist;
-    //   const json: any = { ...baseJson, enumerators: [
-    //     { value: 0, label: 0 },
-    //   ]};
-    //   await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
-    // });
   });
 
   describe("accept", () => {
