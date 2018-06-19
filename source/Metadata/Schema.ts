@@ -336,7 +336,7 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonInternal(jsonObj);
+    this.schemaFromJson(jsonObj);
   }
 
   /**
@@ -344,14 +344,14 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param jsonObj
    */
   public fromJsonSync(jsonObj: any): void {
-    this.fromJsonInternal(jsonObj);
+    this.schemaFromJson(jsonObj);
   }
 
   /**
    *
    * @param jsonObj
    */
-  public fromJsonInternal(jsonObj: any): void {
+  private schemaFromJson(jsonObj: any): void {
     if (SCHEMAURL3_1 !== jsonObj.$schema)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl);
 
