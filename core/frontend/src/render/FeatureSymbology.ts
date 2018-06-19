@@ -281,10 +281,10 @@ export namespace FeatureSymbology {
           this.setVisibleSubCategory(id);
           const ovr = view.displayStyle.getSubCategoryOverride(id);
           if (ovr.anyOverridden) {
-            const app: FeatureSymbology.Appearance = new FeatureSymbology.Appearance();
-            app.initFrom(ovr);
-            if (app.overridesSymbology)
-              this.subCategoryOverrides.set(id.value, app);
+            const featApp: FeatureSymbology.Appearance = new FeatureSymbology.Appearance();
+            featApp.initFrom(ovr);
+            if (featApp.overridesSymbology)
+              this.subCategoryOverrides.set(id.value, featApp);
           }
         }
       }
