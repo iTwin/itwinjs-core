@@ -664,6 +664,17 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+    imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
+      while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
+        imodel2.withPreparedStatement("select codevalue from bis.element where ecinstanceid=?", (stmt6: ECSqlStatement) => {
+          stmt6.bindId(1, stmt5.getRow().id);
+          while (DbResult.BE_SQLITE_ROW === stmt6.step()) {
+            assert.equal(stmt6.getRow().codevalue, stmt5.getRow().codevalue);
+          }
+        });
+      }
+    });
+
   });
 
   it("should create and insert CodeSpecs", () => {
