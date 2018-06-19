@@ -28,7 +28,7 @@ export default class PropertyCategory extends SchemaItem {
     this.propertyCategoryFromJson(jsonObj);
   }
 
-  public propertyCategoryFromJson(jsonObj: any): void {
+  private propertyCategoryFromJson(jsonObj: any): void {
     if (undefined !== jsonObj.priority) {
       if (typeof(jsonObj.priority) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The PropertyCategory ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);

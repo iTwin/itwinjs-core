@@ -47,7 +47,7 @@ export default class KindOfQuantity extends SchemaItem {
     this.koqFromJson(jsonObj);
   }
 
-  public koqFromJson(jsonObj: any) {
+  private koqFromJson(jsonObj: any) {
     if (undefined !== jsonObj.precision) {
       if (typeof(jsonObj.precision) !== "number")
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
