@@ -212,7 +212,7 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 3);
       });
 
-      iModel.withPreparedStatement("SELECT ECClassId,Summary FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
+      iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,Author FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
@@ -220,6 +220,9 @@ describe("ChangeSummary", () => {
           assert.equal(row.className, "IModelChange.ChangeSet");
           assert.equal(row.summary.id, changeSummaryIds[rowCount - 1].value);
           assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
+          assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
+          assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+          // the other properties are not used, but using them in the ECSQL is important to verify preparation works
         }
         assert.isAtLeast(rowCount, 3);
       });
@@ -258,13 +261,16 @@ describe("ChangeSummary", () => {
         return new Id64(row.id);
       });
 
-      iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
+      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, Author FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, changesetId);
         assert.isDefined(row.summary);
         assert.equal(row.summary.id, changeSummaryId.value);
+        assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
+        assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+        // the other properties are not used, but using them in the ECSQL is important to verify preparation works
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
     } finally {
@@ -302,13 +308,16 @@ describe("ChangeSummary", () => {
         return new Id64(row.id);
       });
 
-      iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet", (myStmt) => {
+      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, Author FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
         assert.isDefined(row.wsgId);
         assert.equal(row.wsgId, firstChangesetId);
         assert.isDefined(row.summary);
         assert.equal(row.summary.id, changeSummaryId.value);
+        assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
+        assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+        // the other properties are not used, but using them in the ECSQL is important to verify preparation works
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
