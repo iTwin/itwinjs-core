@@ -245,7 +245,7 @@ export default class Schema implements CustomAttributeContainerProps {
         return undefined;
 
       // Since we are only passing the itemName to the reference schema it will not check its own referenced schemas.
-      foundItem = refSchema.getItem<T>(itemName, includeReference);
+      foundItem = refSchema.getItemSync<T>(itemName, includeReference);
     }
 
     return foundItem ? foundItem as T : foundItem;

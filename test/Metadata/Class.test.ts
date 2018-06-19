@@ -181,6 +181,125 @@ describe("ECClass", () => {
     });
   });
 
+  describe("deserialization sync", () => {
+    it("class with base class", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          testBaseClass: {
+            schemaItemType: "EntityClass",
+          },
+          testClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.testBaseClass",
+          },
+        },
+      };
+
+      schema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(schema);
+
+      const testClass = schema.getClassSync<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      assert.isDefined(testClass!.getBaseClassSync());
+
+      const baseClass = schema.getClassSync<EntityClass>("testBaseClass");
+      assert.isDefined(baseClass);
+      assert.isTrue(baseClass === testClass!.getBaseClassSync());
+    });
+
+    it("class with base class in reference schema", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        references: [
+          {
+            name: "RefSchema",
+            version: "1.0.5",
+          },
+        ],
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "RefSchema.BaseClassInRef",
+          },
+        },
+      };
+
+      const refSchema = new Schema("RefSchema", 1, 0, 5);
+      const refBaseClass = (refSchema as MutableSchema).createEntityClassSync("BaseClassInRef");
+
+      const context = new SchemaContext();
+      context.addSchemaSync(refSchema);
+
+      schema = Schema.fromJsonSync(schemaJson, context);
+
+      const testClass = schema.getClassSync<EntityClass>("testClass");
+
+      assert.isDefined(testClass);
+      assert.isDefined(testClass!.getBaseClassSync());
+      assert.isTrue(testClass!.getBaseClassSync() === refBaseClass);
+    });
+
+    // Used to test that all property types are deserialized correctly. For failure and other tests look at the property
+    // specific test files.
+    it("with properties", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+          },
+          testClass: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                propertyType: "PrimitiveProperty",
+                typeName: "double",
+                name: "testPrimProp",
+              },
+              {
+                propertyType: "StructProperty",
+                name: "testStructProp",
+                typeName: "TestSchema.testStruct",
+              },
+              {
+                propertyType: "PrimitiveArrayProperty",
+                typeName: "string",
+                name: "testPrimArrProp",
+              },
+              {
+                propertyType: "StructArrayProperty",
+                name: "testStructArrProp",
+                typeName: "TestSchema.testStruct",
+              },
+            ],
+          },
+        },
+      };
+
+      const ecSchema = Schema.fromJsonSync(schemaJson);
+      assert.isDefined(ecSchema);
+
+      const testEntity = ecSchema.getClassSync("testClass");
+      assert.isDefined(testEntity);
+
+      const testPrimProp = testEntity!.getPropertySync("testPrimProp");
+      assert.isDefined(testPrimProp);
+      const testPrimArrProp = testEntity!.getPropertySync("testPrimArrProp");
+      assert.isDefined(testPrimArrProp);
+      const testStructProp = testEntity!.getPropertySync("testStructProp");
+      assert.isDefined(testStructProp);
+      const testStructArrProp = testEntity!.getPropertySync("testStructArrProp");
+      assert.isDefined(testStructArrProp);
+    });
+  });
+
   describe("fromJson", () => {
     let testClass: ECClass;
     class MockECClass extends ECClass {}

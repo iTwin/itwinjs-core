@@ -156,6 +156,19 @@ export default class SchemaReadHelper {
     return schema;
   }
 
+  private checkSchemaReference(ref: any): void {
+    if (typeof(ref) !== "object")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
+    if (undefined === ref.name)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'name' property.`);
+    if (typeof(ref.name) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
+    if (undefined === ref.version)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'version' property.`);
+    if (typeof(ref.version) !== "string")
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
+  }
+
   /**
    * Ensures that the SchemaReferences can be located and then loads the references.
    * @param referencesJson The JSON to read the SchemaReference from.
@@ -165,21 +178,7 @@ export default class SchemaReadHelper {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
 
     for (const ref of referencesJson) {
-      if (typeof(ref) !== "object")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
-
-      if (undefined === ref.name)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'name' property.`);
-
-      if (typeof(ref.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
-
-      if (undefined === ref.version)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'version' property.`);
-
-      if (typeof(ref.version) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
-
+      this.checkSchemaReference(ref);
       const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
       const refSchema = await this._context.getSchema(schemaKey);
       if (!refSchema)
@@ -198,21 +197,7 @@ export default class SchemaReadHelper {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
 
     for (const ref of referencesJson) {
-      if (typeof(ref) !== "object")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. It should be of type 'object[]'.`);
-
-      if (undefined === ref.name)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'name' property.`);
-
-      if (typeof(ref.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
-
-      if (undefined === ref.version)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references is missing the required 'version' property.`);
-
-      if (typeof(ref.version) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schema!.schemaKey.name} has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
-
+      this.checkSchemaReference(ref);
       const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
       const refSchema = this._context.getSchemaSync(schemaKey);
       if (!refSchema)
