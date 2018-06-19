@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass } from "@bentley/imodeljs-common";
+import { LinePixels, ColorDef, RgbColor, Cloneable, Feature, GeometryClass, SubCategoryOverride, Appearance as SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { Id64Set, Id64 } from "@bentley/bentleyjs-core";
 import { ViewState, SpecialElements, DrawnElementSets } from "../ViewState";
 import { IModelConnection } from "../IModelConnection";
@@ -84,7 +84,25 @@ export namespace FeatureSymbology {
       return app;
     }
 
-    // public initFrom(over: DgnSubCategoryOverride) { }
+    public initFrom(ovr: SubCategoryOverride) {
+      const app = new SubCategoryAppearance();
+      ovr.applyTo(app);
+
+      if (undefined !== ovr.weight)
+        this.weight = app.weight;
+
+      if (undefined !== ovr.transparency)
+        this.alpha = ovr.transparency;
+
+      if (undefined !== ovr.color)
+        this.rgb = RgbColor.fromColorDef(ovr.color);
+
+      if (undefined !== ovr.material) {
+        // assert(!ovr.material.isValid); // Disabling material is supported; swapping material is currently not
+        if (!ovr.material.isValid)
+          this.ignoresMaterial = true;
+      }
+    }
   }
 
   export class Overrides implements DrawnElementSets {
@@ -164,9 +182,8 @@ export namespace FeatureSymbology {
       }
 
       if (subCategoryId.isValid()) {
-        // ###TODO
-        // if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
-        //   return false;
+        if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
+          return false;
 
         const subCat = this.getSubCategoryOverrides(subCategoryId);
         if (undefined !== subCat) app.setFrom(subCat.extend(app));
@@ -249,12 +266,28 @@ export namespace FeatureSymbology {
       if (replaceExisting || !appearance.overridesSymbology) this._defaultOverrides = appearance.clone();
     }
 
-    /** ###TODO */
-    public async updateFromIModel(_iModel: IModelConnection): Promise<void> {
+    public async updateFromIModel(_iModel: IModelConnection, view: ViewState): Promise<void> {
       // Features are defined by subcategory, which only implies category...
       // A subcategory is visible if it belongs to a viewed category and its appearance's visibility flag is set
+
+      // ###TODO:
       // const ecsql = `SELECT ECInstanceId FROM BisCore.SubCategory`; // WHERE InVirtualSet(?, Parent.Id)`;
       // const stmt = await iModel.executeQuery(ecsql);
+
+      for (const cat of view.categorySelector.categories) {
+        let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]); // ###TODO: Adding +1 to category largely works, but need to actually query subcategories as above.
+        const app = view.displayStyle.getSubCategoryAppearance(id);
+        if (!app.invisible) { // visible
+          this.setVisibleSubCategory(id);
+          const ovr = view.displayStyle.getSubCategoryOverride(id);
+          if (ovr.anyOverridden) {
+            const app: FeatureSymbology.Appearance = new FeatureSymbology.Appearance();
+            app.initFrom(ovr);
+            if (app.overridesSymbology)
+              this.subCategoryOverrides.set(id.value, app);
+          }
+        }
+      }
       return Promise.resolve();
     }
 
@@ -270,7 +303,7 @@ export namespace FeatureSymbology {
       this._patterns = patterns;
       this._lineWeights = viewFlags.showWeights(); // #TODO make showWeights a property
 
-      await this.updateFromIModel(iModel);
+      await this.updateFromIModel(iModel, view);
     }
 
     constructor(view?: ViewState) { if (undefined !== view) this.initFromView(view); }

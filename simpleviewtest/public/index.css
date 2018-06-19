@@ -232,6 +232,9 @@
 .bim-icon-model:before {
       content: "\e90b"
 }
+.bim-icon-model:categories {
+      content: "\e901"
+}
 
 .toolMenu {
   position:absolute;

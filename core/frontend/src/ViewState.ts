@@ -10,7 +10,7 @@ import {
 import {
   AxisAlignedBox3d, Frustum, Npc, ColorDef, Camera, ViewDefinitionProps, ViewDefinition3dProps,
   SpatialViewDefinitionProps, ViewDefinition2dProps, ViewFlags,
-  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping,
+  QParams3d, QPoint3dList, ColorByName, GraphicParams, RenderMaterial, TextureMapping, SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystem2dState } from "./AuxCoordSys";
 import { ElementState } from "./EntityState";
@@ -281,6 +281,16 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     if (undefined === this._specialElements) this._specialElements = new SpecialElements();
     if (undefined !== exclusive) this._noQuery = exclusive;
     this._specialElements.setAlwaysDrawn(id);
+    this.setFeatureOverridesDirty();
+  }
+
+  public dropSubCategoryOverride(id: Id64) {
+    this.displayStyle.dropSubCategoryOverride(id);
+    this.setFeatureOverridesDirty();
+  }
+
+  public overrideSubCategory(id: Id64, ovr: SubCategoryOverride) {
+    this.displayStyle.overrideSubCategory(id, ovr);
     this.setFeatureOverridesDirty();
   }
 

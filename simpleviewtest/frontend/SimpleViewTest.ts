@@ -1,10 +1,11 @@
 import { IModelApp, IModelConnection, ViewState, Viewport, StandardViewId, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, AuthorizationToken, Project, IModel } from "@bentley/imodeljs-clients";
-import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, ElectronRpcConfiguration, StandaloneIModelRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface, ViewQueryParams, ViewDefinitionProps, ModelProps, ModelQueryParams, RenderMode, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi, ProjectScope } from "./ProjectApi";
 import { remote } from "electron";
+import { Id64 } from "@bentley/bentleyjs-core/lib/Id";
 
 // tslint:disable:no-console
 
@@ -44,6 +45,7 @@ let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
 let configuration = {} as SVTConfiguration;
+const subCategoriesInvisible: Map<string, boolean> = new Map<string, boolean>();
 
 interface SVTConfiguration {
   filename: string;
@@ -147,7 +149,33 @@ function startToggleModel(_event: any) {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-// build list of  models; enables them all
+// open up the category selection model
+function startCategorySelection(_event: any) {
+  // ###TODO  ###WIP - Currently makes all categories invisible then visible again.
+  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+
+  if (!(theViewport!.view instanceof SpatialViewState))
+    return;
+  const view = theViewport!.view as SpatialViewState;
+
+  for (const cat of view.categorySelector.categories) {
+    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
+    const ovr = new SubCategoryOverride();
+    const invis = !subCategoriesInvisible.get(id.value)!;
+    subCategoriesInvisible.set(id.value, invis);
+    if (invis) {
+      ovr.setInvisible(true);
+      view.overrideSubCategory(id, ovr);
+    } else {
+      view.dropSubCategoryOverride(id);
+    }
+  }
+
+  theViewport!.sync.invalidateScene();
+}
+
+// build list of models; enables them all
 async function buildModelMenu(state: SimpleViewState) {
   const modelMenu = document.getElementById("toggleModelMenu") as HTMLDivElement;
   const modelQueryParams: ModelQueryParams = { wantPrivate: false };
@@ -172,6 +200,18 @@ async function buildModelMenu(state: SimpleViewState) {
   }
 
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
+}
+
+async function buildCategoryMenu(state: SimpleViewState) {
+  // ###TODO
+  // const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
+  // state.iModelConnection!.
+
+  const view = state.viewState!;
+  for (const cat of view.categorySelector.categories) {
+    let id = new Id64(cat); id = new Id64([id.getLow() + 1, id.getHigh()]);
+    subCategoriesInvisible.set(id.value, false);
+  }
 }
 
 // set model checkbox state to checked or unchecked
@@ -310,6 +350,7 @@ async function openView(state: SimpleViewState) {
 async function _changeView(view: ViewState) {
   await theViewport!.changeView(view);
   buildModelMenu(activeViewState);
+  buildCategoryMenu(activeViewState);
   updateRenderModeOptionsMap();
 }
 
@@ -409,6 +450,7 @@ function wireIconsToFunctions() {
   document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
   document.getElementById("viewList")!.addEventListener("change", changeView);
   document.getElementById("startToggleModel")!.addEventListener("click", startToggleModel);
+  document.getElementById("startCategorySelection")!.addEventListener("click", startCategorySelection);
   document.getElementById("startToggleCamera")!.addEventListener("click", startToggleCamera);
   document.getElementById("startFit")!.addEventListener("click", startFit);
   document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
