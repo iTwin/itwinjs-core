@@ -42,7 +42,7 @@
     "@bentley/geometry-core": "9",
     "@bentley/imodeljs-clients": "6",
     "@bentley/imodeljs-common": "0",
-    "@bentley/imodeljs-native-platform-api": "~20.0.3"
+    "@bentley/imodeljs-native-platform-api": "~20.2.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
