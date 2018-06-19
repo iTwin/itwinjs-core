@@ -6,7 +6,7 @@
 // const prompt = require("prompt");
 import { BriefcaseManager, IModelHost, IModelDb, OpenParams, IModelHostConfiguration, IModelAccessContext } from "@bentley/imodeljs-backend";
 import { AccessToken, IModelQuery, IModel as HubIModel, ChangeSet } from "@bentley/imodeljs-clients";
-import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import * as fs from "fs-extra";
 
@@ -61,7 +61,7 @@ export class DemoBackend {
   public async downloadBriefcase(context: IModelAccessContext, accessToken: AccessToken) {
     BriefcaseManager.setContext(context);
 
-    const imodel = await IModelDb.open(accessToken, context.projectId, context.iModelId, new OpenParams(OpenMode.Readonly));
+    const imodel = await IModelDb.open(accessToken, context.projectId, context.iModelId, OpenParams.pullAndPush());
     console.log(`Downloaded to ${imodel.briefcase.pathname}`);
   }
 }
