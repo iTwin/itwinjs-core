@@ -86,6 +86,7 @@ let baseConfig = {
 // Now add any subdirectories that the final set of paths may depend on
 baseConfig.appSrcFrontend = baseConfig.appSrcFrontend || path.resolve(baseConfig.appSrc, "frontend");
 baseConfig.appSrcBackend = baseConfig.appSrcBackend || path.resolve(baseConfig.appSrc, "backend");
+baseConfig.appTestE2E = baseConfig.appTestE2E || path.resolve(baseConfig.appTest, "e2e");
 
 // Finally, include all deeply nested paths that are relative to an earlier path.
 module.exports = {
@@ -101,6 +102,10 @@ module.exports = {
   appMainJs: path.resolve(baseConfig.appSrcBackend, "main.ts"),
   appIndexJs: path.resolve(baseConfig.appSrcFrontend, "index.tsx"),
   
+  // test/e2e/
+  appTestE2ELib: path.resolve(baseConfig.appTestE2E, "lib"),
+  appTestE2EScreenshots: path.resolve(baseConfig.appTestE2E, "screenshots"),
+
   // public/
   appHtml: path.resolve(baseConfig.appPublic, "index.html"),
 
