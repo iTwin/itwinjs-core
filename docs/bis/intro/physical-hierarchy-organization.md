@@ -2,8 +2,6 @@
 
 <!-- Responsible for this page: Allan Bommer -->
 
-***WIP - The content on this page is still being debated.***
-
 ## Introduction
 
 Each `Subject` in a BIS Repository can have a `PhysicalPartition` child Element, under which the `PhysicalModel`s pertaining to the `Subject` will be organized using mechanisms described in [Model Hierarchy](model-hierarchy.md). The Model Hierarchy is constrained by [Modeling Perspective](modeling-perspective.md), but within the Physical Perspective, it is desirable to further organize Models according to Sites, Facilities, Systems, and Components in order to make the hierarchy of Models understandable by software and users. This section describes “Model Affinity” (a way of specifying “constraints” on the `ModelContainsElements` relationship) and the best-practice for using them to organize the Physical Model Hierarchy.
@@ -150,7 +148,7 @@ These types and their behaviors are explained below, along with the behaviors of
 
 `Site` is class that represents an region of land and all that is contained on, above and below that land.
 
-**TODO: Should Site be sealed?**
+<!-- Should Site be Sealed? -->
 
 In conversation (and writing) the `Model`s that break down `Site` `Element`s are referred to as `Site` `Model`s, even thought there is not a strongly-typed `SiteModel` class. By convention, the top-most `Model` in a `PhysicalModel` hierarchy is considered a Site `Model`, even though it breaks down `PhysicalPartition`. The top `Model` is considered as a `Site` `Model` as nearly all infrastructure that is modeled with BIS can benefit from having a site context.
 
@@ -185,8 +183,6 @@ In conversation (and writing) the `Model`s that break down `ISystem` `Element`s 
 *To implement this behavior every class that includes the `ISystem` mixin must include a `ModelAffinity` custom attribute that indicates a "Recommended" affinity to `PhysicalPartition`, `Site`, `IFacility` and `ISystem`.*
 
 ### System Components
-
-**TODO: If ISystem becomes IDiscipline, then System Component should become Discipline Component**
 
 System Component represents an Entity that is part of a specific `ISystem` and generally does not makes sense outside of the specific system (e.g. sewer pipe outside of sewer system). System Component is not a BIS class, nor mixin.
 
