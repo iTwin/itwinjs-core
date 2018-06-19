@@ -2,15 +2,17 @@
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
 *--------------------------------------------------------------------------------------------*/
 
-import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass } from "../Interfaces";
+import { LazyLoadedPropertyCategory, LazyLoadedKindOfQuantity, LazyLoadedEnumeration, LazyLoadedStructClass, LazyLoadedRelationshipClass, LazyLoadedSchemaItem } from "../Interfaces";
 import { ECName, PrimitiveType, StrengthDirection, parsePrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { PropertyType, PropertyTypeUtils } from "../PropertyTypes";
 import ECClass from "./Class";
+import SchemaItem from "./SchemaItem";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import KindOfQuantity from "./KindOfQuantity";
 import PropertyCategory from "./PropertyCategory";
 import { AnyClass } from "../Interfaces";
+import { RelationshipClass } from "..";
 
 /**
  * A common abstract class for all ECProperty types.
@@ -57,6 +59,32 @@ export abstract class Property {
   get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
 
   get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
+
+  protected getReferencedSchemaItemSync<T extends SchemaItem>(key?: LazyLoadedSchemaItem<T>): T | undefined {
+    if (!key || !this._class || !this._class.schema)
+      return undefined;
+
+    const schema = this._class.schema;
+
+    const isInThisSchema = (schema.name.toLowerCase() === key.schemaName.toLowerCase());
+
+    if (isInThisSchema)
+      return schema.getItemSync<T>(key.name);
+
+    const reference = schema.getReferenceSync(key.schemaName);
+    if (reference)
+      return reference.getItemSync<T>(key.name);
+
+    return undefined;
+  }
+
+  public getCategorySync(): PropertyCategory | undefined {
+    return this.getReferencedSchemaItemSync(this._category);
+  }
+
+  public getKindOfQuantitySync(): KindOfQuantity | undefined {
+    return this.getReferencedSchemaItemSync(this._kindOfQuantity);
+  }
 
   public async fromJson(jsonObj: any): Promise<void> {
     if (undefined !== jsonObj.name) {
@@ -371,6 +399,10 @@ export class NavigationProperty extends Property {
   protected _direction: StrengthDirection;
 
   get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
+
+  public getRelationshipClassSync(): RelationshipClass | undefined {
+    return this.getReferencedSchemaItemSync(this._relationshipClass);
+  }
 
   get direction() { return this._direction; }
 
