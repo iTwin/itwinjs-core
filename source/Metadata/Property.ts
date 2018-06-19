@@ -61,7 +61,7 @@ export abstract class Property {
   get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
 
   protected getReferencedSchemaItemSync<T extends SchemaItem>(key?: LazyLoadedSchemaItem<T>): T | undefined {
-    if (!key || !this._class || !this._class.schema)
+    if (!key)
       return undefined;
 
     const schema = this._class.schema;

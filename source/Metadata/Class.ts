@@ -58,10 +58,10 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
   }
 
   public getBaseClassSync(): ECClass | undefined {
-    if (!this.baseClass || !this.schema)
+    if (!this.baseClass)
       return undefined;
 
-    const isInThisSchema = (this.schema && this.schema.name.toLowerCase() === this.baseClass.schemaName.toLowerCase());
+    const isInThisSchema = (this.schema.name.toLowerCase() === this.baseClass.schemaName.toLowerCase());
 
     if (isInThisSchema)
       return this.schema.getClassSync(this.baseClass.name);
