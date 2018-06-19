@@ -5,7 +5,7 @@
 
 const chalk = require("chalk");
 
-exports.command = "test-e2e";
+exports.command = "test-e2e <type>";
 exports.describe = chalk.bold("Launches the WebDriverIO end-to-end test runner.");
 exports.builder = (yargs) =>
   yargs.strict(true)
