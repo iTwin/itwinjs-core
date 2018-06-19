@@ -23,8 +23,6 @@
     "@types/enzyme": "^3.1.10",
     "@types/mocha": "^5.2.1",
     "@types/node": "^10.3.2",
-    "@types/react": "^16.3.17",
-    "@types/react-dom": "^16.0.6",
     "@types/sinon": "^5.0.1",
     "app-root-path": "^2.0.1",
     "autoprefixer": "^8.6.1",
@@ -85,15 +83,20 @@
     "yargs": "^11.0.0"
   },
   "peerDependencies": {
-    "react": "^16.4.0",
-    "react-dom": "^16.4.0",
-    "react-test-renderer": "^16.4.0",
-    "typescript": "^2.6.0"
-  },
-  "devDependencies": {
+    "@types/react": "^16.3.17",
+    "@types/react-dom": "^16.0.6",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "react-test-renderer": "^16.4.0",
     "typescript": "^2.9.1"
-  }
+  },
+  "devDependencies": {
+    "@types/react": "^16.3.17",
+    "@types/react-dom": "^16.0.6",
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0",
+    "react-test-renderer": "^16.4.0",
+    "typescript": "^2.9.1"
+  },
+  "types": "./index.d.ts"
 }
