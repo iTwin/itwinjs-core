@@ -161,16 +161,10 @@ describe("iModelHub EventHandler", () => {
     chai.expect(error.status).to.be.equal(404);
   });
 
-  it("should reject when no event is available", async () => {
+  it("should return undefined when no event is available", async () => {
     mockGetEvent(iModelId, subscription.wsgId, {}, undefined, undefined, 204);
-    let error;
-    try {
-      await imodelHubClient.Events().getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
-    } catch (err) {
-      error = err;
-    }
-    chai.assert(error);
-    chai.expect(error.status).to.be.equal(204);
+    const result = await imodelHubClient.Events().getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(result).to.be.equal(undefined);
   });
 
   it("should receive code event", async () => {
