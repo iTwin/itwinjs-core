@@ -138,7 +138,7 @@ private enumerationFromJson(jsonObj: any): void {
 }
 
   /**
-   * Populates this Enumeration with the values from the provided. 💩
+   * Populates this Enumeration with the values from the provided.
    */
   public async fromJson(jsonObj: any): Promise<void> {
     await super.fromJson(jsonObj);
