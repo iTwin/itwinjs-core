@@ -10,36 +10,17 @@ Each `Subject` in a BIS Repository can have a `PhysicalPartition` child Element,
 
 ![Top of the PhysicalModel Hierarchy](./media/physical-hierarchy-organization-top-of-the-world.png)
 
-As discussed in [Model Hierarchy](model-hierarchy.md), every `Model` contains `Elements` and many `Elements` can be broken down into more detail ("finer granularity") in breakdown `Model`s. This breakdown strategy provides a flexible mechanism upon which to build an organized `Model` hierarchy, but is so generic that by itself it does not provide much help in organizing a `Subject`'s representation of the physical world. This page describes the strategy, requirements and recommendations for organizing the `PhysicalModel` hierarchy.
+
 
 ## Organization Strategy
 
 ### Motivations
-
-***Start of alternate complete content for this section***
 
 BIS defines a data model that shared by a growing set of applications and services. Many of these applications and service read and/or write `PhysicalModel` data. There are two choices to ensure that these applications and services will be coordinated:
  - Require every application and service to work with any data organization.
  - Specify a data organization which applications and services should read and write.
 
  The second option has been chosen for BIS as it is the more practical solution.
-
-***End of alternate complete content for this section***
-
-
-The high-level goals - sometimes conflicting - of *an* organization for the `PhysicalModel` hierarchy are to:
-- Allow the users to organize their data in a way that is helpful to them.
-- Guide the users to organize their data in a way that will facilitate their long-term success.
-- Automatically organize the data in a way that is helpful to the users.
-- Ease the creation of products and services by organizing the data in a manner that is conducive to writing software.
-- Provide mechanisms for the users to direct the software, and for the software to understand the users' intent (*if A is placed in B, X will (or will not) happen*).
-
-Some more practical goals of *the* organization of the `PhysicalModel` hierarchy are:
- - Define clear rules for the data that is created and used by products and services related to multiple disciplines, which are frequently developed by teams that are not under the same management.
- - Define similar data organization for all "facilities".
- - Define similar data organization for all "systems".
- - Define the standard usage of (what should be contained in) the top `Model` of the `PhysicalModel` hierarchy.
-
 
 ### Predictability vs Flexibility / Strong vs Weak Type Safety
 
