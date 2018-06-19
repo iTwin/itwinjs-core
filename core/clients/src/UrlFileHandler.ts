@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ProgressInfo } from "../Request";
-import { FileHandler } from "../FileHandler";
+import { ProgressInfo } from "./Request";
+import { FileHandler } from "./FileHandler";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";

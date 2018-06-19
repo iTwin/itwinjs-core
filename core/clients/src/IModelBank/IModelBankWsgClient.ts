@@ -7,8 +7,8 @@ import { IModelBankError } from "./Errors";
 import { RequestOptions, RequestQueryOptions } from "../Request";
 import { assert } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../Token";
-import { WsgInstance, FileHandler } from "..";
-import { UrlFileHandler } from "../imodelhub/UrlFileHandler";
+import { WsgInstance, FileHandler, Config } from "..";
+import { UrlFileHandler } from "../UrlFileHandler";
 
 /**
  * Provides default options for iModelBank requests.
@@ -40,10 +40,10 @@ export class IModelBankWsgClient extends WsgClient implements IModelServerHandle
     super("PROD", "v2.5", "");    // v2.5 is the version of the REST API syntax.
     this._accessToken = accessToken;
     this._url = url;
-    this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
+    if (!Config.isBrowser())
+      this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
   }
 
-  public getAgend(): https.Agent { return this._agent; }
   public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
   /**
@@ -59,7 +59,7 @@ export class IModelBankWsgClient extends WsgClient implements IModelServerHandle
     return this._defaultIModelHubOptionsProvider.assignOptions(options);
   }
 
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out"); return ""; }
+  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected getDefaultUrl(): string { return this._url; }
 
@@ -82,6 +82,7 @@ export class IModelBankWsgClient extends WsgClient implements IModelServerHandle
     return this._agent;
   }
 
+  // *** Who calls this??
   public async getAccessToken(_authorizationToken: any): Promise<AccessToken> { return this._accessToken; }
 
   /**
