@@ -936,9 +936,9 @@ export abstract class ViewState3d extends ViewState {
    * If newExtents is undefined, the existing size is unchanged.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @returns a status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-   * <em>note:</em> If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
-   * adjusted when the Viewport is synchronized from this view.
+   * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
+   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * adjusted when the [[Viewport]] is synchronized from this view.
    */
   public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
     const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);

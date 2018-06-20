@@ -3,10 +3,12 @@
  *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64, GuidProps } from "@bentley/bentleyjs-core";
-import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Id64, GuidProps, IModelStatus } from "@bentley/bentleyjs-core";
+import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles, Transform, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { ThumbnailProps } from "./Thumbnail";
+import { IModelError } from "./IModelError";
+import { Cartographic } from "./geometry/Cartographic";
 
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
@@ -24,33 +26,35 @@ export class IModelToken {
   }
 }
 
-/** properties that position an iModel on the earth via ECEF (Earth Centered Earth Fixed) coordinates */
+/** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
 export interface EcefLocationProps {
+  /** The Origin of an iModel on the earth in ECEF coordinates */
   origin: XYZProps;
+  /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. See */
   orientation: YawPitchRollProps;
 }
 
-/** the location/orientation of an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
+/** The location/orientation of an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
 export class EcefLocation implements EcefLocationProps {
-  public origin: Point3d;
-  public orientation: YawPitchRollAngles;
+  public readonly origin: Point3d;
+  public readonly orientation: YawPitchRollAngles;
   constructor(props: EcefLocationProps) {
     this.origin = Point3d.fromJSON(props.origin);
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation);
   }
 }
 
-/** the Root Subject is the base for the "table of contents" of an iModel. Every iModel has one and only one. */
+/** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root). */
 export interface RootSubjectProps {
-  /** the name of the root subject for an iModel. */
+  /** The name of the root subject. */
   name: string;
-  /** optional description of the root subject. */
+  /** Description of the root subject (optional). */
   description?: string;
 }
 
-/** The properties that are global to an iModel. */
+/** Properties that are global to an iModel. */
 export interface IModelProps {
-  /** the name and description of the root subject of this iModel */
+  /** The name and description of the root subject of this iModel */
   rootSubject: RootSubjectProps;
   /** The volume of the entire project */
   projectExtents?: Range3dProps;
@@ -62,11 +66,11 @@ export interface IModelProps {
 
 /** The properties that can be supplied when creating a new iModel. */
 export interface CreateIModelProps extends IModelProps {
-  /** the GUID of new iModel. If not present, a GUID will be generated. */
+  /** The GUID of new iModel. If not present, a GUID will be generated. */
   guid?: GuidProps;
-  /** client name for new iModel */
+  /** Client name for new iModel */
   client?: string;
-  /** thumbnail for new iModel */
+  /** Thumbnail for new iModel */
   thumbnail?: ThumbnailProps;
 }
 
@@ -85,7 +89,6 @@ export abstract class IModel implements IModelProps {
   public static readonly rootSubjectId = new Id64("0x1");
   /** The Id of the dictionary model. */
   public static readonly dictionaryId = new Id64("0x10");
-
   /** Name of the iModel */
   public name!: string;
   /** The name and description of the root subject of this iModel */
@@ -94,8 +97,14 @@ export abstract class IModel implements IModelProps {
   public projectExtents!: AxisAlignedBox3d;
   /** An offset to be applied to all spatial coordinates. */
   public globalOrigin!: Point3d;
-  /** The location of the iModel in Earth Centered Earth Fixed coordinates. */
-  public ecefLocation?: EcefLocation;
+  private _ecefLocation?: EcefLocation;
+  private _ecefTrans?: Transform;
+
+  /** The [EcefLocation]($docs/learning/glossary#ecefLocation) of the iModel in Earth Centered Earth Fixed coordinates. */
+  public get ecefLocation(): EcefLocation | undefined { return this._ecefLocation; }
+
+  /** Set the [EcefLocation]($docs/learning/glossary#ecefLocation) for this iModel. */
+  public setEcefLocation(ecef: EcefLocationProps) { this._ecefLocation = new EcefLocation(ecef); this._ecefTrans = undefined; }
 
   public toJSON(): any {
     const out: any = {};
@@ -124,9 +133,61 @@ export abstract class IModel implements IModelProps {
     this.projectExtents = AxisAlignedBox3d.fromJSON(props.projectExtents);
     this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
     if (props.ecefLocation)
-      this.ecefLocation = new EcefLocation(props.ecefLocation);
+      this.setEcefLocation(props.ecefLocation);
   }
 
-  /** get the default subCategoryId for the supplied categoryId */
+  /** Get the default subCategoryId for the supplied categoryId */
   public static getDefaultSubCategoryId(categoryId: Id64): Id64 { return categoryId.isValid() ? new Id64([categoryId.getLow() + 1, categoryId.getHigh()]) : new Id64(); }
+
+  /** True if this iModel has an [EcefLocation]($docs/learning/glossary#ecefLocation). */
+  public get isGeoLocated() { return undefined !== this._ecefLocation; }
+
+  /** Get the Transform from this iModel's Spatial coordinates to ECEF coordinates. */
+  public getEcefTransform(): Transform {
+    if (undefined === this._ecefLocation)
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (this._ecefTrans === undefined)
+      this._ecefTrans = Transform.createOriginAndMatrix(this._ecefLocation.origin, this._ecefLocation.orientation.toRotMatrix());
+
+    return this._ecefTrans;
+  }
+
+  /**
+   * Convert a point in this iModel's Spatial coordinates to an ECEF point.
+   * @param spatial A point in the iModel's spatial coordinates
+   * @param result If defined, use this for output
+   * @returns A Point3d in ECEF coordinates
+   * @note throws IModelError if [[isGeoLocated]] is false.
+   */
+  public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyPoint3d(spatial, result)!; }
+
+  /**
+   * Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates.
+   * @param ecef A point in ECEF coordinates
+   * @param result If defined, use this for output
+   * @returns A Point3d in this iModel's spatial coordinates
+   * @note throws IModelError if [[isGeoLocated]] is false.
+   * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
+   */
+  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
+
+  /**
+   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]].
+   * @param spatial A point in the iModel's spatial coordinates
+   * @param result If defined, use this for output
+   * @returns A Cartographic location
+   * @note throws IModelError if [[isGeoLocated]] is false.
+   */
+  public spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
+
+  /**
+   * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates.
+   * @param cartographic A cartographic location
+   * @param result If defined, use this for output
+   * @returns A point in this iModel's spatial coordinates
+   * @note throws IModelError if [[isGeoLocated]] is false.
+   * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
+   */
+  public cartographicToSpatial(cartographic: Cartographic, result?: Point3d) { return this.ecefToSpatial(cartographic.toEcef(result), result); }
 }

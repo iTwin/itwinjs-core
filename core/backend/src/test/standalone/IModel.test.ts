@@ -4,7 +4,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64, BeEvent } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, Range3d } from "@bentley/geometry-core";
+import { Point3d, Transform, Range3d, Angle } from "@bentley/geometry-core";
 import {
   ClassRegistry, BisCore, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, DefinitionPartition,
   LinkPartition, PhysicalPartition, GroupInformationPartition, DocumentPartition, Subject, ElementPropertyFormatter,
@@ -29,12 +29,14 @@ describe("iModel", () => {
   let imodel2: IModelDb;
   let imodel3: IModelDb;
   let imodel4: IModelDb;
+  let imodel5: IModelDb;
 
   before(() => {
     imodel1 = IModelTestUtils.openIModel("test.bim");
     imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
     imodel4 = IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
+    imodel5 = IModelTestUtils.openIModel("mirukuru.ibim");
   });
 
   after(() => {
@@ -42,6 +44,7 @@ describe("iModel", () => {
     IModelTestUtils.closeIModel(imodel2);
     IModelTestUtils.closeIModel(imodel3);
     IModelTestUtils.closeIModel(imodel4);
+    IModelTestUtils.closeIModel(imodel5);
   });
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
@@ -543,18 +546,37 @@ describe("iModel", () => {
     checkElementMetaData(metaData);
   });
 
-  it("should update the imodel project extents", async () => {
+  it("should update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
     const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    assert.isDefined(imodel1.briefcase, "Briefcase info should be defined before getting iModel props");
     const updatedProps = JSON.parse(imodel1.briefcase!.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
+  });
+
+  it.only("ecefLocation for iModels", () => {
+    assert.isTrue(imodel5.isGeoLocated);
+    const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
+    const ecefPt = imodel5.spatialToEcef(center);
+    const pt = { x: -3575157.057023252, y: 3873432.7966756118, z: 3578994.5664978377 };
+    assert.isTrue(ecefPt.isAlmostEqual(pt), "spatialToEcef");
+
+    const z2 = imodel5.ecefToSpatial(ecefPt);
+    assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
+
+    const carto = imodel5.spatialToCartographic(center);
+    assert.approximately(Angle.radiansToDegrees(carto.longitude), 132.70599650539427, .1); // this data is in Japan
+    assert.approximately(Angle.radiansToDegrees(carto.latitude), 34.35461328445589, .1);
+    const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
+    assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
+
+    imodel5.cartographicToSpatial(carto, z2);
+    assert.isTrue(z2.isAlmostEqual(center, .001), "cartographicToSpatial");
   });
 
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
