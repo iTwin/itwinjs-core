@@ -46,14 +46,14 @@ export interface InstanceChange {
 
 /** Options for [ChangeSummaryManager.extractChangeSummaries]($backend). */
 export interface ChangeSummaryExtractOptions {
-  /** If specified, change summaries are extracted from the start changeset to the current changeset as of which the iModel
-   *  was opened. If undefined, the extraction starts at the first changeset of the iModel.
+  /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
+   *  was opened. If undefined, the extraction starts at the first version of the iModel.
    */
-  startChangeSetId?: string;
-  /** If specified, the change summary will be extracted only for current changeset as of which the iModel
+  startVersion?: IModelVersion;
+  /** If specified, the change summary will be extracted only for current version as of which the iModel
    *  was opened.
    */
-  currentChangeSetOnly?: boolean;
+  currentVersionOnly?: boolean;
 }
 
 class ChangeSummaryExtractContext {
@@ -126,11 +126,11 @@ export class ChangeSummaryManager {
   }
 
   /** Extracts change summaries from the specified iModel.
-   * Change summaries are extracted from the specified startChangeSetId up through the change set the iModel was opened with.
-   * If startChangeSetId is undefined, the first changeset will be used.
+   * Change summaries are extracted from the specified start version up through the version the iModel was opened with.
+   * If no start version has been specified, the first version will be used.
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel.
-   * Note: The method moves the history of the iModel back to the specified start changeset. After the extraction has completed,
-   * the iModel is moved back to the original changeset.
+   * Note: For every version to extract a summary from, the method moves the iModel to that version before extraction. After
+   * the extraction has completed, the iModel is moved back to the original version.
    * @param options Extraction options
    * @throws [IModelError]($common) if the iModel is standalone
    */
@@ -145,9 +145,9 @@ export class ChangeSummaryManager {
 
     let startChangeSetId: string = "";
     if (options) {
-      if (options.startChangeSetId)
-        startChangeSetId = options.startChangeSetId;
-      else if (options.currentChangeSetOnly) {
+      if (options.startVersion)
+        startChangeSetId = await options.startVersion.evaluateChangeSet(ctx.accessToken, ctx.iModelId, BriefcaseManager.hubClient);
+      else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
       }
     }
