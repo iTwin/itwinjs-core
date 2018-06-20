@@ -383,6 +383,7 @@ export class SceneCompositor {
     // Clear output targets
     this.clearOpaque(needComposite);
 
+    // Render the background
     this.renderBackground(commands, needComposite);
     this._target.setFrameTime();
 
@@ -390,6 +391,7 @@ export class SceneCompositor {
     this._target.pushActiveVolume();
     this._target.setFrameTime();
 
+    // Render opaque geometry
     this.renderOpaque(commands, needComposite);
     this._target.setFrameTime();
 
@@ -405,7 +407,6 @@ export class SceneCompositor {
       this._target.setFrameTime();
       this._target.setFrameTime();
     }
-
     this._target.popActiveVolume();
   }
 
@@ -499,6 +500,7 @@ export class SceneCompositor {
   private renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean = false) {
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
+
     const fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
@@ -506,12 +508,12 @@ export class SceneCompositor {
       if (renderForReadPixels) {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
       }
-
-      this._readPickDataFromPingPong = false;
     });
+    this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels) {
+      const fbStack = System.instance.frameBufferStack;
       fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
@@ -525,13 +527,12 @@ export class SceneCompositor {
       return;
     }
 
-    const fbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
-    const target = this._target;
-    System.instance.frameBufferStack.execute(fbo, true, () => {
-      target.pushState(target.decorationState);
+    const fbStack = System.instance.frameBufferStack;
+    fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
+      this._target.pushState(this._target.decorationState);
       System.instance.applyRenderState(this.getRenderState(RenderPass.Background));
-      target.techniques.execute(target, cmds, RenderPass.Background);
-      target.popBranch();
+      this._target.techniques.execute(this._target, cmds, RenderPass.Background);
+      this._target.popBranch();
     });
   }
 

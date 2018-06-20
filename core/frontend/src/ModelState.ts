@@ -11,6 +11,10 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileLoader, IModelTileLoader } from "./tile/TileTree";
 import { ScalableMeshTileTree, ScalableMeshTileLoader, ScalableMeshTileTreeProps } from "./tile/ScalableMeshTileTree";
+import { DecorateContext } from "./ViewContext";
+import { SheetBorder } from "./Sheet";
+import { GraphicBuilder } from "./render/GraphicBuilder";
+import { RenderGraphic } from "./render/System";
 
 /** the state of a Model */
 export class ModelState extends EntityState implements ModelProps {
@@ -118,8 +122,22 @@ export class GeometricModel3dState extends GeometricModelState {
   public constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
+/**
+ * SheetModel is a GeometricModel2d that has the following characteristics:
+ * * Has finite extents, specified in meters.
+ * * Can contain views of other models, like pictures pasted on a photo album.
+ */
+export class SheetModelState extends GeometricModel2dState {
+  /** Draw border graphics (called during update) */
+  public static createBorder(width: number, height: number, viewContext: DecorateContext): RenderGraphic {
+    const border = SheetBorder.create(width, height, viewContext);
+    const builder: GraphicBuilder = viewContext.createViewBackground();
+    border.addToBuilder(builder);
+    return builder.finish();
+  }
+}
+
 export class SpatialModelState extends GeometricModel3dState { }
 export class DrawingModelState extends GeometricModel2dState { }
 export class SectionDrawingModelState extends DrawingModelState { }
-export class SheetModelState extends GeometricModel2dState { }
 export class WebMercatorModel extends SpatialModelState { }

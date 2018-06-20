@@ -930,7 +930,6 @@ export class RotMatrix implements BeJSONFunctions {
       @return the vector result
   */
   public multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d {
-    result = result ? result : new Vector3d();
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;

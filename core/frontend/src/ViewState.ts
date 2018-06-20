@@ -25,7 +25,7 @@ import { IModelApp } from "./IModelApp";
 import { Viewport } from "./Viewport";
 import { GraphicBuilder } from "./rendering";
 import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core/lib/AnalyticGeometry";
-import { GeometricModelState } from "./ModelState";
+import { GeometricModelState, SheetModelState, GeometricModel2dState } from "./ModelState";
 
 export const enum GridOrientationType {
   View = 0,
@@ -313,8 +313,7 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
   /** Override this if you want to perform some logic on each iteration of the render loop. */
   public abstract onRenderFrame(): void;
 
-  /** WIP: should be abstract, but for now leave unimplemented  */
-  public decorate(_context: DecorateContext): void { }
+  public abstract decorate(context: DecorateContext): void;
 
   /** Determine whether this ViewDefinition views a given model */
   public abstract viewsModel(modelId: Id64): boolean;
@@ -361,7 +360,6 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
 
   public drawGrid(context: DecorateContext): void {
     const vp = context.viewport;
-
     if (!vp.isGridOn)
       return;
 
@@ -374,17 +372,15 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
       // NEEDSWORK...
     }
 
-    // #TODO
-    // let isoGrid = false,
-    //     gridsPerRef = 0;
-    // const spacing = new Point2d();
-    // const origin = new Point3d();
-    // const rMatrix = new RotMatrix();
-    // const fixedRepsAuto = new Point2d();
+    const isoGrid = false;
+    const gridsPerRef = this.getGridsPerRef();
+    const spacing = Point2d.createFrom(this.getGridSpacing());
+    const origin = Point3d.create();
+    const matrix = RotMatrix.createIdentity();
+    const fixedRepsAuto = Point2d.create();
 
-    // this.getGridSpacing(spacing);
-    // this.getGridOrientation(vp, origin, rMatrix, orientation);
-    // context.drawStandardGrid(origin, rMatrix, spacing gridsPerRef, isoGrid, GridOrientationType.View !== orientation ? fixedRepsAuto : undefined);
+    this.getGridSettings(vp, origin, matrix, orientation);
+    context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 
   /**
@@ -612,6 +608,46 @@ export abstract class ViewState extends ElementState implements DrawnElementSets
     JsonUtils.setOrRemoveNumber(details, "gridPerRef", gridsPerRef, 10);
     JsonUtils.setOrRemoveNumber(details, "gridSpaceX", spacing.x, 1.0);
     JsonUtils.setOrRemoveNumber(details, "gridSpaceY", spacing.y, spacing.x);
+  }
+
+  /** Populate the given origin and rotmatrix with information from the contained grid settings, dependent upon the grid orientation. */
+  public getGridSettings(vp: Viewport, origin: Point3d, rMatrix: RotMatrix, orientation: GridOrientationType) {
+    // start with global origin (for spatial views) and identity matrix
+    rMatrix.setIdentity();
+    origin.setFrom(vp.view.isSpatialView() ? vp.view.iModel.globalOrigin : Point3d.create());
+
+    switch (orientation) {
+      case GridOrientationType.View: {
+        const centerWorld = Point3d.create(0.5, 0.5, 0.5);
+        vp.npcToWorld(centerWorld, centerWorld);
+
+        rMatrix.setFrom(vp.rotMatrix);
+        rMatrix.multiplyXYZtoXYZ(origin, origin);
+        origin.z = centerWorld.z;
+        rMatrix.multiplyTransposeVectorInPlace(origin);
+        break;
+      }
+      case GridOrientationType.WorldXY:
+        break;
+      case GridOrientationType.WorldYZ: {
+        const rowX = rMatrix.getRow(0);
+        const rowY = rMatrix.getRow(1);
+        const rowZ = rMatrix.getRow(2);
+        rMatrix.setRow(0, rowY);
+        rMatrix.setRow(1, rowZ);
+        rMatrix.setRow(2, rowX);
+        break;
+      }
+      case GridOrientationType.WorldXZ: {
+        const rowX = rMatrix.getRow(0);
+        const rowY = rMatrix.getRow(1);
+        const rowZ = rMatrix.getRow(2);
+        rMatrix.setRow(0, rowX);
+        rMatrix.setRow(1, rowZ);
+        rMatrix.setRow(2, rowY);
+        break;
+      }
+    }
   }
 
   /** Get the grid settings for this view */
@@ -1193,7 +1229,7 @@ export abstract class ViewState3d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
 
   // ###TODO: Move this back to SpatialViewState...for some reason we always get OrthographicViewState, which we should rarely if ever encounter...
-  public drawDecorations(context: DecorateContext): void {
+  public decorate(context: DecorateContext): void {
     this.drawSkyBox(context);
     this.drawGroundPlane(context);
   }
@@ -1523,6 +1559,16 @@ export class ViewState2d extends ViewState {
     return val;
   }
 
+  public getViewedModel(): GeometricModel2dState | undefined {
+    const model = this.iModel.models.getLoaded(this.baseModelId.value);
+    if (model && !(model instanceof GeometricModel2dState))
+      return undefined;
+    return model;
+  }
+
+  // This should be overridden by more specific leaf classes of ViewState2d
+  public decorate(_context: DecorateContext): void { }
+
   public equalState(other: ViewState2d): boolean {
     if (!this.baseModelId.equals(other.baseModelId))
       return false;
@@ -1587,4 +1633,28 @@ export class DrawingViewState extends ViewState2d {
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
   public static get className() { return "SheetViewDefinition"; }
+  public readonly size: Point2d;
+
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps?: any) {
+    super(props, iModel, categories, displayStyle);
+
+    // sheetProps is necessary for a Sheet View, and contains a height and width for the size of the sheet itself
+    // if it does not appear as given by a sheetProps object, we expect it to be included on the props object (from cloning)
+    if (sheetProps)
+      this.size = Point2d.create(sheetProps.width, sheetProps.height);
+    else
+      this.size = Point2d.create(props.sheetProps.width, props.sheetProps.height);
+  }
+
+  public decorate(context: DecorateContext): void {
+    const border = SheetModelState.createBorder(this.size.x, this.size.y, context);
+    context.setViewBackground(border);
+  }
+
+  /** Serialize this SheetViewState into a JSON object. */
+  public toJSON(): any {
+    const json = super.toJSON();
+    json.sheetProps = { width: this.size.x, height: this.size.y };
+    return json;
+  }
 }

@@ -685,6 +685,7 @@ export abstract class ViewManip extends ViewTool {
     const before = viewport.getWorldFrustum(scratchFrustum);
 
     // ###TODO: Currently computeViewRange() simply returns the viewed extents, in *world* coords.
+    // This will change to be the range of a particular geometric model once Keith adds range as a property of GeometricModelState
     if (this._useViewAlignedVolume)
       viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     else

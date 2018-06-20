@@ -11,7 +11,6 @@ import { HitDetail } from "./HitDetail";
 import { GraphicType, GraphicBuilder, GraphicBuilderCreateParams } from "./render/GraphicBuilder";
 import { ViewFlags, Npc, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { TileRequests } from "./tile/TileTree";
-import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { DecorationList, Decorations, RenderGraphic, RenderTarget, GraphicBranch } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
@@ -268,44 +267,6 @@ export class DecorateContext extends RenderContext {
   public createWorldDecoration(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldDecoration)!; }
   public createWorldOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.WorldOverlay)!; }
   public createViewOverlay(tf = Transform.createIdentity()): GraphicBuilder { return this.createGraphic(tf, GraphicType.ViewOverlay)!; }
-
-  public displayAuxCoordSystem(_acs: AuxCoordSystemState, _options: ACSDisplayOptions): void {
-    //   const checkOutOfView = (ACSDisplayOptions.None !== (options & ACSDisplayOptions.CheckVisible));
-    //   const drawOrigin = acs.getOrigin();
-
-    //   if (checkOutOfView && !isOriginInView(drawOrigin, * context.GetViewport(), true))
-    //     options = options | ACSDisplayOptions:: Deemphasized;
-
-    //   double      pixelSize = context.GetViewport() -> PixelsFromInches(TRIAD_SIZE_INCHES); // Active size...
-
-    //   if (ACSDisplayOptions:: None != (options & ACSDisplayOptions:: Deemphasized))
-    //   pixelSize *= 0.8;
-    // else if (ACSDisplayOptions:: None == (options & ACSDisplayOptions:: Active))
-    //   pixelSize *= 0.9;
-
-    //   double      exagg = context.GetViewport() -> GetViewController().GetViewDefinition().GetAspectRatioSkew();
-    //   double      scale = context.GetPixelSizeAtPoint(& drawOrigin) * pixelSize;
-    //   RotMatrix   rMatrix = _GetRotation();
-    //   Transform   transform;
-
-    //   rMatrix.InverseOf(rMatrix);
-    //   rMatrix.ScaleRows(rMatrix, scale, scale / exagg, scale);
-    //   transform.InitFrom(rMatrix, drawOrigin);
-
-    //   auto graphic = context.CreateWorldOverlay(transform);
-
-    //   DgnViewportR vp = * context.GetViewport();
-    //   _AddAxis(* graphic, 0, options, vp);
-    //   _AddAxis(* graphic, 1, options, vp);
-    //   _AddAxis(* graphic, 2, options, vp);
-
-    //   return graphic;
-
-    //   if (!graphic.IsValid())
-    //     return;
-
-    //   context.AddWorldOverlay(* graphic -> Finish());
-  }
 }
 
 export class SceneContext extends RenderContext {

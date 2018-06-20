@@ -526,7 +526,7 @@ export namespace IModelConnection {
         }
         case SheetViewState.getClassFullName(): {
           const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, this._iModel);
-          viewState = new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState);
+          viewState = new SheetViewState(viewStateData.viewDefinitionProps, this._iModel, categorySelectorState, displayStyleState, viewStateData.sheetProps);
           break;
         }
         default:

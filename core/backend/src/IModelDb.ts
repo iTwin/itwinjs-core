@@ -11,7 +11,7 @@ import {
   IModelNotFoundResponse, EcefLocation,
 } from "@bentley/imodeljs-common";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
-import { Element, Subject } from "./Element";
+import { Element, Subject, Sheet } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager, KeepBriefcase, BriefcaseId } from "./BriefcaseManager";
@@ -22,6 +22,7 @@ import * as path from "path";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { PromiseMemoizer, QueryablePromise } from "./PromiseMemoizer";
+import { ViewDefinition, SheetViewDefinition } from "./ViewDefinition";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -1077,11 +1078,19 @@ export namespace IModelDb {
     public getViewStateData(viewDefinitionId: string): any {
       const viewStateData: any = {};
       const elements = this._iModel.elements;
-      viewStateData.viewDefinitionProps = elements.getElementProps(viewDefinitionId) as ViewDefinitionProps;
+      const viewDefinitionElement = elements.getElement(viewDefinitionId) as ViewDefinition;
+      viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
       viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId);
       viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId);
-      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
+      if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined) {
         viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId);
+      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
+        // If we have 2d sheet view, pass along the sheet size stored on element of id basemodelid
+        const sheetElement = elements.getElementProps(viewDefinitionElement.baseModelId) as Sheet;
+        viewStateData.sheetProps = {};
+        viewStateData.sheetProps.width = sheetElement.width;
+        viewStateData.sheetProps.height = sheetElement.height;
+      }
       return viewStateData;
     }
   }

@@ -11,7 +11,7 @@ import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationTy
 import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
-import { AuxCoordSystemState } from "./AuxCoordSys";
+import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail, SnapMode } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -147,6 +147,9 @@ export class DepthRangeNpc {
 
 /** Coordinate system types */
 export const enum CoordSystem {
+  /** Coordinates are relative to the origin of the screen. */
+  Screen,
+
   /**
    * Coordinates are relative to the origin of the viewing rectangle.
    * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
@@ -1593,12 +1596,11 @@ export class Viewport {
     }
   }
 
-  public decorate(context: DecorateContext): void {
+  public callDecorators(context: DecorateContext): void {
     this.view.decorate(context);
-    // ###TODO: Decorations...
-    // this.view.drawGrid(context);
-    // if (context.viewFlags.showAcsTriad())
-    //   this.getAuxCoordSystem()
+    this.view.drawGrid(context);
+    if (context.viewFlags.showAcsTriad())
+      this.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
   }
 
   public requestScene(_plan: UpdatePlan): void { }
