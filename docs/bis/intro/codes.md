@@ -30,16 +30,19 @@ For example, a physical valve will have its serial number permanently affixed to
 ## CodeSpec
 Each `Element` has a `CodeSpec` navigation property relating it to a `CodeSpec` Element that governs its Code.
 A `CodeSpec` (aka **Code Specification**) captures the rules for encoding and decoding significant business information into and from a Code.
-A Code Specification is used to generate and validate Codes.
+A Code Specification is used to generate and validate Codes using an independent 'Identification Code Service'.
 
 A single BIS Repository (e.g. an iModel) may use many Code Specifications--different classes of Elements can have different coding conventions.
 
 ## CodeScope
-Each `Element` has a `CodeScope` navigation property to another Element that provides the uniqueness scope for its Code.
+Each `Element` has a `CodeScope` navigation property that points to another Element that provides the uniqueness scope for its Code. 
+The 'scoping' Element can represent the repository as a whole, a model, an assembly, etc.
+The 'scoping' Element could also represent some entity with a scope that is greater than the current BIS Repository. In this case, uniqueness within that scope can only be enforced by an external 'Identification Code Service'.
+
 For example, a Floor Code (like "1" or "2") must be unique within a Building, but is not unique across Buildings.
 In this example, the Building instance is providing the CodeScope for the Floor.
 
-## Code uniqueness
+## Uniqueness with a BIS Repsoitory
 For a given Element, the combination of `CodeSpec`, `CodeScope`, and `CodeValue` must be unique within a BIS repository. In BIS Repositories, all `null` values are considered to be unique.
 
 > Next: [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
