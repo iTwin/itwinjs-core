@@ -38,6 +38,7 @@
     "test:clients:integration": "cd core/clients && npm run test:integration",
     "test:backendwebpackformobile": "cd core/backend && npm run webpackformobile",
     "test:frontend": "cd testbed && npm run build && node bin/testbed.js",
+    "test:frontend:performance": "cd testbed && npm run build:perf && node bin/testbed.js",
     "test:example-code-snippets": "cd example-code/snippets && npm run test",
     "test:example-code-app": "cd example-code/app && npm run test",
     "test:perf": "cd core/backend && npm run perftest",

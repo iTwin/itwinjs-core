@@ -8,7 +8,7 @@ import {
   RotMatrix, Transform, Map4d, Point4d, Constant,
 } from "@bentley/geometry-core";
 import { ViewState, StandardViewId, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { BeEvent, BeDuration, BeTimePoint, Id64 } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch } from "@bentley/bentleyjs-core";
 import { BeCursor } from "./tools/Tool";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -1509,6 +1509,9 @@ export class Viewport {
     const view = this.view;
     const target = this.target;
 
+    // Start timer for tile loading time
+    const timer = new StopWatch(undefined, true);
+
     this.animate();
 
     // Allow ViewState instance to change any state which might affect logic below...
@@ -1575,8 +1578,9 @@ export class Viewport {
       isRedrawNeeded = true;
     }
 
+    timer.stop();
     if (isRedrawNeeded)
-      target.drawFrame();
+      target.drawFrame(timer.elapsedSeconds);
 
     return true;
   }

@@ -385,6 +385,7 @@ function updateRenderModeOptionsMap() {
   updateRenderModeOption("weights", viewflags.showWeights(), renderModeOptions.flags);
   updateRenderModeOption("styles", viewflags.showStyles(), renderModeOptions.flags);
   updateRenderModeOption("transparency", viewflags.showTransparency(), renderModeOptions.flags);
+  updateRenderModeOption("continuousRendering", viewflags.doContinuousRendering(), renderModeOptions.flags);
 
   renderModeOptions.mode = viewflags.getRenderMode();
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.getRenderMode());
@@ -542,6 +543,13 @@ function wireIconsToFunctions() {
   addRenderModeHandler("weights");
   addRenderModeHandler("styles");
   addRenderModeHandler("transparency");
+  document.getElementById("continuousRendering")!.addEventListener("click", () => {
+    const contRend = (document.getElementById("continuousRendering")! as HTMLInputElement);
+    (document.getElementById("showfps")! as HTMLInputElement).style.display = contRend.checked ? "inline" : "none";
+    IModelApp.viewManager.doContinuousRendering = contRend.checked;
+    applyRenderModeChange("continuousRendering");
+  });
+
 
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
 }

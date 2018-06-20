@@ -389,6 +389,7 @@ export class ViewFlags {
   public weights: boolean = true;               // Controls whether non-zero line weights are used or display using weight 0.
   public styles: boolean = true;                // Controls whether custom line styles are used (e.g. control whether elements with custom line styles draw normally, or as solid lines).
   public transparency: boolean = true;          // Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque).
+  public continuousRendering: boolean = false;  // Controls whether continuous rendering is used.
   public fill: boolean = true;                  // Controls whether the fills on filled elements are displayed.
   public textures: boolean = true;              // Controls whether to display texture maps for material assignments. When off only material color is used for display.
   public materials: boolean = true;             // Controls whether materials are used (e.g. control whether geometry with materials draw normally, or as if it has no material).
@@ -416,6 +417,7 @@ export class ViewFlags {
       val.weights = other.weights;
       val.styles = other.styles;
       val.transparency = other.transparency;
+      val.continuousRendering = other.continuousRendering;
       val.fill = other.fill;
       val.textures = other.textures;
       val.materials = other.materials;
@@ -457,6 +459,7 @@ export class ViewFlags {
     if (!this.weights) out.noWeight = true;
     if (!this.styles) out.noStyle = true;
     if (!this.transparency) out.noTransp = true;
+    if (this.continuousRendering) out.contRend = true;
     if (!this.fill) out.noFill = true;
     if (this.grid) out.grid = true;
     if (this.acsTriad) out.acs = true;
@@ -487,6 +490,7 @@ export class ViewFlags {
     val.weights = !JsonUtils.asBool(json.noWeight);
     val.styles = !JsonUtils.asBool(json.noStyle);
     val.transparency = !JsonUtils.asBool(json.noTransp);
+    val.continuousRendering = JsonUtils.asBool(json.contRend);
     val.fill = !JsonUtils.asBool(json.noFill);
     val.grid = JsonUtils.asBool(json.grid);
     val.acsTriad = JsonUtils.asBool(json.acs);
@@ -521,6 +525,7 @@ export class ViewFlags {
       && this.weights === other.weights
       && this.styles === other.styles
       && this.transparency === other.transparency
+      && this.continuousRendering === other.continuousRendering
       && this.fill === other.fill
       && this.textures === other.textures
       && this.materials === other.materials
@@ -558,6 +563,7 @@ export class ViewFlags {
   public showStyles() { return this.styles; }
   public showTextures() { return this.textures; }
   public showTransparency() { return this.transparency; }
+  public doContinuousRendering() { return this.continuousRendering; }
   public showVisibleEdges() { return this.visibleEdges; }
   public showWeights() { return this.weights; }
   public useHlineMaterialColors() { return this.hLineMaterialColors; }
@@ -581,6 +587,7 @@ export class ViewFlags {
   public setShowStyles(val: boolean) { this.styles = val; }
   public setShowTextures(val: boolean) { this.textures = val; }
   public setShowTransparency(val: boolean) { this.transparency = val; }
+  public setDoContinuousRendering(val: boolean) { this.continuousRendering = val; }
   public setShowVisibleEdges(val: boolean) { this.visibleEdges = val; }
   public setShowWeights(val: boolean) { this.weights = val; }
   public setUseHlineMaterialColors(val: boolean) { this.hLineMaterialColors = val; }
@@ -597,6 +604,7 @@ export namespace ViewFlag {
     kWeights,
     kStyles,
     kTransparency,
+    kContinuousRendering,
     kFill,
     kTextures,
     kMaterials,
@@ -650,6 +658,7 @@ export namespace ViewFlag {
     public setShowWeights(val: boolean) { this.values.setShowWeights(val); this.setPresent(PresenceFlag.kWeights); }
     public setShowStyles(val: boolean) { this.values.setShowStyles(val); this.setPresent(PresenceFlag.kStyles); }
     public setShowTransparency(val: boolean) { this.values.setShowTransparency(val); this.setPresent(PresenceFlag.kTransparency); }
+    public setDoContinuousRendering(val: boolean) { this.values.setDoContinuousRendering(val); this.setPresent(PresenceFlag.kContinuousRendering); }
     public setShowFill(val: boolean) { this.values.setShowFill(val); this.setPresent(PresenceFlag.kFill); }
     public setShowTextures(val: boolean) { this.values.setShowTextures(val); this.setPresent(PresenceFlag.kTextures); }
     public setShowMaterials(val: boolean) { this.values.setShowMaterials(val); this.setPresent(PresenceFlag.kMaterials); }
@@ -679,6 +688,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kWeights)) base.setShowWeights(this.values.showWeights());
       if (this.isPresent(PresenceFlag.kStyles)) base.setShowStyles(this.values.showStyles());
       if (this.isPresent(PresenceFlag.kTransparency)) base.setShowTransparency(this.values.showTransparency());
+      if (this.isPresent(PresenceFlag.kContinuousRendering)) base.setDoContinuousRendering(this.values.doContinuousRendering());
       if (this.isPresent(PresenceFlag.kFill)) base.setShowFill(this.values.showFill());
       if (this.isPresent(PresenceFlag.kTextures)) base.setShowTextures(this.values.showTextures());
       if (this.isPresent(PresenceFlag.kMaterials)) base.setShowMaterials(this.values.showMaterials());
